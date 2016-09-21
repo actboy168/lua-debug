@@ -282,7 +282,7 @@ namespace vscode
 			set_state(state::running);
 		}
 		open();
-		return false;
+		return !stopOnEntry;
 	}
 
 	bool debugger_impl::request_thread(rprotocol& req, lua_State* L, lua_Debug *ar) {
@@ -541,6 +541,6 @@ namespace vscode
 	{
 		response_success(req);
 		step_in();
-		return false;
+		return true;
 	}
 }
