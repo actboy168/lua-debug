@@ -11,7 +11,7 @@
 template <class... Args>
 static void log(const char* fmt, const Args& ... args)
 {
-	utility::printf(fmt, args...);
+	vscode::printf(fmt, args...);
 }
 #endif	 
 
