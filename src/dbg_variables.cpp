@@ -173,7 +173,7 @@ namespace vscode
 			int64_t reference = 0;
 			if (pos && (lua_type(L, -1) == LUA_TTABLE))
 			{
-				reference = pos | (n << ((2 + level) * 8));
+				reference = pos | ((int64_t)n << ((2 + level) * 8));
 			}
 			lua_pop(L, 1);
 			if (push(name, value, reference))

@@ -61,6 +61,25 @@ namespace vscode
 		return output;
 	}
 
+	static void path_normalize(std::string& path)
+	{
+		std::transform(path.begin(), path.end(), path.begin(),
+			[](char c)->char
+		{
+			if (c == '\\') return '/';
+			return tolower((unsigned char)c);
+		}
+		);
+	}
+
+	static std::string get_path(const rapidjson::Value& value)
+	{
+		assert(value.IsString());
+		std::string path(value.GetString(), value.GetStringLength());
+		path_normalize(path);
+		return path;
+	}
+
 	void debugger_impl::set_state(state state)
 	{
 		state_ = state;
@@ -134,7 +153,9 @@ namespace vscode
 				{
 					if (ar->source[0] == '@')
 					{
-						if (breakpoints_.has(ar->source + 1, ar->currentline))
+						std::string path(ar->source + 1);
+						path_normalize(path);
+						if (breakpoints_.has(path, ar->currentline))
 						{
 							step_in();
 							return true;
@@ -144,19 +165,6 @@ namespace vscode
 			}
 		}
 		return false;
-	}
-
-	std::string get_path(const rapidjson::Value& value)
-	{
-		assert(value.IsString());
-		std::string path(value.GetString(), value.GetStringLength());
-		std::transform(path.begin(), path.end(), path.begin(),
-			[](char c)->char{
-			if (c == '\\') return '/';
-			return c;
-		}
-		);
-		return path;
 	}
 
 	bool debugger_impl::request_initialize(rprotocol& req) {
@@ -383,6 +391,8 @@ namespace vscode
 		auto& source = args["source"];
 		std::string path = get_path(source["path"]);
 
+		breakpoints_.clear(path);
+
 		std::vector<size_t> lines;
 		for (auto& m : args["breakpoints"].GetArray())
 		{
@@ -525,5 +535,12 @@ namespace vscode
 		response_success(req);
 		set_state(state::running);
 		return true;
+	}
+
+	bool debugger_impl::request_pause(rprotocol& req)
+	{
+		response_success(req);
+		step_in();
+		return false;
 	}
 }

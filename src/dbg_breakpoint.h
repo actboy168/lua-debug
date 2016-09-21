@@ -27,12 +27,27 @@ namespace vscode
 			fast_table_.clear();
 		}
 
+		void clear(const std::string& path)
+		{
+			auto it = find(path);
+			if (it == end())
+			{
+				return;
+			}
+			auto& lines = it->second;
+			for (size_t line : lines)
+			{
+				fast_table_[line]--;
+			}
+			lines.clear();
+		}
+
 		void insert(const std::string& path, size_t line)
 		{
 			auto it = find(path);
 			if (it == end())
 			{
-				base_type::insert(std::make_pair(path, std::set < size_t > { line }));
+				base_type::insert(std::make_pair(path, std::set<size_t> { line }));
 			}
 			else
 			{
