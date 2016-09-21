@@ -1,0 +1,16 @@
+{
+    "version": "0.0.1",
+    "debugServer": 4278,
+    "configurations": [
+        {
+            "name": "Lua Debugger",
+            "type": "lua",
+            "request": "attach",
+            "program": "${workspaceRoot}/main.lua",
+            "stopOnEntry": true,
+            "cwd": "${workspaceRoot}",
+            "path": "${workspaceRoot}/?.lua",
+            "cpath": "${workspaceRoot}/?.dll"
+        }
+    ]
+}

@@ -1,0 +1,80 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="inc">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="cpp">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\src\dbg_network.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\dbg_message.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\dbg_variables.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\dbg_response.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\dbg_request.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\dbg_impl.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\debugger.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\dbg_redirect.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\dbg_unicode.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\src\debugger.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\dbg_network.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\dbg_protocol.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\dbg_message.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\dbg_breakpoint.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\dbg_variables.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\dbg_impl.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\dbg_redirect.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\dbg_file.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\dbg_unicode.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\dbg_format.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\dbg_hybridarray.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,95 @@
+{
+	"name": "lua-debug",
+	"displayName": "Lua 5.3 Debugger",
+	"version": "0.0.1",
+	"publisher": "actboy168",
+	"description": "Visual Studio Code debugger extension for Lua 5.3",
+	"categories": [
+		"Debuggers"
+	],
+	"author": {
+		"name": "actboy168"
+	},
+	"license": "MIT",
+	"private": true,
+	"scripts": {},
+	"engines": {
+		"vscode": "^1.0.0",
+		"node": "^4.1.1"
+	},
+	"dependencies": {},
+	"devDependencies": {},
+	"contributes": {
+		"debuggers": [
+			{
+				"type": "lua",
+				"label": "Lua Debugger",
+				"enableBreakpointsFor": {
+					"languageIds": [
+						"lua"
+					]
+				},
+				"initialConfigurations": [
+					{
+						"name": "Lua Debugger",
+						"type": "lua",
+						"request": "launch",
+						"program": "${workspaceRoot}/main.lua",
+						"stopOnEntry": true,
+						"cwd": "${workspaceRoot}",
+						"path": "${workspaceRoot}/?.lua",
+						"cpath": "${workspaceRoot}/?.dll"
+					}
+				],
+				"configurationAttributes": {
+					"attach": {
+						"properties": {
+							"cwd": {
+								"type": "string",
+								"description": "Working directory at program startup",
+								"default": "${workspaceRoot}"
+							},
+							"stopOnEntry": {
+								"type": "boolean",
+								"description": "Automatically stop after launch.",
+								"default": true
+							}
+						}
+					},
+					"launch": {
+						"required": [
+							"program"
+						],
+						"properties": {
+							"program": {
+								"type": "string",
+								"description": "Lua 5.3 program to debug - set this to the path of the script",
+								"default": "main.lua"
+							},
+							"cwd": {
+								"type": "string",
+								"description": "Working directory at program startup",
+								"default": "${workspaceRoot}"
+							},
+							"stopOnEntry": {
+								"type": "boolean",
+								"description": "Automatically stop after launch.",
+								"default": true
+							},
+							"path": {
+								"type": "string",
+								"description": "Search path for Lua programs",
+								"default": "${workspaceRoot}/?.lua"
+							},
+							"cpath": {
+								"type": "string",
+								"description": "Search path for native libraries",
+								"default": "${workspaceRoot}/?.dll"
+							}
+						}
+					}
+				}
+			}
+		]
+	}
+}
