@@ -153,7 +153,7 @@ namespace vscode
 				request_initialize(req);
 			}
 		}
-		else if (is_state(state::initialized))
+		else if (is_state(state::initialized) || is_state(state::running))
 		{
 			update_redirect();
 			rprotocol req = network_->input();
@@ -203,6 +203,7 @@ namespace vscode
 			{ "disconnect", DBG_REQUEST_MAIN(request_disconnect) },
 			{ "setBreakpoints", DBG_REQUEST_MAIN(request_set_breakpoints) },
 			{ "configurationDone", DBG_REQUEST_MAIN(request_configuration_done) },
+			{ "pause", DBG_REQUEST_MAIN(request_pause) },
 		})
 		, hook_dispatch_
 		({

@@ -62,6 +62,7 @@ namespace vscode
 		bool request_launch(rprotocol& req);
 		bool request_attach(rprotocol& req);
 		bool request_disconnect(rprotocol& req);
+		bool request_pause(rprotocol& req);
 
 	private:
 		bool request_thread(rprotocol& req, lua_State *L, lua_Debug *ar);
