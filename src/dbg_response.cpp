@@ -17,9 +17,17 @@ namespace vscode
 			for (auto _ : res("body").Object())
 			{
 				res("supportsConfigurationDoneRequest").Bool(true);
+				res("supportsSetVariable").Bool(true);
+				res("supportsEvaluateForHovers").Bool(false);
 				res("supportsFunctionBreakpoints").Bool(false);
 				res("supportsConditionalBreakpoints").Bool(false);
-				res("supportsEvaluateForHovers").Bool(false);
+				res("exceptionBreakpointFilters").Bool(false);
+				res("supportsStepBack").Bool(false);
+				res("supportsRestartFrame").Bool(false);
+				res("supportsGotoTargetsRequest").Bool(false);
+				res("supportsStepInTargetsRequest").Bool(false);
+				res("supportsCompletionsRequest").Bool(false);
+				
 			}
 		}
 		network_->output(res);
