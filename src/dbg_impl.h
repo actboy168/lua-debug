@@ -7,7 +7,8 @@
 #include <map>
 #include <vector>
 #include "dbg_breakpoint.h"	 
-#include "dbg_redirect.h"
+#include "dbg_redirect.h"  
+#include "dbg_evaluate.h"
 
 namespace fs = std::tr2::sys;
 
@@ -128,6 +129,7 @@ namespace vscode
 		breakpoint         breakpoints_;
 		fs::path           workingdir_;
 		std::vector<stack> stack_;
+		watchs             watch_;
 		redirector         redirect_;
 		std::map<std::string, std::function<bool(rprotocol&)>>                            main_dispatch_;
 		std::map<std::string, std::function<bool(rprotocol&, lua_State*, lua_Debug *ar)>> hook_dispatch_;

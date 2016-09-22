@@ -3,7 +3,6 @@
 #include "dbg_network.h"	
 #include "dbg_variables.h"	
 #include "dbg_format.h"
-#include "dbg_evaluate.h"
 
 namespace vscode
 {
@@ -497,9 +496,17 @@ namespace vscode
 			return false;
 		}
 
+		if (type == var_type::watch)
+		{
+			if (!watch_.get((var_ref >> 16) & 0xFF))
+			{
+				response_error(req, "Error retrieving variables");
+			}
+		}
+
 		response_success(req, [&](wprotocol& res)
 		{
-			variables resv(res, L, ar);
+			variables resv(res, L, ar, type == var_type::watch ? -1 : 0);
 			resv.push_value(type, depth, var_ref >> 16);
 		});
 		return false;
@@ -603,8 +610,16 @@ namespace vscode
 		{
 			var_set_value(rets[i], L, -1 - i);
 		}
+		int64_t reference = 0;
+		if (rets.size() == 1 && lua_type(L, -1) == LUA_TTABLE && args["context"] == "watch")
+		{
+			size_t pos = watch_.add();
+			if (pos > 0)
+			{
+				reference = (int)var_type::watch | (pos << 16);
+			}
+		}
 		lua_settop(L, n);
-
 		response_success(req, [&](wprotocol& res)
 		{
 			if (rets.size() == 0)
@@ -624,7 +639,7 @@ namespace vscode
 				}
 				res("result").String(result);
 			}
-			res("variablesReference").Int64(0);
+			res("variablesReference").Int64(reference);
 		});
 		return false;
 	}

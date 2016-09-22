@@ -16,6 +16,7 @@ namespace vscode
 		upvalue = 3,
 		global = 4,
 		standard = 5,
+		watch = 6,
 	};
 
 	struct variable {
@@ -40,7 +41,7 @@ namespace vscode
 	class variables
 	{
 	public:
-		variables(wprotocol& res, lua_State* L, lua_Debug* ar);
+		variables(wprotocol& res, lua_State* L, lua_Debug* ar, int fix = 0);
 		~variables();
 		bool push(const variable& var);
 		void push_table(int idx, int level, int64_t pos, var_type type);

@@ -206,6 +206,7 @@ namespace vscode
 		, breakpoints_()
 		, workingdir_()
 		, stack_()
+		, watch_(L)
 		, redirect_()
 		, main_dispatch_
 		({

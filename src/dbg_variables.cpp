@@ -273,6 +273,12 @@ namespace vscode
 				level++;
 			}
 			break;
+		case var_type::watch:
+			pos >>= 8;
+			level++;
+			break;
+		default:
+			return false;
 		}
 
 		for (int64_t p = pos; p; p >>= 8)
@@ -383,12 +389,12 @@ namespace vscode
 		return true;
 	}
 
-	variables::variables(wprotocol& res, lua_State* L, lua_Debug* ar)
+	variables::variables(wprotocol& res, lua_State* L, lua_Debug* ar, int fix)
 		: res(res)
 		, L(L)
 		, ar(ar)
 		, n(0)
-		, checkstack(lua_gettop(L))
+		, checkstack(lua_gettop(L) + fix)
 	{
 		res("variables").StartArray();
 	}
