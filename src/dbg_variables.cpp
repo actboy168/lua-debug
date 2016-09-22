@@ -61,7 +61,7 @@ namespace vscode
 		return level;
 	}
 
-	static std::string get_value(lua_State *L, int idx, bool isvalue) {
+	static std::string get_name(lua_State *L, int idx) {
 		if (luaL_callmeta(L, idx, "__tostring")) {
 			size_t len = 0;
 			const char* buf = lua_tolstring(L, idx, &len);
@@ -77,14 +77,9 @@ namespace vscode
 			else
 				return format("%f", lua_tonumber(L, idx));
 		case LUA_TSTRING:
-			if (isvalue) {
-				return  format("'%s'", lua_tostring(L, idx));
-			}
-			else {
-				size_t len = 0;
-				const char* buf = lua_tolstring(L, idx, &len);
-				return std::string(buf ? buf : "", len);
-			}
+			size_t len = 0;
+			const char* buf = lua_tolstring(L, idx, &len);
+			return std::string(buf ? buf : "", len);
 		case LUA_TBOOLEAN:
 			return lua_toboolean(L, idx) ? "true" : "false";
 		case LUA_TNIL:
@@ -93,6 +88,52 @@ namespace vscode
 			break;
 		}
 		return format("%s: %p", luaL_typename(L, idx), lua_topointer(L, idx));
+	}
+
+	static void var_set_value_(variable& var, lua_State *L, int idx)
+	{
+		switch (lua_type(L, idx)) 
+		{
+		case LUA_TNUMBER:
+			if (lua_isinteger(L, idx))
+			{
+				var.value = format("%d", lua_tointeger(L, idx)); 
+				var.type = "integer";
+			}
+			else
+			{
+				var.value = format("%f", lua_tonumber(L, idx));
+				var.type = "number";
+			}
+			return;
+		case LUA_TSTRING:
+			var.value = format("'%s'", lua_tostring(L, idx));
+			var.type = "string";
+			return;
+		case LUA_TBOOLEAN:
+			var.value = lua_toboolean(L, idx) ? "true" : "false";
+			var.type = "boolean";
+			return;
+		case LUA_TNIL:
+			var.value = "nil";
+			var.type = "nil";
+			return;
+		default:
+			break;
+		}
+		var.value = format("%s: %p", luaL_typename(L, idx), lua_topointer(L, idx));
+		var.type = luaL_typename(L, idx);
+		return;
+	}
+
+	static void var_set_value(variable& var, lua_State *L, int idx)
+	{
+		if (luaL_callmeta(L, idx, "__tostring")) {
+			var_set_value_(var, L, -1);
+			lua_pop(L, 1);
+			return;
+		}
+		return var_set_value_(var, L, idx);
 	}
 
 	static bool set_value(lua_State* L, std::string& value)
@@ -288,7 +329,7 @@ namespace vscode
 		lua_pushnil(L);
 		while (lua_next(L, idx))
 		{
-			if (name == get_value(L, -2, false))
+			if (name == get_name(L, -2))
 			{
 				lua_pop(L, 1);
 				if (!set_value(L, value))
@@ -358,14 +399,15 @@ namespace vscode
 		lua_settop(L, checkstack);
 	}
 
-	bool variables::push(const std::string& name, const std::string& value, int64_t reference)
+	bool variables::push(const variable& var)
 	{
 		n++;
 		for (auto _ : res.Object())
 		{
-			res("variablesReference").Int64(reference);
-			res("name").String(name);
-			res("value").String(value);
+			res("variablesReference").Int64(var.reference);
+			res("name").String(var.name);
+			res("value").String(var.value);
+			res("type").String(var.type);
 		}
 		if (n + 1 >= type_indexmax)
 		{
@@ -373,22 +415,12 @@ namespace vscode
 			{
 				res("name").String("...");
 				res("value").String("");
+				res("type").String("");
 			}
 			return true;
 		}
 		return false;
 	}
-
-	struct variable_t {
-		std::string name;
-		std::string value;
-		int64_t     reference;
-
-		bool operator < (const variable_t& that) const
-		{
-			return name < that.name;
-		}
-	};
 
 	void variables::push_table(int idx, int level, int64_t pos, var_type type)
 	{
@@ -396,13 +428,14 @@ namespace vscode
 		idx = lua_absindex(L, idx);
 		if (lua_getmetatable(L, idx))
 		{
-			std::string value = get_value(L, -1, true);
-			int64_t reference = 0;
+			variable var;
+			var.name = "[metatable]";
+			var_set_value(var, L, -1);
 			if (pos && (lua_type(L, -1) == LUA_TTABLE))
 			{
-				reference = pos | ((int64_t)type_metatable << ((2 + level) * 8));
+				var.reference = pos | ((int64_t)type_metatable << ((2 + level) * 8));
 			}
-			if (push("[metatable]", value, reference))
+			if (push(var))
 			{
 				lua_pop(L, 1);
 				return;
@@ -410,14 +443,14 @@ namespace vscode
 			lua_pop(L, 1);
 		}
 
-		std::set<variable_t> vars;
+		std::set<variable> vars;
 
 		lua_pushnil(L);
 		while (lua_next(L, -2))
 		{
 			n++;
-			variable_t var;
-			var.name = get_value(L, -2, false);
+			variable var;
+			var.name = get_name(L, -2);
 			if (level == 0) {
 				if (type == var_type::global) {
 					if (standard.find(var.name) != standard.end()) {
@@ -432,8 +465,7 @@ namespace vscode
 					}
 				}
 			}
-			var.value = get_value(L, -1, true);
-			var.reference = 0;
+			var_set_value(var, L, -1);
 			if (pos && (lua_type(L, -1) == LUA_TTABLE))
 			{
 				var.reference = pos | ((int64_t)n << ((2 + level) * 8));
@@ -442,9 +474,9 @@ namespace vscode
 			lua_pop(L, 1);
 		}
 
-		for (const variable_t& var : vars)
+		for (const variable& var : vars)
 		{
-			if (push(var.name, var.value, var.reference))
+			if (push(var))
 			{
 				break;
 			}
@@ -465,16 +497,16 @@ namespace vscode
 				{
 					const char* name = getlocal(L, ar, type, n);
 					if (!name)
-						break;
-					std::string value = get_value(L, lua_gettop(L), true);
-					int64_t reference = 0;
+						break; 
+					variable var;
+					var.name = name;
+					var_set_value(var, L, -1);
 					if (lua_type(L, lua_gettop(L)) == LUA_TTABLE)
 					{
-						reference = (int)type | (depth << 8) | (n << 16);
+						var.reference = (int)type | (depth << 8) | (n << 16);
 					}
-					bool quit = push(name, value, reference);
 					lua_pop(L, 1);
-					if (quit) break;
+					if (push(var)) break;
 				}
 				return;
 			}

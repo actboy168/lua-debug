@@ -18,12 +18,30 @@ namespace vscode
 		standard = 5,
 	};
 
+	struct variable {
+		std::string name;
+		std::string value;
+		std::string type;
+		int64_t     reference;
+
+		variable()
+			: name()
+			, value()
+			, reference(0)
+		{ }
+
+		bool operator < (const variable& that) const
+		{
+			return name < that.name;
+		}
+	};
+
 	class variables
 	{
 	public:
 		variables(wprotocol& res, lua_State* L, lua_Debug* ar);
 		~variables();
-		bool push(const std::string& name, const std::string& value, int64_t reference);
+		bool push(const variable& var);
 		void push_table(int idx, int level, int64_t pos, var_type type);
 		void push_value(var_type type, int depth, int64_t pos);
 
