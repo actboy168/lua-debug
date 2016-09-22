@@ -19,6 +19,7 @@ namespace vscode
 		rprotocol input();
 		bool      input_empty() const;
 		void      set_schema(const char* file);
+		void      close_session();
 
 	private:
 		std::unique_ptr<net::poller_t> poller_;

@@ -175,7 +175,10 @@ namespace vscode
 	void server::event_accept(net::socket::fd_t fd, const net::endpoint& ep)
 	{
 		if (session_)
+		{
+			net::socket::close(fd);
 			return;
+		}
 		session_.reset(new session(this, get_poller()));
 		if (!schema_file_.empty())
 		{
@@ -215,5 +218,12 @@ namespace vscode
 	void server::set_schema(const char* file)
 	{
 		schema_file_ = file;
+	}
+
+	void server::close_session()
+	{
+		if (!session_)
+			return;
+		session_->close();
 	}
 }

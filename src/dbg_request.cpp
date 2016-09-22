@@ -82,6 +82,7 @@ namespace vscode
 
 	void debugger_impl::set_state(state state)
 	{
+		if (state_ == state) return;
 		state_ = state;
 		switch (state_)
 		{
@@ -531,6 +532,7 @@ namespace vscode
 	{
 		response_success(req);
 		set_state(state::terminated);
+		network_->close_session();
 		return true;
 	}
 

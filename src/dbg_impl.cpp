@@ -160,6 +160,9 @@ namespace vscode
 			if (req["command"] == "initialize") {
 				request_initialize(req);
 			}
+			else if (req["command"] == "disconnect") {
+				request_disconnect(req);
+			}
 		}
 		else if (is_state(state::initialized) || is_state(state::running))
 		{

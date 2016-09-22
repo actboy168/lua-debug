@@ -57,6 +57,7 @@ namespace vscode
 		rprotocol input();
 		bool      input_empty()	const;
 		void      set_schema(const char* file);
+		void      close_session();
 
 	private:
 		void event_accept(net::socket::fd_t fd, const net::endpoint& ep);

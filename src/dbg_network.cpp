@@ -45,4 +45,11 @@ namespace vscode
 			return;
 		return server_->set_schema(file);
 	}
+
+	void network::close_session()
+	{
+		if (!server_)
+			return;
+		server_->close_session();
+	}
 }
