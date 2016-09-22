@@ -23,14 +23,13 @@ namespace vscode
 	public:
 		variables(wprotocol& res, lua_State* L, lua_Debug* ar);
 		~variables();
-
-		bool find_value(var_type type, int depth, int64_t& pos, int& level);
 		bool push(const std::string& name, const std::string& value, int64_t reference);
 		void push_table(int idx, int level, int64_t pos, var_type type);
 		void push_value(var_type type, int depth, int64_t pos);
 
-	private:
-		const char* getlocal(var_type type, int n);
+	public:
+		static bool set_value(lua_State* L, lua_Debug* ar, var_type type, int depth, int64_t pos, const std::string& name, std::string& value);
+		static bool find_value(lua_State* L, lua_Debug* ar, var_type type, int depth, int64_t pos);
 
 	private:
 		wprotocol& res;

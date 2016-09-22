@@ -70,6 +70,7 @@ namespace vscode
 		bool request_source(rprotocol& req, lua_State *L, lua_Debug *ar);
 		bool request_scopes(rprotocol& req, lua_State *L, lua_Debug *ar);
 		bool request_variables(rprotocol& req, lua_State *L, lua_Debug *ar);
+		bool request_set_variable(rprotocol& req, lua_State *L, lua_Debug *ar);
 		bool request_stepin(rprotocol& req, lua_State *L, lua_Debug *ar);
 		bool request_stepout(rprotocol& req, lua_State *L, lua_Debug *ar);
 		bool request_next(rprotocol& req, lua_State *L, lua_Debug *ar);

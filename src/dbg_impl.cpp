@@ -214,6 +214,7 @@ namespace vscode
 			{ "stackTrace", DBG_REQUEST_HOOK(request_stack_trace) },
 			{ "scopes", DBG_REQUEST_HOOK(request_scopes) },
 			{ "variables", DBG_REQUEST_HOOK(request_variables) },
+			{ "setVariable", DBG_REQUEST_HOOK(request_set_variable) },
 			{ "source", DBG_REQUEST_HOOK(request_source) },
 			{ "threads", DBG_REQUEST_HOOK(request_thread) },
 		})

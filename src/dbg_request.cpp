@@ -496,6 +496,31 @@ namespace vscode
 		return false;
 	}
 
+	bool debugger_impl::request_set_variable(rprotocol& req, lua_State *L, lua_Debug *ar)
+	{
+		auto& args = req["arguments"];
+		lua_Debug entry;
+		int64_t var_ref = args["variablesReference"].GetInt64();
+		var_type type = (var_type)(var_ref & 0xFF);
+		int depth = (var_ref >> 8) & 0xFF;
+		if (!lua_getstack(L, depth, &entry)) {
+			response_error(req, "Failed set variable");
+			return false;
+		}
+		std::string name(args["name"].GetString(), args["name"].GetStringLength());
+		std::string value(args["value"].GetString(), args["value"].GetStringLength());
+		if (!variables::set_value(L, &entry, type, depth, var_ref >> 16, name, value))
+		{
+			response_error(req, "Failed set variable");
+			return false;
+		}
+		response_success(req, [&](wprotocol& res)
+		{
+			res("value").String(value);
+		});
+		return false;
+	}
+
 	bool debugger_impl::request_configuration_done(rprotocol& req)
 	{
 		response_success(req);
