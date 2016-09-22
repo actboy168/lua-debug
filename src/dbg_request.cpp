@@ -407,7 +407,7 @@ namespace vscode
 			{
 				for (auto _ : res.Object())
 				{
-					res("verified").Bool(false);
+					res("verified").Bool(true);
 					for (auto _ : res("source").Object())
 					{
 						res("path").String(path);
