@@ -76,5 +76,8 @@
     <ClInclude Include="..\src\dbg_hybridarray.h">
       <Filter>inc</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\dbg_evaluate.h">
+      <Filter>inc</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

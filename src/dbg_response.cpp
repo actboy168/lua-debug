@@ -20,7 +20,7 @@ namespace vscode
 				res("supportsSetVariable").Bool(true);
 				res("supportsEvaluateForHovers").Bool(false);
 				res("supportsFunctionBreakpoints").Bool(false);
-				res("supportsConditionalBreakpoints").Bool(false);
+				res("supportsConditionalBreakpoints").Bool(true);
 				res("exceptionBreakpointFilters").Bool(false);
 				res("supportsStepBack").Bool(false);
 				res("supportsRestartFrame").Bool(false);

@@ -3,6 +3,7 @@
 #include "dbg_network.h"	
 #include "dbg_variables.h"	
 #include "dbg_format.h"
+#include "dbg_evaluate.h"
 
 namespace vscode
 {
@@ -156,7 +157,7 @@ namespace vscode
 					{
 						std::string path(ar->source + 1);
 						path_normalize(path);
-						if (breakpoints_.has(path, ar->currentline))
+						if (breakpoints_.has(path, ar->currentline, L, ar))
 						{
 							step_in();
 							return true;
@@ -399,7 +400,14 @@ namespace vscode
 		{
 			size_t line = m["line"].GetUint();
 			lines.push_back(line);
-			breakpoints_.insert(path, line);
+			if (!m.HasMember("condition"))
+			{
+				breakpoints_.insert(path, line);
+			}
+			else
+			{
+				breakpoints_.insert(path, line, std::string(m["condition"].GetString(), m["condition"].GetStringLength()));
+			}
 		}
 
 		response_success(req, [&](wprotocol& res)
@@ -583,56 +591,8 @@ namespace vscode
 			return false;
 		}
 
-		int n = lua_gettop(L); 	
-		if (luaL_loadstring(L, ("return " + expression).c_str()))
-		{
-			response_error(req, lua_tostring(L, -1));
-			lua_pop(L, 1);
-			return false;
-		}
-
-		lua_newtable(L);
-		{
-			lua_newtable(L);
-			lua_pushglobaltable(L);
-			lua_setfield(L, -2, "__index");
-			lua_setmetatable(L, -2);
-		}
-
-		if (lua_getinfo(L, "f", &current))
-		{
-			for (int i = 1;; ++i)
-			{
-				const char* name = lua_getupvalue(L, -1, i);
-				if (!name) break;
-				lua_setfield(L, -3, name);
-			}
-			lua_pop(L, 1);
-		}
-
-		for (int i = 1;; ++i)
-		{
-			const char* name = lua_getlocal(L, &current, -i);
-			if (!name) break;
-			lua_setfield(L, -2, name);
-		}
-
-		for (int i = 1;; ++i)
-		{
-			const char* name = lua_getlocal(L, &current, i);
-			if (!name)
-			{
-				break;
-			}
-			lua_setfield(L, -2, name);
-		}
-
-		if (!lua_setupvalue(L, -2, 1))
-		{
-			lua_pop(L, 1);
-		}
-
-		if (lua_pcall(L, 0, LUA_MULTRET, 0))
+		int n = lua_gettop(L);
+		if (!evaluate(L, &current, ("return " + expression).c_str()))
 		{
 			response_error(req, lua_tostring(L, -1));
 			lua_pop(L, 1);

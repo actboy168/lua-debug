@@ -23,6 +23,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\dbg_breakpoint.h" />
+    <ClInclude Include="..\src\dbg_evaluate.h" />
     <ClInclude Include="..\src\dbg_file.h" />
     <ClInclude Include="..\src\dbg_format.h" />
     <ClInclude Include="..\src\dbg_hybridarray.h" />
