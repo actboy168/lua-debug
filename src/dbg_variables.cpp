@@ -6,6 +6,9 @@
 
 namespace vscode
 {
+	const int type_indexmax = 250;
+	const int type_metatable = 251;
+
 	static std::set<std::string> standard = {
 		"ipairs",
 		"error",
@@ -107,7 +110,7 @@ namespace vscode
 			res("name").String(name);
 			res("value").String(value);
 		}
-		if (n + 1 >= 250)
+		if (n + 1 >= type_indexmax)
 		{
 			for (auto _ : res.Object())
 			{
@@ -152,6 +155,21 @@ namespace vscode
 	{
 		size_t n = 0;
 		idx = lua_absindex(L, idx);
+		if (lua_getmetatable(L, idx))
+		{
+			std::string value = get_value(L, -1, true);
+			int64_t reference = 0;
+			if (pos && (lua_type(L, -1) == LUA_TTABLE))
+			{
+				reference = pos | ((int64_t)type_metatable << ((2 + level) * 8));
+			}
+			if (push("[metatable]", value, reference ))
+			{
+				lua_pop(L, 1);
+				return;
+			}
+			lua_pop(L, 1);
+		}
 		lua_pushnil(L);
 		while (lua_next(L, -2))
 		{
@@ -183,17 +201,83 @@ namespace vscode
 			}
 		}
 	}
-
-	void variables::push_value(var_type type, int depth, int64_t pos)
+	
+	bool variables::find_value(var_type type, int depth, int64_t& pos, int& level)
 	{
-		int level = 0;
-		int64_t ref = (int)type | (depth << 8) | (pos << 16);
 		switch (type)
 		{
 		case var_type::standard:
 		case var_type::global:
 			lua_pushglobaltable(L);
 			break;
+		case var_type::local:
+		case var_type::vararg:
+		case var_type::upvalue:
+			if (pos == 0)
+			{
+				return true;
+			}
+			else
+			{
+				const char* name = getlocal(type, pos & 0xFF);
+				if (!name)
+					return false;
+				pos >>= 8;
+				level++;
+			}
+			break;
+		}
+
+		for (int64_t p = pos; p; p >>= 8)
+		{
+			level++;
+			if (level > 3)
+			{
+				lua_pop(L, 1);
+				return false;
+			}
+
+			bool suc = false;
+			int n = int(p & 0xFF);
+			if (n <= type_indexmax)
+			{
+				lua_pushnil(L);
+				while (lua_next(L, -2))
+				{
+					n--;
+					if (n <= 0)
+					{
+						lua_remove(L, -2);
+						lua_remove(L, -2);
+						suc = true;
+						break;
+					}
+					lua_pop(L, 1);
+				}
+			}
+			else if (n == type_metatable)
+			{
+				if (lua_getmetatable(L, -1))
+				{
+					lua_remove(L, -2);
+					suc = true;
+				}
+			}
+
+			if (!suc)
+			{
+				lua_pop(L, 1);
+				return false;
+			}
+		}
+		return true;
+	}
+
+	void variables::push_value(var_type type, int depth, int64_t pos)
+	{
+		int64_t ref = (int)type | (depth << 8) | (pos << 16);
+		switch (type)
+		{
 		case var_type::local:
 		case var_type::vararg:
 		case var_type::upvalue:
@@ -216,47 +300,13 @@ namespace vscode
 				}
 				return;
 			}
-			else
-			{
-				const char* name = getlocal(type, pos & 0xFF);
-				if (!name)
-					return;
-				pos >>= 8;
-				level++;
-			}
 			break;
 		}
-
-
-		for (int64_t p = pos; p; p >>= 8)
+		  
+		int level = 0;
+		if (!find_value(type, depth, pos, level))
 		{
-			level++;
-			if (level > 3)
-			{
-				lua_pop(L, 1);
-				return;
-			}
-			int n = int(p & 0xFF);
-			bool suc = true;
-			lua_pushnil(L);
-			while (lua_next(L, -2))
-			{
-				n--;
-				if (n <= 0)
-				{
-					lua_remove(L, -2);
-					lua_remove(L, -2);
-					suc = true;
-					break;
-				}
-				lua_pop(L, 1);
-			}
-
-			if (!suc)
-			{
-				lua_pop(L, 1);
-				return;
-			}
+			return;
 		}
 
 		if (lua_type(L, -1) == LUA_TTABLE)
