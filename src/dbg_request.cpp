@@ -568,4 +568,102 @@ namespace vscode
 		step_in();
 		return true;
 	}
+
+	bool debugger_impl::request_evaluate(rprotocol& req, lua_State *L, lua_Debug *ar)
+	{
+		auto& args = req["arguments"];
+		int depth = args["frameId"].GetInt();
+		std::string expression(args["expression"].GetString(), args["expression"].GetStringLength());
+
+		lua_Debug current;
+		if (!lua_getstack(L, depth, &current)) {
+			response_error(req, "error stack frame");
+			return false;
+		}
+
+		int n = lua_gettop(L); 	
+		if (luaL_loadstring(L, ("return " + expression).c_str()))
+		{
+			response_error(req, lua_tostring(L, -1));
+			lua_pop(L, 1);
+			return false;
+		}
+
+		lua_newtable(L);
+		{
+			lua_newtable(L);
+			lua_pushglobaltable(L);
+			lua_setfield(L, -2, "__index");
+			lua_setmetatable(L, -2);
+		}
+
+		if (lua_getinfo(L, "f", &current))
+		{
+			for (int i = 1;; ++i)
+			{
+				const char* name = lua_getupvalue(L, -1, i);
+				if (!name) break;
+				lua_setfield(L, -3, name);
+			}
+			lua_pop(L, 1);
+		}
+
+		for (int i = 1;; ++i)
+		{
+			const char* name = lua_getlocal(L, &current, -i);
+			if (!name) break;
+			lua_setfield(L, -2, name);
+		}
+
+		for (int i = 1;; ++i)
+		{
+			const char* name = lua_getlocal(L, &current, i);
+			if (!name)
+			{
+				break;
+			}
+			lua_setfield(L, -2, name);
+		}
+
+		if (!lua_setupvalue(L, -2, 1))
+		{
+			lua_pop(L, 1);
+		}
+
+		if (lua_pcall(L, 0, LUA_MULTRET, 0))
+		{
+			response_error(req, lua_tostring(L, -1));
+			lua_pop(L, 1);
+			return false;
+		}
+		std::vector<variable> rets(lua_gettop(L) - n);
+		for (int i = 0; i < (int)rets.size(); ++i)
+		{
+			var_set_value(rets[i], L, -1 - i);
+		}
+		lua_settop(L, n);
+
+		response_success(req, [&](wprotocol& res)
+		{
+			if (rets.size() == 0)
+			{
+				res("result").String("nil");
+			}
+			else if (rets.size() == 1)
+			{
+				res("result").String(rets[0].value);
+			}
+			else
+			{
+				std::string result = rets[0].value;
+				for (int i = 1; i < (int)rets.size(); ++i)
+				{
+					result += ", " + rets[i].value;
+				}
+				res("result").String(result);
+			}
+			res("variablesReference").Int64(0);
+		});
+		return false;
+	}
 }

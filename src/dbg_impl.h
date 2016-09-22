@@ -75,6 +75,7 @@ namespace vscode
 		bool request_stepout(rprotocol& req, lua_State *L, lua_Debug *ar);
 		bool request_next(rprotocol& req, lua_State *L, lua_Debug *ar);
 		bool request_continue(rprotocol& req, lua_State *L, lua_Debug *ar);
+		bool request_evaluate(rprotocol& req, lua_State *L, lua_Debug *ar);
 
 	private:
 		void event_stopped(const char *msg);

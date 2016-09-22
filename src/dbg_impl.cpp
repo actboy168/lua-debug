@@ -225,6 +225,7 @@ namespace vscode
 			{ "setVariable", DBG_REQUEST_HOOK(request_set_variable) },
 			{ "source", DBG_REQUEST_HOOK(request_source) },
 			{ "threads", DBG_REQUEST_HOOK(request_thread) },
+			{ "evaluate", DBG_REQUEST_HOOK(request_evaluate) },
 		})
 	{
 	}

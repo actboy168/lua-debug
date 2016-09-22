@@ -35,6 +35,7 @@ namespace vscode
 			return name < that.name;
 		}
 	};
+	void var_set_value(variable& var, lua_State *L, int idx);
 
 	class variables
 	{

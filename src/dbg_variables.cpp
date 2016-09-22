@@ -76,10 +76,11 @@ namespace vscode
 				return format("%d", lua_tointeger(L, idx));
 			else
 				return format("%f", lua_tonumber(L, idx));
-		case LUA_TSTRING:
+		case LUA_TSTRING: {
 			size_t len = 0;
 			const char* buf = lua_tolstring(L, idx, &len);
 			return std::string(buf ? buf : "", len);
+		}
 		case LUA_TBOOLEAN:
 			return lua_toboolean(L, idx) ? "true" : "false";
 		case LUA_TNIL:
@@ -126,7 +127,7 @@ namespace vscode
 		return;
 	}
 
-	static void var_set_value(variable& var, lua_State *L, int idx)
+	void var_set_value(variable& var, lua_State *L, int idx)
 	{
 		if (luaL_callmeta(L, idx, "__tostring")) {
 			var_set_value_(var, L, -1);
