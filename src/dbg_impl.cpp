@@ -95,10 +95,12 @@ namespace vscode
 			return;
 		}
 
+		bool bp = false;
 		if (is_state(state::running)) {
 			if (!check_breakpoint(L, ar)) {
 				return;
 			}
+			bp = true;
 		}
 
 		if (is_state(state::stepping)) {
@@ -108,8 +110,14 @@ namespace vscode
 						return;
 					}
 				}
+				else {
+					bp = true;
+				}
 			}
-			event_stopped("step");
+			if (bp)
+				event_stopped("breakpoint");
+			else
+				event_stopped("step");
 			step_in();
 		}
 
