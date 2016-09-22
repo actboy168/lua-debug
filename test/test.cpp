@@ -6,7 +6,7 @@
 
 namespace fs = std::tr2::sys;
 
-#define TEST_ATTACH 0
+#define TEST_ATTACH 1
 
 int main()
 {
@@ -15,7 +15,6 @@ int main()
 
 	try {
 		fs::path cwd(SOURCE_PATH);
-		cwd /= "test";
 		fs::current_path(cwd);
 
 		vscode::debugger dbg(L, "0.0.0.0", 4278);

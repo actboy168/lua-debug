@@ -3,14 +3,22 @@
     "debugServer": 4278,
     "configurations": [
         {
-            "name": "Lua Debugger",
+            "name": "launch",
             "type": "lua",
-            "request": "attach",
+            "request": "launch",
             "program": "${workspaceRoot}/main.lua",
             "stopOnEntry": true,
             "cwd": "${workspaceRoot}",
             "path": "${workspaceRoot}/?.lua",
             "cpath": "${workspaceRoot}/?.dll"
+        },
+        {
+            "name": "attach",
+            "type": "lua",
+            "request": "attach",
+            "program": "${workspaceRoot}/main.lua",
+            "stopOnEntry": true,
+            "cwd": "${workspaceRoot}",
         }
     ]
 }

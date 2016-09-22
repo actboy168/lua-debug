@@ -1,7 +1,7 @@
-key = {
+key = setmetatable({
     [1] = {1, 2, 3},
     ['size'] = {a=1,b=2},
-}
+}, {k = 0})
 print(_VERSION)
 
 function test(...)
