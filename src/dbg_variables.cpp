@@ -379,6 +379,17 @@ namespace vscode
 		return false;
 	}
 
+	struct variable_t {
+		std::string name;
+		std::string value;
+		int64_t     reference;
+
+		bool operator < (const variable_t& that) const
+		{
+			return name < that.name;
+		}
+	};
+
 	void variables::push_table(int idx, int level, int64_t pos, var_type type)
 	{
 		size_t n = 0;
@@ -398,35 +409,43 @@ namespace vscode
 			}
 			lua_pop(L, 1);
 		}
+
+		std::set<variable_t> vars;
+
 		lua_pushnil(L);
 		while (lua_next(L, -2))
 		{
 			n++;
-			std::string name = get_value(L, -2, false);	 
+			variable_t var;
+			var.name = get_value(L, -2, false);
 			if (level == 0) {
 				if (type == var_type::global) {
-					if (standard.find(name) != standard.end()) {
+					if (standard.find(var.name) != standard.end()) {
 						lua_pop(L, 1);
 						continue;
 					}
 				}
 				else if (type == var_type::standard) {
-					if (standard.find(name) == standard.end()) {
+					if (standard.find(var.name) == standard.end()) {
 						lua_pop(L, 1);
 						continue;
 					}
 				}
 			}
-			std::string value = get_value(L, -1, true);
-			int64_t reference = 0;
+			var.value = get_value(L, -1, true);
+			var.reference = 0;
 			if (pos && (lua_type(L, -1) == LUA_TTABLE))
 			{
-				reference = pos | ((int64_t)n << ((2 + level) * 8));
+				var.reference = pos | ((int64_t)n << ((2 + level) * 8));
 			}
+			vars.insert(var);
 			lua_pop(L, 1);
-			if (push(name, value, reference))
+		}
+
+		for (const variable_t& var : vars)
+		{
+			if (push(var.name, var.value, var.reference))
 			{
-				lua_pop(L, 1);
 				break;
 			}
 		}
