@@ -5,7 +5,7 @@ VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "luacore", "luacore.vcxproj", "{B84F7231-16CE-41D8-8C08-7B523FF4225B}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vscode-lua-debug", "vscode-debug.vcxproj", "{9FD838AC-A5A2-4A24-8166-105BA0D8A973}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vscode-debug", "vscode-debug.vcxproj", "{9FD838AC-A5A2-4A24-8166-105BA0D8A973}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test", "test.vcxproj", "{9022BEF7-18C3-47C0-BE1A-C24B82E3E5FA}"
 EndProject

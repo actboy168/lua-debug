@@ -184,6 +184,8 @@ namespace net { namespace tcp {
 	protected:
 		connecter_t<typename Stream::poller_type> impl_;
 	};
+
+	typedef basic_connecter_t<stream> connecter;
 }}
 
 #if defined _MSC_VER

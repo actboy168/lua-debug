@@ -45,7 +45,7 @@
     <ProjectGuid>{9FD838AC-A5A2-4A24-8166-105BA0D8A973}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>vscodeluadebug</RootNamespace>
-    <ProjectName>vscode-lua-debug</ProjectName>
+    <ProjectName>vscode-debug</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
