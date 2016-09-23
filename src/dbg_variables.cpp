@@ -137,7 +137,7 @@ namespace vscode
 		return var_set_value_(var, L, idx);
 	}
 
-	static bool set_value(lua_State* L, std::string& value)
+	static bool set_newvalue(lua_State* L, int oldtype, std::string& value)
 	{
 		if (value == "nil")	{
 			lua_pushnil(L);
@@ -181,10 +181,14 @@ namespace vscode
 			return true;
 		}
 
-
 		if (value.size() >= 2 && value[0] == '\''&& value[value.size() - 1] == '\'')  {
 			lua_pushlstring(L, value.data() + 1, value.size() - 2);
 			return true;
+		}
+
+		if (oldtype != LUA_TSTRING)
+		{
+			return false;
 		}
 		lua_pushlstring(L, value.data(), value.size());
 		value = "'" + value + "'";
@@ -197,7 +201,13 @@ namespace vscode
 		{
 			if (!lua_getinfo(L, "f", ar))
 				return false;
-			if (!set_value(L, value))
+			int oldtype = LUA_TNIL;
+			if (lua_getupvalue(L, -1, n))
+			{
+				oldtype = lua_type(L, -1);
+				lua_pop(L, 1);
+			}
+			if (!set_newvalue(L, oldtype, value))
 			{
 				lua_pop(L, 1);
 				return false;
@@ -209,7 +219,14 @@ namespace vscode
 			lua_pop(L, 1);
 			return true;
 		}
-		if (!set_value(L, value))
+
+		int oldtype = LUA_TNIL;
+		if (lua_setlocal(L, ar, type == var_type::vararg ? -n : n))
+		{
+			oldtype = lua_type(L, -1);
+			lua_pop(L, 1);
+		}
+		if (!set_newvalue(L, oldtype, value))
 			return false;
 		if (!lua_setlocal(L, ar, type == var_type::vararg ? -n : n))
 		{
@@ -338,8 +355,9 @@ namespace vscode
 		{
 			if (name == get_name(L, -2))
 			{
+				int oldtype = lua_type(L, -1);
 				lua_pop(L, 1);
-				if (!set_value(L, value))
+				if (!set_newvalue(L, oldtype, value))
 				{
 					lua_pop(L, 1);
 					return false;
