@@ -21,6 +21,11 @@ namespace vscode
 	{
 		impl_->set_schema(file);
 	}
+
+	void debugger::set_custom(custom* custom)
+	{
+		impl_->set_custom(custom);
+	}
 }
 
 void* __cdecl vscode_debugger_create(lua_State* L, const char* ip, uint16_t port)

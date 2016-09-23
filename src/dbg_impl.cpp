@@ -6,7 +6,9 @@
 
 namespace vscode
 {
+	static custom         global_custom;
 	static debugger_impl* global_debugger;
+
 	void debugger_impl::debughook(lua_State *L, lua_Debug *ar)
 	{
 		if (!ar || !global_debugger)
@@ -189,6 +191,11 @@ namespace vscode
 		network_->set_schema(file);
 	}
 
+	void debugger_impl::set_custom(custom* custom)
+	{
+		custom_ = custom;
+	}
+
 #define DBG_REQUEST_MAIN(name) std::bind(&debugger_impl:: ## name, this, std::placeholders::_1)
 #define DBG_REQUEST_HOOK(name) std::bind(&debugger_impl:: ## name, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
 
@@ -206,6 +213,8 @@ namespace vscode
 		, stack_()
 		, watch_(L)
 		, redirect_()
+		, pathconvert_()
+		, custom_(&global_custom)
 		, main_dispatch_
 		({
 			{ "launch", DBG_REQUEST_MAIN(request_launch) },

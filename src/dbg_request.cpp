@@ -6,78 +6,12 @@
 
 namespace vscode
 {
-	fs::path naive_uncomplete(const fs::path& p, const fs::path& base)
-	{
-		if (p == base)
-			return "./";
-		fs::path from_path, from_base, output;
-		fs::path::iterator path_it = p.begin(), path_end = p.end();
-		fs::path::iterator base_it = base.begin(), base_end = base.end();
-
-		if ((path_it == path_end) || (base_it == base_end))
-			throw std::runtime_error("path or base was empty; couldn't generate relative path");
-
-#ifdef WIN32
-		if (*path_it != *base_it)
-			return p;
-		++path_it, ++base_it;
-#endif
-
-		const std::string _dot = std::string(1, fs::dot<fs::path>::value);
-		const std::string _dots = std::string(2, fs::dot<fs::path>::value);
-		const std::string _sep = std::string(1, fs::slash<fs::path>::value);
-
-		while (true) {
-			if ((path_it == path_end) || (base_it == base_end) || (*path_it != *base_it)) {
-				for (; base_it != base_end; ++base_it) {
-					if (*base_it == _dot)
-						continue;
-					else if (*base_it == _sep)
-						continue;
-
-					output /= "../";
-				}
-				fs::path::iterator path_it_start = path_it;
-				for (; path_it != path_end; ++path_it) {
-
-					if (path_it != path_it_start)
-						output /= "/";
-
-					if (*path_it == _dot)
-						continue;
-					if (*path_it == _sep)
-						continue;
-
-					output /= *path_it;
-				}
-
-				break;
-			}
-			from_path /= fs::path(*path_it);
-			from_base /= fs::path(*base_it);
-			++path_it, ++base_it;
-		}
-
-		return output;
-	}
-
-	static void path_normalize(std::string& path)
-	{
-		std::transform(path.begin(), path.end(), path.begin(),
-			[](char c)->char
-		{
-			if (c == '\\') return '/';
-			return tolower((unsigned char)c);
-		}
-		);
-	}
-
-	static std::string get_path(const rapidjson::Value& value)
+	static fs::path get_path(const rapidjson::Value& value)
 	{
 		assert(value.IsString());
 		std::string path = value.Get<std::string>();
-		path_normalize(path);
-		return path;
+		std::transform(path.begin(), path.end(), path.begin(), tolower);
+		return fs::path(path);
 	}
 
 	void debugger_impl::set_state(state state)
@@ -152,15 +86,11 @@ namespace vscode
 			{
 				if (lua_getinfo(L, "S", ar))
 				{
-					if (ar->source[0] == '@')
+					bp_source* src = breakpoints_.get(ar->source, pathconvert_, *custom_);
+					if (src && breakpoints_.has(src, ar->currentline, L, ar))
 					{
-						std::string path(ar->source + 1);
-						path_normalize(path);
-						if (breakpoints_.has(path, ar->currentline, L, ar))
-						{
-							step_in();
-							return true;
-						}
+						step_in();
+						return true;
 					}
 				}
 			}
@@ -214,8 +144,8 @@ namespace vscode
 			workingdir_ = get_path(args["cwd"]);
 			fs::current_path(workingdir_);
 		}
-		std::string program = get_path(args["program"]);
-		int status = luaL_loadfile(L, program.c_str());
+		fs::path program = get_path(args["program"]);
+		int status = luaL_loadfile(L, program.file_string().c_str());
 		if (status != LUA_OK) {
 			event_output("console", format("Failed to launch %s due to error: %s\n", program, lua_tostring(L, -1)));
 			response_error(req, "Launch failed");
@@ -319,7 +249,7 @@ namespace vscode
 							fs::path path(src);
 							if (path.is_complete())
 							{
-								path = naive_uncomplete(path, fs::current_path<fs::path>());
+								path = path_uncomplete(path, fs::current_path<fs::path>());
 							}
 							path = fs::complete(path, workingdir_);
 							fs::path name = path.filename();
@@ -336,6 +266,22 @@ namespace vscode
 							{
 								res("name").String("<C function>");
 								res("sourceReference").Int64(-1);
+							}
+						}
+						else if (*src == '=')
+						{
+							std::string client_path;
+							custom::result r =  pathconvert_.get_or_eval(src, client_path, *custom_);
+							if (r == custom::result::sucess || r == custom::result::sucess_once)
+							{
+								fs::path path = fs::complete(fs::path(client_path), workingdir_);
+								fs::path name = path.filename();
+								for (auto _ : res("source").Object())
+								{
+									res("name").String(name.string());
+									res("path").String(path.string());
+									res("sourceReference").Int64(0);
+								}
 							}
 						}
 						else
@@ -390,9 +336,9 @@ namespace vscode
 	{
 		auto& args = req["arguments"];
 		auto& source = args["source"];
-		std::string path = get_path(source["path"]);
-
-		breakpoints_.clear(path);
+		fs::path client_path = get_path(source["path"]);
+		fs::path uncomplete_path = path_uncomplete(client_path, workingdir_);
+		breakpoints_.clear(uncomplete_path);
 
 		std::vector<size_t> lines;
 		for (auto& m : args["breakpoints"].GetArray())
@@ -401,11 +347,11 @@ namespace vscode
 			lines.push_back(line);
 			if (!m.HasMember("condition"))
 			{
-				breakpoints_.insert(path, line);
+				breakpoints_.insert(uncomplete_path, line);
 			}
 			else
 			{
-				breakpoints_.insert(path, line, m["condition"].Get<std::string>());
+				breakpoints_.insert(uncomplete_path, line, m["condition"].Get<std::string>());
 			}
 		}
 
@@ -418,7 +364,7 @@ namespace vscode
 					res("verified").Bool(true);
 					for (auto _ : res("source").Object())
 					{
-						res("path").String(path);
+						res("path").String(client_path.file_string());
 					}
 					res("line").Int(lines[d]);
 				}

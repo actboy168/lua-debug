@@ -2,15 +2,15 @@
 
 #include <stdint.h>
 #include <lua.hpp>	  
-#include <filesystem>
 #include <functional>
 #include <map>
 #include <vector>
 #include "dbg_breakpoint.h"	 
 #include "dbg_redirect.h"  
 #include "dbg_evaluate.h"
-
-namespace fs = std::tr2::sys;
+#include "dbg_path.h" 
+#include "dbg_custom.h"	
+#include "dbg_pathconvert.h"
 
 namespace vscode
 {
@@ -45,6 +45,7 @@ namespace vscode
 		void hook(lua_State *L, lua_Debug *ar);
 		void update();
 		void set_schema(const char* file);
+		void set_custom(custom* custom);
 
 		void set_state(state state);
 		bool is_state(state state);
@@ -131,6 +132,8 @@ namespace vscode
 		std::vector<stack> stack_;
 		watchs             watch_;
 		redirector         redirect_;
+		pathconvert        pathconvert_;
+		custom*            custom_;
 		std::map<std::string, std::function<bool(rprotocol&)>>                            main_dispatch_;
 		std::map<std::string, std::function<bool(rprotocol&, lua_State*, lua_Debug *ar)>> hook_dispatch_;
 	};

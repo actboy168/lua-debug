@@ -18,6 +18,7 @@ struct lua_State;
 
 namespace vscode
 {
+	class custom;
 	class debugger_impl;
 
 	class DEBUGGER_API debugger
@@ -27,6 +28,7 @@ namespace vscode
 		~debugger();
 		void update();
 		void set_schema(const char* file);
+		void set_custom(custom* custom);
 
 	private:
 		debugger_impl* impl_;
