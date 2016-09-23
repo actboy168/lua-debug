@@ -55,8 +55,7 @@ namespace vscode
 
 	bool debugger_impl::update_main(rprotocol& req, bool& quit)
 	{
-		auto& command = req["command"];
-		auto it = main_dispatch_.find(std::string(command.GetString(), command.GetStringLength()));
+		auto it = main_dispatch_.find(req["command"].Get<std::string>());
 		if (it != main_dispatch_.end())
 		{
 			quit = it->second(req);
@@ -67,8 +66,7 @@ namespace vscode
 
 	bool debugger_impl::update_hook(rprotocol& req, lua_State *L, lua_Debug *ar, bool& quit)
 	{
-		auto& command = req["command"];
-		auto it = hook_dispatch_.find(std::string(command.GetString(), command.GetStringLength()));
+		auto it = hook_dispatch_.find(req["command"].Get<std::string>());
 		if (it != hook_dispatch_.end())
 		{
 			quit = it->second(req, L, ar);

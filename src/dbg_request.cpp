@@ -75,7 +75,7 @@ namespace vscode
 	static std::string get_path(const rapidjson::Value& value)
 	{
 		assert(value.IsString());
-		std::string path(value.GetString(), value.GetStringLength());
+		std::string path = value.Get<std::string>();
 		path_normalize(path);
 		return path;
 	}
@@ -405,7 +405,7 @@ namespace vscode
 			}
 			else
 			{
-				breakpoints_.insert(path, line, std::string(m["condition"].GetString(), m["condition"].GetStringLength()));
+				breakpoints_.insert(path, line, m["condition"].Get<std::string>());
 			}
 		}
 
@@ -523,8 +523,8 @@ namespace vscode
 			response_error(req, "Failed set variable");
 			return false;
 		}
-		std::string name(args["name"].GetString(), args["name"].GetStringLength());
-		std::string value(args["value"].GetString(), args["value"].GetStringLength());
+		std::string name = args["name"].Get<std::string>();
+		std::string value = args["value"].Get<std::string>();
 		if (!variables::set_value(L, &entry, type, depth, var_ref >> 16, name, value))
 		{
 			response_error(req, "Failed set variable");
@@ -590,7 +590,7 @@ namespace vscode
 	{
 		auto& args = req["arguments"];
 		int depth = args["frameId"].GetInt();
-		std::string expression(args["expression"].GetString(), args["expression"].GetStringLength());
+		std::string expression = args["expression"].Get<std::string>();
 
 		lua_Debug current;
 		if (!lua_getstack(L, depth, &current)) {
