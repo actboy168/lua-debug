@@ -6,9 +6,11 @@
 
 namespace vscode
 {
-	const int type_root = 0;
-	const int type_indexmax = 250;
-	const int type_metatable = 251;
+	static const int max_level = 4;
+	static const int type_root = 0;
+	static const int type_indexmax = 250;
+	static const int type_metatable = 251;
+	static const int type_uservalue = 252;
 
 	static std::set<std::string> standard = {
 		"ipairs",
@@ -59,6 +61,35 @@ namespace vscode
 			++level;
 		}
 		return level;
+	}
+
+	static bool can_extand(lua_State *L, int idx)
+	{
+		int type = lua_type(L, idx);
+		switch (type)
+		{
+		case LUA_TTABLE:
+			return true;
+		case LUA_TLIGHTUSERDATA:
+			if (lua_getmetatable(L, idx)) {
+				lua_pop(L, 1);
+				return true;
+			}
+			lua_pop(L, 1);
+			return false;
+		case LUA_TUSERDATA:
+			if (lua_getmetatable(L, idx)) {
+				lua_pop(L, 1);
+				return true;
+			}
+			if (lua_getuservalue(L, idx) != LUA_TNIL) {
+				lua_pop(L, 1);
+				return true;
+			}
+			lua_pop(L, 1);
+			return false;
+		}
+		return false;
 	}
 
 	static std::string get_name(lua_State *L, int idx) {
@@ -304,7 +335,7 @@ namespace vscode
 		for (int64_t p = pos; p; p >>= 8)
 		{
 			level++;
-			if (level > 3)
+			if (level > max_level)
 			{
 				lua_pop(L, 1);
 				return false;
@@ -335,6 +366,12 @@ namespace vscode
 					lua_remove(L, -2);
 					suc = true;
 				}
+			}
+			else if (n == type_uservalue)
+			{
+				lua_getuservalue(L, -1);
+				lua_remove(L, -2);
+				suc = true;
 			}
 
 			if (!suc)
@@ -471,6 +508,32 @@ namespace vscode
 			lua_pop(L, 1);
 		}
 
+		switch (lua_type(L, -1))
+		{
+		case LUA_TTABLE:
+			break;
+		case LUA_TLIGHTUSERDATA:
+			return;
+		case LUA_TUSERDATA:
+			if (lua_getuservalue(L, idx) != LUA_TNIL)
+			{
+				variable var;
+				var.name = "[uservalue]";
+				var_set_value(var, L, -1);
+				if (pos && can_extand(L, -1))
+				{
+					var.reference = pos | ((int64_t)type_uservalue << ((2 + level) * 8));
+				}
+				if (push(var))
+				{
+					lua_pop(L, 1);
+					return;
+				}
+			}
+			lua_pop(L, 1);
+			return;
+		}
+
 		std::set<variable> vars;
 
 		lua_pushnil(L);
@@ -494,7 +557,7 @@ namespace vscode
 				}
 			}
 			var_set_value(var, L, -1);
-			if (pos && (lua_type(L, -1) == LUA_TTABLE))
+			if (pos && can_extand(L, -1))
 			{
 				var.reference = pos | ((int64_t)n << ((2 + level) * 8));
 			}
@@ -529,7 +592,7 @@ namespace vscode
 					variable var;
 					var.name = name;
 					var_set_value(var, L, -1);
-					if (lua_type(L, lua_gettop(L)) == LUA_TTABLE)
+					if (can_extand(L, lua_gettop(L)))
 					{
 						var.reference = (int)type | (depth << 8) | (n << 16);
 					}
@@ -547,9 +610,9 @@ namespace vscode
 		}
 
 		int level = pos2level(pos);
-		if (lua_type(L, -1) == LUA_TTABLE)
+		if (can_extand(L, -1))
 		{
-			if (level == 3)
+			if (level == max_level)
 				push_table(-1, level, 0, type);
 			else
 				push_table(-1, level, ref, type);
