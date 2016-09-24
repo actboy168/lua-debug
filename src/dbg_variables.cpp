@@ -153,8 +153,9 @@ namespace vscode
 		}
 
 		char* end = "";
+		errno = 0;
 		long lv = strtol(value.c_str(), &end, 10);
-		if (*end == 0)
+		if (errno != ERANGE && *end == 0)
 		{
 			value = format("%d", lv);
 			lua_pushinteger(L, lv);
@@ -163,8 +164,9 @@ namespace vscode
 
 		if (value.size() >= 3 && value[0] == '0' && (value[1] == 'x' || value[1] == 'X'))
 		{
+			errno = 0;
 			long lv = strtol(value.c_str() + 2, &end, 16);
-			if (*end == 0)
+			if (errno != ERANGE && *end == 0)
 			{
 				value = format("0x%x", lv);
 				lua_pushinteger(L, lv);
@@ -173,8 +175,9 @@ namespace vscode
 		}
 
 		end = "";
+		errno = 0;
 		double dv = strtod(value.c_str(), &end);
-		if (*end == 0)
+		if (errno != ERANGE && *end == 0)
 		{
 			value = format("%f", dv);
 			lua_pushnumber(L, dv);
