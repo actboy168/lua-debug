@@ -92,6 +92,37 @@ namespace vscode
 		return false;
 	}
 
+	static bool get_extand_table(lua_State* L, int idx)
+	{
+		if (!lua_getmetatable(L, idx)) {
+			return false;
+		}
+		int type = lua_getfield(L, -1, "__debugger_extand");
+		if (type == LUA_TNIL) {
+			lua_pop(L, 2);
+			return false;
+		}
+		if (type == LUA_TTABLE) {
+			lua_remove(L, -2);
+			return true;
+		}
+		if (type == LUA_TFUNCTION) {
+			lua_pushvalue(L, idx);
+			if (lua_pcall(L, 1, 1, 0)) {
+				lua_pop(L, 2);
+				return false;
+			}
+			if (lua_type(L, -1) != LUA_TTABLE) {
+				lua_pop(L, 2);
+				return false;
+			}
+			lua_remove(L, -2);
+			return true;
+		}
+		lua_pop(L, 2);
+		return false;
+	}
+
 	static std::string get_name(lua_State *L, int idx) {
 		if (luaL_callmeta(L, idx, "__tostring")) {
 			size_t len = 0;
@@ -385,11 +416,31 @@ namespace vscode
 
 	static bool set_value(lua_State* L, int idx, const std::string& name, std::string& value)
 	{
-		if (lua_type(L, idx) != LUA_TTABLE)
-			return false;
 		if (name == "[metatable]")
 			return false;
+		if (name == "[uservalue]")
+			return false;
 		idx = lua_absindex(L, idx);
+		if (lua_type(L, idx) == LUA_TUSERDATA) {
+			if (!get_extand_table(L, idx)) {
+				return false;
+			}
+			if (LUA_TNIL == lua_getfield(L, -1, name.c_str())) {
+				lua_pop(L, 1);
+				return false;
+			}
+			int oldtype = lua_type(L, -1);
+			lua_pop(L, 1);
+			if (!set_newvalue(L, oldtype, value))
+			{
+				lua_pop(L, 1);
+				return false;
+			}
+			lua_setfield(L, -2, name.c_str());
+			return true;
+		}
+		if (lua_type(L, idx) != LUA_TTABLE)
+			return false;
 		lua_pushnil(L);
 		while (lua_next(L, idx))
 		{
@@ -489,32 +540,36 @@ namespace vscode
 
 	void variables::each_userdata(int idx, int level, int64_t pos, var_type type)
 	{
-		if (!lua_getmetatable(L, idx)) {
+		if (!get_extand_table(L, idx)){
 			return;
 		}
-		int mttype = lua_getfield(L, -1, "__debugger_watch");
-		if (mttype == LUA_TNIL) {
-			lua_pop(L, 2);
-			return;
-		}
-		if (mttype == LUA_TTABLE) {
-			each_table(-1, level, pos, type);
-			lua_pop(L, 2);
-			return;
-		}
-		if(mttype == LUA_TFUNCTION) {
-			lua_pushvalue(L, idx);
-			if (lua_pcall(L, 1, 1, 0)) {
+
+		for (int n = 1;; ++n)
+		{
+			if (LUA_TSTRING != lua_rawgeti(L, -1, n)) {
+				lua_pop(L, 1);
+				break;
+			}
+			lua_pushvalue(L, -1);
+			if (LUA_TNIL == lua_gettable(L, -3)) {
 				lua_pop(L, 2);
-				return;
+				continue;
 			}
-			if (lua_type(L, -1) == LUA_TTABLE) {
-				each_table(-1, level, pos, type);
+			variable var;
+			var.name = get_name(L, -2);
+			var_set_value(var, L, -1);
+			if (pos && can_extand(L, -1))
+			{
+				var.reference = pos | ((int64_t)n << ((2 + level) * 8));
+			}
+			if (push(var))
+			{
+				lua_pop(L, 2);
+				break;
 			}
 			lua_pop(L, 2);
-			return;
 		}
-		lua_pop(L, 2);
+		lua_pop(L, 1);
 	}
 
 	void variables::each_table(int idx, int level, int64_t pos, var_type type)
