@@ -535,6 +535,7 @@ namespace vscode
 	bool debugger_impl::request_evaluate(rprotocol& req, lua_State *L, lua_Debug *ar)
 	{
 		auto& args = req["arguments"];
+		auto& context = args["context"];
 		int depth = args["frameId"].GetInt();
 		std::string expression = args["expression"].Get<std::string>();
 
@@ -544,20 +545,36 @@ namespace vscode
 			return false;
 		}
 
-		int n = lua_gettop(L);
-		if (!evaluate(L, &current, ("return " + expression).c_str()))
+		int nresult = 0;
+		if (!evaluate(L, &current, ("return " + expression).c_str(), nresult, context == "repl"))
 		{
-			response_error(req, lua_tostring(L, -1));
-			lua_pop(L, 1);
+			if (context != "repl")
+			{
+				response_error(req, lua_tostring(L, -1));
+				lua_pop(L, 1);
+				return false;
+			}
+			if (!evaluate(L, &current, expression.c_str(), nresult, true))
+			{
+				response_error(req, lua_tostring(L, -1));
+				lua_pop(L, 1);
+				return false;
+			}
+			response_success(req, [&](wprotocol& res)
+			{
+				res("result").String("ok");
+				res("variablesReference").Int64(0);
+			});
+			lua_pop(L, nresult);
 			return false;
 		}
-		std::vector<variable> rets(lua_gettop(L) - n);
+		std::vector<variable> rets(nresult);
 		for (int i = 0; i < (int)rets.size(); ++i)
 		{
 			var_set_value(rets[i], L, -1 - i);
 		}
 		int64_t reference = 0;
-		if (rets.size() == 1 && lua_type(L, -1) == LUA_TTABLE && args["context"] == "watch")
+		if (rets.size() == 1 && lua_type(L, -1) == LUA_TTABLE && context == "watch")
 		{
 			size_t pos = watch_.add();
 			if (pos > 0)
@@ -565,7 +582,7 @@ namespace vscode
 				reference = (int)var_type::watch | (pos << 16);
 			}
 		}
-		lua_settop(L, n);
+		lua_pop(L, nresult);
 		response_success(req, [&](wprotocol& res)
 		{
 			if (rets.size() == 0)

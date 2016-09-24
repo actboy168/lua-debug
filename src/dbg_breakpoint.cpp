@@ -95,17 +95,17 @@ namespace vscode
 		{
 			return true;
 		}
-		int n = lua_gettop(L);
-		if (!evaluate(L, ar, ("return " + condition).c_str()))
+		int nresult = 0;
+		if (!evaluate(L, ar, ("return " + condition).c_str(), nresult))
 		{
 			lua_pop(L, 1);
 			return false;
 		}
-		if (lua_type(L, -1) == LUA_TBOOLEAN	 && lua_toboolean(L, -1))
+		if (nresult > 0 && lua_type(L, -nresult) == LUA_TBOOLEAN && lua_toboolean(L, -nresult))
 		{
 			return true;
 		}
-		lua_settop(L, n);
+		lua_pop(L, nresult);
 		return false;
 	}
 
