@@ -197,7 +197,6 @@ namespace vscode
 
 		if (args.HasMember("cwd") && args["cwd"].IsString()) {
 			workingdir_ = get_path(args["cwd"]);
-			fs::current_path(workingdir_);
 		}
 
 		response_success(req);
