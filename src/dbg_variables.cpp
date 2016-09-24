@@ -487,7 +487,37 @@ namespace vscode
 		return false;
 	}
 
-	void variables::push_table(int idx, int level, int64_t pos, var_type type)
+	void variables::each_userdata(int idx, int level, int64_t pos, var_type type)
+	{
+		if (!lua_getmetatable(L, idx)) {
+			return;
+		}
+		int mttype = lua_getfield(L, -1, "__debugger_watch");
+		if (mttype == LUA_TNIL) {
+			lua_pop(L, 2);
+			return;
+		}
+		if (mttype == LUA_TTABLE) {
+			each_table(-1, level, pos, type);
+			lua_pop(L, 2);
+			return;
+		}
+		if(mttype == LUA_TFUNCTION) {
+			lua_pushvalue(L, idx);
+			if (lua_pcall(L, 1, 1, 0)) {
+				lua_pop(L, 2);
+				return;
+			}
+			if (lua_type(L, -1) == LUA_TTABLE) {
+				each_table(-1, level, pos, type);
+			}
+			lua_pop(L, 2);
+			return;
+		}
+		lua_pop(L, 2);
+	}
+
+	void variables::each_table(int idx, int level, int64_t pos, var_type type)
 	{
 		size_t n = 0;
 		idx = lua_absindex(L, idx);
@@ -530,7 +560,8 @@ namespace vscode
 					return;
 				}
 			}
-			lua_pop(L, 1);
+			lua_pop(L, 1); 
+			each_userdata(idx, level, pos, type);
 			return;
 		}
 
@@ -613,9 +644,9 @@ namespace vscode
 		if (can_extand(L, -1))
 		{
 			if (level == max_level)
-				push_table(-1, level, 0, type);
+				each_table(-1, level, 0, type);
 			else
-				push_table(-1, level, ref, type);
+				each_table(-1, level, ref, type);
 		}
 		lua_pop(L, 1);
 	}
