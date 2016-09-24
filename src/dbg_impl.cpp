@@ -7,27 +7,39 @@
 namespace vscode
 {
 	static custom         global_custom;
-	static debugger_impl* global_debugger;
 
-	void debugger_impl::debughook(lua_State *L, lua_Debug *ar)
+	static void debughook(debugger_impl* dbg, lua_State *L, lua_Debug *ar)
 	{
-		if (!ar || !global_debugger)
-			return;
-		global_debugger->hook(L, ar);
+		dbg->hook(L, ar);
 	}
 
 	void debugger_impl::open()
 	{
 		redirect_.open();
-		global_debugger = this;
 		stacklevel_ = 0;
-		lua_sethook(GL, debugger_impl::debughook, LUA_MASKCALL | LUA_MASKLINE | LUA_MASKRET, 0);
+
+		using namespace asmjit;
+		CodeHolder code; 
+		code.init(jit_.getCodeInfo());
+
+		X86Assembler assemblr(&code);
+		assemblr.push(x86::dword_ptr(x86::esp, 8));
+		assemblr.push(x86::dword_ptr(x86::esp, 8));
+		assemblr.push(imm(reinterpret_cast<intptr_t>(this)));
+		assemblr.call(imm(reinterpret_cast<intptr_t>(&debughook)));
+		assemblr.add(x86::esp, 12);
+		assemblr.ret();
+
+		lua_Hook hook;
+		Error err = jit_.add(&hook, &code);
+		assert (!err);
+		lua_sethook(GL, hook, LUA_MASKCALL | LUA_MASKLINE | LUA_MASKRET, 0);
 	}
 
 	void debugger_impl::close()
 	{
+		jit_.release((void*)lua_gethook(GL));
 		redirect_.close();
-		global_debugger = 0;
 		lua_sethook(GL, 0, 0, 0);
 		breakpoints_.clear();
 		stack_.clear();

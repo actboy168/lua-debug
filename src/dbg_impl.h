@@ -4,13 +4,14 @@
 #include <lua.hpp>	  
 #include <functional>
 #include <map>
-#include <vector>
+#include <vector> 
+#include <asmjit/asmjit.h>
 #include "dbg_breakpoint.h"	 
 #include "dbg_redirect.h"  
 #include "dbg_evaluate.h"
 #include "dbg_path.h" 
 #include "dbg_custom.h"	
-#include "dbg_pathconvert.h"
+#include "dbg_pathconvert.h" 
 
 namespace vscode
 {
@@ -113,7 +114,6 @@ namespace vscode
 	private:
 		void open();
 		void close();
-		static void debughook(lua_State *L, lua_Debug *ar);
 		void update_redirect();
 		bool update_main(rprotocol& req, bool& quit);
 		bool update_hook(rprotocol& req, lua_State *L, lua_Debug *ar, bool& quit);
@@ -134,6 +134,7 @@ namespace vscode
 		redirector         redirect_;
 		pathconvert        pathconvert_;
 		custom*            custom_;
+		asmjit::JitRuntime jit_;
 		std::map<std::string, std::function<bool(rprotocol&)>>                            main_dispatch_;
 		std::map<std::string, std::function<bool(rprotocol&, lua_State*, lua_Debug *ar)>> hook_dispatch_;
 	};
