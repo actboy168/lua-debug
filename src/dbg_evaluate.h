@@ -10,23 +10,32 @@ namespace vscode
 		watchs(lua_State* L)
 			: L(L)
 			, cache_()
-			, n_(0)
+			, cur_(0)
+			, max_(0)
 		{ }
 
 		size_t add()
 		{
-			if (n_ >= cache_.max_size())
+			if (max_ < cache_.max_size())
 			{
-				lua_pop(L, 1);
-				return 0;
+				max_++;
 			}
-			cache_[n_++] = luaL_ref(L, LUA_REGISTRYINDEX);
-			return n_;
+			else
+			{
+				if (cur_ == max_)
+				{
+					cur_ = 0;
+				}
+				luaL_unref(L, LUA_REGISTRYINDEX, cache_[cur_]);
+			}
+
+			cache_[cur_++] = luaL_ref(L, LUA_REGISTRYINDEX);
+			return cur_;
 		}
 
 		bool get(size_t index)
 		{
-			if (index > n_ || index == 0)
+			if (index > max_ || index == 0)
 			{
 				return false;
 			}
@@ -36,16 +45,18 @@ namespace vscode
 
 		void clear()
 		{
-			for (size_t i = 0; i < n_; ++i)
+			for (size_t i = 0; i < max_; ++i)
 			{
 				luaL_unref(L, LUA_REGISTRYINDEX, cache_[i]);
 			}
-			n_ = 0;
+			cur_ = 0;
+			max_ = 0;
 		}
 
 		lua_State* L;
 		std::array<int, 250> cache_;
-		size_t n_;
+		size_t cur_;
+		size_t max_;
 	};
 
 	bool evaluate(lua_State* L, lua_Debug *ar, const char* script, int& nresult, bool writeable = false);

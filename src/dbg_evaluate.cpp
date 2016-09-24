@@ -174,7 +174,7 @@ namespace vscode
 			lua_pushnil(L);
 			while (lua_next(L, -2))
 			{
-				if (!lua_setlocal(L, ar, lua_tointeger(L, -2))) {
+				if (!lua_setlocal(L, ar, (int)lua_tointeger(L, -2))) {
 					lua_pop(L, 1);
 				}
 			}
