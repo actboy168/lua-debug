@@ -578,7 +578,7 @@ namespace vscode
 			var_set_value(rets[i], L, -1 - i);
 		}
 		int64_t reference = 0;
-		if (rets.size() == 1 && lua_type(L, -1) == LUA_TTABLE && context == "watch")
+		if (rets.size() == 1 && context == "watch" && can_extand(L, -1))
 		{
 			size_t pos = watch_.add();
 			if (pos > 0)

@@ -37,6 +37,7 @@ namespace vscode
 		}
 	};
 	void var_set_value(variable& var, lua_State *L, int idx);
+	bool can_extand(lua_State *L, int idx);
 
 	class variables
 	{

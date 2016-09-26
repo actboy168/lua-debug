@@ -529,6 +529,7 @@ namespace vscode
 		{
 			for (auto _ : res.Object())
 			{
+				res("variablesReference").Int64(0);
 				res("name").String("...");
 				res("value").String("");
 				res("type").String("");
