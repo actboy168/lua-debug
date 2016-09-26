@@ -6,7 +6,15 @@
 
 namespace vscode
 {
-	static bool redirect_handle(const char* name, FILE* handle, HANDLE& pipe_rd, HANDLE& pipe_wr)
+	static void set_handle(DWORD handletype, FILE* file, HANDLE handle)
+	{
+		SetStdHandle(handletype, handle);
+		int fd = _open_osfhandle((intptr_t)handle, _O_WRONLY | _O_TEXT);
+		FILE *fp = _fdopen(fd, "w");
+		*file = *fp;
+	}
+
+	static bool redirect_handle(const char* name, DWORD handletype, FILE* file, HANDLE& pipe_rd, HANDLE& pipe_wr, HANDLE& oldhandle)
 	{
 		std::wstring pipe_name = format(L"\\\\.\\pipe\\%s-redirector-%d", name, GetCurrentProcessId());
 		SECURITY_ATTRIBUTES read_attr = { sizeof(SECURITY_ATTRIBUTES), 0, false };
@@ -31,11 +39,9 @@ namespace vscode
 			return false;
 		}
 		::ConnectNamedPipe(rd, NULL);
-		SetStdHandle(STD_OUTPUT_HANDLE, wr);
-		int fd = _open_osfhandle((intptr_t)wr, _O_WRONLY | _O_TEXT);
-		FILE *fp = _fdopen(fd, "w");
-		*handle = *fp;
-		setvbuf(handle, NULL, _IONBF, 0);
+		oldhandle = GetStdHandle(handletype);
+		set_handle(handletype, file, wr);
+		setvbuf(file, NULL, _IONBF, 0);
 		pipe_rd = rd;
 		pipe_wr = wr;
 		return true;
@@ -44,8 +50,10 @@ namespace vscode
 	redirector::redirector()
 		: out_rd_(INVALID_HANDLE_VALUE)
 		, out_wr_(INVALID_HANDLE_VALUE)
+		, out_old_(INVALID_HANDLE_VALUE)
 		, err_rd_(INVALID_HANDLE_VALUE)
 		, err_wr_(INVALID_HANDLE_VALUE)
+		, err_old_(INVALID_HANDLE_VALUE)
 	{
 	}
 
@@ -56,8 +64,8 @@ namespace vscode
 
 	void redirector::open()
 	{
-		redirect_handle("stdout", stdout, out_rd_, out_wr_);
-		redirect_handle("stderr", stderr, err_rd_, err_wr_);
+		redirect_handle("stdout", STD_OUTPUT_HANDLE, stdout, out_rd_, out_wr_, out_old_);
+		redirect_handle("stderr", STD_ERROR_HANDLE, stderr, err_rd_, err_wr_, err_old_);
 	}
 
 	void redirector::close()
@@ -66,10 +74,22 @@ namespace vscode
 		CloseHandle(out_wr_);
 		CloseHandle(err_rd_);
 		CloseHandle(err_wr_);
+
+		if (out_old_ != INVALID_HANDLE_VALUE)
+		{
+			set_handle(STD_OUTPUT_HANDLE, stdout, out_old_);
+		}
+		if (err_old_ != INVALID_HANDLE_VALUE)
+		{
+			set_handle(STD_ERROR_HANDLE, stderr, err_old_);
+		}
+
 		out_rd_ = INVALID_HANDLE_VALUE;
 		out_wr_ = INVALID_HANDLE_VALUE;
+		err_old_ = INVALID_HANDLE_VALUE;
 		err_rd_ = INVALID_HANDLE_VALUE;
 		err_wr_ = INVALID_HANDLE_VALUE;
+		err_old_ = INVALID_HANDLE_VALUE;
 	}
 
 	size_t redirector::peek_stdout()

@@ -18,7 +18,9 @@ namespace vscode
 	private:
 		void* out_rd_;
 		void* out_wr_;
+		void* out_old_;
 		void* err_rd_;
 		void* err_wr_;
+		void* err_old_;
 	};
 }
