@@ -35,6 +35,7 @@ namespace vscode
 
 	public:
 		debugger_impl(lua_State* L, const char* ip, uint16_t port);
+		~debugger_impl();
 		void hook(lua_State *L, lua_Debug *ar);
 		void update();
 		void set_schema(const char* file);

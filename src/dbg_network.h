@@ -3,6 +3,7 @@
 #include <string>
 #include <memory>
 #include <net/poller.h>
+#include "dbg_message.h"
 
 namespace vscode
 {

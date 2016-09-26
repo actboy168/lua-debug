@@ -210,6 +210,11 @@ namespace vscode
 		event_output(category, easy_string(buf, len));
 	}
 
+	debugger_impl::~debugger_impl()
+	{
+		delete network_;
+	}
+
 #define DBG_REQUEST_MAIN(name) std::bind(&debugger_impl:: ## name, this, std::placeholders::_1)
 #define DBG_REQUEST_HOOK(name) std::bind(&debugger_impl:: ## name, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
 

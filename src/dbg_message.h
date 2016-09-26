@@ -51,8 +51,7 @@ namespace vscode
 	public:
 		server(net::poller_t* poll);
 		~server();
-		void listen(const net::endpoint& ep);
-
+		bool      listen(const net::endpoint& ep);
 		bool      output(const wprotocol& wp);
 		rprotocol input();
 		bool      input_empty()	const;

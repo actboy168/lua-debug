@@ -164,12 +164,16 @@ namespace vscode
 
 	server::~server()
 	{
+		base_type::close();
+		if (session_)
+			session_->close();
 	}
 
-	void server::listen(const net::endpoint& ep)
+	bool server::listen(const net::endpoint& ep)
 	{
 		base_type::open();
 		base_type::listen(ep, std::bind(&server::event_accept, this, std::placeholders::_1, std::placeholders::_2));
+		return base_type::sock != net::socket::retired_fd;
 	}
 
 	void server::event_accept(net::socket::fd_t fd, const net::endpoint& ep)
