@@ -111,8 +111,6 @@ namespace vscode
 		}
 		// todo: pcall?
 		lua_call(L, 0, writeable? 2: 1);
-		luaL_checktype(L, -2, LUA_TFUNCTION);
-		luaL_checktype(L, -1, LUA_TFUNCTION);
 		for (int i = 1;; ++i)
 		{
 			const char* name = lua_getupvalue(L, -1, i);
@@ -178,6 +176,7 @@ namespace vscode
 					lua_pop(L, 1);
 				}
 			}
+			lua_pop(L, 1);
 		}
 		lua_rotate(L, startstack + 1, nresult);
 		lua_settop(L, startstack + nresult);
