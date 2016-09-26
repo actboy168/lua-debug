@@ -15,11 +15,10 @@ namespace vscode
 
 	void debugger_impl::open()
 	{
-		redirect_.open();
 		stacklevel_ = 0;
 
 		using namespace asmjit;
-		CodeHolder code; 
+		CodeHolder code;
 		code.init(jit_.getCodeInfo());
 
 		X86Assembler assemblr(&code);
@@ -32,39 +31,19 @@ namespace vscode
 
 		lua_Hook hook;
 		Error err = jit_.add(&hook, &code);
-		assert (!err);
+		assert(!err);
 		lua_sethook(GL, hook, LUA_MASKCALL | LUA_MASKLINE | LUA_MASKRET, 0);
 	}
 
 	void debugger_impl::close()
 	{
 		jit_.release((void*)lua_gethook(GL));
-		redirect_.close();
 		lua_sethook(GL, 0, 0, 0);
 		breakpoints_.clear();
 		stack_.clear();
 		workingdir_.clear();
 		seq = 1;
 		stacklevel_ = 0;
-	}
-
-	void debugger_impl::update_redirect()
-	{
-		size_t n = 0;
-		n = redirect_.peek_stdout();
-		if (n > 1)
-		{
-			hybridarray<char, 1024> buf(n);
-			redirect_.read_stdout(buf.data(), buf.size());
-			event_output("stdout", buf);
-		}
-		n = redirect_.peek_stdout();
-		if (n > 0)
-		{
-			hybridarray<char, 1024> buf(n);
-			redirect_.read_stdout(buf.data(), buf.size());
-			event_output("stderr", buf);
-		}
 	}
 
 	bool debugger_impl::update_main(rprotocol& req, bool& quit)
@@ -136,8 +115,8 @@ namespace vscode
 		bool quit = false;
 		while (!quit)
 		{
+			custom_->update_stop();
 			network_->update(0);
-			update_redirect();
 
 			rprotocol req = network_->input();
 			if (req.IsNull()) {
@@ -178,7 +157,6 @@ namespace vscode
 		}
 		else if (is_state(state::initialized) || is_state(state::running))
 		{
-			update_redirect();
 			rprotocol req = network_->input();
 			if (req.IsNull()) {
 				return;
@@ -193,7 +171,6 @@ namespace vscode
 		}
 		else if (is_state(state::terminated))
 		{
-			update_redirect();
 			set_state(state::birth);
 		}
 	}
@@ -206,6 +183,31 @@ namespace vscode
 	void debugger_impl::set_custom(custom* custom)
 	{
 		custom_ = custom;
+	}
+
+	struct easy_string
+	{
+		easy_string(const char* buf, size_t len)
+			: buf_(buf)
+			, len_(len)
+		{ }
+
+		const char* data() const
+		{
+			return buf_;
+		}
+		size_t size() const
+		{
+			return len_;
+		}
+
+		const char* buf_;
+		size_t      len_;
+	};
+
+	void debugger_impl::output(const char* category, const char* buf, size_t len)
+	{
+		event_output(category, easy_string(buf, len));
 	}
 
 #define DBG_REQUEST_MAIN(name) std::bind(&debugger_impl:: ## name, this, std::placeholders::_1)
@@ -224,7 +226,6 @@ namespace vscode
 		, workingdir_()
 		, stack_()
 		, watch_(L)
-		, redirect_()
 		, pathconvert_()
 		, custom_(&global_custom)
 		, main_dispatch_

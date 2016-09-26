@@ -7,11 +7,11 @@
 #include <vector> 
 #include <asmjit/asmjit.h>
 #include "dbg_breakpoint.h"	 
-#include "dbg_redirect.h"  
 #include "dbg_evaluate.h"
 #include "dbg_path.h" 
 #include "dbg_custom.h"	
 #include "dbg_pathconvert.h" 
+#include "dbg_enum.h"
 
 namespace vscode
 {
@@ -21,15 +21,7 @@ namespace vscode
 
 	class debugger_impl
 	{
-	public:
-		enum state {
-			birth = 1,
-			initialized = 2,
-			stepping = 3,
-			running = 4,
-			terminated = 5,
-		};
-
+	public:	
 		enum class step {
 			in = 1,
 			over = 2,
@@ -47,6 +39,7 @@ namespace vscode
 		void update();
 		void set_schema(const char* file);
 		void set_custom(custom* custom);
+		void output(const char* category, const char* buf, size_t len);
 
 		void set_state(state state);
 		bool is_state(state state);
@@ -86,6 +79,7 @@ namespace vscode
 		void event_terminated();
 		void event_initialized();
 
+	public:
 		template <class T>
 		void event_output(const std::string& category, const T& msg)
 		{
@@ -104,6 +98,7 @@ namespace vscode
 			network_->output(res);
 		}
 
+	private:
 		void response_error(rprotocol& req, const char *msg);
 		void response_success(rprotocol& req);
 		void response_success(rprotocol& req, std::function<void(wprotocol&)> body);
@@ -114,7 +109,6 @@ namespace vscode
 	private:
 		void open();
 		void close();
-		void update_redirect();
 		bool update_main(rprotocol& req, bool& quit);
 		bool update_hook(rprotocol& req, lua_State *L, lua_Debug *ar, bool& quit);
 
@@ -131,7 +125,6 @@ namespace vscode
 		fs::path           workingdir_;
 		std::vector<stack> stack_;
 		watchs             watch_;
-		redirector         redirect_;
 		pathconvert        pathconvert_;
 		custom*            custom_;
 		asmjit::JitRuntime jit_;

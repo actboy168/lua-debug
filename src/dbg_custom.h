@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include "dbg_enum.h"
 
 namespace vscode
 {
@@ -19,5 +20,11 @@ namespace vscode
 		{
 			return result::failed;
 		}
+
+		virtual void set_state(state state)
+		{ }
+
+		virtual void update_stop()
+		{ }
 	};
 }

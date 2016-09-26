@@ -32,9 +32,6 @@
     <ClCompile Include="..\src\debugger.cpp">
       <Filter>cpp</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\dbg_redirect.cpp">
-      <Filter>cpp</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\dbg_unicode.cpp">
       <Filter>cpp</Filter>
     </ClCompile>
@@ -73,9 +70,6 @@
     <ClInclude Include="..\src\dbg_impl.h">
       <Filter>inc</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\dbg_redirect.h">
-      <Filter>inc</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\dbg_file.h">
       <Filter>inc</Filter>
     </ClInclude>
@@ -98,6 +92,9 @@
       <Filter>inc</Filter>
     </ClInclude>
     <ClInclude Include="..\src\dbg_pathconvert.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\dbg_enum.h">
       <Filter>inc</Filter>
     </ClInclude>
   </ItemGroup>

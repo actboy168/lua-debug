@@ -26,6 +26,11 @@ namespace vscode
 	{
 		impl_->set_custom(custom);
 	}
+
+	void debugger::output(const char* category, const char* buf, size_t len)
+	{
+		impl_->output(category, buf, len);
+	}
 }
 
 void* __cdecl vscode_debugger_create(lua_State* L, const char* ip, uint16_t port)

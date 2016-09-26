@@ -19,7 +19,11 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\test\dbg_redirect.cpp" />
     <ClCompile Include="..\test\test.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\test\dbg_redirect.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{9022BEF7-18C3-47C0-BE1A-C24B82E3E5FA}</ProjectGuid>

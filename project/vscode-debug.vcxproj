@@ -15,7 +15,6 @@
     <ClCompile Include="..\src\dbg_evaluate.cpp" />
     <ClCompile Include="..\src\dbg_path.cpp" />
     <ClCompile Include="..\src\dbg_pathconvert.cpp" />
-    <ClCompile Include="..\src\dbg_redirect.cpp" />
     <ClCompile Include="..\src\dbg_unicode.cpp" />
     <ClCompile Include="..\src\debugger.cpp" />
     <ClCompile Include="..\src\dbg_impl.cpp" />
@@ -28,13 +27,13 @@
   <ItemGroup>
     <ClInclude Include="..\src\dbg_breakpoint.h" />
     <ClInclude Include="..\src\dbg_custom.h" />
+    <ClInclude Include="..\src\dbg_enum.h" />
     <ClInclude Include="..\src\dbg_evaluate.h" />
     <ClInclude Include="..\src\dbg_file.h" />
     <ClInclude Include="..\src\dbg_format.h" />
     <ClInclude Include="..\src\dbg_hybridarray.h" />
     <ClInclude Include="..\src\dbg_path.h" />
     <ClInclude Include="..\src\dbg_pathconvert.h" />
-    <ClInclude Include="..\src\dbg_redirect.h" />
     <ClInclude Include="..\src\dbg_unicode.h" />
     <ClInclude Include="..\src\debugger.h" />
     <ClInclude Include="..\src\dbg_impl.h" />

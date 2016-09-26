@@ -3,7 +3,6 @@
 #include <memory>
 #include <string>
 
-
 #if defined(DEBUGGER_INLINE)
 #	define DEBUGGER_API
 #else
@@ -24,11 +23,13 @@ namespace vscode
 	class DEBUGGER_API debugger
 	{
 	public:
+
 		debugger(lua_State* L, const char* ip, uint16_t port);
 		~debugger();
 		void update();
 		void set_schema(const char* file);
 		void set_custom(custom* custom);
+		void output(const char* category, const char* buf, size_t len);
 
 	private:
 		debugger_impl* impl_;
