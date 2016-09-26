@@ -109,24 +109,6 @@ namespace vscode
 		return false;
 	}
 
-	static custom::result path_convert(const std::string& server_path, std::string& client_path, custom& custom)
-	{
-		if (server_path[0] == '@')
-		{
-			std::string path;
-			path.resize(server_path.size() - 1);
-			std::transform(server_path.begin() + 1, server_path.end(), path.begin(), tolower);
-			client_path = path_uncomplete(path, fs::current_path<fs::path>()).file_string();
-			return custom::result::sucess;
-		}
-		else if (server_path[0] == '=')
-		{
-			return custom.path_convert(server_path, client_path);
-		}
-		client_path = server_path;
-		return custom::result::sucess;
-	}
-
 	bp_source* breakpoint::get(const std::string& server_path, pathconvert& pathconvert, custom& custom)
 	{
 		auto it = server_map_.find(server_path);

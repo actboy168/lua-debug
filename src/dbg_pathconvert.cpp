@@ -1,6 +1,7 @@
 #include "dbg_pathconvert.h"
 #include "dbg_path.h"
 #include <algorithm>
+#include <assert.h>
 
 namespace vscode
 {
@@ -22,7 +23,9 @@ namespace vscode
 			std::string path;
 			path.resize(server_path.size() - 1);
 			std::transform(server_path.begin() + 1, server_path.end(), path.begin(), tolower);
-			client_path = path_uncomplete(path, fs::current_path<fs::path>()).file_string();
+			std::error_code ec;
+			client_path = path_uncomplete(path, fs::current_path<fs::path>(), ec).file_string();
+			assert(!ec);
 			server2client_[server_path] = client_path;
 			return custom::result::sucess;
 		}

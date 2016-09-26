@@ -249,7 +249,9 @@ namespace vscode
 							fs::path path(src);
 							if (path.is_complete())
 							{
-								path = path_uncomplete(path, fs::current_path<fs::path>());
+								std::error_code ec;
+								path = path_uncomplete(path, fs::current_path<fs::path>(), ec);
+								assert(!ec);
 							}
 							path = fs::complete(path, workingdir_);
 							fs::path name = path.filename();
@@ -337,7 +339,9 @@ namespace vscode
 		auto& args = req["arguments"];
 		auto& source = args["source"];
 		fs::path client_path = get_path(source["path"]);
-		fs::path uncomplete_path = path_uncomplete(client_path, workingdir_);
+		std::error_code ec;
+		fs::path uncomplete_path = path_uncomplete(client_path, workingdir_, ec);
+		assert(!ec);
 		breakpoints_.clear(uncomplete_path);
 
 		std::vector<size_t> lines;

@@ -1,22 +1,27 @@
-#include "dbg_path.h"
+#include "dbg_path.h" 
+#include <deque>
 #include <algorithm>
 
 namespace vscode
 {
-	fs::path path_uncomplete(const fs::path& p, const fs::path& base)
+	fs::path path_uncomplete(const fs::path& p, const fs::path& base, std::error_code& ec)
 	{
-		if (p == base)
+		fs::path pp = path_normalize(p);
+		if (pp == base)
 			return "./";
 		fs::path from_path, from_base, output;
-		fs::path::iterator path_it = p.begin(), path_end = p.end();
+		fs::path::iterator path_it = pp.begin(), path_end = pp.end();
 		fs::path::iterator base_it = base.begin(), base_end = base.end();
 
 		if ((path_it == path_end) || (base_it == base_end))
-			throw std::runtime_error("path or base was empty; couldn't generate relative path");
+		{
+			ec = std::make_error_code(std::generic_errno::not_a_directory);
+			return p;
+		}
 
 #ifdef WIN32
 		if (*path_it != *base_it)
-			return p;
+			return pp;
 		++path_it, ++base_it;
 #endif
 
@@ -56,5 +61,23 @@ namespace vscode
 		}
 
 		return output;
+	}
+
+	fs::path path_normalize(const fs::path& p)
+	{
+		fs::path result = p.root_path();
+		std::deque<std::string> stack;
+		for (auto e : p.relative_path()) {
+			if (e == ".." && !stack.empty()) {
+				stack.pop_back();
+			}
+			else if (e != ".") {
+				stack.push_back(e);
+			}
+		}
+		for (auto e : stack) {
+			result /= e;
+		}
+		return result;
 	}
 }
