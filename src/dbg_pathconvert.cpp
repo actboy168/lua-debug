@@ -5,6 +5,15 @@
 
 namespace vscode
 {
+	pathconvert::pathconvert()
+		: scriptpath_(fs::current_path<fs::path>())
+	{ }
+
+	void pathconvert::set_script_path(const fs::path& path)
+	{
+		scriptpath_ = path;
+	}
+
 	bool pathconvert::fget(const std::string& server_path, std::string*& client_path)
 	{
 		auto it = server2client_.find(server_path);
@@ -24,7 +33,7 @@ namespace vscode
 			path.resize(server_path.size() - 1);
 			std::transform(server_path.begin() + 1, server_path.end(), path.begin(), tolower);
 			std::error_code ec;
-			client_path = path_uncomplete(path, fs::current_path<fs::path>(), ec).file_string();
+			client_path = path_uncomplete(path, scriptpath_, ec).file_string();
 			assert(!ec);
 			server2client_[server_path] = client_path;
 			return custom::result::sucess;

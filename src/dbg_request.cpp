@@ -144,6 +144,7 @@ namespace vscode
 		if (args.HasMember("cwd") && args["cwd"].IsString()) {
 			workingdir_ = get_path(args["cwd"]);
 			fs::current_path(workingdir_);
+			pathconvert_.set_script_path(workingdir_);
 		}
 		fs::path program = get_path(args["program"]);
 		int status = luaL_loadfile(L, program.file_string().c_str());
@@ -198,6 +199,8 @@ namespace vscode
 
 		if (args.HasMember("cwd") && args["cwd"].IsString()) {
 			workingdir_ = get_path(args["cwd"]);
+			// todo: 如果服务端和客户端不在一起这是错误的
+			pathconvert_.set_script_path(workingdir_);
 		}
 
 		response_success(req);
@@ -243,26 +246,7 @@ namespace vscode
 						int status = lua_getinfo(L, "Sln", &entry);
 						assert(status);
 						const char *src = entry.source;
-						if (*src == '@')
-						{
-							src++;	
-							fs::path path(src);
-							if (path.is_complete())
-							{
-								std::error_code ec;
-								path = path_uncomplete(path, fs::current_path<fs::path>(), ec);
-								assert(!ec);
-							}
-							path = fs::complete(path, workingdir_);
-							fs::path name = path.filename();
-							for (auto _ : res("source").Object())
-							{
-								res("name").String(name.string());
-								res("path").String(path.string());
-								res("sourceReference").Int64(0);
-							}
-						}
-						else if (memcmp(src, "=[C]", 4) == 0)
+						if (memcmp(src, "=[C]", 4) == 0)
 						{
 							for (auto _ : res("source").Object())
 							{
@@ -270,7 +254,7 @@ namespace vscode
 								res("sourceReference").Int64(-1);
 							}
 						}
-						else if (*src == '=')
+						else if (*src == '@' || *src == '=')
 						{
 							std::string client_path;
 							custom::result r =  pathconvert_.get_or_eval(src, client_path, *custom_);
