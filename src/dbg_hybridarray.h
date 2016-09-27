@@ -106,7 +106,7 @@ namespace vscode {
 			difference_type num_elements = last - first;
 			if (size_ + num_elements > capacity_)
 			{
-				grow(num_elements);
+				grow(size_ + num_elements);
 			}
 			std::uninitialized_copy(first, last, ptr_ + size_);
 			size_ += num_elements;
