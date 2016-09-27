@@ -457,7 +457,7 @@ namespace vscode
 		response_success(req, [&](wprotocol& res)
 		{
 			variables resv(res, L, ar, type == var_type::watch ? -1 : 0);
-			resv.push_value(type, depth, var_ref >> 16);
+			resv.push_value(type, depth, var_ref >> 16, pathconvert_, *custom_);
 		});
 		return false;
 	}
@@ -575,7 +575,7 @@ namespace vscode
 		std::vector<variable> rets(nresult);
 		for (int i = 0; i < (int)rets.size(); ++i)
 		{
-			var_set_value(rets[i], L, -1 - i);
+			var_set_value(rets[i], L, -1 - i, pathconvert_, *custom_);
 		}
 		int64_t reference = 0;
 		if (rets.size() == 1 && context == "watch" && can_extand(L, -1))
