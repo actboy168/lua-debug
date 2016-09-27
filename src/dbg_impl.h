@@ -11,7 +11,8 @@
 #include "dbg_path.h" 
 #include "dbg_custom.h"	
 #include "dbg_pathconvert.h" 
-#include "dbg_enum.h"
+#include "dbg_enum.h"   
+#include "dbg_watchs.h"
 
 namespace vscode
 {

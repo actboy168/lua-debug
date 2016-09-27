@@ -16,6 +16,7 @@
     <ClCompile Include="..\src\dbg_path.cpp" />
     <ClCompile Include="..\src\dbg_pathconvert.cpp" />
     <ClCompile Include="..\src\dbg_unicode.cpp" />
+    <ClCompile Include="..\src\dbg_watchs.cpp" />
     <ClCompile Include="..\src\debugger.cpp" />
     <ClCompile Include="..\src\dbg_impl.cpp" />
     <ClCompile Include="..\src\dbg_request.cpp" />
@@ -35,6 +36,7 @@
     <ClInclude Include="..\src\dbg_path.h" />
     <ClInclude Include="..\src\dbg_pathconvert.h" />
     <ClInclude Include="..\src\dbg_unicode.h" />
+    <ClInclude Include="..\src\dbg_watchs.h" />
     <ClInclude Include="..\src\debugger.h" />
     <ClInclude Include="..\src\dbg_impl.h" />
     <ClInclude Include="..\src\dbg_variables.h" />

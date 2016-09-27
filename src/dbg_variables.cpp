@@ -63,13 +63,25 @@ namespace vscode
 		return level;
 	}
 
-	static bool can_extand(lua_State *L, int idx)
+	extern intptr_t WATCH_TABLE;
+	static bool is_watch_table(lua_State* L, int idx)
+	{
+		idx = lua_absindex(L, idx);
+		if (LUA_TTABLE != lua_rawgetp(L, LUA_REGISTRYINDEX, &WATCH_TABLE)) {
+			return false;
+		}
+		int r = lua_rawequal(L, -1, idx);
+		lua_pop(L, 1);
+		return !!r;
+	}
+
+	bool can_extand(lua_State *L, int idx)
 	{
 		int type = lua_type(L, idx);
 		switch (type)
 		{
 		case LUA_TTABLE:
-			return true;
+			return !is_watch_table(L, idx);
 		case LUA_TLIGHTUSERDATA:
 			if (lua_getmetatable(L, idx)) {
 				lua_pop(L, 1);

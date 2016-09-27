@@ -47,6 +47,9 @@
     <ClCompile Include="..\src\dbg_evaluate.cpp">
       <Filter>cpp</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\dbg_watchs.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\debugger.h">
@@ -95,6 +98,9 @@
       <Filter>inc</Filter>
     </ClInclude>
     <ClInclude Include="..\src\dbg_enum.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\dbg_watchs.h">
       <Filter>inc</Filter>
     </ClInclude>
   </ItemGroup>

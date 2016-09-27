@@ -1,5 +1,6 @@
 #include "dbg_evaluate.h"
 #include "dbg_format.h"
+#include <lua.hpp>
 #include <vector>
 #include <map>
 
