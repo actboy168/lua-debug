@@ -18,31 +18,23 @@ namespace net { namespace tcp {
 			length_ = 0;
 		}
 
-		bool rcv(socket::fd_t s)
+		char* rcv_data() 
+		{
+			return (char*)&(rcvbuf_.back_chunk->values[rcvbuf_.back_pos]);
+		}
+
+		size_t rcv_size() const
 		{
 			assert(rcvbuf_.back_pos < rcvbuf_.chunk_size());
-			int rc = recv(s, (char*)&(rcvbuf_.back_chunk->values[rcvbuf_.back_pos]), (int)(rcvbuf_.chunk_size() - rcvbuf_.back_pos), 0);
-			if (rc == 0)
-			{
-				return false;
-			}
-			else if (rc < 0)
-			{
-				int ec = socket::error_no();
-				if (ec == EAGAIN || ec == EWOULDBLOCK || ec == EINTR)
-				{
-					return true;
-				}
-				else
-				{
-					return false;
-				}
-			}
+			return rcvbuf_.chunk_size() - rcvbuf_.back_pos;
+		}
 
-			rcvbuf_.back_pos += rc - 1;
+		void rcv_push(size_t n)
+		{
+			assert(n > 0);
+			rcvbuf_.back_pos += n - 1;
 			rcvbuf_.do_push();
-			length_ += rc;
-			return true;
+			length_ += n;
 		}
 
 		size_t pop(char* buf, size_t buflen)

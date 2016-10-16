@@ -18,14 +18,13 @@ namespace net { namespace tcp {
 			length_ = 0;
 		}
 
-		bool snd(socket::fd_t s)
+		const char* snd_data() const
 		{
-			if (sndbuf_.empty())
-			{
-				return true;
-			}
+			return (const char*)&(sndbuf_.begin_chunk->values[sndbuf_.begin_pos]);
+		}
 
-			char* buf = (char*)&(sndbuf_.begin_chunk->values[sndbuf_.begin_pos]);
+		size_t snd_size() const
+		{
 			size_t len = 0;
 			if (sndbuf_.begin_chunk == sndbuf_.back_chunk)
 			{
@@ -36,25 +35,15 @@ namespace net { namespace tcp {
 				len = sndbuf_.chunk_size() - sndbuf_.begin_pos;
 			}
 			assert(len > 0);
+			return len;
+		}
 
-			int rc = send(s, buf, (int)len, 0);
-			if (rc < 0)
-			{
-				int ec = socket::error_no();
-				if (ec == EAGAIN || ec == EWOULDBLOCK || ec == EINTR)
-				{
-					return true;
-				}
-				else
-				{
-					return false;
-				}
-			}
-
-			sndbuf_.begin_pos += rc - 1;
+		void snd_pop(size_t n)
+		{
+			assert(n > 0);
+			sndbuf_.begin_pos += n - 1;
 			sndbuf_.do_pop();
-			length_ -= rc;
-			return true;
+			length_ -= n;
 		}
 
 		size_t push(const char* buf, size_t buflen)

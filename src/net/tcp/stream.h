@@ -116,22 +116,53 @@ namespace net { namespace tcp {
 
 		bool event_in()
 		{
-			bool suc = rcvbuf_.rcv(event_type::sock);
-			if (!suc)
+			int rc = ::recv(event_type::sock, rcvbuf_.rcv_data(), (int)rcvbuf_.rcv_size(), 0);
+			if (rc == 0)
 			{
 				NETLOG_ERROR() << "socket(" << event_type::sock << ") recv error, ec = " << socket::error_no_();
+				return false;
 			}
-			return suc;
+			else if (rc < 0)
+			{
+				int ec = socket::error_no();
+				if (ec == EAGAIN || ec == EWOULDBLOCK || ec == EINTR)
+				{
+					return true;
+				}
+				else
+				{
+					NETLOG_ERROR() << "socket(" << event_type::sock << ") recv error, ec = " << socket::error_no_();
+					return false;
+				}
+			}
+
+			rcvbuf_.rcv_push(rc);
+			return true;
 		}
 
 		bool event_out()
 		{
-			if (!sndbuf_.snd(event_type::sock))
+			if (sndbuf_.empty())
 			{
-				NETLOG_ERROR() << "socket(" << event_type::sock << ") send error, ec = " << socket::error_no_();
-				return false;
+				return true;
 			}
 
+			int rc = ::send(event_type::sock, sndbuf_.snd_data(), (int)sndbuf_.snd_size(), 0);
+			if (rc < 0)
+			{
+				int ec = socket::error_no();
+				if (ec == EAGAIN || ec == EWOULDBLOCK || ec == EINTR)
+				{
+					return true;
+				}
+				else
+				{
+					NETLOG_ERROR() << "socket(" << event_type::sock << ") send error, ec = " << socket::error_no_();
+					return false;
+				}
+			}
+
+			sndbuf_.snd_pop(rc);
 			if (write_empty())
 			{
 				base_t::reset_pollout();
