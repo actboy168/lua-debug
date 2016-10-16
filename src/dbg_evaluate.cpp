@@ -28,7 +28,7 @@ namespace vscode
 
 		strbuilder& operator +=	(std::string&& s)
 		{
-			push_back(s);
+			push_back(std::forward<std::string>(s));
 			n += s.size();
 			return *this;
 		}
