@@ -7,54 +7,70 @@
 
 namespace vscode
 {
-	static void set_handle(DWORD handletype, FILE* file, HANDLE handle)
+	static DWORD handles[] = {
+		STD_INPUT_HANDLE,
+		STD_OUTPUT_HANDLE,
+		STD_ERROR_HANDLE,
+	};
+
+	static FILE* files[] = {
+		stdin,
+		stdout,
+		stderr,
+	};
+
+	redirect_pipe::redirect_pipe()
+		: rd_(INVALID_HANDLE_VALUE)
+		, wr_(INVALID_HANDLE_VALUE)
+	{ }
+	  
+	redirect_pipe::~redirect_pipe()
 	{
-		SetStdHandle(handletype, handle);
-		int fd = _open_osfhandle((intptr_t)handle, _O_WRONLY | _O_TEXT);
-		FILE *fp = _fdopen(fd, "w");
-		*file = *fp;
+		CloseHandle(rd_);
+		CloseHandle(wr_);
+		rd_ = INVALID_HANDLE_VALUE;
+		wr_ = INVALID_HANDLE_VALUE;
 	}
 
-	static bool redirect_handle(const char* name, DWORD handletype, FILE* file, HANDLE& pipe_rd, HANDLE& pipe_wr, HANDLE& oldhandle)
+	bool redirect_pipe::create(const char* name)
 	{
 		std::wstring pipe_name = format(L"\\\\.\\pipe\\%s-redirector-%d", name, GetCurrentProcessId());
-		SECURITY_ATTRIBUTES read_attr = { sizeof(SECURITY_ATTRIBUTES), 0, false };
-		HANDLE rd = ::CreateNamedPipeW(
+		SECURITY_ATTRIBUTES attr = { sizeof(SECURITY_ATTRIBUTES), 0, true };
+		rd_ = ::CreateNamedPipeW(
 			pipe_name.c_str()
 			, PIPE_ACCESS_INBOUND | FILE_FLAG_OVERLAPPED
 			, PIPE_TYPE_BYTE | PIPE_WAIT
-			, 1, 0, 1024 * 1024, 0, &read_attr
+			, 1, 1024 * 1024, 1024 * 1024, 0, &attr
 			);
-		if (rd == INVALID_HANDLE_VALUE)  {
+		if (rd_ == INVALID_HANDLE_VALUE)  {
 			return false;
 		}
-		SECURITY_ATTRIBUTES write_attr = { sizeof(SECURITY_ATTRIBUTES), 0, true };
-		HANDLE wr = ::CreateFileW(
+		wr_ = ::CreateFileW(
 			pipe_name.c_str()
 			, GENERIC_WRITE
-			, 0, &write_attr
+			, 0, &attr
 			, OPEN_EXISTING, FILE_FLAG_OVERLAPPED, NULL
 			);
-		if (wr == INVALID_HANDLE_VALUE)  {
-			::CloseHandle(rd);
+		if (wr_ == INVALID_HANDLE_VALUE)  {
+			::CloseHandle(rd_);
 			return false;
 		}
-		::ConnectNamedPipe(rd, NULL);
-		oldhandle = GetStdHandle(handletype);
-		set_handle(handletype, file, wr);
-		setvbuf(file, NULL, _IONBF, 0);
-		pipe_rd = rd;
-		pipe_wr = wr;
 		return true;
 	}
 
+	static void set_handle(std_fd type, HANDLE handle)
+	{
+		SetStdHandle(handles[(int)type], handle);
+		int fd = _open_osfhandle((intptr_t)handle, type == std_fd::STDIN ? _O_RDONLY : _O_WRONLY);
+		FILE *fp = _fdopen(fd, type == std_fd::STDIN ? "r": "w");
+		*files[(int)type] = *fp;
+		setvbuf(files[(int)type], NULL, _IONBF, 0);
+	}
+
 	redirector::redirector()
-		: out_rd_(INVALID_HANDLE_VALUE)
-		, out_wr_(INVALID_HANDLE_VALUE)
-		, out_old_(INVALID_HANDLE_VALUE)
-		, err_rd_(INVALID_HANDLE_VALUE)
-		, err_wr_(INVALID_HANDLE_VALUE)
-		, err_old_(INVALID_HANDLE_VALUE)
+		: pipe_()
+		, old_(INVALID_HANDLE_VALUE)
+		, type_(std_fd::STDOUT)
 	{
 	}
 
@@ -63,74 +79,41 @@ namespace vscode
 		close();
 	}
 
-	void redirector::open()
+	void redirector::open(const char* name, std_fd type)
 	{
-		redirect_handle("stdout", STD_OUTPUT_HANDLE, stdout, out_rd_, out_wr_, out_old_);
-		redirect_handle("stderr", STD_ERROR_HANDLE, stderr, err_rd_, err_wr_, err_old_);
+		if (!pipe_.create(name)) {
+			return ;
+		}
+		type_ = type;
+		old_ = GetStdHandle(handles[(int)type]);
+		set_handle(type, type == std_fd::STDIN ? pipe_.rd_: pipe_.wr_);
 	}
 
 	void redirector::close()
 	{
-		CloseHandle(out_rd_);
-		CloseHandle(out_wr_);
-		CloseHandle(err_rd_);
-		CloseHandle(err_wr_);
-
-		if (out_old_ != INVALID_HANDLE_VALUE)
+		if (old_ != INVALID_HANDLE_VALUE)
 		{
-			set_handle(STD_OUTPUT_HANDLE, stdout, out_old_);
+			set_handle(type_, old_);
 		}
-		if (err_old_ != INVALID_HANDLE_VALUE)
-		{
-			set_handle(STD_ERROR_HANDLE, stderr, err_old_);
-		}
-
-		out_rd_ = INVALID_HANDLE_VALUE;
-		out_wr_ = INVALID_HANDLE_VALUE;
-		err_old_ = INVALID_HANDLE_VALUE;
-		err_rd_ = INVALID_HANDLE_VALUE;
-		err_wr_ = INVALID_HANDLE_VALUE;
-		err_old_ = INVALID_HANDLE_VALUE;
+		old_ = INVALID_HANDLE_VALUE;
 	}
 
-	size_t redirector::peek_stdout()
+	size_t redirector::peek()
 	{
 		DWORD rlen = 0;
-		if (!PeekNamedPipe(out_rd_, 0, 0, 0, &rlen, 0))
+		if (!PeekNamedPipe(pipe_.rd_, 0, 0, 0, &rlen, 0))
 		{
 			return 0;
 		}
 		return rlen;
 	}
 
-	size_t redirector::peek_stderr()
+	size_t redirector::read(char* buf, size_t len)
 	{
-		DWORD rlen = 0;
-		if (!PeekNamedPipe(err_rd_, 0, 0, 0, &rlen, 0))
-		{
-			return 0;
-		}
-		return rlen;
-	}
-
-	size_t redirector::read_stdout(char* buf, size_t len)
-	{
-		if (!peek_stdout())
+		if (!peek())
 			return 0;
 		DWORD rlen = 0;
-		if (!ReadFile(out_rd_, buf, len, &rlen, 0))
-		{
-			return 0;
-		}
-		return rlen;
-	}
-
-	size_t redirector::read_stderr(char* buf, size_t len)
-	{
-		if (!peek_stderr())
-			return 0;
-		DWORD rlen = 0;
-		if (!PeekNamedPipe(err_rd_, buf, len, &rlen, 0, 0))
+		if (!ReadFile(pipe_.rd_, buf, len, &rlen, 0))
 		{
 			return 0;
 		}

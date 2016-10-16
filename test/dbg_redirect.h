@@ -2,25 +2,35 @@
 
 namespace vscode
 {
+	enum class std_fd {
+		STDIN = 0,
+		STDOUT,
+		STDERR,
+	};
+
+	struct redirect_pipe {
+		void* rd_;
+		void* wr_;
+
+		redirect_pipe();
+		~redirect_pipe();
+		bool create(const char* name);
+	};
+
 	class redirector
 	{
 	public:
 		redirector();
 		~redirector();
 
-		void   open();
+		void   open(const char* name, std_fd type);
 		void   close();
-		size_t peek_stdout();
-		size_t peek_stderr();
-		size_t read_stdout(char* buf, size_t len);
-		size_t read_stderr(char* buf, size_t len);
+		size_t peek();
+		size_t read(char* buf, size_t len);
 
 	private:
-		void* out_rd_;
-		void* out_wr_;
-		void* out_old_;
-		void* err_rd_;
-		void* err_wr_;
-		void* err_old_;
+		redirect_pipe pipe_;
+		void* old_;
+		std_fd type_;
 	};
 }

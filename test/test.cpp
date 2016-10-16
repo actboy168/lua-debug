@@ -9,7 +9,7 @@
 
 namespace fs = std::tr2::sys;
 
-#define TEST_ATTACH 1
+#define TEST_ATTACH 0
 
 class debugger_wrapper
 	: public vscode::custom
@@ -30,10 +30,12 @@ public:
 		switch (state)
 		{
 		case vscode::state::initialized:
-			redirect_.open();
+			stdout_.open("stdout", vscode::std_fd::STDOUT);
+			stderr_.open("stderr", vscode::std_fd::STDERR);
 			break;
 		case vscode::state::terminated:
-			redirect_.close();
+			stdout_.close();
+			stderr_.close();
 			break;
 		default:
 			break;
@@ -57,25 +59,26 @@ public:
 			return;
 
 		size_t n = 0;
-		n = redirect_.peek_stdout();
+		n = stdout_.peek();
 		if (n > 0)
 		{
 			vscode::hybridarray<char, 1024> buf(n);
-			redirect_.read_stdout(buf.data(), buf.size());
+			stdout_.read(buf.data(), buf.size());
 			debugger_.output("stdout", buf.data(), buf.size());
 		}
-		n = redirect_.peek_stdout();
+		n = stderr_.peek();
 		if (n > 0)
 		{
 			vscode::hybridarray<char, 1024> buf(n);
-			redirect_.read_stdout(buf.data(), buf.size());
+			stderr_.read(buf.data(), buf.size());
 			debugger_.output("stderr", buf.data(), buf.size());
 		}
 	}
 
 	vscode::debugger debugger_;
 	vscode::state state_;
-	vscode::redirector redirect_;
+	vscode::redirector stdout_;
+	vscode::redirector stderr_;
 };
 
 int main()
