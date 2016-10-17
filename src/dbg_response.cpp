@@ -6,7 +6,7 @@ namespace vscode
 {
 	void debugger_impl::response_initialize(rprotocol& req)
 	{
-		if (norepl_initialize_)
+		if (req.HasMember("norepl") && req["norepl"].IsBool() && req["norepl"].GetBool())
 		{
 			seq++;
 			return;

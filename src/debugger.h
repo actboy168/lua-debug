@@ -29,7 +29,6 @@ namespace vscode
 		void set_schema(const char* file);
 		void set_custom(custom* custom);
 		void output(const char* category, const char* buf, size_t len);
-		void norepl_initialize(bool norepl);
 
 	private:
 		debugger_impl* impl_;
