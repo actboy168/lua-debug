@@ -146,6 +146,23 @@ namespace vscode
 			fs::current_path(workingdir_);
 			pathconvert_.set_script_path(workingdir_);
 		}
+
+		lua_newtable(L);
+		if (args.HasMember("arg") && args["arg"].IsArray()) {
+			int i = 1;
+			for (auto& v : args["arg"].GetArray())
+			{
+				if (v.IsString()) {
+					lua_pushlstring(L, v.GetString(), v.GetStringLength());
+				}
+				else {
+					lua_pushstring(L, "");
+				}
+				lua_rawseti(L, -2, i++);
+			}
+		}
+		lua_setglobal(L, "arg");
+
 		fs::path program = get_path(args["program"]);
 		int status = luaL_loadfile(L, program.file_string().c_str());
 		if (status != LUA_OK) {
