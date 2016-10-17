@@ -31,6 +31,11 @@ namespace vscode
 	{
 		impl_->output(category, buf, len);
 	}
+
+	void debugger::norepl_initialize(bool norepl)
+	{
+		impl_->norepl_initialize(norepl);
+	}
 }
 
 void* __cdecl vscode_debugger_create(lua_State* L, const char* ip, uint16_t port)

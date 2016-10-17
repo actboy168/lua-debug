@@ -4,8 +4,13 @@
 
 namespace vscode
 {
-	void debugger_impl::response_initialized(rprotocol& req)
+	void debugger_impl::response_initialize(rprotocol& req)
 	{
+		if (norepl_initialize_)
+		{
+			seq++;
+			return;
+		}
 		wprotocol res;
 		for (auto _ : res.Object())
 		{

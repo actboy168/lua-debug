@@ -210,6 +210,11 @@ namespace vscode
 		event_output(category, easy_string(buf, len));
 	}
 
+	void debugger_impl::norepl_initialize(bool norepl)
+	{
+		norepl_initialize_ = norepl;
+	}
+
 	debugger_impl::~debugger_impl()
 	{
 		delete network_;
@@ -233,6 +238,7 @@ namespace vscode
 		, watch_(L)
 		, pathconvert_()
 		, custom_(&global_custom)
+		, norepl_initialize_(false)
 		, main_dispatch_
 		({
 			{ "launch", DBG_REQUEST_MAIN(request_launch) },

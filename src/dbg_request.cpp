@@ -104,7 +104,7 @@ namespace vscode
 			response_error(req, "already initialized");
 			return false;
 		}
-		response_initialized(req);
+		response_initialize(req);
 		set_state(state::initialized);
 		return false;
 	}

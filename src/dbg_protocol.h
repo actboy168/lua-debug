@@ -21,6 +21,15 @@ namespace vscode
 		rprotocol(rprotocol&& that)
 			: rapidjson::Document(std::forward<rapidjson::Document>(that))
 		{ }
+
+		rprotocol& operator=(rprotocol&& that)
+		{
+			if (this == &that) {
+				return *this;
+			}
+			static_cast<rapidjson::Document*>(this)->operator=(std::forward<rapidjson::Document>(that));
+			return *this;
+		}
 	};
 
 	class wprotocol

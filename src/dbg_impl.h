@@ -37,6 +37,7 @@ namespace vscode
 	public:
 		debugger_impl(lua_State* L, const char* ip, uint16_t port);
 		~debugger_impl();
+		void norepl_initialize(bool norepl);
 		void hook(lua_State *L, lua_Debug *ar);
 		void update();
 		void set_schema(const char* file);
@@ -104,7 +105,7 @@ namespace vscode
 		void response_error(rprotocol& req, const char *msg);
 		void response_success(rprotocol& req);
 		void response_success(rprotocol& req, std::function<void(wprotocol&)> body);
-		void response_initialized(rprotocol& req);
+		void response_initialize(rprotocol& req);
 		void response_thread(rprotocol& req);
 		void response_source(rprotocol& req, const char* content);
 
@@ -130,6 +131,7 @@ namespace vscode
 		pathconvert        pathconvert_;
 		custom*            custom_;
 		asmjit::JitRuntime jit_;
+		bool               norepl_initialize_;
 		std::map<std::string, std::function<bool(rprotocol&)>>                            main_dispatch_;
 		std::map<std::string, std::function<bool(rprotocol&, lua_State*, lua_Debug *ar)>> hook_dispatch_;
 	};
