@@ -11,6 +11,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test", "test.vcxproj", "{90
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "asmjit", "asmjit.vcxproj", "{092C8C20-AB98-456A-A63E-0B61E4BFE256}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vscode-debug-client", "vscode-debug-client.vcxproj", "{8AC7695F-C946-4B9A-B814-3E789BFD54E8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -33,6 +35,10 @@ Global
 		{092C8C20-AB98-456A-A63E-0B61E4BFE256}.Debug|Win32.Build.0 = Debug|Win32
 		{092C8C20-AB98-456A-A63E-0B61E4BFE256}.Release|Win32.ActiveCfg = Release|Win32
 		{092C8C20-AB98-456A-A63E-0B61E4BFE256}.Release|Win32.Build.0 = Release|Win32
+		{8AC7695F-C946-4B9A-B814-3E789BFD54E8}.Debug|Win32.ActiveCfg = Debug|Win32
+		{8AC7695F-C946-4B9A-B814-3E789BFD54E8}.Debug|Win32.Build.0 = Debug|Win32
+		{8AC7695F-C946-4B9A-B814-3E789BFD54E8}.Release|Win32.ActiveCfg = Release|Win32
+		{8AC7695F-C946-4B9A-B814-3E789BFD54E8}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,15 +1,16 @@
-#include "debugger.h"
-#include "dbg_custom.h"
-#include "dbg_redirect.h"
-#include "dbg_hybridarray.h"
 #include <iostream>
 #include <thread>
 #include <filesystem>  
-#include <lua.hpp>
+#include <lua.hpp>	 
+#include "debugger.h"
+#include "dbg_custom.h"
+#include "dbg_hybridarray.h"
+#include "../client/dbg_redirect.h"	 
+#include "../client/dbg_redirect.cpp"
 
 namespace fs = std::tr2::sys;
 
-#define TEST_ATTACH 0
+#define TEST_ATTACH 1
 
 class debugger_wrapper
 	: public vscode::custom

@@ -11,6 +11,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="asmjit.vcxproj">
+      <Project>{092c8c20-ab98-456a-a63e-0b61e4bfe256}</Project>
+    </ProjectReference>
     <ProjectReference Include="luacore.vcxproj">
       <Project>{b84f7231-16ce-41d8-8c08-7b523ff4225b}</Project>
     </ProjectReference>
@@ -19,13 +22,19 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\test\test.cpp" />
+    <ClCompile Include="..\client\dbg_redirect.cpp" />
+    <ClCompile Include="..\client\launch.cpp" />
+    <ClCompile Include="..\client\main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\client\dbg_redirect.h" />
+    <ClInclude Include="..\client\launch.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{9022BEF7-18C3-47C0-BE1A-C24B82E3E5FA}</ProjectGuid>
+    <ProjectGuid>{8AC7695F-C946-4B9A-B814-3E789BFD54E8}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>vscodeluadebug</RootNamespace>
-    <ProjectName>test</ProjectName>
+    <ProjectName>vscode-debug-client</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -53,7 +62,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>$(SolutionDir)..\bin\$(Configuration)\</OutDir>
+    <OutDir>C:\Users\Rudolph\.vscode\extensions\lua-debug</OutDir>
     <IntDir>$(SolutionDir)..\build\$(Configuration)\$(ProjectName)</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -67,7 +76,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>SOURCE_PATH=R"($(SolutionDir)..\test\)";_WINSOCK_DEPRECATED_NO_WARNINGS;_WIN32_WINNT=_WIN32_WINNT_WIN7;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>DEBUGGER_EXPORTS;RAPIDJSON_HAS_STDSTRING;_WINSOCK_DEPRECATED_NO_WARNINGS;_WIN32_WINNT=_WIN32_WINNT_WIN7;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(SolutionDir)..\src;$(SolutionDir)..\src\lua</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
     </ClCompile>
@@ -87,7 +96,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>SOURCE_PATH=R"($(SolutionDir)..\test\)";_WINSOCK_DEPRECATED_NO_WARNINGS;_WIN32_WINNT=_WIN32_WINNT_WIN7;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>DEBUGGER_EXPORTS;RAPIDJSON_HAS_STDSTRING;_WINSOCK_DEPRECATED_NO_WARNINGS;_WIN32_WINNT=_WIN32_WINNT_WIN7;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(SolutionDir)..\src;$(SolutionDir)..\src\lua</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
     </ClCompile>
