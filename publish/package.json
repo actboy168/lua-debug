@@ -1,0 +1,134 @@
+{
+    "name": "lua-debug",
+    "displayName": "Lua 5.3 Debugger",
+    "version": "0.0.4",
+    "publisher": "actboy168",
+    "description": "Visual Studio Code debugger extension for Lua 5.3",
+    "categories": [
+        "Debuggers"
+    ],
+    "author": {
+        "name": "actboy168"
+    },
+    "license": "MIT",
+    "private": true,
+    "scripts": {},
+    "engines": {
+        "vscode": "^1.0.0",
+        "node": "^4.1.1"
+    },
+    "dependencies": {},
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/actboy168/vscode-lua-debug.git"
+    },
+    "bugs": {
+        "url": "https://github.com/actboy168/vscode-lua-debug/issues"
+    },
+    "devDependencies": {},
+    "contributes": {
+        "debuggers": [
+            {
+                "type": "lua",
+                "label": "Lua Debugger",
+                "enableBreakpointsFor": {
+                    "languageIds": [
+                        "lua"
+                    ]
+                },
+                "program": "./vscode-debug-client.exe",
+                "initialConfigurations": [
+                    {
+                        "name": "launch",
+                        "type": "lua",
+                        "request": "launch",
+                        "program": "${workspaceRoot}/main.lua",
+                        "stopOnEntry": true,
+                        "cwd": "${workspaceRoot}",
+                        "path": "${workspaceRoot}/?.lua",
+                        "cpath": "${workspaceRoot}/?.dll",
+                        "arg": []
+                    },
+                    {
+                        "name": "attach",
+                        "type": "lua",
+                        "request": "attach",
+                        "program": "",
+                        "stopOnEntry": true,
+                        "cwd": "${workspaceRoot}",
+                        "ip": "localhost",
+                        "port": 4278
+                    }
+                ],
+                "configurationAttributes": {
+                    "launch": {
+                        "required": [
+                            "program"
+                        ],
+                        "properties": {
+                            "program": {
+                                "type": "string",
+                                "description": "Lua 5.3 program to debug - set this to the path of the script",
+                                "default": "${workspaceRoot}/main.lua"
+                            },
+                            "cwd": {
+                                "type": "string",
+                                "description": "Working directory at program startup",
+                                "default": "${workspaceRoot}"
+                            },
+                            "stopOnEntry": {
+                                "type": "boolean",
+                                "description": "Automatically stop after launch.",
+                                "default": true
+                            },
+                            "path": {
+                                "type": "string",
+                                "description": "Search path for Lua programs",
+                                "default": "${workspaceRoot}/?.lua"
+                            },
+                            "cpath": {
+                                "type": "string",
+                                "description": "Search path for native libraries",
+                                "default": "${workspaceRoot}/?.dll"
+                            },
+                            "arg": {
+                                "type": "array",
+                                "description": "Command line argument",
+                                "default": []
+                            }
+                        }
+                    },
+                    "attach": {
+                        "properties": {
+                            "program": {
+                                "type": "string",
+                                "description": "unuse",
+                                "default": ""
+                            },
+                            "cwd": {
+                                "type": "string",
+                                "description": "Working directory at program startup",
+                                "default": "${workspaceRoot}"
+                            },
+                            "stopOnEntry": {
+                                "type": "boolean",
+                                "description": "Automatically stop after attach.",
+                                "default": true
+                            },
+                            "ip": {
+                                "type": "string",
+                                "description": "TCP/IP address of debug port. Default is 'localhost'.",
+                                "default": "localhost"
+                            },
+                            "port": {
+                                "type": "integer",
+                                "description": "Debug port to attach to. Default is 4278.",
+                                "default": 4278
+                            }
+                        }
+                    }
+                }
+            }
+        ]
+    }
+}

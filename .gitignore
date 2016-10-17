@@ -11,5 +11,7 @@
 *.opensdf
 *.ipch
 *.sln.cache
+*.dll
+*.exe
 bin/
 build/
