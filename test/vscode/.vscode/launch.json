@@ -1,6 +1,5 @@
 {
-    "version": "0.0.1",
-    "debugServer": 4278,
+    "version": "0.2.0",
     "configurations": [
         {
             "name": "launch",
@@ -10,15 +9,18 @@
             "stopOnEntry": true,
             "cwd": "${workspaceRoot}",
             "path": "${workspaceRoot}/?.lua",
-            "cpath": "${workspaceRoot}/?.dll"
+            "cpath": "${workspaceRoot}/?.dll",
+            "arg": []
         },
         {
             "name": "attach",
             "type": "lua",
             "request": "attach",
-            "program": "${workspaceRoot}/main.lua",
+            "program": "",
             "stopOnEntry": true,
             "cwd": "${workspaceRoot}",
+            "ip": "localhost",
+            "port": 4278
         }
     ]
 }
