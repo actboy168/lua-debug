@@ -11,36 +11,38 @@
 
 ## 配置launch.json
 
-* launch模式，等同于使用lua.exe来执行你的代码。
+1. launch模式，等同于使用lua.exe来执行你的代码。
 
-1. program，lua.exe执行的入口文件 
-2. cwd，lua.exe的当前目录
-3. stopOnEntry，开始调试时是否先暂停
-4. path，用于初始化package.path
-5. cpath，用于初始化package.cpath
-6. arg，lua.exe的命令行参数，用于初始化arg
+* program，lua.exe执行的入口文件 
+* cwd，lua.exe的当前目录
+* stopOnEntry，开始调试时是否先暂停
+* path，用于初始化package.path
+* cpath，用于初始化package.cpath
+* arg，lua.exe的命令行参数，用于初始化arg
 
-* attach模式，调试任意加载了vscode-debug.dll的进程。
+2. attach模式，调试任意加载了vscode-debug.dll的进程。
 
-1. program，没有用，但由于vscode的bug(?)，你必须有这个参数 
-2. cwd，本地代码所在目录
-3. stopOnEntry，开始调试时是否先暂停
-4. ip，远程调试器的ip
-5. port，远程调试器的端口
+* program，没有用，但由于vscode的bug(?)，你必须有这个参数 
+* cwd，本地代码所在目录
+* stopOnEntry，开始调试时是否先暂停
+* ip，远程调试器的ip
+* port，远程调试器的端口
 
-* 如果你只是使用在本机的远程调试器，你还可以不使用vscode-debug-client.exe，直接使用vscode连接调试器。只需要加上"debugServer"的参数。例如
+3. 如果你只是使用在本机的远程调试器，你还可以不使用vscode-debug-client.exe，直接使用vscode连接调试器。只需要加上"debugServer"的参数。例如
 
-> {
->     "version": "0.2.0",
->     "debugServer" : 4278,
->     "configurations": [
->         {
->             "name": "attach",
->             "type": "lua",
->             "request": "attach",
->             "program": "",
->             "stopOnEntry": false,
->             "cwd": "${workspaceRoot}",
->         }
->     ]
-> }
+```json
+{
+    "version": "0.2.0",
+    "debugServer" : 4278,
+    "configurations": [
+        {
+            "name": "attach",
+            "type": "lua",
+            "request": "attach",
+            "program": "",
+            "stopOnEntry": false,
+            "cwd": "${workspaceRoot}",
+        }
+    ]
+}
+```
