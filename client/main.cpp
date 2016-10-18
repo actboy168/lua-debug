@@ -113,6 +113,12 @@ public:
 		base_type::send(format("Content-Length: %d\r\n\r\n", buffer.GetSize()));
 		base_type::send(buffer.GetString(), buffer.GetSize());
 	}
+
+	void event_close()
+	{
+		base_type::event_close();
+		exit(0);
+	}
 };
 
 void response_initialized(rprotocol& req)
