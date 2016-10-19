@@ -17,16 +17,16 @@ struct lua_State;
 
 namespace vscode
 {
+	class io;
 	class custom;
 	class debugger_impl;
 
 	class DEBUGGER_API debugger
 	{
 	public:
-		debugger(lua_State* L, const char* ip, uint16_t port);
+		debugger(lua_State* L, io* io);
 		~debugger();
 		void update();
-		void set_schema(const char* file);
 		void set_custom(custom* custom);
 		void output(const char* category, const char* buf, size_t len);
 

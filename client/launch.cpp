@@ -1,9 +1,57 @@
 #include "launch.h"
 #include "dbg_hybridarray.h"
+#include "dbg_format.h"
 
-launch_server::launch_server(const char* ip, uint16_t port, std::function<void()> idle)
+void launch_io::update(int ms)
+{
+}
+
+void launch_io::output_(const char* str, size_t len) {
+	for (;;) {
+		size_t r = fwrite(str, len, 1, stdout);
+		if (r == 1)
+			break;
+	}
+}
+
+bool launch_io::output(const vscode::wprotocol& wp)
+{
+	if (!wp.IsComplete())
+		return false;
+	auto l = vscode::format("Content-Length: %d\r\n\r\n", wp.size());
+	output_(l.data(), l.size());
+	output_(wp.data(), wp.size());
+	return true;
+}
+
+vscode::rprotocol launch_io::input()
+{
+	if (input_queue_.empty())
+		return vscode::rprotocol();
+	vscode::rprotocol r = std::move(input_queue_.front());
+	input_queue_.pop();
+	return r;
+}
+
+bool launch_io::input_empty() const
+{
+	return input_queue_.empty();
+}
+
+void launch_io::send(vscode::rprotocol&& rp)
+{
+	input_queue_.push(std::forward<vscode::rprotocol>(rp));
+}
+
+void launch_io::close()
+{
+	exit(0);
+}
+
+launch_server::launch_server(std::function<void()> idle)
 	: L(initLua())
-	, debugger_(L, ip, port)
+	, io_()
+	, debugger_(L, &io_)
 	, idle_(idle)
 {
 	debugger_.set_custom(this);
@@ -72,6 +120,7 @@ void launch_server::update()
 	debugger_.update();
 }
 
+
 void launch_server::update_redirect()
 {
 	if (state_ == vscode::state::birth)
@@ -85,3 +134,7 @@ void launch_server::update_redirect()
 	}
 }
 
+void launch_server::send(vscode::rprotocol&& rp)
+{
+	io_.send(std::forward<vscode::rprotocol>(rp));
+}

@@ -1,10 +1,11 @@
 #include "debugger.h"
 #include "dbg_impl.h"
+#include "dbg_network.h"
 
 namespace vscode
 {
-	debugger::debugger(lua_State* L, const char* ip, uint16_t port)
-		: impl_(new debugger_impl(L, ip, port))
+	debugger::debugger(lua_State* L, io* io)
+		: impl_(new debugger_impl(L, io))
 	{ }
 
 	debugger::~debugger()
@@ -15,11 +16,6 @@ namespace vscode
 	void debugger::update()
 	{
 		impl_->update();
-	}
-
-	void debugger::set_schema(const char* file)
-	{
-		impl_->set_schema(file);
 	}
 
 	void debugger::set_custom(custom* custom)
@@ -33,27 +29,33 @@ namespace vscode
 	}
 }
 
+struct c_debugger {
+	vscode::network  io;
+	vscode::debugger dbg;
+
+	c_debugger(lua_State* L, const char* ip, uint16_t port)
+		: io(ip, port)
+		, dbg(L, &io)
+	{ }
+};
+
 void* __cdecl vscode_debugger_create(lua_State* L, const char* ip, uint16_t port)
 {
-	void* dbg = malloc(sizeof vscode::debugger);
+	void* dbg = malloc(sizeof c_debugger);
 	if (!dbg) {
 		return 0;
 	}
-	new (dbg)vscode::debugger(L, ip, port);
+	new (dbg) c_debugger(L, ip, port);
 	return dbg;
 }
 
 void __cdecl vscode_debugger_close(void* dbg)
 {
-	free((vscode::debugger*)dbg);
-}
-
-void __cdecl vscode_debugger_set_schema(void* dbg, const char* file)
-{
-	((vscode::debugger*)dbg)->set_schema(file);
+	((c_debugger*)dbg)->~c_debugger();
+	free((c_debugger*)dbg);
 }
 
 void __cdecl vscode_debugger_update(void* dbg)
 {
-	((vscode::debugger*)dbg)->update();
+	((c_debugger*)dbg)->dbg.update();
 }

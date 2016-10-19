@@ -1,6 +1,6 @@
 #include "dbg_impl.h"
-#include "dbg_protocol.h"
-#include "dbg_network.h"	
+#include "dbg_protocol.h"  
+#include "dbg_io.h"
 #include "dbg_variables.h"	
 #include "dbg_format.h"
 
@@ -498,7 +498,7 @@ namespace vscode
 	{
 		response_success(req);
 		set_state(state::terminated);
-		network_->close_session();
+		network_->close();
 		return true;
 	}
 

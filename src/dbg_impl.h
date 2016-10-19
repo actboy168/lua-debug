@@ -16,7 +16,7 @@
 
 namespace vscode
 {
-	class network;
+	class io;
 	class rprotocol;
 	class wprotocol;
 
@@ -35,11 +35,10 @@ namespace vscode
 		};
 
 	public:
-		debugger_impl(lua_State* L, const char* ip, uint16_t port);
+		debugger_impl(lua_State* L, io* io);
 		~debugger_impl();
 		void hook(lua_State *L, lua_Debug *ar);
 		void update();
-		void set_schema(const char* file);
 		void set_custom(custom* custom);
 		void output(const char* category, const char* buf, size_t len);
 
@@ -117,7 +116,7 @@ namespace vscode
 	private:
 		lua_State*         GL;
 		int64_t            seq;
-		network*           network_;
+		io*                network_;
 		state              state_;
 		step               step_;
 		int                stepping_stacklevel_;

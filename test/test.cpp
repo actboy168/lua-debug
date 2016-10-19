@@ -4,7 +4,8 @@
 #include <lua.hpp>	 
 #include "debugger.h"
 #include "dbg_custom.h"
-#include "dbg_hybridarray.h"
+#include "dbg_hybridarray.h"   
+#include "dbg_network.h"
 #include "../client/dbg_redirect.h"	 
 #include "../client/dbg_redirect.cpp"
 
@@ -17,11 +18,12 @@ class debugger_wrapper
 {
 public:
 	debugger_wrapper(lua_State* L, const char* ip, uint16_t port)
-		: debugger_(L, ip, port)
+		: network_(ip, port)
+		, debugger_(L, &network_)
 	{
 		fs::path schema(SOURCE_PATH);
 		schema /= "debugProtocol.json";
-		debugger_.set_schema(schema.string().c_str());
+		network_.set_schema(schema.string().c_str());
 		debugger_.set_custom(this);
 	}
 
@@ -76,6 +78,7 @@ public:
 		}
 	}
 
+	vscode::network  network_;
 	vscode::debugger debugger_;
 	vscode::state state_;
 	vscode::redirector stdout_;

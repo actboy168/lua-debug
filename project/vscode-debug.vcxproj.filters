@@ -14,9 +14,6 @@
     <ClCompile Include="..\src\dbg_network.cpp">
       <Filter>cpp</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\dbg_message.cpp">
-      <Filter>cpp</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\dbg_variables.cpp">
       <Filter>cpp</Filter>
     </ClCompile>
@@ -61,9 +58,6 @@
     <ClInclude Include="..\src\dbg_protocol.h">
       <Filter>inc</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\dbg_message.h">
-      <Filter>inc</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\dbg_breakpoint.h">
       <Filter>inc</Filter>
     </ClInclude>
@@ -101,6 +95,9 @@
       <Filter>inc</Filter>
     </ClInclude>
     <ClInclude Include="..\src\dbg_watchs.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\dbg_io.h">
       <Filter>inc</Filter>
     </ClInclude>
   </ItemGroup>

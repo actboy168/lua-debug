@@ -1,6 +1,6 @@
 #include "dbg_impl.h"
-#include "dbg_protocol.h"  
-#include "dbg_network.h"	 
+#include "dbg_protocol.h"  	
+#include "dbg_io.h" 
 #include "dbg_format.h"
 #include <thread>
 
@@ -175,11 +175,6 @@ namespace vscode
 		}
 	}
 
-	void debugger_impl::set_schema(const char* file)
-	{
-		network_->set_schema(file);
-	}
-
 	void debugger_impl::set_custom(custom* custom)
 	{
 		custom_ = custom;
@@ -212,16 +207,15 @@ namespace vscode
 
 	debugger_impl::~debugger_impl()
 	{
-		delete network_;
 	}
 
 #define DBG_REQUEST_MAIN(name) std::bind(&debugger_impl:: ## name, this, std::placeholders::_1)
 #define DBG_REQUEST_HOOK(name) std::bind(&debugger_impl:: ## name, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
 
-	debugger_impl::debugger_impl(lua_State* L, const char* ip, uint16_t port)
+	debugger_impl::debugger_impl(lua_State* L, io* io)
 		: GL(L)
 		, seq(1)
-		, network_(new network(ip, port))
+		, network_(io)
 		, state_(state::birth)
 		, step_(step::in)
 		, stepping_stacklevel_(0)

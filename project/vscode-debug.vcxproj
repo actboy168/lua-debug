@@ -22,7 +22,6 @@
     <ClCompile Include="..\src\dbg_request.cpp" />
     <ClCompile Include="..\src\dbg_response.cpp" />
     <ClCompile Include="..\src\dbg_variables.cpp" />
-    <ClCompile Include="..\src\dbg_message.cpp" />
     <ClCompile Include="..\src\dbg_network.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -33,6 +32,7 @@
     <ClInclude Include="..\src\dbg_file.h" />
     <ClInclude Include="..\src\dbg_format.h" />
     <ClInclude Include="..\src\dbg_hybridarray.h" />
+    <ClInclude Include="..\src\dbg_io.h" />
     <ClInclude Include="..\src\dbg_path.h" />
     <ClInclude Include="..\src\dbg_pathconvert.h" />
     <ClInclude Include="..\src\dbg_unicode.h" />
@@ -40,7 +40,6 @@
     <ClInclude Include="..\src\debugger.h" />
     <ClInclude Include="..\src\dbg_impl.h" />
     <ClInclude Include="..\src\dbg_variables.h" />
-    <ClInclude Include="..\src\dbg_message.h" />
     <ClInclude Include="..\src\dbg_protocol.h" />
     <ClInclude Include="..\src\dbg_network.h" />
   </ItemGroup>

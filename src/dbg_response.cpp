@@ -1,6 +1,5 @@
 #include "dbg_impl.h"
-#include "dbg_network.h"
-#include "dbg_message.h"
+#include "dbg_io.h"
 
 namespace vscode
 {

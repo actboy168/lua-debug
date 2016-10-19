@@ -8,8 +8,8 @@
 
 namespace net {
 #if defined WIN32
-	typedef poller::select_t poller_t;
-#else
-	typedef poller::epoll_t poller_t;
+	struct poller_t : public poller::select_t { };
+#else						  
+	struct poller_t : public poller::epoll_t { };
 #endif
 }

@@ -84,14 +84,17 @@ private:
 	net::tcp::buffer<rprotocol, 8> input_queue_;
 };
 
-class client
+class proxy_client
 	: public net::tcp::connecter
 {
 	typedef net::tcp::connecter base_type;
 public:
-	client(net::poller_t* p)
-		: base_type(p)
-	{ }
+	proxy_client()
+		: poller()
+		, base_type(&poller)
+	{
+		net::socket::initialize();
+	}
 
 	bool event_in()
 	{
@@ -119,6 +122,14 @@ public:
 		base_type::event_close();
 		exit(0);
 	}
+
+	void update()
+	{
+		poller.wait(1000, 0);
+	}
+
+private:
+	net::poller_t poller;
 };
 
 void response_initialized(rprotocol& req)
@@ -154,38 +165,35 @@ int main()
 {
 	_setmode(_fileno(stdout), _O_BINARY);
 	setbuf(stdout, NULL);
-	net::socket::initialize();
-	net::poller_t poller;
 
 	stdinput input;
 	rprotocol initproto;
-	client client(&poller);
+	std::unique_ptr<proxy_client> client;
 	std::unique_ptr<launch_server> server;
 
 	for (;;) {
-		poller.wait(1000, 0);
+		if (server) server->update();
+		if (client) client->update();
 		while (!input.empty()) {
 			rprotocol rp = input.pop();
 			if (rp["type"] == "request") {
 				if (rp["command"] == "initialize") {
-					server.reset();
 					response_initialized(rp);
 					initproto = std::move(rp);
 					initproto.AddMember("norepl", true, initproto.GetAllocator());
 					continue;
 				}
 				else if (rp["command"] == "launch") {
-					server.reset(new launch_server("127.0.0.1", 4279, [&](){
-						poller.wait(1000, 0);
+					server.reset(new launch_server([&](){
 						while (!input.empty()) {
 							rprotocol rp = input.pop();
-							client.send(rp);
+							server->send(std::move(rp));
 						}
 					}));
-					client.connect(net::endpoint("127.0.0.1", 4279));
-					client.send(initproto);
+					server->send(std::move(initproto));
 				}
 				else if (rp["command"] == "attach") {
+					client.reset(new proxy_client);
 					std::string ip = "127.0.0.1";
 					uint16_t port = 4278;
 					if (rp.HasMember("ip")) {
@@ -194,13 +202,13 @@ int main()
 					if (rp.HasMember("port")) {
 						port = rp["port"].GetUint();
 					}
-					client.connect(net::endpoint(ip, port));
-					client.send(initproto);
+					client->connect(net::endpoint(ip, port));
+					client->send(initproto);
 				}
-			}
-			client.send(rp);
+			}  
+			if (server) server->send(std::move(rp));
+			if (client) client->send(rp);
 		}
-		if (server) server->update();
 		std::this_thread::sleep_for(std::chrono::milliseconds(10));
 	}
 	input.join();
