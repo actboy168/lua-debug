@@ -175,7 +175,7 @@ int main()
 					continue;
 				}
 				else if (rp["command"] == "launch") {
-					server.reset(new launch_server(rp, "127.0.0.1", 4279, [&](){
+					server.reset(new launch_server("127.0.0.1", 4279, [&](){
 						poller.wait(1000, 0);
 						while (!input.empty()) {
 							rprotocol rp = input.pop();

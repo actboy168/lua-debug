@@ -11,11 +11,11 @@ class launch_server
 	: public vscode::custom
 {
 public:
-	launch_server(vscode::rprotocol& proto, const char* ip, uint16_t port, std::function<void()> idle);
+	launch_server(const char* ip, uint16_t port, std::function<void()> idle);
 	void update();
 
 private:
-	lua_State* initLua(vscode::rprotocol& proto);
+	lua_State* initLua();
 	virtual void set_state(vscode::state state);
 	virtual void update_stop();
 	void update_redirect();

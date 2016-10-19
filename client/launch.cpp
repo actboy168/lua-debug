@@ -1,8 +1,8 @@
 #include "launch.h"
 #include "dbg_hybridarray.h"
 
-launch_server::launch_server(vscode::rprotocol& proto, const char* ip, uint16_t port, std::function<void()> idle)
-	: L(initLua(proto))
+launch_server::launch_server(const char* ip, uint16_t port, std::function<void()> idle)
+	: L(initLua())
 	, debugger_(L, ip, port)
 	, idle_(idle)
 {
@@ -37,7 +37,7 @@ int launch_server::print(lua_State *L) {
 	return 0;
 }
 
-lua_State* launch_server::initLua(vscode::rprotocol& proto)
+lua_State* launch_server::initLua()
 {
 	lua_State* L = luaL_newstate();
 	luaL_openlibs(L);
