@@ -1,7 +1,7 @@
 {
     "name": "lua-debug",
     "displayName": "Lua 5.3 Debugger",
-    "version": "0.0.7",
+    "version": "0.0.8",
     "publisher": "actboy168",
     "icon": "images/logo.png",
     "description": "Visual Studio Code debugger extension for Lua 5.3",
@@ -101,6 +101,12 @@
                                 "type": "array",
                                 "description": "Command line argument",
                                 "default": []
+                            },
+                            "console": {
+                                "type": "string",
+                                "description": "Console encoding",
+                                "default": "utf8",
+                                "enum": [ "utf8", "ansi", "none" ]
                             }
                         }
                     },

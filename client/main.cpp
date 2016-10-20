@@ -187,11 +187,15 @@ int main()
 					continue;
 				}
 				else if (rp["command"] == "launch") {
+					std::string console;
 					auto& args = rp["arguments"];
 					if (args.HasMember("luadll")) {
 						delayload::set_lua_dll(vscode::u2w(std::string(args["luadll"].GetString(), args["luadll"].GetStringLength())));
 					}
-					server.reset(new launch_server([&](){
+					if (args.HasMember("console")) {
+						console = std::string(args["console"].GetString(), args["console"].GetStringLength());
+					}
+					server.reset(new launch_server(console, [&](){
 						while (!input.empty()) {
 							rprotocol rp = input.pop();
 							server->send(std::move(rp));

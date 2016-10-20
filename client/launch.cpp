@@ -1,7 +1,32 @@
 #include "launch.h"
 #include "dbg_hybridarray.h"
 #include "dbg_format.h"	 
+#include "dbg_unicode.h"
 #include <lua.hpp>
+#include <Windows.h>
+
+template <class T>
+static std::wstring a2w(const T& str)
+{
+	if (str.empty())
+	{
+		return L"";
+	}
+	int wlen = ::MultiByteToWideChar(CP_ACP, 0, str.data(), str.size(), NULL, 0);
+	if (wlen <= 0)
+	{
+		return L"";
+	}
+	std::vector<wchar_t> result(wlen);
+	::MultiByteToWideChar(CP_ACP, 0, str.data(), str.size(), result.data(), wlen);
+	return std::wstring(result.data(), result.size());
+}
+
+template <class T>
+static std::string a2u(const T& str)
+{
+	return vscode::w2u(a2w(str));
+}
 
 void launch_io::update(int ms)
 {
@@ -49,15 +74,25 @@ void launch_io::close()
 	exit(0);
 }
 
-launch_server::launch_server(std::function<void()> idle)
+launch_server::launch_server(const std::string& console, std::function<void()> idle)
 	: L(initLua())
 	, io_()
 	, debugger_(L, &io_)
 	, idle_(idle)
+	, console_(encoding::none)
 {
 	debugger_.set_custom(this);
 
-	lua_pushlightuserdata(L, &debugger_);
+	if (console == "ansi") {
+		console_ = encoding::ansi;
+	}
+	else if (console == "utf8") {
+		console_ = encoding::utf8;
+	}
+	else {
+		return;
+	}
+	lua_pushlightuserdata(L, this);
 	lua_pushcclosure(L, print, 1);
 	lua_setglobal(L, "print");
 }
@@ -81,8 +116,8 @@ int launch_server::print(lua_State *L) {
 		lua_pop(L, 1);
 	}
 	out += "\n";
-	vscode::debugger* dbg = (vscode::debugger*)lua_touserdata(L, lua_upvalueindex(1));
-	dbg->output("stdout", out.data(), out.size());
+	launch_server* srv = (launch_server*)lua_touserdata(L, lua_upvalueindex(1));
+	srv->output("stdout", out);
 	return 0;
 }
 
@@ -126,16 +161,35 @@ void launch_server::update_redirect()
 {
 	if (state_ == vscode::state::birth)
 		return;
+	if (console_ == encoding::none)
+		return;
 	size_t n = stderr_.peek();
 	if (n > 0)
 	{
 		vscode::hybridarray<char, 1024> buf(n);
 		stderr_.read(buf.data(), buf.size());
-		debugger_.output("stderr", buf.data(), buf.size());
+		if (console_ == encoding::ansi) {
+			std::string utf8 = a2u(buf);
+			output("stderr", utf8);
+		}
+		else {
+			output("stderr", buf);
+		}
 	}
 }
 
 void launch_server::send(vscode::rprotocol&& rp)
 {
 	io_.send(std::forward<vscode::rprotocol>(rp));
+}
+
+void launch_server::output(const char* category, const strview& str)
+{
+	if (console_ == encoding::ansi) {
+		std::string utf8 = a2u(str);
+		debugger_.output(category, utf8.data(), utf8.size());
+	}
+	else {
+		debugger_.output(category, str.data(), str.size());
+	}
 }
