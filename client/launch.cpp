@@ -1,6 +1,7 @@
 #include "launch.h"
 #include "dbg_hybridarray.h"
-#include "dbg_format.h"
+#include "dbg_format.h"	 
+#include <lua.hpp>
 
 void launch_io::update(int ms)
 {

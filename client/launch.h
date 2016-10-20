@@ -5,10 +5,11 @@
 #include "dbg_redirect.h"
 #include "dbg_protocol.h"  
 #include "dbg_io.h"
-#include <lua.hpp>
 #include <functional>	
 #include <vector>	
 #include <net/tcp/buffer.h>
+
+struct lua_State;
 
 class launch_io
 	: public vscode::io

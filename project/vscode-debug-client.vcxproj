@@ -23,11 +23,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\client\dbg_redirect.cpp" />
+    <ClCompile Include="..\client\delayload.cpp" />
     <ClCompile Include="..\client\launch.cpp" />
     <ClCompile Include="..\client\main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\client\dbg_redirect.h" />
+    <ClInclude Include="..\client\delayload.h" />
     <ClInclude Include="..\client\launch.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
@@ -86,6 +88,7 @@
       <AdditionalDependencies>Ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>
       </ModuleDefinitionFile>
+      <DelayLoadDLLs>vscode-debug.dll;luacore.dll</DelayLoadDLLs>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -108,6 +111,7 @@
       <AdditionalDependencies>Ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>
       </ModuleDefinitionFile>
+      <DelayLoadDLLs>vscode-debug.dll;luacore.dll</DelayLoadDLLs>
     </Link>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

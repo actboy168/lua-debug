@@ -7,8 +7,10 @@
 #include <net/poller.h>
 #include <rapidjson/document.h>
 #include "dbg_protocol.h"	 
-#include "dbg_format.h"
+#include "dbg_format.h"	 
+#include "dbg_unicode.h"
 #include "launch.h"
+#include "delayload.h"
 
 using namespace vscode;
 
@@ -163,6 +165,7 @@ void response_initialized(rprotocol& req)
 
 int main()
 {
+	MessageBox(0, 0, 0, 0);
 	_setmode(_fileno(stdout), _O_BINARY);
 	setbuf(stdout, NULL);
 
@@ -184,6 +187,10 @@ int main()
 					continue;
 				}
 				else if (rp["command"] == "launch") {
+					auto& args = rp["arguments"];
+					if (args.HasMember("luadll")) {
+						delayload::set_lua_dll(vscode::u2w(std::string(args["luadll"].GetString(), args["luadll"].GetStringLength())));
+					}
 					server.reset(new launch_server([&](){
 						while (!input.empty()) {
 							rprotocol rp = input.pop();
@@ -196,11 +203,12 @@ int main()
 					client.reset(new proxy_client);
 					std::string ip = "127.0.0.1";
 					uint16_t port = 4278;
-					if (rp.HasMember("ip")) {
-						ip = std::string(rp["ip"].GetString(), rp["ip"].GetStringLength());
+					auto& args = rp["arguments"];
+					if (args.HasMember("ip")) {
+						ip = std::string(args["ip"].GetString(), args["ip"].GetStringLength());
 					}
-					if (rp.HasMember("port")) {
-						port = rp["port"].GetUint();
+					if (args.HasMember("port")) {
+						port = args["port"].GetUint();
 					}
 					client->connect(net::endpoint(ip, port));
 					client->send(initproto);
