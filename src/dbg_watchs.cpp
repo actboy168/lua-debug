@@ -10,8 +10,6 @@ namespace vscode
 		, cur_(0)
 		, max_(0)
 	{
-		lua_newtable(L);
-		lua_rawsetp(L, LUA_REGISTRYINDEX, &WATCH_TABLE);
 	}
 
 	watchs::~watchs()
