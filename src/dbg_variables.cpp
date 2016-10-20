@@ -53,6 +53,18 @@ namespace vscode
 		"bit32",
 	};
 
+	static int safe_callmeta(lua_State *L, int obj, const char *event) {
+		obj = lua_absindex(L, obj);
+		if (luaL_getmetafield(L, obj, event) == LUA_TNIL)
+			return 0;
+		lua_pushvalue(L, obj);
+		if (lua_pcall(L, 1, 1, 0) != LUA_OK) {
+			lua_pop(L, 1);
+			return 0;
+		}
+		return 1;
+	}
+
 	static int pos2level(int64_t pos)
 	{
 		int level = 0;
@@ -143,7 +155,7 @@ namespace vscode
 	}
 
 	static std::string get_name(lua_State *L, int idx) {
-		if (luaL_callmeta(L, idx, "__tostring")) {
+		if (safe_callmeta(L, idx, "__tostring")) {
 			size_t len = 0;
 			const char* buf = lua_tolstring(L, idx, &len);
 			std::string result(buf ? buf : "", len);
@@ -229,7 +241,7 @@ namespace vscode
 
 	void var_set_value(variable& var, lua_State *L, int idx, pathconvert& pathconvert, custom& custom)
 	{
-		if (luaL_callmeta(L, idx, "__tostring")) {
+		if (safe_callmeta(L, idx, "__tostring")) {
 			var_set_value_(var, L, -1, pathconvert, custom);
 			lua_pop(L, 1);
 			return;
