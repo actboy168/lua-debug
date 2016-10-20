@@ -82,6 +82,11 @@
                                 "description": "Automatically stop after launch.",
                                 "default": true
                             },
+                            "luadll": {
+                                "type": "string",
+                                "description": "Absolute path to the lua dll.",
+                                "default": null
+                            },
                             "path": {
                                 "type": "string",
                                 "description": "Search path for Lua programs",
