@@ -2,7 +2,8 @@
 #include "dbg_protocol.h"  
 #include "dbg_io.h"
 #include "dbg_variables.h"	
-#include "dbg_format.h"
+#include "dbg_format.h"		
+#include "dbg_delayload.h" 
 
 namespace vscode
 {
@@ -115,6 +116,11 @@ namespace vscode
 			return false;
 		}
 		auto& args = req["arguments"];
+#if defined(DEBUGGER_DELAYLOAD_LUA)	   
+		if (args.HasMember("luadll")) {
+			delayload::set_lua_dll(vscode::u2w(std::string(args["luadll"].GetString(), args["luadll"].GetStringLength())));
+		}
+#endif
 		if (!args.HasMember("program") || !args["program"].IsString()) {
 			response_error(req, "Launch failed");
 			return false;

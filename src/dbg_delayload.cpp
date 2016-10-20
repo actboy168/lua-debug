@@ -1,4 +1,6 @@
-#include "delayload.h"
+#if defined(DEBUGGER_DELAYLOAD_LUA)
+
+#include "dbg_delayload.h"
 #include <windows.h>
 #include <DelayImp.h>
 
@@ -38,3 +40,5 @@ namespace delayload
 
 
 PfnDliHook __pfnDliNotifyHook2 = delayload::hook;
+
+#endif

@@ -12,6 +12,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\dbg_breakpoint.cpp" />
+    <ClCompile Include="..\src\dbg_delayload.cpp" />
     <ClCompile Include="..\src\dbg_evaluate.cpp" />
     <ClCompile Include="..\src\dbg_path.cpp" />
     <ClCompile Include="..\src\dbg_pathconvert.cpp" />
@@ -27,6 +28,7 @@
   <ItemGroup>
     <ClInclude Include="..\src\dbg_breakpoint.h" />
     <ClInclude Include="..\src\dbg_custom.h" />
+    <ClInclude Include="..\src\dbg_delayload.h" />
     <ClInclude Include="..\src\dbg_enum.h" />
     <ClInclude Include="..\src\dbg_evaluate.h" />
     <ClInclude Include="..\src\dbg_file.h" />
@@ -97,7 +99,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>DEBUGGER_EXPORTS;RAPIDJSON_HAS_STDSTRING;_WINSOCK_DEPRECATED_NO_WARNINGS;_WIN32_WINNT=_WIN32_WINNT_WIN7;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>DEBUGGER_EXPORTS;DEBUGGER_DELAYLOAD_LUA;RAPIDJSON_HAS_STDSTRING;_WINSOCK_DEPRECATED_NO_WARNINGS;_WIN32_WINNT=_WIN32_WINNT_WIN7;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(SolutionDir)..\src;$(SolutionDir)..\src\lua</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
     </ClCompile>
@@ -107,6 +109,7 @@
       <AdditionalDependencies>Ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>
       </ModuleDefinitionFile>
+      <DelayLoadDLLs>luacore.dll</DelayLoadDLLs>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -117,7 +120,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>DEBUGGER_EXPORTS;RAPIDJSON_HAS_STDSTRING;_WINSOCK_DEPRECATED_NO_WARNINGS;_WIN32_WINNT=_WIN32_WINNT_WIN7;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>DEBUGGER_EXPORTS;DEBUGGER_DELAYLOAD_LUA;RAPIDJSON_HAS_STDSTRING;_WINSOCK_DEPRECATED_NO_WARNINGS;_WIN32_WINNT=_WIN32_WINNT_WIN7;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(SolutionDir)..\src;$(SolutionDir)..\src\lua</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
     </ClCompile>
@@ -129,6 +132,7 @@
       <AdditionalDependencies>Ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>
       </ModuleDefinitionFile>
+      <DelayLoadDLLs>luacore.dll</DelayLoadDLLs>
     </Link>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

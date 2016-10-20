@@ -10,7 +10,8 @@
 #include "dbg_format.h"	 
 #include "dbg_unicode.h"
 #include "launch.h"
-#include "delayload.h"
+#include "dbg_delayload.h" 
+#include "dbg_delayload.cpp"
 
 using namespace vscode;
 
@@ -165,7 +166,6 @@ void response_initialized(rprotocol& req)
 
 int main()
 {
-	MessageBox(0, 0, 0, 0);
 	_setmode(_fileno(stdout), _O_BINARY);
 	setbuf(stdout, NULL);
 
