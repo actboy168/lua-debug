@@ -16,6 +16,7 @@
     * program，lua.exe执行的入口文件 
     * cwd，lua.exe的当前目录
     * stopOnEntry，开始调试时是否先暂停
+    * luadll，指定lua dll的路径，如有不填会加载luacore.dll
     * path，用于初始化package.path
     * cpath，用于初始化package.cpath
     * arg，lua.exe的命令行参数，用于初始化arg
