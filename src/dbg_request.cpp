@@ -23,7 +23,6 @@ namespace vscode
 		{
 		case state::initialized:
 			event_initialized();
-			event_output("console", "Debugger initialized\n");
 			break;
 		case state::terminated:
 			event_terminated();

@@ -5,6 +5,27 @@
 #include <lua.hpp>
 #include <Windows.h>
 
+struct strview {
+	template <class T>
+	strview(const T& str)
+		: buf(str.data())
+		, len(str.size())
+	{ }
+	strview(const rapidjson::Value& str)
+		: buf(str.GetString())
+		, len(str.GetStringLength())
+	{ }
+	strview(const char* buf, size_t len)
+		: buf(buf)
+		, len(len)
+	{ }
+	bool empty() const { return buf == 0; }
+	const char* data() const { return buf; }
+	size_t size() const { return len; }
+	const char* buf;
+	size_t len;
+};
+
 template <class T>
 static std::wstring a2w(const T& str)
 {
@@ -28,6 +49,23 @@ static std::string a2u(const T& str)
 	return vscode::w2u(a2w(str));
 }
 
+launch_io::launch_io(const std::string& console)
+	: vscode::io()
+	, buffer_()
+	, input_queue_()
+	, encoding_(encoding::none)
+{
+	if (console == "ansi") {
+		encoding_ = encoding::ansi;
+	}
+	else if (console == "utf8") {
+		encoding_ = encoding::utf8;
+	}
+	else {
+		return;
+	}
+}
+
 void launch_io::update(int ms)
 {
 }
@@ -44,6 +82,22 @@ bool launch_io::output(const vscode::wprotocol& wp)
 {
 	if (!wp.IsComplete())
 		return false;
+	if (encoding_ == encoding::ansi) {
+		vscode::rprotocol rp;
+		if (!rp.Parse(wp.data(), wp.size()).HasParseError()) {
+			if (rp["type"] == "event" && rp["event"] == "output") {
+				std::string utf8 = a2u(strview(rp["body"]["output"]));
+				rp["body"]["output"].SetString(utf8.data(), utf8.size());
+				rapidjson::StringBuffer buffer;
+				rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+				rp.Accept(writer);
+				auto l = vscode::format("Content-Length: %d\r\n\r\n", buffer.GetSize());
+				output_(l.data(), l.size());
+				output_(buffer.GetString(), buffer.GetSize());
+				return true;
+			}
+		}
+	}
 	auto l = vscode::format("Content-Length: %d\r\n\r\n", wp.size());
 	output_(l.data(), l.size());
 	output_(wp.data(), wp.size());
@@ -74,27 +128,24 @@ void launch_io::close()
 	exit(0);
 }
 
+bool launch_io::enable_console() const
+{
+	return encoding_ != encoding::none;
+}
+
 launch_server::launch_server(const std::string& console, std::function<void()> idle)
 	: L(initLua())
-	, io_()
+	, io_(console)
 	, debugger_(L, &io_)
 	, idle_(idle)
-	, console_(encoding::none)
 {
 	debugger_.set_custom(this);
 
-	if (console == "ansi") {
-		console_ = encoding::ansi;
+	if (io_.enable_console()) {
+		lua_pushlightuserdata(L, &debugger_);
+		lua_pushcclosure(L, print, 1);
+		lua_setglobal(L, "print");
 	}
-	else if (console == "utf8") {
-		console_ = encoding::utf8;
-	}
-	else {
-		return;
-	}
-	lua_pushlightuserdata(L, this);
-	lua_pushcclosure(L, print, 1);
-	lua_setglobal(L, "print");
 }
 
 int launch_server::print(lua_State *L) {
@@ -116,8 +167,8 @@ int launch_server::print(lua_State *L) {
 		lua_pop(L, 1);
 	}
 	out += "\n";
-	launch_server* srv = (launch_server*)lua_touserdata(L, lua_upvalueindex(1));
-	srv->output("stdout", out);
+	vscode::debugger* dbg = (vscode::debugger*)lua_touserdata(L, lua_upvalueindex(1));
+	dbg->output("stdout", out.data(), out.size());
 	return 0;
 }
 
@@ -161,35 +212,18 @@ void launch_server::update_redirect()
 {
 	if (state_ == vscode::state::birth)
 		return;
-	if (console_ == encoding::none)
+	if (!io_.enable_console())
 		return;
 	size_t n = stderr_.peek();
 	if (n > 0)
 	{
 		vscode::hybridarray<char, 1024> buf(n);
 		stderr_.read(buf.data(), buf.size());
-		if (console_ == encoding::ansi) {
-			std::string utf8 = a2u(buf);
-			output("stderr", utf8);
-		}
-		else {
-			output("stderr", buf);
-		}
+		debugger_.output("stderr", buf.data(), buf.size());
 	}
 }
 
 void launch_server::send(vscode::rprotocol&& rp)
 {
 	io_.send(std::forward<vscode::rprotocol>(rp));
-}
-
-void launch_server::output(const char* category, const strview& str)
-{
-	if (console_ == encoding::ansi) {
-		std::string utf8 = a2u(str);
-		debugger_.output(category, utf8.data(), utf8.size());
-	}
-	else {
-		debugger_.output(category, str.data(), str.size());
-	}
 }
