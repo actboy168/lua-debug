@@ -101,6 +101,7 @@ namespace vscode
 	}
 
 	void debugger_impl::initialize_sourcemaps(rapidjson::Value& args) {
+		pathconvert_.clear_sourcemap();
 		if (!args.HasMember("sourceMaps")) {
 			return;
 		}

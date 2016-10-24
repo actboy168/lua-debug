@@ -17,6 +17,7 @@ namespace vscode
 	public:
 		pathconvert(debugger_impl* dbg);
 		void   add_sourcemap(const fs::path& srv, const fs::path& cli);
+		void   clear_sourcemap();
 		bool   fget(const std::string& server_path, fs::path*& client_path);
 		result eval(const std::string& server_path, fs::path& client_path);
 		result get_or_eval(const std::string& server_path, fs::path& client_path);

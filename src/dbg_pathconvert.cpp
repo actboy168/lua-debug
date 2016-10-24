@@ -23,6 +23,11 @@ namespace vscode
 		}
 	}
 
+	void pathconvert::clear_sourcemap()
+	{
+		sourcemaps_.clear();
+	}
+
 	bool pathconvert::fget(const std::string& server_path, fs::path*& client_path)
 	{
 		auto it = server2client_.find(server_path);
