@@ -34,6 +34,35 @@ namespace vscode
 		return false;
 	}
 
+	pathconvert::result pathconvert::eval_uncomplete(const std::string& server_path, fs::path& client_path)
+	{
+		if (server_path[0] == '@')
+		{
+			fs::path srvpath = server_path.substr(1);
+			for (auto& pair : sourcemaps_)
+			{
+				if (path_is_subpath(srvpath, pair.first))
+				{
+					std::error_code ec;
+					client_path = path_uncomplete(srvpath, pair.first, ec);
+					assert(!ec);
+					return result::sucess;
+				}
+			}
+			std::error_code ec;
+			client_path = path_uncomplete(srvpath, fs::current_path<fs::path>(), ec);
+			assert(!ec);
+			return result::sucess;
+		}
+		else if (server_path[0] == '=')
+		{
+			return debugger_->custom_->path_convert(server_path, client_path, sourcemaps_, true);
+		}
+		client_path = server_path;
+		return result::sucess;
+	}
+
+
 	pathconvert::result pathconvert::eval(const std::string& server_path, fs::path& client_path)
 	{
 		if (server_path[0] == '@')
@@ -44,7 +73,7 @@ namespace vscode
 				if (path_is_subpath(srvpath, pair.first))
 				{
 					std::error_code ec;
-					client_path = fs::path(pair.second) / path_uncomplete(srvpath, pair.first, ec);
+					client_path = pair.second / path_uncomplete(srvpath, pair.first, ec);
 					server2client_[server_path] = client_path;
 					assert(!ec);
 					return result::sucess;
@@ -56,7 +85,7 @@ namespace vscode
 		}
 		else if (server_path[0] == '=')
 		{
-			result r = debugger_->custom_->path_convert(server_path, client_path, sourcemaps_);
+			result r = debugger_->custom_->path_convert(server_path, client_path, sourcemaps_, false);
 			switch (r)
 			{
 			case custom::result::failed:

@@ -17,9 +17,9 @@ namespace vscode
 			failed_once = 2,
 			sucess_once = 3,
 		};
-		typedef std::vector<std::pair<fs::path, std::string>> sourcemap_t;
+		typedef std::vector<std::pair<fs::path, fs::path>> sourcemap_t;
 
-		virtual result path_convert(const std::string& server_path, fs::path& client_path, const sourcemap_t& map)
+		virtual result path_convert(const std::string& server_path, fs::path& client_path, const sourcemap_t& map, bool uncomplete)
 		{
 			return result::failed;
 		}

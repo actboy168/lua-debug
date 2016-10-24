@@ -20,6 +20,7 @@ namespace vscode
 		bool   fget(const std::string& server_path, fs::path*& client_path);
 		result eval(const std::string& server_path, fs::path& client_path);
 		result get_or_eval(const std::string& server_path, fs::path& client_path);
+		result eval_uncomplete(const std::string& server_path, fs::path& client_path);
 
 	private:
 		debugger_impl*                     debugger_;

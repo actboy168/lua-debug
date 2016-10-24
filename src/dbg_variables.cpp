@@ -221,10 +221,9 @@ namespace vscode
 			if (lua_getinfo(L, ">S", &entry))
 			{
 				fs::path client_path;
-				custom::result r = pathconvert.get_or_eval(entry.source, client_path);
+				custom::result r = pathconvert.eval_uncomplete(entry.source, client_path);
 				if (r == custom::result::sucess || r == custom::result::sucess_once)
 				{
-					// todo:
 					var.value = format("[%s:%d]", client_path.string(), entry.linedefined);
 					var.type = "function";
 					return;
