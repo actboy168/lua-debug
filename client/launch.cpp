@@ -5,50 +5,6 @@
 #include <lua.hpp>
 #include <Windows.h>
 
-struct strview {
-	template <class T>
-	strview(const T& str)
-		: buf(str.data())
-		, len(str.size())
-	{ }
-	strview(const rapidjson::Value& str)
-		: buf(str.GetString())
-		, len(str.GetStringLength())
-	{ }
-	strview(const char* buf, size_t len)
-		: buf(buf)
-		, len(len)
-	{ }
-	bool empty() const { return buf == 0; }
-	const char* data() const { return buf; }
-	size_t size() const { return len; }
-	const char* buf;
-	size_t len;
-};
-
-template <class T>
-static std::wstring a2w(const T& str)
-{
-	if (str.empty())
-	{
-		return L"";
-	}
-	int wlen = ::MultiByteToWideChar(CP_ACP, 0, str.data(), str.size(), NULL, 0);
-	if (wlen <= 0)
-	{
-		return L"";
-	}
-	std::vector<wchar_t> result(wlen);
-	::MultiByteToWideChar(CP_ACP, 0, str.data(), str.size(), result.data(), wlen);
-	return std::wstring(result.data(), result.size());
-}
-
-template <class T>
-static std::string a2u(const T& str)
-{
-	return vscode::w2u(a2w(str));
-}
-
 launch_io::launch_io(const std::string& console)
 	: vscode::io()
 	, buffer_()
@@ -86,7 +42,7 @@ bool launch_io::output(const vscode::wprotocol& wp)
 		vscode::rprotocol rp;
 		if (!rp.Parse(wp.data(), wp.size()).HasParseError()) {
 			if (rp["type"] == "event" && rp["event"] == "output") {
-				std::string utf8 = a2u(strview(rp["body"]["output"]));
+				std::string utf8 = vscode::a2u(vscode::strview(rp["body"]["output"]));
 				rp["body"]["output"].SetString(utf8.data(), utf8.size());
 				rapidjson::StringBuffer buffer;
 				rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);

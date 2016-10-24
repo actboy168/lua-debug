@@ -153,7 +153,7 @@ namespace vscode
 		}
 		if (args.HasMember("path") && args["cpath"].IsString())
 		{
-			std::string path = get_path(args["path"]);
+			std::string path = u2a(args["path"]);
 			lua_getglobal(L, "package");
 			lua_pushlstring(L, path.data(), path.size());
 			lua_setfield(L, -2, "path");
@@ -161,7 +161,7 @@ namespace vscode
 		}
 		if (args.HasMember("cpath") && args["cpath"].IsString())
 		{
-			std::string path = get_path(args["cpath"]);
+			std::string path = u2a(args["cpath"]);
 			lua_getglobal(L, "package");
 			lua_pushlstring(L, path.data(), path.size());
 			lua_setfield(L, -2, "cpath");
@@ -189,8 +189,8 @@ namespace vscode
 		}
 		lua_setglobal(L, "arg");
 
-		fs::path program = get_path(args["program"]);
-		int status = luaL_loadfile(L, program.file_string().c_str());
+		std::string program = u2a(args["program"]);
+		int status = luaL_loadfile(L, program.c_str());
 		if (status != LUA_OK) {
 			event_output("console", format("Failed to launch %s due to error: %s\n", program, lua_tostring(L, -1)));
 			response_error(req, "Launch failed");

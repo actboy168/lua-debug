@@ -19,9 +19,7 @@
             "name": "attach",
             "type": "lua",
             "request": "attach",
-            "program": "",
             "stopOnEntry": true,
-            "cwd": "${workspaceRoot}",
             "ip": "localhost",
             "port": 4278,
             "sourceMaps" : [
