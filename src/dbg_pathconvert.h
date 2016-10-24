@@ -29,6 +29,5 @@ namespace vscode
 		debugger_impl*                     debugger_;
 		std::map<std::string, fs::path>    server2client_;
 		sourcemap_t                        sourcemaps_;
-		fs::path                           currentpath_;
 	};
 }

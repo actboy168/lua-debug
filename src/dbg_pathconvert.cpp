@@ -9,7 +9,6 @@ namespace vscode
 	pathconvert::pathconvert(debugger_impl* dbg)
 		: debugger_(dbg)
 		, sourcemaps_()
-		, currentpath_(fs::current_path<fs::path>())
 	{ }
 
 	void pathconvert::add_sourcemap(const fs::path& srv, const fs::path& cli)
@@ -41,7 +40,7 @@ namespace vscode
 		{
 			return path;
 		}
-		return path_normalize(fs::complete(path, currentpath_));
+		return path_normalize(fs::complete(path, fs::current_path<fs::path>()));
 	}
 
 	pathconvert::result pathconvert::eval_uncomplete(const std::string& server_path, fs::path& client_path)

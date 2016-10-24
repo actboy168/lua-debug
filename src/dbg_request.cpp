@@ -7,14 +7,6 @@
 
 namespace vscode
 {
-	static fs::path get_path(const rapidjson::Value& value)
-	{
-		assert(value.IsString());
-		std::string path = value.Get<std::string>();
-		std::transform(path.begin(), path.end(), path.begin(), tolower);
-		return fs::path(path);
-	}
-
 	void debugger_impl::set_state(state state)
 	{
 		if (state_ == state) return;
@@ -169,7 +161,7 @@ namespace vscode
 		}
 
 		if (args.HasMember("cwd") && args["cwd"].IsString()) {
-			fs::current_path(get_path(args["cwd"]));
+			fs::current_path(fs::path(args["cwd"].Get<std::string>()));
 		}
 		initialize_sourcemaps(args);
 
@@ -355,7 +347,7 @@ namespace vscode
 	{
 		auto& args = req["arguments"];
 		auto& source = args["source"];
-		fs::path client_path = get_path(source["path"]);
+		fs::path client_path = path_normalize(source["path"].Get<std::string>());
 		assert(client_path.is_complete());
 		breakpoints_.clear(client_path);
 
@@ -383,7 +375,7 @@ namespace vscode
 					res("verified").Bool(true);
 					for (auto _ : res("source").Object())
 					{
-						res("path").String(client_path.file_string());
+						res("path").String(client_path.string());
 					}
 					res("line").Int(lines[d]);
 				}
