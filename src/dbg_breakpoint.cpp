@@ -24,7 +24,7 @@ namespace vscode
 		fast_table_.clear();
 	}
 
-	void breakpoint::clear(const std::string& client_path)
+	void breakpoint::clear(const fs::path& client_path)
 	{
 		auto it = client_map_.find(client_path);
 		if (it == client_map_.end())
@@ -39,12 +39,12 @@ namespace vscode
 		src->clear();
 	}
 
-	void breakpoint::insert(const std::string& client_path, size_t line)
+	void breakpoint::insert(const fs::path& client_path, size_t line)
 	{
 		insert(client_path, line, std::string());
 	}
 
-	void breakpoint::insert(const std::string& client_path, size_t line, const std::string& condition)
+	void breakpoint::insert(const fs::path& client_path, size_t line, const std::string& condition)
 	{
 		auto it = client_map_.find(client_path);
 		if (it == client_map_.end())

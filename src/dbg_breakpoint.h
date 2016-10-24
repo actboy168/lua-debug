@@ -27,14 +27,14 @@ namespace vscode
 	class breakpoint
 	{
 	public:
-		typedef std::map<std::string, bp_source*> map_type;
+		typedef std::map<fs::path, bp_source*> map_type;
 
 	public:
 		breakpoint();
 		void clear();
-		void clear(const std::string& client_path);
-		void insert(const std::string& client_path, size_t line);
-		void insert(const std::string& client_path, size_t line, const std::string& condition);
+		void clear(const fs::path& client_path);
+		void insert(const fs::path& client_path, size_t line);
+		void insert(const fs::path& client_path, size_t line, const std::string& condition);
 		bool has(size_t line) const;
 		bool has(bp_source* src, size_t line, lua_State* L, lua_Debug* ar) const;
 		bp_source* get(const std::string& server_path, pathconvert& pathconvert);
