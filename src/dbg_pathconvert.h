@@ -23,8 +23,12 @@ namespace vscode
 		result eval_uncomplete(const std::string& server_path, fs::path& client_path);
 
 	private:
+		fs::path server_complete(const fs::path& path);
+
+	private:
 		debugger_impl*                     debugger_;
 		std::map<std::string, fs::path>    server2client_;
 		sourcemap_t                        sourcemaps_;
+		fs::path                           currentpath_;
 	};
 }

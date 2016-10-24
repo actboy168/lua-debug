@@ -9,6 +9,7 @@ namespace vscode
 	pathconvert::pathconvert(debugger_impl* dbg)
 		: debugger_(dbg)
 		, sourcemaps_()
+		, currentpath_(fs::current_path<fs::path>())
 	{ }
 
 	void pathconvert::add_sourcemap(const fs::path& srv, const fs::path& cli)
@@ -34,11 +35,20 @@ namespace vscode
 		return false;
 	}
 
+	fs::path pathconvert::server_complete(const fs::path& path)
+	{
+		if (path.is_complete())
+		{
+			return path;
+		}
+		return path_normalize(fs::complete(path, currentpath_));
+	}
+
 	pathconvert::result pathconvert::eval_uncomplete(const std::string& server_path, fs::path& client_path)
 	{
 		if (server_path[0] == '@')
 		{
-			fs::path srvpath = server_path.substr(1);
+			fs::path srvpath = server_complete(server_path.substr(1));
 			for (auto& pair : sourcemaps_)
 			{
 				if (path_is_subpath(srvpath, pair.first))
@@ -67,7 +77,7 @@ namespace vscode
 	{
 		if (server_path[0] == '@')
 		{
-			fs::path srvpath = server_path.substr(1);
+			fs::path srvpath = server_complete(server_path.substr(1));
 			for (auto& pair : sourcemaps_)
 			{
 				if (path_is_subpath(srvpath, pair.first))
