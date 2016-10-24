@@ -32,12 +32,14 @@ namespace vscode
 		lua_Hook hook;
 		Error err = jit_.add(&hook, &code);
 		assert(!err);
+		if (funcptr_)
+			jit_.release(funcptr_);
+		funcptr_ = hook;
 		lua_sethook(GL, hook, LUA_MASKCALL | LUA_MASKLINE | LUA_MASKRET, 0);
 	}
 
 	void debugger_impl::close()
 	{
-		jit_.release((void*)lua_gethook(GL));
 		lua_sethook(GL, 0, 0, 0);
 		breakpoints_.clear();
 		stack_.clear();
@@ -225,6 +227,8 @@ namespace vscode
 		, watch_(L)
 		, pathconvert_(this)
 		, custom_(&global_custom)
+		, jit_()
+		, funcptr_(0)
 		, main_dispatch_
 		({
 			{ "launch", DBG_REQUEST_MAIN(request_launch) },
