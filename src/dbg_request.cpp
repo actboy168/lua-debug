@@ -231,10 +231,6 @@ namespace vscode
 			return false;
 		}
 		auto& args = req["arguments"];
-		if (!args.HasMember("program") || !args["program"].IsString()) {
-			response_error(req, "Launch failed");
-			return false;
-		}
 		bool stopOnEntry = true;
 		if (args.HasMember("stopOnEntry") && args["stopOnEntry"].IsBool()) {
 			stopOnEntry = args["stopOnEntry"].GetBool();

@@ -43,8 +43,8 @@
                         "name": "launch",
                         "type": "lua",
                         "request": "launch",
-                        "program": "${workspaceRoot}/main.lua",
                         "stopOnEntry": true,
+                        "program": "${workspaceRoot}/main.lua",
                         "cwd": "${workspaceRoot}",
                         "path": "${workspaceRoot}/?.lua",
                         "cpath": "${workspaceRoot}/?.dll",
@@ -54,9 +54,7 @@
                         "name": "attach",
                         "type": "lua",
                         "request": "attach",
-                        "program": "",
                         "stopOnEntry": true,
-                        "cwd": "${workspaceRoot}",
                         "ip": "localhost",
                         "port": 4278,
                         "sourceMaps": [
@@ -127,16 +125,6 @@
                     },
                     "attach": {
                         "properties": {
-                            "program": {
-                                "type": "string",
-                                "description": "unuse",
-                                "default": ""
-                            },
-                            "cwd": {
-                                "type": "string",
-                                "description": "Working directory at program startup",
-                                "default": "${workspaceRoot}"
-                            },
                             "stopOnEntry": {
                                 "type": "boolean",
                                 "description": "Automatically stop after attach.",
