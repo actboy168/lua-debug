@@ -83,7 +83,7 @@ namespace vscode
 				if (path_is_subpath(srvpath, pair.first))
 				{
 					std::error_code ec;
-					client_path = pair.second / path_uncomplete(srvpath, pair.first, ec);
+					client_path = path_normalize(pair.second / path_uncomplete(srvpath, pair.first, ec));
 					server2client_[server_path] = client_path;
 					assert(!ec);
 					return result::sucess;
