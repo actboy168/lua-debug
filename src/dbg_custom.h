@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 #include "dbg_enum.h"
 
 namespace vscode
@@ -15,8 +16,9 @@ namespace vscode
 			failed_once = 2,
 			sucess_once = 3,
 		};
+		typedef std::vector<std::pair<std::string, std::string>> sourcemap_t;
 
-		virtual result path_convert(const std::string& server_path, std::string& client_path)
+		virtual result path_convert(const std::string& server_path, std::string& client_path, const sourcemap_t& map)
 		{
 			return result::failed;
 		}

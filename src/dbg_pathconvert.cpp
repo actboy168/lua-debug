@@ -8,12 +8,17 @@ namespace vscode
 {
 	pathconvert::pathconvert(debugger_impl* dbg)
 		: debugger_(dbg)
-		, scriptpath_(fs::current_path<fs::path>())
+		, sourcemaps_()
 	{ }
 
-	void pathconvert::set_script_path(const fs::path& path)
+	void pathconvert::add_sourcemap(const std::string& srv, const std::string& cli)
 	{
-		scriptpath_ = path;
+		fs::path srvpath = srv;
+		if (!srvpath.is_complete())
+		{
+			srvpath = fs::complete(srvpath, fs::current_path<fs::path>());
+		}
+		sourcemaps_.push_back(std::make_pair(srvpath, cli));
 	}
 
 	bool pathconvert::fget(const std::string& server_path, std::string*& client_path)
@@ -34,15 +39,22 @@ namespace vscode
 			std::string path;
 			path.resize(server_path.size() - 1);
 			std::transform(server_path.begin() + 1, server_path.end(), path.begin(), tolower);
-			std::error_code ec;
-			client_path = path_uncomplete(path, scriptpath_, ec).file_string();
-			assert(!ec);
+
+			fs::path srvpath = path;
+			client_path = srvpath;
+			for (auto& pair : sourcemaps_)
+			{
+				if (path_is_subpath(srvpath, pair.first))
+				{
+					client_path = pair.second;
+				}
+			}
 			server2client_[server_path] = client_path;
 			return custom::result::sucess;
 		}
 		else if (server_path[0] == '=')
 		{
-			custom::result r = debugger_->custom_->path_convert(server_path, client_path);
+			custom::result r = debugger_->custom_->path_convert(server_path, client_path, sourcemaps_);
 			switch (r)
 			{
 			case custom::result::failed:

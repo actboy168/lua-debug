@@ -78,6 +78,33 @@ namespace vscode
 		for (auto e : stack) {
 			result /= e;
 		}
-		return result;
+		std::string ret = result.string();
+		std::string tmp;
+		tmp.resize(ret.size());
+		std::transform(ret.begin(), ret.end(), tmp.begin(), tolower);
+		return tmp;
+	}
+
+	bool path_is_subpath(const fs::path& path, const fs::path& base)
+	{
+		fs::path npath = path_normalize(path);
+		fs::path::iterator path_it = npath.begin(), path_end = npath.end();
+		fs::path::iterator base_it = base.begin(), base_end = base.end();
+		
+		for (;;)
+		{
+			if (base_it == base_end) {
+				return false;
+			}
+			if (path_it == path_end) {
+				return true;
+			}
+			if (*path_it != *base_it) {
+				return false;
+			}
+			++path_it;
+			++base_it;
+		}
+		return false;
 	}
 }

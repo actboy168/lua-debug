@@ -41,7 +41,6 @@ namespace vscode
 		lua_sethook(GL, 0, 0, 0);
 		breakpoints_.clear();
 		stack_.clear();
-		workingdir_.clear();
 		seq = 1;
 		stacklevel_ = 0;
 	}
@@ -222,7 +221,6 @@ namespace vscode
 		, stepping_lua_state_(NULL)
 		, stacklevel_(0)
 		, breakpoints_()
-		, workingdir_()
 		, stack_()
 		, watch_(L)
 		, pathconvert_(this)

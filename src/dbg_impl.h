@@ -5,7 +5,8 @@
 #include <functional>
 #include <map>
 #include <vector> 
-#include <asmjit/asmjit.h>
+#include <asmjit/asmjit.h>	
+#include <rapidjson/document.h>
 #include "dbg_breakpoint.h"	 
 #include "dbg_evaluate.h"
 #include "dbg_path.h" 
@@ -113,6 +114,7 @@ namespace vscode
 		void close();
 		bool update_main(rprotocol& req, bool& quit);
 		bool update_hook(rprotocol& req, lua_State *L, lua_Debug *ar, bool& quit);
+		void initialize_sourcemaps(rapidjson::Value& args);
 
 	private:
 		lua_State*         GL;
@@ -124,7 +126,6 @@ namespace vscode
 		lua_State*         stepping_lua_state_;
 		int                stacklevel_;
 		breakpoint         breakpoints_;
-		fs::path           workingdir_;
 		std::vector<stack> stack_;
 		watchs             watch_;
 		pathconvert        pathconvert_;

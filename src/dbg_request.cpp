@@ -3,7 +3,7 @@
 #include "dbg_io.h"
 #include "dbg_variables.h"	
 #include "dbg_format.h"		
-#include "dbg_delayload.h" 
+#include "dbg_delayload.h"
 
 namespace vscode
 {
@@ -108,6 +108,29 @@ namespace vscode
 		return false;
 	}
 
+	void debugger_impl::initialize_sourcemaps(rapidjson::Value& args) {
+		if (!args.HasMember("sourceMaps")) {
+			return;
+		}
+		auto& mapjson = args["sourceMaps"];
+		if (!mapjson.IsArray()) {
+			return;
+		}
+		for (auto& e : mapjson.GetArray())
+		{
+			if (!e.IsArray())
+			{
+				continue;
+			}
+			auto& eary = e.GetArray();
+			if (eary.Size() < 2 || !eary[0].IsString() || !eary[1].IsString())
+			{
+				continue;
+			}
+			pathconvert_.add_sourcemap(eary[0].Get<std::string>(), eary[1].Get<std::string>());
+		}
+	}
+
 	bool debugger_impl::request_launch(rprotocol& req) {
 		lua_State *L = GL;
 		if (!is_state(state::initialized)) {
@@ -146,10 +169,9 @@ namespace vscode
 		}
 
 		if (args.HasMember("cwd") && args["cwd"].IsString()) {
-			workingdir_ = get_path(args["cwd"]);
-			fs::current_path(workingdir_);
-			pathconvert_.set_script_path(workingdir_);
+			fs::current_path(get_path(args["cwd"]));
 		}
+		initialize_sourcemaps(args);
 
 		lua_newtable(L);
 		if (args.HasMember("arg") && args["arg"].IsArray()) {
@@ -217,12 +239,7 @@ namespace vscode
 		if (args.HasMember("stopOnEntry") && args["stopOnEntry"].IsBool()) {
 			stopOnEntry = args["stopOnEntry"].GetBool();
 		}
-
-		if (args.HasMember("cwd") && args["cwd"].IsString()) {
-			workingdir_ = get_path(args["cwd"]);
-			// todo: 如果服务端和客户端不在一起这是错误的
-			pathconvert_.set_script_path(workingdir_);
-		}
+		initialize_sourcemaps(args);
 
 		response_success(req);
 		event_thread(true);
@@ -281,7 +298,7 @@ namespace vscode
 							custom::result r =  pathconvert_.get_or_eval(src, client_path);
 							if (r == custom::result::sucess || r == custom::result::sucess_once)
 							{
-								fs::path path = fs::complete(fs::path(client_path), workingdir_);
+								fs::path path = client_path;
 								fs::path name = path.filename();
 								for (auto _ : res("source").Object())
 								{
@@ -344,10 +361,8 @@ namespace vscode
 		auto& args = req["arguments"];
 		auto& source = args["source"];
 		fs::path client_path = get_path(source["path"]);
-		std::error_code ec;
-		fs::path uncomplete_path = path_uncomplete(client_path, workingdir_, ec);
-		assert(!ec);
-		breakpoints_.clear(uncomplete_path);
+		assert(client_path.is_complete());
+		breakpoints_.clear(client_path);
 
 		std::vector<size_t> lines;
 		for (auto& m : args["breakpoints"].GetArray())
@@ -356,11 +371,11 @@ namespace vscode
 			lines.push_back(line);
 			if (!m.HasMember("condition"))
 			{
-				breakpoints_.insert(uncomplete_path, line);
+				breakpoints_.insert(client_path, line);
 			}
 			else
 			{
-				breakpoints_.insert(uncomplete_path, line, m["condition"].Get<std::string>());
+				breakpoints_.insert(client_path, line, m["condition"].Get<std::string>());
 			}
 		}
 

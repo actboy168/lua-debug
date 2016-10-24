@@ -10,7 +10,10 @@
             "cwd": "${workspaceRoot}",
             "path": "${workspaceRoot}/?.lua",
             "cpath": "${workspaceRoot}/?.dll",
-            "arg": []
+            "arg": [],
+            "sourceMaps" = [
+                ["./",  "${workspaceRoot}"]
+            ]
         },
         {
             "name": "attach",
@@ -20,7 +23,10 @@
             "stopOnEntry": true,
             "cwd": "${workspaceRoot}",
             "ip": "localhost",
-            "port": 4278
+            "port": 4278,
+            "sourceMaps" = [
+                ["./",  "${workspaceRoot}"]
+            ]
         }
     ]
 }
