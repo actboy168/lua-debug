@@ -15,11 +15,11 @@ namespace vscode
 	{
 		if (srv.is_complete())
 		{
-			sourcemaps_.push_back(std::make_pair(srv, cli));
+			sourcemaps_.push_back(std::make_pair(path_normalize(srv), cli));
 		}
 		else
 		{
-			sourcemaps_.push_back(std::make_pair(fs::complete(srv, fs::current_path<fs::path>()), cli));
+			sourcemaps_.push_back(std::make_pair(path_normalize(fs::complete(srv, fs::current_path<fs::path>())), cli));
 		}
 	}
 
@@ -43,8 +43,10 @@ namespace vscode
 			{
 				if (path_is_subpath(srvpath, pair.first))
 				{
-					client_path = pair.second;
+					std::error_code ec;
+					client_path = fs::path(pair.second) / path_uncomplete(srvpath, pair.first, ec);
 					server2client_[server_path] = client_path;
+					assert(!ec);
 					return result::sucess;
 				}
 			}

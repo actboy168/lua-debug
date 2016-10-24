@@ -11,7 +11,7 @@
             "path": "${workspaceRoot}/?.lua",
             "cpath": "${workspaceRoot}/?.dll",
             "arg": [],
-            "sourceMaps" = [
+            "sourceMaps" : [
                 ["./",  "${workspaceRoot}"]
             ]
         },
@@ -24,7 +24,7 @@
             "cwd": "${workspaceRoot}",
             "ip": "localhost",
             "port": 4278,
-            "sourceMaps" = [
+            "sourceMaps" : [
                 ["./",  "${workspaceRoot}"]
             ]
         }

@@ -94,10 +94,10 @@ namespace vscode
 		for (;;)
 		{
 			if (base_it == base_end) {
-				return false;
+				return true;
 			}
 			if (path_it == path_end) {
-				return true;
+				return false;
 			}
 			if (*path_it != *base_it) {
 				return false;
