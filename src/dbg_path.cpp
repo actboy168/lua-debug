@@ -68,7 +68,7 @@ namespace vscode
 		fs::path result = p.root_path();
 		std::deque<std::string> stack;
 		for (auto e : p.relative_path()) {
-			if (e == ".." && !stack.empty()) {
+			if (e == ".." && !stack.empty() && stack.back() != "..") {
 				stack.pop_back();
 			}
 			else if (e != ".") {
