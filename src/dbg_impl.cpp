@@ -225,7 +225,7 @@ namespace vscode
 		, workingdir_()
 		, stack_()
 		, watch_(L)
-		, pathconvert_()
+		, pathconvert_(this)
 		, custom_(&global_custom)
 		, main_dispatch_
 		({

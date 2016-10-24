@@ -110,7 +110,7 @@ namespace vscode
 		return false;
 	}
 
-	bp_source* breakpoint::get(const std::string& server_path, pathconvert& pathconvert, custom& custom)
+	bp_source* breakpoint::get(const std::string& server_path, pathconvert& pathconvert)
 	{
 		auto it = server_map_.find(server_path);
 		if (it != server_map_.end())
@@ -128,7 +128,7 @@ namespace vscode
 		}
 
 		std::string client_path;
-		custom::result r = pathconvert.eval(server_path, client_path, custom);
+		custom::result r = pathconvert.eval(server_path, client_path);
 		switch (r)
 		{
 		case custom::result::failed:

@@ -1,12 +1,14 @@
 #include "dbg_pathconvert.h"
-#include "dbg_path.h"
+#include "dbg_path.h"	  
+#include "dbg_impl.h"
 #include <algorithm>
 #include <assert.h>
 
 namespace vscode
 {
-	pathconvert::pathconvert()
-		: scriptpath_(fs::current_path<fs::path>())
+	pathconvert::pathconvert(debugger_impl* dbg)
+		: debugger_(dbg)
+		, scriptpath_(fs::current_path<fs::path>())
 	{ }
 
 	void pathconvert::set_script_path(const fs::path& path)
@@ -25,7 +27,7 @@ namespace vscode
 		return false;
 	}
 
-	custom::result pathconvert::eval(const std::string& server_path, std::string& client_path, custom& custom)
+	custom::result pathconvert::eval(const std::string& server_path, std::string& client_path)
 	{
 		if (server_path[0] == '@')
 		{
@@ -40,7 +42,7 @@ namespace vscode
 		}
 		else if (server_path[0] == '=')
 		{
-			custom::result r = custom.path_convert(server_path, client_path);
+			custom::result r = debugger_->custom_->path_convert(server_path, client_path);
 			switch (r)
 			{
 			case custom::result::failed:
@@ -55,7 +57,7 @@ namespace vscode
 		return custom::result::sucess;
 	}
 
-	custom::result pathconvert::get_or_eval(const std::string& server_path, std::string& client_path, custom& custom)
+	custom::result pathconvert::get_or_eval(const std::string& server_path, std::string& client_path)
 	{
 		std::string* ptr;
 		if (fget(server_path, ptr))
@@ -63,6 +65,6 @@ namespace vscode
 			client_path = *ptr;
 			return custom::result::sucess;
 		}
-		return eval(server_path, client_path, custom);
+		return eval(server_path, client_path);
 	}
 }

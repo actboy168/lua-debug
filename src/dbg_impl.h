@@ -22,6 +22,7 @@ namespace vscode
 
 	class debugger_impl
 	{
+		friend class pathconvert;
 	public:	
 		enum class step {
 			in = 1,

@@ -37,7 +37,7 @@ namespace vscode
 		void insert(const std::string& client_path, size_t line, const std::string& condition);
 		bool has(size_t line) const;
 		bool has(bp_source* src, size_t line, lua_State* L, lua_Debug* ar) const;
-		bp_source* get(const std::string& server_path, pathconvert& pathconvert, custom& custom);
+		bp_source* get(const std::string& server_path, pathconvert& pathconvert);
 
 	private:
 		map_type                  server_map_;

@@ -1,15 +1,14 @@
 #include <iostream>
-#include <thread>
-#include <filesystem>  
+#include <thread> 
 #include <lua.hpp>	 
 #include "debugger.h"
 #include "dbg_custom.h"
 #include "dbg_hybridarray.h"   
 #include "dbg_network.h"
+#include "dbg_path.h"
 #include "../client/dbg_redirect.h"	 
 #include "../client/dbg_redirect.cpp"
 
-namespace fs = std::tr2::sys;
 
 #define TEST_ATTACH 1
 

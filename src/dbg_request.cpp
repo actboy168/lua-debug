@@ -86,7 +86,7 @@ namespace vscode
 			{
 				if (lua_getinfo(L, "S", ar))
 				{
-					bp_source* src = breakpoints_.get(ar->source, pathconvert_, *custom_);
+					bp_source* src = breakpoints_.get(ar->source, pathconvert_);
 					if (src && breakpoints_.has(src, ar->currentline, L, ar))
 					{
 						step_in();
@@ -278,7 +278,7 @@ namespace vscode
 						else if (*src == '@' || *src == '=')
 						{
 							std::string client_path;
-							custom::result r =  pathconvert_.get_or_eval(src, client_path, *custom_);
+							custom::result r =  pathconvert_.get_or_eval(src, client_path);
 							if (r == custom::result::sucess || r == custom::result::sucess_once)
 							{
 								fs::path path = fs::complete(fs::path(client_path), workingdir_);
@@ -462,7 +462,7 @@ namespace vscode
 		response_success(req, [&](wprotocol& res)
 		{
 			variables resv(res, L, ar, type == var_type::watch ? -1 : 0);
-			resv.push_value(type, depth, var_ref >> 16, pathconvert_, *custom_);
+			resv.push_value(type, depth, var_ref >> 16, pathconvert_);
 		});
 		return false;
 	}
@@ -580,7 +580,7 @@ namespace vscode
 		std::vector<variable> rets(nresult);
 		for (int i = 0; i < (int)rets.size(); ++i)
 		{
-			var_set_value(rets[i], L, -1 - i, pathconvert_, *custom_);
+			var_set_value(rets[i], L, -1 - i, pathconvert_);
 		}
 		int64_t reference = 0;
 		if (rets.size() == 1 && context == "watch" && can_extand(L, -1))
