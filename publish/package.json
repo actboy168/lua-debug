@@ -58,7 +58,13 @@
                         "stopOnEntry": true,
                         "cwd": "${workspaceRoot}",
                         "ip": "localhost",
-                        "port": 4278
+                        "port": 4278,
+                        "sourceMaps": [
+                            [
+                                "./",
+                                "${workspaceRoot}"
+                            ]
+                        ]
                     }
                 ],
                 "configurationAttributes": {
@@ -106,7 +112,16 @@
                                 "type": "string",
                                 "description": "Console encoding",
                                 "default": "utf8",
-                                "enum": [ "utf8", "ansi", "none" ]
+                                "enum": [
+                                    "utf8",
+                                    "ansi",
+                                    "none"
+                                ]
+                            },
+                            "sourceMaps": {
+                                "type": "array",
+                                "description": "The source path of the remote host and the source path of local.",
+                                "default": null
                             }
                         }
                     },
@@ -136,6 +151,16 @@
                                 "type": "integer",
                                 "description": "Debug port to attach to. Default is 4278.",
                                 "default": 4278
+                            },
+                            "sourceMaps": {
+                                "type": "array",
+                                "description": "The source path of the remote host and the source path of local.",
+                                "default": [
+                                    [
+                                        "./",
+                                        "${workspaceRoot}"
+                                    ]
+                                ]
                             }
                         }
                     }
