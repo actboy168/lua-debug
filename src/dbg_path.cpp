@@ -25,16 +25,12 @@ namespace vscode
 		++path_it, ++base_it;
 #endif
 
-		const std::string _dot = std::string(1, fs::dot<fs::path>::value);
-		const std::string _dots = std::string(2, fs::dot<fs::path>::value);
-		const std::string _sep = std::string(1, fs::slash<fs::path>::value);
-
 		while (true) {
 			if ((path_it == path_end) || (base_it == base_end) || (*path_it != *base_it)) {
 				for (; base_it != base_end; ++base_it) {
-					if (*base_it == _dot)
+					if (*base_it == ".")
 						continue;
-					else if (*base_it == _sep)
+					else if (*base_it == "/")
 						continue;
 
 					output /= "../";
@@ -45,9 +41,9 @@ namespace vscode
 					if (path_it != path_it_start)
 						output /= "/";
 
-					if (*path_it == _dot)
+					if (*path_it == ".")
 						continue;
-					if (*path_it == _sep)
+					if (*path_it == "/")
 						continue;
 
 					output /= *path_it;
