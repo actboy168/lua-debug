@@ -190,10 +190,10 @@ int main()
 					std::string console;
 					auto& args = rp["arguments"];
 					if (args.HasMember("luadll")) {
-						delayload::set_lua_dll(vscode::u2w(std::string(args["luadll"].GetString(), args["luadll"].GetStringLength())));
+						delayload::set_lua_dll(vscode::u2w(args["luadll"].Get<std::string>()));
 					}
 					if (args.HasMember("console")) {
-						console = std::string(args["console"].GetString(), args["console"].GetStringLength());
+						console = args["console"].Get<std::string>();
 					}
 					server.reset(new launch_server(console, [&](){
 						while (!input.empty()) {
@@ -209,7 +209,7 @@ int main()
 					uint16_t port = 4278;
 					auto& args = rp["arguments"];
 					if (args.HasMember("ip")) {
-						ip = std::string(args["ip"].GetString(), args["ip"].GetStringLength());
+						ip = args["ip"].Get<std::string>();
 					}
 					if (args.HasMember("port")) {
 						port = args["port"].GetUint();

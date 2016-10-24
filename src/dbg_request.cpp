@@ -117,7 +117,7 @@ namespace vscode
 		auto& args = req["arguments"];
 #if defined(DEBUGGER_DELAYLOAD_LUA)	   
 		if (args.HasMember("luadll")) {
-			delayload::set_lua_dll(vscode::u2w(std::string(args["luadll"].GetString(), args["luadll"].GetStringLength())));
+			delayload::set_lua_dll(vscode::u2w(args["luadll"].Get<std::string>()));
 		}
 #endif
 		if (!args.HasMember("program") || !args["program"].IsString()) {
