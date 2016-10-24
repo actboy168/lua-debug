@@ -4,24 +4,25 @@
 
 namespace vscode
 {
-	fs::path path_uncomplete(const fs::path& p, const fs::path& base, std::error_code& ec)
+	fs::path path_uncomplete(const fs::path& path, const fs::path& base, std::error_code& ec)
 	{
-		fs::path pp = path_normalize(p);
-		if (pp == base)
+		fs::path npath = path_normalize(path);
+		fs::path nbase = path_normalize(base);
+		if (npath == nbase)
 			return "./";
 		fs::path from_path, from_base, output;
-		fs::path::iterator path_it = pp.begin(), path_end = pp.end();
-		fs::path::iterator base_it = base.begin(), base_end = base.end();
+		fs::path::iterator path_it = npath.begin(), path_end = npath.end();
+		fs::path::iterator base_it = nbase.begin(), base_end = nbase.end();
 
 		if ((path_it == path_end) || (base_it == base_end))
 		{
 			ec = std::make_error_code(std::generic_errno::not_a_directory);
-			return p;
+			return npath;
 		}
 
 #ifdef WIN32
 		if (*path_it != *base_it)
-			return pp;
+			return npath;
 		++path_it, ++base_it;
 #endif
 
