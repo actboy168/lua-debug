@@ -294,11 +294,10 @@ namespace vscode
 						}
 						else if (*src == '@' || *src == '=')
 						{
-							std::string client_path;
-							custom::result r =  pathconvert_.get_or_eval(src, client_path);
+							fs::path path;
+							custom::result r = pathconvert_.get_or_eval(src, path);
 							if (r == custom::result::sucess || r == custom::result::sucess_once)
 							{
-								fs::path path = client_path;
 								fs::path name = path.filename();
 								for (auto _ : res("source").Object())
 								{

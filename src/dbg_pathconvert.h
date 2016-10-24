@@ -11,18 +11,19 @@ namespace vscode
 
 	class pathconvert
 	{
-		typedef std::vector<std::pair<std::string, std::string>> sourcemap_t;
+		typedef custom::sourcemap_t sourcemap_t;
+		typedef custom::result      result;
 
 	public:
 		pathconvert(debugger_impl* dbg);
-		void           add_sourcemap(const std::string& srv, const std::string& cli);
-		bool           fget(const std::string& server_path, std::string*& client_path);
-		custom::result eval(const std::string& server_path, std::string& client_path);
-		custom::result get_or_eval(const std::string& server_path, std::string& client_path);
+		void   add_sourcemap(const fs::path& srv, const fs::path& cli);
+		bool   fget(const std::string& server_path, fs::path*& client_path);
+		result eval(const std::string& server_path, fs::path& client_path);
+		result get_or_eval(const std::string& server_path, fs::path& client_path);
 
 	private:
 		debugger_impl*                     debugger_;
-		std::map<std::string, std::string> server2client_;
+		std::map<std::string, fs::path>    server2client_;
 		sourcemap_t                        sourcemaps_;
 	};
 }

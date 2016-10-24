@@ -220,11 +220,12 @@ namespace vscode
 			lua_pushvalue(L, idx);
 			if (lua_getinfo(L, ">S", &entry))
 			{
-				std::string client_path;
+				fs::path client_path;
 				custom::result r = pathconvert.get_or_eval(entry.source, client_path);
 				if (r == custom::result::sucess || r == custom::result::sucess_once)
 				{
-					var.value = format("[%s:%d]", client_path, entry.linedefined);
+					// todo:
+					var.value = format("[%s:%d]", client_path.string(), entry.linedefined);
 					var.type = "function";
 					return;
 				}

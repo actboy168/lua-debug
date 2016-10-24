@@ -11,17 +11,19 @@ namespace vscode
 		, sourcemaps_()
 	{ }
 
-	void pathconvert::add_sourcemap(const std::string& srv, const std::string& cli)
+	void pathconvert::add_sourcemap(const fs::path& srv, const fs::path& cli)
 	{
-		fs::path srvpath = srv;
-		if (!srvpath.is_complete())
+		if (srv.is_complete())
 		{
-			srvpath = fs::complete(srvpath, fs::current_path<fs::path>());
+			sourcemaps_.push_back(std::make_pair(srv, cli));
 		}
-		sourcemaps_.push_back(std::make_pair(srvpath, cli));
+		else
+		{
+			sourcemaps_.push_back(std::make_pair(fs::complete(srv, fs::current_path<fs::path>()), cli));
+		}
 	}
 
-	bool pathconvert::fget(const std::string& server_path, std::string*& client_path)
+	bool pathconvert::fget(const std::string& server_path, fs::path*& client_path)
 	{
 		auto it = server2client_.find(server_path);
 		if (it != server2client_.end())
@@ -32,29 +34,27 @@ namespace vscode
 		return false;
 	}
 
-	custom::result pathconvert::eval(const std::string& server_path, std::string& client_path)
+	pathconvert::result pathconvert::eval(const std::string& server_path, fs::path& client_path)
 	{
 		if (server_path[0] == '@')
 		{
-			std::string path;
-			path.resize(server_path.size() - 1);
-			std::transform(server_path.begin() + 1, server_path.end(), path.begin(), tolower);
-
-			fs::path srvpath = path;
-			client_path = srvpath;
+			fs::path srvpath = server_path.substr(1);
 			for (auto& pair : sourcemaps_)
 			{
 				if (path_is_subpath(srvpath, pair.first))
 				{
 					client_path = pair.second;
+					server2client_[server_path] = client_path;
+					return result::sucess;
 				}
 			}
+			client_path = path_normalize(srvpath);
 			server2client_[server_path] = client_path;
-			return custom::result::sucess;
+			return result::sucess;
 		}
 		else if (server_path[0] == '=')
 		{
-			custom::result r = debugger_->custom_->path_convert(server_path, client_path, sourcemaps_);
+			result r = debugger_->custom_->path_convert(server_path, client_path, sourcemaps_);
 			switch (r)
 			{
 			case custom::result::failed:
@@ -66,16 +66,16 @@ namespace vscode
 		}
 		client_path = server_path;
 		server2client_[server_path] = client_path;
-		return custom::result::sucess;
+		return result::sucess;
 	}
 
-	custom::result pathconvert::get_or_eval(const std::string& server_path, std::string& client_path)
+	pathconvert::result pathconvert::get_or_eval(const std::string& server_path, fs::path& client_path)
 	{
-		std::string* ptr;
+		fs::path* ptr;
 		if (fget(server_path, ptr))
 		{
 			client_path = *ptr;
-			return custom::result::sucess;
+			return result::sucess;
 		}
 		return eval(server_path, client_path);
 	}

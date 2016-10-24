@@ -118,7 +118,7 @@ namespace vscode
 			return it->second;
 		}
 
-		std::string* cliptr = 0;
+		fs::path* cliptr = 0;
 		if (pathconvert.fget(server_path, cliptr))
 		{
 			auto it = client_map_.find(*cliptr);
@@ -127,7 +127,7 @@ namespace vscode
 			return it->second;
 		}
 
-		std::string client_path;
+		fs::path client_path;
 		custom::result r = pathconvert.eval(server_path, client_path);
 		switch (r)
 		{
