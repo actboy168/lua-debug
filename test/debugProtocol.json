@@ -17,7 +17,7 @@
 				"type": {
 					"type": "string",
 					"description": "One of 'request', 'response', or 'event'.",
-					"enum": [ "request", "response", "event" ]
+					"_enum": [ "request", "response", "event" ]
 				}
 			},
 			"required": [ "seq", "type" ]
@@ -26,7 +26,7 @@
 		"Request": {
 			"allOf": [ { "$ref": "#/definitions/ProtocolMessage" }, {
 				"type": "object",
-				"description": "Request.",
+				"description": "A client or server-initiated request.",
 				"properties": {
 					"type": {
 						"type": "string",
@@ -37,7 +37,7 @@
 						"description": "The command to execute."
 					},
 					"arguments": {
-						"type": "object",
+						"type": [ "array", "boolean", "integer", "null", "number" , "object", "string" ],
 						"description": "Object containing arguments for the command."
 					}
 				},
@@ -59,7 +59,7 @@
 						"description": "Type of event."
 					},
 					"body": {
-						"type": "object",
+						"type": [ "array", "boolean", "integer", "null", "number" , "object", "string" ],
 						"description": "Event-specific information."
 					}
 				},
@@ -93,7 +93,7 @@
 						"description": "Contains error message if success == false."
 					},
 					"body": {
-						"type": "object",
+						"type": [ "array", "boolean", "integer", "null", "number" , "object", "string" ],
 						"description": "Contains request result if success is true and optional error details if success is false."
 					}
 				},
@@ -130,7 +130,7 @@
 							"reason": {
 								"type": "string",
 								"description": "The reason for the event (such as: 'step', 'breakpoint', 'exception', 'pause'). This string is shown in the UI.",
-								"enum": [ "step", "breakpoint", "exception", "pause" ]
+								"_enum": [ "step", "breakpoint", "exception", "pause" ]
 							},
 							"threadId": {
 								"type": "integer",
@@ -242,7 +242,7 @@
 							"reason": {
 								"type": "string",
 								"description": "The reason for the event (such as: 'started', 'exited').",
-								"enum": [ "started", "exited" ]
+								"_enum": [ "started", "exited" ]
 							},
 							"threadId": {
 								"type": "integer",
@@ -271,14 +271,14 @@
 							"category": {
 								"type": "string",
 								"description": "The category of output (such as: 'console', 'stdout', 'stderr', 'telemetry'). If not specified, 'console' is assumed.",
-								"enum": [ "console", "stdout", "stderr", "telemetry" ]
+								"_enum": [ "console", "stdout", "stderr", "telemetry" ]
 							},
 							"output": {
 								"type": "string",
 								"description": "The output to report."
 							},
 							"data": {
-								"type": "object",
+								"type": [ "array", "boolean", "integer", "null", "number" , "object", "string" ],
 								"description": "Optional data to report. For the 'telemetry' category the data will be sent to telemetry, for the other categories the data is shown in JSON format."
 							}
 						},
@@ -304,7 +304,7 @@
 							"reason": {
 								"type": "string",
 								"description": "The reason for the event (such as: 'changed', 'new').",
-								"enum": [ "changed", "new" ]
+								"_enum": [ "changed", "new" ]
 							},
 							"breakpoint": {
 								"$ref": "#/definitions/Breakpoint",
@@ -389,7 +389,11 @@
 				},
 				"env": {
 					"type": "object",
-					"description": "Environment key-value pairs that are added to the default environment."
+					"description": "Environment key-value pairs that are added to the default environment.",
+					"additionalProperties": {
+						"type": "string",
+						"description": "Values must be strings."
+					}
 				}
 			},
 			"required": [ "args", "cwd" ]
@@ -466,7 +470,7 @@
 				},
 				"pathFormat": {
 					"type": "string",
-					"enum": [ "path", "uri" ],
+					"_enum": [ "path", "uri" ],
 					"description": "Determines in what format paths are specified. Possible values are 'path' or 'uri'. The default is 'path', which is the native format."
 				},
 				"supportsVariableType": {
@@ -1281,7 +1285,23 @@
 						"properties": {
 							"value": {
 								"type": "string",
-								"description": "the new value of the variable."
+								"description": "The new value of the variable."
+							},
+							"type": {
+								"type": "string",
+								"description": "The type of the new value. Typically shown in the UI when hovering over the value."
+							},
+							"variablesReference": {
+								"type": "number",
+								"description": "If variablesReference is > 0, the new value is structured and its children can be retrieved by passing variablesReference to the VariablesRequest."
+							},
+							"namedVariables": {
+								"type": "number",
+								"description": "The number of named child variables.\nThe client can use this optional information to present the variables in a paged UI and fetch them in chunks."
+							},
+							"indexedVariables": {
+								"type": "number",
+								"description": "The number of indexed child variables.\nThe client can use this optional information to present the variables in a paged UI and fetch them in chunks."
 							}
 						},
 						"required": [ "value" ]
@@ -1465,7 +1485,7 @@
 				},
 				"context": {
 					"type": "string",
-					"enum": [ "watch", "repl", "hover" ],
+					"_enum": [ "watch", "repl", "hover" ],
 					"description": "The context in which the evaluate request is run. Possible values are 'watch' if evaluate is run in a watch, 'repl' if run from the REPL console, or 'hover' if run from a data hover."
 				}
 			},
@@ -1687,11 +1707,15 @@
 				},
 				"supportsFunctionBreakpoints": {
 					"type": "boolean",
-					"description": "The debug adapter supports functionBreakpoints."
+					"description": "The debug adapter supports function breakpoints."
 				},
 				"supportsConditionalBreakpoints": {
 					"type": "boolean",
-					"description": "The debug adapter supports conditionalBreakpoints."
+					"description": "The debug adapter supports conditional breakpoints."
+				},
+				"supportsHitConditionalBreakpoints": {
+					"type": "boolean",
+					"description": "The debug adapter supports breakpoints that break execution after a specified number of hits."
 				},
 				"supportsEvaluateForHovers": {
 					"type": "boolean",
@@ -1727,6 +1751,24 @@
 				"supportsCompletionsRequest": {
 					"type": "boolean",
 					"description": "The debug adapter supports the completionsRequest."
+				},
+				"supportsModulesRequest": {
+					"type": "boolean",
+					"description": "The debug adapter supports the modules request."
+				},
+				"additionalModuleColumns": {
+					"type": "array",
+					"items": {
+						"$ref": "#/definitions/ColumnDescriptor"
+					},
+					"description": "The set of additional module information exposed by the debug adapter."
+				},
+				"supportedChecksumAlgorithms": {
+					"type": "array",
+					"items": {
+						"$ref": "#/definitions/ChecksumAlgorithm"
+					},
+					"description": "Checksum algorithms supported by the debug adapter."
 				}
 			}
 		},
@@ -1765,7 +1807,11 @@
 				},
 				"variables": {
 					"type": "object",
-					"description": "An object used as a dictionary for looking up the variables in the format string."
+					"description": "An object used as a dictionary for looking up the variables in the format string.",
+					"additionalProperties": {
+						"type": "string",
+						"description": "Values must be strings."
+					}
 				},
 				"sendTelemetry": {
 					"type": "boolean",
@@ -1851,12 +1897,17 @@
 					"type": "string",
 					"description": "Format to use for the rendered values in this column. TBD how the format strings looks like."
 				},
+				"type": {
+					"type": "string",
+					"enum": [ "string", "number", "boolean", "unixTimestampUTC" ],
+					"description": "Datatype of values in this column.  Defaults to 'string' if not specified."
+				},
 				"width": {
 					"type": "integer",
 					"description": "Width of this column in characters (hint only)."
 				}
 			},
-			"required": [ "attributeName", "label", "format", "width" ]
+			"required": [ "attributeName", "label"]
 		},
 
 		"ModulesViewDescriptor": {
@@ -1910,8 +1961,15 @@
 					"description": "The (optional) origin of this source: possible values 'internal module', 'inlined content from source map', etc."
 				},
 				"adapterData": {
-					"type": "object",
+					"type": [ "array", "boolean", "integer", "null", "number", "object", "string" ],
 					"description": "Optional data that a debug adapter might want to loop through the client. The client should leave the data intact and persist it across sessions. The client should not interpret the data."
+				},
+				"checksums": {
+					"type": "array",
+					"items": {
+						"$ref": "#/definitions/Checksum"
+					},
+					"description": "The checksums associated with this file."
 				}
 			}
 		},
@@ -1947,6 +2005,10 @@
 				"endColumn": {
 					"type": "integer",
 					"description": "An optional end column of the range covered by the stack frame."
+				},
+				"moduleId": {
+					"type": ["integer", "string"],
+					"description": "The module associated with this frame, if any."
 				}
 			},
 			"required": [ "id", "name", "line", "column" ]
@@ -1954,7 +2016,7 @@
 
 		"Scope": {
 			"type": "object",
-			"description": "A Scope is a named container for variables.",
+			"description": "A Scope is a named container for variables. Optionally a scope can map to a source or a range within a source.",
 			"properties": {
 				"name": {
 					"type": "string",
@@ -1975,6 +2037,26 @@
 				"expensive": {
 					"type": "boolean",
 					"description": "If true, the number of variables in this scope is large or expensive to retrieve."
+				},
+				"source": {
+					"$ref": "#/definitions/Source",
+					"description": "Optional source for this scope."
+				},
+				"line": {
+					"type": "integer",
+					"description": "Optional start line of the range covered by this scope."
+				},
+				"column": {
+					"type": "integer",
+					"description": "Optional start column of the range covered by this scope."
+				},
+				"endLine": {
+					"type": "integer",
+					"description": "Optional end line of the range covered by this scope."
+				},
+				"endColumn": {
+					"type": "integer",
+					"description": "Optional end column of the range covered by this scope."
 				}
 			},
 			"required": [ "name", "variablesReference", "expensive" ]
@@ -1982,23 +2064,27 @@
 
 		"Variable": {
 			"type": "object",
-			"description": "A Variable is a name/value pair.\nOptionally a variable can have a 'type' that is shown if space permits or when hovering over the variable's name.\nAn optional 'kind' is used to render additional properties of the variable, e.g. different icons can be used to indicate that a variable is public or private.\nIf the value is structured (has children), a handle is provided to retrieve the children with the VariablesRequest.\nIf the number of children is large, the number should be returned via the optional 'totalVariables' attribute.\nThe client can use this optional information to present the children in a paged UI and fetch them in chunks.",
+			"description": "A Variable is a name/value pair.\nOptionally a variable can have a 'type' that is shown if space permits or when hovering over the variable's name.\nAn optional 'kind' is used to render additional properties of the variable, e.g. different icons can be used to indicate that a variable is public or private.\nIf the value is structured (has children), a handle is provided to retrieve the children with the VariablesRequest.\nIf the number of named or indexed children is large, the numbers should be returned via the optional 'namedVariables' and 'indexedVariables' attributes.\nThe client can use this optional information to present the children in a paged UI and fetch them in chunks.",
 			"properties": {
 				"name": {
 					"type": "string",
 					"description": "The variable's name."
 				},
-				"type": {
-					"type": "string",
-					"description": "The variable's type."
-				},
 				"value": {
 					"type": "string",
 					"description": "The variable's value. For structured objects this can be a multi line text, e.g. for a function the body of a function."
 				},
+				"type": {
+					"type": "string",
+					"description": "The type of the variable's value. Typically shown in the UI when hovering over the value."
+				},
 				"kind": {
 					"type": "string",
 					"description": "Properties of a variable that can be used to determine how to render the variable in the UI. Format of the string value: TBD."
+				},
+				"evaluateName": {
+					"type": "string",
+					"description": "Optional evaluatable name of this variable which can be passed to the 'EvaluateRequest' to fetch the variable's value."
 				},
 				"variablesReference": {
 					"type": "integer",
@@ -2006,11 +2092,11 @@
 				},
 				"namedVariables": {
 					"type": "integer",
-					"description": "The number of named child variables in this scope.\nThe client can use this optional information to present the children in a paged UI and fetch them in chunks."
+					"description": "The number of named child variables.\nThe client can use this optional information to present the children in a paged UI and fetch them in chunks."
 				},
 				"indexedVariables": {
 					"type": "integer",
-					"description": "The number of indexed child variables in this scope.\nThe client can use this optional information to present the children in a paged UI and fetch them in chunks."
+					"description": "The number of indexed child variables.\nThe client can use this optional information to present the children in a paged UI and fetch them in chunks."
 				}
 			},
 			"required": [ "name", "value", "variablesReference" ]
@@ -2031,6 +2117,10 @@
 				"condition": {
 					"type": "string",
 					"description": "An optional expression for conditional breakpoints."
+				},
+				"hitCondition": {
+					"type": "string",
+					"description": "An optional expression that controls how many hits of the breakpoint are ignored. The backend is expected to interpret the expression as needed."
 				}
 			},
 			"required": [ "line" ]
@@ -2047,6 +2137,10 @@
 				"condition": {
 					"type": "string",
 					"description": "An optional expression for conditional breakpoints."
+				},
+				"hitCondition": {
+					"type": "string",
+					"description": "An optional expression that controls how many hits of the breakpoint are ignored. The backend is expected to interpret the expression as needed."
 				}
 			},
 			"required": [ "name" ]
@@ -2171,6 +2265,28 @@
 			"type": "string",
 			"description": "Some predefined types for the CompletionItem. Please note that not all clients have specific icons for all of them.",
 			"enum": [ "method", "function", "constructor", "field", "variable", "class", "interface", "module", "property", "unit", "value", "enum", "keyword", "snippet", "text", "color", "file", "reference", "customcolor" ]
+		},
+
+		"ChecksumAlgorithm": {
+			"type": "string",
+			"description": "Names of checksum algorithms that may be supported by a debug adapter.",
+			"enum": [ "MD5", "SHA1", "SHA256", "SHA1Normalized", "SHA256Normalized", "timestamp" ]
+		},
+
+		"Checksum": {
+			"type": "object",
+			"description": "The checksum of an item calculated by the specified algorithm.",
+			"properties": {
+				"algorithm": {
+					"$ref": "#/definitions/ChecksumAlgorithm",
+					"description": "The algorithm used to calculate this checksum."
+				},
+				"checksum": {
+					"type": "string",
+					"description": "Value of the checksum."
+				}
+			},
+			"required": [ "algorithm", "checksum" ]
 		}
 	}
 }
