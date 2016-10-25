@@ -249,38 +249,43 @@ namespace vscode
 		return var_set_value_(var, L, idx, pathconvert);
 	}
 
-	static bool set_newvalue(lua_State* L, int oldtype, std::string& value)
+	static bool set_newvalue(lua_State* L, int oldtype, variable& var)
 	{
-		if (value == "nil")	{
+		if (var.value == "nil")	{
 			lua_pushnil(L);
+			var.type = "nil";
 			return true;
 		}
-		if (value == "true")	{
+		if (var.value == "true")	{
 			lua_pushboolean(L, 1);
+			var.type = "boolean";
 			return true;
 		}
-		if (value == "false")	{
+		if (var.value == "false")	{
 			lua_pushboolean(L, 0);
+			var.type = "boolean";
 			return true;
 		}
 
 		char* end = "";
 		errno = 0;
-		long lv = strtol(value.c_str(), &end, 10);
+		long lv = strtol(var.value.c_str(), &end, 10);
 		if (errno != ERANGE && *end == 0)
 		{
-			value = format("%d", lv);
+			var.value = format("%d", lv);
+			var.type = "integer";
 			lua_pushinteger(L, lv);
 			return true;
 		}
 
-		if (value.size() >= 3 && value[0] == '0' && (value[1] == 'x' || value[1] == 'X'))
+		if (var.value.size() >= 3 && var.value[0] == '0' && (var.value[1] == 'x' || var.value[1] == 'X'))
 		{
 			errno = 0;
-			long lv = strtol(value.c_str() + 2, &end, 16);
+			long lv = strtol(var.value.c_str() + 2, &end, 16);
 			if (errno != ERANGE && *end == 0)
 			{
-				value = format("0x%x", lv);
+				var.value = format("0x%x", lv);
+				var.type = "integer";
 				lua_pushinteger(L, lv);
 				return true;
 			}
@@ -288,16 +293,18 @@ namespace vscode
 
 		end = "";
 		errno = 0;
-		double dv = strtod(value.c_str(), &end);
+		double dv = strtod(var.value.c_str(), &end);
 		if (errno != ERANGE && *end == 0)
 		{
-			value = format("%f", dv);
+			var.value = format("%f", dv);
+			var.type = "number";
 			lua_pushnumber(L, dv);
 			return true;
 		}
 
-		if (value.size() >= 2 && value[0] == '\''&& value[value.size() - 1] == '\'')  {
-			lua_pushlstring(L, value.data() + 1, value.size() - 2);
+		if (var.value.size() >= 2 && var.value[0] == '\''&& var.value[var.value.size() - 1] == '\'')  {
+			lua_pushlstring(L, var.value.data() + 1, var.value.size() - 2);
+			var.type = "string";
 			return true;
 		}
 
@@ -305,12 +312,13 @@ namespace vscode
 		{
 			return false;
 		}
-		lua_pushlstring(L, value.data(), value.size());
-		value = "'" + value + "'";
+		lua_pushlstring(L, var.value.data(), var.value.size());
+		var.value = "'" + var.value + "'";
+		var.type = "string";
 		return true;
 	}
 
-	static bool setlocal(lua_State* L, lua_Debug* ar, var_type type, int n, std::string& value)
+	static bool setlocal(lua_State* L, lua_Debug* ar, var_type type, int n, variable& var)
 	{
 		if (type == var_type::upvalue)
 		{
@@ -322,7 +330,7 @@ namespace vscode
 				oldtype = lua_type(L, -1);
 				lua_pop(L, 1);
 			}
-			if (!set_newvalue(L, oldtype, value))
+			if (!set_newvalue(L, oldtype, var))
 			{
 				lua_pop(L, 1);
 				return false;
@@ -341,7 +349,7 @@ namespace vscode
 			oldtype = lua_type(L, -1);
 			lua_pop(L, 1);
 		}
-		if (!set_newvalue(L, oldtype, value))
+		if (!set_newvalue(L, oldtype, var))
 			return false;
 		if (!lua_setlocal(L, ar, type == var_type::vararg ? -n : n))
 		{
@@ -475,29 +483,29 @@ namespace vscode
 		return true;
 	}
 
-	static bool set_value(lua_State* L, int idx, const std::string& name, std::string& value)
+	static bool set_value(lua_State* L, int idx, variable& var)
 	{
-		if (name == "[metatable]")
+		if (var.name == "[metatable]")
 			return false;
-		if (name == "[uservalue]")
+		if (var.name == "[uservalue]")
 			return false;
 		idx = lua_absindex(L, idx);
 		if (lua_type(L, idx) == LUA_TUSERDATA) {
 			if (!get_extand_table(L, idx)) {
 				return false;
 			}
-			if (LUA_TNIL == lua_getfield(L, -1, name.c_str())) {
+			if (LUA_TNIL == lua_getfield(L, -1, var.name.c_str())) {
 				lua_pop(L, 1);
 				return false;
 			}
 			int oldtype = lua_type(L, -1);
 			lua_pop(L, 1);
-			if (!set_newvalue(L, oldtype, value))
+			if (!set_newvalue(L, oldtype, var))
 			{
 				lua_pop(L, 1);
 				return false;
 			}
-			lua_setfield(L, -2, name.c_str());
+			lua_setfield(L, -2, var.name.c_str());
 			return true;
 		}
 		if (lua_type(L, idx) != LUA_TTABLE)
@@ -505,11 +513,11 @@ namespace vscode
 		lua_pushnil(L);
 		while (lua_next(L, idx))
 		{
-			if (name == get_name(L, -2))
+			if (var.name == get_name(L, -2))
 			{
 				int oldtype = lua_type(L, -1);
 				lua_pop(L, 1);
-				if (!set_newvalue(L, oldtype, value))
+				if (!set_newvalue(L, oldtype, var))
 				{
 					lua_pop(L, 1);
 					return false;
@@ -522,7 +530,7 @@ namespace vscode
 		return false;
 	}
 
-	bool variables::set_value(lua_State* L, lua_Debug* ar, var_type type, int depth, int64_t pos, const std::string& name, std::string& value)
+	bool variables::set_value(lua_State* L, lua_Debug* ar, var_type type, int depth, int64_t pos, variable& var)
 	{
 		switch (type)
 		{
@@ -536,9 +544,9 @@ namespace vscode
 					const char* lname = getlocal(L, ar, type, n);
 					if (!lname)
 						break;
-					if (name == lname)
+					if (var.name == lname)
 					{
-						return setlocal(L, ar, type, n, value);
+						return setlocal(L, ar, type, n, var);
 					}
 				}
 				return false;
@@ -550,7 +558,7 @@ namespace vscode
 		{
 			return false;
 		}
-		if (!vscode::set_value(L, -1, name, value))
+		if (!vscode::set_value(L, -1, var))
 		{
 			lua_pop(L, 1);
 			return false;

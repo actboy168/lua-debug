@@ -481,16 +481,19 @@ namespace vscode
 			response_error(req, "Failed set variable");
 			return false;
 		}
-		std::string name = args["name"].Get<std::string>();
-		std::string value = args["value"].Get<std::string>();
-		if (!variables::set_value(L, &entry, type, depth, var_ref >> 16, name, value))
+
+		variable var;
+		var.name = args["name"].Get<std::string>();
+		var.value = args["value"].Get<std::string>();
+		if (!variables::set_value(L, &entry, type, depth, var_ref >> 16, var))
 		{
 			response_error(req, "Failed set variable");
 			return false;
 		}
 		response_success(req, [&](wprotocol& res)
 		{
-			res("value").String(value);
+			res("value").String(var.value);
+			res("type").String(var.type);
 		});
 		return false;
 	}

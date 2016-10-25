@@ -52,7 +52,7 @@ namespace vscode
 		void each_userdata(int idx, int level, int64_t pos, var_type type, pathconvert& pathconvert);
 
 	public:
-		static bool set_value(lua_State* L, lua_Debug* ar, var_type type, int depth, int64_t pos, const std::string& name, std::string& value);
+		static bool set_value(lua_State* L, lua_Debug* ar, var_type type, int depth, int64_t pos, variable& var);
 		static bool find_value(lua_State* L, lua_Debug* ar, var_type type, int depth, int64_t pos);
 
 	private:
