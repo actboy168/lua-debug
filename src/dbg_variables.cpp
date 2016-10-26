@@ -87,13 +87,24 @@ namespace vscode
 		return !!r;
 	}
 
+	static bool table_empty(lua_State *L, int idx)
+	{
+		idx = lua_absindex(L, idx);
+		lua_pushnil(L);
+		if (0 == lua_next(L, idx))
+		{
+			return true;
+		}
+		lua_pop(L, 2);
+		return false;
+	}
 	bool can_extand(lua_State *L, int idx)
 	{
 		int type = lua_type(L, idx);
 		switch (type)
 		{
 		case LUA_TTABLE:
-			return !is_watch_table(L, idx);
+			return !is_watch_table(L, idx) && !table_empty(L, idx);
 		case LUA_TLIGHTUSERDATA:
 			if (lua_getmetatable(L, idx)) {
 				lua_pop(L, 1);
