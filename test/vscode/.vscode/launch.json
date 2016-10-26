@@ -1,5 +1,6 @@
 {
     "version": "0.2.0",
+    //"debugServer" : 4278,
     "configurations": [
         {
             "name": "launch",
@@ -10,10 +11,7 @@
             "cwd": "${workspaceRoot}",
             "path": "${workspaceRoot}/?.lua",
             "cpath": "${workspaceRoot}/?.dll",
-            "arg": [],
-            "sourceMaps" : [
-                ["./",  "${workspaceRoot}"]
-            ]
+            "arg": []
         },
         {
             "name": "attach",
@@ -22,8 +20,11 @@
             "stopOnEntry": true,
             "ip": "localhost",
             "port": 4278,
-            "sourceMaps" : [
-                ["./",  "${workspaceRoot}"]
+            "sourceMaps": [
+                [
+                    "./",
+                    "${workspaceRoot}"
+                ]
             ]
         }
     ]
