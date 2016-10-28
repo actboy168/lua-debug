@@ -13,13 +13,13 @@ namespace vscode
 
 	void pathconvert::add_sourcemap(const fs::path& srv, const fs::path& cli)
 	{
-		if (srv.is_complete())
+		if (srv.is_absolute())
 		{
 			sourcemaps_.push_back(std::make_pair(path_normalize(srv), cli));
 		}
 		else
 		{
-			sourcemaps_.push_back(std::make_pair(path_normalize(fs::complete(srv, fs::current_path<fs::path>())), cli));
+			sourcemaps_.push_back(std::make_pair(path_normalize(fs::absolute(srv, fs::current_path())), cli));
 		}
 	}
 
@@ -41,11 +41,11 @@ namespace vscode
 
 	fs::path pathconvert::server_complete(const fs::path& path)
 	{
-		if (path.is_complete())
+		if (path.is_absolute())
 		{
 			return path;
 		}
-		return path_normalize(fs::complete(path, fs::current_path<fs::path>()));
+		return path_normalize(fs::absolute(path, fs::current_path()));
 	}
 
 	pathconvert::result pathconvert::eval_uncomplete(const std::string& server_path, fs::path& client_path)
@@ -64,7 +64,7 @@ namespace vscode
 				}
 			}
 			std::error_code ec;
-			client_path = path_uncomplete(srvpath, fs::current_path<fs::path>(), ec);
+			client_path = path_uncomplete(srvpath, fs::current_path(), ec);
 			assert(!ec);
 			return result::sucess;
 		}

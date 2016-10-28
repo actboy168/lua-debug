@@ -110,7 +110,7 @@ namespace vscode
 		return false;
 	}
 
-	bp_source* breakpoint::get(const std::string& server_path, pathconvert& pathconvert)
+	bp_source* breakpoint::get(const fs::path& server_path, pathconvert& pathconvert)
 	{
 		auto it = server_map_.find(server_path);
 		if (it != server_map_.end())

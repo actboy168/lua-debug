@@ -16,7 +16,11 @@ namespace vscode
 
 		if ((path_it == path_end) || (base_it == base_end))
 		{
+#if _MSC_VER >= 1900
+			ec = std::make_error_code(std::errc::not_a_directory);
+#else
 			ec = std::make_error_code(std::generic_errno::not_a_directory);
+#endif
 			return npath;
 		}
 
@@ -69,7 +73,11 @@ namespace vscode
 				stack.pop_back();
 			}
 			else if (e != ".") {
+#if _MSC_VER >= 1900
+				stack.push_back(e.string());
+#else
 				stack.push_back(e);
+#endif
 			}
 		}
 		for (auto e : stack) {

@@ -349,7 +349,7 @@ namespace vscode
 		auto& args = req["arguments"];
 		auto& source = args["source"];
 		fs::path client_path = path_normalize(source["path"].Get<std::string>());
-		assert(client_path.is_complete());
+		assert(client_path.is_absolute());
 		breakpoints_.clear(client_path);
 
 		std::vector<size_t> lines;
