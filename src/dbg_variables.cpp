@@ -203,25 +203,20 @@ namespace vscode
 			if (lua_isinteger(L, idx))
 			{
 				var.value = format("%d", lua_tointeger(L, idx)); 
-				var.type = "integer";
 			}
 			else
 			{
 				var.value = format("%f", lua_tonumber(L, idx));
-				var.type = "number";
 			}
 			return;
 		case LUA_TSTRING:
 			var.value = format("'%s'", lua_tostring(L, idx));
-			var.type = "string";
 			return;
 		case LUA_TBOOLEAN:
 			var.value = lua_toboolean(L, idx) ? "true" : "false";
-			var.type = "boolean";
 			return;
 		case LUA_TNIL:
 			var.value = "nil";
-			var.type = "nil";
 			return;
 		case LUA_TFUNCTION:
 		{
@@ -236,7 +231,6 @@ namespace vscode
 				if (r == custom::result::sucess || r == custom::result::sucess_once)
 				{
 					var.value = format("[%s:%d]", client_path.string(), entry.linedefined);
-					var.type = "function";
 					return;
 				}
 			}
@@ -246,12 +240,30 @@ namespace vscode
 			break;
 		}
 		var.value = format("%s: %p", luaL_typename(L, idx), lua_topointer(L, idx));
-		var.type = luaL_typename(L, idx);
 		return;
+	}
+
+	void var_set_type(variable& var, lua_State *L, int idx)
+	{
+		if (luaL_getmetafield(L, idx, "__name") == LUA_TSTRING) {
+			var.type = lua_tostring(L, -1);
+			lua_pop(L, 1);
+			return;
+		}
+		switch (lua_type(L, idx)) {
+		case LUA_TNUMBER:
+			var.type = lua_isinteger(L, idx) ? "integer" : "number";
+			return;
+		case LUA_TLIGHTUSERDATA:
+			var.type = "light userdata";
+			return;
+		}
+		var.type = luaL_typename(L, idx);
 	}
 
 	void var_set_value(variable& var, lua_State *L, int idx, pathconvert& pathconvert)
 	{
+		var_set_type(var, L, idx);
 		if (safe_callmeta(L, idx, "__tostring")) {
 			var_set_value_(var, L, -1, pathconvert);
 			lua_pop(L, 1);
