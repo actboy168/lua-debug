@@ -245,10 +245,13 @@ namespace vscode
 
 	void var_set_type(variable& var, lua_State *L, int idx)
 	{
-		if (luaL_getmetafield(L, idx, "__name") == LUA_TSTRING) {
-			var.type = lua_tostring(L, -1);
+		if (luaL_getmetafield(L, idx, "__name") != LUA_TNIL) {
+			if (lua_type(L, -1) == LUA_TSTRING)	  {
+				var.type = lua_tostring(L, -1);
+				lua_pop(L, 1);
+				return;
+			}
 			lua_pop(L, 1);
-			return;
 		}
 		switch (lua_type(L, idx)) {
 		case LUA_TNUMBER:
