@@ -48,7 +48,8 @@
                         "cwd": "${workspaceRoot}",
                         "path": "${workspaceRoot}/?.lua",
                         "cpath": "${workspaceRoot}/?.dll",
-                        "arg": []
+                        "arg": [],
+                        "console" : "ansi"
                     },
                     {
                         "name": "attach",
