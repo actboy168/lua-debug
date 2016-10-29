@@ -1,7 +1,7 @@
 {
     "name": "lua-debug",
     "displayName": "Lua 5.3 Debugger",
-    "version": "0.0.9",
+    "version": "0.0.11",
     "publisher": "actboy168",
     "icon": "images/logo.png",
     "description": "Visual Studio Code debugger extension for Lua 5.3",
@@ -49,7 +49,7 @@
                         "path": "${workspaceRoot}/?.lua",
                         "cpath": "${workspaceRoot}/?.dll",
                         "arg": [],
-                        "console" : "ansi"
+                        "console": "ansi"
                     },
                     {
                         "name": "attach",
