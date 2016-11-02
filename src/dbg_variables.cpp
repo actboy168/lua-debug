@@ -385,33 +385,39 @@ namespace vscode
 		return true;
 	}
 
-	static const char* getlocal(lua_State* L, lua_Debug* ar, var_type type, int n)
+	static bool getlocal(lua_State* L, lua_Debug* ar, var_type type, int n, const char*& name)
 	{
 		if (type == var_type::upvalue)
 		{
 			if (!lua_getinfo(L, "f", ar))
-				return 0;
+				return false;
 			const char* r = lua_getupvalue(L, -1, n);
 			if (!r) {
 				lua_pop(L, 1);
-				return 0;
+				name = 0;
+				return false;
 			}
 			lua_remove(L, -2);
-			return r;
+			name = r;
+			return true;
 		}
 		const char *r = lua_getlocal(L, ar, type == var_type::vararg ? -n : n);
 		if (!r) {
-			return 0;
+			return false;
 		}
 		if (*r == '(' && strcmp(r, "(*vararg)") != 0) {
 			lua_pop(L, 1);
-			return 0;
+			name = 0;
+			return true;
 		}
-		if (*r != '(')
-			return r;
-		static std::string name;
-		name = format("[%d]", n);
-		return name.c_str();
+		if (*r != '(') {
+			name = r;
+			return true;
+		}
+		static std::string s_name;
+		s_name = format("[%d]", n);
+		name = s_name.c_str();
+		return true;
 	}
 
 	bool variables::find_value(lua_State* L, lua_Debug* ar, var_type type, int depth, int64_t pos)
@@ -432,7 +438,8 @@ namespace vscode
 			}
 			else
 			{
-				const char* name = getlocal(L, ar, type, pos & 0xFF);
+				const char* name = 0;
+				getlocal(L, ar, type, pos & 0xFF, name);
 				if (!name)
 					return false;
 				pos >>= 8;
@@ -567,10 +574,11 @@ namespace vscode
 			{
 				for (int n = 1;; n++)
 				{
-					const char* lname = getlocal(L, ar, type, n);
-					if (!lname)
+					const char* name = 0;
+					if (!getlocal(L, ar, type, n, name)) {
 						break;
-					if (var.name == lname)
+					}
+					if (name && var.name == name)
 					{
 						return setlocal(L, ar, type, n, var);
 					}
@@ -793,18 +801,21 @@ namespace vscode
 			{
 				for (int n = 1;; n++)
 				{
-					const char* name = getlocal(L, ar, type, n);
-					if (!name)
-						break; 
-					variable var;
-					var.name = name;
-					var_set_value(var, L, -1, pathconvert);
-					if (can_extand(L, lua_gettop(L)))
-					{
-						var.reference = (int)type | (depth << 8) | (n << 16);
+					const char* name = 0;
+					if (!getlocal(L, ar, type, n, name)) {
+						break;
 					}
-					lua_pop(L, 1);
-					if (push(var)) break;
+					if (name) {
+						variable var;
+						var.name = name;
+						var_set_value(var, L, -1, pathconvert);
+						if (can_extand(L, lua_gettop(L)))
+						{
+							var.reference = (int)type | (depth << 8) | (n << 16);
+						}
+						lua_pop(L, 1);
+						if (push(var)) break;
+					}
 				}
 				return;
 			}
