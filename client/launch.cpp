@@ -102,6 +102,14 @@ launch_server::launch_server(const std::string& console, std::function<void()> i
 		lua_pushcclosure(L, print, 1);
 		lua_setglobal(L, "print");
 	}
+	else {
+		lua_pushcclosure(L, print_empty, 0);
+		lua_setglobal(L, "print");
+	}
+}
+
+int launch_server::print_empty(lua_State *L) {
+	return 0;
 }
 
 int launch_server::print(lua_State *L) {
