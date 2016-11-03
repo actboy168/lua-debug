@@ -75,6 +75,7 @@ namespace vscode
 			for (auto _ : res("body").Object())
 			{
 				res("content").String(content);
+				res("mimeType").String("text/x-lua");
 			}
 		}
 		network_->output(res);

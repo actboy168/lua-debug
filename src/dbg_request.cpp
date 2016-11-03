@@ -348,6 +348,10 @@ namespace vscode
 	{
 		auto& args = req["arguments"];
 		auto& source = args["source"];
+		if (!source.HasMember("path")) {
+			response_error(req, "not yet implemented");
+			return false;
+		}
 		fs::path client_path = path_normalize(source["path"].Get<std::string>());
 		assert(client_path.is_absolute());
 		breakpoints_.clear(client_path);
