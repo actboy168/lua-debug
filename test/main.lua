@@ -1,6 +1,8 @@
+local code = [[
+print(1)
+print(1)
+print(1)
+]]
 
-if not G then
-    G = 0
-end
-G = G + 1
-print(G)
+load(code)()
+print('ok')

@@ -6,12 +6,13 @@
             "name": "launch",
             "type": "lua",
             "request": "launch",
-            "program": "${workspaceRoot}/main.lua",
             "stopOnEntry": true,
+            "program": "${workspaceRoot}/main.lua",
             "cwd": "${workspaceRoot}",
             "path": "${workspaceRoot}/?.lua",
             "cpath": "${workspaceRoot}/?.dll",
-            "arg": []
+            "arg": []//,
+            //"console": "utf8"
         },
         {
             "name": "attach",
