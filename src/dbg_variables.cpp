@@ -799,6 +799,7 @@ namespace vscode
 		case var_type::upvalue:
 			if (pos == 0)
 			{
+				std::vector<variable> vars;
 				for (int n = 1;; n++)
 				{
 					const char* name = 0;
@@ -814,7 +815,28 @@ namespace vscode
 							var.reference = (int)type | (depth << 8) | (n << 16);
 						}
 						lua_pop(L, 1);
-						if (push(var)) break;
+
+						size_t i = 0;
+						for (; i < vars.size(); ++i)
+						{
+							if (vars[i].name == var.name)
+							{
+								vars[i] = var;
+								break;
+							}
+						}
+						if (i == vars.size())
+						{
+							vars.push_back(var);
+						}
+					}
+				}
+
+				for (const variable& var : vars)
+				{
+					if (push(var))
+					{
+						break;
 					}
 				}
 				return;
