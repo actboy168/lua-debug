@@ -110,7 +110,6 @@ namespace vscode
 				lua_pop(L, 1);
 				return true;
 			}
-			lua_pop(L, 1);
 			return false;
 		case LUA_TUSERDATA:
 			if (lua_getmetatable(L, idx)) {
