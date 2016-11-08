@@ -468,7 +468,7 @@ namespace vscode
 
 		response_success(req, [&](wprotocol& res)
 		{
-			variables resv(res, L, ar, type == var_type::watch ? -1 : 0);
+			variables resv(res, L, &entry, type == var_type::watch ? -1 : 0);
 			resv.push_value(type, depth, var_ref >> 16, pathconvert_);
 		});
 		return false;
