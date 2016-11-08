@@ -13,7 +13,8 @@
 #include "dbg_custom.h"	
 #include "dbg_pathconvert.h" 
 #include "dbg_enum.h"   
-#include "dbg_watchs.h"
+#include "dbg_watchs.h"	  
+#include "dbg_protocol.h"
 
 namespace vscode
 {
@@ -115,6 +116,7 @@ namespace vscode
 		bool update_main(rprotocol& req, bool& quit);
 		bool update_hook(rprotocol& req, lua_State *L, lua_Debug *ar, bool& quit);
 		void initialize_sourcemaps(rapidjson::Value& args);
+		bool request_launch_done(rprotocol& req);
 
 	private:
 		lua_State*         GL;
@@ -131,7 +133,8 @@ namespace vscode
 		pathconvert        pathconvert_;
 		custom*            custom_;
 		asmjit::JitRuntime jit_;
-		void*              funcptr_;
+		void*              funcptr_;  
+		rprotocol          cache_launch_;
 		std::map<std::string, std::function<bool(rprotocol&)>>                            main_dispatch_;
 		std::map<std::string, std::function<bool(rprotocol&, lua_State*, lua_Debug *ar)>> hook_dispatch_;
 	};

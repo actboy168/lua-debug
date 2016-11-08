@@ -135,14 +135,14 @@ namespace vscode
 		if (args.HasMember("luadll")) {
 			delayload::set_lua_dll(vscode::u2w(args["luadll"].Get<std::string>()));
 		}
-#endif
+#endif		
 		if (!args.HasMember("program") || !args["program"].IsString()) {
 			response_error(req, "Launch failed");
 			return false;
 		}
-		bool stopOnEntry = true;
-		if (args.HasMember("stopOnEntry") && args["stopOnEntry"].IsBool()) {
-			stopOnEntry = args["stopOnEntry"].GetBool();
+		initialize_sourcemaps(args);
+		if (args.HasMember("cwd") && args["cwd"].IsString()) {
+			fs::current_path(fs::path(args["cwd"].Get<std::string>()));
 		}
 		if (args.HasMember("path") && args["cpath"].IsString())
 		{
@@ -160,12 +160,6 @@ namespace vscode
 			lua_setfield(L, -2, "cpath");
 			lua_pop(L, 1);
 		}
-
-		if (args.HasMember("cwd") && args["cwd"].IsString()) {
-			fs::current_path(fs::path(args["cwd"].Get<std::string>()));
-		}
-		initialize_sourcemaps(args);
-
 		lua_newtable(L);
 		if (args.HasMember("arg") && args["arg"].IsArray()) {
 			int i = 1;
@@ -181,7 +175,17 @@ namespace vscode
 			}
 		}
 		lua_setglobal(L, "arg");
+		cache_launch_ = std::move(req);
+		return false;
+	}
 
+	bool debugger_impl::request_launch_done(rprotocol& req) {
+		lua_State *L = GL;
+		bool stopOnEntry = true;
+		auto& args = req["arguments"];
+		if (args.HasMember("stopOnEntry") && args["stopOnEntry"].IsBool()) {
+			stopOnEntry = args["stopOnEntry"].GetBool();
+		}
 		std::string program = u2a(args["program"]);
 		int status = luaL_loadfile(L, program.c_str());
 		if (status != LUA_OK) {
@@ -196,7 +200,6 @@ namespace vscode
 		}
 
 		event_thread(true);
-
 		if (stopOnEntry)
 		{
 			set_state(state::stepping);
@@ -206,7 +209,6 @@ namespace vscode
 		{
 			set_state(state::running);
 		}
-
 		open();
 		if (lua_pcall(L, 0, 0, 0))
 		{
@@ -505,7 +507,7 @@ namespace vscode
 	bool debugger_impl::request_configuration_done(rprotocol& req)
 	{
 		response_success(req);
-		return false;
+		return request_launch_done(cache_launch_);
 	}
 
 	bool debugger_impl::request_disconnect(rprotocol& req)
