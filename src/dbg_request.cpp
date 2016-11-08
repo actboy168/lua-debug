@@ -555,13 +555,18 @@ namespace vscode
 	{
 		auto& args = req["arguments"];
 		auto& context = args["context"];
-		int depth = args["frameId"].GetInt();
 		std::string expression = args["expression"].Get<std::string>();
 
 		lua_Debug current;
-		if (!lua_getstack(L, depth, &current)) {
-			response_error(req, "error stack frame");
-			return false;
+		if (args.HasMember("frameId")) {
+			int depth = args["frameId"].GetInt();
+			if (!lua_getstack(L, depth, &current)) {
+				response_error(req, "error stack frame");
+				return false;
+			}
+		}
+		else {
+			current = *ar;
 		}
 
 		int nresult = 0;
