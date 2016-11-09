@@ -245,6 +245,7 @@ namespace vscode
 			set_state(state::running);
 		}
 		open();
+		cache_launch_ = rprotocol();
 		return !stopOnEntry;
 	}
 
@@ -507,6 +508,9 @@ namespace vscode
 	bool debugger_impl::request_configuration_done(rprotocol& req)
 	{
 		response_success(req);
+		if (cache_launch_.IsNull()) {
+			return false;
+		}
 		return request_launch_done(cache_launch_);
 	}
 
