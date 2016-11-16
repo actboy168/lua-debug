@@ -20,7 +20,7 @@
     * path，用于初始化package.path
     * cpath，用于初始化package.cpath
     * arg，lua.exe的命令行参数，用于初始化arg
-    * console，lua的标准输出的编码，可选择utf8、ansi、none，当是none时不会重定向标准输出到vscode
+    * console，lua的标准输出的编码，可选择utf8、ansi、none， 等于none时不会重定向标准输出到vscode
     * sourceMaps，一般不需要，作用同attach模式
 
 2. attach模式，调试任意加载了vscode-debug.dll的进程。
