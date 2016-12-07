@@ -179,6 +179,12 @@ namespace vscode
 		return false;
 	}
 
+	static int errfunc(lua_State* L)
+	{
+		luaL_traceback(L, L, lua_tostring(L, 1), 1);
+		return 1;
+	}
+
 	bool debugger_impl::request_launch_done(rprotocol& req) {
 		lua_State *L = GL;
 		bool stopOnEntry = true;
@@ -210,11 +216,15 @@ namespace vscode
 			set_state(state::running);
 		}
 		open();
-		if (lua_pcall(L, 0, 0, 0))
+
+		lua_pushcfunction(L, errfunc);
+		lua_insert(L, -2);
+		if (lua_pcall(L, 0, 0, -2))
 		{
 			event_output("console", format("Program terminated with error: %s\n", lua_tostring(L, -1)));
 			lua_pop(L, 1);
 		}
+		lua_pop(L, 1);
 		set_state(state::terminated);
 		return false;
 	}
