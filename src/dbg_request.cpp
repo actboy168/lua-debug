@@ -303,8 +303,8 @@ namespace vscode
 								fs::path name = path.filename();
 								for (auto _ : res("source").Object())
 								{
-									res("name").String(name.string());
-									res("path").String(path.string());
+									res("name").String(a2u(name.string()));
+									res("path").String(a2u(path.string()));
 									res("sourceReference").Int64(0);
 								}
 							}
@@ -365,7 +365,7 @@ namespace vscode
 			response_error(req, "not yet implemented");
 			return false;
 		}
-		fs::path client_path = path_normalize(source["path"].Get<std::string>());
+		fs::path client_path = path_normalize(u2a(source["path"].Get<std::string>()));
 		assert(client_path.is_absolute());
 		breakpoints_.clear(client_path);
 
@@ -393,7 +393,7 @@ namespace vscode
 					res("verified").Bool(true);
 					for (auto _ : res("source").Object())
 					{
-						res("path").String(client_path.string());
+						res("path").String(a2u(client_path.string()));
 					}
 					res("line").Int(lines[d]);
 				}
