@@ -102,9 +102,14 @@
                                 "description": "Search path for native libraries",
                                 "default": "${workspaceRoot}/?.dll"
                             },
+                            "arg0": {
+                                "type": "string",
+                                "description": "Command line argument, arg[0]",
+                                "default": null
+                            },
                             "arg": {
                                 "type": "array",
-                                "description": "Command line argument",
+                                "description": "Command line argument, arg[1] ... arg[n]",
                                 "default": []
                             },
                             "console": {
