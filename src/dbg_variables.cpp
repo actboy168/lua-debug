@@ -754,6 +754,10 @@ namespace vscode
 		while (lua_next(L, -2))
 		{
 			n++;
+			if (n + 1 >= type_indexmax) {
+				lua_pop(L, 2);
+				break;
+			}
 			variable var;
 			var.name = get_name(L, -2);
 			if (level == 0) {
@@ -799,7 +803,7 @@ namespace vscode
 			if (pos == 0)
 			{
 				std::vector<variable> vars;
-				for (int n = 1;; n++)
+				for (int n = 1; n < type_indexmax; n++)
 				{
 					const char* name = 0;
 					if (!getlocal(L, ar, type, n, name)) {
