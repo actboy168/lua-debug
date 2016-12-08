@@ -15,3 +15,4 @@
 *.exe
 bin/
 build/
+*.vs/

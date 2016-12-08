@@ -144,7 +144,7 @@ namespace vscode
 		if (args.HasMember("cwd") && args["cwd"].IsString()) {
 			fs::current_path(fs::path(args["cwd"].Get<std::string>()));
 		}
-		if (args.HasMember("path") && args["cpath"].IsString())
+		if (args.HasMember("path") && args["path"].IsString())
 		{
 			std::string path = u2a(args["path"]);
 			lua_getglobal(L, "package");
