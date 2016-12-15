@@ -1,7 +1,7 @@
 {
     "name": "lua-debug",
     "displayName": "Lua 5.3 Debugger",
-    "version": "0.0.14",
+    "version": "0.0.16",
     "publisher": "actboy168",
     "icon": "images/logo.png",
     "description": "Visual Studio Code debugger extension for Lua 5.3",
@@ -49,7 +49,7 @@
                         "path": "${workspaceRoot}/?.lua",
                         "cpath": "${workspaceRoot}/?.dll",
                         "arg": [],
-                        "console": "ansi"
+                        "console": "utf8"
                     },
                     {
                         "name": "attach",
@@ -64,6 +64,24 @@
                                 "${workspaceRoot}"
                             ]
                         ]
+                    }
+                ],
+                "configurationSnippets": [
+                    {
+                        "label": "Lua Debug: Launch",
+                        "description": "A new configuration for launching a lua debug program",
+                        "body": {
+                            "name": "${1:launch}",
+                            "type": "lua",
+                            "request": "launch",
+                            "stopOnEntry": true,
+                            "program": "^\"\\${workspaceRoot}/${2:main.lua}\"",
+                            "cwd": "^\"\\${workspaceRoot}\"",
+                            "path": "^\"\\${workspaceRoot}/?.lua\"",
+                            "cpath": "^\"\\${workspaceRoot}/?.dll\"",
+                            "arg": [],
+                            "console": "utf8"
+                        }
                     }
                 ],
                 "configurationAttributes": {
