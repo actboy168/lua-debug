@@ -621,7 +621,7 @@ namespace vscode
 		std::vector<variable> rets(nresult);
 		for (int i = 0; i < (int)rets.size(); ++i)
 		{
-			var_set_value(rets[i], L, -1 - i, pathconvert_);
+			var_set_value(rets[i], L, i - (int)rets.size(), pathconvert_);
 		}
 		int64_t reference = 0;
 		if (rets.size() == 1 && context == "watch" && can_extand(L, -1))
