@@ -209,7 +209,15 @@ namespace vscode
 			}
 			return;
 		case LUA_TSTRING:
-			var.value = format("'%s'", lua_tostring(L, idx));
+		{
+			size_t len = 0;
+			const char* str = lua_tolstring(L, idx, &len);
+			if (len < 256) {
+				var.value = format("'%s'", str);
+			} else {
+				var.value = format("'%s...'", std::string(str, 256));
+			}
+		}
 			return;
 		case LUA_TBOOLEAN:
 			var.value = lua_toboolean(L, idx) ? "true" : "false";
