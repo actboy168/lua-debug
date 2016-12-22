@@ -175,8 +175,13 @@ namespace vscode
 
 		switch (lua_type(L, idx)) {
 		case LUA_TNUMBER:
-			if (lua_isinteger(L, idx))
-				return format("%d", lua_tointeger(L, idx));
+			if (lua_isinteger(L, idx)) {
+				lua_Integer i = lua_tointeger(L, idx);
+				if (i > 0 && i < 1000) {
+					return format("[%03d]", i);
+				}
+				return format("[%d]", i);
+			}
 			else
 				return format("%f", lua_tonumber(L, idx));
 		case LUA_TSTRING: {
