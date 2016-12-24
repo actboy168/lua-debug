@@ -10,7 +10,7 @@
 #include "../client/dbg_redirect.cpp"
 
 
-#define TEST_ATTACH 1
+#define TEST_ATTACH 0
 
 class debugger_wrapper
 	: public vscode::custom

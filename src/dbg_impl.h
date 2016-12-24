@@ -135,6 +135,8 @@ namespace vscode
 		asmjit::JitRuntime jit_;
 		void*              funcptr_;  
 		rprotocol          cache_launch_;
+		bool               has_source_;
+		bp_source*         cur_source_;
 		std::map<std::string, std::function<bool(rprotocol&)>>                            main_dispatch_;
 		std::map<std::string, std::function<bool(rprotocol&, lua_State*, lua_Debug *ar)>> hook_dispatch_;
 	};

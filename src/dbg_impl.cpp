@@ -74,11 +74,13 @@ namespace vscode
 		if (ar->event == LUA_HOOKCALL)
 		{
 			stacklevel_++;
+			has_source_ = false;
 			return;
 		}
 		if (ar->event == LUA_HOOKRET)
 		{
 			stacklevel_--;
+			has_source_ = false;
 			return;
 		}
 		if (ar->event != LUA_HOOKLINE)
@@ -229,6 +231,8 @@ namespace vscode
 		, custom_(&global_custom)
 		, jit_()
 		, funcptr_(0)
+		, has_source_(false)
+		, cur_source_(0)
 		, main_dispatch_
 		({
 			{ "launch", DBG_REQUEST_MAIN(request_launch) },

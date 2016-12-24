@@ -76,14 +76,19 @@ namespace vscode
 		{
 			if (breakpoints_.has(ar->currentline))
 			{
-				if (lua_getinfo(L, "S", ar))
+				if (!has_source_)
 				{
-					bp_source* src = breakpoints_.get(ar->source, pathconvert_);
-					if (src && breakpoints_.has(src, ar->currentline, L, ar))
-					{
-						step_in();
-						return true;
-					}
+					has_source_ = true;
+					cur_source_ = 0;
+					if (!lua_getinfo(L, "S", ar))
+						return false;
+					cur_source_ = breakpoints_.get(ar->source, pathconvert_);
+				}
+
+				if (cur_source_ && breakpoints_.has(cur_source_, ar->currentline, L, ar))
+				{
+					step_in();
+					return true;
 				}
 			}
 		}
