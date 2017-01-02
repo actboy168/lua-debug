@@ -38,7 +38,9 @@ namespace delayload
 	}
 }
 
-
+#ifndef DELAYIMP_INSECURE_WRITABLE_HOOKS
+const
+#endif
 PfnDliHook __pfnDliNotifyHook2 = delayload::hook;
 
 #endif
