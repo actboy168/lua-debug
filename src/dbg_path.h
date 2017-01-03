@@ -4,6 +4,7 @@
 
 #if _MSC_VER >= 1900
 namespace fs = std::experimental::filesystem::v1;
+#define path_to_string(x) (x).string()
 #else
 namespace fs_ = std::tr2::sys;
 
@@ -65,6 +66,7 @@ namespace fs {
 		fs_::current_path(p);
 	}
 }
+#define path_to_string(x) (x)
 #endif
 
 namespace vscode

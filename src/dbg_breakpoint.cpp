@@ -119,7 +119,7 @@ namespace vscode
 		}
 
 		fs::path* cliptr = 0;
-		if (pathconvert.fget(server_path, cliptr))
+		if (pathconvert.fget(path_to_string(server_path), cliptr))
 		{
 			auto it = client_map_.find(*cliptr);
 			if (it == client_map_.end())
@@ -128,7 +128,7 @@ namespace vscode
 		}
 
 		fs::path client_path;
-		custom::result r = pathconvert.eval(server_path, client_path);
+		custom::result r = pathconvert.eval(path_to_string(server_path), client_path);
 		switch (r)
 		{
 		case custom::result::failed:
