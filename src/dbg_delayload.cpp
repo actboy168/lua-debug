@@ -2,6 +2,7 @@
 
 #include "dbg_delayload.h"
 #include <windows.h>
+#define DELAYIMP_INSECURE_WRITABLE_HOOKS
 #include <DelayImp.h>
 
 namespace delayload
@@ -38,9 +39,6 @@ namespace delayload
 	}
 }
 
-#ifndef DELAYIMP_INSECURE_WRITABLE_HOOKS
-const
-#endif
 PfnDliHook __pfnDliNotifyHook2 = delayload::hook;
 
 #endif
