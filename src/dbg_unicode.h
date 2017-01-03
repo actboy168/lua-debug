@@ -19,6 +19,10 @@ namespace vscode
 			: buf(buf)
 			, len(len)
 		{ }
+		strview(const char* buf)
+			: buf(buf)
+			, len(strlen(buf))
+		{ }
 		bool empty() const { return buf == 0; }
 		const char* data() const { return buf; }
 		size_t size() const { return len; }
