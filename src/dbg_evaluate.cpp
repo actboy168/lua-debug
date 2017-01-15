@@ -117,6 +117,16 @@ namespace vscode
 			const char* name = lua_getupvalue(L, -1, i);
 			if (!name) break;
 			lua_pop(L, 1);
+			{
+				auto it = id_local.find(name);
+				if (it != id_local.end())
+				{
+					lua_pushvalue(L, it->second);
+					if (!lua_setupvalue(L, -2, i))
+						lua_pop(L, 1);
+					continue;
+				}
+			}
 			if (writeable)
 			{
 				auto it = id_upvalue.find(name);
@@ -136,16 +146,6 @@ namespace vscode
 						if (!lua_setupvalue(L, -2, i))
 							lua_pop(L, 1);
 					}
-					continue;
-				}
-			}
-			{
-				auto it = id_local.find(name);
-				if (it != id_local.end())
-				{
-					lua_pushvalue(L, it->second);
-					if (!lua_setupvalue(L, -2, i))
-						lua_pop(L, 1);
 					continue;
 				}
 			}
