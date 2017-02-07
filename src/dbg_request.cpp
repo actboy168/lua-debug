@@ -308,6 +308,7 @@ namespace vscode
 							{
 								res("name").String("<C function>");
 								res("sourceReference").Int64(-1);
+								res("presentationHint").String("deemphasize");
 							}
 						}
 						else if (*src == '@' || *src == '=')
