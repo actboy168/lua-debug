@@ -332,6 +332,7 @@ namespace vscode
 							stack_.push_back({ depth, reference });
 							for (auto _ : res("source").Object())
 							{
+								res("name").String("<Memory funtion>");
 								res("sourceReference").Int64(reference);
 							}
 						}
