@@ -16,10 +16,11 @@
     * program，lua.exe执行的入口文件 
     * cwd，lua.exe的当前目录
     * stopOnEntry，开始调试时是否先暂停
-    * luadll，指定lua dll的路径，如有不填会加载luacore.dll
+    * luadll，指定lua dll的路径，如果不填则会加载luacore.dll
     * path，用于初始化package.path
     * cpath，用于初始化package.cpath
     * arg，lua.exe的命令行参数，用于初始化arg
+    * arg0，lua.exe的命令行参数，用于初始化arg的arg[0]
     * console，lua的标准输出的编码，可选择utf8、ansi、none， 等于none时不会重定向标准输出到vscode
     * sourceMaps，一般不需要，作用同attach模式
 
@@ -35,7 +36,6 @@
 ```json
 {
     "version": "0.2.0",
-    "debugServer" : 4278,
     "configurations": [
         {
             "name": "attach",
@@ -44,6 +44,7 @@
             "program": "",
             "stopOnEntry": false,
             "cwd": "${workspaceRoot}",
+            "debugServer" : 4278
         }
     ]
 }
