@@ -1,7 +1,7 @@
 {
     "version": "0.2.0",
-    "debugServer" : 4278,
     "configurations": [
+
         {
             "name": "launch",
             "type": "lua",
@@ -11,8 +11,8 @@
             "cwd": "${workspaceRoot}",
             "path": "${workspaceRoot}/?.lua",
             "cpath": "${workspaceRoot}/?.dll",
-            "arg": []//,
-            //"console": "utf8"
+            "arg": [],
+            "debugServer" : 4278
         },
         {
             "name": "attach",
