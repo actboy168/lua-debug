@@ -168,13 +168,23 @@ namespace vscode
 		lua_newtable(L);
 		if (args.HasMember("arg0")) {
 			if (args["arg0"].IsString()) {
-				auto& v = u2a(args["arg0"]);
-				lua_pushlstring(L, v.data(), v.size());
+				auto& v = args["arg0"];
+				lua_pushlstring(L, v.GetString(), v.GetStringLength());
+				lua_rawseti(L, -2, 0);
 			}
-			else {
-				lua_pushstring(L, "");
+			else if (args["arg0"].IsArray()) {
+				int i = 1 - (int)args["arg0"].Size();
+				for (auto& v : args["arg0"].GetArray())
+				{
+					if (v.IsString()) {
+						lua_pushlstring(L, v.GetString(), v.GetStringLength());
+					}
+					else {
+						lua_pushstring(L, "");
+					}
+					lua_rawseti(L, -2, i++);
+				}
 			}
-			lua_rawseti(L, -2, 0);
 		}
 		if (args.HasMember("arg") && args["arg"].IsArray()) {
 			int i = 1;

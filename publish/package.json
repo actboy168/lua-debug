@@ -121,8 +121,8 @@
                                 "default": "${workspaceRoot}/?.dll"
                             },
                             "arg0": {
-                                "type": "string",
-                                "description": "Command line argument, arg[0]",
+                                "type": ["string", "array"],
+                                "description": "Command line argument, arg[-n] ... arg[0]",
                                 "default": null
                             },
                             "arg": {
