@@ -19,7 +19,7 @@
     * luadll，指定lua dll的路径，如果不填则会加载luacore.dll
     * path，用于初始化package.path
     * cpath，用于初始化package.cpath
-    * arg0，lua.exe的命令行参数，用于初始化arg的arg[0]
+    * arg0，lua.exe的命令行参数，用于初始化arg的arg[-n] .. arg[0]
     * arg，lua.exe的命令行参数，用于初始化arg的arg[1] .. arg[n]
     * console，lua的标准输出的编码，可选择utf8、ansi、none， 等于none时不会重定向标准输出到vscode
     * sourceMaps，一般不需要，作用同attach模式
