@@ -106,5 +106,8 @@
     <ClInclude Include="..\src\dbg_delayload.h">
       <Filter>inc</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\dbg_capabilities.h">
+      <Filter>inc</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -1,5 +1,6 @@
 #include "dbg_impl.h"
 #include "dbg_io.h"
+#include "dbg_capabilities.h"
 
 namespace vscode
 {
@@ -11,22 +12,7 @@ namespace vscode
 			return;
 		}
 		wprotocol res;
-		for (auto _ : res.Object())
-		{
-			res("type").String("response");
-			res("seq").Int64(seq++);
-			res("command").String(req["command"]);
-			res("request_seq").Int64(req["seq"].GetInt64());
-			res("success").Bool(true);
-			for (auto _ : res("body").Object())
-			{
-				res("supportsConfigurationDoneRequest").Bool(true);
-				res("supportsSetVariable").Bool(true);
-				res("supportsConditionalBreakpoints").Bool(true);
-				res("supportsValueFormattingOptions").Bool(true);
-				
-			}
-		}
+		capabilities(res, req["seq"].GetInt64());
 		network_->output(res);
 	}
 

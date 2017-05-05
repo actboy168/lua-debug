@@ -12,6 +12,7 @@
 #include "launch.h"
 #include "dbg_delayload.h" 
 #include "dbg_delayload.cpp"
+#include "dbg_capabilities.h"
 
 using namespace vscode;
 
@@ -138,20 +139,7 @@ private:
 void response_initialized(rprotocol& req)
 {
 	wprotocol res;
-	for (auto _ : res.Object())
-	{
-		res("type").String("response");
-		res("seq").Int64(1);
-		res("command").String(req["command"]);
-		res("request_seq").Int64(req["seq"].GetInt64());
-		res("success").Bool(true);
-		for (auto _ : res("body").Object())
-		{
-			res("supportsConfigurationDoneRequest").Bool(true);
-			res("supportsSetVariable").Bool(true);
-			res("supportsConditionalBreakpoints").Bool(true);
-		}
-	}
+	vscode::capabilities(res, req["seq"].GetInt64());
 	stdinput::output(res);
 }
 
