@@ -60,7 +60,7 @@ namespace vscode
 		network_->output(res);
 	}
 
-	void debugger_impl::event_stopped(const char *msg)
+	void debugger_impl::event_stopped(const char *msg, const char* text)
 	{
 		watch_.clear();
 
@@ -74,6 +74,10 @@ namespace vscode
 			{
 				res("reason").String(msg);
 				res("threadId").Int(1);
+				if (text)
+				{
+					res("text").String(text);
+				}
 			}
 		}
 		network_->output(res);

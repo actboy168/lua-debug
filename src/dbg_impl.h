@@ -41,6 +41,8 @@ namespace vscode
 		debugger_impl(lua_State* L, io* io);
 		~debugger_impl();
 		void hook(lua_State *L, lua_Debug *ar);
+		void exception(lua_State *L, const char* msg);
+		void loop(lua_State *L, lua_Debug *ar);
 		void update();
 		void set_custom(custom* custom);
 		void output(const char* category, const char* buf, size_t len);
@@ -63,6 +65,7 @@ namespace vscode
 		bool request_attach(rprotocol& req);
 		bool request_disconnect(rprotocol& req);
 		bool request_pause(rprotocol& req);
+		bool request_set_exception_breakpoints(rprotocol& req);
 
 	private:
 		bool request_thread(rprotocol& req, lua_State *L, lua_Debug *ar);
@@ -78,7 +81,7 @@ namespace vscode
 		bool request_evaluate(rprotocol& req, lua_State *L, lua_Debug *ar);
 
 	private:
-		void event_stopped(const char *msg);
+		void event_stopped(const char *msg, const char* text = nullptr);
 		void event_thread(bool started);
 		void event_terminated();
 		void event_initialized();
@@ -137,6 +140,7 @@ namespace vscode
 		rprotocol          cache_launch_;
 		bool               has_source_;
 		bp_source*         cur_source_;
+		bool               exception_;
 		std::map<std::string, std::function<bool(rprotocol&)>>                            main_dispatch_;
 		std::map<std::string, std::function<bool(rprotocol&, lua_State*, lua_Debug *ar)>> hook_dispatch_;
 	};

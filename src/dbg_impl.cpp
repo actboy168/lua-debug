@@ -115,6 +115,26 @@ namespace vscode
 			step_in();
 		}
 
+		loop(L, ar);
+	}
+
+	void debugger_impl::exception(lua_State *L, const char* msg)
+	{
+		if (!exception_)
+		{
+			return;
+		}
+		lua_Debug ar;
+		if (lua_getstack(L, 0, &ar))
+		{
+			event_stopped("exception", msg);
+			step_in();
+			loop(L, &ar);
+		}
+	}
+
+	void debugger_impl::loop(lua_State *L, lua_Debug *ar)
+	{
 		bool quit = false;
 		while (!quit)
 		{
@@ -233,12 +253,14 @@ namespace vscode
 		, funcptr_(0)
 		, has_source_(false)
 		, cur_source_(0)
+		, exception_(false)
 		, main_dispatch_
 		({
 			{ "launch", DBG_REQUEST_MAIN(request_launch) },
 			{ "attach", DBG_REQUEST_MAIN(request_attach) },
 			{ "disconnect", DBG_REQUEST_MAIN(request_disconnect) },
 			{ "setBreakpoints", DBG_REQUEST_MAIN(request_set_breakpoints) },
+			{ "setExceptionBreakpoints", DBG_REQUEST_MAIN(request_set_exception_breakpoints) },
 			{ "configurationDone", DBG_REQUEST_MAIN(request_configuration_done) },
 			{ "pause", DBG_REQUEST_MAIN(request_pause) },
 		})

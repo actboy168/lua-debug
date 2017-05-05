@@ -11,6 +11,7 @@ This project aims to provide a debug adapter that allows Microsoft's Visual Stud
 * Watches
 * Evaluate expressions
 * Remote debugging
+* Exception
 
 ##Source
 [GitHub](https://github.com/actboy168/vscode-lua-debug)

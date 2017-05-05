@@ -206,7 +206,10 @@ namespace vscode
 
 	static int errfunc(lua_State* L)
 	{
+		debugger_impl* dbg = (debugger_impl*)lua_touserdata(L, lua_upvalueindex(1));
 		luaL_traceback(L, L, lua_tostring(L, 1), 1);
+		dbg->exception(L, lua_tostring(L, -1));
+		lua_settop(L, 2);
 		return 1;
 	}
 
@@ -242,7 +245,8 @@ namespace vscode
 		}
 		open();
 
-		lua_pushcfunction(L, errfunc);
+		lua_pushlightuserdata(L, this);
+		lua_pushcclosure(L, errfunc, 1);
 		lua_insert(L, -2);
 		if (lua_pcall(L, 0, 0, -2))
 		{
@@ -449,6 +453,14 @@ namespace vscode
 				}
 			}
 		});
+		return false;
+	}
+	
+	bool debugger_impl::request_set_exception_breakpoints(rprotocol& req)
+	{
+		auto& args = req["arguments"];
+		exception_ = args.HasMember("filters") && args["filters"].IsArray() && args["filters"].Size() > 0;
+		response_success(req);
 		return false;
 	}
 
