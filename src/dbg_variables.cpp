@@ -199,6 +199,27 @@ namespace vscode
 		return format("%s: %p", luaL_typename(L, idx), lua_topointer(L, idx));
 	}
 
+	static const char* skipline(const char* str, size_t n)
+	{
+		if (n <= 1) return str;
+		size_t lineno = 1;
+		for (const char* z = str; *z; ++z)
+		{
+			if (*z == '\n' || *z == '\r')
+			{
+				z++;
+				if ((*z == '\n' || *z == '\r') && *z != *(z - 1))
+					z++;
+				lineno++;
+				if (lineno >= n)
+				{
+					return z;
+				}
+			}
+		}
+		return nullptr;
+	}
+
 	static void var_set_value_(variable& var, lua_State *L, int idx, pathconvert& pathconvert)
 	{
 		switch (lua_type(L, idx)) 
@@ -238,6 +259,20 @@ namespace vscode
 			lua_pushvalue(L, idx);
 			if (lua_getinfo(L, ">S", &entry))
 			{
+				if (entry.source && entry.source[0] != '@' && entry.source[0] != '=')
+				{
+					const char* pos = skipline(entry.source, entry.linedefined);
+					if (pos)
+					{
+						var.value = pos;
+					}
+					else
+					{
+						var.value = format("[%s:%d]", entry.source, entry.linedefined);
+					}
+					return;
+				}
+
 				fs::path client_path;
 				custom::result r = pathconvert.eval_uncomplete(entry.source, client_path);
 				if (r == custom::result::sucess || r == custom::result::sucess_once)
