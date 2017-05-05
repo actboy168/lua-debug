@@ -303,60 +303,81 @@ namespace vscode
 			int levels = args["levels"].GetInt();
 			lua_Debug entry;
 			int depth = 0;
+			int n = 0;
 			for (auto _ : res("stackFrames").Array())
 			{
-				while (lua_getstack(L, depth, &entry) && depth < levels)
+				while (lua_getstack(L, depth, &entry) && n < levels)
 				{
-					for (auto _ : res.Object())
+					int status = lua_getinfo(L, "Sln", &entry);
+					assert(status);
+					const char *src = entry.source;
+					if (memcmp(src, "=[C]", 4) == 0)
 					{
-						int status = lua_getinfo(L, "Sln", &entry);
-						assert(status);
-						const char *src = entry.source;
-						if (memcmp(src, "=[C]", 4) == 0)
+						if (n != 0)
 						{
 							intptr_t reference = ensure_value_fits_in_mantissa((intptr_t)src);
-							for (auto _ : res("source").Object())
+							for (auto _ : res.Object())
 							{
-								res("name").String("<C function>");
-								res("sourceReference").Int64(reference);
-								res("presentationHint").String("deemphasize");
+								for (auto _ : res("source").Object())
+								{
+									res("name").String("<C function>");
+									res("sourceReference").Int64(reference);
+									res("presentationHint").String("deemphasize");
+								}
+								res("id").Int(depth);
+								res("column").Int(1);
+								res("name").String(entry.name ? entry.name : "?");
+								res("line").Int(entry.currentline);
 							}
+							n++;
 						}
-						else if (*src == '@' || *src == '=')
+					}
+					else if (*src == '@' || *src == '=')
+					{
+						fs::path path;
+						custom::result r = pathconvert_.get_or_eval(src, path);
+						if (r == custom::result::sucess || r == custom::result::sucess_once)
 						{
-							fs::path path;
-							custom::result r = pathconvert_.get_or_eval(src, path);
-							if (r == custom::result::sucess || r == custom::result::sucess_once)
+							fs::path name = path.filename();
+							for (auto _ : res.Object())
 							{
-								fs::path name = path.filename();
 								for (auto _ : res("source").Object())
 								{
 									res("name").String(a2u(name.string()));
 									res("path").String(a2u(path.string()));
 									res("sourceReference").Int64(0);
 								}
+								res("id").Int(depth);
+								res("column").Int(1);
+								res("name").String(entry.name ? entry.name : "?");
+								res("line").Int(entry.currentline);
 							}
+							n++;
 						}
-						else
+					}
+					else
+					{
+						intptr_t reference = ensure_value_fits_in_mantissa((intptr_t)src);
+						stack_.push_back({ depth, reference });
+						for (auto _ : res.Object())
 						{
-							intptr_t reference = ensure_value_fits_in_mantissa((intptr_t)src);
-							stack_.push_back({ depth, reference });
 							for (auto _ : res("source").Object())
 							{
 								res("name").String("<Memory funtion>");
 								res("sourceReference").Int64(reference);
 							}
+							res("id").Int(depth);
+							res("column").Int(1);
+							res("name").String(entry.name ? entry.name : "?");
+							res("line").Int(entry.currentline);
 						}
-
-						res("id").Int(depth);
-						res("column").Int(1);
-						res("name").String(entry.name ? entry.name : "?");
-						res("line").Int(entry.currentline);
-						depth++;
+						n++;
 					}
+
+					depth++;
 				}
 			}
-			res("totalFrames").Int(depth);
+			res("totalFrames").Int(n);
 		});
 		return false;
 	}
