@@ -314,10 +314,11 @@ namespace vscode
 						const char *src = entry.source;
 						if (memcmp(src, "=[C]", 4) == 0)
 						{
+							intptr_t reference = ensure_value_fits_in_mantissa((intptr_t)src);
 							for (auto _ : res("source").Object())
 							{
 								res("name").String("<C function>");
-								res("sourceReference").Int64(-1);
+								res("sourceReference").Int64(reference);
 								res("presentationHint").String("deemphasize");
 							}
 						}
