@@ -85,7 +85,7 @@ public:
 
 private:
 	std::vector<char> buffer_;
-	net::tcp::buffer<rprotocol, 8> input_queue_;
+	net::queue<rprotocol, 8> input_queue_;
 };
 
 class proxy_client
