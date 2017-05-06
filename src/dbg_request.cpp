@@ -284,7 +284,6 @@ namespace vscode
 		{
 			set_state(state::running);
 		}
-		open();
 		cache_launch_ = rprotocol();
 		return !stopOnEntry;
 	}
@@ -293,7 +292,6 @@ namespace vscode
 		response_thread(req);
 		return false;
 	}
-
 
 	static intptr_t ensure_value_fits_in_mantissa(intptr_t sourceReference) {
 		assert(sourceReference <= 9007199254740991);
@@ -580,10 +578,13 @@ namespace vscode
 	bool debugger_impl::request_configuration_done(rprotocol& req)
 	{
 		response_success(req);
-		if (cache_launch_.IsNull()) {
-			return false;
+		if (!cache_launch_.IsNull()) {
+			// launch
+			return request_launch_done(cache_launch_);
 		}
-		return request_launch_done(cache_launch_);
+		//attach
+		open();
+		return false;
 	}
 
 	bool debugger_impl::request_disconnect(rprotocol& req)
