@@ -20,20 +20,17 @@ namespace net { namespace tcp {
 
 		char* rcv_data() 
 		{
-			return (char*)&(rcvbuf_.back_chunk->values[rcvbuf_.back_pos]);
+			return (char*)&(rcvbuf_.back());
 		}
 
 		size_t rcv_size() const
 		{
-			assert(rcvbuf_.back_pos < rcvbuf_.chunk_size());
-			return rcvbuf_.chunk_size() - rcvbuf_.back_pos;
+			return rcvbuf_.back_size();
 		}
 
 		void rcv_push(size_t n)
 		{
-			assert(n > 0);
-			rcvbuf_.back_pos += n - 1;
-			rcvbuf_.do_push();
+			rcvbuf_.do_push(n);
 			length_ += n;
 		}
 
@@ -50,32 +47,20 @@ namespace net { namespace tcp {
 				return 0;
 			}
 
-			size_t len = 0;
-			if (rcvbuf_.begin_chunk != rcvbuf_.back_chunk)
+			size_t len = rcvbuf_.front_size();
+			if (len == 0) { }
+			else if (len >= buflen)
 			{
-				len = rcvbuf_.chunk_size() - rcvbuf_.begin_pos;
-				if (len >= buflen)
-				{
-					len = buflen;
-				}
-				else
-				{
-					size_t r = pop(buf, len);
-					return r + pop(buf + len, buflen - len);
-				}
+				len = buflen;
 			}
 			else
 			{
-				len = rcvbuf_.back_pos - rcvbuf_.begin_pos;
-				if (len >= buflen)
-				{
-					len = buflen;
-				}
+				size_t r = pop(buf, len);
+				return r + pop(buf + len, buflen - len);
 			}
 
-			memcpy(buf, &(rcvbuf_.begin_chunk->values[rcvbuf_.begin_pos]), len);
-			rcvbuf_.begin_pos += len - 1;
-			rcvbuf_.do_pop();
+			memcpy(buf, &(rcvbuf_.front()), len);
+			rcvbuf_.do_pop(len);
 			length_ -= len;
 			return len;
 		}
@@ -92,31 +77,19 @@ namespace net { namespace tcp {
 				return 0;
 			}
 
-			size_t len = 0;
-			if (rcvbuf_.begin_chunk != rcvbuf_.back_chunk)
+			size_t len = rcvbuf_.front_size();
+			if (len == 0) {}
+			else if (len >= buflen)
 			{
-				len = rcvbuf_.chunk_size() - rcvbuf_.begin_pos;
-				if (len >= buflen)
-				{
-					len = buflen;
-				}
-				else
-				{
-					size_t r = pop(len);
-					return r + pop(buflen - len);
-				}
+				len = buflen;
 			}
 			else
 			{
-				len = rcvbuf_.back_pos - rcvbuf_.begin_pos;
-				if (len >= buflen)
-				{
-					len = buflen;
-				}
+				size_t r = pop(len);
+				return r + pop(buflen - len);
 			}
 
-			rcvbuf_.begin_pos += len - 1;
-			rcvbuf_.do_pop();
+			rcvbuf_.do_pop(len);
 			length_ -= len;
 			return len;
 		}

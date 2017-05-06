@@ -20,29 +20,17 @@ namespace net { namespace tcp {
 
 		const char* snd_data() const
 		{
-			return (const char*)&(sndbuf_.begin_chunk->values[sndbuf_.begin_pos]);
+			return (const char*)&(sndbuf_.front());
 		}
 
 		size_t snd_size() const
 		{
-			size_t len = 0;
-			if (sndbuf_.begin_chunk == sndbuf_.back_chunk)
-			{
-				len = sndbuf_.back_pos - sndbuf_.begin_pos;
-			}
-			else
-			{
-				len = sndbuf_.chunk_size() - sndbuf_.begin_pos;
-			}
-			assert(len > 0);
-			return len;
+			return sndbuf_.front_size();
 		}
 
 		void snd_pop(size_t n)
 		{
-			assert(n > 0);
-			sndbuf_.begin_pos += n - 1;
-			sndbuf_.do_pop();
+			sndbuf_.do_pop(n);
 			length_ -= n;
 		}
 
@@ -53,16 +41,15 @@ namespace net { namespace tcp {
 				return 0;
 			}
 
-			size_t len = sndbuf_.chunk_size() - sndbuf_.back_pos;
+			size_t len = sndbuf_.back_size();
 			if (len < buflen)
 			{
 				size_t r = push(buf, len);
 				return r + push(buf + len, buflen - len);
 			}
 
-			memcpy(&(sndbuf_.back_chunk->values[sndbuf_.back_pos]), buf, buflen);
-			sndbuf_.back_pos += buflen - 1;
-			sndbuf_.do_push();
+			memcpy(&(sndbuf_.back()), buf, buflen);
+			sndbuf_.do_push(buflen);
 			length_ += buflen;
 			return buflen;
 		}

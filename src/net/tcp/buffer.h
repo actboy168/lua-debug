@@ -26,8 +26,6 @@ namespace net { namespace tcp {
 		: public queue<T, N, Alloc, empty_atomic<queue_chunk<T, N>*>>
 	{
 		typedef queue<T, N, Alloc, empty_atomic<queue_chunk<T, N>*>> mybase;
-		friend class sndbuffer;
-		friend class rcvbuffer;
 		
 	public:
 		buffer()
@@ -39,9 +37,34 @@ namespace net { namespace tcp {
 			return ((begin_chunk == back_chunk) && (begin_pos == back_pos));
 		}
 
-		size_t chunk_size() const
+		size_t front_size() const
 		{
-			return N;
+			if (begin_chunk == back_chunk) {
+				assert(begin_pos <= back_pos);
+				return back_pos - begin_pos;
+			}
+			assert(begin_pos < N);
+			return N - begin_pos;
+		}
+
+		size_t back_size() const
+		{
+			assert(back_pos < N);
+			return N - back_pos;
+		}
+
+		void do_push(size_t n)
+		{
+			assert(n > 0 && n <= N - back_pos);
+			back_pos += n - 1;
+			mybase::do_push();
+		}
+
+		void do_pop(size_t n)
+		{
+			assert(n > 0 && n <= N - begin_pos);
+			begin_pos += n - 1;
+			mybase::do_pop();
 		}
 
 	private:
