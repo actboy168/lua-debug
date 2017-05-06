@@ -131,24 +131,33 @@ namespace vscode
 
 	bool debugger_impl::request_launch(rprotocol& req) {
 		lua_State *L = GL;
+		cache_launch_ = rprotocol();
 		if (!is_state(state::initialized)) {
 			response_error(req, "not initialized or unexpected state");
 			return false;
 		}
 		auto& args = req["arguments"];
+		if (!args.HasMember("program") || !args["program"].IsString()) {
+			response_error(req, "Launch failed");
+			return false;
+		}
 #if defined(DEBUGGER_DELAYLOAD_LUA)	   
 		if (args.HasMember("luadll")) {
 			delayload::set_lua_dll(vscode::u2w(args["luadll"].Get<std::string>()));
 		}
 #endif		
-		if (!args.HasMember("program") || !args["program"].IsString()) {
-			response_error(req, "Launch failed");
-			return false;
-		}
 		initialize_sourcemaps(args);
 		if (args.HasMember("cwd") && args["cwd"].IsString()) {
 			fs::current_path(fs::path(args["cwd"].Get<std::string>()));
 		}
+		cache_launch_ = std::move(req);
+		return false;
+	}
+
+	bool debugger_impl::request_launch_done(rprotocol& req) {
+		lua_State *L = GL;
+
+		auto& args = req["arguments"];
 		if (args.HasMember("path") && args["path"].IsString())
 		{
 			std::string path = u2a(args["path"]);
@@ -200,26 +209,7 @@ namespace vscode
 			}
 		}
 		lua_setglobal(L, "arg");
-		cache_launch_ = std::move(req);
-		return false;
-	}
 
-	static int errfunc(lua_State* L)
-	{
-		debugger_impl* dbg = (debugger_impl*)lua_touserdata(L, lua_upvalueindex(1));
-		luaL_traceback(L, L, lua_tostring(L, 1), 1);
-		dbg->exception(L, lua_tostring(L, -1));
-		lua_settop(L, 2);
-		return 1;
-	}
-
-	bool debugger_impl::request_launch_done(rprotocol& req) {
-		lua_State *L = GL;
-		bool stopOnEntry = true;
-		auto& args = req["arguments"];
-		if (args.HasMember("stopOnEntry") && args["stopOnEntry"].IsBool()) {
-			stopOnEntry = args["stopOnEntry"].GetBool();
-		}
 		std::string program = u2a(args["program"]);
 		int status = luaL_loadfile(L, program.c_str());
 		if (status != LUA_OK) {
@@ -233,6 +223,10 @@ namespace vscode
 			response_success(req);
 		}
 
+		bool stopOnEntry = true;
+		if (args.HasMember("stopOnEntry") && args["stopOnEntry"].IsBool()) {
+			stopOnEntry = args["stopOnEntry"].GetBool();
+		}
 		event_thread(true);
 		if (stopOnEntry)
 		{
@@ -244,18 +238,7 @@ namespace vscode
 			set_state(state::running);
 		}
 		open();
-
-		lua_pushlightuserdata(L, this);
-		lua_pushcclosure(L, errfunc, 1);
-		lua_insert(L, -2);
-		if (lua_pcall(L, 0, 0, -2))
-		{
-			event_output("console", format("Program terminated with error: %s\n", lua_tostring(L, -1)));
-			lua_pop(L, 1);
-		}
-		lua_pop(L, 1);
-		set_state(state::terminated);
-		network_->close();
+		launch_ = true;
 		return false;
 	}
 

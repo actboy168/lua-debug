@@ -118,6 +118,7 @@ namespace vscode
 		void close();
 		bool update_main(rprotocol& req, bool& quit);
 		bool update_hook(rprotocol& req, lua_State *L, lua_Debug *ar, bool& quit);
+		void update_launch();
 		void initialize_sourcemaps(rapidjson::Value& args);
 		bool request_launch_done(rprotocol& req);
 
@@ -141,6 +142,7 @@ namespace vscode
 		bool               has_source_;
 		bp_source*         cur_source_;
 		bool               exception_;
+		bool               launch_;
 		std::map<std::string, std::function<bool(rprotocol&)>>                            main_dispatch_;
 		std::map<std::string, std::function<bool(rprotocol&, lua_State*, lua_Debug *ar)>> hook_dispatch_;
 	};

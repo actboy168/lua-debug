@@ -190,7 +190,10 @@ namespace vscode
 			bool quit = false;
 			if (!update_main(req, quit)) {
 				response_error(req, format("%s not yet implemented", req["command"].GetString()).c_str());
+				return;
 			}
+
+			update_launch();
 		}
 		else if (is_state(state::terminated))
 		{
@@ -228,6 +231,36 @@ namespace vscode
 		event_output(category, easy_string(buf, len));
 	}
 
+	static int errfunc(lua_State* L)
+	{
+		debugger_impl* dbg = (debugger_impl*)lua_touserdata(L, lua_upvalueindex(1));
+		luaL_traceback(L, L, lua_tostring(L, 1), 1);
+		dbg->exception(L, lua_tostring(L, -1));
+		lua_settop(L, 2);
+		return 1;
+	}
+
+	void debugger_impl::update_launch()
+	{
+		if (launch_)
+		{
+			launch_ = false;
+
+			lua_State *L = GL;
+			lua_pushlightuserdata(L, this);
+			lua_pushcclosure(L, errfunc, 1);
+			lua_insert(L, -2);
+			if (lua_pcall(L, 0, 0, -2))
+			{
+				event_output("console", format("Program terminated with error: %s\n", lua_tostring(L, -1)));
+				lua_pop(L, 1);
+			}
+			lua_pop(L, 1);
+			set_state(state::terminated);
+			network_->close();
+		}
+	}
+
 	debugger_impl::~debugger_impl()
 	{
 	}
@@ -254,6 +287,7 @@ namespace vscode
 		, has_source_(false)
 		, cur_source_(0)
 		, exception_(false)
+		, launch_(false)
 		, main_dispatch_
 		({
 			{ "launch", DBG_REQUEST_MAIN(request_launch) },
