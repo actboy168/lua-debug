@@ -55,8 +55,15 @@ namespace net { namespace tcp {
 
 		void do_push(size_t n)
 		{
-			assert(n > 0 && n <= N - back_pos);
-			back_pos += n - 1;
+			assert(n > 0);
+			if (end_pos + n > N) {
+				end_pos += n - 2;
+				mybase::do_push();
+				mybase::do_push();
+				return;
+			}
+			assert(n <= N - end_pos);
+			end_pos += n - 1;
 			mybase::do_push();
 		}
 
