@@ -78,7 +78,7 @@ namespace net { namespace tcp {
 		}
 
 	private:
-		queue<char, 4096> sndbuf_;
+		buffer<char, 4096> sndbuf_;
 		size_t length_;
 	};
 }}

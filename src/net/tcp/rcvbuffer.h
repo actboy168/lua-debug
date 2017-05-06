@@ -132,7 +132,7 @@ namespace net { namespace tcp {
 		}
 
 	private:
-		queue<char, 4096> rcvbuf_;
+		buffer<char, 4096> rcvbuf_;
 		size_t length_;
 	};
 }}
