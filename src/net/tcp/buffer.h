@@ -6,49 +6,49 @@
 namespace net { namespace tcp {
 
 	template <typename T, ::std::size_t N>
-	struct buffer_chunk
+	struct queue_chunk
 	{
 		T values [N];
-		buffer_chunk<T, N>* next;
+		queue_chunk<T, N>* next;
 	};
 
 	template <typename T, ::std::size_t N, typename Alloc>
-	class buffer_alloc
-		: public Alloc::template rebind<buffer_chunk<T, N> >::other
+	class queue_alloc
+		: public Alloc::template rebind<queue_chunk<T, N> >::other
 	{
 	public:
-		typedef buffer_chunk<T, N>                                  chunt_type;
-		typedef typename Alloc::template rebind<chunt_type>::other base_type;
+		typedef queue_chunk<T, N>                                  chunk_type;
+		typedef typename Alloc::template rebind<chunk_type>::other base_type;
 
 	public:
-		inline chunt_type*  allocate()
+		chunk_type*  allocate()
 		{
 			return base_type::allocate(1);
 		}
 
-		inline void deallocate(chunt_type* p)
+		void deallocate(chunk_type* p)
 		{
 			base_type::deallocate(p, 1);
 		}
 	};
 
 	template <typename T, ::std::size_t N = 256, typename Alloc = ::std::allocator<T>>
-	class buffer
-		: public buffer_alloc<T, N, Alloc>
+	class queue
+		: public queue_alloc<T, N, Alloc>
 	{
 		friend class sndbuffer;
 		friend class rcvbuffer;
 		
 	public:
-		typedef buffer_alloc<T, N, Alloc>       alloc_type;
-		typedef typename alloc_type::chunt_type chunt_type;
+		typedef queue_alloc<T, N, Alloc>        alloc_type;
+		typedef typename alloc_type::chunk_type chunk_type;
 		typedef T                               value_type;
 		typedef value_type*                     pointer;
 		typedef value_type&                     reference;
 		typedef value_type const&               const_reference;
 
 	public:
-		buffer()
+		queue()
 			: begin_chunk(alloc_type::allocate())
 			, begin_pos(0)
 			, back_chunk(begin_chunk)
@@ -59,7 +59,7 @@ namespace net { namespace tcp {
 			assert(empty());
 		}
 
-		~buffer()
+		~queue()
 		{
 			clear();
 			alloc_type::deallocate(begin_chunk);
@@ -73,7 +73,7 @@ namespace net { namespace tcp {
 				if (begin_chunk == back_chunk) {
 					break;
 				}
-				chunt_type *o = begin_chunk;
+				chunk_type *o = begin_chunk;
 				begin_chunk = begin_chunk->next;
 				alloc_type::deallocate(o);
 			}
@@ -105,7 +105,7 @@ namespace net { namespace tcp {
 
 		void push(value_type&& val)
 		{
-			new(&back()) T(std::move(val));
+			new(&back()) T(::std::move(val));
 			do_push();
 		}
 
@@ -162,7 +162,7 @@ namespace net { namespace tcp {
 		void do_pop()
 		{
 			if (++ begin_pos == N) {
-				chunt_type *o = begin_chunk;
+				chunk_type *o = begin_chunk;
 				begin_chunk = begin_chunk->next;
 				begin_pos = 0;
 				if (spare_chunk)
@@ -172,14 +172,14 @@ namespace net { namespace tcp {
 		}
 
 	private:
-		chunt_type* begin_chunk;
+		chunk_type* begin_chunk;
 		size_t      begin_pos;
-		chunt_type* back_chunk;
+		chunk_type* back_chunk;
 		size_t      back_pos;
-		chunt_type* spare_chunk;
+		chunk_type* spare_chunk;
 
 	private:
-		buffer(const buffer&);
-		buffer& operator=(const buffer&);
+		queue(const queue&);
+		queue& operator=(const queue&);
 	};
 }}

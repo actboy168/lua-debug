@@ -54,7 +54,7 @@ namespace vscode
 		std::string stream_buf_;
 		size_t      stream_stat_;
 		size_t      stream_len_;
-		net::tcp::buffer<rprotocol, 8> input_queue_;
+		net::tcp::queue<rprotocol, 8> input_queue_;
 		std::unique_ptr<rapidjson::SchemaDocument> schema_;
 	};
 
