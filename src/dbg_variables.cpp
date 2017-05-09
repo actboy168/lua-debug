@@ -80,6 +80,7 @@ namespace vscode
 	{
 		idx = lua_absindex(L, idx);
 		if (LUA_TTABLE != lua_rawgetp(L, LUA_REGISTRYINDEX, &WATCH_TABLE)) {
+			lua_pop(L, 1);
 			return false;
 		}
 		int r = lua_rawequal(L, -1, idx);
