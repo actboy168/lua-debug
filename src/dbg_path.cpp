@@ -63,14 +63,14 @@ namespace vscode
 	fs::path path_normalize(const fs::path& p)
 	{
 		fs::path result = p.root_path();
-		std::deque<std::string> stack;
+		std::deque<std::wstring> stack;
 		for (auto e : p.relative_path()) {
-			if (e == ".." && !stack.empty() && stack.back() != "..") {
+			if (e == L".." && !stack.empty() && stack.back() != L"..") {
 				stack.pop_back();
 			}
-			else if (e != ".") {
+			else if (e != L".") {
 #if _MSC_VER >= 1900
-				stack.push_back(e.string());
+				stack.push_back(e.wstring());
 #else
 				stack.push_back(e);
 #endif
@@ -79,8 +79,8 @@ namespace vscode
 		for (auto e : stack) {
 			result /= e;
 		}
-		std::string ret = result.string();
-		std::string tmp;
+		std::wstring ret = result.wstring();
+		std::wstring tmp;
 		tmp.resize(ret.size());
 		std::transform(ret.begin(), ret.end(), tmp.begin(), tolower);
 		return tmp;

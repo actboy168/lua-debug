@@ -27,7 +27,8 @@ namespace vscode
 	class breakpoint
 	{
 	public:
-		typedef std::map<fs::path, bp_source*> map_type;
+		typedef std::map<std::string, bp_source*> svr_map_type;
+		typedef std::map<fs::path, bp_source*>    cli_map_type;
 
 	public:
 		breakpoint();
@@ -37,11 +38,11 @@ namespace vscode
 		void insert(const fs::path& client_path, size_t line, const std::string& condition);
 		bool has(size_t line) const;
 		bool has(bp_source* src, size_t line, lua_State* L, lua_Debug* ar) const;
-		bp_source* get(const fs::path& server_path, pathconvert& pathconvert);
+		bp_source* get(const std::string& server_path, pathconvert& pathconvert);
 
 	private:
-		map_type                  server_map_;
-		map_type                  client_map_;
+		svr_map_type              server_map_;
+		cli_map_type              client_map_;
 		hybridarray<size_t, 1024> fast_table_;
 	};
 }

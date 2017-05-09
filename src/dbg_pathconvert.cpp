@@ -1,6 +1,7 @@
 #include "dbg_pathconvert.h"
 #include "dbg_path.h"	  
 #include "dbg_impl.h"
+#include "dbg_unicode.h"
 #include <algorithm>
 #include <assert.h>
 
@@ -81,7 +82,7 @@ namespace vscode
 	{
 		if (server_path[0] == '@')
 		{
-			fs::path srvpath = server_complete(server_path.substr(1));
+			fs::path srvpath = server_complete(u2w(server_path.substr(1)));
 			for (auto& pair : sourcemaps_)
 			{
 				if (path_is_subpath(srvpath, pair.first))
