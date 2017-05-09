@@ -114,6 +114,8 @@ namespace vscode
 		void response_source(rprotocol& req, const char* content);
 
 	private:
+		void create_asmjit();
+		void release_asmjit();
 		void open();
 		void close();
 		bool update_main(rprotocol& req, bool& quit);
@@ -136,8 +138,8 @@ namespace vscode
 		watchs             watch_;
 		pathconvert        pathconvert_;
 		custom*            custom_;
-		asmjit::JitRuntime jit_;
-		void*              funcptr_;  
+		asmjit::JitRuntime asm_jit_;
+		lua_Hook           asm_func_;
 		rprotocol          cache_launch_;
 		bool               has_source_;
 		bp_source*         cur_source_;

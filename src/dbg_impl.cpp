@@ -13,14 +13,12 @@ namespace vscode
 		dbg->hook(L, ar);
 	}
 
-	void debugger_impl::open()
+	void debugger_impl::create_asmjit()
 	{
-		stacklevel_ = 0;
-
+		release_asmjit();
 		using namespace asmjit;
 		CodeHolder code;
-		code.init(jit_.getCodeInfo());
-
+		code.init(asm_jit_.getCodeInfo());
 		X86Assembler assemblr(&code);
 		assemblr.push(x86::dword_ptr(x86::esp, 8));
 		assemblr.push(x86::dword_ptr(x86::esp, 8));
@@ -28,14 +26,21 @@ namespace vscode
 		assemblr.call(imm(reinterpret_cast<intptr_t>(&debughook)));
 		assemblr.add(x86::esp, 12);
 		assemblr.ret();
-
-		lua_Hook hook;
-		Error err = jit_.add(&hook, &code);
+		Error err = asm_jit_.add(&asm_func_, &code);
 		assert(!err);
-		if (funcptr_)
-			jit_.release(funcptr_);
-		funcptr_ = hook;
-		lua_sethook(GL, hook, LUA_MASKCALL | LUA_MASKLINE | LUA_MASKRET, 0);
+	}
+
+	void debugger_impl::release_asmjit()
+	{
+		if (asm_func_)
+			asm_jit_.release(asm_func_);
+	}
+
+	void debugger_impl::open()
+	{
+		stacklevel_ = 0;
+
+		lua_sethook(GL, asm_func_, LUA_MASKCALL | LUA_MASKLINE | LUA_MASKRET, 0);
 	}
 
 	void debugger_impl::close()
@@ -263,6 +268,7 @@ namespace vscode
 
 	debugger_impl::~debugger_impl()
 	{
+		release_asmjit();
 	}
 
 #define DBG_REQUEST_MAIN(name) std::bind(&debugger_impl:: ## name, this, std::placeholders::_1)
@@ -282,8 +288,8 @@ namespace vscode
 		, watch_(L)
 		, pathconvert_(this)
 		, custom_(&global_custom)
-		, jit_()
-		, funcptr_(0)
+		, asm_jit_()
+		, asm_func_(0)
 		, has_source_(false)
 		, cur_source_(0)
 		, exception_(false)
@@ -313,6 +319,7 @@ namespace vscode
 			{ "evaluate", DBG_REQUEST_HOOK(request_evaluate) },
 		})
 	{
+		create_asmjit();
 	}
 #undef DBG_REQUEST_MAIN	 
 #undef DBG_REQUEST_HOOK
