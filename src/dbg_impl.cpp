@@ -36,16 +36,22 @@ namespace vscode
 			asm_jit_.release(asm_func_);
 	}
 
-	void debugger_impl::open()
+	void debugger_impl::open_hook(lua_State* L)
 	{
 		stacklevel_ = 0;
-
-		lua_sethook(GL, asm_func_, LUA_MASKCALL | LUA_MASKLINE | LUA_MASKRET, 0);
+		if (hookL_ && hookL_ != L) {
+			lua_sethook(hookL_, 0, 0, 0);
+		}
+		lua_sethook(L, asm_func_, LUA_MASKCALL | LUA_MASKLINE | LUA_MASKRET, 0);
+		hookL_ = L;
 	}
 
-	void debugger_impl::close()
+	void debugger_impl::close_hook()
 	{
-		lua_sethook(GL, 0, 0, 0);
+		if (hookL_) {
+			lua_sethook(hookL_, 0, 0, 0);
+			hookL_ = 0;
+		}
 		breakpoints_.clear();
 		stack_.clear();
 		seq = 1;
@@ -205,6 +211,11 @@ namespace vscode
 			set_state(state::birth);
 		}
 	}
+	
+	void debugger_impl::set_lua(lua_State* L)
+	{
+		attachL_ = L;
+	}
 
 	void debugger_impl::set_custom(custom* custom)
 	{
@@ -247,11 +258,11 @@ namespace vscode
 
 	void debugger_impl::update_launch()
 	{
-		if (launch_)
+		if (launchL_)
 		{
-			launch_ = false;
+			lua_State *L = launchL_;
+			launchL_ = 0;
 
-			lua_State *L = GL;
 			lua_pushlightuserdata(L, this);
 			lua_pushcclosure(L, errfunc, 1);
 			lua_insert(L, -2);
@@ -274,9 +285,8 @@ namespace vscode
 #define DBG_REQUEST_MAIN(name) std::bind(&debugger_impl:: ## name, this, std::placeholders::_1)
 #define DBG_REQUEST_HOOK(name) std::bind(&debugger_impl:: ## name, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
 
-	debugger_impl::debugger_impl(lua_State* L, io* io)
-		: GL(L)
-		, seq(1)
+	debugger_impl::debugger_impl(io* io)
+		: seq(1)
 		, network_(io)
 		, state_(state::birth)
 		, step_(step::in)
@@ -285,7 +295,7 @@ namespace vscode
 		, stacklevel_(0)
 		, breakpoints_()
 		, stack_()
-		, watch_(L)
+		, watch_()
 		, pathconvert_(this)
 		, custom_(&global_custom)
 		, asm_jit_()
@@ -293,7 +303,9 @@ namespace vscode
 		, has_source_(false)
 		, cur_source_(0)
 		, exception_(false)
-		, launch_(false)
+		, attachL_(0)
+		, launchL_(0)
+		, hookL_(0)
 		, main_dispatch_
 		({
 			{ "launch", DBG_REQUEST_MAIN(request_launch) },

@@ -38,12 +38,13 @@ namespace vscode
 		};
 
 	public:
-		debugger_impl(lua_State* L, io* io);
+		debugger_impl(io* io);
 		~debugger_impl();
 		void hook(lua_State *L, lua_Debug *ar);
 		void exception(lua_State *L, const char* msg);
 		void loop(lua_State *L, lua_Debug *ar);
 		void update();
+		void set_lua(lua_State* L);
 		void set_custom(custom* custom);
 		void output(const char* category, const char* buf, size_t len);
 
@@ -116,8 +117,8 @@ namespace vscode
 	private:
 		void create_asmjit();
 		void release_asmjit();
-		void open();
-		void close();
+		void open_hook(lua_State* L);
+		void close_hook();
 		bool update_main(rprotocol& req, bool& quit);
 		bool update_hook(rprotocol& req, lua_State *L, lua_Debug *ar, bool& quit);
 		void update_launch();
@@ -125,7 +126,6 @@ namespace vscode
 		bool request_launch_done(rprotocol& req);
 
 	private:
-		lua_State*         GL;
 		int64_t            seq;
 		io*                network_;
 		state              state_;
@@ -135,7 +135,7 @@ namespace vscode
 		int                stacklevel_;
 		breakpoint         breakpoints_;
 		std::vector<stack> stack_;
-		watchs             watch_;
+		std::unique_ptr<watchs> watch_;
 		pathconvert        pathconvert_;
 		custom*            custom_;
 		asmjit::JitRuntime asm_jit_;
@@ -144,7 +144,9 @@ namespace vscode
 		bool               has_source_;
 		bp_source*         cur_source_;
 		bool               exception_;
-		bool               launch_;
+		lua_State*         attachL_;
+		lua_State*         launchL_;
+		lua_State*         hookL_;
 		std::map<std::string, std::function<bool(rprotocol&)>>                            main_dispatch_;
 		std::map<std::string, std::function<bool(rprotocol&, lua_State*, lua_Debug *ar)>> hook_dispatch_;
 	};

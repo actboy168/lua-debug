@@ -62,7 +62,7 @@ namespace vscode
 
 	void debugger_impl::event_stopped(const char *msg, const char* text)
 	{
-		watch_.clear();
+		if (watch_) watch_->clear();
 
 		wprotocol res;
 		for (auto _ : res.Object())

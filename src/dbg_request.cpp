@@ -18,7 +18,7 @@ namespace vscode
 			break;
 		case state::terminated:
 			event_terminated();
-			close();
+			close_hook();
 			break;
 		default:
 			break;
@@ -130,7 +130,6 @@ namespace vscode
 	}
 
 	bool debugger_impl::request_launch(rprotocol& req) {
-		lua_State *L = GL;
 		cache_launch_ = rprotocol();
 		if (!is_state(state::initialized)) {
 			response_error(req, "not initialized or unexpected state");
@@ -155,7 +154,15 @@ namespace vscode
 	}
 
 	bool debugger_impl::request_launch_done(rprotocol& req) {
-		lua_State *L = GL;
+		if (!attachL_) {
+			response_error(req, "Launch failed");
+			return false;
+		}
+		if (launchL_) {
+			lua_close(launchL_);
+			launchL_ = 0;
+		}
+		lua_State *L = attachL_;
 
 		auto& args = req["arguments"];
 		if (args.HasMember("path") && args["path"].IsString())
@@ -237,14 +244,14 @@ namespace vscode
 		{
 			set_state(state::running);
 		}
-		open();
-		launch_ = true;
+		open_hook(L);
+		launchL_ = L;
 		return false;
 	}
 
 	bool debugger_impl::request_attach(rprotocol& req)
 	{
-		if (!is_state(state::initialized)) {
+		if (!is_state(state::initialized) || !attachL_) {
 			response_error(req, "not initialized or unexpected state");
 			return false;
 		}
@@ -267,7 +274,7 @@ namespace vscode
 		{
 			set_state(state::running);
 		}
-		open();
+		open_hook(attachL_);
 		cache_launch_ = rprotocol();
 		return !stopOnEntry;
 	}
@@ -276,7 +283,6 @@ namespace vscode
 		response_thread(req);
 		return false;
 	}
-
 
 	static intptr_t ensure_value_fits_in_mantissa(intptr_t sourceReference) {
 		assert(sourceReference <= 9007199254740991);
@@ -518,9 +524,10 @@ namespace vscode
 
 		if (type == var_type::watch)
 		{
-			if (!watch_.get((var_ref >> 16) & 0xFF))
+			if (!watch_ || !watch_->get((var_ref >> 16) & 0xFF))
 			{
 				response_error(req, "Error retrieving variables");
+				return false;
 			}
 		}
 
@@ -661,7 +668,10 @@ namespace vscode
 		int64_t reference = 0;
 		if (rets.size() == 1 && context == "watch" && can_extand(L, -1))
 		{
-			size_t pos = watch_.add();
+			if (!watch_) {
+				watch_.reset(new watchs(hookL_));
+			}
+			size_t pos = watch_->add();
 			if (pos > 0)
 			{
 				reference = (int)var_type::watch | (pos << 16);

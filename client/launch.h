@@ -50,7 +50,6 @@ public:
 	void send(vscode::rprotocol&& rp);
 
 private:
-	lua_State* initLua();
 	virtual void set_state(vscode::state state);
 	virtual void update_stop();
 	void         update_redirect();
@@ -58,7 +57,6 @@ private:
 	static int   print_empty(lua_State *L);
 
 private:
-	lua_State *L;
 	vscode::debugger debugger_;
 	vscode::state state_;
 	vscode::redirector stderr_;

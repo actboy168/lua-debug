@@ -4,8 +4,8 @@
 
 namespace vscode
 {
-	debugger::debugger(lua_State* L, io* io)
-		: impl_(new debugger_impl(L, io))
+	debugger::debugger(io* io)
+		: impl_(new debugger_impl(io))
 	{ }
 
 	debugger::~debugger()
@@ -16,6 +16,11 @@ namespace vscode
 	void debugger::update()
 	{
 		impl_->update();
+	}
+
+	void debugger::set_lua(lua_State* L)
+	{
+		impl_->set_lua(L);
 	}
 
 	void debugger::set_custom(custom* custom)
@@ -35,8 +40,10 @@ struct c_debugger {
 
 	c_debugger(lua_State* L, const char* ip, uint16_t port)
 		: io(ip, port)
-		, dbg(L, &io)
-	{ }
+		, dbg( &io)
+	{
+		dbg.set_lua(L);
+	}
 };
 
 void* __cdecl vscode_debugger_create(lua_State* L, const char* ip, uint16_t port)

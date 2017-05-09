@@ -24,9 +24,10 @@ namespace vscode
 	class DEBUGGER_API debugger
 	{
 	public:
-		debugger(lua_State* L, io* io);
+		debugger(io* io);
 		~debugger();
 		void update();
+		void set_lua(lua_State* L);
 		void set_custom(custom* custom);
 		void output(const char* category, const char* buf, size_t len);
 

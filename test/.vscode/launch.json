@@ -3,6 +3,7 @@
     "configurations": [
 
         {
+            //"debugServer" : 4278,
             "name": "launch",
             "type": "lua",
             "request": "launch",
@@ -11,8 +12,8 @@
             "cwd": "${workspaceRoot}",
             "path": "${workspaceRoot}/?.lua",
             "cpath": "${workspaceRoot}/?.dll",
-            "arg": [],
-            "debugServer" : 4278
+            "console": "utf8",
+            "arg": []
         },
         {
             "name": "attach",

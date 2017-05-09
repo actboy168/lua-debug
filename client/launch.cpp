@@ -90,11 +90,13 @@ bool launch_io::enable_console() const
 }
 
 launch_server::launch_server(const std::string& console, std::function<void()> idle)
-	: L(initLua())
-	, io_(console)
-	, debugger_(L, &io_)
+	: io_(console)
+	, debugger_(&io_)
 	, idle_(idle)
 {
+	lua_State* L = luaL_newstate();
+	luaL_openlibs(L);
+	debugger_.set_lua(L);
 	debugger_.set_custom(this);
 
 	if (io_.enable_console()) {
@@ -134,13 +136,6 @@ int launch_server::print(lua_State *L) {
 	vscode::debugger* dbg = (vscode::debugger*)lua_touserdata(L, lua_upvalueindex(1));
 	dbg->output("stdout", out.data(), out.size());
 	return 0;
-}
-
-lua_State* launch_server::initLua()
-{
-	lua_State* L = luaL_newstate();
-	luaL_openlibs(L);
-	return L;
 }
 
 void launch_server::set_state(vscode::state state)
