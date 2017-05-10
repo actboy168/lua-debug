@@ -278,23 +278,28 @@ namespace vscode
 		: public dbg_thread
 	{
 		async(std::function<void()> const& threadfunc)
-			: thd_(std::bind(&async::run, this))
-			, mtx_()
+			: mtx_()
 			, exit_(false)
 			, func_(threadfunc)
+			, thd_()
 		{ }
 
 		~async()
 		{
 			exit_ = true;
-			thd_.join();
+			if (thd_) thd_->join();
+		}
+
+		void start() 
+		{
+			thd_.reset(new std::thread(std::bind(&async::run, this)));
 		}
 
 		void run()
 		{
 			for (
 				; !exit_
-				; std::this_thread::sleep_for(std::chrono::milliseconds(50)))
+				; std::this_thread::sleep_for(std::chrono::milliseconds(100)))
 			{
 				func_();
 			}
@@ -304,15 +309,16 @@ namespace vscode
 		bool try_lock() { return mtx_.try_lock(); }
 		void unlock() { return mtx_.unlock(); }
 
-		std::thread thd_;
 		std::mutex  mtx_;
 		std::atomic<bool> exit_;
 		std::function<void()> func_;
+		std::unique_ptr<std::thread> thd_;
 	};
 
 	struct sync
 		: public dbg_thread
 	{
+		void start() {}
 		void lock() {}
 		bool try_lock() { return true; }
 		void unlock() {}
@@ -367,6 +373,7 @@ namespace vscode
 		})
 	{
 		create_asmjit();
+		thread_->start();
 	}
 
 #undef DBG_REQUEST_MAIN	 
