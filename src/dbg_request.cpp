@@ -312,8 +312,11 @@ namespace vscode
 			response_error(req, "not yet implemented");
 			return false;
 		}
-		fs::path client_path = path_normalize(u2a(source["path"].Get<std::string>()));
-		assert(client_path.is_absolute());
+		fs::path client_path = path_normalize(u2w(source["path"].Get<std::string>()));
+		if (!client_path.is_absolute()) {
+			response_error(req, "not yet implemented");
+			return false;
+		}
 		breakpoints_.clear(client_path);
 
 		std::vector<size_t> lines;
