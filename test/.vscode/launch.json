@@ -20,7 +20,7 @@
             "type": "lua",
             "request": "attach",
             "stopOnEntry": true,
-            "ip": "localhost",
+            "ip": "127.0.0.1",
             "port": 4278,
             "sourceMaps": [
                 [

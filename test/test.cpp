@@ -10,7 +10,7 @@
 #include "../client/dbg_redirect.cpp"
 
 
-#define TEST_ATTACH 0
+#define TEST_ATTACH 1
 
 class debugger_wrapper
 	: public vscode::custom
@@ -18,12 +18,12 @@ class debugger_wrapper
 public:
 	debugger_wrapper(lua_State* L, const char* ip, uint16_t port)
 		: network_(ip, port)
-		, debugger_(&network_)
+		, debugger_(&network_, vscode::threadmode::async)
 	{
 		fs::path schema(SOURCE_PATH);
 		schema /= "debugProtocol.json";
 		network_.set_schema(schema.string().c_str());
-		debugger_.set_lua(L);
+		debugger_.attach_lua(L);
 		debugger_.set_custom(this);
 	}
 
@@ -53,7 +53,6 @@ public:
 	void update()
 	{
 		update_redirect();
-		debugger_.update();
 	}
 
 	void update_redirect()
