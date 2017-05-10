@@ -1,15 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.31101.0
+# Visual Studio 15
+VisualStudioVersion = 15.0.26403.7
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "luacore", "luacore.vcxproj", "{B84F7231-16CE-41D8-8C08-7B523FF4225B}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "debugger", "debugger.vcxproj", "{9FD838AC-A5A2-4A24-8166-105BA0D8A973}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test", "test.vcxproj", "{9022BEF7-18C3-47C0-BE1A-C24B82E3E5FA}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "asmjit", "asmjit.vcxproj", "{092C8C20-AB98-456A-A63E-0B61E4BFE256}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vscode-lua-debug", "vscode-lua-debug.vcxproj", "{8AC7695F-C946-4B9A-B814-3E789BFD54E8}"
 EndProject
@@ -31,10 +29,6 @@ Global
 		{9022BEF7-18C3-47C0-BE1A-C24B82E3E5FA}.Debug|Win32.Build.0 = Debug|Win32
 		{9022BEF7-18C3-47C0-BE1A-C24B82E3E5FA}.Release|Win32.ActiveCfg = Release|Win32
 		{9022BEF7-18C3-47C0-BE1A-C24B82E3E5FA}.Release|Win32.Build.0 = Release|Win32
-		{092C8C20-AB98-456A-A63E-0B61E4BFE256}.Debug|Win32.ActiveCfg = Debug|Win32
-		{092C8C20-AB98-456A-A63E-0B61E4BFE256}.Debug|Win32.Build.0 = Debug|Win32
-		{092C8C20-AB98-456A-A63E-0B61E4BFE256}.Release|Win32.ActiveCfg = Release|Win32
-		{092C8C20-AB98-456A-A63E-0B61E4BFE256}.Release|Win32.Build.0 = Release|Win32
 		{8AC7695F-C946-4B9A-B814-3E789BFD54E8}.Debug|Win32.ActiveCfg = Debug|Win32
 		{8AC7695F-C946-4B9A-B814-3E789BFD54E8}.Debug|Win32.Build.0 = Debug|Win32
 		{8AC7695F-C946-4B9A-B814-3E789BFD54E8}.Release|Win32.ActiveCfg = Release|Win32

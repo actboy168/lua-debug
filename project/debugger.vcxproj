@@ -11,6 +11,37 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\src\asmjit\base\arch.cpp" />
+    <ClCompile Include="..\src\asmjit\base\assembler.cpp" />
+    <ClCompile Include="..\src\asmjit\base\codebuilder.cpp" />
+    <ClCompile Include="..\src\asmjit\base\codecompiler.cpp" />
+    <ClCompile Include="..\src\asmjit\base\codeemitter.cpp" />
+    <ClCompile Include="..\src\asmjit\base\codeholder.cpp" />
+    <ClCompile Include="..\src\asmjit\base\constpool.cpp" />
+    <ClCompile Include="..\src\asmjit\base\cpuinfo.cpp" />
+    <ClCompile Include="..\src\asmjit\base\func.cpp" />
+    <ClCompile Include="..\src\asmjit\base\globals.cpp" />
+    <ClCompile Include="..\src\asmjit\base\logging.cpp" />
+    <ClCompile Include="..\src\asmjit\base\operand.cpp" />
+    <ClCompile Include="..\src\asmjit\base\osutils.cpp" />
+    <ClCompile Include="..\src\asmjit\base\regalloc.cpp" />
+    <ClCompile Include="..\src\asmjit\base\runtime.cpp" />
+    <ClCompile Include="..\src\asmjit\base\string.cpp" />
+    <ClCompile Include="..\src\asmjit\base\utils.cpp" />
+    <ClCompile Include="..\src\asmjit\base\vmem.cpp" />
+    <ClCompile Include="..\src\asmjit\base\zone.cpp" />
+    <ClCompile Include="..\src\asmjit\base\zonecontainers.cpp" />
+    <ClCompile Include="..\src\asmjit\base\zoneheap.cpp" />
+    <ClCompile Include="..\src\asmjit\x86\x86assembler.cpp" />
+    <ClCompile Include="..\src\asmjit\x86\x86builder.cpp" />
+    <ClCompile Include="..\src\asmjit\x86\x86compiler.cpp" />
+    <ClCompile Include="..\src\asmjit\x86\x86inst.cpp" />
+    <ClCompile Include="..\src\asmjit\x86\x86internal.cpp" />
+    <ClCompile Include="..\src\asmjit\x86\x86logging.cpp" />
+    <ClCompile Include="..\src\asmjit\x86\x86operand.cpp" />
+    <ClCompile Include="..\src\asmjit\x86\x86operand_regs.cpp" />
+    <ClCompile Include="..\src\asmjit\x86\x86regalloc.cpp" />
+    <ClCompile Include="..\src\asmjit\x86\x86ssetoavxpass.cpp" />
     <ClCompile Include="..\src\dbg_breakpoint.cpp" />
     <ClCompile Include="..\src\dbg_delayload.cpp" />
     <ClCompile Include="..\src\dbg_evaluate.cpp" />
@@ -27,6 +58,46 @@
     <ClCompile Include="..\src\dbg_network.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\src\asmjit\arm.h" />
+    <ClInclude Include="..\src\asmjit\asmjit.h" />
+    <ClInclude Include="..\src\asmjit\asmjit_apibegin.h" />
+    <ClInclude Include="..\src\asmjit\asmjit_apiend.h" />
+    <ClInclude Include="..\src\asmjit\asmjit_build.h" />
+    <ClInclude Include="..\src\asmjit\base.h" />
+    <ClInclude Include="..\src\asmjit\base\arch.h" />
+    <ClInclude Include="..\src\asmjit\base\assembler.h" />
+    <ClInclude Include="..\src\asmjit\base\codebuilder.h" />
+    <ClInclude Include="..\src\asmjit\base\codecompiler.h" />
+    <ClInclude Include="..\src\asmjit\base\codeemitter.h" />
+    <ClInclude Include="..\src\asmjit\base\codeholder.h" />
+    <ClInclude Include="..\src\asmjit\base\constpool.h" />
+    <ClInclude Include="..\src\asmjit\base\cpuinfo.h" />
+    <ClInclude Include="..\src\asmjit\base\func.h" />
+    <ClInclude Include="..\src\asmjit\base\globals.h" />
+    <ClInclude Include="..\src\asmjit\base\logging.h" />
+    <ClInclude Include="..\src\asmjit\base\operand.h" />
+    <ClInclude Include="..\src\asmjit\base\osutils.h" />
+    <ClInclude Include="..\src\asmjit\base\regalloc_p.h" />
+    <ClInclude Include="..\src\asmjit\base\runtime.h" />
+    <ClInclude Include="..\src\asmjit\base\simdtypes.h" />
+    <ClInclude Include="..\src\asmjit\base\string.h" />
+    <ClInclude Include="..\src\asmjit\base\utils.h" />
+    <ClInclude Include="..\src\asmjit\base\vmem.h" />
+    <ClInclude Include="..\src\asmjit\base\zone.h" />
+    <ClInclude Include="..\src\asmjit\base\zonecontainers.h" />
+    <ClInclude Include="..\src\asmjit\base\zoneheap.h" />
+    <ClInclude Include="..\src\asmjit\x86.h" />
+    <ClInclude Include="..\src\asmjit\x86\x86assembler.h" />
+    <ClInclude Include="..\src\asmjit\x86\x86builder.h" />
+    <ClInclude Include="..\src\asmjit\x86\x86compiler.h" />
+    <ClInclude Include="..\src\asmjit\x86\x86emitter.h" />
+    <ClInclude Include="..\src\asmjit\x86\x86inst.h" />
+    <ClInclude Include="..\src\asmjit\x86\x86internal_p.h" />
+    <ClInclude Include="..\src\asmjit\x86\x86logging.h" />
+    <ClInclude Include="..\src\asmjit\x86\x86misc.h" />
+    <ClInclude Include="..\src\asmjit\x86\x86operand.h" />
+    <ClInclude Include="..\src\asmjit\x86\x86regalloc_p.h" />
+    <ClInclude Include="..\src\asmjit\x86\x86ssetoavxpass_p.h" />
     <ClInclude Include="..\src\dbg_breakpoint.h" />
     <ClInclude Include="..\src\dbg_capabilities.h" />
     <ClInclude Include="..\src\dbg_custom.h" />
@@ -48,9 +119,6 @@
     <ClInclude Include="..\src\dbg_network.h" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="asmjit.vcxproj">
-      <Project>{092c8c20-ab98-456a-a63e-0b61e4bfe256}</Project>
-    </ProjectReference>
     <ProjectReference Include="luacore.vcxproj">
       <Project>{b84f7231-16ce-41d8-8c08-7b523ff4225b}</Project>
     </ProjectReference>
@@ -101,7 +169,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>DEBUGGER_EXPORTS;DEBUGGER_DELAYLOAD_LUA;RAPIDJSON_HAS_STDSTRING;_WINSOCK_DEPRECATED_NO_WARNINGS;_WIN32_WINNT=_WIN32_WINNT_WIN7;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>DEBUGGER_EXPORTS;DEBUGGER_DELAYLOAD_LUA;RAPIDJSON_HAS_STDSTRING;ASMJIT_STATIC;ASMJIT_DISABLE_BUILDER;ASMJIT_DISABLE_COMPILER;ASMJIT_DISABLE_LOGGING;ASMJIT_DISABLE_TEXT;ASMJIT_DISABLE_BUILDER;ASMJIT_DISABLE_COMPILER;ASMJIT_DISABLE_LOGGING;ASMJIT_DISABLE_TEXT;_WINSOCK_DEPRECATED_NO_WARNINGS;_WIN32_WINNT=_WIN32_WINNT_WIN7;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(SolutionDir)..\src;$(SolutionDir)..\src\lua</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
     </ClCompile>
@@ -122,7 +190,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>DEBUGGER_EXPORTS;DEBUGGER_DELAYLOAD_LUA;RAPIDJSON_HAS_STDSTRING;_WINSOCK_DEPRECATED_NO_WARNINGS;_WIN32_WINNT=_WIN32_WINNT_WIN7;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>DEBUGGER_EXPORTS;DEBUGGER_DELAYLOAD_LUA;RAPIDJSON_HAS_STDSTRING;ASMJIT_STATIC;ASMJIT_DISABLE_BUILDER;ASMJIT_DISABLE_COMPILER;ASMJIT_DISABLE_LOGGING;ASMJIT_DISABLE_TEXT;_WINSOCK_DEPRECATED_NO_WARNINGS;_WIN32_WINNT=_WIN32_WINNT_WIN7;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(SolutionDir)..\src;$(SolutionDir)..\src\lua</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
     </ClCompile>

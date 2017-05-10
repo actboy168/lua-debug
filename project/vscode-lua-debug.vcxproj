@@ -11,9 +11,6 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="asmjit.vcxproj">
-      <Project>{092c8c20-ab98-456a-a63e-0b61e4bfe256}</Project>
-    </ProjectReference>
     <ProjectReference Include="debugger.vcxproj">
       <Project>{9fd838ac-a5a2-4a24-8166-105ba0d8a973}</Project>
     </ProjectReference>
