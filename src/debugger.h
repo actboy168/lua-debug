@@ -44,12 +44,5 @@ namespace vscode
 }
 
 extern "C" {
-#define DEBUGGER_THREADMODE_ASYNC 0
-#define DEBUGGER_THREADMODE_SYNC  1
-	DEBUGGER_API void* __cdecl vscode_debugger_create(const char* ip, uint16_t port, int threadmode);
-	DEBUGGER_API void  __cdecl vscode_debugger_close(void* dbg);
-	DEBUGGER_API void  __cdecl vscode_debugger_set_schema(void* dbg, const char* file);
-	DEBUGGER_API void  __cdecl vscode_debugger_update(void* dbg);
-	DEBUGGER_API void  __cdecl vscode_debugger_attach_lua(void* dbg, lua_State* L);
-	DEBUGGER_API void  __cdecl vscode_debugger_detach_lua(void* dbg, lua_State* L);
+	DEBUGGER_API int __cdecl luaopen_debugger(lua_State* L);
 }
