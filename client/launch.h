@@ -53,8 +53,6 @@ private:
 	virtual void set_state(vscode::state state);
 	virtual void update_stop();
 	void         update_redirect();
-	static int   print(lua_State *L);
-	static int   print_empty(lua_State *L);
 
 private:
 	vscode::debugger debugger_;

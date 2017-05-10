@@ -147,6 +147,7 @@ namespace vscode
 		lua_State*         attachL_;
 		lua_State*         launchL_;
 		lua_State*         hookL_;
+		std::string        launch_console_;
 		std::map<std::string, std::function<bool(rprotocol&)>>                            main_dispatch_;
 		std::map<std::string, std::function<bool(rprotocol&, lua_State*, lua_Debug *ar)>> hook_dispatch_;
 	};

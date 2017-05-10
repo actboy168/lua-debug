@@ -14,6 +14,7 @@
     <ClCompile Include="..\src\dbg_breakpoint.cpp" />
     <ClCompile Include="..\src\dbg_delayload.cpp" />
     <ClCompile Include="..\src\dbg_evaluate.cpp" />
+    <ClCompile Include="..\src\dbg_launch.cpp" />
     <ClCompile Include="..\src\dbg_path.cpp" />
     <ClCompile Include="..\src\dbg_pathconvert.cpp" />
     <ClCompile Include="..\src\dbg_unicode.cpp" />

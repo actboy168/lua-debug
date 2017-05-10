@@ -94,48 +94,7 @@ launch_server::launch_server(const std::string& console, std::function<void()> i
 	, debugger_(&io_)
 	, idle_(idle)
 {
-	lua_State* L = luaL_newstate();
-	luaL_openlibs(L);
-	debugger_.set_lua(L);
 	debugger_.set_custom(this);
-
-	if (io_.enable_console()) {
-		lua_pushlightuserdata(L, &debugger_);
-		lua_pushcclosure(L, print, 1);
-		lua_setglobal(L, "print");
-	}
-	else {
-		lua_pushcclosure(L, print_empty, 0);
-		lua_setglobal(L, "print");
-	}
-}
-
-int launch_server::print_empty(lua_State *L) {
-	return 0;
-}
-
-int launch_server::print(lua_State *L) {
-	std::string out;
-	int n = lua_gettop(L);
-	int i;
-	lua_getglobal(L, "tostring");
-	for (i = 1; i <= n; i++) {
-		const char *s;
-		size_t l;
-		lua_pushvalue(L, -1);
-		lua_pushvalue(L, i);
-		lua_call(L, 1, 1);
-		s = lua_tolstring(L, -1, &l);
-		if (s == NULL)
-			return luaL_error(L, "'tostring' must return a string to 'print'");
-		if (i>1) out += "\t";
-		out += std::string(s, l);
-		lua_pop(L, 1);
-	}
-	out += "\n";
-	vscode::debugger* dbg = (vscode::debugger*)lua_touserdata(L, lua_upvalueindex(1));
-	dbg->output("stdout", out.data(), out.size());
-	return 0;
 }
 
 void launch_server::set_state(vscode::state state)
