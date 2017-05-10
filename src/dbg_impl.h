@@ -5,6 +5,7 @@
 #include <functional>
 #include <map>
 #include <vector> 
+#include <mutex>
 #include <asmjit/asmjit.h>	
 #include <rapidjson/document.h>
 #include "dbg_breakpoint.h"	 
@@ -13,14 +14,22 @@
 #include "dbg_custom.h"	
 #include "dbg_pathconvert.h" 
 #include "dbg_enum.h"   
-#include "dbg_watchs.h"	  
+#include "dbg_watchs.h"
 #include "dbg_protocol.h"
+#include "debugger.h"
 
 namespace vscode
 {
 	class io;
 	class rprotocol;
 	class wprotocol;
+
+	struct dbg_thread
+	{
+		virtual void lock() = 0;
+		virtual bool try_lock() = 0;
+		virtual void unlock() = 0;
+	};
 
 	class debugger_impl
 	{
@@ -38,13 +47,14 @@ namespace vscode
 		};
 
 	public:
-		debugger_impl(io* io);
+		debugger_impl(io* io, threadmode mode);
 		~debugger_impl();
 		void hook(lua_State *L, lua_Debug *ar);
 		void exception(lua_State *L, const char* msg);
 		void loop(lua_State *L, lua_Debug *ar);
 		void update();
-		void set_lua(lua_State* L);
+		void attach_lua(lua_State* L);
+		void detach_lua(lua_State* L);
 		void set_custom(custom* custom);
 		void output(const char* category, const char* buf, size_t len);
 
@@ -148,6 +158,7 @@ namespace vscode
 		lua_State*         launchL_;
 		lua_State*         hookL_;
 		std::string        launch_console_;
+		dbg_thread*        thread_;
 		std::map<std::string, std::function<bool(rprotocol&)>>                            main_dispatch_;
 		std::map<std::string, std::function<bool(rprotocol&, lua_State*, lua_Debug *ar)>> hook_dispatch_;
 	};

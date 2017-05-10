@@ -91,7 +91,7 @@ bool launch_io::enable_console() const
 
 launch_server::launch_server(const std::string& console, std::function<void()> idle)
 	: io_(console)
-	, debugger_(&io_)
+	, debugger_(&io_, vscode::threadmode::sync)
 	, idle_(idle)
 {
 	debugger_.set_custom(this);

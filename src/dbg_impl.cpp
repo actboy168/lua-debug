@@ -3,6 +3,7 @@
 #include "dbg_io.h" 
 #include "dbg_format.h"
 #include <thread>
+#include <atomic>
 
 namespace vscode
 {
@@ -82,6 +83,8 @@ namespace vscode
 
 	void debugger_impl::hook(lua_State *L, lua_Debug *ar)
 	{
+		std::lock_guard<dbg_thread> lock(*thread_);
+
 		if (ar->event == LUA_HOOKCALL)
 		{
 			stacklevel_++;
@@ -131,6 +134,8 @@ namespace vscode
 
 	void debugger_impl::exception(lua_State *L, const char* msg)
 	{
+		std::lock_guard<dbg_thread> lock(*thread_);
+
 		if (!exception_)
 		{
 			return;
@@ -172,6 +177,11 @@ namespace vscode
 
 	void debugger_impl::update()
 	{
+		std::unique_lock<dbg_thread> lock(*thread_, std::try_to_lock_t());
+		if (!lock) {
+			return;
+		}
+
 		network_->update(0);
 		if (is_state(state::birth))
 		{
@@ -204,6 +214,7 @@ namespace vscode
 				return;
 			}
 
+			lock.unlock();
 			update_launch();
 		}
 		else if (is_state(state::terminated))
@@ -212,9 +223,17 @@ namespace vscode
 		}
 	}
 	
-	void debugger_impl::set_lua(lua_State* L)
+	void debugger_impl::attach_lua(lua_State* L)
 	{
 		attachL_ = L;
+	}
+
+	void debugger_impl::detach_lua(lua_State* L)
+	{
+		if (attachL_ == L)
+		{
+			attachL_ = 0;
+		}
 	}
 
 	void debugger_impl::set_custom(custom* custom)
@@ -255,7 +274,51 @@ namespace vscode
 #define DBG_REQUEST_MAIN(name) std::bind(&debugger_impl:: ## name, this, std::placeholders::_1)
 #define DBG_REQUEST_HOOK(name) std::bind(&debugger_impl:: ## name, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
 
-	debugger_impl::debugger_impl(io* io)
+	struct async
+		: public dbg_thread
+	{
+		async(std::function<void()> const& threadfunc)
+			: thd_(std::bind(&async::run, this))
+			, mtx_()
+			, exit_(false)
+			, func_(threadfunc)
+		{ }
+
+		~async()
+		{
+			exit_ = true;
+			thd_.join();
+		}
+
+		void run()
+		{
+			for (
+				; !exit_
+				; std::this_thread::sleep_for(std::chrono::milliseconds(50)))
+			{
+				func_();
+			}
+		}
+
+		void lock() { return mtx_.lock(); }
+		bool try_lock() { return mtx_.try_lock(); }
+		void unlock() { return mtx_.unlock(); }
+
+		std::thread thd_;
+		std::mutex  mtx_;
+		std::atomic<bool> exit_;
+		std::function<void()> func_;
+	};
+
+	struct sync
+		: public dbg_thread
+	{
+		void lock() {}
+		bool try_lock() { return true; }
+		void unlock() {}
+	};
+
+	debugger_impl::debugger_impl(io* io, threadmode mode)
 		: seq(1)
 		, network_(io)
 		, state_(state::birth)
@@ -277,6 +340,7 @@ namespace vscode
 		, launchL_(0)
 		, hookL_(0)
 		, launch_console_()
+		, thread_(mode == threadmode::async ? (dbg_thread*)new async(std::bind(&debugger_impl::update, this)): (dbg_thread*)new sync)
 		, main_dispatch_
 		({
 			{ "launch", DBG_REQUEST_MAIN(request_launch) },
@@ -304,6 +368,7 @@ namespace vscode
 	{
 		create_asmjit();
 	}
+
 #undef DBG_REQUEST_MAIN	 
 #undef DBG_REQUEST_HOOK
 }

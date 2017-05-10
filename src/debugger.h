@@ -21,13 +21,20 @@ namespace vscode
 	class custom;
 	class debugger_impl;
 
+	enum class threadmode
+	{
+		async,
+		sync,
+	};
+
 	class DEBUGGER_API debugger
 	{
 	public:
-		debugger(io* io);
+		debugger(io* io, threadmode mode);
 		~debugger();
 		void update();
-		void set_lua(lua_State* L);
+		void attach_lua(lua_State* L);
+		void detach_lua(lua_State* L);
 		void set_custom(custom* custom);
 		void output(const char* category, const char* buf, size_t len);
 
@@ -37,8 +44,12 @@ namespace vscode
 }
 
 extern "C" {
-	DEBUGGER_API void* __cdecl vscode_debugger_create(lua_State* L, const char* ip, uint16_t port);
+#define DEBUGGER_THREADMODE_ASYNC 0
+#define DEBUGGER_THREADMODE_SYNC  1
+	DEBUGGER_API void* __cdecl vscode_debugger_create(const char* ip, uint16_t port, int threadmode);
 	DEBUGGER_API void  __cdecl vscode_debugger_close(void* dbg);
 	DEBUGGER_API void  __cdecl vscode_debugger_set_schema(void* dbg, const char* file);
 	DEBUGGER_API void  __cdecl vscode_debugger_update(void* dbg);
+	DEBUGGER_API void  __cdecl vscode_debugger_attach_lua(void* dbg, lua_State* L);
+	DEBUGGER_API void  __cdecl vscode_debugger_detach_lua(void* dbg, lua_State* L);
 }

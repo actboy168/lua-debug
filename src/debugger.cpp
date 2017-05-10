@@ -4,8 +4,8 @@
 
 namespace vscode
 {
-	debugger::debugger(io* io)
-		: impl_(new debugger_impl(io))
+	debugger::debugger(io* io, threadmode mode)
+		: impl_(new debugger_impl(io, mode))
 	{ }
 
 	debugger::~debugger()
@@ -18,9 +18,14 @@ namespace vscode
 		impl_->update();
 	}
 
-	void debugger::set_lua(lua_State* L)
+	void debugger::attach_lua(lua_State* L)
 	{
-		impl_->set_lua(L);
+		impl_->attach_lua(L);
+	}
+
+	void debugger::detach_lua(lua_State* L)
+	{
+		impl_->detach_lua(L);
 	}
 
 	void debugger::set_custom(custom* custom)
@@ -38,21 +43,19 @@ struct c_debugger {
 	vscode::network  io;
 	vscode::debugger dbg;
 
-	c_debugger(lua_State* L, const char* ip, uint16_t port)
+	c_debugger(const char* ip, uint16_t port, vscode::threadmode mode)
 		: io(ip, port)
-		, dbg( &io)
-	{
-		dbg.set_lua(L);
-	}
+		, dbg(&io, mode)
+	{ }
 };
 
-void* __cdecl vscode_debugger_create(lua_State* L, const char* ip, uint16_t port)
+void* __cdecl vscode_debugger_create(const char* ip, uint16_t port, int threadmode)
 {
 	void* dbg = malloc(sizeof c_debugger);
 	if (!dbg) {
 		return 0;
 	}
-	new (dbg) c_debugger(L, ip, port);
+	new (dbg) c_debugger(ip, port, (vscode::threadmode)threadmode);
 	return dbg;
 }
 
@@ -65,4 +68,14 @@ void __cdecl vscode_debugger_close(void* dbg)
 void __cdecl vscode_debugger_update(void* dbg)
 {
 	((c_debugger*)dbg)->dbg.update();
+}
+
+void  __cdecl vscode_debugger_attach_lua(void* dbg, lua_State* L)
+{
+	((c_debugger*)dbg)->dbg.attach_lua(L);
+}
+
+void  __cdecl vscode_debugger_detach_lua(void* dbg, lua_State* L)
+{
+	((c_debugger*)dbg)->dbg.detach_lua(L);
 }
