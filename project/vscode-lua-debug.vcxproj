@@ -11,65 +11,40 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\src\dbg_breakpoint.cpp" />
-    <ClCompile Include="..\src\dbg_delayload.cpp" />
-    <ClCompile Include="..\src\dbg_evaluate.cpp" />
-    <ClCompile Include="..\src\dbg_launch.cpp" />
-    <ClCompile Include="..\src\dbg_path.cpp" />
-    <ClCompile Include="..\src\dbg_pathconvert.cpp" />
-    <ClCompile Include="..\src\dbg_unicode.cpp" />
-    <ClCompile Include="..\src\dbg_watchs.cpp" />
-    <ClCompile Include="..\src\debugger.cpp" />
-    <ClCompile Include="..\src\dbg_impl.cpp" />
-    <ClCompile Include="..\src\dbg_request.cpp" />
-    <ClCompile Include="..\src\dbg_response.cpp" />
-    <ClCompile Include="..\src\dbg_variables.cpp" />
-    <ClCompile Include="..\src\dbg_network.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\src\dbg_breakpoint.h" />
-    <ClInclude Include="..\src\dbg_capabilities.h" />
-    <ClInclude Include="..\src\dbg_custom.h" />
-    <ClInclude Include="..\src\dbg_delayload.h" />
-    <ClInclude Include="..\src\dbg_enum.h" />
-    <ClInclude Include="..\src\dbg_evaluate.h" />
-    <ClInclude Include="..\src\dbg_file.h" />
-    <ClInclude Include="..\src\dbg_format.h" />
-    <ClInclude Include="..\src\dbg_hybridarray.h" />
-    <ClInclude Include="..\src\dbg_io.h" />
-    <ClInclude Include="..\src\dbg_path.h" />
-    <ClInclude Include="..\src\dbg_pathconvert.h" />
-    <ClInclude Include="..\src\dbg_unicode.h" />
-    <ClInclude Include="..\src\dbg_watchs.h" />
-    <ClInclude Include="..\src\debugger.h" />
-    <ClInclude Include="..\src\dbg_impl.h" />
-    <ClInclude Include="..\src\dbg_variables.h" />
-    <ClInclude Include="..\src\dbg_protocol.h" />
-    <ClInclude Include="..\src\dbg_network.h" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="asmjit.vcxproj">
       <Project>{092c8c20-ab98-456a-a63e-0b61e4bfe256}</Project>
+    </ProjectReference>
+    <ProjectReference Include="debugger.vcxproj">
+      <Project>{9fd838ac-a5a2-4a24-8166-105ba0d8a973}</Project>
     </ProjectReference>
     <ProjectReference Include="luacore.vcxproj">
       <Project>{b84f7231-16ce-41d8-8c08-7b523ff4225b}</Project>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\client\dbg_redirect.cpp" />
+    <ClCompile Include="..\client\launch.cpp" />
+    <ClCompile Include="..\client\main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\client\dbg_redirect.h" />
+    <ClInclude Include="..\client\launch.h" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{9FD838AC-A5A2-4A24-8166-105BA0D8A973}</ProjectGuid>
+    <ProjectGuid>{8AC7695F-C946-4B9A-B814-3E789BFD54E8}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>vscodeluadebug</RootNamespace>
-    <ProjectName>vscode-debug</ProjectName>
+    <ProjectName>vscode-lua-debug</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v141</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v141</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -101,7 +76,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>DEBUGGER_EXPORTS;DEBUGGER_DELAYLOAD_LUA;RAPIDJSON_HAS_STDSTRING;_WINSOCK_DEPRECATED_NO_WARNINGS;_WIN32_WINNT=_WIN32_WINNT_WIN7;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>DEBUGGER_DELAYLOAD_LUA;RAPIDJSON_HAS_STDSTRING;_WINSOCK_DEPRECATED_NO_WARNINGS;_WIN32_WINNT=_WIN32_WINNT_WIN7;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(SolutionDir)..\src;$(SolutionDir)..\src\lua</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
     </ClCompile>
@@ -111,7 +86,7 @@
       <AdditionalDependencies>Ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>
       </ModuleDefinitionFile>
-      <DelayLoadDLLs>luacore.dll</DelayLoadDLLs>
+      <DelayLoadDLLs>vscode-debug.dll;luacore.dll</DelayLoadDLLs>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -122,7 +97,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>DEBUGGER_EXPORTS;DEBUGGER_DELAYLOAD_LUA;RAPIDJSON_HAS_STDSTRING;_WINSOCK_DEPRECATED_NO_WARNINGS;_WIN32_WINNT=_WIN32_WINNT_WIN7;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>DEBUGGER_DELAYLOAD_LUA;RAPIDJSON_HAS_STDSTRING;_WINSOCK_DEPRECATED_NO_WARNINGS;_WIN32_WINNT=_WIN32_WINNT_WIN7;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(SolutionDir)..\src;$(SolutionDir)..\src\lua</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
     </ClCompile>
@@ -134,7 +109,7 @@
       <AdditionalDependencies>Ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>
       </ModuleDefinitionFile>
-      <DelayLoadDLLs>luacore.dll</DelayLoadDLLs>
+      <DelayLoadDLLs>vscode-debug.dll;luacore.dll</DelayLoadDLLs>
     </Link>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

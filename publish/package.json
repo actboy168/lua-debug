@@ -1,7 +1,7 @@
 {
     "name": "lua-debug",
     "displayName": "Lua 5.3 Debugger",
-    "version": "0.0.20",
+    "version": "0.1.0",
     "publisher": "actboy168",
     "icon": "images/logo.png",
     "description": "Visual Studio Code debugger extension for Lua 5.3",
@@ -37,7 +37,7 @@
                         "lua"
                     ]
                 },
-                "program": "./vscode-debug-client.exe",
+                "program": "./vscode-lua-debug.exe",
                 "initialConfigurations": [
                     {
                         "name": "launch",
