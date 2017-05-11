@@ -39,7 +39,7 @@ namespace vscode
 
 	void debugger_impl::open_hook(lua_State* L)
 	{
-		stacklevel_ = 0;
+		stacklevel_.clear();
 		if (hookL_ && hookL_ != L) {
 			lua_sethook(hookL_, 0, 0, 0);
 		}
@@ -56,7 +56,7 @@ namespace vscode
 		breakpoints_.clear();
 		stack_.clear();
 		seq = 1;
-		stacklevel_ = 0;
+		stacklevel_.clear();
 	}
 
 	bool debugger_impl::update_main(rprotocol& req, bool& quit)
@@ -87,13 +87,18 @@ namespace vscode
 
 		if (ar->event == LUA_HOOKCALL)
 		{
-			stacklevel_++;
+			stacklevel_[L]++;
 			has_source_ = false;
 			return;
 		}
 		if (ar->event == LUA_HOOKRET)
 		{
-			stacklevel_--;
+			if (stacklevel_[L] <= 1) {
+				stacklevel_.erase(L);
+			}
+			else {
+				stacklevel_[L]--;
+			}
 			has_source_ = false;
 			return;
 		}
@@ -331,7 +336,7 @@ namespace vscode
 		, step_(step::in)
 		, stepping_stacklevel_(0)
 		, stepping_lua_state_(NULL)
-		, stacklevel_(0)
+		, stacklevel_()
 		, breakpoints_()
 		, stack_()
 		, watch_()
