@@ -170,6 +170,16 @@ namespace vscode
 			if (req["type"] != "request") {
 				continue;
 			}
+			if (is_state(state::birth)) {
+				if (req["command"] == "initialize") {
+					request_initialize(req);
+					continue;
+				}
+				else if (req["command"] == "disconnect") {
+					request_disconnect(req);
+					continue;
+				}
+			}
 			if (update_main(req, quit)) {
 				continue;
 			}
@@ -228,9 +238,12 @@ namespace vscode
 		}
 	}
 	
-	void debugger_impl::attach_lua(lua_State* L)
+	void debugger_impl::attach_lua(lua_State* L, bool pause)
 	{
 		attachL_ = L;
+		if (pause && L) {
+			open_hook(L);
+		}
 	}
 
 	void debugger_impl::detach_lua(lua_State* L)

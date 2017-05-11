@@ -33,7 +33,7 @@ namespace vscode
 		debugger(io* io, threadmode mode);
 		~debugger();
 		void update();
-		void attach_lua(lua_State* L);
+		void attach_lua(lua_State* L, bool pause);
 		void detach_lua(lua_State* L);
 		void set_custom(custom* custom);
 		void output(const char* category, const char* buf, size_t len);
