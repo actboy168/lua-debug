@@ -31,7 +31,7 @@
     * port，远程调试器的端口
     * sourceMaps，远程代码和本地代码的路径映射
 
-3. 如果你只是使用在本机的远程调试器，你还可以不使用vscode-debug-client.exe，直接使用vscode连接调试器。只需要加上"debugServer"的参数。例如
+3. 如果你只是使用在本机的远程调试器，你还可以不使用vscode-lua-debug.exe，直接使用vscode连接调试器。只需要加上"debugServer"的参数。例如
 
 ```json
 {
