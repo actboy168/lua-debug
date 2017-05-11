@@ -1,6 +1,8 @@
 #include "debugger.h"
 #include "dbg_impl.h"
 #include "dbg_network.h"
+#include "dbg_delayload.h"
+#include "dbg_unicode.h"
 
 namespace vscode
 {
@@ -94,4 +96,11 @@ namespace luaw {
 int __cdecl luaopen_debugger(lua_State* L)
 {
 	return luaw::open(L);
+}
+
+void set_luadll(const char* path, size_t len)
+{
+#if defined(DEBUGGER_DELAYLOAD_LUA)
+	delayload::set_luadll(vscode::u2w(vscode::strview(path, len)));
+#endif
 }

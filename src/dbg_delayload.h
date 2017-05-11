@@ -6,7 +6,7 @@
 
 namespace delayload
 {
-	void set_lua_dll(const std::wstring& path);
+	void set_luadll(const std::wstring& path);
 }
 
 #endif

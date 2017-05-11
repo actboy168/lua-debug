@@ -142,7 +142,7 @@ namespace vscode
 		}
 #if defined(DEBUGGER_DELAYLOAD_LUA)	   
 		if (args.HasMember("luadll")) {
-			delayload::set_lua_dll(vscode::u2w(args["luadll"].Get<std::string>()));
+			delayload::set_luadll(vscode::u2w(args["luadll"].Get<std::string>()));
 		}
 #endif		
 		initialize_sourcemaps(args);
