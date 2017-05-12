@@ -85,6 +85,8 @@ namespace vscode
 
 	void debugger_impl::hook(lua_State *L, lua_Debug *ar)
 	{
+		if (!allowhook_) { return; }
+
 		std::lock_guard<dbg_thread> lock(*thread_);
 
 		if (ar->event == LUA_HOOKCALL)
@@ -147,6 +149,8 @@ namespace vscode
 		{
 			return;
 		}
+
+		allowhook_ = false;
 		lua_Debug ar;
 		if (lua_getstack(L, 0, &ar))
 		{
@@ -154,6 +158,7 @@ namespace vscode
 			step_in();
 			loop(L, &ar);
 		}
+		allowhook_ = true;
 	}
 
 	void debugger_impl::loop(lua_State *L, lua_Debug *ar)
@@ -379,6 +384,7 @@ namespace vscode
 		, launchL_(0)
 		, hookL_(0)
 		, launch_console_()
+		, allowhook_(true)
 		, thread_(mode == threadmode::async ? (dbg_thread*)new async(std::bind(&debugger_impl::update, this)): (dbg_thread*)new sync)
 		, main_dispatch_
 		({
