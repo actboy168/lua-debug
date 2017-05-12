@@ -171,9 +171,9 @@ namespace vscode
 				lua_pop(L, 1);
 			}
 			lua_pop(L, 1);
-			lua_close(L);
 			set_state(state::terminated);
 			network_->close();
+			lua_close(L);
 		}
 	}
 }

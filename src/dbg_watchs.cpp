@@ -14,8 +14,7 @@ namespace vscode
 
 	watchs::~watchs()
 	{
-		lua_pushnil(L);
-		lua_rawsetp(L, LUA_REGISTRYINDEX, &WATCH_TABLE);
+		clear();
 	}
 
 	size_t watchs::add()
@@ -45,7 +44,7 @@ namespace vscode
 
 	void watchs::clear()
 	{
-		lua_newtable(L);
+		lua_pushnil(L);
 		lua_rawsetp(L, LUA_REGISTRYINDEX, &WATCH_TABLE);
 		cur_ = 0;
 		max_ = 0;
