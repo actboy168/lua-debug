@@ -6,11 +6,12 @@
 #include "dbg_hybridarray.h"   
 #include "dbg_network.h"
 #include "dbg_path.h"
-#include "../client/dbg_redirect.h"	 
-#include "../client/dbg_redirect.cpp"
+#include "../src/dbg_redirect.h"
+#include "../src/dbg_redirect.cpp" 
+#include "../src/dbg_unicode.cpp"
 
 
-#define TEST_ATTACH 1
+#define TEST_ATTACH 0
 
 class debugger_wrapper
 	: public vscode::custom
@@ -23,7 +24,7 @@ public:
 		fs::path schema(SOURCE_PATH);
 		schema /= "debugProtocol.json";
 		network_.set_schema(schema.string().c_str());
-		debugger_.attach_lua(L);
+		debugger_.attach_lua(L, false);
 		debugger_.set_custom(this);
 	}
 

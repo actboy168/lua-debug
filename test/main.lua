@@ -1,8 +1,6 @@
-local code = [[
-print(1)
-print(1)
-print(1)
-]]
+local sleep = require 'sleep'
 
-load(code)()
-print('ok')
+for i = 1, 10000 do
+	print(i)
+	sleep(1000)
+end
