@@ -61,14 +61,14 @@ bool create_process_with_debugger(vscode::rprotocol& req)
 
 int64_t seq = 1;
 
-void response_initialized(vscode::rprotocol& req)
+void response_initialized(stdinput& io, vscode::rprotocol& req)
 {
 	vscode::wprotocol res;
 	vscode::capabilities(res, req["seq"].GetInt64());
-	stdinput::output(res);
+	io.output(res);
 }
 
-void response_error(vscode::rprotocol& req, const char *msg)
+void response_error(stdinput& io, vscode::rprotocol& req, const char *msg)
 {
 	vscode::wprotocol res;
 	for (auto _ : res.Object())
@@ -80,7 +80,7 @@ void response_error(vscode::rprotocol& req, const char *msg)
 		res("success").Bool(false);
 		res("message").String(msg);
 	}
-	stdinput::output(res);
+	io.output(res);
 }
 
 int main()
@@ -88,7 +88,7 @@ int main()
 	_setmode(_fileno(stdout), _O_BINARY);
 	setbuf(stdout, NULL);
 
-	stdinput input;
+	stdinput io;
 	vscode::rprotocol initproto;
 	std::unique_ptr<proxy_client> client;
 	std::unique_ptr<launch_server> server;
@@ -96,11 +96,11 @@ int main()
 	for (;;) {
 		if (server) server->update();
 		if (client) client->update();
-		while (!input.empty()) {
-			vscode::rprotocol rp = input.pop();
+		while (!io.input_empty()) {
+			vscode::rprotocol rp = io.input();
 			if (rp["type"] == "request") {
 				if (rp["command"] == "initialize") {
-					response_initialized(rp);
+					response_initialized(io, rp);
 					initproto = std::move(rp);
 					initproto.AddMember("__norepl", true, initproto.GetAllocator());
 					seq = 1;
@@ -111,11 +111,11 @@ int main()
 					auto& args = rp["arguments"];
 					if (args.HasMember("runtimeExecutable")) {
 						if (!create_process_with_debugger(rp)) {
-							response_error(rp, "Launch failed");
-							exit(1);
+							response_error(io, rp, "Launch failed");
+							exit(0);
 							continue;
 						}
-						client.reset(new proxy_client);
+						client.reset(new proxy_client(io));
 						client->connect(net::endpoint("127.0.0.1", 4278));
 						if (seq > 1) initproto.AddMember("__initseq", seq, initproto.GetAllocator());
 						client->send(initproto);
@@ -124,18 +124,13 @@ int main()
 						if (args.HasMember("console")) {
 							console = args["console"].Get<std::string>();
 						}
-						server.reset(new launch_server(console, [&]() {
-							while (!input.empty()) {
-								vscode::rprotocol rp = input.pop();
-								server->send(std::move(rp));
-							}
-						}));
+						server.reset(new launch_server(console, io));
 						if (seq > 1) initproto.AddMember("__initseq", seq, initproto.GetAllocator());
 						server->send(std::move(initproto));
 					}
 				}
 				else if (rp["command"] == "attach") {
-					client.reset(new proxy_client);
+					client.reset(new proxy_client(io));
 					std::string ip = "127.0.0.1";
 					uint16_t port = 4278;
 					auto& args = rp["arguments"];
@@ -155,5 +150,5 @@ int main()
 		}
 		std::this_thread::sleep_for(std::chrono::milliseconds(10));
 	}
-	input.join();
+	io.join();
 }

@@ -10,6 +10,7 @@
 #include <net/tcp/buffer.h>
 
 struct lua_State;
+class stdinput;
 
 class launch_io
 	: public vscode::io
@@ -45,7 +46,7 @@ class launch_server
 	: public vscode::custom
 {
 public:
-	launch_server(const std::string& console, std::function<void()> idle);
+	launch_server(const std::string& console, stdinput& io);
 	void update();
 	void send(vscode::rprotocol&& rp);
 
@@ -59,6 +60,7 @@ private:
 	vscode::state state_;
 	vscode::redirector stderr_;
 	std::function<void()> idle_;
-	launch_io io_;
+	launch_io launch_io_;
+	stdinput& io;
 };
 

@@ -2,8 +2,9 @@
 #include "stdinput.h"
 #include "dbg_format.h"
 
-proxy_client::proxy_client()
+proxy_client::proxy_client(stdinput& io_)
 	: poller()
+	, io(io_)
 	, base_type(&poller)
 {
 	net::socket::initialize();
@@ -17,7 +18,7 @@ bool proxy_client::event_in()
 	size_t len = base_type::recv(tmp.data(), tmp.size());
 	if (len == 0)
 		return true;
-	stdinput::output(tmp.data(), len);
+	io.output(tmp.data(), len);
 	return true;
 }
 

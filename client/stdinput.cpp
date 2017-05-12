@@ -1,70 +1,82 @@
 #include "stdinput.h"
-
-#include <thread>
-#include "dbg_protocol.h"
 #include "dbg_format.h"
-#include <net/queue.h>
 
-
-stdinput::stdinput()
-	: std::thread(std::bind(&stdinput::run, this))
+fileio::fileio(FILE* fin, FILE* fout)
+	: fin_(fin)
+	, fout_(fout)
 { }
 
-void stdinput::run() {
+void fileio::update(int ms) {
 	for (;;) {
-		while (update()) {}
-		std::this_thread::sleep_for(std::chrono::milliseconds(10));
+		char buf[32] = { 0 };
+		if (fgets(buf, sizeof buf - 1, fin_) == NULL) {
+			break;
+		}
+		buf[sizeof buf - 1] = 0;
+		if (strncmp(buf, "Content-Length: ", 16) != 0) {
+			break;
+		}
+		char *bufp = buf + 16;
+		int len = atoi(bufp);
+		if (len <= 0) {
+			close();
+		}
+		if (fgets(buf, sizeof buf, fin_) == NULL) {
+			close();
+		}
+		buffer_.resize(len + 1);
+		buffer_[0] = 0;
+		if (fread(buffer_.data(), len, 1, fin_) != 1) {
+			close();
+		}
+		buffer_[len] = 0;
+		rapidjson::Document	d;
+		if (d.Parse(buffer_.data(), len).HasParseError()) {
+			exit(1);
+		}
+		input_queue_.push(vscode::rprotocol(std::move(d)));
 	}
 }
-bool stdinput::update() {
-	char buf[32] = { 0 };
-	if (fgets(buf, sizeof buf - 1, stdin) == NULL) {
-		return false;
-	}
-	buf[sizeof buf - 1] = 0;
-	if (strncmp(buf, "Content-Length: ", 16) != 0) {
-		return false;
-	}
-	char *bufp = buf + 16;
-	int len = atoi(bufp);
-	if (len <= 0) {
-		exit(1);
-	}
-	if (fgets(buf, sizeof buf, stdin) == NULL) {
-		exit(1);
-	}
-	buffer_.resize(len + 1);
-	buffer_[0] = 0;
-	if (fread(buffer_.data(), len, 1, stdin) != 1) {
-		exit(1);
-	}
-	buffer_[len] = 0;
-	rapidjson::Document	d;
-	if (d.Parse(buffer_.data(), len).HasParseError()) {
-		exit(1);
-	}
-	input_queue_.push(vscode::rprotocol(std::move(d)));
-	return true;
-}
-bool stdinput::empty() const {
-	return input_queue_.empty();
-}
-vscode::rprotocol stdinput::pop() {
+
+vscode::rprotocol fileio::input() {
 	vscode::rprotocol r = std::move(input_queue_.front());
 	input_queue_.pop();
 	return r;
 }
-void stdinput::output(const char* str, size_t len) {
+
+bool fileio::input_empty() const {
+	return input_queue_.empty();
+}
+
+bool fileio::output(const vscode::wprotocol& wp) {
+	if (!wp.IsComplete())
+		return false;
+	auto l = vscode::format("Content-Length: %d\r\n\r\n", wp.size());
+	output(l.data(), l.size());
+	output(wp.data(), wp.size());
+	return true;
+}
+
+void fileio::output(const char* str, size_t len) {
 	for (;;) {
-		size_t r = fwrite(str, len, 1, stdout);
+		size_t r = fwrite(str, len, 1, fout_);
 		if (r == 1)
 			break;
 	}
 }
-void stdinput::output(const vscode::wprotocol& wp) {
-	if (!wp.IsComplete())
-		return;
-	auto l = vscode::format("Content-Length: %d\r\n\r\n", wp.size());
-	output(l.data(), l.size());
-	output(wp.data(), wp.size());
+
+stdinput::stdinput()
+	: fileio(stdin, stdout)
+	, std::thread(std::bind(&stdinput::run, this))
+{ }
+
+void stdinput::run() {
+	for (;;) {
+		fileio::update(10);
+		std::this_thread::sleep_for(std::chrono::milliseconds(10));
+	}
+}
+
+void stdinput::close() {
+	exit(0);
 }
