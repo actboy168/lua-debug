@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26403.7
+VisualStudioVersion = 15.0.26430.4
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "luacore", "luacore.vcxproj", "{B84F7231-16CE-41D8-8C08-7B523FF4225B}"
 EndProject
@@ -10,6 +10,8 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test", "test.vcxproj", "{9022BEF7-18C3-47C0-BE1A-C24B82E3E5FA}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vscode-lua-debug", "vscode-lua-debug.vcxproj", "{8AC7695F-C946-4B9A-B814-3E789BFD54E8}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "debugger-inject", "debugger-inject.vcxproj", "{20F15A76-D908-475B-A904-6ACD1763D5FB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{8AC7695F-C946-4B9A-B814-3E789BFD54E8}.Debug|Win32.Build.0 = Debug|Win32
 		{8AC7695F-C946-4B9A-B814-3E789BFD54E8}.Release|Win32.ActiveCfg = Release|Win32
 		{8AC7695F-C946-4B9A-B814-3E789BFD54E8}.Release|Win32.Build.0 = Release|Win32
+		{20F15A76-D908-475B-A904-6ACD1763D5FB}.Debug|Win32.ActiveCfg = Debug|Win32
+		{20F15A76-D908-475B-A904-6ACD1763D5FB}.Debug|Win32.Build.0 = Debug|Win32
+		{20F15A76-D908-475B-A904-6ACD1763D5FB}.Release|Win32.ActiveCfg = Release|Win32
+		{20F15A76-D908-475B-A904-6ACD1763D5FB}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

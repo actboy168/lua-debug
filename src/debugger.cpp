@@ -41,36 +41,50 @@ namespace vscode
 	}
 }
 
-namespace luaw {
-	std::unique_ptr<vscode::network>  io;
-	std::unique_ptr<vscode::debugger> dbg;
+std::unique_ptr<vscode::network>  global_io;
+std::unique_ptr<vscode::debugger> global_dbg;
 
+void set_luadll(const char* path, size_t len)
+{
+#if defined(DEBUGGER_DELAYLOAD_LUA)
+	delayload::set_luadll(vscode::u2w(vscode::strview(path, len)));
+#endif
+}
+
+void start_server(const char* ip, uint16_t port)
+{
+	if (!global_io || !global_dbg)
+	{
+		global_io.reset(new vscode::network(ip, port));
+		global_dbg.reset(new vscode::debugger(global_io.get(), vscode::threadmode::async));
+	}
+}
+
+void attach_lua(lua_State* L, bool pause)
+{
+	if (global_dbg) global_dbg->attach_lua(L, pause);
+}
+
+namespace luaw {
 	int listen(lua_State* L)
 	{
-		if (!io || !dbg) {
-			const char* ip = luaL_checkstring(L, 1);
-			uint16_t port = (uint16_t)luaL_checkinteger(L, 2);
-			io.reset(new vscode::network(ip, port));
-			dbg.reset(new vscode::debugger(io.get(), vscode::threadmode::async));
-		}
-		dbg->attach_lua(L, false);
+		::start_server(luaL_checkstring(L, 1), (uint16_t)luaL_checkinteger(L, 2));
+		::attach_lua(L, false);
 		lua_pushvalue(L, lua_upvalueindex(1));
 		return 1;
 	}
 
 	int start(lua_State* L)
 	{
-		if (dbg) {
-			dbg->attach_lua(L, true);
-		}
+		::attach_lua(L, true);
 		lua_pushvalue(L, lua_upvalueindex(1));
 		return 1;
 	}
 
 	int __gc(lua_State* L)
 	{
-		if (dbg) {
-			dbg->detach_lua(L);
+		if (global_dbg) {
+			global_dbg->detach_lua(L);
 		}
 		return 0;
 	}
@@ -96,11 +110,4 @@ namespace luaw {
 int __cdecl luaopen_debugger(lua_State* L)
 {
 	return luaw::open(L);
-}
-
-void set_luadll(const char* path, size_t len)
-{
-#if defined(DEBUGGER_DELAYLOAD_LUA)
-	delayload::set_luadll(vscode::u2w(vscode::strview(path, len)));
-#endif
 }

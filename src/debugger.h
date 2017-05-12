@@ -46,4 +46,6 @@ namespace vscode
 extern "C" {
 	DEBUGGER_API int __cdecl luaopen_debugger(lua_State* L);
 	DEBUGGER_API void set_luadll(const char* path, size_t len);
+	DEBUGGER_API void start_server(const char* ip, uint16_t port);
+	DEBUGGER_API void attach_lua(lua_State* L, bool pause);
 }
