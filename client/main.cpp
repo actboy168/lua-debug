@@ -134,10 +134,32 @@ private:
 	net::poller_t poller;
 };
 
+bool create_process_with_debugger(rprotocol& req)
+{
+	return false;
+}
+
+int64_t seq = 1;
+
 void response_initialized(rprotocol& req)
 {
 	wprotocol res;
 	vscode::capabilities(res, req["seq"].GetInt64());
+	stdinput::output(res);
+}
+
+void response_error(rprotocol& req, const char *msg)
+{
+	wprotocol res;
+	for (auto _ : res.Object())
+	{
+		res("type").String("response");
+		res("seq").Int64(seq++);
+		res("command").String(req["command"]);
+		res("request_seq").Int64(req["seq"].GetInt64());
+		res("success").Bool(false);
+		res("message").String(msg);
+	}
 	stdinput::output(res);
 }
 
@@ -160,22 +182,36 @@ int main()
 				if (rp["command"] == "initialize") {
 					response_initialized(rp);
 					initproto = std::move(rp);
-					initproto.AddMember("norepl", true, initproto.GetAllocator());
+					initproto.AddMember("__norepl", true, initproto.GetAllocator());
+					seq = 1;
 					continue;
 				}
 				else if (rp["command"] == "launch") {
 					std::string console;
 					auto& args = rp["arguments"];
-					if (args.HasMember("console")) {
-						console = args["console"].Get<std::string>();
-					}
-					server.reset(new launch_server(console, [&](){
-						while (!input.empty()) {
-							rprotocol rp = input.pop();
-							server->send(std::move(rp));
+					if (args.HasMember("runtimeExecutable")) {
+						if (!create_process_with_debugger(rp)) {
+							response_error(rp, "Launch failed");
+							continue;
 						}
-					}));
-					server->send(std::move(initproto));
+						client.reset(new proxy_client);
+						client->connect(net::endpoint("127.0.0.1", 4278));
+						if (seq > 1) initproto.AddMember("__initseq", seq, initproto.GetAllocator());
+						client->send(initproto);
+					}
+					else {
+						if (args.HasMember("console")) {
+							console = args["console"].Get<std::string>();
+						}
+						server.reset(new launch_server(console, [&]() {
+							while (!input.empty()) {
+								rprotocol rp = input.pop();
+								server->send(std::move(rp));
+							}
+						}));
+						if (seq > 1) initproto.AddMember("__initseq", seq, initproto.GetAllocator());
+						server->send(std::move(initproto));
+					}
 				}
 				else if (rp["command"] == "attach") {
 					client.reset(new proxy_client);
@@ -189,6 +225,7 @@ int main()
 						port = args["port"].GetUint();
 					}
 					client->connect(net::endpoint(ip, port));
+					if (seq > 1) initproto.AddMember("__initseq", seq, initproto.GetAllocator());
 					client->send(initproto);
 				}
 			}  
