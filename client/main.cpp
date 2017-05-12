@@ -90,7 +90,7 @@ int main()
 
 	stdinput io;
 	vscode::rprotocol initproto;
-	std::unique_ptr<proxy_client> client;
+	std::unique_ptr<attach_client> client;
 	std::unique_ptr<launch_server> server;
 
 	for (;;) {
@@ -115,7 +115,7 @@ int main()
 							exit(0);
 							continue;
 						}
-						client.reset(new proxy_client(io));
+						client.reset(new attach_client(io));
 						client->connect(net::endpoint("127.0.0.1", 4278));
 						if (seq > 1) initproto.AddMember("__initseq", seq, initproto.GetAllocator());
 						client->send(initproto);
@@ -130,7 +130,7 @@ int main()
 					}
 				}
 				else if (rp["command"] == "attach") {
-					client.reset(new proxy_client(io));
+					client.reset(new attach_client(io));
 					std::string ip = "127.0.0.1";
 					uint16_t port = 4278;
 					auto& args = rp["arguments"];

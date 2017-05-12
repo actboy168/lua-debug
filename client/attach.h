@@ -6,12 +6,12 @@
 
 class stdinput;
 
-class proxy_client
+class attach_client
 	: public net::tcp::connecter
 {
 	typedef net::tcp::connecter base_type;
 public:
-	proxy_client(stdinput& io);
+	attach_client(stdinput& io);
 	bool event_in();
 	void send(const vscode::rprotocol& rp);
 	void event_close();

@@ -2,7 +2,7 @@
 #include "stdinput.h"
 #include "dbg_format.h"
 
-proxy_client::proxy_client(stdinput& io_)
+attach_client::attach_client(stdinput& io_)
 	: poller()
 	, io(io_)
 	, base_type(&poller)
@@ -10,7 +10,7 @@ proxy_client::proxy_client(stdinput& io_)
 	net::socket::initialize();
 }
 
-bool proxy_client::event_in()
+bool attach_client::event_in()
 {
 	if (!base_type::event_in())
 		return false;
@@ -22,7 +22,7 @@ bool proxy_client::event_in()
 	return true;
 }
 
-void proxy_client::send(const vscode::rprotocol& rp)
+void attach_client::send(const vscode::rprotocol& rp)
 {
 	rapidjson::StringBuffer buffer;
 	rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
@@ -31,13 +31,13 @@ void proxy_client::send(const vscode::rprotocol& rp)
 	base_type::send(buffer.GetString(), buffer.GetSize());
 }
 
-void proxy_client::event_close()
+void attach_client::event_close()
 {
 	base_type::event_close();
 	exit(0);
 }
 
-void proxy_client::update()
+void attach_client::update()
 {
 	poller.wait(1000, 0);
 }
