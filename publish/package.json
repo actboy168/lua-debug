@@ -31,7 +31,9 @@
         "debuggers": [
             {
                 "type": "lua",
-                "languages": "lua",
+                "languages": [
+                    "lua"
+                ],
                 "label": "Lua Debugger",
                 "enableBreakpointsFor": {
                     "languageIds": [
