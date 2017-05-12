@@ -135,27 +135,14 @@ private:
 	net::poller_t poller;
 };
 
-class module {		
-public:		
-	module(const wchar_t* path)		
-		: handle_(LoadLibraryW(path))
-	{ }		
-
-	~module()
-	{ }
-
-	HMODULE handle() const		
-	{		
-		return handle_;		
-	}		
-	
-	intptr_t api(const char* name)		
-	{		
-		return (intptr_t)GetProcAddress(handle_, name);		
-	}		
-	
+class module {
+public:
+	module(const wchar_t* path) : handle_(LoadLibraryW(path)) { }
+	~module() { }
+	HMODULE handle() const { return handle_; }
+	intptr_t api(const char* name) { return (intptr_t)GetProcAddress(handle_, name); }
 private:		
-	HMODULE handle_;		
+	HMODULE handle_;
 };
 
 bool create_process_with_debugger(rprotocol& req)
@@ -177,21 +164,22 @@ bool create_process_with_debugger(rprotocol& req)
 			return false;
 		}
 	}
-
+	
 	if (!args.HasMember("runtimeExecutable") || !args["runtimeExecutable"].IsString()) {
 		return false;
 	}
 
-	std::wstring wcommand = u2w(args["runtimeExecutable"].Get<std::string>());
+	std::wstring wapplication = u2w(args["runtimeExecutable"].Get<std::string>());
+	std::wstring wcommand;
 	if (args.HasMember("runtimeArgs") && args["runtimeArgs"].IsString()) {
-		// TODO:
+		wcommand = u2w(args["runtimeArgs"].Get<std::string>());
 	}
 	std::wstring wcwd;
 	if (args.HasMember("cwd") && args["cwd"].IsString()) {
 		wcwd = u2w(args["cwd"].Get<std::string>());
 	}
 
-	if (!base::c_call<bool>(create_process, 4278, wcommand.c_str(), wcwd.c_str())) {
+	if (!base::c_call<bool>(create_process, 4278, wapplication.c_str(), wcommand.c_str(), wcwd.c_str())) {
 		return false;
 	}
 	return true;

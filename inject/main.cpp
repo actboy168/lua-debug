@@ -89,7 +89,7 @@ bool set_luadll(const wchar_t* str, size_t len)
 }
 
 extern "C" __declspec(dllexport)
-bool create_process_with_debugger(uint16_t port, const wchar_t* command_line, const wchar_t* current_directory)
+bool create_process_with_debugger(uint16_t port, const wchar_t* application, const wchar_t* command_line, const wchar_t* current_directory)
 {
 	//TODO: ÒÆ³ý¶ÔportµÄÒÀÀµ
 	shared_port = port;
@@ -97,5 +97,5 @@ bool create_process_with_debugger(uint16_t port, const wchar_t* command_line, co
 
 	base::win::process p;
 	p.inject(get_self_path());
-	return p.create(std::optional<fs::path>(), command_line, current_directory);
+	return p.create(application, command_line, current_directory);
 }

@@ -150,6 +150,22 @@
                                 "type": "array",
                                 "description": "The source path of the remote host and the source path of local.",
                                 "default": null
+                            },
+                            "runtimeExecutable": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ],
+                                "description": "Runtime to use. Either an absolute path or the name of a runtime available on the PATH.",
+                                "default": null
+                            },
+                            "runtimeArgs": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ],
+                                "description": "Arguments passed to the runtime executable.",
+                                "default": null
                             }
                         }
                     },
