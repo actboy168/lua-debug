@@ -34,18 +34,21 @@ void fileio::update(int ms) {
 		if (d.Parse(buffer_.data(), len).HasParseError()) {
 			exit(1);
 		}
-		input_queue_.push(vscode::rprotocol(std::move(d)));
+		input_.push(vscode::rprotocol(std::move(d)));
 	}
 }
 
 vscode::rprotocol fileio::input() {
-	vscode::rprotocol r = std::move(input_queue_.front());
-	input_queue_.pop();
+	if (input_.empty()) {
+		return vscode::rprotocol();
+	}
+	vscode::rprotocol r = std::move(input_.front());
+	input_.pop();
 	return r;
 }
 
 bool fileio::input_empty() const {
-	return input_queue_.empty();
+	return input_.empty();
 }
 
 bool fileio::output(const vscode::wprotocol& wp) {
@@ -79,4 +82,25 @@ void stdinput::run() {
 
 void stdinput::close() {
 	exit(0);
+}
+
+vscode::rprotocol stdinput::input() {
+	if (preinput_.empty()) {
+		return fileio::input();
+	}
+	vscode::rprotocol r = std::move(preinput_.front());
+	preinput_.pop();
+	return r;
+}
+
+bool stdinput::input_empty() const {
+	return preinput_.empty() && fileio::input_empty();
+}
+
+void stdinput::push_input(vscode::rprotocol&& rp)
+{
+	preinput_.push(std::forward<vscode::rprotocol>(rp));
+}
+
+void stdinput::update(int ms) {
 }

@@ -94,8 +94,11 @@ int main()
 	std::unique_ptr<attach_client> client;
 	std::unique_ptr<launch_server> server;
 
-	for (;;) {
-		if (server) server->update();
+	for (;; std::this_thread::sleep_for(std::chrono::milliseconds(10))) {
+		if (server) {
+			server->update(); 
+			continue;
+		}
 		if (client) client->update();
 		while (!io.input_empty()) {
 			vscode::rprotocol rp = io.input();
@@ -108,7 +111,6 @@ int main()
 					continue;
 				}
 				else if (rp["command"] == "launch") {
-					std::string console;
 					auto& args = rp["arguments"];
 					if (args.HasMember("runtimeExecutable")) {
 						if (!create_process_with_debugger(rp)) {
@@ -125,6 +127,8 @@ int main()
 						server.reset(new launch_server(io));
 						if (seq > 1) initproto.AddMember("__initseq", seq, initproto.GetAllocator());
 						server->send(std::move(initproto));
+						server->send(std::move(rp));
+						break;
 					}
 				}
 				else if (rp["command"] == "attach") {
@@ -146,7 +150,6 @@ int main()
 			if (server) server->send(std::move(rp));
 			if (client) client->send(rp);
 		}
-		std::this_thread::sleep_for(std::chrono::milliseconds(10));
 	}
 	io.join();
 }

@@ -1,3 +1,4 @@
 luacore.dll
 asmjit.dll
 debugger.dll
+debugger-inject.dll

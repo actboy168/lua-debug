@@ -20,7 +20,7 @@ private:
 	FILE* fin_;
 	FILE* fout_;
 	std::vector<char> buffer_;
-	net::queue<vscode::rprotocol, 8> input_queue_;
+	net::queue<vscode::rprotocol, 8> input_;
 };
 
 class stdinput
@@ -30,5 +30,12 @@ class stdinput
 public:
 	stdinput();
 	void run();
+	void update(int ms);
 	void close();
+	vscode::rprotocol input();
+	bool input_empty() const;
+	void push_input(vscode::rprotocol&& rp);
+
+private:
+	net::queue<vscode::rprotocol, 8> preinput_;
 };
