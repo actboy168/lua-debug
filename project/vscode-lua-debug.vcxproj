@@ -16,13 +16,17 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\client\attach.cpp" />
     <ClCompile Include="..\client\dbg_redirect.cpp" />
     <ClCompile Include="..\client\launch.cpp" />
     <ClCompile Include="..\client\main.cpp" />
+    <ClCompile Include="..\client\stdinput.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\client\attach.h" />
     <ClInclude Include="..\client\dbg_redirect.h" />
     <ClInclude Include="..\client\launch.h" />
+    <ClInclude Include="..\client\stdinput.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{8AC7695F-C946-4B9A-B814-3E789BFD54E8}</ProjectGuid>
