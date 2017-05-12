@@ -111,7 +111,12 @@ namespace vscode
 				for (auto _ : res("body").Object())
 				{
 					res("category").String(category);
-					res("output").String(msg);
+					if (launch_console_ == "ansi") {
+						res("output").String(vscode::a2u(msg));
+					}
+					else {
+						res("output").String(msg);
+					}
 				}
 			}
 			network_->output(res);

@@ -38,22 +38,6 @@ bool launch_io::output(const vscode::wprotocol& wp)
 {
 	if (!wp.IsComplete())
 		return false;
-	if (encoding_ == encoding::ansi) {
-		vscode::rprotocol rp;
-		if (!rp.Parse(wp.data(), wp.size()).HasParseError()) {
-			if (rp["type"] == "event" && rp["event"] == "output") {
-				std::string utf8 = vscode::a2u(vscode::strview(rp["body"]["output"]));
-				rp["body"]["output"].SetString(utf8.data(), utf8.size());
-				rapidjson::StringBuffer buffer;
-				rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-				rp.Accept(writer);
-				auto l = vscode::format("Content-Length: %d\r\n\r\n", buffer.GetSize());
-				output_(l.data(), l.size());
-				output_(buffer.GetString(), buffer.GetSize());
-				return true;
-			}
-		}
-	}
 	auto l = vscode::format("Content-Length: %d\r\n\r\n", wp.size());
 	output_(l.data(), l.size());
 	output_(wp.data(), wp.size());
@@ -92,7 +76,7 @@ bool launch_io::enable_console() const
 launch_server::launch_server(const std::string& console, stdinput& io_)
 	: launch_io_(console)
 	, debugger_(&launch_io_, vscode::threadmode::sync)
-	, io(io)
+	, io(io_)
 {
 	debugger_.set_custom(this);
 }
