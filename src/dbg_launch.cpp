@@ -44,14 +44,16 @@ namespace vscode
 	}
 
 	bool debugger_impl::request_launch_done(rprotocol& req) {
+		auto& args = req["arguments"];
+		if (args.HasMember("runtimeExecutable") && args["runtimeExecutable"].IsString()) {
+			return request_attach(req);
+		}
 		if (launchL_) {
 			lua_close(launchL_);
 			launchL_ = 0;
 		}
 		lua_State* L = luaL_newstate();
 		luaL_openlibs(L);
-
-		auto& args = req["arguments"];
 
 		launch_console_ = "none";
 		if (args.HasMember("console") && args["console"].IsString())

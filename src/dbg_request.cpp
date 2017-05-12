@@ -136,6 +136,10 @@ namespace vscode
 			return false;
 		}
 		auto& args = req["arguments"];
+		if (args.HasMember("runtimeExecutable") && args["runtimeExecutable"].IsString()) {
+			cache_launch_ = std::move(req);
+			return false;
+		}
 		if (!args.HasMember("program") || !args["program"].IsString()) {
 			response_error(req, "Launch failed");
 			return false;

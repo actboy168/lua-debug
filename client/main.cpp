@@ -11,6 +11,7 @@
 #include "dbg_unicode.h"
 #include "launch.h"
 #include "dbg_capabilities.h"
+#include <base/hook/fp_call.h>
 
 using namespace vscode;
 
@@ -134,9 +135,66 @@ private:
 	net::poller_t poller;
 };
 
+class module {		
+public:		
+	module(const wchar_t* path)		
+		: handle_(LoadLibraryW(path))
+	{ }		
+
+	~module()
+	{ }
+
+	HMODULE handle() const		
+	{		
+		return handle_;		
+	}		
+	
+	intptr_t api(const char* name)		
+	{		
+		return (intptr_t)GetProcAddress(handle_, name);		
+	}		
+	
+private:		
+	HMODULE handle_;		
+};
+
 bool create_process_with_debugger(rprotocol& req)
 {
-	return false;
+	module dll(L"debugger-inject.dll");
+	if (!dll.handle()) {
+		return false;
+	}
+	intptr_t create_process = dll.api("create_process_with_debugger");
+	intptr_t set_luadll = dll.api("set_luadll");
+	if (!create_process || !set_luadll) {
+		return false;
+	}
+
+	auto& args = req["arguments"];
+	if (args.HasMember("luadll") && args["luadll"].IsString()) {
+		std::wstring wluadll = u2w(args["luadll"].Get<std::string>());
+		if (!base::c_call<bool>(set_luadll, wluadll.data(), wluadll.size())) {
+			return false;
+		}
+	}
+
+	if (!args.HasMember("runtimeExecutable") || !args["runtimeExecutable"].IsString()) {
+		return false;
+	}
+
+	std::wstring wcommand = u2w(args["runtimeExecutable"].Get<std::string>());
+	if (args.HasMember("runtimeArgs") && args["runtimeArgs"].IsString()) {
+		// TODO:
+	}
+	std::wstring wcwd;
+	if (args.HasMember("cwd") && args["cwd"].IsString()) {
+		wcwd = u2w(args["cwd"].Get<std::string>());
+	}
+
+	if (!base::c_call<bool>(create_process, 4278, wcommand.c_str(), wcwd.c_str())) {
+		return false;
+	}
+	return true;
 }
 
 int64_t seq = 1;
@@ -192,6 +250,7 @@ int main()
 					if (args.HasMember("runtimeExecutable")) {
 						if (!create_process_with_debugger(rp)) {
 							response_error(rp, "Launch failed");
+							exit(1);
 							continue;
 						}
 						client.reset(new proxy_client);

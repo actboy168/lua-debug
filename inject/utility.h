@@ -4,28 +4,6 @@
 
 fs::path get_self_path();
 
-template <typename CharT, size_t MaxSize>
-class cstring_t {
-public:
-	cstring_t()
-		: m_str()
-		, m_len(0)
-	{ }
-
-	const CharT* data() const { return m_str; }
-	size_t size() const { return m_len; }
-	bool assign(const CharT* str, size_t len) {
-		if (len + 1 > MaxSize) { return false; }
-		memcpy(m_str, str, len);
-		m_str[len] = L'\0';
-		m_len = len;
-		return true;
-	}
-private:
-	CharT  m_str[MaxSize];
-	size_t m_len = 0;
-};
-
 template <class T>
 struct eat_helper
 {
