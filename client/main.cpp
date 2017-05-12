@@ -169,7 +169,7 @@ int main()
 					std::string console;
 					auto& args = rp["arguments"];
 					if (args.HasMember("luadll")) {
-						delayload::set_lua_dll(vscode::u2w(args["luadll"].Get<std::string>()));
+						delayload::set_luadll(vscode::u2w(args["luadll"].Get<std::string>()));
 					}
 					if (args.HasMember("console")) {
 						console = args["console"].Get<std::string>();
