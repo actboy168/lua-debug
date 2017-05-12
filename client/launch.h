@@ -5,10 +5,10 @@
 
 class stdinput;
 
-class launch_server
+class launch
 {
 public:
-	launch_server(stdinput& io);
+	launch(stdinput& io);
 	void update();
 	void send(vscode::rprotocol&& rp);
 

@@ -2,7 +2,7 @@
 #include "stdinput.h"
 #include "dbg_format.h"
 
-attach_client::attach_client(stdinput& io_)
+attach::attach(stdinput& io_)
 	: poller()
 	, io(io_)
 	, base_type(&poller)
@@ -10,7 +10,7 @@ attach_client::attach_client(stdinput& io_)
 	net::socket::initialize();
 }
 
-bool attach_client::event_in()
+bool attach::event_in()
 {
 	if (!base_type::event_in())
 		return false;
@@ -22,7 +22,7 @@ bool attach_client::event_in()
 	return true;
 }
 
-void attach_client::send(const vscode::rprotocol& rp)
+void attach::send(const vscode::rprotocol& rp)
 {
 	rapidjson::StringBuffer buffer;
 	rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
@@ -31,13 +31,17 @@ void attach_client::send(const vscode::rprotocol& rp)
 	base_type::send(buffer.GetString(), buffer.GetSize());
 }
 
-void attach_client::event_close()
+void attach::event_close()
 {
 	base_type::event_close();
 	exit(0);
 }
 
-void attach_client::update()
+void attach::update()
 {
 	poller.wait(1000, 0);
+	while (!io.input_empty()) {
+		vscode::rprotocol rp = io.input();
+		send(rp);
+	}
 }

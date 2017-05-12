@@ -6,12 +6,12 @@
 
 class stdinput;
 
-class attach_client
+class attach
 	: public net::tcp::connecter
 {
 	typedef net::tcp::connecter base_type;
 public:
-	attach_client(stdinput& io);
+	attach(stdinput& io);
 	bool event_in();
 	void send(const vscode::rprotocol& rp);
 	void event_close();

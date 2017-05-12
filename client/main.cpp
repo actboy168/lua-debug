@@ -91,15 +91,18 @@ int main()
 
 	stdinput io;
 	vscode::rprotocol initproto;
-	std::unique_ptr<attach_client> client;
-	std::unique_ptr<launch_server> server;
+	std::unique_ptr<attach> attach_;
+	std::unique_ptr<launch> launch_;
 
 	for (;; std::this_thread::sleep_for(std::chrono::milliseconds(10))) {
-		if (server) {
-			server->update(); 
+		if (launch_) {
+			launch_->update();
 			continue;
 		}
-		if (client) client->update();
+		if (attach_) {
+			attach_->update();
+			continue;
+		}
 		while (!io.input_empty()) {
 			vscode::rprotocol rp = io.input();
 			if (rp["type"] == "request") {
@@ -118,21 +121,22 @@ int main()
 							exit(0);
 							continue;
 						}
-						client.reset(new attach_client(io));
-						client->connect(net::endpoint("127.0.0.1", 4278));
+						attach_.reset(new attach(io));
+						attach_->connect(net::endpoint("127.0.0.1", 4278));
 						if (seq > 1) initproto.AddMember("__initseq", seq, initproto.GetAllocator());
-						client->send(initproto);
+						attach_->send(initproto);
+						attach_->send(rp);
 					}
 					else {
-						server.reset(new launch_server(io));
+						launch_.reset(new launch(io));
 						if (seq > 1) initproto.AddMember("__initseq", seq, initproto.GetAllocator());
-						server->send(std::move(initproto));
-						server->send(std::move(rp));
+						launch_->send(std::move(initproto));
+						launch_->send(std::move(rp));
 						break;
 					}
 				}
 				else if (rp["command"] == "attach") {
-					client.reset(new attach_client(io));
+					attach_.reset(new attach(io));
 					std::string ip = "127.0.0.1";
 					uint16_t port = 4278;
 					auto& args = rp["arguments"];
@@ -142,13 +146,12 @@ int main()
 					if (args.HasMember("port")) {
 						port = args["port"].GetUint();
 					}
-					client->connect(net::endpoint(ip, port));
+					attach_->connect(net::endpoint(ip, port));
 					if (seq > 1) initproto.AddMember("__initseq", seq, initproto.GetAllocator());
-					client->send(initproto);
+					attach_->send(initproto);
+					attach_->send(rp);
 				}
-			}  
-			if (server) server->send(std::move(rp));
-			if (client) client->send(rp);
+			}
 		}
 	}
 	io.join();
