@@ -2,7 +2,6 @@
 #include "dbg_hybridarray.h"
 #include "dbg_format.h"	 
 #include "dbg_unicode.h"
-#include <lua.hpp>
 #include <Windows.h>
 
 launch_io::launch_io(const std::string& console)

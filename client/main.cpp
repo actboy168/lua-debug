@@ -10,8 +10,6 @@
 #include "dbg_format.h"	 
 #include "dbg_unicode.h"
 #include "launch.h"
-#include "dbg_delayload.h" 
-#include "dbg_delayload.cpp"
 #include "dbg_capabilities.h"
 
 using namespace vscode;
@@ -168,9 +166,6 @@ int main()
 				else if (rp["command"] == "launch") {
 					std::string console;
 					auto& args = rp["arguments"];
-					if (args.HasMember("luadll")) {
-						delayload::set_luadll(vscode::u2w(args["luadll"].Get<std::string>()));
-					}
 					if (args.HasMember("console")) {
 						console = args["console"].Get<std::string>();
 					}
