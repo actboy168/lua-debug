@@ -1,36 +1,26 @@
 #include "launch.h"
-#include "dbg_hybridarray.h"
 #include "dbg_format.h"
 #include "dbg_unicode.h"
 #include "stdinput.h"
 #include <Windows.h>
 
-launch_io::launch_io()
+launch_io::launch_io(stdinput& io)
 	: vscode::io()
-	, buffer_()
+	, io_(io)
 	, input_queue_()
 { }
 
 void launch_io::update(int ms)
 {
-}
-
-void launch_io::output_(const char* str, size_t len) {
-	for (;;) {
-		size_t r = fwrite(str, len, 1, stdout);
-		if (r == 1)
-			break;
+	while (!io_.input_empty()) {
+		vscode::rprotocol rp = io_.input();
+		send(std::move(rp));
 	}
 }
 
 bool launch_io::output(const vscode::wprotocol& wp)
 {
-	if (!wp.IsComplete())
-		return false;
-	auto l = vscode::format("Content-Length: %d\r\n\r\n", wp.size());
-	output_(l.data(), l.size());
-	output_(wp.data(), wp.size());
-	return true;
+	return io_.output(wp);
 }
 
 vscode::rprotocol launch_io::input()
@@ -54,27 +44,13 @@ void launch_io::send(vscode::rprotocol&& rp)
 
 void launch_io::close()
 {
-	exit(0);
+	return io_.close();
 }
 
 launch_server::launch_server(stdinput& io_)
-	: launch_io_()
+	: launch_io_(io_)
 	, debugger_(&launch_io_, vscode::threadmode::sync)
-	, io(io_)
 {
-	debugger_.set_custom(this);
-}
-
-void launch_server::set_state(vscode::state state)
-{
-}
-
-void launch_server::update_stop()
-{
-	while (!io.input_empty()) {
-		vscode::rprotocol rp = io.input();
-		send(std::move(rp));
-	}
 }
 
 void launch_server::update()
