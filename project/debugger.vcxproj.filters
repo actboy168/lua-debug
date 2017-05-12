@@ -155,6 +155,9 @@
     <ClCompile Include="..\src\asmjit\x86\x86ssetoavxpass.cpp">
       <Filter>asmjit\x86</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\dbg_redirect.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\debugger.h">
@@ -333,6 +336,9 @@
     </ClInclude>
     <ClInclude Include="..\src\asmjit\x86.h">
       <Filter>asmjit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\dbg_redirect.h">
+      <Filter>inc</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

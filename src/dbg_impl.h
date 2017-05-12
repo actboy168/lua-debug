@@ -16,6 +16,7 @@
 #include "dbg_enum.h"   
 #include "dbg_watchs.h"
 #include "dbg_protocol.h"
+#include "dbg_redirect.h"
 #include "debugger.h"
 
 namespace vscode
@@ -138,6 +139,7 @@ namespace vscode
 		bool update_main(rprotocol& req, bool& quit);
 		bool update_hook(rprotocol& req, lua_State *L, lua_Debug *ar, bool& quit);
 		void update_launch();
+		void update_redirect();
 		void initialize_sourcemaps(rapidjson::Value& args);
 		bool request_launch_done(rprotocol& req);
 
@@ -165,6 +167,7 @@ namespace vscode
 		lua_State*         hookL_;
 		std::string        launch_console_;
 		dbg_thread*        thread_;
+		std::unique_ptr<redirector> stderr_;
 		std::map<std::string, std::function<bool(rprotocol&)>>                            main_dispatch_;
 		std::map<std::string, std::function<bool(rprotocol&, lua_State*, lua_Debug *ar)>> hook_dispatch_;
 	};

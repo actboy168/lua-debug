@@ -7,6 +7,7 @@
 #include "launch.h"
 #include "attach.h"
 #include "dbg_capabilities.h"
+#include "dbg_unicode.cpp"
 #include <base/hook/fp_call.h>
 
 class module {
@@ -121,10 +122,7 @@ int main()
 						client->send(initproto);
 					}
 					else {
-						if (args.HasMember("console")) {
-							console = args["console"].Get<std::string>();
-						}
-						server.reset(new launch_server(console, io));
+						server.reset(new launch_server(io));
 						if (seq > 1) initproto.AddMember("__initseq", seq, initproto.GetAllocator());
 						server->send(std::move(initproto));
 					}

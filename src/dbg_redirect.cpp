@@ -1,6 +1,5 @@
 ﻿#include "dbg_redirect.h" 
 #include "dbg_format.h"
-#include "dbg_unicode.cpp"
 #include <windows.h> 
 #include <fcntl.h>
 #include <io.h>

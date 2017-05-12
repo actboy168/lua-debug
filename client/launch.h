@@ -16,21 +16,13 @@ class launch_io
 	: public vscode::io
 {
 public:
-	enum class encoding {
-		none,
-		ansi,
-		utf8,
-	};
-
-public:
-	launch_io(const std::string& console);
+	launch_io();
 	void              update(int ms);
 	bool              output(const vscode::wprotocol& wp);
 	vscode::rprotocol input();
 	bool              input_empty() const;
 	void              close();
 	void              send(vscode::rprotocol&& rp);
-	bool          	  enable_console() const;
 
 private:
 	bool update_();
@@ -39,27 +31,22 @@ private:
 private:
 	std::vector<char>                      buffer_;
 	net::tcp::buffer<vscode::rprotocol, 8> input_queue_;
-	encoding                               encoding_;
 };
 
 class launch_server
 	: public vscode::custom
 {
 public:
-	launch_server(const std::string& console, stdinput& io);
+	launch_server(stdinput& io);
 	void update();
 	void send(vscode::rprotocol&& rp);
 
 private:
 	virtual void set_state(vscode::state state);
 	virtual void update_stop();
-	void         update_redirect();
 
 private:
 	vscode::debugger debugger_;
-	vscode::state state_;
-	vscode::redirector stderr_;
-	std::function<void()> idle_;
 	launch_io launch_io_;
 	stdinput& io;
 };

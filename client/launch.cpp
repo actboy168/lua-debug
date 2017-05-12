@@ -5,22 +5,11 @@
 #include "stdinput.h"
 #include <Windows.h>
 
-launch_io::launch_io(const std::string& console)
+launch_io::launch_io()
 	: vscode::io()
 	, buffer_()
 	, input_queue_()
-	, encoding_(encoding::none)
-{
-	if (console == "ansi") {
-		encoding_ = encoding::ansi;
-	}
-	else if (console == "utf8") {
-		encoding_ = encoding::utf8;
-	}
-	else {
-		return;
-	}
-}
+{ }
 
 void launch_io::update(int ms)
 {
@@ -68,13 +57,8 @@ void launch_io::close()
 	exit(0);
 }
 
-bool launch_io::enable_console() const
-{
-	return encoding_ != encoding::none;
-}
-
-launch_server::launch_server(const std::string& console, stdinput& io_)
-	: launch_io_(console)
+launch_server::launch_server(stdinput& io_)
+	: launch_io_()
 	, debugger_(&launch_io_, vscode::threadmode::sync)
 	, io(io_)
 {
@@ -83,23 +67,10 @@ launch_server::launch_server(const std::string& console, stdinput& io_)
 
 void launch_server::set_state(vscode::state state)
 {
-	state_ = state;
-	switch (state)
-	{
-	case vscode::state::initialized:
-		stderr_.open("stderr", vscode::std_fd::STDERR);
-		break;
-	case vscode::state::terminated:
-		stderr_.close();
-		break;
-	default:
-		break;
-	}
 }
 
 void launch_server::update_stop()
 {
-	update_redirect();
 	while (!io.input_empty()) {
 		vscode::rprotocol rp = io.input();
 		send(std::move(rp));
@@ -108,23 +79,7 @@ void launch_server::update_stop()
 
 void launch_server::update()
 {
-	update_redirect();
 	debugger_.update();
-}
-
-void launch_server::update_redirect()
-{
-	if (state_ == vscode::state::birth)
-		return;
-	if (!launch_io_.enable_console())
-		return;
-	size_t n = stderr_.peek();
-	if (n > 0)
-	{
-		vscode::hybridarray<char, 1024> buf(n);
-		stderr_.read(buf.data(), buf.size());
-		debugger_.output("stderr", buf.data(), buf.size());
-	}
 }
 
 void launch_server::send(vscode::rprotocol&& rp)

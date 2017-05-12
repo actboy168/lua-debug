@@ -58,6 +58,7 @@ namespace vscode
 		seq = 1;
 		stacklevel_.clear();
 		watch_.reset();
+		stderr_.reset();
 	}
 
 	bool debugger_impl::update_main(rprotocol& req, bool& quit)
@@ -161,6 +162,7 @@ namespace vscode
 		while (!quit)
 		{
 			custom_->update_stop();
+			update_redirect();
 			network_->update(0);
 
 			rprotocol req = network_->input();
@@ -198,6 +200,7 @@ namespace vscode
 			return;
 		}
 
+		update_redirect();
 		network_->update(0);
 		if (is_state(state::birth))
 		{
@@ -238,7 +241,18 @@ namespace vscode
 			set_state(state::birth);
 		}
 	}
-	
+	void debugger_impl::update_redirect()
+	{
+		if (stderr_) {
+			size_t n = stderr_->peek();
+			if (n > 0) {
+				hybridarray<char, 1024> buf(n);
+				stderr_->read(buf.data(), buf.size());
+				output("stderr", buf.data(), buf.size());
+			}
+		}
+	}
+
 	void debugger_impl::attach_lua(lua_State* L, bool pause)
 	{
 		attachL_ = L;

@@ -69,6 +69,8 @@ namespace vscode
 			lua_pushlightuserdata(L, this);
 			lua_pushcclosure(L, print, 1);
 			lua_setglobal(L, "print");
+			stderr_.reset(new redirector);
+			stderr_->open("stderr", std_fd::STDERR);
 		}
 
 		if (args.HasMember("path") && args["path"].IsString())
