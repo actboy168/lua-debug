@@ -28,10 +28,10 @@
 
     * runtimeExecutable，进程exe的路径
     * runtimeArgs，启动进程的参数
-    * cwd，进程的当前目录，如果不填则是进程exe所在的目录
-    * luadll，指定luadll的路径，如果不填会尝试搜索进程exe的导入表，搜索不成功则会加载luacore.dll
+    * cwd，进程的当前目录，如果不填则是进程exe所在的目录
+    * luadll，指定luadll的路径，如果不填会尝试搜索进程exe的导入表，搜索不成功则会加载luacore.dll
     * stopOnEntry，开始调试时是否先暂停
-    * sourceMaps，作用同attach模式
+    * sourceMaps，作用同attach模式
 
 3. attach模式，调试任意加载了vscode-debug.dll的进程。
 
