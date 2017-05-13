@@ -11,9 +11,7 @@
 
 ## 配置launch.json
 
-1. launch模式，launch有两种模式。
-
-模拟lua.exe的行为来执行你的代码，调试器直接加载lua脚本。优点是效率和兼容性比另一种模式高、直接可用不需要自己准备lua的执行环境。
+1. launch模式，模拟lua.exe的行为来执行你的代码，调试器直接加载lua脚本。优点是效率和兼容性比另一种launch模式高、直接可用不需要自己准备lua的执行环境。
 
     * program，lua.exe执行的入口文件 
     * cwd，lua.exe的当前目录
@@ -26,7 +24,7 @@
     * console，lua的标准输出的编码，可选择utf8、ansi、none， 等于none时不会重定向标准输出到vscode
     * sourceMaps，一般不需要，作用同attach模式
 
-启动一个进程(比如lua.exe或者其他动态链接了luadll的exe)并调试。如果需要调试的目标和lua.exe的行为不一致，可以采用这个模式。
+2. launch模式，启动一个进程(比如lua.exe或者其他动态链接了luadll的exe)并调试。如果需要调试的目标和lua.exe的行为不一致，可以采用这个模式。
  
     * runtimeExecutable，进程exe的路径
     * runtimeArgs，启动进程的参数
@@ -35,14 +33,14 @@
     * stopOnEntry，开始调试时是否先暂停
     * sourceMaps，作用同attach模式
 
-2. attach模式，调试任意加载了vscode-debug.dll的进程。
+3. attach模式，调试任意加载了vscode-debug.dll的进程。
 
     * stopOnEntry，开始调试时是否先暂停
     * ip，远程调试器的ip
     * port，远程调试器的端口
     * sourceMaps，远程代码和本地代码的路径映射
 
-3. 如果你只是使用在本机的远程调试器，你还可以不使用vscode-lua-debug.exe，直接使用vscode连接调试器。只需要加上"debugServer"的参数。例如
+4. 如果你只是使用在本机的远程调试器，你还可以不使用vscode-lua-debug.exe，直接使用vscode连接调试器。只需要加上"debugServer"的参数。例如
 
 ```json
 {
