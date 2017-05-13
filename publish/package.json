@@ -99,7 +99,10 @@
                                 "default": "${workspaceRoot}/main.lua"
                             },
                             "cwd": {
-                                "type": "string",
+                                "type": [
+                                    "string",
+                                    "null"
+                                ],
                                 "description": "Working directory at program startup",
                                 "default": "${workspaceRoot}"
                             },

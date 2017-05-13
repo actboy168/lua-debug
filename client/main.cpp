@@ -8,6 +8,7 @@
 #include "attach.h"
 #include "dbg_capabilities.h"
 #include "dbg_unicode.cpp"
+#include <base/filesystem.h>
 #include <base/hook/fp_call.h>
 
 class module {
@@ -52,6 +53,9 @@ bool create_process_with_debugger(vscode::rprotocol& req)
 	std::wstring wcwd;
 	if (args.HasMember("cwd") && args["cwd"].IsString()) {
 		wcwd = vscode::u2w(args["cwd"].Get<std::string>());
+	}
+	else {
+		wcwd = fs::path(wapplication).remove_filename();
 	}
 
 	if (!base::c_call<bool>(create_process, 4278, wapplication.c_str(), wcommand.c_str(), wcwd.c_str())) {
