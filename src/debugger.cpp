@@ -109,7 +109,22 @@ namespace luaw {
 	}
 }
 
+void caller_is_luadll(void* callerAddress)
+{
+	HMODULE  caller = NULL;
+	if (GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS, (LPCTSTR)callerAddress, &caller) && caller)
+	{
+		if (GetProcAddress(caller, "lua_newstate"))
+		{
+			delayload::set_luadll(caller);
+		}
+	}
+}
+
 int __cdecl luaopen_debugger(lua_State* L)
 {
+#if defined(DEBUGGER_DELAYLOAD_LUA)
+	caller_is_luadll(_ReturnAddress());
+#endif
 	return luaw::open(L);
 }

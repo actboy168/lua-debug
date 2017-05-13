@@ -7,11 +7,17 @@
 
 namespace delayload
 {
-	static std::wstring lua_dll_;
+	static std::wstring luadll_path;
+	static HMODULE luadll_handle = 0;
+
+	void set_luadll(HMODULE handle)
+	{
+		luadll_handle = handle;
+	}
 
 	void set_luadll(const std::wstring& path)
 	{
-		lua_dll_ = path;
+		luadll_path = path;
 	}
 
 	static FARPROC WINAPI hook(unsigned dliNotify, PDelayLoadInfo pdli)
@@ -20,8 +26,13 @@ namespace delayload
 		case dliStartProcessing:
 			break;
 		case dliNotePreLoadLibrary:
-			if (strcmp("luacore.dll", pdli->szDll) == 0 && !lua_dll_.empty()) {
-				return (FARPROC)LoadLibraryW(lua_dll_.c_str());
+			if (strcmp("luacore.dll", pdli->szDll) == 0) {
+				if (!luadll_path.empty()) {
+					return (FARPROC)LoadLibraryW(luadll_path.c_str());
+				}
+				else if (luadll_handle) {
+					return (FARPROC)luadll_handle;
+				}
 			}
 			break;
 		case dliNotePreGetProcAddress:
