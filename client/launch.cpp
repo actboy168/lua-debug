@@ -1,8 +1,5 @@
 #include "launch.h"
-#include "dbg_format.h"
-#include "dbg_unicode.h"
 #include "stdinput.h"
-#include <Windows.h>
 
 launch::launch(stdinput& io)
 	: debugger_(&io, vscode::threadmode::sync)

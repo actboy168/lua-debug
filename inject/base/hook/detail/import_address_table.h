@@ -1,6 +1,7 @@
 #pragma once
 
 #include <base/win/pe_reader.h>
+#include <functional>
 #include <Windows.h>
 #include <cstdint>
 
@@ -12,6 +13,7 @@ namespace base { namespace hook { namespace detail {
 
 		bool open_module(HMODULE module_handle);
 		bool open_dll(const char* dll_name);
+		bool each_dll(std::function<bool(const char*)> f);
 		uintptr_t get_proc_address(const char* proc_name);
 
 	private:

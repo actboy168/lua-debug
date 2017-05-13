@@ -1,4 +1,5 @@
 #include <Windows.h>
+#include <base/hook/iat.h>
 #include <base/hook/eat.h>
 #include <base/hook/fp_call.h>
 #include <base/win/process.h>
@@ -38,7 +39,7 @@ void initialize_debugger(void* L)
 }
 
 struct lua_newstate
-	: public eat_helper<lua_newstate>
+	: public hook_helper<lua_newstate>
 {
 	static void* __cdecl fake(void* f, void* ud)
 	{
@@ -49,11 +50,12 @@ struct lua_newstate
 };
 
 struct luaL_newstate
-	: public eat_helper<lua_newstate>
+	: public hook_helper<lua_newstate>
 {
 	static void* __cdecl fake()
 	{
 		void* L = base::c_call<void*>(real);
+
 		if (L) initialize_debugger(L);
 		return L;
 	}
@@ -65,13 +67,20 @@ BOOL APIENTRY DllMain(HMODULE module, DWORD reason, LPVOID /*pReserved*/)
 	{
 		::DisableThreadLibraryCalls(module);
 		if (shared_enable) {
-			if (shared_luadll.size() == 0) {
-				lua_newstate::init(L"luacore.dll", "lua_newstate");
-				luaL_newstate::init(L"luacore.dll", "luaL_newstate");
-			}
-			else {
+			if (shared_luadll.size() != 0) {
 				lua_newstate::init(shared_luadll.data(), "lua_newstate");
 				luaL_newstate::init(shared_luadll.data(), "luaL_newstate");
+			}
+			else {
+				const char* luadll = search_api("lua_newstate", "luaL_newstate");
+				if (luadll) {
+					lua_newstate::init(luadll, "lua_newstate");
+					luaL_newstate::init(luadll, "luaL_newstate");
+				}
+				else {
+					lua_newstate::init(L"luacore.dll", "lua_newstate");
+					luaL_newstate::init(L"luacore.dll", "luaL_newstate");
+				}
 			}
 		}
 	}

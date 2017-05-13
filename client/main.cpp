@@ -45,9 +45,9 @@ bool create_process_with_debugger(vscode::rprotocol& req)
 	}
 
 	std::wstring wapplication = vscode::u2w(args["runtimeExecutable"].Get<std::string>());
-	std::wstring wcommand;
+	std::wstring wcommand = wapplication;
 	if (args.HasMember("runtimeArgs") && args["runtimeArgs"].IsString()) {
-		wcommand = vscode::u2w(args["runtimeArgs"].Get<std::string>());
+		wcommand = L"\"" + wapplication + L"\" " + vscode::u2w(args["runtimeArgs"].Get<std::string>());
 	}
 	std::wstring wcwd;
 	if (args.HasMember("cwd") && args["cwd"].IsString()) {

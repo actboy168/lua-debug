@@ -36,6 +36,28 @@ namespace base { namespace hook { namespace detail {
 		return false;
 	}
 
+	bool import_address_table::each_dll(std::function<bool(const char*)> f)
+	{
+		assert(image_.module());
+
+		PIMAGE_IMPORT_DESCRIPTOR import = (PIMAGE_IMPORT_DESCRIPTOR)image_.get_directory_entry(IMAGE_DIRECTORY_ENTRY_IMPORT);
+		uint32_t size = image_.get_directory_entry_size(IMAGE_DIRECTORY_ENTRY_IMPORT);
+
+		if (import == NULL || size < sizeof IMAGE_IMPORT_DESCRIPTOR)
+			return false;
+
+		for (; import->FirstThunk; ++import)
+		{
+			cur_import_ptr_ = import;
+			if (f((const char*)image_.rva_to_addr(import->Name)))
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	uintptr_t import_address_table::get_proc_address(const char* proc_name)
 	{
 		assert(image_.module());
