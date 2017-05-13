@@ -58,6 +58,19 @@
 * 静态链接debugger.dll到调试目标
 * 通过debugger.dll的导出函数set_luadll指定调试目标使用的luadll的路径（在其他一切api使用之前）
 
+自动识别
+* 如果debugger.dll是通过luadll加载的，debugger.dll可以识别出这种情况，并自己设置luadll的路径。通过*require 'debugger'*来加载，并且是通过lua的默认searcher加载；或者自定义的searcher，但是最后调用dll入门函数是通过luaapi来执行的。
+```lua
+// 可以识别
+lua_CFunction f = (lua_CFunction)GetProcAddress(h, "luaopen_debugger");
+lua_pushcfunction(L, f);
+lua_call(L, 0, 0);
+
+// 不能识别
+lua_CFunction f = (lua_CFunction)GetProcAddress(h, "luaopen_debugger");
+f(L);
+```
+
 2. 在调试目标中加载debugger.dll。debugger.dll目前支持c++导出类和lua模块两套风格的api。为简单起见，这里只说lua模块的加载方式。
 
 确保debugger.dll在package.cpath的搜索范围内，然后执行以下代码
