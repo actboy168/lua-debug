@@ -11,9 +11,11 @@
 
 ## 配置launch.json
 
-1. launch模式，等同于使用lua.exe来执行你的代码。
+1. launch模式，launch有两种模式。
 
-    * program，lua.exe执行的入口文件 
+模拟lua.exe的行为来执行你的代码，调试器直接加载lua脚本。优点是效率和兼容性比另一种模式高、直接可用不需要自己准备lua的执行环境。
+
+    * program，lua.exe执行的入口文件 
     * cwd，lua.exe的当前目录
     * stopOnEntry，开始调试时是否先暂停
     * luadll，指定lua dll的路径，如果不填则会加载luacore.dll
@@ -23,6 +25,15 @@
     * arg，lua.exe的命令行参数，用于初始化arg的arg[1] .. arg[n]
     * console，lua的标准输出的编码，可选择utf8、ansi、none， 等于none时不会重定向标准输出到vscode
     * sourceMaps，一般不需要，作用同attach模式
+
+启动一个进程(比如lua.exe或者其他动态链接了luadll的exe)并调试。如果需要调试的目标和lua.exe的行为不一致，可以采用这个模式。
+ 
+    * runtimeExecutable，进程exe的路径
+    * runtimeArgs，启动进程的参数
+    * cwd，进程的当前目录，如果不填则是进程exe所在的目录
+    * luadll，指定luadll的路径，如果不填会尝试搜索进程exe的导入表，搜索不成功则会加载luacore.dll
+    * stopOnEntry，开始调试时是否先暂停
+    * sourceMaps，作用同attach模式
 
 2. attach模式，调试任意加载了vscode-debug.dll的进程。
 
@@ -60,7 +71,7 @@
 
 自动识别
 * 如果debugger.dll是通过luadll加载的，debugger.dll可以识别出这种情况，并自己设置luadll的路径。通过*require 'debugger'*来加载，并且是通过lua的默认searcher加载；或者自定义的searcher，但是最后调用dll入门函数是通过luaapi来执行的。
-```lua
+```c
 // 可以识别
 lua_CFunction f = (lua_CFunction)GetProcAddress(h, "luaopen_debugger");
 lua_pushcfunction(L, f);
