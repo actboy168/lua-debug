@@ -301,6 +301,7 @@ namespace vscode
 	network::network(const char* ip, uint16_t port)
 		: poller_(new net::poller_t)
 		, server_(new server(poller_))
+		, kill_process_when_close_(false)
 	{
 		net::socket::initialize();
 		server_->listen(net::endpoint(ip, port));
@@ -349,8 +350,14 @@ namespace vscode
 
 	void network::close()
 	{
-		if (!server_)
-			return;
-		server_->close_session();
+		if (server_)
+			server_->close_session();
+		if (kill_process_when_close_)
+			exit(0);
+	}
+
+	void network::kill_process_when_close()
+	{
+		kill_process_when_close_ = true;
 	}
 }

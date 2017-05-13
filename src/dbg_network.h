@@ -31,10 +31,12 @@ namespace vscode
 		rprotocol input();
 		bool      input_empty() const;
 		void      close();
-		void      set_schema(const char* file);
+		void      set_schema(const char* file); 
+		void      kill_process_when_close();
 
 	private:
 		net::poller_t* poller_;
 		server*        server_;
+		bool           kill_process_when_close_;
 	};
 }

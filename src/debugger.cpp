@@ -51,12 +51,14 @@ void set_luadll(const char* path, size_t len)
 #endif
 }
 
-void start_server(const char* ip, uint16_t port)
+void start_server(const char* ip, uint16_t port, bool launch)
 {
 	if (!global_io || !global_dbg)
 	{
 		global_io.reset(new vscode::network(ip, port));
 		global_dbg.reset(new vscode::debugger(global_io.get(), vscode::threadmode::async));
+		if (launch)
+			global_io->kill_process_when_close();
 	}
 }
 
@@ -68,7 +70,7 @@ void attach_lua(lua_State* L, bool pause)
 namespace luaw {
 	int listen(lua_State* L)
 	{
-		::start_server(luaL_checkstring(L, 1), (uint16_t)luaL_checkinteger(L, 2));
+		::start_server(luaL_checkstring(L, 1), (uint16_t)luaL_checkinteger(L, 2), false);
 		::attach_lua(L, false);
 		lua_pushvalue(L, lua_upvalueindex(1));
 		return 1;
