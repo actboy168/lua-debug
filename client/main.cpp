@@ -87,7 +87,6 @@ void response_error(stdinput& io, vscode::rprotocol& req, const char *msg)
 
 int main()
 {
-	MessageBox(0, 0, 0, 0);
 	_setmode(_fileno(stdout), _O_BINARY);
 	setbuf(stdout, NULL);
 

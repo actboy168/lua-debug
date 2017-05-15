@@ -5,6 +5,13 @@ namespace vscode
 {
 	intptr_t WATCH_TABLE = 0;
 
+	static int watch_gc(lua_State* L)
+	{
+		watchs* w = (watchs*)lua_touserdata(L, lua_upvalueindex(1));
+		w->destory();
+		return 0;
+	}
+
 	watchs::watchs(lua_State* L)
 		: L(L)
 		, cur_(0)
@@ -44,6 +51,7 @@ namespace vscode
 
 	void watchs::clear()
 	{
+		if (!L) return;
 		lua_pushnil(L);
 		lua_rawsetp(L, LUA_REGISTRYINDEX, &WATCH_TABLE);
 		cur_ = 0;
@@ -55,6 +63,10 @@ namespace vscode
 		if (LUA_TTABLE != lua_rawgetp(L, LUA_REGISTRYINDEX, &WATCH_TABLE)) {
 			lua_pop(L, 1);
 			lua_newtable(L);
+			lua_pushlightuserdata(L, (void*)this);
+			lua_pushcclosure(L, watch_gc, 1);
+			lua_setfield(L, -2, "__gc");
+			lua_setmetatable(L, -2);
 			lua_pushvalue(L, -1);
 			lua_rawsetp(L, LUA_REGISTRYINDEX, &WATCH_TABLE);
 		}
@@ -77,5 +89,10 @@ namespace vscode
 		lua_rawgeti(L, -1, n);
 		lua_remove(L, -2);
 		int top2 = lua_gettop(L);
+	}
+
+	void watchs::destory()
+	{
+		L = 0;
 	}
 }

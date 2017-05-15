@@ -370,7 +370,6 @@ namespace vscode
 		kill_process_when_close_ = true;
 	}
 
-
 	uint16_t network::get_port() const
 	{
 		if (server_)

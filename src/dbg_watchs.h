@@ -12,6 +12,7 @@ namespace vscode
 		size_t add();
 		bool get(size_t index);
 		void clear();
+		void destory();
 
 	private:
 		void t_table();
