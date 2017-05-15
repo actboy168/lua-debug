@@ -33,6 +33,7 @@ namespace vscode
 		void      close();
 		void      set_schema(const char* file); 
 		void      kill_process_when_close();
+		uint16_t  get_port() const;
 
 	private:
 		net::poller_t* poller_;

@@ -51,7 +51,7 @@ void set_luadll(const char* path, size_t len)
 #endif
 }
 
-void start_server(const char* ip, uint16_t port, bool launch)
+uint16_t start_server(const char* ip, uint16_t port, bool launch)
 {
 	if (!global_io || !global_dbg)
 	{
@@ -60,6 +60,7 @@ void start_server(const char* ip, uint16_t port, bool launch)
 		if (launch)
 			global_io->kill_process_when_close();
 	}
+	return global_io->get_port();
 }
 
 void attach_lua(lua_State* L, bool pause)

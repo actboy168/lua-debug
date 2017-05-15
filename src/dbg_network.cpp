@@ -73,7 +73,8 @@ namespace vscode
 		rprotocol input();
 		bool      input_empty()	const;
 		void      set_schema(const char* file);
-		void      close_session();
+		void      close_session(); 
+		uint16_t  get_port() const;
 
 	private:
 		void event_accept(net::socket::fd_t fd, const net::endpoint& ep);
@@ -298,6 +299,14 @@ namespace vscode
 		session_->close();
 	}
 
+	uint16_t server::get_port() const
+	{
+		sockaddr_in addr;
+		int addrlen = sizeof(sockaddr_in);
+		::getsockname(sock, (sockaddr*)&addr, &addrlen);
+		return ::ntohs(addr.sin_port);
+	}
+
 	network::network(const char* ip, uint16_t port)
 		: poller_(new net::poller_t)
 		, server_(new server(poller_))
@@ -359,5 +368,13 @@ namespace vscode
 	void network::kill_process_when_close()
 	{
 		kill_process_when_close_ = true;
+	}
+
+
+	uint16_t network::get_port() const
+	{
+		if (server_)
+			return server_->get_port();
+		return 0;
 	}
 }

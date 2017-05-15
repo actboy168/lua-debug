@@ -34,7 +34,7 @@ void initialize_debugger(void* L)
 	if (shared_luadll.size() != 0) {
 		base::c_call<void>(set_luadll, shared_luadll.data(), shared_luadll.size());
 	}
-	base::c_call<void>(start_server, "127.0.0.1", shared_port, true);
+	shared_port = base::c_call<uint16_t>(start_server, "127.0.0.1", shared_port, true);
 	base::c_call<void>(attach_lua, L, true);
 }
 
@@ -98,13 +98,21 @@ bool set_luadll(const wchar_t* str, size_t len)
 }
 
 extern "C" __declspec(dllexport)
-bool create_process_with_debugger(uint16_t port, const wchar_t* application, const wchar_t* command_line, const wchar_t* current_directory)
+uint16_t create_process_with_debugger(const wchar_t* application, const wchar_t* command_line, const wchar_t* current_directory)
 {
-	//TODO: ÒÆ³ý¶ÔportµÄÒÀÀµ
-	shared_port = port;
+	shared_port = 0;
 	shared_enable = true;
 
 	base::win::process p;
 	p.inject(get_self_path());
-	return p.create(application, command_line, current_directory);
+	if (!p.create(application, command_line, current_directory)) {
+		return 0;
+	}
+	for (int i = 0; i < 1000 || !p.is_running(); ++i)
+	{
+		if (shared_port != 0)
+			return shared_port;
+		Sleep(100);
+	}
+	return 0;
 }

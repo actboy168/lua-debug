@@ -21,28 +21,28 @@ private:
 	HMODULE handle_;
 };
 
-bool create_process_with_debugger(vscode::rprotocol& req)
+uint16_t create_process_with_debugger(vscode::rprotocol& req)
 {
 	module dll(L"debugger-inject.dll");
 	if (!dll.handle()) {
-		return false;
+		return 0;
 	}
 	intptr_t create_process = dll.api("create_process_with_debugger");
 	intptr_t set_luadll = dll.api("set_luadll");
 	if (!create_process || !set_luadll) {
-		return false;
+		return 0;
 	}
 
 	auto& args = req["arguments"];
 	if (args.HasMember("luadll") && args["luadll"].IsString()) {
 		std::wstring wluadll = vscode::u2w(args["luadll"].Get<std::string>());
 		if (!base::c_call<bool>(set_luadll, wluadll.data(), wluadll.size())) {
-			return false;
+			return 0;
 		}
 	}
 	
 	if (!args.HasMember("runtimeExecutable") || !args["runtimeExecutable"].IsString()) {
-		return false;
+		return 0;
 	}
 
 	std::wstring wapplication = vscode::u2w(args["runtimeExecutable"].Get<std::string>());
@@ -58,10 +58,7 @@ bool create_process_with_debugger(vscode::rprotocol& req)
 		wcwd = fs::path(wapplication).remove_filename();
 	}
 
-	if (!base::c_call<bool>(create_process, 4278, wapplication.c_str(), wcommand.c_str(), wcwd.c_str())) {
-		return false;
-	}
-	return true;
+	return base::c_call<uint16_t>(create_process, wapplication.c_str(), wcommand.c_str(), wcwd.c_str());
 }
 
 int64_t seq = 1;
@@ -90,6 +87,7 @@ void response_error(stdinput& io, vscode::rprotocol& req, const char *msg)
 
 int main()
 {
+	MessageBox(0, 0, 0, 0);
 	_setmode(_fileno(stdout), _O_BINARY);
 	setbuf(stdout, NULL);
 
@@ -120,13 +118,14 @@ int main()
 				else if (rp["command"] == "launch") {
 					auto& args = rp["arguments"];
 					if (args.HasMember("runtimeExecutable")) {
-						if (!create_process_with_debugger(rp)) {
+						uint16_t port = create_process_with_debugger(rp);
+						if (port == 0) {
 							response_error(io, rp, "Launch failed");
 							exit(0);
 							continue;
 						}
 						attach_.reset(new attach(io));
-						attach_->connect(net::endpoint("127.0.0.1", 4278));
+						attach_->connect(net::endpoint("127.0.0.1", port));
 						if (seq > 1) initproto.AddMember("__initseq", seq, initproto.GetAllocator());
 						attach_->send(initproto);
 						attach_->send(rp);
