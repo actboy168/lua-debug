@@ -18,6 +18,24 @@
     <Filter Include="asmjit\x86">
       <UniqueIdentifier>{bb64b440-5534-40d1-9e82-6937636b5217}</UniqueIdentifier>
     </Filter>
+    <Filter Include="net">
+      <UniqueIdentifier>{52ddbaab-889f-477d-86f1-0baaeaa9a43d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="net\tcp">
+      <UniqueIdentifier>{95e85022-cace-4c43-81f4-60056d7ee179}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="net\udp">
+      <UniqueIdentifier>{bc3bc9e4-f345-45d5-b574-285c4fc40efd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="net\log">
+      <UniqueIdentifier>{5cacf5c1-edb5-416d-b1b7-cb7aa5ae1ff5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="net\poller">
+      <UniqueIdentifier>{9bd4b338-88d7-4ebf-8bfb-0c531412b220}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="net\datetime">
+      <UniqueIdentifier>{a01d820a-49f3-4414-9d35-5b6c39165eed}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\dbg_network.cpp">
@@ -340,5 +358,79 @@
     <ClInclude Include="..\src\dbg_redirect.h">
       <Filter>inc</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\net\endpoint.h">
+      <Filter>net</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\net\poller.h">
+      <Filter>net</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\net\queue.h">
+      <Filter>net</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\net\socket.h">
+      <Filter>net</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\net\winapi.h">
+      <Filter>net</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\net\tcp\buffer.h">
+      <Filter>net\tcp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\net\tcp\connecter.h">
+      <Filter>net\tcp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\net\tcp\listener.h">
+      <Filter>net\tcp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\net\tcp\rcvbuffer.h">
+      <Filter>net\tcp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\net\tcp\sndbuffer.h">
+      <Filter>net\tcp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\net\tcp\stream.h">
+      <Filter>net\tcp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\net\udp\stream.h">
+      <Filter>net\udp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\net\udp\udp.h">
+      <Filter>net\udp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\net\log\logging.h">
+      <Filter>net\log</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\net\poller\epoll.h">
+      <Filter>net\poller</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\net\poller\event.h">
+      <Filter>net\poller</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\net\poller\io_object.h">
+      <Filter>net\poller</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\net\poller\select.h">
+      <Filter>net\poller</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\net\poller\timer.h">
+      <Filter>net\poller</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\net\poller\timer_queue.h">
+      <Filter>net\poller</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\net\datetime\clock.h">
+      <Filter>net\datetime</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\net\datetime\date.h">
+      <Filter>net\datetime</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\net\datetime\now.h">
+      <Filter>net\datetime</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\src\net\socket.inl">
+      <Filter>net</Filter>
+    </None>
   </ItemGroup>
 </Project>

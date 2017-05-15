@@ -119,11 +119,37 @@
     <ClInclude Include="..\src\dbg_variables.h" />
     <ClInclude Include="..\src\dbg_protocol.h" />
     <ClInclude Include="..\src\dbg_network.h" />
+    <ClInclude Include="..\src\net\datetime\clock.h" />
+    <ClInclude Include="..\src\net\datetime\date.h" />
+    <ClInclude Include="..\src\net\datetime\now.h" />
+    <ClInclude Include="..\src\net\endpoint.h" />
+    <ClInclude Include="..\src\net\log\logging.h" />
+    <ClInclude Include="..\src\net\poller.h" />
+    <ClInclude Include="..\src\net\poller\epoll.h" />
+    <ClInclude Include="..\src\net\poller\event.h" />
+    <ClInclude Include="..\src\net\poller\io_object.h" />
+    <ClInclude Include="..\src\net\poller\select.h" />
+    <ClInclude Include="..\src\net\poller\timer.h" />
+    <ClInclude Include="..\src\net\poller\timer_queue.h" />
+    <ClInclude Include="..\src\net\queue.h" />
+    <ClInclude Include="..\src\net\socket.h" />
+    <ClInclude Include="..\src\net\tcp\buffer.h" />
+    <ClInclude Include="..\src\net\tcp\connecter.h" />
+    <ClInclude Include="..\src\net\tcp\listener.h" />
+    <ClInclude Include="..\src\net\tcp\rcvbuffer.h" />
+    <ClInclude Include="..\src\net\tcp\sndbuffer.h" />
+    <ClInclude Include="..\src\net\tcp\stream.h" />
+    <ClInclude Include="..\src\net\udp\stream.h" />
+    <ClInclude Include="..\src\net\udp\udp.h" />
+    <ClInclude Include="..\src\net\winapi.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="luacore.vcxproj">
       <Project>{b84f7231-16ce-41d8-8c08-7b523ff4225b}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\src\net\socket.inl" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{9FD838AC-A5A2-4A24-8166-105BA0D8A973}</ProjectGuid>
