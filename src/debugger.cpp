@@ -44,14 +44,14 @@ namespace vscode
 std::unique_ptr<vscode::network>  global_io;
 std::unique_ptr<vscode::debugger> global_dbg;
 
-void set_luadll(const char* path, size_t len)
+void __cdecl set_luadll(const char* path, size_t len)
 {
 #if defined(DEBUGGER_DELAYLOAD_LUA)
 	delayload::set_luadll(vscode::u2w(vscode::strview(path, len)));
 #endif
 }
 
-uint16_t start_server(const char* ip, uint16_t port, bool launch)
+uint16_t __cdecl start_server(const char* ip, uint16_t port, bool launch)
 {
 	if (!global_io || !global_dbg)
 	{
@@ -63,9 +63,14 @@ uint16_t start_server(const char* ip, uint16_t port, bool launch)
 	return global_io->get_port();
 }
 
-void attach_lua(lua_State* L, bool pause)
+void __cdecl attach_lua(lua_State* L, bool pause)
 {
 	if (global_dbg) global_dbg->attach_lua(L, pause);
+}
+
+void __cdecl detach_lua(lua_State* L)
+{
+	if (global_dbg) global_dbg->detach_lua(L);
 }
 
 namespace luaw {

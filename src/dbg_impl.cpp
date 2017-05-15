@@ -271,6 +271,7 @@ namespace vscode
 		if (attachL_ == L)
 		{
 			attachL_ = 0;
+			set_state(state::terminated);
 		}
 	}
 

@@ -34,8 +34,22 @@ void initialize_debugger(void* L)
 	if (shared_luadll.size() != 0) {
 		base::c_call<void>(set_luadll, shared_luadll.data(), shared_luadll.size());
 	}
-	shared_port = base::c_call<uint16_t>(start_server, "127.0.0.1", shared_port, true);
+	shared_port = base::c_call<uint16_t>(start_server, "127.0.0.1", 0, true);
 	base::c_call<void>(attach_lua, L, true);
+}
+
+void uninitialize_debugger(void* L)
+{
+	HMODULE dll = GetModuleHandleW(L"debugger.dll");
+	if (!dll) {
+		return;
+	}
+	uintptr_t detach_lua = (uintptr_t)GetProcAddress(dll, "detach_lua");
+	if (!detach_lua) {
+		return;
+	}
+	base::c_call<void>(detach_lua, L);
+	Sleep(100);
 }
 
 struct lua_newstate
@@ -61,6 +75,16 @@ struct luaL_newstate
 	}
 };
 
+struct lua_close
+	: public hook_helper<lua_close>
+{
+	static void __cdecl fake(void* L)
+	{
+		uninitialize_debugger(L);
+		return base::c_call<void>(real, L);
+	}
+};
+
 BOOL APIENTRY DllMain(HMODULE module, DWORD reason, LPVOID /*pReserved*/)
 {
 	if (reason == DLL_PROCESS_ATTACH)
@@ -70,16 +94,19 @@ BOOL APIENTRY DllMain(HMODULE module, DWORD reason, LPVOID /*pReserved*/)
 			if (shared_luadll.size() != 0) {
 				lua_newstate::init(shared_luadll.data(), "lua_newstate");
 				luaL_newstate::init(shared_luadll.data(), "luaL_newstate");
+				lua_close::init(shared_luadll.data(), "lua_close");
 			}
 			else {
 				const char* luadll = search_api("lua_newstate", "luaL_newstate");
 				if (luadll) {
 					lua_newstate::init(luadll, "lua_newstate");
 					luaL_newstate::init(luadll, "luaL_newstate");
+					lua_close::init(luadll, "lua_close");
 				}
 				else {
 					lua_newstate::init(L"luacore.dll", "lua_newstate");
 					luaL_newstate::init(L"luacore.dll", "luaL_newstate");
+					lua_close::init(L"luacore.dll", "lua_close");
 				}
 			}
 		}
