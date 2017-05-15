@@ -435,7 +435,7 @@ namespace vscode
 
 		if (type == var_type::watch)
 		{
-			if (!watch_ || !watch_->get((var_ref >> 16) & 0xFF))
+			if (!watch_ || !watch_->get(L, (var_ref >> 16) & 0xFF))
 			{
 				response_error(req, "Error retrieving variables");
 				return false;
@@ -580,9 +580,9 @@ namespace vscode
 		if (rets.size() == 1 && context == "watch" && can_extand(L, -1))
 		{
 			if (!watch_) {
-				watch_.reset(new watchs(hookL_));
+				watch_.reset(new watchs());
 			}
-			size_t pos = watch_->add();
+			size_t pos = watch_->add(L);
 			if (pos > 0)
 			{
 				reference = (int)var_type::watch | (pos << 16);

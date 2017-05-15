@@ -5,9 +5,8 @@ namespace vscode
 {
 	intptr_t WATCH_TABLE = 0;
 
-	watchs::watchs(lua_State* L)
-		: L(L)
-		, cur_(0)
+	watchs::watchs()
+		: cur_(0)
 		, max_(0)
 	{
 	}
@@ -17,7 +16,7 @@ namespace vscode
 		//clear();
 	}
 
-	size_t watchs::add()
+	size_t watchs::add(lua_State* L)
 	{
 		if (max_ < 250)
 		{
@@ -28,30 +27,29 @@ namespace vscode
 			cur_ = 0;
 		}
 
-		t_set(cur_++);
+		t_set(L, ++cur_);
 		return cur_;
 	}
 
-	bool watchs::get(size_t index)
+	bool watchs::get(lua_State* L, size_t index)
 	{
 		if (index > max_ || index == 0)
 		{
 			return false;
 		}
-		t_get(index - 1);
+		t_get(L, index);
 		return true;
 	}
 
-	void watchs::clear()
+	void watchs::clear(lua_State* L)
 	{
-		if (!L) return;
 		lua_pushnil(L);
 		lua_rawsetp(L, LUA_REGISTRYINDEX, &WATCH_TABLE);
 		cur_ = 0;
 		max_ = 0;
 	}
 
-	void watchs::t_table()
+	void watchs::t_table(lua_State* L)
 	{
 		if (LUA_TTABLE != lua_rawgetp(L, LUA_REGISTRYINDEX, &WATCH_TABLE)) {
 			lua_pop(L, 1);
@@ -61,27 +59,23 @@ namespace vscode
 		}
 	}
 
-	void watchs::t_set(int n)
+	void watchs::t_set(lua_State* L, int n)
 	{
 		int top1 = lua_gettop(L);
-		t_table();
+		t_table(L);
 		lua_pushvalue(L, -2);
 		lua_rawseti(L, -2, n);
 		lua_pop(L, 1);
 		int top2 = lua_gettop(L);
 	}
 
-	void watchs::t_get(int n)
+	void watchs::t_get(lua_State* L, int n)
 	{
 		int top1 = lua_gettop(L);
-		t_table();
+		t_table(L);
 		lua_rawgeti(L, -1, n);
 		lua_remove(L, -2);
+		int t = lua_type(L, -1);
 		int top2 = lua_gettop(L);
-	}
-
-	void watchs::destory()
-	{
-		L = 0;
 	}
 }
