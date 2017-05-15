@@ -49,6 +49,6 @@ namespace net { namespace socket {
 	int  error_no();
 }}
 
-#define YARD_INLINE inline
+#define NET_INLINE inline
 #include <net/socket.inl>
-#undef YARD_INLINE
+#undef NET_INLINE

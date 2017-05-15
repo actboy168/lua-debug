@@ -12,7 +12,7 @@
 
 namespace net { namespace socket {
 
-	YARD_INLINE void initialize()
+	NET_INLINE void initialize()
 	{
 		static bool initialized = false;
 		if (!initialized) {
@@ -29,7 +29,7 @@ namespace net { namespace socket {
 		}
 	}
 
-	YARD_INLINE int error_no_()
+	NET_INLINE int error_no_()
 	{
 #if defined WIN32
 		return ::WSAGetLastError();
@@ -39,7 +39,7 @@ namespace net { namespace socket {
 	}
 
 #if defined WIN32
-	YARD_INLINE int wsa_error_to_errno(int errcode)
+	NET_INLINE int wsa_error_to_errno(int errcode)
 	{
 		switch (errcode) {
 		//  10009 - File handle is not valid.
@@ -116,7 +116,7 @@ namespace net { namespace socket {
 	}
 #endif
 
-	YARD_INLINE int error_no()
+	NET_INLINE int error_no()
 	{
 #if defined WIN32
 		return wsa_error_to_errno(error_no_());
@@ -125,12 +125,12 @@ namespace net { namespace socket {
 #endif
 	}
 
-	YARD_INLINE fd_t open(int domain, int type, int protocol)
+	NET_INLINE fd_t open(int domain, int type, int protocol)
 	{
 		return ::socket(domain, type, protocol);
 	}
 
-	YARD_INLINE void close(fd_t s)
+	NET_INLINE void close(fd_t s)
 	{
 		assert(s != retired_fd);
 #if defined WIN32
@@ -141,7 +141,7 @@ namespace net { namespace socket {
 		net_assert_success(rc);
 	}
 
-	YARD_INLINE void shutdown(fd_t s)
+	NET_INLINE void shutdown(fd_t s)
 	{
 		assert(s != retired_fd);
 #if defined WIN32
@@ -152,7 +152,7 @@ namespace net { namespace socket {
 		net_assert_success(rc);
 	}
 
-	YARD_INLINE void shutdown_read(fd_t s)
+	NET_INLINE void shutdown_read(fd_t s)
 	{
 		assert(s != retired_fd);
 #if defined WIN32
@@ -163,7 +163,7 @@ namespace net { namespace socket {
 		net_assert_success(rc);
 	}
 
-	YARD_INLINE void shutdown_write(fd_t s)
+	NET_INLINE void shutdown_write(fd_t s)
 	{
 		assert(s != retired_fd);
 #if defined WIN32
@@ -174,7 +174,7 @@ namespace net { namespace socket {
 		net_assert_success(rc);
 	}
 
-	YARD_INLINE void nonblocking(fd_t s)
+	NET_INLINE void nonblocking(fd_t s)
 	{
 #if defined WIN32
 		unsigned long nonblock = 1;
@@ -189,7 +189,7 @@ namespace net { namespace socket {
 #endif
 	}
 
-	YARD_INLINE void keepalive(fd_t s, int keepalive, int keepalive_cnt, int keepalive_idle, int keepalive_intvl)
+	NET_INLINE void keepalive(fd_t s, int keepalive, int keepalive_cnt, int keepalive_idle, int keepalive_intvl)
 	{
 #if defined WIN32
 		if (keepalive != -1)
@@ -227,7 +227,7 @@ namespace net { namespace socket {
 #endif
 	}
 
-	YARD_INLINE void udp_connect_reset(fd_t s)
+	NET_INLINE void udp_connect_reset(fd_t s)
 	{
 #if defined WIN32
 		DWORD byte_retruned = 0;
@@ -236,19 +236,19 @@ namespace net { namespace socket {
 #endif
 	}
 
-	YARD_INLINE void send_buffer(fd_t s, int bufsize)
+	NET_INLINE void send_buffer(fd_t s, int bufsize)
 	{
 		const int rc = setsockopt(s, SOL_SOCKET, SO_SNDBUF, (char*) &bufsize, sizeof bufsize);
 		net_assert_success(rc);
 	}
 
-	YARD_INLINE void recv_buffer(fd_t s, int bufsize)
+	NET_INLINE void recv_buffer(fd_t s, int bufsize)
 	{
 		const int rc = setsockopt(s, SOL_SOCKET, SO_RCVBUF, (char*) &bufsize, sizeof bufsize);
 		net_assert_success(rc);
 	}
 
-	YARD_INLINE void reuse(fd_t s)
+	NET_INLINE void reuse(fd_t s)
 	{
 		int flag = 1;
 #if defined WIN32
@@ -259,7 +259,7 @@ namespace net { namespace socket {
 		net_assert_success(rc);
 	}
 
-	YARD_INLINE bool connect_error(fd_t s)
+	NET_INLINE bool connect_error(fd_t s)
 	{
 		int err = 0;
 #if defined WIN32
@@ -281,7 +281,7 @@ namespace net { namespace socket {
 		return true;
 	}
 
-	YARD_INLINE int connect(fd_t s, const endpoint& ep)
+	NET_INLINE int connect(fd_t s, const endpoint& ep)
 	{
 		int rc = ::connect(s, ep.addr(), (int)ep.addrlen());
 		if (rc == 0)
@@ -298,12 +298,12 @@ namespace net { namespace socket {
 		return -1;
 	}
 
-	YARD_INLINE int bind(fd_t s, const endpoint& ep)
+	NET_INLINE int bind(fd_t s, const endpoint& ep)
 	{
 		return ::bind(s, ep.addr(), (int)ep.addrlen());
 	}
 
-	YARD_INLINE int listen(fd_t s, const endpoint& ep, int backlog)
+	NET_INLINE int listen(fd_t s, const endpoint& ep, int backlog)
 	{
 		if (::bind(s, ep.addr(), (int)ep.addrlen()) == -1)
 		{
@@ -316,7 +316,7 @@ namespace net { namespace socket {
 		return 0;
 	}
 
-	YARD_INLINE int accept(fd_t s, fd_t& fd, endpoint& ep)
+	NET_INLINE int accept(fd_t s, fd_t& fd, endpoint& ep)
 	{
 		struct sockaddr_storage ss;
 		memset(&ss, 0, sizeof (ss));
