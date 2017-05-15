@@ -9,32 +9,35 @@
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
-    <Filter Include="asmjit">
-      <UniqueIdentifier>{2da4deda-d819-4b31-8261-b07e4b029b42}</UniqueIdentifier>
+    <Filter Include="libs">
+      <UniqueIdentifier>{90af2600-1058-4176-8097-9a9328d1ffbd}</UniqueIdentifier>
     </Filter>
-    <Filter Include="asmjit\base">
-      <UniqueIdentifier>{5cd7133a-519e-48e1-a882-b80a1aa913c5}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="asmjit\x86">
-      <UniqueIdentifier>{bb64b440-5534-40d1-9e82-6937636b5217}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="net">
+    <Filter Include="libs\net">
       <UniqueIdentifier>{52ddbaab-889f-477d-86f1-0baaeaa9a43d}</UniqueIdentifier>
     </Filter>
-    <Filter Include="net\tcp">
+    <Filter Include="libs\net\tcp">
       <UniqueIdentifier>{95e85022-cace-4c43-81f4-60056d7ee179}</UniqueIdentifier>
     </Filter>
-    <Filter Include="net\udp">
+    <Filter Include="libs\net\udp">
       <UniqueIdentifier>{bc3bc9e4-f345-45d5-b574-285c4fc40efd}</UniqueIdentifier>
     </Filter>
-    <Filter Include="net\log">
+    <Filter Include="libs\net\log">
       <UniqueIdentifier>{5cacf5c1-edb5-416d-b1b7-cb7aa5ae1ff5}</UniqueIdentifier>
     </Filter>
-    <Filter Include="net\poller">
+    <Filter Include="libs\net\poller">
       <UniqueIdentifier>{9bd4b338-88d7-4ebf-8bfb-0c531412b220}</UniqueIdentifier>
     </Filter>
-    <Filter Include="net\datetime">
+    <Filter Include="libs\net\datetime">
       <UniqueIdentifier>{a01d820a-49f3-4414-9d35-5b6c39165eed}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="libs\asmjit">
+      <UniqueIdentifier>{2da4deda-d819-4b31-8261-b07e4b029b42}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="libs\asmjit\base">
+      <UniqueIdentifier>{5cd7133a-519e-48e1-a882-b80a1aa913c5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="libs\asmjit\x86">
+      <UniqueIdentifier>{bb64b440-5534-40d1-9e82-6937636b5217}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -81,97 +84,97 @@
       <Filter>cpp</Filter>
     </ClCompile>
     <ClCompile Include="..\src\asmjit\base\arch.cpp">
-      <Filter>asmjit\base</Filter>
+      <Filter>libs\asmjit\base</Filter>
     </ClCompile>
     <ClCompile Include="..\src\asmjit\base\assembler.cpp">
-      <Filter>asmjit\base</Filter>
+      <Filter>libs\asmjit\base</Filter>
     </ClCompile>
     <ClCompile Include="..\src\asmjit\base\codebuilder.cpp">
-      <Filter>asmjit\base</Filter>
+      <Filter>libs\asmjit\base</Filter>
     </ClCompile>
     <ClCompile Include="..\src\asmjit\base\codecompiler.cpp">
-      <Filter>asmjit\base</Filter>
+      <Filter>libs\asmjit\base</Filter>
     </ClCompile>
     <ClCompile Include="..\src\asmjit\base\codeemitter.cpp">
-      <Filter>asmjit\base</Filter>
+      <Filter>libs\asmjit\base</Filter>
     </ClCompile>
     <ClCompile Include="..\src\asmjit\base\codeholder.cpp">
-      <Filter>asmjit\base</Filter>
+      <Filter>libs\asmjit\base</Filter>
     </ClCompile>
     <ClCompile Include="..\src\asmjit\base\constpool.cpp">
-      <Filter>asmjit\base</Filter>
+      <Filter>libs\asmjit\base</Filter>
     </ClCompile>
     <ClCompile Include="..\src\asmjit\base\cpuinfo.cpp">
-      <Filter>asmjit\base</Filter>
+      <Filter>libs\asmjit\base</Filter>
     </ClCompile>
     <ClCompile Include="..\src\asmjit\base\func.cpp">
-      <Filter>asmjit\base</Filter>
+      <Filter>libs\asmjit\base</Filter>
     </ClCompile>
     <ClCompile Include="..\src\asmjit\base\globals.cpp">
-      <Filter>asmjit\base</Filter>
+      <Filter>libs\asmjit\base</Filter>
     </ClCompile>
     <ClCompile Include="..\src\asmjit\base\logging.cpp">
-      <Filter>asmjit\base</Filter>
+      <Filter>libs\asmjit\base</Filter>
     </ClCompile>
     <ClCompile Include="..\src\asmjit\base\operand.cpp">
-      <Filter>asmjit\base</Filter>
+      <Filter>libs\asmjit\base</Filter>
     </ClCompile>
     <ClCompile Include="..\src\asmjit\base\osutils.cpp">
-      <Filter>asmjit\base</Filter>
+      <Filter>libs\asmjit\base</Filter>
     </ClCompile>
     <ClCompile Include="..\src\asmjit\base\regalloc.cpp">
-      <Filter>asmjit\base</Filter>
+      <Filter>libs\asmjit\base</Filter>
     </ClCompile>
     <ClCompile Include="..\src\asmjit\base\runtime.cpp">
-      <Filter>asmjit\base</Filter>
+      <Filter>libs\asmjit\base</Filter>
     </ClCompile>
     <ClCompile Include="..\src\asmjit\base\string.cpp">
-      <Filter>asmjit\base</Filter>
+      <Filter>libs\asmjit\base</Filter>
     </ClCompile>
     <ClCompile Include="..\src\asmjit\base\utils.cpp">
-      <Filter>asmjit\base</Filter>
+      <Filter>libs\asmjit\base</Filter>
     </ClCompile>
     <ClCompile Include="..\src\asmjit\base\vmem.cpp">
-      <Filter>asmjit\base</Filter>
+      <Filter>libs\asmjit\base</Filter>
     </ClCompile>
     <ClCompile Include="..\src\asmjit\base\zone.cpp">
-      <Filter>asmjit\base</Filter>
+      <Filter>libs\asmjit\base</Filter>
     </ClCompile>
     <ClCompile Include="..\src\asmjit\base\zonecontainers.cpp">
-      <Filter>asmjit\base</Filter>
+      <Filter>libs\asmjit\base</Filter>
     </ClCompile>
     <ClCompile Include="..\src\asmjit\base\zoneheap.cpp">
-      <Filter>asmjit\base</Filter>
+      <Filter>libs\asmjit\base</Filter>
     </ClCompile>
     <ClCompile Include="..\src\asmjit\x86\x86assembler.cpp">
-      <Filter>asmjit\x86</Filter>
+      <Filter>libs\asmjit\x86</Filter>
     </ClCompile>
     <ClCompile Include="..\src\asmjit\x86\x86builder.cpp">
-      <Filter>asmjit\x86</Filter>
+      <Filter>libs\asmjit\x86</Filter>
     </ClCompile>
     <ClCompile Include="..\src\asmjit\x86\x86compiler.cpp">
-      <Filter>asmjit\x86</Filter>
+      <Filter>libs\asmjit\x86</Filter>
     </ClCompile>
     <ClCompile Include="..\src\asmjit\x86\x86inst.cpp">
-      <Filter>asmjit\x86</Filter>
+      <Filter>libs\asmjit\x86</Filter>
     </ClCompile>
     <ClCompile Include="..\src\asmjit\x86\x86internal.cpp">
-      <Filter>asmjit\x86</Filter>
+      <Filter>libs\asmjit\x86</Filter>
     </ClCompile>
     <ClCompile Include="..\src\asmjit\x86\x86logging.cpp">
-      <Filter>asmjit\x86</Filter>
+      <Filter>libs\asmjit\x86</Filter>
     </ClCompile>
     <ClCompile Include="..\src\asmjit\x86\x86operand.cpp">
-      <Filter>asmjit\x86</Filter>
+      <Filter>libs\asmjit\x86</Filter>
     </ClCompile>
     <ClCompile Include="..\src\asmjit\x86\x86operand_regs.cpp">
-      <Filter>asmjit\x86</Filter>
+      <Filter>libs\asmjit\x86</Filter>
     </ClCompile>
     <ClCompile Include="..\src\asmjit\x86\x86regalloc.cpp">
-      <Filter>asmjit\x86</Filter>
+      <Filter>libs\asmjit\x86</Filter>
     </ClCompile>
     <ClCompile Include="..\src\asmjit\x86\x86ssetoavxpass.cpp">
-      <Filter>asmjit\x86</Filter>
+      <Filter>libs\asmjit\x86</Filter>
     </ClCompile>
     <ClCompile Include="..\src\dbg_redirect.cpp">
       <Filter>cpp</Filter>
@@ -236,201 +239,201 @@
       <Filter>inc</Filter>
     </ClInclude>
     <ClInclude Include="..\src\asmjit\base\arch.h">
-      <Filter>asmjit\base</Filter>
+      <Filter>libs\asmjit\base</Filter>
     </ClInclude>
     <ClInclude Include="..\src\asmjit\base\assembler.h">
-      <Filter>asmjit\base</Filter>
+      <Filter>libs\asmjit\base</Filter>
     </ClInclude>
     <ClInclude Include="..\src\asmjit\base\codebuilder.h">
-      <Filter>asmjit\base</Filter>
+      <Filter>libs\asmjit\base</Filter>
     </ClInclude>
     <ClInclude Include="..\src\asmjit\base\codecompiler.h">
-      <Filter>asmjit\base</Filter>
+      <Filter>libs\asmjit\base</Filter>
     </ClInclude>
     <ClInclude Include="..\src\asmjit\base\codeemitter.h">
-      <Filter>asmjit\base</Filter>
+      <Filter>libs\asmjit\base</Filter>
     </ClInclude>
     <ClInclude Include="..\src\asmjit\base\codeholder.h">
-      <Filter>asmjit\base</Filter>
+      <Filter>libs\asmjit\base</Filter>
     </ClInclude>
     <ClInclude Include="..\src\asmjit\base\constpool.h">
-      <Filter>asmjit\base</Filter>
+      <Filter>libs\asmjit\base</Filter>
     </ClInclude>
     <ClInclude Include="..\src\asmjit\base\cpuinfo.h">
-      <Filter>asmjit\base</Filter>
+      <Filter>libs\asmjit\base</Filter>
     </ClInclude>
     <ClInclude Include="..\src\asmjit\base\func.h">
-      <Filter>asmjit\base</Filter>
+      <Filter>libs\asmjit\base</Filter>
     </ClInclude>
     <ClInclude Include="..\src\asmjit\base\globals.h">
-      <Filter>asmjit\base</Filter>
+      <Filter>libs\asmjit\base</Filter>
     </ClInclude>
     <ClInclude Include="..\src\asmjit\base\logging.h">
-      <Filter>asmjit\base</Filter>
+      <Filter>libs\asmjit\base</Filter>
     </ClInclude>
     <ClInclude Include="..\src\asmjit\base\operand.h">
-      <Filter>asmjit\base</Filter>
+      <Filter>libs\asmjit\base</Filter>
     </ClInclude>
     <ClInclude Include="..\src\asmjit\base\osutils.h">
-      <Filter>asmjit\base</Filter>
+      <Filter>libs\asmjit\base</Filter>
     </ClInclude>
     <ClInclude Include="..\src\asmjit\base\regalloc_p.h">
-      <Filter>asmjit\base</Filter>
+      <Filter>libs\asmjit\base</Filter>
     </ClInclude>
     <ClInclude Include="..\src\asmjit\base\runtime.h">
-      <Filter>asmjit\base</Filter>
+      <Filter>libs\asmjit\base</Filter>
     </ClInclude>
     <ClInclude Include="..\src\asmjit\base\simdtypes.h">
-      <Filter>asmjit\base</Filter>
+      <Filter>libs\asmjit\base</Filter>
     </ClInclude>
     <ClInclude Include="..\src\asmjit\base\string.h">
-      <Filter>asmjit\base</Filter>
+      <Filter>libs\asmjit\base</Filter>
     </ClInclude>
     <ClInclude Include="..\src\asmjit\base\utils.h">
-      <Filter>asmjit\base</Filter>
+      <Filter>libs\asmjit\base</Filter>
     </ClInclude>
     <ClInclude Include="..\src\asmjit\base\vmem.h">
-      <Filter>asmjit\base</Filter>
+      <Filter>libs\asmjit\base</Filter>
     </ClInclude>
     <ClInclude Include="..\src\asmjit\base\zone.h">
-      <Filter>asmjit\base</Filter>
+      <Filter>libs\asmjit\base</Filter>
     </ClInclude>
     <ClInclude Include="..\src\asmjit\base\zonecontainers.h">
-      <Filter>asmjit\base</Filter>
+      <Filter>libs\asmjit\base</Filter>
     </ClInclude>
     <ClInclude Include="..\src\asmjit\base\zoneheap.h">
-      <Filter>asmjit\base</Filter>
+      <Filter>libs\asmjit\base</Filter>
     </ClInclude>
     <ClInclude Include="..\src\asmjit\x86\x86assembler.h">
-      <Filter>asmjit\x86</Filter>
+      <Filter>libs\asmjit\x86</Filter>
     </ClInclude>
     <ClInclude Include="..\src\asmjit\x86\x86builder.h">
-      <Filter>asmjit\x86</Filter>
+      <Filter>libs\asmjit\x86</Filter>
     </ClInclude>
     <ClInclude Include="..\src\asmjit\x86\x86compiler.h">
-      <Filter>asmjit\x86</Filter>
+      <Filter>libs\asmjit\x86</Filter>
     </ClInclude>
     <ClInclude Include="..\src\asmjit\x86\x86emitter.h">
-      <Filter>asmjit\x86</Filter>
+      <Filter>libs\asmjit\x86</Filter>
     </ClInclude>
     <ClInclude Include="..\src\asmjit\x86\x86inst.h">
-      <Filter>asmjit\x86</Filter>
+      <Filter>libs\asmjit\x86</Filter>
     </ClInclude>
     <ClInclude Include="..\src\asmjit\x86\x86internal_p.h">
-      <Filter>asmjit\x86</Filter>
+      <Filter>libs\asmjit\x86</Filter>
     </ClInclude>
     <ClInclude Include="..\src\asmjit\x86\x86logging.h">
-      <Filter>asmjit\x86</Filter>
+      <Filter>libs\asmjit\x86</Filter>
     </ClInclude>
     <ClInclude Include="..\src\asmjit\x86\x86misc.h">
-      <Filter>asmjit\x86</Filter>
+      <Filter>libs\asmjit\x86</Filter>
     </ClInclude>
     <ClInclude Include="..\src\asmjit\x86\x86operand.h">
-      <Filter>asmjit\x86</Filter>
+      <Filter>libs\asmjit\x86</Filter>
     </ClInclude>
     <ClInclude Include="..\src\asmjit\x86\x86regalloc_p.h">
-      <Filter>asmjit\x86</Filter>
+      <Filter>libs\asmjit\x86</Filter>
     </ClInclude>
     <ClInclude Include="..\src\asmjit\x86\x86ssetoavxpass_p.h">
-      <Filter>asmjit\x86</Filter>
+      <Filter>libs\asmjit\x86</Filter>
     </ClInclude>
     <ClInclude Include="..\src\asmjit\arm.h">
-      <Filter>asmjit</Filter>
+      <Filter>libs\asmjit</Filter>
     </ClInclude>
     <ClInclude Include="..\src\asmjit\asmjit.h">
-      <Filter>asmjit</Filter>
+      <Filter>libs\asmjit</Filter>
     </ClInclude>
     <ClInclude Include="..\src\asmjit\asmjit_apibegin.h">
-      <Filter>asmjit</Filter>
+      <Filter>libs\asmjit</Filter>
     </ClInclude>
     <ClInclude Include="..\src\asmjit\asmjit_apiend.h">
-      <Filter>asmjit</Filter>
+      <Filter>libs\asmjit</Filter>
     </ClInclude>
     <ClInclude Include="..\src\asmjit\asmjit_build.h">
-      <Filter>asmjit</Filter>
+      <Filter>libs\asmjit</Filter>
     </ClInclude>
     <ClInclude Include="..\src\asmjit\base.h">
-      <Filter>asmjit</Filter>
+      <Filter>libs\asmjit</Filter>
     </ClInclude>
     <ClInclude Include="..\src\asmjit\x86.h">
-      <Filter>asmjit</Filter>
+      <Filter>libs\asmjit</Filter>
     </ClInclude>
     <ClInclude Include="..\src\dbg_redirect.h">
       <Filter>inc</Filter>
     </ClInclude>
     <ClInclude Include="..\src\net\endpoint.h">
-      <Filter>net</Filter>
+      <Filter>libs\net</Filter>
     </ClInclude>
     <ClInclude Include="..\src\net\poller.h">
-      <Filter>net</Filter>
+      <Filter>libs\net</Filter>
     </ClInclude>
     <ClInclude Include="..\src\net\queue.h">
-      <Filter>net</Filter>
+      <Filter>libs\net</Filter>
     </ClInclude>
     <ClInclude Include="..\src\net\socket.h">
-      <Filter>net</Filter>
+      <Filter>libs\net</Filter>
     </ClInclude>
     <ClInclude Include="..\src\net\winapi.h">
-      <Filter>net</Filter>
+      <Filter>libs\net</Filter>
     </ClInclude>
     <ClInclude Include="..\src\net\tcp\buffer.h">
-      <Filter>net\tcp</Filter>
+      <Filter>libs\net\tcp</Filter>
     </ClInclude>
     <ClInclude Include="..\src\net\tcp\connecter.h">
-      <Filter>net\tcp</Filter>
+      <Filter>libs\net\tcp</Filter>
     </ClInclude>
     <ClInclude Include="..\src\net\tcp\listener.h">
-      <Filter>net\tcp</Filter>
+      <Filter>libs\net\tcp</Filter>
     </ClInclude>
     <ClInclude Include="..\src\net\tcp\rcvbuffer.h">
-      <Filter>net\tcp</Filter>
+      <Filter>libs\net\tcp</Filter>
     </ClInclude>
     <ClInclude Include="..\src\net\tcp\sndbuffer.h">
-      <Filter>net\tcp</Filter>
+      <Filter>libs\net\tcp</Filter>
     </ClInclude>
     <ClInclude Include="..\src\net\tcp\stream.h">
-      <Filter>net\tcp</Filter>
+      <Filter>libs\net\tcp</Filter>
     </ClInclude>
     <ClInclude Include="..\src\net\udp\stream.h">
-      <Filter>net\udp</Filter>
+      <Filter>libs\net\udp</Filter>
     </ClInclude>
     <ClInclude Include="..\src\net\udp\udp.h">
-      <Filter>net\udp</Filter>
+      <Filter>libs\net\udp</Filter>
     </ClInclude>
     <ClInclude Include="..\src\net\log\logging.h">
-      <Filter>net\log</Filter>
+      <Filter>libs\net\log</Filter>
     </ClInclude>
     <ClInclude Include="..\src\net\poller\epoll.h">
-      <Filter>net\poller</Filter>
+      <Filter>libs\net\poller</Filter>
     </ClInclude>
     <ClInclude Include="..\src\net\poller\event.h">
-      <Filter>net\poller</Filter>
+      <Filter>libs\net\poller</Filter>
     </ClInclude>
     <ClInclude Include="..\src\net\poller\io_object.h">
-      <Filter>net\poller</Filter>
+      <Filter>libs\net\poller</Filter>
     </ClInclude>
     <ClInclude Include="..\src\net\poller\select.h">
-      <Filter>net\poller</Filter>
+      <Filter>libs\net\poller</Filter>
     </ClInclude>
     <ClInclude Include="..\src\net\poller\timer.h">
-      <Filter>net\poller</Filter>
+      <Filter>libs\net\poller</Filter>
     </ClInclude>
     <ClInclude Include="..\src\net\poller\timer_queue.h">
-      <Filter>net\poller</Filter>
+      <Filter>libs\net\poller</Filter>
     </ClInclude>
     <ClInclude Include="..\src\net\datetime\clock.h">
-      <Filter>net\datetime</Filter>
+      <Filter>libs\net\datetime</Filter>
     </ClInclude>
     <ClInclude Include="..\src\net\datetime\date.h">
-      <Filter>net\datetime</Filter>
+      <Filter>libs\net\datetime</Filter>
     </ClInclude>
     <ClInclude Include="..\src\net\datetime\now.h">
-      <Filter>net\datetime</Filter>
+      <Filter>libs\net\datetime</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\src\net\socket.inl">
-      <Filter>net</Filter>
+      <Filter>libs\net</Filter>
     </None>
   </ItemGroup>
 </Project>
