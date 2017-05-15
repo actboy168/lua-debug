@@ -140,6 +140,7 @@ namespace vscode
 		bool update_main(rprotocol& req, bool& quit);
 		bool update_hook(rprotocol& req, lua_State *L, lua_Debug *ar, bool& quit);
 		void update_launch();
+		void init_redirector(rprotocol& req, lua_State* L);
 		void update_redirect();
 		void initialize_sourcemaps(rapidjson::Value& args);
 		bool request_launch_done(rprotocol& req);

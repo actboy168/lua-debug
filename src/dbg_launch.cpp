@@ -43,18 +43,8 @@ namespace vscode
 		return 1;
 	}
 
-	bool debugger_impl::request_launch_done(rprotocol& req) {
+	void debugger_impl::init_redirector(rprotocol& req, lua_State* L) {
 		auto& args = req["arguments"];
-		if (args.HasMember("runtimeExecutable") && args["runtimeExecutable"].IsString()) {
-			return request_attach(req);
-		}
-		if (launchL_) {
-			lua_close(launchL_);
-			launchL_ = 0;
-		}
-		lua_State* L = luaL_newstate();
-		luaL_openlibs(L);
-
 		launch_console_ = "none";
 		if (args.HasMember("console") && args["console"].IsString())
 		{
@@ -72,6 +62,22 @@ namespace vscode
 			stderr_.reset(new redirector);
 			stderr_->open("stderr", std_fd::STDERR);
 		}
+	}
+
+	bool debugger_impl::request_launch_done(rprotocol& req) {
+		auto& args = req["arguments"];
+		if (args.HasMember("runtimeExecutable") && args["runtimeExecutable"].IsString()) {
+			if (attachL_) 
+				init_redirector(req, attachL_);
+			return request_attach(req);
+		}
+		if (launchL_) {
+			lua_close(launchL_);
+			launchL_ = 0;
+		}
+		lua_State* L = luaL_newstate();
+		luaL_openlibs(L);
+		init_redirector(req, L);
 
 		if (args.HasMember("path") && args["path"].IsString())
 		{
