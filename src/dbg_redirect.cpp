@@ -32,7 +32,7 @@ namespace vscode
 	bool redirect_pipe::create(const char* name)
 	{
 		SECURITY_ATTRIBUTES attr = { sizeof(SECURITY_ATTRIBUTES), 0, true };
-		return ::CreatePipe(&rd_, &wr_, &attr, 0);
+		return !!::CreatePipe(&rd_, &wr_, &attr, 0);
 	}
 
 	static void set_handle(std_fd type, HANDLE handle)
