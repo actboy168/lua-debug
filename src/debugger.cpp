@@ -89,7 +89,7 @@ namespace luaw {
 		return 1;
 	}
 
-	int __gc(lua_State* L)
+	int mt_gc(lua_State* L)
 	{
 		if (global_dbg) {
 			global_dbg->detach_lua(L);
@@ -103,7 +103,7 @@ namespace luaw {
 		luaL_Reg f[] = {
 			{ "listen", listen },
 			{ "start", start },
-			{ "__gc", __gc },
+			{ "__gc", mt_gc },
 			{ NULL, NULL },
 		};
 		luaL_newlibtable(L, f);
