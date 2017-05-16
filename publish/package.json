@@ -71,7 +71,7 @@
                 ],
                 "configurationSnippets": [
                     {
-                        "label": "Lua Debug: Launch",
+                        "label": "Lua Debug: Launch Script",
                         "description": "A new configuration for launching a lua debug program",
                         "body": {
                             "name": "${1:launch}",
@@ -85,13 +85,35 @@
                             "arg": [],
                             "console": "utf8"
                         }
+                    },
+                    {
+                        "label": "Lua Debug: Launch Process",
+                        "description": "A new configuration for launching a lua process",
+                        "body": {
+                            "name": "${1:launch process}",
+                            "type": "lua",
+                            "request": "launch",
+                            "stopOnEntry": true,
+                            "runtimeExecutable" : "^\"\\${workspaceRoot}/lua.exe\"",
+                            "runtimeArgs" : "^\"\\${workspaceRoot}/${2:main.lua}\"",
+                            "console": "utf8"
+                        }
+                    },
+                    {
+                        "label": "Lua Debug: Attach",
+                        "description": "A new configuration for attaching a lua debug program",
+                        "body": {
+                            "name": "${1:attach}",
+                            "type": "lua",
+                            "request": "attach",
+                            "stopOnEntry": true,
+                            "ip": "localhost",
+                            "port": 4278
+                        }
                     }
                 ],
                 "configurationAttributes": {
                     "launch": {
-                        "required": [
-                            "program"
-                        ],
                         "properties": {
                             "program": {
                                 "type": "string",
