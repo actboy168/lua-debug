@@ -32,7 +32,7 @@ void fileio::update(int ms) {
 		buffer_[len] = 0;
 		rapidjson::Document	d;
 		if (d.Parse(buffer_.data(), len).HasParseError()) {
-			exit(1);
+			close();
 		}
 		input_.push(vscode::rprotocol(std::move(d)));
 	}
