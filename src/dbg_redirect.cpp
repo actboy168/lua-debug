@@ -25,7 +25,6 @@ namespace vscode
 	  
 	redirect_pipe::~redirect_pipe()
 	{
-		CloseHandle(rd_);
 		CloseHandle(wr_);
 		rd_ = INVALID_HANDLE_VALUE;
 		wr_ = INVALID_HANDLE_VALUE;
