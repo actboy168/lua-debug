@@ -49,7 +49,7 @@ void uninitialize_debugger(void* L)
 		return;
 	}
 	base::c_call<void>(detach_lua, L);
-	Sleep(100);
+	Sleep(1000);
 }
 
 struct lua_newstate
