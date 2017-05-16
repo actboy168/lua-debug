@@ -31,28 +31,8 @@ namespace vscode
 
 	bool redirect_pipe::create(const char* name)
 	{
-		std::wstring pipe_name = format(L"\\\\.\\pipe\\%s-redirector-%d", name, GetCurrentProcessId());
 		SECURITY_ATTRIBUTES attr = { sizeof(SECURITY_ATTRIBUTES), 0, true };
-		rd_ = ::CreateNamedPipeW(
-			pipe_name.c_str()
-			, PIPE_ACCESS_INBOUND | FILE_FLAG_OVERLAPPED
-			, PIPE_TYPE_BYTE | PIPE_WAIT
-			, 1, 1024 * 1024, 1024 * 1024, 0, &attr
-			);
-		if (rd_ == INVALID_HANDLE_VALUE)  {
-			return false;
-		}
-		wr_ = ::CreateFileW(
-			pipe_name.c_str()
-			, GENERIC_WRITE
-			, 0, &attr
-			, OPEN_EXISTING, FILE_FLAG_OVERLAPPED, NULL
-			);
-		if (wr_ == INVALID_HANDLE_VALUE)  {
-			::CloseHandle(rd_);
-			return false;
-		}
-		return true;
+		return ::CreatePipe(&rd_, &wr_, &attr, 0);
 	}
 
 	static void set_handle(std_fd type, HANDLE handle)

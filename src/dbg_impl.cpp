@@ -57,7 +57,8 @@ namespace vscode
 		stack_.clear();
 		seq = 1;
 		stacklevel_.clear();
-		watch_.reset();
+		watch_.reset(); 
+		update_redirect();
 		stderr_.reset();
 	}
 
