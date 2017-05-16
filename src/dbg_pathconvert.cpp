@@ -53,7 +53,7 @@ namespace vscode
 	{
 		if (server_path[0] == '@')
 		{
-			fs::path srvpath = server_complete(server_path.substr(1));
+			fs::path srvpath = server_complete(fs::path(u2w(server_path.substr(1))));
 			for (auto& pair : sourcemaps_)
 			{
 				if (path_is_subpath(srvpath, pair.first))
@@ -73,7 +73,7 @@ namespace vscode
 		{
 			return debugger_->custom_->path_convert(server_path, client_path, sourcemaps_, true);
 		}
-		client_path = server_path;
+		client_path = fs::path(u2w(server_path));
 		return result::sucess;
 	}
 
@@ -82,7 +82,7 @@ namespace vscode
 	{
 		if (server_path[0] == '@')
 		{
-			fs::path srvpath = server_complete(u2w(server_path.substr(1)));
+			fs::path srvpath = server_complete(fs::path(u2w(server_path.substr(1))));
 			for (auto& pair : sourcemaps_)
 			{
 				if (path_is_subpath(srvpath, pair.first))
@@ -110,7 +110,7 @@ namespace vscode
 			}
 			return r;
 		}
-		client_path = server_path;
+		client_path = fs::path(u2w(server_path));
 		server2client_[server_path] = client_path;
 		return result::sucess;
 	}

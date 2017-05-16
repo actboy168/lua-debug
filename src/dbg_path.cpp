@@ -9,7 +9,7 @@ namespace vscode
 		fs::path npath = path_normalize(path);
 		fs::path nbase = path_normalize(base);
 		if (npath == nbase)
-			return "./";
+			return L"./";
 		fs::path from_path, from_base, output;
 		fs::path::iterator path_it = npath.begin(), path_end = npath.end();
 		fs::path::iterator base_it = nbase.begin(), base_end = nbase.end();
@@ -29,22 +29,22 @@ namespace vscode
 		while (true) {
 			if ((path_it == path_end) || (base_it == base_end) || (*path_it != *base_it)) {
 				for (; base_it != base_end; ++base_it) {
-					if (*base_it == ".")
+					if (*base_it == L".")
 						continue;
-					else if (*base_it == "/")
+					else if (*base_it == L"/")
 						continue;
 
-					output /= "../";
+					output /= L"../";
 				}
 				fs::path::iterator path_it_start = path_it;
 				for (; path_it != path_end; ++path_it) {
 
 					if (path_it != path_it_start)
-						output /= "/";
+						output /= L"/";
 
-					if (*path_it == ".")
+					if (*path_it == L".")
 						continue;
-					if (*path_it == "/")
+					if (*path_it == L"/")
 						continue;
 
 					output /= *path_it;

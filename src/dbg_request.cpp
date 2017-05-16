@@ -125,7 +125,7 @@ namespace vscode
 			{
 				continue;
 			}
-			pathconvert_.add_sourcemap(eary[0].Get<std::string>(), eary[1].Get<std::string>());
+			pathconvert_.add_sourcemap(fs::path(u2w(eary[0].Get<std::string>())), fs::path(u2w(eary[1].Get<std::string>())));
 		}
 	}
 
@@ -151,7 +151,7 @@ namespace vscode
 #endif		
 		initialize_sourcemaps(args);
 		if (args.HasMember("cwd") && args["cwd"].IsString()) {
-			fs::current_path(fs::path(args["cwd"].Get<std::string>()));
+			fs::current_path(fs::path(u2w(args["cwd"].Get<std::string>())));
 		}
 		cache_launch_ = std::move(req);
 		return false;
@@ -244,8 +244,8 @@ namespace vscode
 							{
 								for (auto _ : res("source").Object())
 								{
-									res("name").String(a2u(name.string()));
-									res("path").String(a2u(path.string()));
+									res("name").String(w2u(name.wstring()));
+									res("path").String(w2u(path.wstring()));
 									res("sourceReference").Int64(0);
 								}
 								res("id").Int(depth);
@@ -316,7 +316,7 @@ namespace vscode
 			response_error(req, "not yet implemented");
 			return false;
 		}
-		fs::path client_path = path_normalize(u2w(source["path"].Get<std::string>()));
+		fs::path client_path = path_normalize(fs::path(u2w(source["path"].Get<std::string>())));
 		if (!client_path.is_absolute()) {
 			response_error(req, "not yet implemented");
 			return false;
@@ -347,7 +347,7 @@ namespace vscode
 					res("verified").Bool(true);
 					for (auto _ : res("source").Object())
 					{
-						res("path").String(a2u(client_path.string()));
+						res("path").String(w2u(client_path.wstring()));
 					}
 					res("line").Int(lines[d]);
 				}

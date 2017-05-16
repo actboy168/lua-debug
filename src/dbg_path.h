@@ -4,50 +4,42 @@
 
 #if _MSC_VER >= 1900
 namespace fs = std::experimental::filesystem::v1;
-#define path_to_string(x) (x).string()
 #else
 namespace fs_ = std::tr2::sys;
 
 namespace fs {
 	class path
-		: public fs_::path
+		: public fs_::wpath
 	{
 	public:
 		path()
-			: fs_::path()
-		{ }
-
-		path(const char* str)
-			: fs_::path(str)
-		{ }
-
-		path(const std::string& str)
-			: fs_::path(str)
+			: fs_::wpath()
 		{ }
 
 		path(const path& p)
-			: fs_::path(p)
+			: fs_::wpath(p)
 		{ }
 
-		path(const fs_::path& p)
-			: fs_::path(p)
-		{ }
-
-		path(std::string&& str)
-			: fs_::path(std::forward<std::string>(str))
+		path(const fs_::wpath& p)
+			: fs_::wpath(p)
 		{ }
 
 		path(path&& p)
-			: fs_::path(std::forward<path>(p))
+			: fs_::wpath(std::forward<path>(p))
 		{ }
 
-		path(fs_::path&& p)
-			: fs_::path(std::forward<fs_::path>(p))
+		path(fs_::wpath&& p)
+			: fs_::wpath(std::forward<fs_::wpath>(p))
 		{ }
 
 		bool is_absolute() const
 		{
-			return fs_::path::is_complete();
+			return fs_::wpath::is_complete();
+		}
+
+		std::wstring wstring() const
+		{
+			return fs_::wpath::string();
 		}
 	};
 
@@ -66,7 +58,6 @@ namespace fs {
 		fs_::current_path(p);
 	}
 }
-#define path_to_string(x) (x)
 #endif
 
 namespace vscode
