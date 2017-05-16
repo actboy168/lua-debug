@@ -23,7 +23,7 @@ namespace vscode
 					for (auto _ : res.Object())
 					{
 						res("filter").String("error");
-						res("label").String("<error>");
+						res("label").String("Uncaught Error");
 					}
 				}
 			}
