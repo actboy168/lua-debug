@@ -8,6 +8,11 @@
     "categories": [
         "Debuggers"
     ],
+	"keywords": [
+		"lua",
+		"debug",
+		"debuggers"
+	],
     "author": {
         "name": "actboy168"
     },
