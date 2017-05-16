@@ -223,7 +223,7 @@ namespace vscode
 				request_disconnect(req);
 			}
 		}
-		else if (is_state(state::initialized) || is_state(state::running))
+		else if (is_state(state::initialized) || is_state(state::running) || is_state(state::stepping))
 		{
 			rprotocol req = network_->input();
 			if (req.IsNull()) {

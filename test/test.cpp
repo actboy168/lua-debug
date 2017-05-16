@@ -11,7 +11,7 @@
 #include "../src/dbg_unicode.cpp"
 
 
-#define TEST_ATTACH 0
+#define TEST_ATTACH 1
 
 class debugger_wrapper
 	: public vscode::custom
@@ -19,7 +19,7 @@ class debugger_wrapper
 public:
 	debugger_wrapper(lua_State* L, const char* ip, uint16_t port)
 		: network_(ip, port)
-		, debugger_(&network_, vscode::threadmode::async)
+		, debugger_(&network_, vscode::threadmode::sync)
 	{
 		fs::path schema(SOURCE_PATH);
 		schema /= "debugProtocol.json";
@@ -54,6 +54,7 @@ public:
 	void update()
 	{
 		update_redirect();
+		debugger_.update();
 	}
 
 	void update_redirect()
