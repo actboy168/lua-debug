@@ -115,6 +115,7 @@ namespace luaw {
 	}
 }
 
+#if defined(DEBUGGER_DELAYLOAD_LUA)
 void caller_is_luadll(void* callerAddress)
 {
 	HMODULE  caller = NULL;
@@ -126,6 +127,7 @@ void caller_is_luadll(void* callerAddress)
 		}
 	}
 }
+#endif
 
 int __cdecl luaopen_debugger(lua_State* L)
 {
