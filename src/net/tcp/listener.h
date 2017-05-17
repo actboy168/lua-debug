@@ -37,18 +37,12 @@ namespace net { namespace tcp {
 
 		~listener_t()
 		{
-			if (is_listening())
-			{
-				close();
-			}
+			close();
 		}
 
 		int open()
 		{
-			if (is_listening())
-			{
-				close();
-			}
+			close();
 
 			event_type::sock = socket::open(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 
@@ -123,6 +117,11 @@ namespace net { namespace tcp {
 
 		void event_close()
 		{
+			if (event_type::sock == socket::retired_fd)
+			{
+				return;
+			}
+
 			base_t::rm_fd();
 			base_t::cancel_timer();
 			socket::close(event_type::sock);

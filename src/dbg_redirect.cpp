@@ -40,7 +40,9 @@ namespace vscode
 		SetStdHandle(handles[(int)type], handle);
 		int fd = _open_osfhandle((intptr_t)handle, type == std_fd::STDIN ? _O_RDONLY : _O_WRONLY);
 		FILE *fp = _fdopen(fd, type == std_fd::STDIN ? "r": "w");
-		_dup2(_fileno(fp), _fileno(files[(int)type]));
+		if (fp) {
+			_dup2(_fileno(fp), _fileno(files[(int)type]));
+		}
 	}
 
 	redirector::redirector()

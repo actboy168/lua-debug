@@ -229,6 +229,7 @@ namespace vscode
 		, session_()
 		, endpoint_(ep)
 	{
+		net::socket::initialize();
 		base_type::open();
 	}
 
@@ -262,6 +263,7 @@ namespace vscode
 	void server::event_close()
 	{
 		session_.reset();
+		base_type::event_close();
 	}
 
 	bool server::output(const wprotocol& wp)
@@ -312,7 +314,6 @@ namespace vscode
 		, server_(new server(poller_, net::endpoint(ip, port)))
 		, kill_process_when_close_(false)
 	{
-		net::socket::initialize();
 		server_->listen();
 	}
 
