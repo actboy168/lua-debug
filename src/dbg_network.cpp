@@ -66,9 +66,9 @@ namespace vscode
 		typedef net::tcp::listener base_type;
 
 	public:
-		server(net::poller_t* poll);
+		server(net::poller_t* poll, const net::endpoint& ep);
 		~server();
-		bool      listen(const net::endpoint& ep);
+		bool      listen();
 		bool      output(const wprotocol& wp);
 		rprotocol input();
 		bool      input_empty()	const;
@@ -83,6 +83,7 @@ namespace vscode
 	private:
 		std::unique_ptr<session> session_;
 		std::string              schema_file_;
+		net::endpoint            endpoint_;
 	};
 
 	session::session(server* server, net::poller_t* poll)
@@ -223,11 +224,12 @@ namespace vscode
 		return true;
 	}
 
-	server::server(net::poller_t* poll)
+	server::server(net::poller_t* poll, const net::endpoint& ep)
 		: base_type(poll)
 		, session_()
+		, endpoint_(ep)
 	{
-
+		base_type::open();
 	}
 
 	server::~server()
@@ -237,11 +239,9 @@ namespace vscode
 			session_->close();
 	}
 
-	bool server::listen(const net::endpoint& ep)
+	bool server::listen()
 	{
-		base_type::open();
-		base_type::listen(ep, std::bind(&server::event_accept, this, std::placeholders::_1, std::placeholders::_2));
-		return base_type::sock != net::socket::retired_fd;
+		return base_type::listen(endpoint_, std::bind(&server::event_accept, this, std::placeholders::_1, std::placeholders::_2));
 	}
 
 	void server::event_accept(net::socket::fd_t fd, const net::endpoint& ep)
@@ -309,11 +309,11 @@ namespace vscode
 
 	network::network(const char* ip, uint16_t port)
 		: poller_(new net::poller_t)
-		, server_(new server(poller_))
+		, server_(new server(poller_, net::endpoint(ip, port)))
 		, kill_process_when_close_(false)
 	{
 		net::socket::initialize();
-		server_->listen(net::endpoint(ip, port));
+		server_->listen();
 	}
 
 	network::~network()
@@ -324,6 +324,9 @@ namespace vscode
 
 	void network::update(int ms)
 	{
+		if (!server_->is_listening()) {
+			server_->listen();
+		}
 		poller_->wait(1000, ms);
 	}
 

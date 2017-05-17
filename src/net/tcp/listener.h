@@ -35,9 +35,17 @@ namespace net { namespace tcp {
 			event_type::sock = socket::retired_fd;
 		}
 
+		~listener_t()
+		{
+			if (is_listening())
+			{
+				close();
+			}
+		}
+
 		int open()
 		{
-			if (stat_ != e_idle)
+			if (is_listening())
 			{
 				close();
 			}
@@ -58,7 +66,7 @@ namespace net { namespace tcp {
 			return 0;
 		}
 
-		void listen(const endpoint& addr, std::function<void(socket::fd_t, const endpoint&)> connected)
+		bool listen(const endpoint& addr, std::function<void(socket::fd_t, const endpoint&)> connected)
 		{
 			assert(stat_ == e_idle);
 			assert(!!connected);
@@ -70,6 +78,7 @@ namespace net { namespace tcp {
 				stat_ = e_listening;
 				base_t::set_fd(event_type::sock);
 				base_t::set_pollin();
+				return true;
 			}
 			else
 			{
@@ -78,6 +87,7 @@ namespace net { namespace tcp {
 				{
 					event_close();
 				}
+				return false;
 			}
 		}
 
@@ -122,6 +132,11 @@ namespace net { namespace tcp {
 
 		void event_timer(uint64_t id)
 		{ }
+
+		bool is_listening() const
+		{
+			return stat_ == e_listening;
+		}
 
 	protected:
 		std::function<void(socket::fd_t, const endpoint&)> connected_;
