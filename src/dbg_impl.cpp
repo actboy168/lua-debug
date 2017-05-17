@@ -57,9 +57,11 @@ namespace vscode
 		stack_.clear();
 		seq = 1;
 		stacklevel_.clear();
-		watch_.reset(); 
+		watch_.reset();
+#if !defined(DEBUGGER_DISABLE_LAUNCH)
 		update_redirect();
 		stderr_.reset();
+#endif
 	}
 
 	bool debugger_impl::update_main(rprotocol& req, bool& quit)
@@ -168,7 +170,9 @@ namespace vscode
 		while (!quit)
 		{
 			custom_->update_stop();
+#if !defined(DEBUGGER_DISABLE_LAUNCH)
 			update_redirect();
+#endif
 			network_->update(0);
 
 			rprotocol req = network_->input();
@@ -206,7 +210,9 @@ namespace vscode
 			return;
 		}
 
+#if !defined(DEBUGGER_DISABLE_LAUNCH)
 		update_redirect();
+#endif
 		network_->update(0);
 		if (is_state(state::birth))
 		{
@@ -238,24 +244,14 @@ namespace vscode
 				response_error(req, format("%s not yet implemented", req["command"].GetString()).c_str());
 				return;
 			}
-
+#if !defined(DEBUGGER_DISABLE_LAUNCH)
 			lock.unlock();
 			update_launch();
+#endif
 		}
 		else if (is_state(state::terminated))
 		{
 			set_state(state::birth);
-		}
-	}
-	void debugger_impl::update_redirect()
-	{
-		if (stderr_) {
-			size_t n = stderr_->peek();
-			if (n > 0) {
-				hybridarray<char, 1024> buf(n);
-				stderr_->read(buf.data(), buf.size());
-				output("stderr", buf.data(), buf.size());
-			}
 		}
 	}
 
@@ -383,19 +379,23 @@ namespace vscode
 		, cur_source_(0)
 		, exception_(false)
 		, attachL_(0)
-		, launchL_(0)
 		, hookL_(0)
+#if !defined(DEBUGGER_DISABLE_LAUNCH)
+		, launchL_(0)
 		, launch_console_()
+#endif
 		, allowhook_(true)
 		, thread_(mode == threadmode::async ? (dbg_thread*)new async(std::bind(&debugger_impl::update, this)): (dbg_thread*)new sync)
 		, main_dispatch_
 		({
+#if !defined(DEBUGGER_DISABLE_LAUNCH)
 			{ "launch", DBG_REQUEST_MAIN(request_launch) },
+			{ "configurationDone", DBG_REQUEST_MAIN(request_configuration_done) },
+#endif
 			{ "attach", DBG_REQUEST_MAIN(request_attach) },
 			{ "disconnect", DBG_REQUEST_MAIN(request_disconnect) },
 			{ "setBreakpoints", DBG_REQUEST_MAIN(request_set_breakpoints) },
 			{ "setExceptionBreakpoints", DBG_REQUEST_MAIN(request_set_exception_breakpoints) },
-			{ "configurationDone", DBG_REQUEST_MAIN(request_configuration_done) },
 			{ "pause", DBG_REQUEST_MAIN(request_pause) },
 		})
 		, hook_dispatch_

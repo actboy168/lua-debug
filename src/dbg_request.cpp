@@ -2,8 +2,7 @@
 #include "dbg_protocol.h"  
 #include "dbg_io.h"
 #include "dbg_variables.h"	
-#include "dbg_format.h"		
-#include "dbg_delayload.h"
+#include "dbg_format.h"
 
 namespace vscode
 {
@@ -129,34 +128,6 @@ namespace vscode
 		}
 	}
 
-	bool debugger_impl::request_launch(rprotocol& req) {
-		cache_launch_ = rprotocol();
-		if (!is_state(state::initialized)) {
-			response_error(req, "not initialized or unexpected state");
-			return false;
-		}
-		auto& args = req["arguments"];
-		if (args.HasMember("runtimeExecutable") && args["runtimeExecutable"].IsString()) {
-			cache_launch_ = std::move(req);
-			return false;
-		}
-		if (!args.HasMember("program") || !args["program"].IsString()) {
-			response_error(req, "Launch failed");
-			return false;
-		}
-#if defined(DEBUGGER_DELAYLOAD_LUA)	   
-		if (args.HasMember("luadll")) {
-			delayload::set_luadll(vscode::u2w(args["luadll"].Get<std::string>()));
-		}
-#endif		
-		initialize_sourcemaps(args);
-		if (args.HasMember("cwd") && args["cwd"].IsString()) {
-			fs::current_path(fs::path(u2w(args["cwd"].Get<std::string>())));
-		}
-		cache_launch_ = std::move(req);
-		return false;
-	}
-
 	bool debugger_impl::request_attach(rprotocol& req)
 	{
 		if (!is_state(state::initialized) || !attachL_) {
@@ -183,7 +154,9 @@ namespace vscode
 			set_state(state::running);
 		}
 		open_hook(attachL_);
+#if !defined(DEBUGGER_DISABLE_LAUNCH)
 		cache_launch_ = rprotocol();
+#endif
 		return !stopOnEntry;
 	}
 
@@ -476,15 +449,6 @@ namespace vscode
 			res("type").String(var.type);
 		});
 		return false;
-	}
-
-	bool debugger_impl::request_configuration_done(rprotocol& req)
-	{
-		response_success(req);
-		if (cache_launch_.IsNull()) {
-			return false;
-		}
-		return request_launch_done(cache_launch_);
 	}
 
 	bool debugger_impl::request_disconnect(rprotocol& req)

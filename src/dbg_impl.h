@@ -17,8 +17,10 @@
 #include "dbg_enum.h"   
 #include "dbg_watchs.h"
 #include "dbg_protocol.h"
-#include "dbg_redirect.h"
 #include "debugger.h"
+#if !defined(DEBUGGER_DISABLE_LAUNCH)
+#include "dbg_redirect.h"
+#endif
 
 namespace vscode
 {
@@ -74,8 +76,6 @@ namespace vscode
 	private:
 		bool request_initialize(rprotocol& req);
 		bool request_set_breakpoints(rprotocol& req);
-		bool request_configuration_done(rprotocol& req);
-		bool request_launch(rprotocol& req);
 		bool request_attach(rprotocol& req);
 		bool request_disconnect(rprotocol& req);
 		bool request_pause(rprotocol& req);
@@ -113,12 +113,16 @@ namespace vscode
 				for (auto _ : res("body").Object())
 				{
 					res("category").String(category);
+#if !defined(DEBUGGER_DISABLE_LAUNCH)
 					if (launch_console_ == "ansi") {
 						res("output").String(vscode::a2u(msg));
 					}
 					else {
 						res("output").String(msg);
 					}
+#else
+					res("output").String(msg);
+#endif
 				}
 			}
 			network_->output(res);
@@ -139,11 +143,16 @@ namespace vscode
 		void close_hook();
 		bool update_main(rprotocol& req, bool& quit);
 		bool update_hook(rprotocol& req, lua_State *L, lua_Debug *ar, bool& quit);
-		void update_launch();
-		void init_redirector(rprotocol& req, lua_State* L);
-		void update_redirect();
 		void initialize_sourcemaps(rapidjson::Value& args);
+
+#if !defined(DEBUGGER_DISABLE_LAUNCH)
+		bool request_configuration_done(rprotocol& req);
+		bool request_launch(rprotocol& req);
 		bool request_launch_done(rprotocol& req);
+		void init_redirector(rprotocol& req, lua_State* L);
+		void update_launch();
+		void update_redirect();
+#endif
 
 	private:
 		int64_t            seq;
@@ -160,17 +169,19 @@ namespace vscode
 		custom*            custom_;
 		asmjit::JitRuntime asm_jit_;
 		lua_Hook           asm_func_;
-		rprotocol          cache_launch_;
 		bool               has_source_;
 		bp_source*         cur_source_;
 		bool               exception_;
 		lua_State*         attachL_;
-		lua_State*         launchL_;
 		lua_State*         hookL_;
-		std::string        launch_console_;
 		dbg_thread*        thread_;
-		std::unique_ptr<redirector> stderr_;
 		std::atomic<bool>  allowhook_;
+#if !defined(DEBUGGER_DISABLE_LAUNCH)
+		rprotocol          cache_launch_;
+		lua_State*         launchL_;
+		std::string        launch_console_;
+		std::unique_ptr<redirector> stderr_;
+#endif
 		std::map<std::string, std::function<bool(rprotocol&)>>                            main_dispatch_;
 		std::map<std::string, std::function<bool(rprotocol&, lua_State*, lua_Debug *ar)>> hook_dispatch_;
 	};

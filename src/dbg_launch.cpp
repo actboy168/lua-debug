@@ -1,9 +1,12 @@
+#if !defined(DEBUGGER_DISABLE_LAUNCH)
+
 #include <lua.hpp>
 #include <string>
 #include "dbg_impl.h"
 #include "dbg_unicode.h"
 #include "dbg_format.h"
 #include "dbg_io.h"
+#include "dbg_delayload.h"
 
 namespace vscode
 {
@@ -62,6 +65,43 @@ namespace vscode
 			stderr_.reset(new redirector);
 			stderr_->open("stderr", std_fd::STDERR);
 		}
+	}
+
+	bool debugger_impl::request_launch(rprotocol& req) {
+		cache_launch_ = rprotocol();
+		if (!is_state(state::initialized)) {
+			response_error(req, "not initialized or unexpected state");
+			return false;
+		}
+		auto& args = req["arguments"];
+		if (args.HasMember("runtimeExecutable") && args["runtimeExecutable"].IsString()) {
+			cache_launch_ = std::move(req);
+			return false;
+		}
+		if (!args.HasMember("program") || !args["program"].IsString()) {
+			response_error(req, "Launch failed");
+			return false;
+		}
+#if defined(DEBUGGER_DELAYLOAD_LUA)	   
+		if (args.HasMember("luadll")) {
+			delayload::set_luadll(vscode::u2w(args["luadll"].Get<std::string>()));
+		}
+#endif		
+		initialize_sourcemaps(args);
+		if (args.HasMember("cwd") && args["cwd"].IsString()) {
+			fs::current_path(fs::path(u2w(args["cwd"].Get<std::string>())));
+		}
+		cache_launch_ = std::move(req);
+		return false;
+	}
+
+	bool debugger_impl::request_configuration_done(rprotocol& req)
+	{
+		response_success(req);
+		if (cache_launch_.IsNull()) {
+			return false;
+		}
+		return request_launch_done(cache_launch_);
 	}
 
 	bool debugger_impl::request_launch_done(rprotocol& req) {
@@ -184,4 +224,18 @@ namespace vscode
 			lua_close(L);
 		}
 	}
+
+	void debugger_impl::update_redirect()
+	{
+		if (stderr_) {
+			size_t n = stderr_->peek();
+			if (n > 0) {
+				hybridarray<char, 1024> buf(n);
+				stderr_->read(buf.data(), buf.size());
+				output("stderr", buf.data(), buf.size());
+			}
+		}
+	}
 }
+
+#endif
