@@ -173,10 +173,10 @@ namespace vscode
 	bool debugger_impl::request_stack_trace(rprotocol& req, lua_State* L, lua_Debug *ar) {
 		response_success(req, [&](wprotocol& res)
 		{
-			auto& args = req["arguments"];
-			int levels = args["levels"].GetInt();
 			lua_Debug entry;
-			int depth = 0;
+			auto& args = req["arguments"];
+			int levels = args.HasMember("levels") ? args["levels"].GetInt(): 20;
+			int depth = args.HasMember("startFrame") ? args["startFrame"].GetInt() : 0;
 			int n = 0;
 			for (auto _ : res("stackFrames").Array())
 			{
