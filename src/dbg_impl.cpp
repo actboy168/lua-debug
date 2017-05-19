@@ -4,6 +4,7 @@
 #include "dbg_format.h"
 #include <thread>
 #include <atomic>
+#include <net/datetime/clock.h>
 
 namespace vscode
 {
@@ -118,7 +119,7 @@ namespace vscode
 		bool bp = false;
 		if (is_state(state::running)) {
 			if (!check_breakpoint(L, ar)) {
-				return;
+				return thread_->update();
 			}
 			bp = true;
 		}
@@ -127,7 +128,7 @@ namespace vscode
 			if (is_step(step::out) || is_step(step::over)) {
 				if (!check_breakpoint(L, ar)) {
 					if (!check_step(L, ar)) {
-						return;
+						return thread_->update();
 					}
 				}
 				else {
@@ -141,7 +142,7 @@ namespace vscode
 			step_in();
 		}
 
-		loop(L, ar);
+		run_stopped(L, ar);
 	}
 
 	void debugger_impl::exception(lua_State *L, const char* msg)
@@ -159,12 +160,12 @@ namespace vscode
 		{
 			event_stopped("exception", msg);
 			step_in();
-			loop(L, &ar);
+			run_stopped(L, &ar);
 		}
 		allowhook_ = true;
 	}
 
-	void debugger_impl::loop(lua_State *L, lua_Debug *ar)
+	void debugger_impl::run_stopped(lua_State *L, lua_Debug *ar)
 	{
 		bool quit = false;
 		while (!quit)
@@ -193,23 +194,20 @@ namespace vscode
 					continue;
 				}
 			}
-			if (update_main(req, quit)) {
-				continue;
-			}
-			if (update_hook(req, L, ar, quit)) {
-				continue;
+			else {
+				if (update_main(req, quit)) {
+					continue;
+				}
+				if (update_hook(req, L, ar, quit)) {
+					continue;
+				}
 			}
 			response_error(req, format("%s not yet implemented", req["command"].GetString()).c_str());
 		}
 	}
 
-	void debugger_impl::update()
+	void debugger_impl::run_idle()
 	{
-		std::unique_lock<dbg_thread> lock(*thread_, std::try_to_lock_t());
-		if (!lock) {
-			return;
-		}
-
 #if !defined(DEBUGGER_DISABLE_LAUNCH)
 		update_redirect();
 #endif
@@ -244,15 +242,26 @@ namespace vscode
 				response_error(req, format("%s not yet implemented", req["command"].GetString()).c_str());
 				return;
 			}
-#if !defined(DEBUGGER_DISABLE_LAUNCH)
-			lock.unlock();
-			update_launch();
-#endif
 		}
 		else if (is_state(state::terminated))
 		{
 			set_state(state::birth);
 		}
+	}
+
+	void debugger_impl::update()
+	{
+		{
+			std::unique_lock<dbg_thread> lock(*thread_, std::try_to_lock_t());
+			if (!lock) {
+				return;
+			}
+			run_idle();
+		}
+
+#if !defined(DEBUGGER_DISABLE_LAUNCH)
+		update_launch();
+#endif
 	}
 
 	void debugger_impl::attach_lua(lua_State* L, bool pause)
@@ -344,6 +353,7 @@ namespace vscode
 		void lock() { return mtx_.lock(); }
 		bool try_lock() { return mtx_.try_lock(); }
 		void unlock() { return mtx_.unlock(); }
+		void update() { }
 
 		std::mutex  mtx_;
 		std::atomic<bool> exit_;
@@ -354,10 +364,26 @@ namespace vscode
 	struct sync
 		: public dbg_thread
 	{
+		sync(std::function<void()> const& threadfunc)
+			: func_(threadfunc)
+			, time_()
+			, last_(time_.now_ms())
+		{ }
+
 		void start() {}
 		void lock() {}
 		bool try_lock() { return true; }
 		void unlock() {}
+		void update() {
+			uint64_t now = time_.now_ms();
+			if (now - last_ > 100) {
+				now = last_;
+				func_();
+			}
+		}
+		std::function<void()>  func_;
+		net::datetime::clock_t time_;
+		uint64_t               last_;
 	};
 
 	debugger_impl::debugger_impl(io* io, threadmode mode)
@@ -385,7 +411,9 @@ namespace vscode
 		, launch_console_()
 #endif
 		, allowhook_(true)
-		, thread_(mode == threadmode::async ? (dbg_thread*)new async(std::bind(&debugger_impl::update, this)): (dbg_thread*)new sync)
+		, thread_(mode == threadmode::async 
+			? (dbg_thread*)new async(std::bind(&debugger_impl::update, this))
+			: (dbg_thread*)new sync(std::bind(&debugger_impl::run_idle, this)))
 		, main_dispatch_
 		({
 #if !defined(DEBUGGER_DISABLE_LAUNCH)

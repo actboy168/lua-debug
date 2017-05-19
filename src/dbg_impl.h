@@ -31,6 +31,7 @@ namespace vscode
 	struct dbg_thread
 	{
 		virtual void start() = 0;
+		virtual void update() = 0;
 		virtual void lock() = 0;
 		virtual bool try_lock() = 0;
 		virtual void unlock() = 0;
@@ -56,7 +57,8 @@ namespace vscode
 		~debugger_impl();
 		void hook(lua_State *L, lua_Debug *ar);
 		void exception(lua_State *L, const char* msg);
-		void loop(lua_State *L, lua_Debug *ar);
+		void run_stopped(lua_State *L, lua_Debug *ar);
+		void run_idle();
 		void update();
 		void attach_lua(lua_State* L, bool pause);
 		void detach_lua(lua_State* L);
