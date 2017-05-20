@@ -11,7 +11,8 @@ int main()
 	luaL_openlibs(L);
 
 	vscode::network  network("0.0.0.0", 4278);
-	vscode::debugger debugger(L, &network);
+	vscode::debugger debugger(&network, vscode::threadmode::sync);
+	debugger.attach_lua(L, true);
 	for (;;)
 	{
 		for (int i = 0; i < 100; ++i)
@@ -22,10 +23,9 @@ int main()
 
 		if (luaL_dostring(L,
 			R"(
-				local a = 1
-				local b = 2
-				print(a, b)
-				print('ok')
+for i = 1, 10 do
+    print('hello', i)
+end
 			)"))
 		{
 			printf("%s\n", lua_tostring(L, -1));

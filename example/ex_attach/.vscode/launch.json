@@ -1,0 +1,13 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "attach",
+            "type": "lua",
+            "request": "attach",
+            "stopOnEntry": true,
+            "ip": "localhost",
+            "port": 4278
+        }
+    ]
+}

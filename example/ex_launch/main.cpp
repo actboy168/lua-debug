@@ -7,11 +7,8 @@
 
 int main()
 {
-	lua_State *L = luaL_newstate();
-	luaL_openlibs(L);
-
 	vscode::network  network("0.0.0.0", 4278);
-	vscode::debugger debugger(L, &network);
+	vscode::debugger debugger(&network, vscode::threadmode::sync);
 	for (;;)
 	{
 		debugger.update();

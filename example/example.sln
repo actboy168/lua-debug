@@ -1,19 +1,17 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26403.7
+VisualStudioVersion = 15.0.26430.6
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ex_launch", "ex_launch\ex_launch.vcxproj", "{9022BEF7-18C3-47C0-BE1A-C24B82E3E5FA}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "luacore", "..\project\luacore.vcxproj", "{B84F7231-16CE-41D8-8C08-7B523FF4225B}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vscode-debug", "..\project\vscode-debug.vcxproj", "{9FD838AC-A5A2-4A24-8166-105BA0D8A973}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ex_attach", "ex_attach\ex_attach.vcxproj", "{4451C830-73F4-4914-BBD8-25BFDF489C2D}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "lib", "lib", "{9303C96F-05E2-46F2-A922-35F54AD0EE76}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "asmjit", "..\project\asmjit.vcxproj", "{092C8C20-AB98-456A-A63E-0B61E4BFE256}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "debugger", "..\project\debugger.vcxproj", "{9FD838AC-A5A2-4A24-8166-105BA0D8A973}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -29,18 +27,14 @@ Global
 		{B84F7231-16CE-41D8-8C08-7B523FF4225B}.Debug|Win32.Build.0 = Debug|Win32
 		{B84F7231-16CE-41D8-8C08-7B523FF4225B}.Release|Win32.ActiveCfg = Release|Win32
 		{B84F7231-16CE-41D8-8C08-7B523FF4225B}.Release|Win32.Build.0 = Release|Win32
-		{9FD838AC-A5A2-4A24-8166-105BA0D8A973}.Debug|Win32.ActiveCfg = Debug|Win32
-		{9FD838AC-A5A2-4A24-8166-105BA0D8A973}.Debug|Win32.Build.0 = Debug|Win32
-		{9FD838AC-A5A2-4A24-8166-105BA0D8A973}.Release|Win32.ActiveCfg = Release|Win32
-		{9FD838AC-A5A2-4A24-8166-105BA0D8A973}.Release|Win32.Build.0 = Release|Win32
 		{4451C830-73F4-4914-BBD8-25BFDF489C2D}.Debug|Win32.ActiveCfg = Debug|Win32
 		{4451C830-73F4-4914-BBD8-25BFDF489C2D}.Debug|Win32.Build.0 = Debug|Win32
 		{4451C830-73F4-4914-BBD8-25BFDF489C2D}.Release|Win32.ActiveCfg = Release|Win32
 		{4451C830-73F4-4914-BBD8-25BFDF489C2D}.Release|Win32.Build.0 = Release|Win32
-		{092C8C20-AB98-456A-A63E-0B61E4BFE256}.Debug|Win32.ActiveCfg = Debug|Win32
-		{092C8C20-AB98-456A-A63E-0B61E4BFE256}.Debug|Win32.Build.0 = Debug|Win32
-		{092C8C20-AB98-456A-A63E-0B61E4BFE256}.Release|Win32.ActiveCfg = Release|Win32
-		{092C8C20-AB98-456A-A63E-0B61E4BFE256}.Release|Win32.Build.0 = Release|Win32
+		{9FD838AC-A5A2-4A24-8166-105BA0D8A973}.Debug|Win32.ActiveCfg = Debug|Win32
+		{9FD838AC-A5A2-4A24-8166-105BA0D8A973}.Debug|Win32.Build.0 = Debug|Win32
+		{9FD838AC-A5A2-4A24-8166-105BA0D8A973}.Release|Win32.ActiveCfg = Release|Win32
+		{9FD838AC-A5A2-4A24-8166-105BA0D8A973}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -48,6 +42,5 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{B84F7231-16CE-41D8-8C08-7B523FF4225B} = {9303C96F-05E2-46F2-A922-35F54AD0EE76}
 		{9FD838AC-A5A2-4A24-8166-105BA0D8A973} = {9303C96F-05E2-46F2-A922-35F54AD0EE76}
-		{092C8C20-AB98-456A-A63E-0B61E4BFE256} = {9303C96F-05E2-46F2-A922-35F54AD0EE76}
 	EndGlobalSection
 EndGlobal
