@@ -120,7 +120,7 @@ namespace vscode
 	void session::event_close()
 	{
 		base_type::event_close();
-		server_->event_close();
+		server_->close_session();
 	}
 
 	bool session::event_in()
@@ -298,7 +298,8 @@ namespace vscode
 	{
 		if (!session_)
 			return;
-		session_->close();
+		std::unique_ptr<session> s(session_.release());
+		s->close();
 	}
 
 	uint16_t server::get_port() const
