@@ -200,10 +200,6 @@ namespace vscode
 					request_initialize(req);
 					continue;
 				}
-				else if (req["command"] == "disconnect") {
-					request_disconnect(req);
-					continue;
-				}
 			}
 			else {
 				if (update_main(req, quit)) {
@@ -234,10 +230,9 @@ namespace vscode
 			}
 			if (req["command"] == "initialize") {
 				request_initialize(req);
+				return;
 			}
-			else if (req["command"] == "disconnect") {
-				request_disconnect(req);
-			}
+			response_error(req, format("%s not yet implemented", req["command"].GetString()).c_str());
 		}
 		else if (is_state(state::initialized) || is_state(state::running) || is_state(state::stepping))
 		{
