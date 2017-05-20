@@ -64,7 +64,7 @@ struct lua_newstate
 };
 
 struct luaL_newstate
-	: public hook_helper<lua_newstate>
+	: public hook_helper<luaL_newstate>
 {
 	static void* __cdecl fake()
 	{
