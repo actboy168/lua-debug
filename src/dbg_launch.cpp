@@ -54,11 +54,26 @@ namespace vscode
 			launch_console_ = args["console"].Get<std::string>();
 		}
 
-		if (launch_console_ != "none") {
-			stdout_.reset(new redirector);
-			stdout_->open("stdout", std_fd::STDOUT);
-			stderr_.reset(new redirector);
-			stderr_->open("stderr", std_fd::STDERR);
+		if (req.HasMember("__stdout")) {
+			if (launch_console_ == "none") {
+				lua_pushcclosure(L, print_empty, 0);
+				lua_setglobal(L, "print");
+			}
+			else {
+				lua_pushlightuserdata(L, this);
+				lua_pushcclosure(L, print, 1);
+				lua_setglobal(L, "print");
+				stderr_.reset(new redirector);
+				stderr_->open("stderr", std_fd::STDERR);
+			}
+		}
+		else {
+			if (launch_console_ != "none") {
+				stdout_.reset(new redirector);
+				stdout_->open("stdout", std_fd::STDOUT);
+				stderr_.reset(new redirector);
+				stderr_->open("stderr", std_fd::STDERR);
+			}
 		}
 	}
 
