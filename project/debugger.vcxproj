@@ -112,6 +112,7 @@
     <ClInclude Include="..\src\dbg_path.h" />
     <ClInclude Include="..\src\dbg_pathconvert.h" />
     <ClInclude Include="..\src\dbg_redirect.h" />
+    <ClInclude Include="..\src\dbg_thread.h" />
     <ClInclude Include="..\src\dbg_unicode.h" />
     <ClInclude Include="..\src\dbg_watchs.h" />
     <ClInclude Include="..\src\debugger.h" />

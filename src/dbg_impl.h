@@ -30,6 +30,7 @@ namespace vscode
 
 	struct dbg_thread
 	{
+		virtual threadmode mode() const = 0;
 		virtual void start() = 0;
 		virtual void update() = 0;
 		virtual void lock() = 0;
@@ -178,6 +179,7 @@ namespace vscode
 		lua_State*         hookL_;
 		dbg_thread*        thread_;
 		std::atomic<bool>  allowhook_;
+		std::function<void()> attach_callback_;
 #if !defined(DEBUGGER_DISABLE_LAUNCH)
 		rprotocol          cache_launch_;
 		lua_State*         launchL_;

@@ -2,9 +2,9 @@
 #include "dbg_protocol.h"  	
 #include "dbg_io.h" 
 #include "dbg_format.h"
+#include "dbg_thread.h"
 #include <thread>
 #include <atomic>
-#include <net/datetime/clock.h>
 
 namespace vscode
 {
@@ -268,7 +268,16 @@ namespace vscode
 	{
 		attachL_ = L;
 		if (pause && L) {
-			open_hook(L);
+			open_hook(L);	
+
+			if (thread_->mode() == threadmode::async) {
+				semaphore sem;
+				attach_callback_ = [&]() {
+					sem.signal();
+				};
+				sem.wait();
+				attach_callback_ = std::function<void()>();
+			}
 		}
 	}
 
@@ -319,73 +328,6 @@ namespace vscode
 #define DBG_REQUEST_MAIN(name) std::bind(&debugger_impl:: ## name, this, std::placeholders::_1)
 #define DBG_REQUEST_HOOK(name) std::bind(&debugger_impl:: ## name, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
 
-	struct async
-		: public dbg_thread
-	{
-		async(std::function<void()> const& threadfunc)
-			: mtx_()
-			, exit_(false)
-			, func_(threadfunc)
-			, thd_()
-		{ }
-
-		~async()
-		{
-			exit_ = true;
-			if (thd_) thd_->join();
-		}
-
-		void start() 
-		{
-			thd_.reset(new std::thread(std::bind(&async::run, this)));
-		}
-
-		void run()
-		{
-			for (
-				; !exit_
-				; std::this_thread::sleep_for(std::chrono::milliseconds(100)))
-			{
-				func_();
-			}
-		}
-
-		void lock() { return mtx_.lock(); }
-		bool try_lock() { return mtx_.try_lock(); }
-		void unlock() { return mtx_.unlock(); }
-		void update() { }
-
-		std::mutex  mtx_;
-		std::atomic<bool> exit_;
-		std::function<void()> func_;
-		std::unique_ptr<std::thread> thd_;
-	};
-
-	struct sync
-		: public dbg_thread
-	{
-		sync(std::function<void()> const& threadfunc)
-			: func_(threadfunc)
-			, time_()
-			, last_(time_.now_ms())
-		{ }
-
-		void start() {}
-		void lock() {}
-		bool try_lock() { return true; }
-		void unlock() {}
-		void update() {
-			uint64_t now = time_.now_ms();
-			if (now - last_ > 100) {
-				now = last_;
-				func_();
-			}
-		}
-		std::function<void()>  func_;
-		net::datetime::clock_t time_;
-		uint64_t               last_;
-	};
-
 	debugger_impl::debugger_impl(io* io, threadmode mode)
 		: seq(1)
 		, network_(io)
@@ -406,6 +348,7 @@ namespace vscode
 		, exception_(false)
 		, attachL_(0)
 		, hookL_(0)
+		, attach_callback_()
 #if !defined(DEBUGGER_DISABLE_LAUNCH)
 		, launchL_(0)
 		, launch_console_()

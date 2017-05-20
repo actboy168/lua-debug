@@ -154,6 +154,9 @@ namespace vscode
 			set_state(state::running);
 		}
 		open_hook(attachL_);
+		if (attach_callback_) {
+			attach_callback_();
+		}
 #if !defined(DEBUGGER_DISABLE_LAUNCH)
 		cache_launch_ = rprotocol();
 #endif

@@ -430,6 +430,9 @@
     <ClInclude Include="..\src\net\datetime\now.h">
       <Filter>libs\net\datetime</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\dbg_thread.h">
+      <Filter>inc</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\src\net\socket.inl">
