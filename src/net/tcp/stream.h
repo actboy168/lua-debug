@@ -30,6 +30,7 @@ namespace net { namespace tcp {
 			, remote_()
 			, sndbuf_()
 			, rcvbuf_()
+			, wait_close_(false)
 		{
 			event_type::sock = socket::retired_fd;
 		}
@@ -68,6 +69,10 @@ namespace net { namespace tcp {
 
 		size_t send(const char* buf, size_t buflen)
 		{
+			if (wait_close_)
+			{
+				return 0;
+			}
 			size_t r = sndbuf_.push(buf, buflen);
 			if (write_empty())
 			{
@@ -145,6 +150,7 @@ namespace net { namespace tcp {
 		{
 			if (sndbuf_.empty())
 			{
+				if (wait_close_) force_close();
 				return true;
 			}
 
@@ -167,11 +173,21 @@ namespace net { namespace tcp {
 			if (write_empty())
 			{
 				base_t::reset_pollout();
+				if (wait_close_) force_close();
 			}
 			return true;
 		}
 
 		void event_close()
+		{
+			wait_close_ = true;
+			if (sndbuf_.empty())
+			{
+				force_close();
+			}
+		}
+
+		void force_close()
 		{
 			NETLOG_INFO() << "socket(" << event_type::sock << ") close";
 			base_t::rm_fd();
@@ -194,6 +210,7 @@ namespace net { namespace tcp {
 		endpoint  remote_;
 		sndbuffer sndbuf_;
 		rcvbuffer rcvbuf_;
+		bool      wait_close_;
 	};
 	typedef stream_t<poller_t> stream;
 }}

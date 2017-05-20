@@ -68,6 +68,7 @@ namespace vscode
 	public:
 		server(net::poller_t* poll, const net::endpoint& ep);
 		~server();
+		void      update();
 		bool      listen();
 		bool      output(const wprotocol& wp);
 		rprotocol input();
@@ -84,6 +85,7 @@ namespace vscode
 		std::unique_ptr<session> session_;
 		std::string              schema_file_;
 		net::endpoint            endpoint_;
+		std::vector<std::unique_ptr<session>> clearlist_;
 	};
 
 	session::session(server* server, net::poller_t* poll)
@@ -240,6 +242,22 @@ namespace vscode
 			session_->close();
 	}
 
+	void server::update()
+	{
+		if (!is_listening()) {
+			listen();
+		}
+		for (auto& s = clearlist_.begin(); s != clearlist_.end();)
+		{
+			if ((*s)->sock == net::socket::retired_fd) {
+				s = clearlist_.erase(s);
+			}
+			else {
+				++s;
+			}
+		}
+	}
+
 	bool server::listen()
 	{
 		return base_type::listen(endpoint_, std::bind(&server::event_accept, this, std::placeholders::_1, std::placeholders::_2));
@@ -300,6 +318,7 @@ namespace vscode
 			return;
 		std::unique_ptr<session> s(session_.release());
 		s->close();
+		clearlist_.push_back(std::move(s));
 	}
 
 	uint16_t server::get_port() const
@@ -326,9 +345,7 @@ namespace vscode
 
 	void network::update(int ms)
 	{
-		if (!server_->is_listening()) {
-			server_->listen();
-		}
+		server_->update();
 		poller_->wait(1000, ms);
 	}
 
