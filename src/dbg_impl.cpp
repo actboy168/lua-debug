@@ -88,6 +88,15 @@ namespace vscode
 		return false;
 	}
 
+	static int get_stacklevel(lua_State* L)
+	{
+		lua_Debug ar;
+		int n;
+		for (n = 0; lua_getstack(L, n + 1, &ar) != 0; ++n)
+		{ }
+		return n;
+	}
+
 	void debugger_impl::hook(lua_State *L, lua_Debug *ar)
 	{
 		if (!allowhook_) { return; }
@@ -96,17 +105,18 @@ namespace vscode
 
 		if (ar->event == LUA_HOOKCALL)
 		{
-			stacklevel_[L]++;
+			stacklevel_[L] = get_stacklevel(L);
 			has_source_ = false;
 			return;
 		}
 		if (ar->event == LUA_HOOKRET)
 		{
-			if (stacklevel_[L] <= 1) {
-				stacklevel_.erase(L);
+			int n = get_stacklevel(L);
+			if (n != 1) {
+				stacklevel_[L] = n - 1;
 			}
 			else {
-				stacklevel_[L]--;
+				stacklevel_.erase(L);
 			}
 			has_source_ = false;
 			return;
