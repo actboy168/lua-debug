@@ -54,14 +54,9 @@ namespace vscode
 			launch_console_ = args["console"].Get<std::string>();
 		}
 
-		if (launch_console_ == "none") {
-			lua_pushcclosure(L, print_empty, 0);
-			lua_setglobal(L, "print");
-		}
-		else {
-			lua_pushlightuserdata(L, this);
-			lua_pushcclosure(L, print, 1);
-			lua_setglobal(L, "print");
+		if (launch_console_ != "none") {
+			stdout_.reset(new redirector);
+			stdout_->open("stdout", std_fd::STDOUT);
 			stderr_.reset(new redirector);
 			stderr_->open("stderr", std_fd::STDERR);
 		}
@@ -227,6 +222,14 @@ namespace vscode
 
 	void debugger_impl::update_redirect()
 	{
+		if (stdout_) {
+			size_t n = stdout_->peek();
+			if (n > 0) {
+				hybridarray<char, 1024> buf(n);
+				stdout_->read(buf.data(), buf.size());
+				output("stdout", buf.data(), buf.size());
+			}
+		}
 		if (stderr_) {
 			size_t n = stderr_->peek();
 			if (n > 0) {

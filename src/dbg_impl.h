@@ -184,6 +184,7 @@ namespace vscode
 		rprotocol          cache_launch_;
 		lua_State*         launchL_;
 		std::string        launch_console_;
+		std::unique_ptr<redirector> stdout_;
 		std::unique_ptr<redirector> stderr_;
 #endif
 		std::map<std::string, std::function<bool(rprotocol&)>>                            main_dispatch_;

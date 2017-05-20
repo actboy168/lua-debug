@@ -61,6 +61,7 @@ namespace vscode
 		watch_.reset();
 #if !defined(DEBUGGER_DISABLE_LAUNCH)
 		update_redirect();
+		stdout_.reset();
 		stderr_.reset();
 #endif
 	}
