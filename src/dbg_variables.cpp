@@ -99,6 +99,7 @@ namespace vscode
 		lua_pop(L, 2);
 		return false;
 	}
+	
 	bool can_extand(lua_State *L, int idx)
 	{
 		int type = lua_type(L, idx);
@@ -221,18 +222,18 @@ namespace vscode
 		return nullptr;
 	}
 
-	static void var_set_value_(variable& var, lua_State *L, int idx, pathconvert& pathconvert)
+	void variable::set_value(lua_State *L, int idx, pathconvert& pathconvert)
 	{
 		switch (lua_type(L, idx)) 
 		{
 		case LUA_TNUMBER:
 			if (lua_isinteger(L, idx))
 			{
-				var.value = format("%d", lua_tointeger(L, idx)); 
+				value = format("%d", lua_tointeger(L, idx)); 
 			}
 			else
 			{
-				var.value = format("%f", lua_tonumber(L, idx));
+				value = format("%f", lua_tonumber(L, idx));
 			}
 			return;
 		case LUA_TSTRING:
@@ -240,17 +241,17 @@ namespace vscode
 			size_t len = 0;
 			const char* str = lua_tolstring(L, idx, &len);
 			if (len < 256) {
-				var.value = format("'%s'", str);
+				value = format("'%s'", str);
 			} else {
-				var.value = format("'%s...'", std::string(str, 256));
+				value = format("'%s...'", std::string(str, 256));
 			}
 		}
 			return;
 		case LUA_TBOOLEAN:
-			var.value = lua_toboolean(L, idx) ? "true" : "false";
+			value = lua_toboolean(L, idx) ? "true" : "false";
 			return;
 		case LUA_TNIL:
-			var.value = "nil";
+			value = "nil";
 			return;
 		case LUA_TFUNCTION:
 		{
@@ -265,11 +266,11 @@ namespace vscode
 					const char* pos = skipline(entry.source, entry.linedefined);
 					if (pos)
 					{
-						var.value = pos;
+						value = pos;
 					}
 					else
 					{
-						var.value = format("[%s:%d]", entry.source, entry.linedefined);
+						value = format("[%s:%d]", entry.source, entry.linedefined);
 					}
 					return;
 				}
@@ -278,7 +279,7 @@ namespace vscode
 				custom::result r = pathconvert.eval_uncomplete(entry.source, client_path);
 				if (r == custom::result::sucess || r == custom::result::sucess_once)
 				{
-					var.value = format("[%s:%d]", client_path.string(), entry.linedefined);
+					value = format("[%s:%d]", client_path.string(), entry.linedefined);
 					return;
 				}
 			}
@@ -287,15 +288,15 @@ namespace vscode
 		default:
 			break;
 		}
-		var.value = format("%s: %p", luaL_typename(L, idx), lua_topointer(L, idx));
+		value = format("%s: %p", luaL_typename(L, idx), lua_topointer(L, idx));
 		return;
 	}
 
-	void var_set_type(variable& var, lua_State *L, int idx)
+	void variable::set_type(lua_State *L, int idx)
 	{
 		if (luaL_getmetafield(L, idx, "__name") != LUA_TNIL) {
 			if (lua_type(L, -1) == LUA_TSTRING)	  {
-				var.type = lua_tostring(L, -1);
+				type = lua_tostring(L, -1);
 				lua_pop(L, 1);
 				return;
 			}
@@ -303,24 +304,24 @@ namespace vscode
 		}
 		switch (lua_type(L, idx)) {
 		case LUA_TNUMBER:
-			var.type = lua_isinteger(L, idx) ? "integer" : "number";
+			type = lua_isinteger(L, idx) ? "integer" : "number";
 			return;
 		case LUA_TLIGHTUSERDATA:
-			var.type = "light userdata";
+			type = "light userdata";
 			return;
 		}
-		var.type = luaL_typename(L, idx);
+		type = luaL_typename(L, idx);
 	}
 
-	void var_set_value(variable& var, lua_State *L, int idx, pathconvert& pathconvert)
+	void variable::set(lua_State *L, int idx, pathconvert& pathconvert)
 	{
-		var_set_type(var, L, idx);
+		set_type(L, idx);
 		if (safe_callmeta(L, idx, "__tostring")) {
-			var_set_value_(var, L, -1, pathconvert);
+			set_value(L, -1, pathconvert);
 			lua_pop(L, 1);
 			return;
 		}
-		return var_set_value_(var, L, idx, pathconvert);
+		return set_value(L, idx, pathconvert);
 	}
 
 	static bool set_newvalue(lua_State* L, int oldtype, variable& var)
@@ -709,7 +710,7 @@ namespace vscode
 			}
 			variable var;
 			var.name = get_name(L, -2);
-			var_set_value(var, L, -1, pathconvert);
+			var.set(L, -1, pathconvert);
 			if (pos && can_extand(L, -1))
 			{
 				var.reference = pos | ((int64_t)n << ((2 + level) * 8));
@@ -733,7 +734,7 @@ namespace vscode
 				break;
 			variable var;
 			var.name = name;
-			var_set_value(var, L, -1, pathconvert);
+			var.set(L, -1, pathconvert);
 			if (pos && can_extand(L, lua_gettop(L)))
 			{
 				var.reference = pos | ((int64_t)n << ((2 + level) * 8));
@@ -757,7 +758,7 @@ namespace vscode
 		{
 			variable var;
 			var.name = "[metatable]";
-			var_set_value(var, L, -1, pathconvert);
+			var.set(L, -1, pathconvert);
 			if (pos && (lua_type(L, -1) == LUA_TTABLE))
 			{
 				var.reference = pos | ((int64_t)type_metatable << ((2 + level) * 8));
@@ -781,7 +782,7 @@ namespace vscode
 			{
 				variable var;
 				var.name = "[uservalue]";
-				var_set_value(var, L, -1, pathconvert);
+				var.set(L, -1, pathconvert);
 				if (pos && can_extand(L, -1))
 				{
 					var.reference = pos | ((int64_t)type_uservalue << ((2 + level) * 8));
@@ -823,7 +824,7 @@ namespace vscode
 					}
 				}
 			}
-			var_set_value(var, L, -1, pathconvert);
+			var.set(L, -1, pathconvert);
 			if (pos && can_extand(L, -1))
 			{
 				var.reference = pos | ((int64_t)n << ((2 + level) * 8));
@@ -861,7 +862,7 @@ namespace vscode
 					if (name) {
 						variable var;
 						var.name = name;
-						var_set_value(var, L, -1, pathconvert);
+						var.set(L, -1, pathconvert);
 						if (can_extand(L, lua_gettop(L)))
 						{
 							var.reference = (int)type | (depth << 8) | (n << 16);

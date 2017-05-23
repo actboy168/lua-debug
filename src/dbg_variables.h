@@ -36,9 +36,13 @@ namespace vscode
 		{
 			return name < that.name;
 		}
+
+		void set(lua_State *L, int idx, pathconvert& pathconvert); 
+
+	private:
+		void set_type(lua_State *L, int idx);
+		void set_value(lua_State *L, int idx, pathconvert& pathconvert);
 	};
-	void var_set_value(variable& var, lua_State *L, int idx, pathconvert& pathconvert);
-	bool can_extand(lua_State *L, int idx);
 
 	class variables
 	{
@@ -62,4 +66,6 @@ namespace vscode
 		size_t n;
 		int checkstack;
 	};
+
+	bool can_extand(lua_State *L, int idx);
 }
