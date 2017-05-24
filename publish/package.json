@@ -1,18 +1,18 @@
 {
     "name": "lua-debug",
     "displayName": "Lua 5.3 Debugger",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "publisher": "actboy168",
     "icon": "images/logo.png",
     "description": "Visual Studio Code debugger extension for Lua 5.3",
     "categories": [
         "Debuggers"
     ],
-	"keywords": [
-		"lua",
-		"debug",
-		"debuggers"
-	],
+    "keywords": [
+        "lua",
+        "debug",
+        "debuggers"
+    ],
     "author": {
         "name": "actboy168"
     },
@@ -99,8 +99,8 @@
                             "type": "lua",
                             "request": "launch",
                             "stopOnEntry": true,
-                            "runtimeExecutable" : "^\"\\${workspaceRoot}/lua.exe\"",
-                            "runtimeArgs" : "^\"\\${workspaceRoot}/${2:main.lua}\"",
+                            "runtimeExecutable": "^\"\\${workspaceRoot}/lua.exe\"",
+                            "runtimeArgs": "^\"\\${workspaceRoot}/${2:main.lua}\"",
                             "console": "utf8"
                         }
                     },
