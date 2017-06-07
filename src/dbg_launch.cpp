@@ -105,15 +105,6 @@ namespace vscode
 		return false;
 	}
 
-	bool debugger_impl::request_configuration_done(rprotocol& req)
-	{
-		response_success(req);
-		if (cache_launch_.IsNull()) {
-			return false;
-		}
-		return request_launch_done(cache_launch_);
-	}
-
 	bool debugger_impl::request_launch_done(rprotocol& req) {
 		auto& args = req["arguments"];
 		if (args.HasMember("runtimeExecutable") && args["runtimeExecutable"].IsString()) {

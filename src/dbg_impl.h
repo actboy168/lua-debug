@@ -80,6 +80,7 @@ namespace vscode
 		bool request_initialize(rprotocol& req);
 		bool request_set_breakpoints(rprotocol& req);
 		bool request_attach(rprotocol& req);
+		bool request_configuration_done(rprotocol& req);
 		bool request_disconnect(rprotocol& req);
 		bool request_pause(rprotocol& req);
 		bool request_set_exception_breakpoints(rprotocol& req);
@@ -149,7 +150,6 @@ namespace vscode
 		void initialize_sourcemaps(rapidjson::Value& args);
 
 #if !defined(DEBUGGER_DISABLE_LAUNCH)
-		bool request_configuration_done(rprotocol& req);
 		bool request_launch(rprotocol& req);
 		bool request_launch_done(rprotocol& req);
 		void init_redirector(rprotocol& req, lua_State* L);

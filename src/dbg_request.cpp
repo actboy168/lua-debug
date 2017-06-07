@@ -163,6 +163,18 @@ namespace vscode
 		return !stopOnEntry;
 	}
 
+	bool debugger_impl::request_configuration_done(rprotocol& req) {
+#if !defined(DEBUGGER_DISABLE_LAUNCH)
+		response_success(req);
+		if (cache_launch_.IsNull()) {
+			return false;
+		}
+		return request_launch_done(cache_launch_);
+#else
+		return false;
+#endif
+	}
+
 	bool debugger_impl::request_thread(rprotocol& req, lua_State* L, lua_Debug *ar) {
 		response_thread(req);
 		return false;

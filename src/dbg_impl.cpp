@@ -367,9 +367,9 @@ namespace vscode
 		({
 #if !defined(DEBUGGER_DISABLE_LAUNCH)
 			{ "launch", DBG_REQUEST_MAIN(request_launch) },
-			{ "configurationDone", DBG_REQUEST_MAIN(request_configuration_done) },
 #endif
 			{ "attach", DBG_REQUEST_MAIN(request_attach) },
+			{ "configurationDone", DBG_REQUEST_MAIN(request_configuration_done) },
 			{ "disconnect", DBG_REQUEST_MAIN(request_disconnect) },
 			{ "setBreakpoints", DBG_REQUEST_MAIN(request_set_breakpoints) },
 			{ "setExceptionBreakpoints", DBG_REQUEST_MAIN(request_set_exception_breakpoints) },
