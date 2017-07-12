@@ -13,8 +13,10 @@ This project aims to provide a debug adapter that allows Microsoft's Visual Stud
 * Remote debugging
 * Exception
 
-##Source
+## Source
+
 [GitHub](https://github.com/actboy168/vscode-lua-debug)
 
-##License
+## License
+
 [MIT](https://raw.githubusercontent.com/actboy168/vscode-lua-debug/master/LICENSE)
