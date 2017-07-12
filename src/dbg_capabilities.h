@@ -18,6 +18,7 @@ namespace vscode
 				res("supportsConfigurationDoneRequest").Bool(true);
 				res("supportsSetVariable").Bool(true);
 				res("supportsConditionalBreakpoints").Bool(true);
+				res("supportsDelayedStackTraceLoading").Bool(true);
 				for (auto _ : res("exceptionBreakpointFilters").Array())
 				{
 					for (auto _ : res.Object())
