@@ -82,7 +82,7 @@ namespace vscode
 	{
 		if (server_path[0] == '@')
 		{
-			fs::path srvpath = server_complete(fs::path(u2w(server_path.substr(1))));
+			fs::path srvpath = server_complete(fs::path(a2w(server_path.substr(1))));
 			for (auto& pair : sourcemaps_)
 			{
 				if (path_is_subpath(srvpath, pair.first))
