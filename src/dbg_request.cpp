@@ -311,10 +311,10 @@ namespace vscode
 		}
 		breakpoints_.clear(client_path);
 
-		std::vector<size_t> lines;
+		std::vector<unsigned int> lines;
 		for (auto& m : args["breakpoints"].GetArray())
 		{
-			size_t line = m["line"].GetUint();
+			unsigned int line = m["line"].GetUint();
 			lines.push_back(line);
 			if (!m.HasMember("condition"))
 			{
@@ -337,7 +337,7 @@ namespace vscode
 					{
 						res("path").String(w2u(client_path.wstring()));
 					}
-					res("line").Int(lines[d]);
+					res("line").Uint(lines[d]);
 				}
 			}
 		});

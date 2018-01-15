@@ -59,7 +59,7 @@ namespace vscode
 		}
 	}
 
-	void watchs::t_set(lua_State* L, int n)
+	void watchs::t_set(lua_State* L, size_t n)
 	{
 		int top1 = lua_gettop(L);
 		t_table(L);
@@ -69,7 +69,7 @@ namespace vscode
 		int top2 = lua_gettop(L);
 	}
 
-	void watchs::t_get(lua_State* L, int n)
+	void watchs::t_get(lua_State* L, size_t n)
 	{
 		int top1 = lua_gettop(L);
 		t_table(L);

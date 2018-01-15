@@ -34,7 +34,7 @@ namespace vscode
 			bool suc = rapidjson::UTF8<>::Decode(p, &codepoint);
 			if (suc && codepoint == 0)
 				break;
-			rapidjson::UTF16<>::Encode(ostream, suc ? codepoint : (unsigned)L"?");
+			rapidjson::UTF16<>::Encode(ostream, suc ? codepoint : (unsigned int)L'?');
 		}
 		return wstr;
 	}
@@ -54,7 +54,7 @@ namespace vscode
 			bool suc = rapidjson::UTF16<>::Decode(p, &codepoint);
 			if (suc && codepoint == 0)
 				break;
-			rapidjson::UTF8<>::Encode(ostream, suc ? codepoint : (unsigned)"?");
+			rapidjson::UTF8<>::Encode(ostream, suc ? codepoint : (unsigned int)'?');
 		}
 		return str;
 	}
@@ -70,13 +70,13 @@ namespace vscode
 		{
 			return L"";
 		}
-		int wlen = ::MultiByteToWideChar(CP_ACP, 0, str.data(), str.size(), NULL, 0);
+		int wlen = ::MultiByteToWideChar(CP_ACP, 0, str.data(), static_cast<int>(str.size()), NULL, 0);
 		if (wlen <= 0)
 		{
 			return L"";
 		}
 		std::vector<wchar_t> result(wlen);
-		::MultiByteToWideChar(CP_ACP, 0, str.data(), str.size(), result.data(), wlen);
+		::MultiByteToWideChar(CP_ACP, 0, str.data(), static_cast<int>(str.size()), result.data(), wlen);
 		return std::wstring(result.data(), result.size());
 	}
 
@@ -86,13 +86,13 @@ namespace vscode
 		{
 			return "";
 		}
-		int len = ::WideCharToMultiByte(CP_ACP, 0, wstr.data(), wstr.size(), NULL, 0, 0, 0);
+		int len = ::WideCharToMultiByte(CP_ACP, 0, wstr.data(), static_cast<int>(wstr.size()), NULL, 0, 0, 0);
 		if (len <= 0)
 		{
 			return "";
 		}
 		std::vector<char> result(len);
-		::WideCharToMultiByte(CP_ACP, 0, wstr.data(), wstr.size(), result.data(), len, 0, 0);
+		::WideCharToMultiByte(CP_ACP, 0, wstr.data(), static_cast<int>(wstr.size()), result.data(), len, 0, 0);
 		return std::string(result.data(), result.size());
 	}
 

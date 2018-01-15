@@ -94,7 +94,7 @@ namespace vscode
 		if (!peek())
 			return 0;
 		DWORD rlen = 0;
-		if (!ReadFile(pipe_.rd_, buf, len, &rlen, 0))
+		if (!ReadFile(pipe_.rd_, buf, static_cast<DWORD>(len), &rlen, 0))
 		{
 			return 0;
 		}

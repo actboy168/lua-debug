@@ -80,7 +80,7 @@ namespace vscode
 		template <class T>
 		bool String(const T& str)
 		{
-			return base_type::String(str.data(), str.size());
+			return base_type::String(str.data(), static_cast<rapidjson::SizeType>(str.size()));
 		}
 
 		typedef bool (wprotocol::*ItorT)();
