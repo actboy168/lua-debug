@@ -4,6 +4,7 @@
 #include "dbg_unicode.h"
 #include <algorithm>
 #include <assert.h>
+#include <regex>
 
 namespace vscode
 {
@@ -12,21 +13,45 @@ namespace vscode
 		, sourcemaps_()
 	{ }
 
-	void pathconvert::add_sourcemap(const fs::path& srv, const fs::path& cli)
+	void pathconvert::add_sourcemap(const std::string& srv, const std::string& cli)
 	{
-		if (srv.is_absolute())
-		{
-			sourcemaps_.push_back(std::make_pair(path_normalize(srv), cli));
+		try {
+			std::string re = srv;
+			re = std::regex_replace(re, std::regex(R"(\?)"), R"((.*))");
+			re = std::regex_replace(re, std::regex(R"(\\|/)"), R"([\\/])");
+			sourcemaps_.push_back(std::make_pair(
+				std::regex(re),
+				cli
+			));
 		}
-		else
-		{
-			sourcemaps_.push_back(std::make_pair(path_normalize(fs::absolute(srv, fs::current_path())), cli));
+		catch (...) {
 		}
 	}
 
 	void pathconvert::clear_sourcemap()
 	{
 		sourcemaps_.clear();
+	}
+
+	bool pathconvert::find_sourcemap(const std::string& srv, std::string& cli)
+	{
+		for (auto& it : sourcemaps_)
+		{
+			try {
+				std::smatch match;
+				if (std::regex_match(srv, match, it.first))
+				{
+					if (match.size() == 2) {
+						cli = std::regex_replace(it.second, std::regex("\\?"), match[1].str());
+						return true;
+					}
+				}
+			}
+			catch (...) {
+
+			}
+		}
+		return false;
 	}
 
 	bool pathconvert::fget(const std::string& server_path, fs::path*& client_path)
@@ -53,20 +78,14 @@ namespace vscode
 	{
 		if (server_path[0] == '@')
 		{
-			fs::path srvpath = server_complete(fs::path(a2w(server_path.substr(1))));
-			for (auto& pair : sourcemaps_)
+			std::string spath = server_path.substr(1);
+			std::string cpath;
+			if (find_sourcemap(spath, cpath))
 			{
-				if (path_is_subpath(srvpath, pair.first))
-				{
-					std::error_code ec;
-					client_path = path_uncomplete(srvpath, pair.first, ec);
-					assert(!ec);
-					return result::sucess;
-				}
+				client_path = path_normalize(u2w(cpath));
+				return result::sucess;
 			}
-			std::error_code ec;
-			client_path = path_uncomplete(srvpath, fs::current_path(), ec);
-			assert(!ec);
+			client_path = server_complete(fs::path(a2w(spath)));
 			return result::sucess;
 		}
 		else if (server_path[0] == '=')
@@ -77,24 +96,19 @@ namespace vscode
 		return result::sucess;
 	}
 
-
 	pathconvert::result pathconvert::eval(const std::string& server_path, fs::path& client_path)
 	{
 		if (server_path[0] == '@')
 		{
-			fs::path srvpath = server_complete(fs::path(a2w(server_path.substr(1))));
-			for (auto& pair : sourcemaps_)
+			std::string spath = server_path.substr(1);
+			std::string cpath;
+			if (find_sourcemap(spath, cpath))
 			{
-				if (path_is_subpath(srvpath, pair.first))
-				{
-					std::error_code ec;
-					client_path = path_normalize(pair.second / path_uncomplete(srvpath, pair.first, ec));
-					server2client_[server_path] = client_path;
-					assert(!ec);
-					return result::sucess;
-				}
+				client_path = path_normalize(u2w(cpath));
+				server2client_[server_path] = client_path;
+				return result::sucess;
 			}
-			client_path = path_normalize(srvpath);
+			client_path = server_complete(fs::path(a2w(spath)));
 			server2client_[server_path] = client_path;
 			return result::sucess;
 		}
@@ -110,7 +124,7 @@ namespace vscode
 			}
 			return r;
 		}
-		client_path = fs::path(u2w(server_path));
+		client_path = fs::path(a2w(server_path));
 		server2client_[server_path] = client_path;
 		return result::sucess;
 	}

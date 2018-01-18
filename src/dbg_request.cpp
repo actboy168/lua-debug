@@ -124,7 +124,7 @@ namespace vscode
 			{
 				continue;
 			}
-			pathconvert_.add_sourcemap(fs::path(u2w(eary[0].Get<std::string>())), fs::path(u2w(eary[1].Get<std::string>())));
+			pathconvert_.add_sourcemap(eary[0].Get<std::string>(), eary[1].Get<std::string>());
 		}
 	}
 
