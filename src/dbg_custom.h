@@ -11,18 +11,11 @@ namespace vscode
 	class custom
 	{
 	public:
-		enum class result
-		{
-			failed = 0,
-			sucess = 1,
-			failed_once = 2,
-			sucess_once = 3,
-		};
 		typedef std::vector<std::pair<std::regex, std::string>> sourcemap_t;
 
-		virtual result path_convert(const std::string& server_path, fs::path& client_path, const sourcemap_t& map, bool uncomplete)
+		virtual bool path_convert(const std::string& server_path, fs::path& client_path)
 		{
-			return result::failed;
+			return false;
 		}
 
 		virtual void set_state(state state)

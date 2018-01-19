@@ -12,7 +12,6 @@ namespace vscode
 	class pathconvert
 	{
 		typedef custom::sourcemap_t sourcemap_t;
-		typedef custom::result      result;
 
 	public:
 		pathconvert(debugger_impl* dbg);
@@ -20,9 +19,8 @@ namespace vscode
 		void   clear_sourcemap();
 		bool   find_sourcemap(const std::string& srv, std::string& cli);
 		bool   fget(const std::string& server_path, fs::path*& client_path);
-		result eval(const std::string& server_path, fs::path& client_path);
-		result get_or_eval(const std::string& server_path, fs::path& client_path);
-		result eval_uncomplete(const std::string& server_path, fs::path& client_path);
+		bool   eval(const std::string& server_path, fs::path& client_path);
+		bool   get_or_eval(const std::string& server_path, fs::path& client_path);
 
 	private:
 		fs::path server_complete(const fs::path& path);

@@ -128,26 +128,18 @@ namespace vscode
 		}
 
 		fs::path client_path;
-		custom::result r = pathconvert.eval(server_path, client_path);
-		switch (r)
-		{
-		case custom::result::failed:
-			server_map_.insert(std::make_pair(server_path, nullptr));
-			return 0;
-		case custom::result::failed_once:
-			return 0;
-		case custom::result::sucess:
-		case custom::result::sucess_once:
+		if (pathconvert.eval(server_path, client_path))
 		{
 			auto it = client_map_.find(client_path);
 			if (it != client_map_.end())
 			{
-				if (r == custom::result::sucess)
-					server_map_.insert(std::make_pair(server_path, it->second));
+				server_map_.insert(std::make_pair(server_path, it->second));
 				return it->second;
 			}
 		}
-		return 0;
+		else
+		{
+			server_map_.insert(std::make_pair(server_path, nullptr));
 		}
 		return 0;
 	}

@@ -276,8 +276,7 @@ namespace vscode
 				}
 
 				fs::path client_path;
-				custom::result r = pathconvert.eval_uncomplete(entry.source, client_path);
-				if (r == custom::result::sucess || r == custom::result::sucess_once)
+				if (pathconvert.eval(entry.source, client_path))
 				{
 					value = format("[%s:%d]", client_path.string(), entry.linedefined);
 					return;

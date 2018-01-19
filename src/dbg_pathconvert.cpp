@@ -71,11 +71,12 @@ namespace vscode
 		{
 			return path;
 		}
-		return path_normalize(fs::absolute(path, fs::current_path()));
+		return fs::absolute(path, fs::current_path());
 	}
 
-	pathconvert::result pathconvert::eval_uncomplete(const std::string& server_path, fs::path& client_path)
+	bool pathconvert::eval(const std::string& server_path, fs::path& client_path)
 	{
+		bool res = true;
 		if (server_path[0] == '@')
 		{
 			std::string spath = server_path.substr(1);
@@ -83,59 +84,31 @@ namespace vscode
 			if (find_sourcemap(spath, cpath))
 			{
 				client_path = path_normalize(u2w(cpath));
-				return result::sucess;
 			}
-			client_path = server_complete(fs::path(a2w(spath)));
-			return result::sucess;
+			else
+			{
+				client_path = path_normalize(server_complete(a2w(spath)));
+			}
 		}
 		else if (server_path[0] == '=')
 		{
-			return debugger_->custom_->path_convert(server_path, client_path, sourcemaps_, true);
+			res = debugger_->custom_->path_convert(server_path, client_path);
 		}
-		client_path = fs::path(a2w(server_path));
-		return result::sucess;
-	}
-
-	pathconvert::result pathconvert::eval(const std::string& server_path, fs::path& client_path)
-	{
-		if (server_path[0] == '@')
+		else
 		{
-			std::string spath = server_path.substr(1);
-			std::string cpath;
-			if (find_sourcemap(spath, cpath))
-			{
-				client_path = path_normalize(u2w(cpath));
-				server2client_[server_path] = client_path;
-				return result::sucess;
-			}
-			client_path = server_complete(fs::path(a2w(spath)));
-			server2client_[server_path] = client_path;
-			return result::sucess;
+			client_path = a2w(server_path);
 		}
-		else if (server_path[0] == '=')
-		{
-			result r = debugger_->custom_->path_convert(server_path, client_path, sourcemaps_, false);
-			switch (r)
-			{
-			case custom::result::failed:
-			case custom::result::sucess:
-				server2client_[server_path] = client_path;
-				break;
-			}
-			return r;
-		}
-		client_path = fs::path(a2w(server_path));
 		server2client_[server_path] = client_path;
-		return result::sucess;
+		return true;
 	}
 
-	pathconvert::result pathconvert::get_or_eval(const std::string& server_path, fs::path& client_path)
+	bool pathconvert::get_or_eval(const std::string& server_path, fs::path& client_path)
 	{
 		fs::path* ptr;
 		if (fget(server_path, ptr))
 		{
 			client_path = *ptr;
-			return result::sucess;
+			return true;
 		}
 		return eval(server_path, client_path);
 	}
