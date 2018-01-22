@@ -54,17 +54,6 @@ namespace vscode
 		return false;
 	}
 
-	bool pathconvert::fget(const std::string& server_path, fs::path*& client_path)
-	{
-		auto it = server2client_.find(server_path);
-		if (it != server2client_.end())
-		{
-			client_path = &it->second;
-			return true;
-		}
-		return false;
-	}
-
 	fs::path pathconvert::server_complete(const fs::path& path)
 	{
 		if (path.is_absolute())
@@ -74,8 +63,15 @@ namespace vscode
 		return fs::absolute(path, fs::current_path());
 	}
 
-	bool pathconvert::eval(const std::string& server_path, fs::path& client_path)
+	bool pathconvert::get(const std::string& server_path, fs::path& client_path)
 	{
+		auto it = server2client_.find(server_path);
+		if (it != server2client_.end())
+		{
+			client_path = it->second;
+			return true;
+		}
+
 		bool res = true;
 		if (server_path[0] == '@')
 		{
@@ -100,16 +96,5 @@ namespace vscode
 		}
 		server2client_[server_path] = client_path;
 		return true;
-	}
-
-	bool pathconvert::get_or_eval(const std::string& server_path, fs::path& client_path)
-	{
-		fs::path* ptr;
-		if (fget(server_path, ptr))
-		{
-			client_path = *ptr;
-			return true;
-		}
-		return eval(server_path, client_path);
 	}
 }

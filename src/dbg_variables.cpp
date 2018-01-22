@@ -276,7 +276,7 @@ namespace vscode
 				}
 
 				fs::path client_path;
-				if (pathconvert.eval(entry.source, client_path))
+				if (pathconvert.get(entry.source, client_path))
 				{
 					value = format("[%s:%d]", client_path.string(), entry.linedefined);
 					return;

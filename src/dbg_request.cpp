@@ -224,7 +224,7 @@ namespace vscode
 					else if (*src == '@' || *src == '=')
 					{
 						fs::path path;
-						if (pathconvert_.get_or_eval(src, path))
+						if (pathconvert_.get(src, path))
 						{
 							fs::path name = path.filename();
 							for (auto _ : res.Object())

@@ -41,7 +41,6 @@ namespace vscode
 		bp_source* get(const std::string& server_path, pathconvert& pathconvert);
 
 	private:
-		svr_map_type              server_map_;
 		cli_map_type              client_map_;
 		hybridarray<size_t, 1024> fast_table_;
 	};

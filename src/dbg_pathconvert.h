@@ -18,9 +18,7 @@ namespace vscode
 		void   add_sourcemap(const std::string& srv, const std::string& cli);
 		void   clear_sourcemap();
 		bool   find_sourcemap(const std::string& srv, std::string& cli);
-		bool   fget(const std::string& server_path, fs::path*& client_path);
-		bool   eval(const std::string& server_path, fs::path& client_path);
-		bool   get_or_eval(const std::string& server_path, fs::path& client_path);
+		bool   get(const std::string& server_path, fs::path& client_path);
 
 	private:
 		fs::path server_complete(const fs::path& path);

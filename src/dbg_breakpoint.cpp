@@ -6,8 +6,7 @@
 namespace vscode
 {
 	breakpoint::breakpoint()
-		: server_map_()
-		, client_map_()
+		: client_map_()
 		, fast_table_()
 	{
 		fast_table_.fill(0);
@@ -20,7 +19,6 @@ namespace vscode
 			delete src.second;
 		}
 		client_map_.clear();
-		server_map_.clear();
 		fast_table_.clear();
 	}
 
@@ -112,34 +110,14 @@ namespace vscode
 
 	bp_source* breakpoint::get(const std::string& server_path, pathconvert& pathconvert)
 	{
-		auto it = server_map_.find(server_path);
-		if (it != server_map_.end())
-		{
-			return it->second;
-		}
-
-		fs::path* cliptr = 0;
-		if (pathconvert.fget(server_path, cliptr))
-		{
-			auto it = client_map_.find(*cliptr);
-			if (it == client_map_.end())
-				return 0;
-			return it->second;
-		}
-
 		fs::path client_path;
-		if (pathconvert.eval(server_path, client_path))
+		if (pathconvert.get(server_path, client_path))
 		{
 			auto it = client_map_.find(client_path);
 			if (it != client_map_.end())
 			{
-				server_map_.insert(std::make_pair(server_path, it->second));
 				return it->second;
 			}
-		}
-		else
-		{
-			server_map_.insert(std::make_pair(server_path, nullptr));
 		}
 		return 0;
 	}
