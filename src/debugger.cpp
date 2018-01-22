@@ -90,7 +90,13 @@ void __cdecl detach_lua(lua_State* L)
 namespace luaw {
 	int coding(lua_State* L)
 	{
-		::set_coding((int)luaL_checkinteger(L, 1));
+		const char* str = luaL_checkstring(L, 1);
+		if (strcmp(str, "ansi") == 0) {
+			::set_coding(0);
+		}
+		else if (strcmp(str, "utf8") == 0) {
+			::set_coding(1);
+		}
 		lua_pushvalue(L, lua_upvalueindex(1));
 		return 1;
 	}
