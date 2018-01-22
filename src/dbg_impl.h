@@ -54,7 +54,7 @@ namespace vscode
 		};
 
 	public:
-		debugger_impl(io* io, threadmode mode);
+		debugger_impl(io* io, threadmode mode, coding coding);
 		~debugger_impl();
 		void hook(lua_State *L, lua_Debug *ar);
 		void exception(lua_State *L, const char* msg);
@@ -64,6 +64,7 @@ namespace vscode
 		void attach_lua(lua_State* L, bool pause);
 		void detach_lua(lua_State* L);
 		void set_custom(custom* custom);
+		void set_coding(coding coding);
 		void output(const char* category, const char* buf, size_t len);
 
 		void set_state(state state);

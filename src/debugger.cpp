@@ -6,8 +6,8 @@
 
 namespace vscode
 {
-	debugger::debugger(io* io, threadmode mode)
-		: impl_(new debugger_impl(io, mode))
+	debugger::debugger(io* io, threadmode mode, coding coding)
+		: impl_(new debugger_impl(io, mode, coding))
 	{ }
 
 	debugger::~debugger()
@@ -35,6 +35,11 @@ namespace vscode
 		impl_->set_custom(custom);
 	}
 
+	void debugger::set_coding(coding coding)
+	{
+		impl_->set_coding(coding);
+	}
+
 	void debugger::output(const char* category, const char* buf, size_t len)
 	{
 		impl_->output(category, buf, len);
@@ -43,6 +48,7 @@ namespace vscode
 
 std::unique_ptr<vscode::network>  global_io;
 std::unique_ptr<vscode::debugger> global_dbg;
+vscode::coding                    global_coding = vscode::coding::ansi;
 
 void __cdecl set_luadll(const char* path, size_t len)
 {
@@ -51,12 +57,20 @@ void __cdecl set_luadll(const char* path, size_t len)
 #endif
 }
 
+void __cdecl set_coding(int coding)
+{
+	global_coding = coding == 0 ? vscode::coding::ansi : vscode::coding::utf8;
+	if (global_dbg) {
+		global_dbg->set_coding(global_coding);
+	}
+}
+
 uint16_t __cdecl start_server(const char* ip, uint16_t port, bool launch)
 {
 	if (!global_io || !global_dbg)
 	{
 		global_io.reset(new vscode::network(ip, port));
-		global_dbg.reset(new vscode::debugger(global_io.get(), vscode::threadmode::async));
+		global_dbg.reset(new vscode::debugger(global_io.get(), vscode::threadmode::async, global_coding));
 		if (launch)
 			global_io->kill_process_when_close();
 	}
@@ -74,6 +88,13 @@ void __cdecl detach_lua(lua_State* L)
 }
 
 namespace luaw {
+	int coding(lua_State* L)
+	{
+		::set_coding((int)luaL_checkinteger(L, 1));
+		lua_pushvalue(L, lua_upvalueindex(1));
+		return 1;
+	}
+
 	int listen(lua_State* L)
 	{
 		::start_server(luaL_checkstring(L, 1), (uint16_t)luaL_checkinteger(L, 2), false);
@@ -101,6 +122,7 @@ namespace luaw {
 	{
 		luaL_checkversion(L);
 		luaL_Reg f[] = {
+			{ "coding", coding },
 			{ "listen", listen },
 			{ "start", start },
 			{ "__gc", mt_gc },

@@ -301,6 +301,11 @@ namespace vscode
 		custom_ = custom;
 	}
 
+	void debugger_impl::set_coding(coding coding)
+	{
+		pathconvert_.set_coding(coding);
+	}
+
 	struct easy_string
 	{
 		easy_string(const char* buf, size_t len)
@@ -334,7 +339,7 @@ namespace vscode
 #define DBG_REQUEST_MAIN(name) std::bind(&debugger_impl:: ## name, this, std::placeholders::_1)
 #define DBG_REQUEST_HOOK(name) std::bind(&debugger_impl:: ## name, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
 
-	debugger_impl::debugger_impl(io* io, threadmode mode)
+	debugger_impl::debugger_impl(io* io, threadmode mode, coding coding)
 		: seq(1)
 		, network_(io)
 		, state_(state::birth)
@@ -345,7 +350,7 @@ namespace vscode
 		, breakpoints_()
 		, stack_()
 		, watch_()
-		, pathconvert_(this)
+		, pathconvert_(this, coding)
 		, custom_(&global_custom)
 		, asm_jit_()
 		, asm_func_(0)
