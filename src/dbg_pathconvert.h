@@ -5,6 +5,7 @@
 #include "debugger.h"
 #include <map> 	   
 #include <vector> 
+#include <regex>
 
 namespace vscode
 {
@@ -13,7 +14,7 @@ namespace vscode
 	class pathconvert
 	{
 	public:
-		typedef custom::sourcemap_t sourcemap_t;
+		typedef std::vector<std::pair<std::regex, std::string>> sourcemap_t;
 
 	public:
 		pathconvert(debugger_impl* dbg, coding coding);
