@@ -22,7 +22,6 @@ namespace vscode
 		default:
 			break;
 		}
-		custom_->set_state(state);
 	}
 
 	bool debugger_impl::is_state(state state)

@@ -17,11 +17,5 @@ namespace vscode
 		{
 			return false;
 		}
-
-		virtual void set_state(state state)
-		{ }
-
-		virtual void update_stop()
-		{ }
 	};
 }

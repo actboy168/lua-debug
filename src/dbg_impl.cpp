@@ -258,7 +258,6 @@ namespace vscode
 		bool quit = false;
 		while (!quit)
 		{
-			custom_->update_stop();
 			update_redirect();
 			network_->update(0);
 
