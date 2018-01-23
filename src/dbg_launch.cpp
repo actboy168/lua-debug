@@ -10,71 +10,12 @@
 
 namespace vscode
 {
-	int print_empty(lua_State *L) {
-		return 0;
-	}
-
-	int print(lua_State *L) {
-		std::string out;
-		int n = lua_gettop(L);
-		int i;
-		lua_getglobal(L, "tostring");
-		for (i = 1; i <= n; i++) {
-			const char *s;
-			size_t l;
-			lua_pushvalue(L, -1);
-			lua_pushvalue(L, i);
-			lua_call(L, 1, 1);
-			s = lua_tolstring(L, -1, &l);
-			if (s == NULL)
-				return luaL_error(L, "'tostring' must return a string to 'print'");
-			if (i>1) out += "\t";
-			out += std::string(s, l);
-			lua_pop(L, 1);
-		}
-		out += "\n";
-		debugger_impl* dbg = (debugger_impl*)lua_touserdata(L, lua_upvalueindex(1));
-		dbg->output("stdout", out.data(), out.size());
-		return 0;
-	}
-
 	static int errfunc(lua_State* L) {
 		debugger_impl* dbg = (debugger_impl*)lua_touserdata(L, lua_upvalueindex(1));
 		luaL_traceback(L, L, lua_tostring(L, 1), 1);
 		dbg->exception(L, lua_tostring(L, -1));
 		lua_settop(L, 2);
 		return 1;
-	}
-
-	void debugger_impl::init_redirector(rprotocol& req, lua_State* L) {
-		auto& args = req["arguments"];
-		launch_console_ = "none";
-		if (args.HasMember("console") && args["console"].IsString())
-		{
-			launch_console_ = args["console"].Get<std::string>();
-		}
-
-		if (req.HasMember("__stdout")) {
-			if (launch_console_ == "none") {
-				lua_pushcclosure(L, print_empty, 0);
-				lua_setglobal(L, "print");
-			}
-			else {
-				lua_pushlightuserdata(L, this);
-				lua_pushcclosure(L, print, 1);
-				lua_setglobal(L, "print");
-				stderr_.reset(new redirector);
-				stderr_->open("stderr", std_fd::STDERR);
-			}
-		}
-		else {
-			if (launch_console_ != "none") {
-				stdout_.reset(new redirector);
-				stdout_->open("stdout", std_fd::STDOUT);
-				stderr_.reset(new redirector);
-				stderr_->open("stderr", std_fd::STDERR);
-			}
-		}
 	}
 
 	bool debugger_impl::request_launch(rprotocol& req) {
@@ -223,26 +164,6 @@ namespace vscode
 			set_state(state::terminated);
 			network_->close();
 			lua_close(L);
-		}
-	}
-
-	void debugger_impl::update_redirect()
-	{
-		if (stdout_) {
-			size_t n = stdout_->peek();
-			if (n > 0) {
-				hybridarray<char, 1024> buf(n);
-				stdout_->read(buf.data(), buf.size());
-				output("stdout", buf.data(), buf.size());
-			}
-		}
-		if (stderr_) {
-			size_t n = stderr_->peek();
-			if (n > 0) {
-				hybridarray<char, 1024> buf(n);
-				stderr_->read(buf.data(), buf.size());
-				output("stderr", buf.data(), buf.size());
-			}
 		}
 	}
 }

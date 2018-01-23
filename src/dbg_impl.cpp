@@ -59,11 +59,9 @@ namespace vscode
 		seq = 1;
 		stacklevel_.clear();
 		watch_.reset();
-#if !defined(DEBUGGER_DISABLE_LAUNCH)
 		update_redirect();
 		stdout_.reset();
 		stderr_.reset();
-#endif
 	}
 
 	bool debugger_impl::update_main(rprotocol& req, bool& quit)
@@ -86,6 +84,85 @@ namespace vscode
 			return true;
 		}
 		return false;
+	}
+
+	static int print_empty(lua_State *L) {
+		return 0;
+	}
+
+	static int print(lua_State *L) {
+		std::string out;
+		int n = lua_gettop(L);
+		int i;
+		lua_getglobal(L, "tostring");
+		for (i = 1; i <= n; i++) {
+			const char *s;
+			size_t l;
+			lua_pushvalue(L, -1);
+			lua_pushvalue(L, i);
+			lua_call(L, 1, 1);
+			s = lua_tolstring(L, -1, &l);
+			if (s == NULL)
+				return luaL_error(L, "'tostring' must return a string to 'print'");
+			if (i>1) out += "\t";
+			out += std::string(s, l);
+			lua_pop(L, 1);
+		}
+		out += "\n";
+		debugger_impl* dbg = (debugger_impl*)lua_touserdata(L, lua_upvalueindex(1));
+		dbg->output("stdout", out.data(), out.size());
+		return 0;
+	}
+
+
+	void debugger_impl::init_redirector(rprotocol& req, lua_State* L) {
+		auto& args = req["arguments"];
+		console_ = "none";
+		if (args.HasMember("console") && args["console"].IsString())
+		{
+			console_ = args["console"].Get<std::string>();
+		}
+
+		if (req.HasMember("__stdout")) {
+			if (console_ == "none") {
+				lua_pushcclosure(L, print_empty, 0);
+				lua_setglobal(L, "print");
+			}
+			else {
+				lua_pushlightuserdata(L, this);
+				lua_pushcclosure(L, print, 1);
+				lua_setglobal(L, "print");
+				stderr_.reset(new redirector);
+				stderr_->open("stderr", std_fd::STDERR);
+			}
+		}
+		else {
+			if (console_ != "none") {
+				stdout_.reset(new redirector);
+				stdout_->open("stdout", std_fd::STDOUT);
+				stderr_.reset(new redirector);
+				stderr_->open("stderr", std_fd::STDERR);
+			}
+		}
+	}
+	void debugger_impl::update_redirect()
+	{
+		if (stdout_) {
+			size_t n = stdout_->peek();
+			if (n > 0) {
+				hybridarray<char, 1024> buf(n);
+				stdout_->read(buf.data(), buf.size());
+				output("stdout", buf.data(), buf.size());
+			}
+		}
+		if (stderr_) {
+			size_t n = stderr_->peek();
+			if (n > 0) {
+				hybridarray<char, 1024> buf(n);
+				stderr_->read(buf.data(), buf.size());
+				output("stderr", buf.data(), buf.size());
+			}
+		}
 	}
 
 	static int get_stacklevel(lua_State* L)
@@ -182,9 +259,7 @@ namespace vscode
 		while (!quit)
 		{
 			custom_->update_stop();
-#if !defined(DEBUGGER_DISABLE_LAUNCH)
 			update_redirect();
-#endif
 			network_->update(0);
 
 			rprotocol req = network_->input();
@@ -215,9 +290,7 @@ namespace vscode
 
 	void debugger_impl::run_idle()
 	{
-#if !defined(DEBUGGER_DISABLE_LAUNCH)
 		update_redirect();
-#endif
 		network_->update(0);
 		if (is_state(state::birth))
 		{
@@ -360,9 +433,9 @@ namespace vscode
 		, attachL_(0)
 		, hookL_(0)
 		, attach_callback_()
+		, console_("none")
 #if !defined(DEBUGGER_DISABLE_LAUNCH)
 		, launchL_(0)
-		, launch_console_()
 #endif
 		, allowhook_(true)
 		, thread_(mode == threadmode::async 

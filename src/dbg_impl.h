@@ -18,9 +18,7 @@
 #include "dbg_watchs.h"
 #include "dbg_protocol.h"
 #include "debugger.h"
-#if !defined(DEBUGGER_DISABLE_LAUNCH)
 #include "dbg_redirect.h"
-#endif
 
 namespace vscode
 {
@@ -118,16 +116,12 @@ namespace vscode
 				for (auto _ : res("body").Object())
 				{
 					res("category").String(category);
-#if !defined(DEBUGGER_DISABLE_LAUNCH)
-					if (launch_console_ == "ansi") {
+					if (console_ == "ansi") {
 						res("output").String(vscode::a2u(msg));
 					}
 					else {
 						res("output").String(msg);
 					}
-#else
-					res("output").String(msg);
-#endif
 				}
 			}
 			network_->output(res);
@@ -149,13 +143,13 @@ namespace vscode
 		bool update_main(rprotocol& req, bool& quit);
 		bool update_hook(rprotocol& req, lua_State *L, lua_Debug *ar, bool& quit);
 		void initialize_sourcemaps(rapidjson::Value& args);
+		void init_redirector(rprotocol& req, lua_State* L);
+		void update_redirect();
 
 #if !defined(DEBUGGER_DISABLE_LAUNCH)
 		bool request_launch(rprotocol& req);
 		bool request_launch_done(rprotocol& req);
-		void init_redirector(rprotocol& req, lua_State* L);
 		void update_launch();
-		void update_redirect();
 #endif
 
 	private:
@@ -181,12 +175,12 @@ namespace vscode
 		dbg_thread*        thread_;
 		std::atomic<bool>  allowhook_;
 		std::function<void()> attach_callback_;
+		std::string        console_;
+		std::unique_ptr<redirector> stdout_;
+		std::unique_ptr<redirector> stderr_;
 #if !defined(DEBUGGER_DISABLE_LAUNCH)
 		rprotocol          cache_launch_;
 		lua_State*         launchL_;
-		std::string        launch_console_;
-		std::unique_ptr<redirector> stdout_;
-		std::unique_ptr<redirector> stderr_;
 #endif
 		std::map<std::string, std::function<bool(rprotocol&)>>                            main_dispatch_;
 		std::map<std::string, std::function<bool(rprotocol&, lua_State*, lua_Debug *ar)>> hook_dispatch_;

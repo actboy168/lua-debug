@@ -21,12 +21,7 @@
             "stopOnEntry": true,
             "ip": "localhost",
             "port": 4278,
-            "sourceMaps": [
-                [
-                    "./",
-                    "${workspaceRoot}"
-                ]
-            ]
+            "console": "ansi",
         }
     ]
 }

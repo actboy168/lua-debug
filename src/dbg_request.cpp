@@ -140,7 +140,7 @@ namespace vscode
 			stopOnEntry = args["stopOnEntry"].GetBool();
 		}
 		initialize_sourcemaps(args);
-
+		init_redirector(req, attachL_);
 		response_success(req);
 		event_thread(true);
 
