@@ -2,7 +2,7 @@
 #include "stdinput.h"
 
 launch::launch(stdinput& io)
-	: debugger_(&io, vscode::threadmode::sync)
+	: debugger_(&io, vscode::threadmode::sync, vscode::coding::ansi)
 	, io_(io)
 {
 }

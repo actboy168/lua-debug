@@ -19,7 +19,7 @@ class debugger_wrapper
 public:
 	debugger_wrapper(lua_State* L, const char* ip, uint16_t port)
 		: network_(ip, port)
-		, debugger_(&network_, vscode::threadmode::sync)
+		, debugger_(&network_, vscode::threadmode::sync, vscode::coding::ansi)
 	{
 		fs::path schema(SOURCE_PATH);
 		schema /= "debugProtocol.json";
