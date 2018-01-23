@@ -94,11 +94,11 @@ namespace vscode
 			std::string cpath;
 			if (find_sourcemap(spath, cpath))
 			{
-				client_path = path_normalize(u2w(cpath));
+				client_path = path_normalize(fs::path(u2w(cpath)));
 			}
 			else
 			{
-				client_path = path_normalize(server_complete(u2w(server2u(spath))));
+				client_path = path_normalize(server_complete(fs::path(u2w(server2u(spath)))));
 			}
 		}
 		else if (server_path[0] == '=')
