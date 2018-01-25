@@ -22,11 +22,23 @@ namespace vscode
 		CodeHolder code;
 		code.init(asm_jit_.getCodeInfo());
 		X86Assembler assemblr(&code);
+#if defined(_M_X64)
+		assemblr.push(x86::rdi);
+		assemblr.sub(x86::rsp, 0x20);
+		assemblr.mov(x86::rdi, x86::rsp);
+		assemblr.mov(x86::r8, x86::rdx);
+		assemblr.mov(x86::rdx, x86::rcx);
+		assemblr.mov(x86::rcx, imm(reinterpret_cast<intptr_t>(this)));
+		assemblr.call(imm(reinterpret_cast<intptr_t>(&debughook)));
+		assemblr.add(x86::rsp, 0x20);
+		assemblr.pop(x86::rdi);
+#else
 		assemblr.push(x86::dword_ptr(x86::esp, 8));
 		assemblr.push(x86::dword_ptr(x86::esp, 8));
 		assemblr.push(imm(reinterpret_cast<intptr_t>(this)));
 		assemblr.call(imm(reinterpret_cast<intptr_t>(&debughook)));
 		assemblr.add(x86::esp, 12);
+#endif
 		assemblr.ret();
 		Error err = asm_jit_.add(&asm_func_, &code);
 		assert(!err);
