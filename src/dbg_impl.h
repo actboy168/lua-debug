@@ -63,7 +63,7 @@ namespace vscode
 		void detach_lua(lua_State* L);
 		void set_custom(custom* custom);
 		void set_coding(coding coding);
-		void output(const char* category, const char* buf, size_t len);
+		void output(const char* category, const char* buf, size_t len, lua_State* L);
 
 		void set_state(state state);
 		bool is_state(state state);
@@ -105,7 +105,7 @@ namespace vscode
 
 	public:
 		template <class T>
-		void event_output(const std::string& category, const T& msg)
+		void event_output(const std::string& category, const T& msg, lua_State* L = nullptr)
 		{
 			wprotocol res;
 			for (auto _ : res.Object())
@@ -121,6 +121,45 @@ namespace vscode
 					}
 					else {
 						res("output").String(msg);
+					}
+
+					lua_Debug entry;
+					if (L && lua_getstack(L, 1, &entry))
+					{
+						int status = lua_getinfo(L, "Sln", &entry);
+						assert(status);
+						const char *src = entry.source;
+						if (memcmp(src, "=[C]", 4) == 0) 
+						{
+						}
+						else if (*src == '@' || *src == '=')
+						{
+							fs::path path;
+							if (pathconvert_.get(src, path))
+							{
+								fs::path name = path.filename();
+								for (auto _ : res("source").Object())
+								{
+									res("name").String(w2u(name.wstring()));
+									res("path").String(w2u(path.wstring()));
+									res("sourceReference").Int64(0);
+								};
+								res("line").Int(entry.currentline);
+								res("column").Int(1);
+							}
+						}
+						else
+						{
+							intptr_t reference = (intptr_t)src;
+							for (auto _ : res("source").Object())
+							{
+								res("name").String("<Memory funtion>");
+								res("sourceReference").Int64(reference);
+							}
+							res("name").String(entry.name ? entry.name : "?");
+							res("line").Int(entry.currentline);
+							res("column").Int(1);
+						}
 					}
 				}
 			}
