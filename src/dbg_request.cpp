@@ -70,24 +70,20 @@ namespace vscode
 
 	bool debugger_impl::check_breakpoint(lua_State *L, lua_Debug *ar)
 	{
-		if (ar->currentline > 0)
+		if (ar->currentline > 0 && breakpoints_.has(ar->currentline))
 		{
-			if (breakpoints_.has(ar->currentline))
+			if (!has_source_)
 			{
-				if (!has_source_)
-				{
-					has_source_ = true;
-					cur_source_ = 0;
-					if (!lua_getinfo(L, "S", ar))
-						return false;
-					cur_source_ = breakpoints_.get(ar->source, pathconvert_);
-				}
-
-				if (cur_source_ && breakpoints_.has(cur_source_, ar->currentline, L, ar))
-				{
-					step_in();
-					return true;
-				}
+				has_source_ = true;
+				cur_source_ = 0;
+				if (!lua_getinfo(L, "S", ar))
+					return false;
+				cur_source_ = breakpoints_.get(ar->source, pathconvert_);
+			}
+			if (cur_source_ && breakpoints_.has(cur_source_, ar->currentline, L, ar))
+			{
+				step_in();
+				return true;
 			}
 		}
 		return false;
@@ -298,30 +294,53 @@ namespace vscode
 	{
 		auto& args = req["arguments"];
 		auto& source = args["source"];
-		if (!source.HasMember("path")) {
-			response_error(req, "not yet implemented");
-			return false;
-		}
-		fs::path client_path = path_normalize(fs::path(u2w(source["path"].Get<std::string>())));
-		if (!client_path.is_absolute()) {
-			response_error(req, "not yet implemented");
-			return false;
-		}
-		breakpoints_.clear(client_path);
-
 		std::vector<unsigned int> lines;
-		for (auto& m : args["breakpoints"].GetArray())
+
+		if (source.HasMember("path")) {
+			fs::path client_path = path_normalize(fs::path(u2w(source["path"].Get<std::string>())));
+			if (!client_path.is_absolute()) {
+				response_error(req, "not yet implemented");
+				return false;
+			}
+			breakpoints_.clear(client_path);
+
+			for (auto& m : args["breakpoints"].GetArray())
+			{
+				unsigned int line = m["line"].GetUint();
+				lines.push_back(line);
+				if (!m.HasMember("condition"))
+				{
+					breakpoints_.insert(client_path, line, std::string());
+				}
+				else
+				{
+					breakpoints_.insert(client_path, line, m["condition"].Get<std::string>());
+				}
+			}
+		}
+		else if (source.HasMember("name")
+			&& source.HasMember("sourceReference")
+			&& source["name"].Get<std::string>() == "<Memory funtion>")
 		{
-			unsigned int line = m["line"].GetUint();
-			lines.push_back(line);
-			if (!m.HasMember("condition"))
+			intptr_t source_ref = source["sourceReference"].Get<intptr_t>();
+			breakpoints_.clear(source_ref);
+			for (auto& m : args["breakpoints"].GetArray())
 			{
-				breakpoints_.insert(client_path, line);
+				unsigned int line = m["line"].GetUint();
+				lines.push_back(line);
+				if (!m.HasMember("condition"))
+				{
+					breakpoints_.insert(source_ref, line, std::string());
+				}
+				else
+				{
+					breakpoints_.insert(source_ref, line, m["condition"].Get<std::string>());
+				}
 			}
-			else
-			{
-				breakpoints_.insert(client_path, line, m["condition"].Get<std::string>());
-			}
+		}
+		else {
+			response_error(req, "not yet implemented");
+			return false;
 		}
 
 		response_success(req, [&](wprotocol& res)
@@ -331,10 +350,6 @@ namespace vscode
 				for (auto _ : res.Object())
 				{
 					res("verified").Bool(true);
-					for (auto _ : res("source").Object())
-					{
-						res("path").String(w2u(client_path.wstring()));
-					}
 					res("line").Uint(lines[d]);
 				}
 			}

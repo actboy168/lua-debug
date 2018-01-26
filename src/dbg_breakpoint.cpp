@@ -6,7 +6,7 @@
 namespace vscode
 {
 	breakpoint::breakpoint()
-		: client_map_()
+		: files_()
 		, fast_table_()
 	{
 		fast_table_.fill(0);
@@ -14,55 +14,57 @@ namespace vscode
 
 	void breakpoint::clear()
 	{
-		for (auto src : client_map_)
-		{
-			delete src.second;
-		}
-		client_map_.clear();
+		files_.clear();
+		memorys_.clear();
 		fast_table_.clear();
 	}
 
 	void breakpoint::clear(const fs::path& client_path)
 	{
-		auto it = client_map_.find(client_path);
-		if (it == client_map_.end())
+		auto it = files_.find(client_path);
+		if (it != files_.end())
 		{
-			return;
+			return clear(it->second);
 		}
-		bp_source* src = it->second;
-		for (auto line : *src)
+	}
+
+	void breakpoint::clear(intptr_t source_ref)
+	{
+		auto it = memorys_.find(source_ref);
+		if (it != memorys_.end())
+		{
+			return clear(it->second);
+		}
+	}
+
+	void breakpoint::clear(bp_source& src)
+	{
+		for (auto line : src)
 		{
 			fast_table_[line.first]--;
 		}
-		src->clear();
-	}
-
-	void breakpoint::insert(const fs::path& client_path, size_t line)
-	{
-		insert(client_path, line, std::string());
+		src.clear();
 	}
 
 	void breakpoint::insert(const fs::path& client_path, size_t line, const std::string& condition)
 	{
-		auto it = client_map_.find(client_path);
-		if (it == client_map_.end())
+		return insert(files_[client_path], line, condition);
+	}
+
+	void breakpoint::insert(intptr_t source_ref, size_t line, const std::string& condition)
+	{
+		return insert(memorys_[source_ref], line, condition);
+	}
+
+	void breakpoint::insert(bp_source& src, size_t line, const std::string& condition)
+	{
+		if (src.find(line) != src.end())
 		{
-			client_map_.insert(std::make_pair(client_path, new bp_source(line, condition)));
-		}
-		else
-		{
-			bp_source* src = it->second;
-			if (src->find(line) == src->end())
-			{
-				src->insert({ line, condition });
-			}
-			else
-			{
-				(*src)[line] = condition;
-				return;
-			}
+			src[line] = condition;
+			return;
 		}
 
+		src.insert({ line, condition });
 		if (line >= fast_table_.size())
 		{
 			size_t oldsize = fast_table_.size();
@@ -108,17 +110,28 @@ namespace vscode
 		return false;
 	}
 
-	bp_source* breakpoint::get(const std::string& server_path, pathconvert& pathconvert)
+	bp_source* breakpoint::get(const char* source, pathconvert& pathconvert)
 	{
-		fs::path client_path;
-		if (pathconvert.get(server_path, client_path))
+		if (source[0] == '@' || source[0] == '=')
 		{
-			auto it = client_map_.find(client_path);
-			if (it != client_map_.end())
+			fs::path client_path;
+			if (pathconvert.get(source, client_path))
 			{
-				return it->second;
+				auto it = files_.find(client_path);
+				if (it != files_.end())
+				{
+					return &it->second;
+				}
 			}
 		}
-		return 0;
+		else
+		{
+			auto it = memorys_.find((intptr_t)source);
+			if (it != memorys_.end())
+			{
+				return &it->second;
+			}
+		}
+		return nullptr;
 	}
 }
