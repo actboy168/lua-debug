@@ -122,7 +122,7 @@ namespace vscode
 		}
 		out += "\n";
 		debugger_impl* dbg = (debugger_impl*)lua_touserdata(L, lua_upvalueindex(1));
-		dbg->output("stdout", out.data(), out.size());
+		dbg->output("stdout", out.data(), out.size(), L);
 		return 0;
 	}
 
@@ -164,7 +164,7 @@ namespace vscode
 			if (n > 0) {
 				hybridarray<char, 1024> buf(n);
 				stdout_->read(buf.data(), buf.size());
-				output("stdout", buf.data(), buf.size());
+				output("stdout", buf.data(), buf.size(), nullptr);
 			}
 		}
 		if (stderr_) {
@@ -172,7 +172,7 @@ namespace vscode
 			if (n > 0) {
 				hybridarray<char, 1024> buf(n);
 				stderr_->read(buf.data(), buf.size());
-				output("stderr", buf.data(), buf.size());
+				output("stderr", buf.data(), buf.size(), nullptr);
 			}
 		}
 	}
@@ -410,9 +410,9 @@ namespace vscode
 		size_t      len_;
 	};
 
-	void debugger_impl::output(const char* category, const char* buf, size_t len)
+	void debugger_impl::output(const char* category, const char* buf, size_t len, lua_State* L)
 	{
-		event_output(category, easy_string(buf, len));
+		event_output(category, easy_string(buf, len), L);
 	}
 
 	debugger_impl::~debugger_impl()

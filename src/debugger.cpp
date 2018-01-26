@@ -42,7 +42,7 @@ namespace vscode
 
 	void debugger::output(const char* category, const char* buf, size_t len)
 	{
-		impl_->output(category, buf, len);
+		impl_->output(category, buf, len, nullptr);
 	}
 }
 
