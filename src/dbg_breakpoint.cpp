@@ -46,25 +46,25 @@ namespace vscode
 		src.clear();
 	}
 
-	void breakpoint::insert(const fs::path& client_path, size_t line, const std::string& condition)
+	void breakpoint::add(const fs::path& client_path, size_t line, const std::string& condition, const std::string& hitcondition)
 	{
-		return insert(files_[client_path], line, condition);
+		return add(files_[client_path], line, condition, hitcondition);
 	}
 
-	void breakpoint::insert(intptr_t source_ref, size_t line, const std::string& condition)
+	void breakpoint::add(intptr_t source_ref, size_t line, const std::string& condition, const std::string& hitcondition)
 	{
-		return insert(memorys_[source_ref], line, condition);
+		return add(memorys_[source_ref], line, condition, hitcondition);
 	}
 
-	void breakpoint::insert(bp_source& src, size_t line, const std::string& condition)
+	void breakpoint::add(bp_source& src, size_t line, const std::string& condition, const std::string& hitcondition)
 	{
 		if (src.find(line) != src.end())
 		{
-			src[line] = condition;
+			src[line] = { condition, hitcondition, src[line].hit };
 			return;
 		}
 
-		src.insert({ line, condition });
+		src.insert({ line,{ condition, hitcondition, 0 } });
 		if (line >= fast_table_.size())
 		{
 			size_t oldsize = fast_table_.size();
@@ -84,6 +84,23 @@ namespace vscode
 		return false;
 	}
 
+	bool breakpoint::evaluate_isok(lua_State* L, lua_Debug *ar, const std::string& script) const
+	{
+		int nresult = 0;
+		if (!evaluate(L, ar, ("return " + script).c_str(), nresult))
+		{
+			lua_pop(L, 1);
+			return false;
+		}
+		if (nresult > 0 && lua_type(L, -nresult) == LUA_TBOOLEAN && lua_toboolean(L, -nresult))
+		{
+			lua_pop(L, nresult);
+			return true;
+		}
+		lua_pop(L, nresult);
+		return false;
+	}
+
 	bool breakpoint::has(bp_source* src, size_t line, lua_State* L, lua_Debug* ar) const
 	{
 		auto it = src->find(line);
@@ -91,23 +108,17 @@ namespace vscode
 		{
 			return false;
 		}
-		const std::string& condition = it->second;
-		if (condition.empty())
+		bp& bp = it->second;
+		if (!bp.condition.empty() && !evaluate_isok(L, ar, bp.condition))
 		{
-			return true;
-		}
-		int nresult = 0;
-		if (!evaluate(L, ar, ("return " + condition).c_str(), nresult))
-		{
-			lua_pop(L, 1);
 			return false;
 		}
-		if (nresult > 0 && lua_type(L, -nresult) == LUA_TBOOLEAN && lua_toboolean(L, -nresult))
+		bp.hit++;
+		if (!bp.hitcondition.empty() && !evaluate_isok(L, ar, std::to_string(bp.hit) + " " + bp.hitcondition))
 		{
-			return true;
+			return false;
 		}
-		lua_pop(L, nresult);
-		return false;
+		return true;
 	}
 
 	bp_source* breakpoint::get(const char* source, pathconvert& pathconvert)
