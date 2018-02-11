@@ -138,7 +138,7 @@ namespace net { namespace socket {
 #else
 		int rc = ::close(s);
 #endif
-		net_assert_success(rc);
+		//net_assert_success(rc);
 	}
 
 	NET_INLINE void shutdown(fd_t s)
