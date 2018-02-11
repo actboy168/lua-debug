@@ -145,12 +145,12 @@
     <ClInclude Include="..\src\net\winapi.h" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="luacore.vcxproj">
-      <Project>{b84f7231-16ce-41d8-8c08-7b523ff4225b}</Project>
-    </ProjectReference>
+    <None Include="..\src\net\socket.inl" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\src\net\socket.inl" />
+    <ProjectReference Include="lua53.vcxproj">
+      <Project>{b84f7231-16ce-41d8-8c08-7b523ff4225b}</Project>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{9FD838AC-A5A2-4A24-8166-105BA0D8A973}</ProjectGuid>
@@ -209,7 +209,7 @@
       <AdditionalDependencies>Ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>
       </ModuleDefinitionFile>
-      <DelayLoadDLLs>luacore.dll</DelayLoadDLLs>
+      <DelayLoadDLLs>lua53.dll</DelayLoadDLLs>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -232,7 +232,7 @@
       <AdditionalDependencies>Ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>
       </ModuleDefinitionFile>
-      <DelayLoadDLLs>luacore.dll</DelayLoadDLLs>
+      <DelayLoadDLLs>lua53.dll</DelayLoadDLLs>
     </Link>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
