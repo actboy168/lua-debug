@@ -161,12 +161,12 @@ namespace net { namespace poller {
 						if (idx >= fds_.size()) 
 							break;
 						socket::fd_t fd = fds_[idx].fd;
+						event_t* e = fds_[idx].e;
 						bool read_flag = !!FD_ISSET(fd, &rd);
 						bool write_flag = !!FD_ISSET(fd, &wt);
 						if (write_flag)
 						{
 							++t;
-							event_t* e = fds_[idx].e;
 							if (e->sock != socket::retired_fd)
 							{
 								if (!e->event_out() && e->sock != socket::retired_fd)
@@ -179,7 +179,6 @@ namespace net { namespace poller {
 						if (read_flag)
 						{
 							++t;
-							event_t* e = fds_[idx].e;
 							if (e->sock != socket::retired_fd)
 							{
 								if (!e->event_in() && e->sock != socket::retired_fd)
