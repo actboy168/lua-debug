@@ -18,7 +18,7 @@ class debugger_wrapper
 {
 public:
 	debugger_wrapper(lua_State* L, const char* ip, uint16_t port)
-		: network_(ip, port)
+		: network_(ip, port, false)
 		, debugger_(&network_, vscode::threadmode::async, vscode::coding::ansi)
 	{
 		fs::path schema(SOURCE_PATH);

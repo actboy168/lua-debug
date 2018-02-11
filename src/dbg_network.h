@@ -24,7 +24,7 @@ namespace vscode
 		: public io
 	{
 	public:
-		network(const char* ip, uint16_t port);
+		network(const char* ip, uint16_t port, bool rebind);
 		virtual   ~network();
 		void      update(int ms);
 		bool      output(const wprotocol& wp);
