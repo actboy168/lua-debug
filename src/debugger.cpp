@@ -116,6 +116,15 @@ namespace luaw {
 		return 1;
 	}
 
+	int port(lua_State* L)
+	{
+		if (global_io && global_dbg) {
+			lua_pushinteger(L, global_io->get_port());
+			return 1;
+		}
+		return 0;
+	}
+
 	int mt_gc(lua_State* L)
 	{
 		if (global_dbg) {
@@ -131,6 +140,7 @@ namespace luaw {
 			{ "coding", coding },
 			{ "listen", listen },
 			{ "start", start },
+			{ "port", port },
 			{ "__gc", mt_gc },
 			{ NULL, NULL },
 		};
