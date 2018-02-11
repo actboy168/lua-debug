@@ -14,7 +14,7 @@
     <ProjectReference Include="debugger.vcxproj">
       <Project>{9fd838ac-a5a2-4a24-8166-105ba0d8a973}</Project>
     </ProjectReference>
-    <ProjectReference Include="luacore.vcxproj">
+    <ProjectReference Include="lua53.vcxproj">
       <Project>{b84f7231-16ce-41d8-8c08-7b523ff4225b}</Project>
     </ProjectReference>
   </ItemGroup>
