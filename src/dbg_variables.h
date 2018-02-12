@@ -68,4 +68,5 @@ namespace vscode
 	};
 
 	bool can_extand(lua_State *L, int idx);
+	bool has_scopes(lua_State *L, lua_Debug* ar, var_type type);
 }

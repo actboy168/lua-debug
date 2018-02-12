@@ -357,6 +357,14 @@ namespace vscode
 		return false;
 	}
 
+	static std::map<var_type, std::string> scopes_name = {
+		{ var_type::local, "Locals" },
+		{ var_type::vararg, "Var Args" },
+		{ var_type::upvalue, "Upvalues" },
+		{ var_type::global, "Globals" },
+		{ var_type::standard, "Standard" },
+	};
+
 	bool debugger_impl::request_scopes(rprotocol& req, lua_State* L, lua_Debug *ar) {
 		auto& args = req["arguments"];
 		lua_Debug entry;
@@ -370,46 +378,20 @@ namespace vscode
 		{
 			for (auto _ : res("scopes").Array())
 			{
-				int status = lua_getinfo(L, "u", &entry);
-				assert(status);
-
-				for (auto _ : res.Object())
+				for (auto type : { var_type::local, var_type::vararg, var_type::upvalue, var_type::global, var_type::standard })
 				{
-					res("name").String("Locals");
-					res("variablesReference").Int64((int)var_type::local | (depth << 8));
-					res("expensive").Bool(false);
-				}
-
-				if (entry.isvararg)
-				{
-					for (auto _ : res.Object())
+					if (has_scopes(L, ar, type))
 					{
-						res("name").String("Var Args");
-						res("variablesReference").Int64((int)var_type::vararg | (depth << 8));
-						res("expensive").Bool(false);
+						for (auto _ : res.Object())
+						{
+							res("name").String(scopes_name[type]);
+							res("variablesReference").Int64((int)type | (depth << 8));
+							res("expensive").Bool(false);
+						}
 					}
 				}
 
-				for (auto _ : res.Object())
-				{
-					res("name").String("Upvalues");
-					res("variablesReference").Int64((int)var_type::upvalue | (depth << 8));
-					res("expensive").Bool(false);
-				}
-
-				for (auto _ : res.Object())
-				{
-					res("name").String("Globals");
-					res("variablesReference").Int64((int)var_type::global | (depth << 8));
-					res("expensive").Bool(false);
-				}
-
-				for (auto _ : res.Object())
-				{
-					res("name").String("Standard");
-					res("variablesReference").Int64((int)var_type::standard | (depth << 8));
-					res("expensive").Bool(false);
-				}
+				
 			}
 		});
 		return false;
