@@ -346,8 +346,6 @@ namespace vscode
 	{
 		attachL_ = L;
 		if (pause && L) {
-			open_hook(L);	
-
 			if (thread_->mode() == threadmode::async) {
 				semaphore sem;
 				attach_callback_ = [&]() {
