@@ -212,32 +212,24 @@ namespace vscode
 			return;
 		}
 
-		bool bp = false;
-		if (is_state(state::running)) {
-			if (!check_breakpoint(L, ar)) {
+		bool bp = check_breakpoint(L, ar);
+		if (!bp) {
+			if (is_state(state::running)) {
 				return thread_->update();
 			}
-			bp = true;
-		}
-
-		if (is_state(state::stepping)) {
-			if (is_step(step::out) || is_step(step::over)) {
-				if (!check_breakpoint(L, ar)) {
-					if (!check_step(L, ar)) {
-						return thread_->update();
-					}
-				}
-				else {
-					bp = true;
-				}
+			else if (is_state(state::stepping) && !is_step(step::in) && !check_step(L, ar)) {
+				return thread_->update();
 			}
-			if (bp)
-				event_stopped("breakpoint");
-			else
-				event_stopped("step");
-			step_in();
+			else {
+				assert(is_state(state::stepping));
+			}
 		}
 
+		if (bp)
+			event_stopped("breakpoint");
+		else
+			event_stopped("step");
+		step_in();
 		run_stopped(L, ar);
 	}
 

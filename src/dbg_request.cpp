@@ -57,13 +57,13 @@ namespace vscode
 	{
 		set_state(state::stepping);
 		set_step(step::out);
-		stepping_stacklevel_ = - 1;
+		stepping_stacklevel_ = 1;
 		stepping_lua_state_ = L;
 	}
 
 	bool debugger_impl::check_step(lua_State* L, lua_Debug* ar)
 	{
-		return stepping_lua_state_ == L && stepping_stacklevel_ >= 0;
+		return stepping_lua_state_ == L && stepping_stacklevel_ <= 0;
 	}
 
 	bool debugger_impl::check_breakpoint(lua_State *L, lua_Debug *ar)
