@@ -66,7 +66,7 @@ namespace vscode
 		typedef net::tcp::listener base_type;
 
 	public:
-		server(net::poller_t* poll, const net::endpoint& ep);
+		server(net::poller_t* poll, const net::endpoint& ep, bool rebind);
 		~server();
 		void      update();
 		bool      listen();
@@ -86,6 +86,7 @@ namespace vscode
 		std::string              schema_file_;
 		net::endpoint            endpoint_;
 		std::vector<std::unique_ptr<session>> clearlist_;
+		bool                     rebind_;
 	};
 
 	session::session(server* server, net::poller_t* poll)
@@ -226,10 +227,11 @@ namespace vscode
 		return true;
 	}
 
-	server::server(net::poller_t* poll, const net::endpoint& ep)
+	server::server(net::poller_t* poll, const net::endpoint& ep, bool rebind)
 		: base_type(poll)
 		, session_()
 		, endpoint_(ep)
+		, rebind_(false)
 	{
 		net::socket::initialize();
 		base_type::open();
@@ -260,7 +262,7 @@ namespace vscode
 
 	bool server::listen()
 	{
-		return base_type::listen(endpoint_, std::bind(&server::event_accept, this, std::placeholders::_1, std::placeholders::_2));
+		return base_type::listen(endpoint_, rebind_, std::bind(&server::event_accept, this, std::placeholders::_1, std::placeholders::_2));
 	}
 
 	void server::event_accept(net::socket::fd_t fd, const net::endpoint& ep)
@@ -323,15 +325,18 @@ namespace vscode
 
 	uint16_t server::get_port() const
 	{
+		if (sock == net::socket::retired_fd) {
+			return 0;
+		}
 		sockaddr_in addr;
 		int addrlen = sizeof(sockaddr_in);
 		::getsockname(sock, (sockaddr*)&addr, &addrlen);
 		return ::ntohs(addr.sin_port);
 	}
 
-	network::network(const char* ip, uint16_t port)
+	network::network(const char* ip, uint16_t port, bool rebind)
 		: poller_(new net::poller_t)
-		, server_(new server(poller_, net::endpoint(ip, port)))
+		, server_(new server(poller_, net::endpoint(ip, port), rebind))
 		, kill_process_when_close_(false)
 	{
 		server_->listen();

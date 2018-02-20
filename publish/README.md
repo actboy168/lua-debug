@@ -7,6 +7,7 @@ This project aims to provide a debug adapter that allows Microsoft's Visual Stud
 
 * Breakpoints
 * Conditional breakpoints
+* Hit Conditional breakpoints
 * Step over, step in, step out
 * Watches
 * Evaluate expressions

@@ -60,13 +60,13 @@ namespace net { namespace tcp {
 			return 0;
 		}
 
-		bool listen(const endpoint& addr, std::function<void(socket::fd_t, const endpoint&)> connected)
+		bool listen(const endpoint& addr, bool rebind, std::function<void(socket::fd_t, const endpoint&)> connected)
 		{
 			assert(stat_ == e_idle);
 			assert(!!connected);
 			connected_ = connected;
 			NETLOG_INFO() << "socket(" << event_type::sock << ") " << addr.to_string() << " listening";
-			int rc = socket::listen(event_type::sock, addr, 0x100);
+			int rc = socket::listen(event_type::sock, addr, 0x100, rebind);
 			if (rc == 0)
 			{
 				stat_ = e_listening;

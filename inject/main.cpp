@@ -34,7 +34,7 @@ void initialize_debugger(void* L)
 	if (shared_luadll.size() != 0) {
 		base::c_call<void>(set_luadll, shared_luadll.data(), shared_luadll.size());
 	}
-	shared_port = base::c_call<uint16_t>(start_server, "127.0.0.1", 0, true);
+	shared_port = base::c_call<uint16_t>(start_server, "127.0.0.1", 0, true, false);
 	base::c_call<void>(attach_lua, L, true);
 }
 

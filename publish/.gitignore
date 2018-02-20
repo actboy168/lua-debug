@@ -1,4 +1,3 @@
-luacore.dll
-asmjit.dll
+lua53.dll
 debugger.dll
 debugger-inject.dll

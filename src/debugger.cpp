@@ -65,11 +65,11 @@ void __cdecl set_coding(int coding)
 	}
 }
 
-uint16_t __cdecl start_server(const char* ip, uint16_t port, bool launch)
+uint16_t __cdecl start_server(const char* ip, uint16_t port, bool launch, bool rebind)
 {
 	if (!global_io || !global_dbg)
 	{
-		global_io.reset(new vscode::network(ip, port));
+		global_io.reset(new vscode::network(ip, port, rebind));
 		global_dbg.reset(new vscode::debugger(global_io.get(), vscode::threadmode::async, global_coding));
 		if (launch)
 			global_io->kill_process_when_close();
@@ -103,7 +103,7 @@ namespace luaw {
 
 	int listen(lua_State* L)
 	{
-		::start_server(luaL_checkstring(L, 1), (uint16_t)luaL_checkinteger(L, 2), false);
+		::start_server(luaL_checkstring(L, 1), (uint16_t)luaL_checkinteger(L, 2), false, lua_toboolean(L, 3));
 		::attach_lua(L, false);
 		lua_pushvalue(L, lua_upvalueindex(1));
 		return 1;
@@ -114,6 +114,15 @@ namespace luaw {
 		::attach_lua(L, true);
 		lua_pushvalue(L, lua_upvalueindex(1));
 		return 1;
+	}
+
+	int port(lua_State* L)
+	{
+		if (global_io && global_dbg) {
+			lua_pushinteger(L, global_io->get_port());
+			return 1;
+		}
+		return 0;
 	}
 
 	int mt_gc(lua_State* L)
@@ -131,6 +140,7 @@ namespace luaw {
 			{ "coding", coding },
 			{ "listen", listen },
 			{ "start", start },
+			{ "port", port },
 			{ "__gc", mt_gc },
 			{ NULL, NULL },
 		};

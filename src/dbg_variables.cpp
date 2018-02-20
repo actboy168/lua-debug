@@ -911,4 +911,33 @@ namespace vscode
 		}
 		lua_pop(L, 1);
 	}
+
+	bool has_scopes(lua_State *L, lua_Debug* ar, var_type type)
+	{
+		switch (type)
+		{
+		case var_type::standard:
+			return true;
+		case var_type::global: {
+			lua_pushglobaltable(L);
+			lua_pushnil(L);
+			if (lua_next(L, -2)) {
+				lua_pop(L, 3);
+				return true;
+			}
+			lua_pop(L, 1);
+			return false;
+		}
+		case var_type::local:
+		case var_type::vararg:
+		case var_type::upvalue: {
+			const char* name = 0;
+			if (getlocal(L, ar, type, 1, name) && name) {
+				return true;
+			}
+			return false;
+		}
+		}
+		return false;
+	}
 }
