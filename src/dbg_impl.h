@@ -198,7 +198,6 @@ namespace vscode
 		step               step_;
 		int                stepping_stacklevel_;
 		lua_State*         stepping_lua_state_;
-		std::map<lua_State*, int> stacklevel_;
 		breakpoint         breakpoints_;
 		std::vector<stack> stack_;
 		std::unique_ptr<watchs> watch_;
