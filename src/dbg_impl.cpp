@@ -208,7 +208,7 @@ namespace vscode
 		}
 		if (ar->event != LUA_HOOKLINE)
 			return;
-		if (is_state(state::terminated)) {
+		if (is_state(state::terminated) || is_state(state::birth) || is_state(state::initialized)) {
 			return;
 		}
 
