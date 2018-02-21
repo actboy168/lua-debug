@@ -29,43 +29,6 @@ namespace vscode
 		return state_ == state;
 	}
 
-	void debugger_impl::set_step(step step)
-	{
-		step_ = step;
-	}
-
-	bool debugger_impl::is_step(step step)
-	{
-		return step_ == step;
-	}
-
-	void debugger_impl::step_in()
-	{
-		set_state(state::stepping);
-		set_step(step::in);
-	}
-
-	void debugger_impl::step_over(lua_State* L, lua_Debug* ar)
-	{
-		set_state(state::stepping);
-		set_step(step::over);
-		stepping_stacklevel_ = 0;
-		stepping_lua_state_ = L;
-	}
-
-	void debugger_impl::step_out(lua_State* L, lua_Debug* ar)
-	{
-		set_state(state::stepping);
-		set_step(step::out);
-		stepping_stacklevel_ = 1;
-		stepping_lua_state_ = L;
-	}
-
-	bool debugger_impl::check_step(lua_State* L, lua_Debug* ar)
-	{
-		return stepping_lua_state_ == L && stepping_stacklevel_ <= 0;
-	}
-
 	bool debugger_impl::check_breakpoint(lua_State *L, lua_Debug *ar)
 	{
 		if (ar->currentline > 0 && breakpoints_.has(ar->currentline))

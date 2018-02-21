@@ -184,6 +184,44 @@ namespace vscode
 		return n;
 	}
 
+	void debugger_impl::set_step(step step)
+	{
+		step_ = step;
+	}
+
+	bool debugger_impl::is_step(step step)
+	{
+		return step_ == step;
+	}
+
+	bool debugger_impl::check_step(lua_State* L, lua_Debug* ar)
+	{
+		return stepping_lua_state_ == L && stepping_current_level_ <= stepping_target_level_;
+	}
+
+	void debugger_impl::step_in()
+	{
+		set_state(state::stepping);
+		set_step(step::in);
+	}
+
+	void debugger_impl::step_over(lua_State* L, lua_Debug* ar)
+	{
+		set_state(state::stepping);
+		set_step(step::over);
+		stepping_target_level_ = stepping_current_level_ = get_stacklevel(L);
+		stepping_lua_state_ = L;
+	}
+
+	void debugger_impl::step_out(lua_State* L, lua_Debug* ar)
+	{
+		set_state(state::stepping);
+		set_step(step::out);
+		stepping_target_level_ = stepping_current_level_ = get_stacklevel(L);
+		stepping_target_level_--;
+		stepping_lua_state_ = L;
+	}
+
 	void debugger_impl::hook(lua_State *L, lua_Debug *ar)
 	{
 		if (!allowhook_) { return; }
@@ -194,7 +232,7 @@ namespace vscode
 		{
 			has_source_ = false;
 			if (stepping_lua_state_ == L) {
-				stepping_stacklevel_++;
+				stepping_current_level_++;
 			}
 			return;
 		}
@@ -202,7 +240,7 @@ namespace vscode
 		{
 			has_source_ = false;
 			if (stepping_lua_state_ == L) {
-				stepping_stacklevel_--;
+				stepping_current_level_ = get_stacklevel(L) - 1;
 			}
 			return;
 		}
@@ -414,7 +452,8 @@ namespace vscode
 		, network_(io)
 		, state_(state::birth)
 		, step_(step::in)
-		, stepping_stacklevel_(0)
+		, stepping_target_level_(0)
+		, stepping_current_level_(0)
 		, stepping_lua_state_(NULL)
 		, breakpoints_()
 		, stack_()

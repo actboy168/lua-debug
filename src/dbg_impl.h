@@ -196,7 +196,8 @@ namespace vscode
 		io*                network_;
 		state              state_;
 		step               step_;
-		int                stepping_stacklevel_;
+		int                stepping_target_level_;
+		int                stepping_current_level_;
 		lua_State*         stepping_lua_state_;
 		breakpoint         breakpoints_;
 		std::vector<stack> stack_;
