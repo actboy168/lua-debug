@@ -26,7 +26,7 @@ namespace delayload
 		case dliStartProcessing:
 			break;
 		case dliNotePreLoadLibrary:
-			if (strcmp("luacore.dll", pdli->szDll) == 0) {
+			if (strcmp("lua53.dll", pdli->szDll) == 0) {
 				if (!luadll_path.empty()) {
 					return (FARPROC)LoadLibraryW(luadll_path.c_str());
 				}
