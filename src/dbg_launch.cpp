@@ -46,10 +46,10 @@ namespace vscode
 			for (auto& v : args["env"].GetObject()) {
 				if (v.name.IsString()) {
 					if (v.value.IsString()) {
-						::SetEnvironmentVariableW(vscode::u2w(v.name.Get<std::string>()).c_str(), vscode::u2w(v.value.Get<std::string>()).c_str());
+						_wputenv((vscode::u2w(v.name.Get<std::string>()) + L"=" + vscode::u2w(v.value.Get<std::string>())).c_str());
 					}
 					else if (v.value.IsNull()) {
-						::SetEnvironmentVariableW(vscode::u2w(v.name.Get<std::string>()).c_str(), NULL);
+						_wputenv((vscode::u2w(v.name.Get<std::string>()) + L"=").c_str());
 					}
 				}
 			}
