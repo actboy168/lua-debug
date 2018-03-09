@@ -61,8 +61,6 @@ namespace vscode
 	bool debugger_impl::request_launch_done(rprotocol& req) {
 		auto& args = req["arguments"];
 		if (args.HasMember("runtimeExecutable") && args["runtimeExecutable"].IsString()) {
-			if (attachL_) 
-				init_redirector(req, attachL_);
 			return request_attach(req);
 		}
 		if (launchL_) {
