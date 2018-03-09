@@ -10,52 +10,8 @@
 #include "dbg_unicode.cpp"
 #include <base/filesystem.h>
 #include <base/hook/fp_call.h>
-#include <base/win/process.h>
-#include "inject.h"
 
-uint16_t create_process_with_debugger(const wchar_t* application, const wchar_t* command_line, const wchar_t* environment, const wchar_t* current_directory)
-{
-	base::win::process p;
-	inject_start(p);
-	if (!p.create(application, command_line, current_directory)) {
-		return 0;
-	}
-	return inject_wait(p);
-}
-
-uint16_t create_process_with_debugger(vscode::rprotocol& req)
-{
-	auto& args = req["arguments"];
-	if (args.HasMember("luadll") && args["luadll"].IsString()) {
-		std::wstring wluadll = vscode::u2w(args["luadll"].Get<std::string>());
-		if (!set_luadll(wluadll.data(), wluadll.size())) {
-			return 0;
-		}
-	}
-	
-	if (!args.HasMember("runtimeExecutable") || !args["runtimeExecutable"].IsString()) {
-		return 0;
-	}
-	std::wstring wapplication = vscode::u2w(args["runtimeExecutable"].Get<std::string>());
-	std::wstring wcommand = L"\"" + wapplication + L"\"";
-	if (args.HasMember("runtimeArgs") && args["runtimeArgs"].IsString()) {
-		wcommand = wcommand + L" " + vscode::u2w(args["runtimeArgs"].Get<std::string>());
-	}
-	std::wstring wcwd;
-	if (args.HasMember("cwd") && args["cwd"].IsString()) {
-		wcwd = vscode::u2w(args["cwd"].Get<std::string>());
-	}
-	else {
-		wcwd = fs::path(wapplication).remove_filename();
-	}
-
-	base::win::process p;
-	inject_start(p);
-	if (!p.create(wapplication.c_str(), wcommand.c_str(), wcwd.c_str())) {
-		return 0;
-	}
-	return inject_wait(p);
-}
+uint16_t create_process_with_debugger(vscode::rprotocol& req);
 
 int64_t seq = 1;
 

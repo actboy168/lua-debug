@@ -42,6 +42,18 @@ namespace vscode
 		if (args.HasMember("cwd") && args["cwd"].IsString()) {
 			fs::current_path(fs::path(u2w(args["cwd"].Get<std::string>())));
 		}
+		if (args.HasMember("env") && args["env"].IsObject()) {
+			for (auto& v : args["env"].GetObject()) {
+				if (v.name.IsString()) {
+					if (v.value.IsString()) {
+						::SetEnvironmentVariableW(vscode::u2w(v.name.Get<std::string>()).c_str(), vscode::u2w(v.value.Get<std::string>()).c_str());
+					}
+					else if (v.value.IsNull()) {
+						::SetEnvironmentVariableW(vscode::u2w(v.name.Get<std::string>()).c_str(), NULL);
+					}
+				}
+			}
+		}
 		cache_launch_ = std::move(req);
 		return false;
 	}
