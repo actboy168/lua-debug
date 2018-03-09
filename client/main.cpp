@@ -10,33 +10,25 @@
 #include "dbg_unicode.cpp"
 #include <base/filesystem.h>
 #include <base/hook/fp_call.h>
+#include <base/win/process.h>
+#include "inject.h"
 
-class module {
-public:
-	module(const wchar_t* path) : handle_(LoadLibraryW(path)) { }
-	~module() { }
-	HMODULE handle() const { return handle_; }
-	intptr_t api(const char* name) { return (intptr_t)GetProcAddress(handle_, name); }
-private:		
-	HMODULE handle_;
-};
+uint16_t create_process_with_debugger(const wchar_t* application, const wchar_t* command_line, const wchar_t* environment, const wchar_t* current_directory)
+{
+	base::win::process p;
+	inject_start(p);
+	if (!p.create(application, command_line, current_directory)) {
+		return 0;
+	}
+	return inject_wait(p);
+}
 
 uint16_t create_process_with_debugger(vscode::rprotocol& req)
 {
-	module dll(L"debugger-inject.dll");
-	if (!dll.handle()) {
-		return 0;
-	}
-	intptr_t create_process = dll.api("create_process_with_debugger");
-	intptr_t set_luadll = dll.api("set_luadll");
-	if (!create_process || !set_luadll) {
-		return 0;
-	}
-
 	auto& args = req["arguments"];
 	if (args.HasMember("luadll") && args["luadll"].IsString()) {
 		std::wstring wluadll = vscode::u2w(args["luadll"].Get<std::string>());
-		if (!base::c_call<bool>(set_luadll, wluadll.data(), wluadll.size())) {
+		if (!set_luadll(wluadll.data(), wluadll.size())) {
 			return 0;
 		}
 	}
@@ -44,7 +36,6 @@ uint16_t create_process_with_debugger(vscode::rprotocol& req)
 	if (!args.HasMember("runtimeExecutable") || !args["runtimeExecutable"].IsString()) {
 		return 0;
 	}
-
 	std::wstring wapplication = vscode::u2w(args["runtimeExecutable"].Get<std::string>());
 	std::wstring wcommand = L"\"" + wapplication + L"\"";
 	if (args.HasMember("runtimeArgs") && args["runtimeArgs"].IsString()) {
@@ -58,7 +49,12 @@ uint16_t create_process_with_debugger(vscode::rprotocol& req)
 		wcwd = fs::path(wapplication).remove_filename();
 	}
 
-	return base::c_call<uint16_t>(create_process, wapplication.c_str(), wcommand.c_str(), wcwd.c_str());
+	base::win::process p;
+	inject_start(p);
+	if (!p.create(wapplication.c_str(), wcommand.c_str(), wcwd.c_str())) {
+		return 0;
+	}
+	return inject_wait(p);
 }
 
 int64_t seq = 1;

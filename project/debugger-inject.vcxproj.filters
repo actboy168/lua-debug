@@ -101,5 +101,6 @@
     <ClInclude Include="..\inject\base\util\dynarray.h">
       <Filter>base\util</Filter>
     </ClInclude>
+    <ClInclude Include="..\inject\inject.h" />
   </ItemGroup>
 </Project>

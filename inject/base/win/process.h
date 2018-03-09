@@ -8,7 +8,7 @@
 
 namespace base { namespace win {
 
-	class _BASE_API process
+	class _BASE_EXPORT process
 	{
 	public:
 		enum STATUE
@@ -16,11 +16,19 @@ namespace base { namespace win {
 			PROCESS_STATUE_READY,
 			PROCESS_STATUE_RUNNING,
 		};
-		
+
+		enum CONSOLE
+		{
+			CONSOLE_INHERIT,
+			CONSOLE_DISABLE,
+			CONSOLE_NEW,
+		};
+
 		process();
 		~process();
 		bool     inject(const fs::path& dllpath);
 		bool     replace(const fs::path& dllpath, const char* dllname);
+		bool     set_console(CONSOLE type);
 		bool     hide_window();
 		bool     redirect(HANDLE std_input, HANDLE std_output, HANDLE std_error);
 		bool     create(const std::optional<fs::path>& application, const std::wstring& command_line, const std::optional<fs::path>& current_directory = std::optional<fs::path>());
@@ -31,6 +39,7 @@ namespace base { namespace win {
 		bool     close();
 		bool     release(PROCESS_INFORMATION* pi_ptr);
 		int      id() const;
+		void     set_env(const std::wstring& key, const std::wstring& value);
 
 	private:
 		uint32_t                statue_;
@@ -38,10 +47,12 @@ namespace base { namespace win {
 #pragma warning(disable:4251)
 		fs::path inject_dll_;
 		std::map<std::string, fs::path> replace_dll_;
+		std::map<std::wstring, std::wstring> env_;
 #pragma warning(pop)
 		STARTUPINFOW            si_;
 		PROCESS_INFORMATION     pi_;
 		bool                    inherit_handle_;
+		DWORD                   flags_;
 	};
 
 	_BASE_API bool create_process(

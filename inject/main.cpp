@@ -4,6 +4,7 @@
 #include <base/hook/fp_call.h>
 #include <base/win/process.h>
 #include "utility.h"
+#include "inject.h"
 
 #pragma data_seg("Shared")
 bool                         shared_enable = false;
@@ -114,7 +115,6 @@ BOOL APIENTRY DllMain(HMODULE module, DWORD reason, LPVOID /*pReserved*/)
 	return TRUE;
 }
 
-extern "C" __declspec(dllexport) 
 bool set_luadll(const wchar_t* str, size_t len)
 {
 	if (len + 1 > _countof(shared_luadll_str)) { return false; }
@@ -124,17 +124,16 @@ bool set_luadll(const wchar_t* str, size_t len)
 	return true;
 }
 
-extern "C" __declspec(dllexport)
-uint16_t create_process_with_debugger(const wchar_t* application, const wchar_t* command_line, const wchar_t* current_directory)
+void inject_start(base::win::process& p)
 {
 	shared_port = 0;
 	shared_enable = true;
-
-	base::win::process p;
 	p.inject(get_self_path());
-	if (!p.create(application, command_line, current_directory)) {
-		return 0;
-	}
+}
+
+
+uint16_t inject_wait(base::win::process& p)
+{
 	for (int i = 0; i < 1000 || !p.is_running(); ++i)
 	{
 		if (shared_port != 0)
