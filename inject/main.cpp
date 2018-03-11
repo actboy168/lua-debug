@@ -220,7 +220,7 @@ void inject_start(base::win::process& p)
 
 uint16_t inject_wait(base::win::process& p)
 {
-	for (int i = 0; i < 1000 || !p.is_running(); ++i)
+	for (int i = 0; i < 100 || !p.is_running(); ++i)
 	{
 		if (shared_port != 0)
 			return shared_port;
