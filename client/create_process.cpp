@@ -7,13 +7,6 @@
 uint16_t create_process_with_debugger(vscode::rprotocol& req)
 {
 	auto& args = req["arguments"];
-	if (args.HasMember("luadll") && args["luadll"].IsString()) {
-		std::wstring wluadll = vscode::u2w(args["luadll"].Get<std::string>());
-		if (!set_luadll(wluadll.data(), wluadll.size())) {
-			return 0;
-		}
-	}
-
 	if (!args.HasMember("runtimeExecutable") || !args["runtimeExecutable"].IsString()) {
 		return 0;
 	}

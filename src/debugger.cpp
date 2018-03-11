@@ -50,10 +50,10 @@ std::unique_ptr<vscode::network>  global_io;
 std::unique_ptr<vscode::debugger> global_dbg;
 vscode::coding                    global_coding = vscode::coding::ansi;
 
-void __cdecl set_luadll(const char* path, size_t len)
+void __cdecl set_luadll(void* luadll)
 {
 #if defined(DEBUGGER_DELAYLOAD_LUA)
-	delayload::set_luadll(vscode::u2w(vscode::strview(path, len)));
+	delayload::set_luadll((HMODULE)luadll);
 #endif
 }
 

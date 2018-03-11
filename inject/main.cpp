@@ -9,12 +9,10 @@
 #pragma data_seg("Shared")
 bool                         shared_enable = false;
 uint16_t                     shared_port   = 0;
-wchar_t                      shared_luadll_str[MAX_PATH] = {0};
-size_t                       shared_luadll_len = 0;
 #pragma data_seg()
 #pragma comment(linker, "/section:Shared,rws")
 
-std::wstring_view shared_luadll(shared_luadll_str, shared_luadll_len);
+HMODULE luadll = 0;
 
 void initialize_debugger(void* L)
 {
@@ -32,9 +30,7 @@ void initialize_debugger(void* L)
 	if (!set_luadll || !start_server || !attach_lua) {
 		return;
 	}
-	if (shared_luadll.size() != 0) {
-		base::c_call<void>(set_luadll, shared_luadll.data(), shared_luadll.size());
-	}
+	base::c_call<void>(set_luadll, luadll);
 	shared_port = base::c_call<uint16_t>(start_server, "127.0.0.1", 0, true, false);
 	base::c_call<void>(attach_lua, L, true);
 }
@@ -135,10 +131,13 @@ static bool IsLuaDll(HMODULE hModule)
 
 static bool HookLuaDll(HMODULE hModule)
 {
-	lua_newstate::init(hModule, "lua_newstate");
-	luaL_newstate::init(hModule, "luaL_newstate");
-	lua_close::init(hModule, "lua_close");
-	return false;
+	if (!luadll) {
+		luadll = hModule;
+		lua_newstate::init(hModule, "lua_newstate");
+		luaL_newstate::init(hModule, "luaL_newstate");
+		lua_close::init(hModule, "lua_close");
+	}
+	return true;
 }
 
 std::mutex lockLoadDll;
@@ -209,15 +208,6 @@ BOOL APIENTRY DllMain(HMODULE module, DWORD reason, LPVOID /*pReserved*/)
 		}
 	}
 	return TRUE;
-}
-
-bool set_luadll(const wchar_t* str, size_t len)
-{
-	if (len + 1 > _countof(shared_luadll_str)) { return false; }
-	memcpy(shared_luadll_str, str, len * sizeof(wchar_t));
-	shared_luadll_str[len] = L'\0';
-	shared_luadll_len = len;
-	return true;
 }
 
 void inject_start(base::win::process& p)
