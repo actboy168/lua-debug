@@ -65,7 +65,7 @@ void __cdecl set_coding(int coding)
 	}
 }
 
-uint16_t __cdecl start_server(const char* ip, uint16_t port, bool launch, bool rebind)
+void __cdecl start_server(const char* ip, uint16_t port, bool launch, bool rebind)
 {
 	if (!global_io || !global_dbg)
 	{
@@ -74,7 +74,6 @@ uint16_t __cdecl start_server(const char* ip, uint16_t port, bool launch, bool r
 		if (launch)
 			global_io->kill_process_when_close();
 	}
-	return global_io->get_port();
 }
 
 void __cdecl attach_lua(lua_State* L, bool pause)

@@ -30,7 +30,7 @@ void initialize_debugger(void* L)
 		return;
 	}
 	base::c_call<void>(set_luadll, luadll);
-	uint16_t port = base::c_call<uint16_t>(start_server, "127.0.0.1", 0, true, false);
+	base::c_call<void>(start_server, "127.0.0.1", 0, true, false);
 	base::c_call<void>(attach_lua, L, true);
 }
 
