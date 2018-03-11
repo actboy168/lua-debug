@@ -50,6 +50,9 @@
     <ClCompile Include="..\inject\base\hook\detail\inject_dll.cpp">
       <Filter>base\hook\detail</Filter>
     </ClCompile>
+    <ClCompile Include="..\inject\base\hook\inline.cpp">
+      <Filter>base\hook</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\inject\base\hook\detail\export_address_table.h">
@@ -102,5 +105,8 @@
       <Filter>base\util</Filter>
     </ClInclude>
     <ClInclude Include="..\inject\inject.h" />
+    <ClInclude Include="..\inject\base\hook\inline.h">
+      <Filter>base\hook</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

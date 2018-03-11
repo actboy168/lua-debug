@@ -1,6 +1,5 @@
 #include <Windows.h>
-#include <base/hook/iat.h>
-#include <base/hook/eat.h>
+#include <base/hook/inline.h>
 #include <base/hook/fp_call.h>
 #include <base/win/process.h>
 #include "utility.h"
@@ -86,29 +85,80 @@ struct lua_close
 	}
 };
 
+
+static HMODULE EnumerateModulesInProcess(HANDLE hProcess, HMODULE hModuleLast, PIMAGE_NT_HEADERS32 pNtHeader)
+{
+	MEMORY_BASIC_INFORMATION mbi = { 0 };
+	for (PBYTE pbLast = (PBYTE)hModuleLast + 0x10000;; pbLast = (PBYTE)mbi.BaseAddress + mbi.RegionSize) {
+		if (VirtualQueryEx(hProcess, (PVOID)pbLast, &mbi, sizeof(mbi)) <= 0) {
+			break;
+		}
+		if (((PBYTE)mbi.BaseAddress + mbi.RegionSize) < pbLast) {
+			break;
+		}
+		if ((mbi.State != MEM_COMMIT) ||
+			((mbi.Protect & 0xff) == PAGE_NOACCESS) ||
+			(mbi.Protect & PAGE_GUARD)) {
+			continue;
+		}
+		__try {
+			IMAGE_DOS_HEADER idh;
+			if (!ReadProcessMemory(hProcess, pbLast, &idh, sizeof(idh), NULL)) {
+				continue;
+			}
+			if (idh.e_magic != IMAGE_DOS_SIGNATURE || (DWORD)idh.e_lfanew > mbi.RegionSize || (DWORD)idh.e_lfanew < sizeof(idh)) {
+				continue;
+			}
+			if (!ReadProcessMemory(hProcess, pbLast + idh.e_lfanew, pNtHeader, sizeof(*pNtHeader), NULL)) {
+				continue;
+			}
+			if (pNtHeader->Signature != IMAGE_NT_SIGNATURE) {
+				continue;
+			}
+			return (HMODULE)pbLast;
+		}
+		__except (EXCEPTION_EXECUTE_HANDLER) {
+			continue;
+		}
+	}
+	return NULL;
+}
+
+static HMODULE find_luadll()
+{
+	HANDLE hProcess = GetCurrentProcess();
+	HMODULE hModule = NULL;
+	for (;;) {
+		IMAGE_NT_HEADERS32 inh;
+		if ((hModule = EnumerateModulesInProcess(hProcess, hModule, &inh)) == NULL) {
+			break;
+		}
+		if (GetProcAddress(hModule, "lua_close") && (GetProcAddress(hModule, "lua_newstate") || GetProcAddress(hModule, "luaL_newstate"))) {
+			return hModule;
+		}
+	}
+	return NULL;
+}
+
 BOOL APIENTRY DllMain(HMODULE module, DWORD reason, LPVOID /*pReserved*/)
 {
 	if (reason == DLL_PROCESS_ATTACH)
 	{
 		::DisableThreadLibraryCalls(module);
 		if (shared_enable) {
-			if (shared_luadll.size() != 0) {
-				lua_newstate::init(shared_luadll.data(), "lua_newstate");
-				luaL_newstate::init(shared_luadll.data(), "luaL_newstate");
-				lua_close::init(shared_luadll.data(), "lua_close");
-			}
-			else {
-				const char* luadll = search_api("lua_newstate", "luaL_newstate");
-				if (luadll) {
-					lua_newstate::init(luadll, "lua_newstate");
-					luaL_newstate::init(luadll, "luaL_newstate");
-					lua_close::init(luadll, "lua_close");
+			HMODULE luadll = find_luadll();
+			if (!luadll) {
+				if (shared_luadll.size() != 0) {
+					luadll = ::LoadLibraryW(shared_luadll.data());
 				}
 				else {
-					lua_newstate::init(L"luacore.dll", "lua_newstate");
-					luaL_newstate::init(L"luacore.dll", "luaL_newstate");
-					lua_close::init(L"luacore.dll", "lua_close");
+					luadll = ::LoadLibraryW(L"lua53.dll");
 				}
+			}
+			if (luadll) {
+				lua_newstate::init(luadll, "lua_newstate");
+				luaL_newstate::init(luadll, "luaL_newstate");
+				lua_close::init(luadll, "lua_close");
 			}
 		}
 	}

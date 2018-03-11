@@ -18,6 +18,7 @@
     <ClCompile Include="..\inject\base\hook\detail\replace_pointer.cpp" />
     <ClCompile Include="..\inject\base\hook\eat.cpp" />
     <ClCompile Include="..\inject\base\hook\iat.cpp" />
+    <ClCompile Include="..\inject\base\hook\inline.cpp" />
     <ClCompile Include="..\inject\base\win\pe_reader.cpp" />
     <ClCompile Include="..\inject\base\win\process.cpp" />
     <ClCompile Include="..\inject\main.cpp" />
@@ -36,12 +37,18 @@
     <ClInclude Include="..\inject\base\hook\eat.h" />
     <ClInclude Include="..\inject\base\hook\fp_call.h" />
     <ClInclude Include="..\inject\base\hook\iat.h" />
+    <ClInclude Include="..\inject\base\hook\inline.h" />
     <ClInclude Include="..\inject\base\util\dynarray.h" />
     <ClInclude Include="..\inject\base\util\horrible_cast.h" />
     <ClInclude Include="..\inject\base\win\pe_reader.h" />
     <ClInclude Include="..\inject\base\win\process.h" />
     <ClInclude Include="..\inject\inject.h" />
     <ClInclude Include="..\inject\utility.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\inject\minhook\build\VC15\libMinHook.vcxproj">
+      <Project>{f142a341-5ee0-442d-a15f-98ae9b48dbae}</Project>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{20F15A76-D908-475B-A904-6ACD1763D5FB}</ProjectGuid>
@@ -90,7 +97,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_BASE_EXPORTS;DISABLE_DETOURS;ASMJIT_DISABLE_BUILDER;ASMJIT_DISABLE_COMPILER;ASMJIT_DISABLE_LOGGING;ASMJIT_DISABLE_TEXT;_WINSOCK_DEPRECATED_NO_WARNINGS;_WIN32_WINNT=_WIN32_WINNT_WIN7;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\inject</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\inject;$(SolutionDir)..\inject\minhook\include</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <TreatWarningAsError>true</TreatWarningAsError>
@@ -111,7 +118,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>_BASE_EXPORTS;DISABLE_DETOURS;_WINSOCK_DEPRECATED_NO_WARNINGS;_WIN32_WINNT=_WIN32_WINNT_WIN7;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\inject</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\inject;$(SolutionDir)..\inject\minhook\include</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <TreatWarningAsError>true</TreatWarningAsError>

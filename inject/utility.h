@@ -10,26 +10,10 @@ template <class T>
 struct hook_helper
 {
 	static uintptr_t real;
-	static void init(const wchar_t* module_path, const char* api_name)
+	static void init(HMODULE module, const char* api_name)
 	{
-		fs::path dllname = fs::path(module_path).filename();
-		HMODULE module_handle = GetModuleHandleW(dllname.c_str());
-		if (module_handle) {
-			base::hook::iat(GetModuleHandleW(NULL), dllname.string().c_str(), api_name, (uintptr_t)T::fake);
-		}
-		real = base::hook::eat(module_path, api_name, (uintptr_t)T::fake);
-	}
-
-	static void init(const char* module_name, const char* api_name)
-	{
-		HMODULE module_handle = GetModuleHandleA(module_name);
-		if (module_handle) {
-			base::hook::iat(GetModuleHandleW(NULL), module_name, api_name, (uintptr_t)T::fake);
-			real = base::hook::eat(module_handle, api_name, (uintptr_t)T::fake);
-		}
-		else {
-			real = base::hook::eat(LoadLibraryA(module_name), api_name, (uintptr_t)T::fake);
-		}
+		real = (uintptr_t)GetProcAddress(module, api_name);
+		base::hook::install(&real, (uintptr_t)T::fake);
 	}
 };
 template <class T>
