@@ -21,29 +21,14 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\inject\base\hook\detail\export_address_table.cpp">
-      <Filter>base\hook\detail</Filter>
-    </ClCompile>
-    <ClCompile Include="..\inject\base\hook\detail\import_address_table.cpp">
-      <Filter>base\hook\detail</Filter>
-    </ClCompile>
     <ClCompile Include="..\inject\base\hook\detail\memory_protect.cpp">
       <Filter>base\hook\detail</Filter>
     </ClCompile>
     <ClCompile Include="..\inject\base\hook\detail\replace_pointer.cpp">
       <Filter>base\hook\detail</Filter>
     </ClCompile>
-    <ClCompile Include="..\inject\base\hook\iat.cpp">
-      <Filter>base\hook</Filter>
-    </ClCompile>
-    <ClCompile Include="..\inject\base\win\pe_reader.cpp">
-      <Filter>base\win</Filter>
-    </ClCompile>
     <ClCompile Include="..\inject\main.cpp" />
     <ClCompile Include="..\inject\utility.cpp" />
-    <ClCompile Include="..\inject\base\hook\eat.cpp">
-      <Filter>base\hook</Filter>
-    </ClCompile>
     <ClCompile Include="..\inject\base\win\process.cpp">
       <Filter>base\win</Filter>
     </ClCompile>
@@ -55,12 +40,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\inject\base\hook\detail\export_address_table.h">
-      <Filter>base\hook\detail</Filter>
-    </ClInclude>
-    <ClInclude Include="..\inject\base\hook\detail\import_address_table.h">
-      <Filter>base\hook\detail</Filter>
-    </ClInclude>
     <ClInclude Include="..\inject\base\hook\detail\memory_protect.h">
       <Filter>base\hook\detail</Filter>
     </ClInclude>
@@ -70,12 +49,6 @@
     <ClInclude Include="..\inject\base\hook\fp_call.h">
       <Filter>base\hook</Filter>
     </ClInclude>
-    <ClInclude Include="..\inject\base\hook\iat.h">
-      <Filter>base\hook</Filter>
-    </ClInclude>
-    <ClInclude Include="..\inject\base\win\pe_reader.h">
-      <Filter>base\win</Filter>
-    </ClInclude>
     <ClInclude Include="..\inject\base\config.h">
       <Filter>base</Filter>
     </ClInclude>
@@ -83,9 +56,6 @@
       <Filter>base\util</Filter>
     </ClInclude>
     <ClInclude Include="..\inject\utility.h" />
-    <ClInclude Include="..\inject\base\hook\eat.h">
-      <Filter>base\hook</Filter>
-    </ClInclude>
     <ClInclude Include="..\inject\base\win\process.h">
       <Filter>base\win</Filter>
     </ClInclude>

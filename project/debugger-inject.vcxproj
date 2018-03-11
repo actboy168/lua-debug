@@ -11,15 +11,10 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\inject\base\hook\detail\export_address_table.cpp" />
-    <ClCompile Include="..\inject\base\hook\detail\import_address_table.cpp" />
     <ClCompile Include="..\inject\base\hook\detail\inject_dll.cpp" />
     <ClCompile Include="..\inject\base\hook\detail\memory_protect.cpp" />
     <ClCompile Include="..\inject\base\hook\detail\replace_pointer.cpp" />
-    <ClCompile Include="..\inject\base\hook\eat.cpp" />
-    <ClCompile Include="..\inject\base\hook\iat.cpp" />
     <ClCompile Include="..\inject\base\hook\inline.cpp" />
-    <ClCompile Include="..\inject\base\win\pe_reader.cpp" />
     <ClCompile Include="..\inject\base\win\process.cpp" />
     <ClCompile Include="..\inject\main.cpp" />
     <ClCompile Include="..\inject\utility.cpp" />
@@ -29,18 +24,13 @@
     <ClInclude Include="..\inject\base\hook\assembler\operand.h" />
     <ClInclude Include="..\inject\base\hook\assembler\register.h" />
     <ClInclude Include="..\inject\base\hook\assembler\writer.h" />
-    <ClInclude Include="..\inject\base\hook\detail\export_address_table.h" />
-    <ClInclude Include="..\inject\base\hook\detail\import_address_table.h" />
     <ClInclude Include="..\inject\base\hook\detail\inject_dll.h" />
     <ClInclude Include="..\inject\base\hook\detail\memory_protect.h" />
     <ClInclude Include="..\inject\base\hook\detail\replace_pointer.h" />
-    <ClInclude Include="..\inject\base\hook\eat.h" />
     <ClInclude Include="..\inject\base\hook\fp_call.h" />
-    <ClInclude Include="..\inject\base\hook\iat.h" />
     <ClInclude Include="..\inject\base\hook\inline.h" />
     <ClInclude Include="..\inject\base\util\dynarray.h" />
     <ClInclude Include="..\inject\base\util\horrible_cast.h" />
-    <ClInclude Include="..\inject\base\win\pe_reader.h" />
     <ClInclude Include="..\inject\base\win\process.h" />
     <ClInclude Include="..\inject\inject.h" />
     <ClInclude Include="..\inject\utility.h" />

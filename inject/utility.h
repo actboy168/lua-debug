@@ -4,7 +4,6 @@
 #include <Windows.h>
 
 fs::path get_self_path();
-const char* search_api(const char* api1, const char* api2);
 
 template <class T>
 struct hook_helper
