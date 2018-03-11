@@ -8,7 +8,6 @@
 
 #pragma data_seg("Shared")
 bool                         shared_enable = false;
-uint16_t                     shared_port   = 0;
 #pragma data_seg()
 #pragma comment(linker, "/section:Shared,rws")
 
@@ -31,7 +30,7 @@ void initialize_debugger(void* L)
 		return;
 	}
 	base::c_call<void>(set_luadll, luadll);
-	shared_port = base::c_call<uint16_t>(start_server, "127.0.0.1", 0, true, false);
+	uint16_t port = base::c_call<uint16_t>(start_server, "127.0.0.1", 0, true, false);
 	base::c_call<void>(attach_lua, L, true);
 }
 
@@ -212,19 +211,6 @@ BOOL APIENTRY DllMain(HMODULE module, DWORD reason, LPVOID /*pReserved*/)
 
 void inject_start(base::win::process& p)
 {
-	shared_port = 0;
 	shared_enable = true;
 	p.inject(get_self_path());
-}
-
-
-uint16_t inject_wait(base::win::process& p)
-{
-	for (int i = 0; i < 100 || !p.is_running(); ++i)
-	{
-		if (shared_port != 0)
-			return shared_port;
-		Sleep(100);
-	}
-	return 0;
 }

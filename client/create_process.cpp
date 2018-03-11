@@ -4,7 +4,7 @@
 #include "dbg_protocol.h"
 #include "dbg_unicode.h"
 
-uint16_t create_process_with_debugger(vscode::rprotocol& req)
+bool create_process_with_debugger(vscode::rprotocol& req, uint16_t port)
 {
 	auto& args = req["arguments"];
 	if (!args.HasMember("runtimeExecutable") || !args["runtimeExecutable"].IsString()) {
@@ -41,8 +41,6 @@ uint16_t create_process_with_debugger(vscode::rprotocol& req)
 		}
 		req.RemoveMember("env");
 	}
-	if (!p.create(wapplication.c_str(), wcommand.c_str(), wcwd.c_str())) {
-		return 0;
-	}
-	return inject_wait(p);
+	p.set_env(L"LUADBG_PORT", std::to_wstring(port));
+	return p.create(wapplication.c_str(), wcommand.c_str(), wcwd.c_str());
 }

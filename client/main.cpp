@@ -6,13 +6,15 @@
 #include "stdinput.h"
 #include "launch.h"
 #include "attach.h"
+#include "server.h"
 #include "dbg_capabilities.h"
 #include "dbg_unicode.cpp"
 #include <base/filesystem.h>
 #include <base/hook/fp_call.h>
 
-uint16_t create_process_with_debugger(vscode::rprotocol& req);
+bool create_process_with_debugger(vscode::rprotocol& req, uint16_t port);
 
+uint16_t server_port = 0;
 int64_t seq = 1;
 
 void response_initialized(stdinput& io, vscode::rprotocol& req)
@@ -37,6 +39,16 @@ void response_error(stdinput& io, vscode::rprotocol& req, const char *msg)
 	io.output(res);
 }
 
+int stoi_nothrow(std::string const& str)
+{
+	try {
+		return std::stoi(str);
+	}
+	catch (...) {
+	}
+	return 0;
+}
+
 int main()
 {
 	_setmode(_fileno(stdout), _O_BINARY);
@@ -44,8 +56,10 @@ int main()
 
 	stdinput io;
 	vscode::rprotocol initproto;
+	vscode::rprotocol connectproto;
 	std::unique_ptr<attach> attach_;
 	std::unique_ptr<launch> launch_;
+	std::unique_ptr<server> server_;
 
 	for (;; std::this_thread::sleep_for(std::chrono::milliseconds(10))) {
 		if (launch_) {
@@ -54,6 +68,10 @@ int main()
 		}
 		if (attach_) {
 			attach_->update();
+			continue;
+		}
+		if (server_) {
+			server_->update();
 			continue;
 		}
 		while (!io.input_empty()) {
@@ -69,17 +87,34 @@ int main()
 				else if (rp["command"] == "launch") {
 					auto& args = rp["arguments"];
 					if (args.HasMember("runtimeExecutable")) {
-						uint16_t port = create_process_with_debugger(rp);
-						if (port == 0) {
+						if (!server_) {
+							server_.reset(new server("127.0.0.1", 0));
+							server_->event_recv([&](const std::string& msg) {
+								uint16_t port = stoi_nothrow(msg);
+								if (!port) {
+									response_error(io, connectproto, "Launch failed");
+									exit(0);
+									return;
+								}
+								attach_.reset(new attach(io));
+								attach_->connect(net::endpoint("127.0.0.1", port));
+								if (seq > 1) initproto.AddMember("__initseq", seq, initproto.GetAllocator());
+								attach_->send(initproto);
+								attach_->send(connectproto);
+							});
+							server_port = wait_ok(server_.get());
+							if (!server_port) {
+								response_error(io, rp, "Launch failed");
+								exit(0);
+								continue;
+							}
+						}
+						if (!create_process_with_debugger(rp, server_port)) {
 							response_error(io, rp, "Launch failed");
 							exit(0);
 							continue;
 						}
-						attach_.reset(new attach(io));
-						attach_->connect(net::endpoint("127.0.0.1", port));
-						if (seq > 1) initproto.AddMember("__initseq", seq, initproto.GetAllocator());
-						attach_->send(initproto);
-						attach_->send(rp);
+						connectproto = std::move(rp);
 					}
 					else {
 						launch_.reset(new launch(io));

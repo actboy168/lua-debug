@@ -21,12 +21,14 @@
   <ItemGroup>
     <ClCompile Include="..\client\attach.cpp" />
     <ClCompile Include="..\client\create_process.cpp" />
+    <ClCompile Include="..\client\server.cpp" />
     <ClCompile Include="..\client\launch.cpp" />
     <ClCompile Include="..\client\main.cpp" />
     <ClCompile Include="..\client\stdinput.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\client\attach.h" />
+    <ClInclude Include="..\client\server.h" />
     <ClInclude Include="..\client\launch.h" />
     <ClInclude Include="..\client\stdinput.h" />
   </ItemGroup>
