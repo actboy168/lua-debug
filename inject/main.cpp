@@ -2,6 +2,7 @@
 #include <base/hook/inline.h>
 #include <base/hook/fp_call.h>
 #include <base/win/process.h>
+#include <mutex>
 #include "utility.h"
 #include "inject.h"
 
@@ -124,8 +125,43 @@ static HMODULE EnumerateModulesInProcess(HANDLE hProcess, HMODULE hModuleLast, P
 	return NULL;
 }
 
-static HMODULE find_luadll()
+static bool IsLuaDll(HMODULE hModule)
 {
+	if (GetProcAddress(hModule, "lua_close") && (GetProcAddress(hModule, "lua_newstate") || GetProcAddress(hModule, "luaL_newstate"))) {
+		return true;
+	}
+	return false;
+}
+
+static bool HookLuaDll(HMODULE hModule)
+{
+	lua_newstate::init(hModule, "lua_newstate");
+	luaL_newstate::init(hModule, "luaL_newstate");
+	lua_close::init(hModule, "lua_close");
+	return false;
+}
+
+std::mutex lockLoadDll;
+std::set<std::wstring> loadedModules;
+
+static bool TryHookLuaDll(HMODULE hModule)
+{
+	wchar_t moduleName[MAX_PATH];
+	GetModuleFileNameW(hModule, moduleName, MAX_PATH);
+	if (loadedModules.find(moduleName) != loadedModules.end()) {
+		return false;
+	}
+	loadedModules.insert(moduleName);
+	if (IsLuaDll(hModule)) {
+		HookLuaDll(hModule);
+		return true;
+	}
+	return false;
+}
+
+static bool FindLuaDll()
+{
+	std::unique_lock<std::mutex> lock(lockLoadDll);
 	HANDLE hProcess = GetCurrentProcess();
 	HMODULE hModule = NULL;
 	for (;;) {
@@ -133,11 +169,32 @@ static HMODULE find_luadll()
 		if ((hModule = EnumerateModulesInProcess(hProcess, hModule, &inh)) == NULL) {
 			break;
 		}
-		if (GetProcAddress(hModule, "lua_close") && (GetProcAddress(hModule, "lua_newstate") || GetProcAddress(hModule, "luaL_newstate"))) {
-			return hModule;
+		if (TryHookLuaDll(hModule)) {
+			return true;
 		}
 	}
-	return NULL;
+	return false;
+}
+
+uintptr_t realLoadLibraryExW = 0;
+HMODULE __stdcall fakeLoadLibraryExW(LPCWSTR lpLibFileName, HANDLE hFile, DWORD dwFlags)
+{
+	HMODULE hModule = base::std_call<HMODULE>(realLoadLibraryExW, lpLibFileName, hFile, dwFlags);
+	std::unique_lock<std::mutex> lock(lockLoadDll);
+	TryHookLuaDll(hModule);
+	return hModule;
+}
+
+static void WaitLuaDll()
+{
+	HMODULE hModuleKernel = GetModuleHandleW(L"kernel32.dll");
+	if (hModuleKernel)
+	{
+		realLoadLibraryExW = (uintptr_t)GetProcAddress(hModuleKernel, "LoadLibraryExW");
+		if (realLoadLibraryExW) {
+			base::hook::install(&realLoadLibraryExW, (uintptr_t)fakeLoadLibraryExW);
+		}
+	}
 }
 
 BOOL APIENTRY DllMain(HMODULE module, DWORD reason, LPVOID /*pReserved*/)
@@ -146,19 +203,8 @@ BOOL APIENTRY DllMain(HMODULE module, DWORD reason, LPVOID /*pReserved*/)
 	{
 		::DisableThreadLibraryCalls(module);
 		if (shared_enable) {
-			HMODULE luadll = find_luadll();
-			if (!luadll) {
-				if (shared_luadll.size() != 0) {
-					luadll = ::LoadLibraryW(shared_luadll.data());
-				}
-				else {
-					luadll = ::LoadLibraryW(L"lua53.dll");
-				}
-			}
-			if (luadll) {
-				lua_newstate::init(luadll, "lua_newstate");
-				luaL_newstate::init(luadll, "luaL_newstate");
-				lua_close::init(luadll, "lua_close");
+			if (FindLuaDll()) {
+				WaitLuaDll();
 			}
 		}
 	}
