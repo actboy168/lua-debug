@@ -3,6 +3,7 @@
 #include <base/hook/fp_call.h>
 #include <base/win/process.h>
 #include <mutex>
+#include <stack>
 #include "utility.h"
 
 HMODULE luadll = 0;
@@ -42,40 +43,6 @@ void uninitialize_debugger(void* L)
 	Sleep(1000);
 }
 
-struct lua_newstate
-	: public hook_helper<lua_newstate>
-{
-	static void* __cdecl fake(void* f, void* ud)
-	{
-		void* L = base::c_call<void*>(real, f, ud);
-		if (L) initialize_debugger(L);
-		return L;
-	}
-};
-
-struct luaL_newstate
-	: public hook_helper<luaL_newstate>
-{
-	static void* __cdecl fake()
-	{
-		void* L = base::c_call<void*>(real);
-
-		if (L) initialize_debugger(L);
-		return L;
-	}
-};
-
-struct lua_close
-	: public hook_helper<lua_close>
-{
-	static void __cdecl fake(void* L)
-	{
-		uninitialize_debugger(L);
-		return base::c_call<void>(real, L);
-	}
-};
-
-
 static HMODULE EnumerateModulesInProcess(HANDLE hProcess, HMODULE hModuleLast, PIMAGE_NT_HEADERS32 pNtHeader)
 {
 	MEMORY_BASIC_INFORMATION mbi = { 0 };
@@ -114,23 +81,64 @@ static HMODULE EnumerateModulesInProcess(HANDLE hProcess, HMODULE hModuleLast, P
 	return NULL;
 }
 
-static bool IsLuaDll(HMODULE hModule)
-{
-	if (GetProcAddress(hModule, "lua_close") && (GetProcAddress(hModule, "lua_newstate") || GetProcAddress(hModule, "luaL_newstate"))) {
+namespace lua {
+	namespace real {
+		uintptr_t lua_newstate = 0;
+		uintptr_t luaL_newstate = 0;
+		uintptr_t lua_close = 0;
+	}
+	namespace fake {
+		static void* __cdecl lua_newstate(void* f, void* ud)
+		{
+			void* L = base::c_call<void*>(real::lua_newstate, f, ud);
+			if (L) initialize_debugger(L);
+			return L;
+		}
+		static void* __cdecl luaL_newstate()
+		{
+			void* L = base::c_call<void*>(real::luaL_newstate);
+			if (L) initialize_debugger(L);
+			return L;
+		}
+		void __cdecl lua_close(void* L)
+		{
+			uninitialize_debugger(L);
+			return base::c_call<void>(real::lua_close, L);
+		}
+	}
+
+	bool hook(HMODULE m)
+	{
+		struct Hook {
+			uintptr_t& real;
+			uintptr_t fake;
+		};
+		std::vector<Hook> tasks;
+
+#define HOOK(name) do {\
+			real::##name = (uintptr_t)GetProcAddress(m, #name); \
+			if (!real::##name) return false; \
+			tasks.push_back({real::##name, (uintptr_t)fake::##name}); \
+		} while (0)
+
+		HOOK(lua_newstate);
+		HOOK(luaL_newstate);
+		HOOK(lua_close);
+
+		std::stack<base::hook::hook_t> rollback;
+		for (auto& task : tasks) {
+			base::hook::hook_t h;
+			if (!base::hook::install(&task.real, task.fake, &h)) {
+				while (!rollback.empty()) {
+					base::hook::uninstall(&rollback.top());
+					rollback.pop();
+				}
+				return false;
+			}
+			rollback.push(h);
+		}
 		return true;
 	}
-	return false;
-}
-
-static bool HookLuaDll(HMODULE hModule)
-{
-	if (!luadll) {
-		luadll = hModule;
-		lua_newstate::init(hModule, "lua_newstate");
-		luaL_newstate::init(hModule, "luaL_newstate");
-		lua_close::init(hModule, "lua_close");
-	}
-	return true;
 }
 
 std::mutex lockLoadDll;
@@ -144,11 +152,7 @@ static bool TryHookLuaDll(HMODULE hModule)
 		return false;
 	}
 	loadedModules.insert(moduleName);
-	if (IsLuaDll(hModule)) {
-		HookLuaDll(hModule);
-		return true;
-	}
-	return false;
+	return lua::hook(hModule);
 }
 
 static bool FindLuaDll()
