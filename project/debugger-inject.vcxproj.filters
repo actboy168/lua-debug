@@ -7,23 +7,11 @@
     <Filter Include="base\hook">
       <UniqueIdentifier>{df0463b5-dbf3-4654-81de-d8713c2f203a}</UniqueIdentifier>
     </Filter>
-    <Filter Include="base\hook\detail">
-      <UniqueIdentifier>{0ce1d496-aaf0-4e4c-8605-9dbc0b0b3938}</UniqueIdentifier>
-    </Filter>
     <Filter Include="base\util">
       <UniqueIdentifier>{c1ddd6b2-f708-44b3-a22b-e729648d8ce4}</UniqueIdentifier>
     </Filter>
-    <Filter Include="base\hook\assembler">
-      <UniqueIdentifier>{3351ab76-815d-4a26-b87b-58075bd6ec76}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\inject\base\hook\detail\memory_protect.cpp">
-      <Filter>base\hook\detail</Filter>
-    </ClCompile>
-    <ClCompile Include="..\inject\base\hook\detail\replace_pointer.cpp">
-      <Filter>base\hook\detail</Filter>
-    </ClCompile>
     <ClCompile Include="..\inject\main.cpp" />
     <ClCompile Include="..\inject\utility.cpp" />
     <ClCompile Include="..\inject\base\hook\inline.cpp">
@@ -31,12 +19,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\inject\base\hook\detail\memory_protect.h">
-      <Filter>base\hook\detail</Filter>
-    </ClInclude>
-    <ClInclude Include="..\inject\base\hook\detail\replace_pointer.h">
-      <Filter>base\hook\detail</Filter>
-    </ClInclude>
     <ClInclude Include="..\inject\base\hook\fp_call.h">
       <Filter>base\hook</Filter>
     </ClInclude>
@@ -47,18 +29,6 @@
       <Filter>base\util</Filter>
     </ClInclude>
     <ClInclude Include="..\inject\utility.h" />
-    <ClInclude Include="..\inject\base\hook\assembler\operand.h">
-      <Filter>base\hook\assembler</Filter>
-    </ClInclude>
-    <ClInclude Include="..\inject\base\hook\assembler\register.h">
-      <Filter>base\hook\assembler</Filter>
-    </ClInclude>
-    <ClInclude Include="..\inject\base\hook\assembler\writer.h">
-      <Filter>base\hook\assembler</Filter>
-    </ClInclude>
-    <ClInclude Include="..\inject\base\util\dynarray.h">
-      <Filter>base\util</Filter>
-    </ClInclude>
     <ClInclude Include="..\inject\base\hook\inline.h">
       <Filter>base\hook</Filter>
     </ClInclude>

@@ -11,22 +11,14 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\inject\base\hook\detail\memory_protect.cpp" />
-    <ClCompile Include="..\inject\base\hook\detail\replace_pointer.cpp" />
     <ClCompile Include="..\inject\base\hook\inline.cpp" />
     <ClCompile Include="..\inject\main.cpp" />
     <ClCompile Include="..\inject\utility.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\inject\base\config.h" />
-    <ClInclude Include="..\inject\base\hook\assembler\operand.h" />
-    <ClInclude Include="..\inject\base\hook\assembler\register.h" />
-    <ClInclude Include="..\inject\base\hook\assembler\writer.h" />
-    <ClInclude Include="..\inject\base\hook\detail\memory_protect.h" />
-    <ClInclude Include="..\inject\base\hook\detail\replace_pointer.h" />
     <ClInclude Include="..\inject\base\hook\fp_call.h" />
     <ClInclude Include="..\inject\base\hook\inline.h" />
-    <ClInclude Include="..\inject\base\util\dynarray.h" />
     <ClInclude Include="..\inject\base\util\horrible_cast.h" />
     <ClInclude Include="..\inject\utility.h" />
   </ItemGroup>
