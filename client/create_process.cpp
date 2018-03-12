@@ -1,8 +1,40 @@
 
 #include <base/win/process.h>
-#include "inject.h"
 #include "dbg_protocol.h"
 #include "dbg_unicode.h"
+
+// http://blogs.msdn.com/oldnewthing/archive/2004/10/25/247180.aspx
+extern "C" IMAGE_DOS_HEADER __ImageBase;
+
+fs::path get_self_path()
+{
+	HMODULE module = reinterpret_cast<HMODULE>(&__ImageBase);
+	wchar_t buffer[MAX_PATH];
+	DWORD len = ::GetModuleFileNameW(module, buffer, _countof(buffer));
+	if (len == 0)
+	{
+		return fs::path();
+	}
+	if (len < _countof(buffer))
+	{
+		return fs::path(buffer, buffer + len);
+	}
+	for (size_t buf_len = 0x200; buf_len <= 0x10000; buf_len <<= 1)
+	{
+		std::unique_ptr<wchar_t[]> buf(new wchar_t[len]);
+		len = ::GetModuleFileNameW(module, buf.get(), len);
+		if (len == 0)
+		{
+			return fs::path();
+		}
+		if (len < _countof(buffer))
+		{
+			return fs::path(buf.get(), buf.get() + (size_t)len);
+		}
+	}
+	return fs::path();
+}
+
 
 bool create_process_with_debugger(vscode::rprotocol& req, uint16_t port)
 {
@@ -24,7 +56,7 @@ bool create_process_with_debugger(vscode::rprotocol& req, uint16_t port)
 	}
 
 	base::win::process p;
-	inject_start(p);
+	p.inject(get_self_path().remove_filename() / L"debugger-inject.dll");
 
 	if (args.HasMember("env")) {
 		if (args["env"].IsObject()) {

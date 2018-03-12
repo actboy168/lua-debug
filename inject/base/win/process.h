@@ -21,7 +21,7 @@ namespace base { namespace win {
 		};
 	}
 
-	class _BASE_EXPORT process
+	class _BASE_API process
 	{
 	public:
 		enum STATUE

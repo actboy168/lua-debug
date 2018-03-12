@@ -1,0 +1,40 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="..\client\attach.cpp" />
+    <ClCompile Include="..\client\create_process.cpp" />
+    <ClCompile Include="..\client\server.cpp" />
+    <ClCompile Include="..\client\launch.cpp" />
+    <ClCompile Include="..\client\main.cpp" />
+    <ClCompile Include="..\client\stdinput.cpp" />
+    <ClCompile Include="..\inject\base\hook\detail\inject_dll.cpp">
+      <Filter>base\hook</Filter>
+    </ClCompile>
+    <ClCompile Include="..\inject\base\win\process.cpp">
+      <Filter>base\win</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\client\attach.h" />
+    <ClInclude Include="..\client\server.h" />
+    <ClInclude Include="..\client\launch.h" />
+    <ClInclude Include="..\client\stdinput.h" />
+    <ClInclude Include="..\inject\base\hook\detail\inject_dll.h">
+      <Filter>base\hook</Filter>
+    </ClInclude>
+    <ClInclude Include="..\inject\base\win\process.h">
+      <Filter>base\win</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="base">
+      <UniqueIdentifier>{fd6c93f9-ca0c-45c6-9dbb-164a62dbdf7a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="base\hook">
+      <UniqueIdentifier>{6a1ee654-25bf-4ac8-bd1b-f935aab79966}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="base\win">
+      <UniqueIdentifier>{1388b723-ce88-46bb-91c4-9b02d58ca6b3}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

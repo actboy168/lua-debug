@@ -4,12 +4,6 @@
 #include <base/win/process.h>
 #include <mutex>
 #include "utility.h"
-#include "inject.h"
-
-#pragma data_seg("Shared")
-bool                         shared_enable = false;
-#pragma data_seg()
-#pragma comment(linker, "/section:Shared,rws")
 
 HMODULE luadll = 0;
 
@@ -200,17 +194,11 @@ BOOL APIENTRY DllMain(HMODULE module, DWORD reason, LPVOID /*pReserved*/)
 	if (reason == DLL_PROCESS_ATTACH)
 	{
 		::DisableThreadLibraryCalls(module);
-		if (shared_enable) {
-			if (FindLuaDll()) {
-				WaitLuaDll();
-			}
+		if (FindLuaDll()) {
+			WaitLuaDll();
 		}
 	}
 	return TRUE;
 }
 
-void inject_start(base::win::process& p)
-{
-	shared_enable = true;
-	p.inject(get_self_path());
-}
+extern "C" __declspec(dllexport) void inject() {}

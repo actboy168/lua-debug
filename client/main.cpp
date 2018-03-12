@@ -10,7 +10,6 @@
 #include "dbg_capabilities.h"
 #include "dbg_unicode.cpp"
 #include <base/filesystem.h>
-#include <base/hook/fp_call.h>
 
 bool create_process_with_debugger(vscode::rprotocol& req, uint16_t port);
 

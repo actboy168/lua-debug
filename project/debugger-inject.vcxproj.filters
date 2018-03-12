@@ -10,9 +10,6 @@
     <Filter Include="base\hook\detail">
       <UniqueIdentifier>{0ce1d496-aaf0-4e4c-8605-9dbc0b0b3938}</UniqueIdentifier>
     </Filter>
-    <Filter Include="base\win">
-      <UniqueIdentifier>{0ee4a8bb-9e65-4d0d-bdca-560898b5b531}</UniqueIdentifier>
-    </Filter>
     <Filter Include="base\util">
       <UniqueIdentifier>{c1ddd6b2-f708-44b3-a22b-e729648d8ce4}</UniqueIdentifier>
     </Filter>
@@ -29,12 +26,6 @@
     </ClCompile>
     <ClCompile Include="..\inject\main.cpp" />
     <ClCompile Include="..\inject\utility.cpp" />
-    <ClCompile Include="..\inject\base\win\process.cpp">
-      <Filter>base\win</Filter>
-    </ClCompile>
-    <ClCompile Include="..\inject\base\hook\detail\inject_dll.cpp">
-      <Filter>base\hook\detail</Filter>
-    </ClCompile>
     <ClCompile Include="..\inject\base\hook\inline.cpp">
       <Filter>base\hook</Filter>
     </ClCompile>
@@ -56,12 +47,6 @@
       <Filter>base\util</Filter>
     </ClInclude>
     <ClInclude Include="..\inject\utility.h" />
-    <ClInclude Include="..\inject\base\win\process.h">
-      <Filter>base\win</Filter>
-    </ClInclude>
-    <ClInclude Include="..\inject\base\hook\detail\inject_dll.h">
-      <Filter>base\hook\detail</Filter>
-    </ClInclude>
     <ClInclude Include="..\inject\base\hook\assembler\operand.h">
       <Filter>base\hook\assembler</Filter>
     </ClInclude>
@@ -74,7 +59,6 @@
     <ClInclude Include="..\inject\base\util\dynarray.h">
       <Filter>base\util</Filter>
     </ClInclude>
-    <ClInclude Include="..\inject\inject.h" />
     <ClInclude Include="..\inject\base\hook\inline.h">
       <Filter>base\hook</Filter>
     </ClInclude>
