@@ -36,7 +36,7 @@
     <ClInclude Include="..\inject\utility.h" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\inject\minhook\build\VC15\libMinHook.vcxproj">
+    <ProjectReference Include="..\inject\minhook\project\VC15\libMinHook.vcxproj">
       <Project>{f142a341-5ee0-442d-a15f-98ae9b48dbae}</Project>
     </ProjectReference>
   </ItemGroup>
