@@ -12,7 +12,8 @@
 ## 配置launch.json
 
 1. launch模式，模拟lua.exe的行为来执行你的代码，调试器直接加载lua脚本。优点是兼容性比另一种launch模式高、直接可用不需要自己准备lua的执行环境。
-    * program，lua.exe执行的入口文件 
+
+    * program，lua.exe执行的入口文件 
     * cwd，lua.exe的当前目录
     * stopOnEntry，开始调试时是否先暂停
     * luadll，指定lua dll的路径，如果不填则会加载lua53.dll
