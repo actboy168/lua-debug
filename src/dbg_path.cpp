@@ -79,11 +79,7 @@ namespace vscode
 		for (auto e : stack) {
 			result /= e;
 		}
-		std::wstring ret = result.wstring();
-		std::wstring tmp;
-		tmp.resize(ret.size());
-		std::transform(ret.begin(), ret.end(), tmp.begin(), towlower);
-		return tmp;
+		return result.wstring();
 	}
 
 	bool path_is_subpath(const fs::path& path, const fs::path& base)
