@@ -3,6 +3,13 @@
 #include <lua.hpp>
 
 namespace lua {
+	enum class version {
+		v53,
+		v54,
+	};
+	version get_version();
+	void check_version(void* m);
+
 	union Debug {
 		struct {
 			int event;

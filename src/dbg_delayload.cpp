@@ -29,9 +29,12 @@ namespace delayload
 		case dliNotePreLoadLibrary:
 			if (strcmp("lua53.dll", pdli->szDll) == 0) {
 				if (!luadll_path.empty()) {
-					return (FARPROC)LoadLibraryW(luadll_path.c_str());
+					HMODULE m = LoadLibraryW(luadll_path.c_str());
+					lua::check_version(m);
+					return (FARPROC)m;
 				}
 				else if (luadll_handle) {
+					lua::check_version(luadll_handle);
 					return (FARPROC)luadll_handle;
 				}
 			}
