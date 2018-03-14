@@ -24,9 +24,9 @@ namespace vscode
 	public:
 		breakpoint();
 		void clear();
-		void clear(const fs::path& client_path);
+		void clear(const std::string& client_path);
 		void clear(intptr_t source_ref);
-		void add(const fs::path& client_path, size_t line, const std::string& condition, const std::string& hitcondition);
+		void add(const std::string& client_path, size_t line, const std::string& condition, const std::string& hitcondition);
 		void add(intptr_t source_ref, size_t line, const std::string& condition, const std::string& hitcondition);
 		bool has(size_t line) const;
 		bool has(bp_source* src, size_t line, lua_State* L, lua_Debug* ar) const;
@@ -38,8 +38,8 @@ namespace vscode
 		bool evaluate_isok(lua_State* L, lua_Debug *ar, const std::string& script) const;
 
 	private:
-		std::map<fs::path, bp_source> files_;
-		std::map<intptr_t, bp_source> memorys_;
-		hybridarray<size_t, 1024>     fast_table_;
+		std::map<std::string, bp_source> files_;
+		std::map<intptr_t, bp_source>    memorys_;
+		hybridarray<size_t, 1024>        fast_table_;
 	};
 }

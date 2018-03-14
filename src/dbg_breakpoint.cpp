@@ -19,7 +19,7 @@ namespace vscode
 		fast_table_.clear();
 	}
 
-	void breakpoint::clear(const fs::path& client_path)
+	void breakpoint::clear(const std::string& client_path)
 	{
 		auto it = files_.find(client_path);
 		if (it != files_.end())
@@ -46,7 +46,7 @@ namespace vscode
 		src.clear();
 	}
 
-	void breakpoint::add(const fs::path& client_path, size_t line, const std::string& condition, const std::string& hitcondition)
+	void breakpoint::add(const std::string& client_path, size_t line, const std::string& condition, const std::string& hitcondition)
 	{
 		return add(files_[client_path], line, condition, hitcondition);
 	}
@@ -125,7 +125,7 @@ namespace vscode
 	{
 		if (source[0] == '@' || source[0] == '=')
 		{
-			fs::path client_path;
+			std::string client_path;
 			if (pathconvert.get(source, client_path))
 			{
 				auto it = files_.find(client_path);

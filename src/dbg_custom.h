@@ -9,7 +9,7 @@ namespace vscode
 	{
 	public:
 
-		virtual bool path_convert(const std::string& server_path, fs::path& client_path)
+		virtual bool path_convert(const std::string& server_path, std::string& client_path)
 		{
 			return false;
 		}

@@ -180,16 +180,15 @@ namespace vscode
 					}
 					else if (*src == '@' || *src == '=')
 					{
-						fs::path path;
+						std::string path;
 						if (pathconvert_.get(src, path))
 						{
-							fs::path name = path.filename();
 							for (auto _ : res.Object())
 							{
 								for (auto _ : res("source").Object())
 								{
-									res("name").String(w2u(name.wstring()));
-									res("path").String(w2u(path.wstring()));
+									res("name").String(w2u(fs::path(u2w(path)).filename().wstring()));
+									res("path").String(path);
 									res("sourceReference").Int64(0);
 								}
 								res("id").Int(depth);
@@ -259,18 +258,14 @@ namespace vscode
 		std::vector<unsigned int> lines;
 
 		if (source.HasMember("path")) {
-			fs::path client_path = path_normalize(fs::path(u2w(source["path"].Get<std::string>())));
-			if (!client_path.is_absolute()) {
-				response_error(req, "not yet implemented");
-				return false;
-			}
-			breakpoints_.clear(client_path);
+			std::string path = source["path"].Get<std::string>();
+			breakpoints_.clear(path);
 
 			for (auto& m : args["breakpoints"].GetArray())
 			{
 				unsigned int line = m["line"].GetUint();
 				lines.push_back(line);
-				breakpoints_.add(client_path, line, 
+				breakpoints_.add(path, line,
 					m.HasMember("condition") ? m["condition"].Get<std::string>() : std::string(),
 					m.HasMember("hitCondition") ? m["hitCondition"].Get<std::string>() : std::string()
 				);

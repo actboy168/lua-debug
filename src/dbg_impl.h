@@ -135,14 +135,13 @@ namespace vscode
 						}
 						else if (*src == '@' || *src == '=')
 						{
-							fs::path path;
+							std::string path;
 							if (pathconvert_.get(src, path))
 							{
-								fs::path name = path.filename();
 								for (auto _ : res("source").Object())
 								{
-									res("name").String(w2u(name.wstring()));
-									res("path").String(w2u(path.wstring()));
+									res("name").String(w2u(fs::path(u2w(path)).filename().wstring()));
+									res("path").String(path);
 									res("sourceReference").Int64(0);
 								};
 								res("line").Int(entry.currentline);
