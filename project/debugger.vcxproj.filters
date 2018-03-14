@@ -179,6 +179,9 @@
     <ClCompile Include="..\src\dbg_redirect.cpp">
       <Filter>cpp</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\lua_compatibility.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\debugger.h">
@@ -434,7 +437,7 @@
       <Filter>inc</Filter>
     </ClInclude>
     <ClInclude Include="..\src\lua_compatibility.h">
-      <Filter>cpp</Filter>
+      <Filter>inc</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

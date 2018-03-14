@@ -4,6 +4,7 @@
 #include <windows.h>
 #define DELAYIMP_INSECURE_WRITABLE_HOOKS
 #include <DelayImp.h>
+#include "lua_compatibility.h"
 
 namespace delayload
 {
@@ -39,6 +40,12 @@ namespace delayload
 			FARPROC ret = GetProcAddress(pdli->hmodCur, pdli->dlp.szProcName);
 			if (ret) {
 				return ret;
+			}
+			if (strcmp(pdli->dlp.szProcName, "lua_getuservalue") == 0) {
+				lua::lua54::lua_getiuservalue = (int(__cdecl*)(lua_State*, int, int))GetProcAddress(pdli->hmodCur, "lua_getiuservalue");
+				if (lua::lua54::lua_getiuservalue) {
+					return (FARPROC)lua::lua54::lua_getuservalue;
+				}
 			}
 			char str[256];
 			sprintf(str, "Can't find lua c function: `%s`.", pdli->dlp.szProcName);

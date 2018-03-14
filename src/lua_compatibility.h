@@ -42,4 +42,9 @@ namespace lua {
 			struct CallInfo *i_ci;  /* active function */
 		} v54;
 	};
+
+	namespace lua54 {
+		extern "C" int (__cdecl* lua_getiuservalue)(lua_State *L, int idx, int n);
+		extern "C" int __cdecl lua_getuservalue(lua_State* L, int idx);
+	}
 }

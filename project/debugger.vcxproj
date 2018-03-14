@@ -65,6 +65,7 @@
     <ClCompile Include="..\src\dbg_response.cpp" />
     <ClCompile Include="..\src\dbg_variables.cpp" />
     <ClCompile Include="..\src\dbg_network.cpp" />
+    <ClCompile Include="..\src\lua_compatibility.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\asmjit\arm.h" />
