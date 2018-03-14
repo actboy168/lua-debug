@@ -50,10 +50,12 @@ namespace base { namespace win {
 					environment, current_directory,
 					startup_info, process_information
 				);
+#if !defined(_M_X64)
 				if (suc) 
 				{
 					hook::detail::inject_dll(process_information->hProcess, process_information->hThread, inject_dll.c_str());
 				}
+#endif
 #endif
 			}
 			else

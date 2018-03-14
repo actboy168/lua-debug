@@ -3,8 +3,6 @@
 #include <cassert>
 #include <memory>
 
-namespace net {
-
 #if defined(_MSC_VER)
 #	include <intrin.h>
 #	if defined(_M_IX86)
@@ -18,17 +16,21 @@ namespace net {
 #	else
 #		error "Microsoft Visual C++ compiler: unsupported processor architecture"
 #	endif
+#endif
+
+namespace net {
+#if defined(_MSC_VER)
 	template <typename T>
 	class atomic;
-	
+
 	template <typename T>
 	class atomic<T*>
 	{
 	public:
-		inline atomic () : ptr(nullptr) { }
-		inline atomic (T *ptr_) : ptr(ptr_) { }
-		inline ~atomic () { }
-		inline T *exchange (T *val) { return (T*) _InterlockedExchangePointer ((void*volatile*) &ptr, val); }
+		inline atomic() : ptr(nullptr) { }
+		inline atomic(T *ptr_) : ptr(ptr_) { }
+		inline ~atomic() { }
+		inline T *exchange(T *val) { return (T*)_InterlockedExchangePointer((void*volatile*)&ptr, val); }
 	private:
 		volatile T *ptr;
 	private:

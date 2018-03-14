@@ -225,6 +225,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(SolutionDir)..\bin\$(Configuration)\$(PlatformTarget)\</OutDir>
+    <IntDir>$(SolutionDir)..\build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -235,6 +237,7 @@
       <PreprocessorDefinitions>DEBUGGER_EXPORTS;DEBUGGER_DELAYLOAD_LUA;RAPIDJSON_HAS_STDSTRING;ASMJIT_STATIC;ASMJIT_DISABLE_BUILDER;ASMJIT_DISABLE_COMPILER;ASMJIT_DISABLE_LOGGING;ASMJIT_DISABLE_TEXT;ASMJIT_DISABLE_BUILDER;ASMJIT_DISABLE_COMPILER;ASMJIT_DISABLE_LOGGING;ASMJIT_DISABLE_TEXT;_WINSOCK_DEPRECATED_NO_WARNINGS;_WIN32_WINNT=_WIN32_WINNT_WIN7;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(SolutionDir)..\src;$(SolutionDir)..\src\lua</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -275,6 +278,7 @@
       <PreprocessorDefinitions>DEBUGGER_EXPORTS;DEBUGGER_DELAYLOAD_LUA;RAPIDJSON_HAS_STDSTRING;ASMJIT_STATIC;ASMJIT_DISABLE_BUILDER;ASMJIT_DISABLE_COMPILER;ASMJIT_DISABLE_LOGGING;ASMJIT_DISABLE_TEXT;_WINSOCK_DEPRECATED_NO_WARNINGS;_WIN32_WINNT=_WIN32_WINNT_WIN7;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(SolutionDir)..\src;$(SolutionDir)..\src\lua</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
