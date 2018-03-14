@@ -19,7 +19,16 @@ int64_t seq = 1;
 void response_initialized(stdinput& io, vscode::rprotocol& req)
 {
 	vscode::wprotocol res;
-	vscode::capabilities(res, req["seq"].GetInt64());
+
+	for (auto _ : res.Object())
+	{
+		res("type").String("response");
+		res("seq").Int64(1);
+		res("command").String("initialize");
+		res("request_seq").Int64(req["seq"].GetInt64());
+		res("success").Bool(true);
+		vscode::capabilities(res);
+	}
 	io.output(res);
 }
 

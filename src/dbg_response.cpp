@@ -16,7 +16,15 @@ namespace vscode
 			return;
 		}
 		wprotocol res;
-		capabilities(res, req["seq"].GetInt64());
+		for (auto _ : res.Object())
+		{
+			res("type").String("response");
+			res("seq").Int64(1);
+			res("command").String("initialize");
+			res("request_seq").Int64(req["seq"].GetInt64());
+			res("success").Bool(true);
+			capabilities(res);
+		}
 		network_->output(res);
 	}
 
@@ -132,6 +140,18 @@ namespace vscode
 		network_->output(res);
 	}
 
+	void debugger_impl::event_capabilities()
+	{
+		wprotocol res;
+		for (auto _ : res.Object())
+		{
+			res("type").String("event");
+			res("seq").Int64(seq++);
+			res("event").String("capabilities");
+			capabilities(res);
+		}
+		network_->output(res);
+	}
 	void debugger_impl::response_error(rprotocol& req, const char *msg)
 	{
 		wprotocol res;

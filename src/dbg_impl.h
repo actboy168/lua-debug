@@ -102,6 +102,7 @@ namespace vscode
 		void event_thread(bool started);
 		void event_terminated();
 		void event_initialized();
+		void event_capabilities();
 
 	public:
 		template <class T>
