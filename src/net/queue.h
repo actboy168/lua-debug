@@ -28,7 +28,7 @@ namespace net {
 		inline atomic () : ptr(nullptr) { }
 		inline atomic (T *ptr_) : ptr(ptr_) { }
 		inline ~atomic () { }
-		inline T *exchange (T *val) { return (T*) _InterlockedExchangePointer ((void*) &ptr, val); }
+		inline T *exchange (T *val) { return (T*) _InterlockedExchangePointer ((void*volatile*) &ptr, val); }
 	private:
 		volatile T *ptr;
 	private:
