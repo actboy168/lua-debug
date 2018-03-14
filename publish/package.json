@@ -45,7 +45,9 @@
                         "lua"
                     ]
                 },
-                "program": "./vscode-lua-debug.exe",
+                "windows": {
+                    "program": "./windows/x86/vscode-lua-debug.exe"
+                },
                 "initialConfigurations": [
                     {
                         "name": "launch",
