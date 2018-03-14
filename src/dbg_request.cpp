@@ -29,7 +29,7 @@ namespace vscode
 		return state_ == state;
 	}
 
-	bool debugger_impl::check_breakpoint(lua_State *L, lua_Debug *ar)
+	bool debugger_impl::check_breakpoint(lua_State *L, lua::Debug *ar)
 	{
 		if (ar->currentline > 0 && breakpoints_.has(ar->currentline))
 		{
@@ -37,7 +37,7 @@ namespace vscode
 			{
 				has_source_ = true;
 				cur_source_ = 0;
-				if (!lua_getinfo(L, "S", ar))
+				if (!lua_getinfo(L, "S", (lua_Debug*)ar))
 					return false;
 				cur_source_ = breakpoints_.get(ar->source, pathconvert_);
 			}
@@ -132,7 +132,7 @@ namespace vscode
 #endif
 	}
 
-	bool debugger_impl::request_thread(rprotocol& req, lua_State* L, lua_Debug *ar) {
+	bool debugger_impl::request_thread(rprotocol& req, lua_State* L, lua::Debug *ar) {
 		response_thread(req);
 		return false;
 	}
@@ -142,19 +142,19 @@ namespace vscode
 		return sourceReference;
 	}
 
-	bool debugger_impl::request_stack_trace(rprotocol& req, lua_State* L, lua_Debug *ar) {
+	bool debugger_impl::request_stack_trace(rprotocol& req, lua_State* L, lua::Debug *ar) {
 		response_success(req, [&](wprotocol& res)
 		{
-			lua_Debug entry;
+			lua::Debug entry;
 			auto& args = req["arguments"];
 			int levels = args.HasMember("levels") ? args["levels"].GetInt(): 20;
 			int depth = args.HasMember("startFrame") ? args["startFrame"].GetInt() : 0;
 			int n = 0;
 			for (auto _ : res("stackFrames").Array())
 			{
-				while (lua_getstack(L, depth, &entry) && n < levels)
+				while (lua_getstack(L, depth, (lua_Debug*)&entry) && n < levels)
 				{
-					int status = lua_getinfo(L, "Sln", &entry);
+					int status = lua_getinfo(L, "Sln", (lua_Debug*)&entry);
 					assert(status);
 					const char *src = entry.source;
 					if (memcmp(src, "=[C]", 4) == 0)
@@ -226,9 +226,9 @@ namespace vscode
 		return false;
 	}
 
-	bool debugger_impl::request_source(rprotocol& req, lua_State* L, lua_Debug *ar) {
+	bool debugger_impl::request_source(rprotocol& req, lua_State* L, lua::Debug *ar) {
 		auto& args = req["arguments"];
-		lua_Debug entry;
+		lua::Debug entry;
 		int64_t sourceReference = args["sourceReference"].GetInt64();
 		int depth = -1;
 		for (auto e : stack_) {
@@ -237,8 +237,8 @@ namespace vscode
 				break;
 			}
 		}
-		if (lua_getstack(L, depth, &entry)) {
-			int status = lua_getinfo(L, "Sln", &entry);
+		if (lua_getstack(L, depth, (lua_Debug*)&entry)) {
+			int status = lua_getinfo(L, "Sln", (lua_Debug*)&entry);
 			if (status) {
 				const char *src = entry.source;
 				if (*src != '@' && *src != '=') {
@@ -322,11 +322,11 @@ namespace vscode
 		{ var_type::standard, "Standard" },
 	};
 
-	bool debugger_impl::request_scopes(rprotocol& req, lua_State* L, lua_Debug *ar) {
+	bool debugger_impl::request_scopes(rprotocol& req, lua_State* L, lua::Debug *ar) {
 		auto& args = req["arguments"];
-		lua_Debug entry;
+		lua::Debug entry;
 		int depth = args["frameId"].GetInt();
-		if (!lua_getstack(L, depth, &entry)) {
+		if (!lua_getstack(L, depth, (lua_Debug*)&entry)) {
 			response_error(req, "Error retrieving stack frame");
 			return false;
 		}
@@ -354,13 +354,13 @@ namespace vscode
 		return false;
 	}
 
-	bool debugger_impl::request_variables(rprotocol& req, lua_State* L, lua_Debug *ar) {
+	bool debugger_impl::request_variables(rprotocol& req, lua_State* L, lua::Debug *ar) {
 		auto& args = req["arguments"];
-		lua_Debug entry;
+		lua::Debug entry;
 		int64_t var_ref = args["variablesReference"].GetInt64();
 		var_type type = (var_type)(var_ref & 0xFF);
 		int depth = (var_ref >> 8) & 0xFF;
-		if (!lua_getstack(L, depth, &entry)) {
+		if (!lua_getstack(L, depth, (lua_Debug*)&entry)) {
 			response_error(req, "Error retrieving variables");
 			return false;
 		}
@@ -382,14 +382,14 @@ namespace vscode
 		return false;
 	}
 
-	bool debugger_impl::request_set_variable(rprotocol& req, lua_State *L, lua_Debug *ar)
+	bool debugger_impl::request_set_variable(rprotocol& req, lua_State *L, lua::Debug *ar)
 	{
 		auto& args = req["arguments"];
-		lua_Debug entry;
+		lua::Debug entry;
 		int64_t var_ref = args["variablesReference"].GetInt64();
 		var_type type = (var_type)(var_ref & 0xFF);
 		int depth = (var_ref >> 8) & 0xFF;
-		if (!lua_getstack(L, depth, &entry)) {
+		if (!lua_getstack(L, depth, (lua_Debug*)&entry)) {
 			response_error(req, "Failed set variable");
 			return false;
 		}
@@ -418,28 +418,28 @@ namespace vscode
 		return true;
 	}
 
-	bool debugger_impl::request_stepin(rprotocol& req, lua_State* L, lua_Debug *ar)
+	bool debugger_impl::request_stepin(rprotocol& req, lua_State* L, lua::Debug *ar)
 	{
 		response_success(req);
 		step_in();
 		return true;
 	}
 
-	bool debugger_impl::request_stepout(rprotocol& req, lua_State* L, lua_Debug *ar)
+	bool debugger_impl::request_stepout(rprotocol& req, lua_State* L, lua::Debug *ar)
 	{
 		response_success(req);
 		step_out(L, ar);
 		return true;
 	}
 
-	bool debugger_impl::request_next(rprotocol& req, lua_State* L, lua_Debug *ar)
+	bool debugger_impl::request_next(rprotocol& req, lua_State* L, lua::Debug *ar)
 	{
 		response_success(req);
 		step_over(L, ar);
 		return true;
 	}
 
-	bool debugger_impl::request_continue(rprotocol& req, lua_State* L, lua_Debug *ar)
+	bool debugger_impl::request_continue(rprotocol& req, lua_State* L, lua::Debug *ar)
 	{
 		response_success(req);
 		set_state(state::running);
@@ -453,16 +453,16 @@ namespace vscode
 		return true;
 	}
 
-	bool debugger_impl::request_evaluate(rprotocol& req, lua_State *L, lua_Debug *ar)
+	bool debugger_impl::request_evaluate(rprotocol& req, lua_State *L, lua::Debug *ar)
 	{
 		auto& args = req["arguments"];
 		auto& context = args["context"];
 		std::string expression = args["expression"].Get<std::string>();
 
-		lua_Debug current;
+		lua::Debug current;
 		if (args.HasMember("frameId")) {
 			int depth = args["frameId"].GetInt();
-			if (!lua_getstack(L, depth, &current)) {
+			if (!lua_getstack(L, depth, (lua_Debug*)&current)) {
 				response_error(req, "error stack frame");
 				return false;
 			}

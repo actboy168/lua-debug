@@ -1,7 +1,7 @@
 #include "dbg_variables.h" 
 #include "dbg_protocol.h"	 
 #include "dbg_format.h"
-#include <lua.hpp>
+#include "lua_compatibility.h"
 #include <set>
 
 namespace vscode
@@ -257,9 +257,9 @@ namespace vscode
 		{
 			if (lua_iscfunction(L, idx))
 				break;
-			lua_Debug entry;
+			lua::Debug entry;
 			lua_pushvalue(L, idx);
-			if (lua_getinfo(L, ">S", &entry))
+			if (lua_getinfo(L, ">S", (lua_Debug*)&entry))
 			{
 				if (entry.source && entry.source[0] != '@' && entry.source[0] != '=')
 				{
@@ -392,11 +392,11 @@ namespace vscode
 		return true;
 	}
 
-	static bool setlocal(lua_State* L, lua_Debug* ar, var_type type, int n, variable& var)
+	static bool setlocal(lua_State* L, lua::Debug* ar, var_type type, int n, variable& var)
 	{
 		if (type == var_type::upvalue)
 		{
-			if (!lua_getinfo(L, "f", ar))
+			if (!lua_getinfo(L, "f", (lua_Debug*)ar))
 				return false;
 			int oldtype = LUA_TNIL;
 			if (lua_getupvalue(L, -1, n))
@@ -418,14 +418,14 @@ namespace vscode
 		}
 
 		int oldtype = LUA_TNIL;
-		if (lua_setlocal(L, ar, type == var_type::vararg ? -n : n))
+		if (lua_setlocal(L, (lua_Debug*)ar, type == var_type::vararg ? -n : n))
 		{
 			oldtype = lua_type(L, -1);
 			lua_pop(L, 1);
 		}
 		if (!set_newvalue(L, oldtype, var))
 			return false;
-		if (!lua_setlocal(L, ar, type == var_type::vararg ? -n : n))
+		if (!lua_setlocal(L, (lua_Debug*)ar, type == var_type::vararg ? -n : n))
 		{
 			lua_pop(L, 1);
 			return false;
@@ -433,11 +433,11 @@ namespace vscode
 		return true;
 	}
 
-	static bool getlocal(lua_State* L, lua_Debug* ar, var_type type, int n, const char*& name)
+	static bool getlocal(lua_State* L, lua::Debug* ar, var_type type, int n, const char*& name)
 	{
 		if (type == var_type::upvalue)
 		{
-			if (!lua_getinfo(L, "f", ar))
+			if (!lua_getinfo(L, "f", (lua_Debug*)ar))
 				return false;
 			const char* r = lua_getupvalue(L, -1, n);
 			if (!r) {
@@ -449,7 +449,7 @@ namespace vscode
 			name = r;
 			return true;
 		}
-		const char *r = lua_getlocal(L, ar, type == var_type::vararg ? -n : n);
+		const char *r = lua_getlocal(L, (lua_Debug*)ar, type == var_type::vararg ? -n : n);
 		if (!r) {
 			return false;
 		}
@@ -468,7 +468,7 @@ namespace vscode
 		return true;
 	}
 
-	bool variables::find_value(lua_State* L, lua_Debug* ar, var_type type, int depth, int64_t pos)
+	bool variables::find_value(lua_State* L, lua::Debug* ar, var_type type, int depth, int64_t pos)
 	{
 		int level = 0;
 		switch (type)
@@ -611,7 +611,7 @@ namespace vscode
 		return false;
 	}
 
-	bool variables::set_value(lua_State* L, lua_Debug* ar, var_type type, int depth, int64_t pos, variable& var)
+	bool variables::set_value(lua_State* L, lua::Debug* ar, var_type type, int depth, int64_t pos, variable& var)
 	{
 		switch (type)
 		{
@@ -649,7 +649,7 @@ namespace vscode
 		return true;
 	}
 
-	variables::variables(wprotocol& res, lua_State* L, lua_Debug* ar, int fix)
+	variables::variables(wprotocol& res, lua_State* L, lua::Debug* ar, int fix)
 		: res(res)
 		, L(L)
 		, ar(ar)
@@ -912,7 +912,7 @@ namespace vscode
 		lua_pop(L, 1);
 	}
 
-	bool has_scopes(lua_State *L, lua_Debug* ar, var_type type)
+	bool has_scopes(lua_State *L, lua::Debug* ar, var_type type)
 	{
 		switch (type)
 		{

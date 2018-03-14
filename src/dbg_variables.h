@@ -5,7 +5,7 @@
 #include "dbg_pathconvert.h"
 
 struct lua_State;
-struct lua_Debug;
+namespace lua { union Debug; }
 
 namespace vscode
 {
@@ -47,7 +47,7 @@ namespace vscode
 	class variables
 	{
 	public:
-		variables(wprotocol& res, lua_State* L, lua_Debug* ar, int fix = 0);
+		variables(wprotocol& res, lua_State* L, lua::Debug* ar, int fix = 0);
 		~variables();
 		bool push(const variable& var);
 		void push_value(var_type type, int depth, int64_t pos, pathconvert& pathconvert);
@@ -56,17 +56,17 @@ namespace vscode
 		void each_userdata(int idx, int level, int64_t pos, var_type type, pathconvert& pathconvert);
 
 	public:
-		static bool set_value(lua_State* L, lua_Debug* ar, var_type type, int depth, int64_t pos, variable& var);
-		static bool find_value(lua_State* L, lua_Debug* ar, var_type type, int depth, int64_t pos);
+		static bool set_value(lua_State* L, lua::Debug* ar, var_type type, int depth, int64_t pos, variable& var);
+		static bool find_value(lua_State* L, lua::Debug* ar, var_type type, int depth, int64_t pos);
 
 	private:
 		wprotocol& res;
 		lua_State* L;
-		lua_Debug* ar;
+		lua::Debug* ar;
 		size_t n;
 		int checkstack;
 	};
 
 	bool can_extand(lua_State *L, int idx);
-	bool has_scopes(lua_State *L, lua_Debug* ar, var_type type);
+	bool has_scopes(lua_State *L, lua::Debug* ar, var_type type);
 }

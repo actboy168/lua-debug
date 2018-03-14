@@ -1,7 +1,6 @@
 #pragma once
 
-#include <stdint.h>
-#include <lua.hpp>	  
+#include <stdint.h>  
 #include <functional>
 #include <map>
 #include <vector> 
@@ -9,6 +8,7 @@
 #include <atomic>
 #include <asmjit/asmjit.h>	
 #include <rapidjson/document.h>
+#include "lua_compatibility.h"	 
 #include "dbg_breakpoint.h"	 
 #include "dbg_evaluate.h"
 #include "dbg_path.h" 
@@ -54,9 +54,9 @@ namespace vscode
 	public:
 		debugger_impl(io* io, threadmode mode, coding coding);
 		~debugger_impl();
-		void hook(lua_State *L, lua_Debug *ar);
+		void hook(lua_State *L, lua::Debug *ar);
 		void exception(lua_State *L, const char* msg);
-		void run_stopped(lua_State *L, lua_Debug *ar);
+		void run_stopped(lua_State *L, lua::Debug *ar);
 		void run_idle();
 		void update();
 		void attach_lua(lua_State* L, bool pause);
@@ -70,10 +70,10 @@ namespace vscode
 		void set_step(step step);
 		bool is_step(step step);
 		void step_in();
-		void step_over(lua_State* L, lua_Debug* ar);
-		void step_out(lua_State* L, lua_Debug* ar);
-		bool check_step(lua_State* L, lua_Debug* ar);
-		bool check_breakpoint(lua_State *L, lua_Debug *ar);
+		void step_over(lua_State* L, lua::Debug* ar);
+		void step_out(lua_State* L, lua::Debug* ar);
+		bool check_step(lua_State* L, lua::Debug* ar);
+		bool check_breakpoint(lua_State *L, lua::Debug *ar);
 
 	private:
 		bool request_initialize(rprotocol& req);
@@ -85,17 +85,17 @@ namespace vscode
 		bool request_set_exception_breakpoints(rprotocol& req);
 
 	private:
-		bool request_thread(rprotocol& req, lua_State *L, lua_Debug *ar);
-		bool request_stack_trace(rprotocol& req, lua_State *L, lua_Debug *ar);
-		bool request_source(rprotocol& req, lua_State *L, lua_Debug *ar);
-		bool request_scopes(rprotocol& req, lua_State *L, lua_Debug *ar);
-		bool request_variables(rprotocol& req, lua_State *L, lua_Debug *ar);
-		bool request_set_variable(rprotocol& req, lua_State *L, lua_Debug *ar);
-		bool request_stepin(rprotocol& req, lua_State *L, lua_Debug *ar);
-		bool request_stepout(rprotocol& req, lua_State *L, lua_Debug *ar);
-		bool request_next(rprotocol& req, lua_State *L, lua_Debug *ar);
-		bool request_continue(rprotocol& req, lua_State *L, lua_Debug *ar);
-		bool request_evaluate(rprotocol& req, lua_State *L, lua_Debug *ar);
+		bool request_thread(rprotocol& req, lua_State *L, lua::Debug *ar);
+		bool request_stack_trace(rprotocol& req, lua_State *L, lua::Debug *ar);
+		bool request_source(rprotocol& req, lua_State *L, lua::Debug *ar);
+		bool request_scopes(rprotocol& req, lua_State *L, lua::Debug *ar);
+		bool request_variables(rprotocol& req, lua_State *L, lua::Debug *ar);
+		bool request_set_variable(rprotocol& req, lua_State *L, lua::Debug *ar);
+		bool request_stepin(rprotocol& req, lua_State *L, lua::Debug *ar);
+		bool request_stepout(rprotocol& req, lua_State *L, lua::Debug *ar);
+		bool request_next(rprotocol& req, lua_State *L, lua::Debug *ar);
+		bool request_continue(rprotocol& req, lua_State *L, lua::Debug *ar);
+		bool request_evaluate(rprotocol& req, lua_State *L, lua::Debug *ar);
 
 	private:
 		void event_stopped(const char *msg, const char* text = nullptr);
@@ -124,10 +124,10 @@ namespace vscode
 						res("output").String(msg);
 					}
 
-					lua_Debug entry;
-					if (L && lua_getstack(L, 1, &entry))
+					lua::Debug entry;
+					if (L && lua_getstack(L, 1, (lua_Debug*)&entry))
 					{
-						int status = lua_getinfo(L, "Sln", &entry);
+						int status = lua_getinfo(L, "Sln", (lua_Debug*)&entry);
 						assert(status);
 						const char *src = entry.source;
 						if (memcmp(src, "=[C]", 4) == 0) 
@@ -180,7 +180,7 @@ namespace vscode
 		void open_hook(lua_State* L);
 		void close_hook();
 		bool update_main(rprotocol& req, bool& quit);
-		bool update_hook(rprotocol& req, lua_State *L, lua_Debug *ar, bool& quit);
+		bool update_hook(rprotocol& req, lua_State *L, lua::Debug *ar, bool& quit);
 		void initialize_sourcemaps(rapidjson::Value& args);
 		void init_redirector(rprotocol& req, lua_State* L);
 		void update_redirect();
@@ -222,6 +222,6 @@ namespace vscode
 		lua_State*         launchL_;
 #endif
 		std::map<std::string, std::function<bool(rprotocol&)>>                            main_dispatch_;
-		std::map<std::string, std::function<bool(rprotocol&, lua_State*, lua_Debug *ar)>> hook_dispatch_;
+		std::map<std::string, std::function<bool(rprotocol&, lua_State*, lua::Debug *ar)>> hook_dispatch_;
 	};
 }

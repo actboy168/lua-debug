@@ -1,6 +1,5 @@
 #if !defined(DEBUGGER_DISABLE_LAUNCH)
 
-#include <lua.hpp>
 #include <string>
 #include "dbg_impl.h"
 #include "dbg_unicode.h"

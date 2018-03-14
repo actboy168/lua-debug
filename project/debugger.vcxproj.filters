@@ -433,6 +433,9 @@
     <ClInclude Include="..\src\dbg_thread.h">
       <Filter>inc</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\lua_compatibility.h">
+      <Filter>cpp</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\src\net\socket.inl">

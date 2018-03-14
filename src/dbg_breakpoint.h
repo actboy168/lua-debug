@@ -7,7 +7,7 @@
 #include "dbg_pathconvert.h"
 
 struct lua_State;
-struct lua_Debug;
+namespace lua { union Debug; }
 
 namespace vscode
 {
@@ -29,13 +29,13 @@ namespace vscode
 		void add(const std::string& client_path, size_t line, const std::string& condition, const std::string& hitcondition);
 		void add(intptr_t source_ref, size_t line, const std::string& condition, const std::string& hitcondition);
 		bool has(size_t line) const;
-		bool has(bp_source* src, size_t line, lua_State* L, lua_Debug* ar) const;
+		bool has(bp_source* src, size_t line, lua_State* L, lua::Debug* ar) const;
 		bp_source* get(const char* source, pathconvert& pathconvert);
 
 	private:
 		void clear(bp_source& src);
 		void add(bp_source& src, size_t line, const std::string& condition, const std::string& hitcondition);
-		bool evaluate_isok(lua_State* L, lua_Debug *ar, const std::string& script) const;
+		bool evaluate_isok(lua_State* L, lua::Debug *ar, const std::string& script) const;
 
 	private:
 		std::map<std::string, bp_source> files_;

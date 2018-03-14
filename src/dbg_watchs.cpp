@@ -1,5 +1,5 @@
 #include "dbg_watchs.h"
-#include <lua.hpp>
+#include "lua_compatibility.h"
 
 namespace vscode
 {

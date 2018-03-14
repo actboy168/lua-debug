@@ -10,7 +10,7 @@ namespace vscode
 {
 	static custom         global_custom;
 
-	static void debughook(debugger_impl* dbg, lua_State *L, lua_Debug *ar)
+	static void debughook(debugger_impl* dbg, lua_State *L, lua::Debug *ar)
 	{
 		dbg->hook(L, ar);
 	}
@@ -85,7 +85,7 @@ namespace vscode
 		return false;
 	}
 
-	bool debugger_impl::update_hook(rprotocol& req, lua_State *L, lua_Debug *ar, bool& quit)
+	bool debugger_impl::update_hook(rprotocol& req, lua_State *L, lua::Debug *ar, bool& quit)
 	{
 		auto it = hook_dispatch_.find(req["command"].Get<std::string>());
 		if (it != hook_dispatch_.end())
@@ -177,9 +177,9 @@ namespace vscode
 
 	static int get_stacklevel(lua_State* L)
 	{
-		lua_Debug ar;
+		lua::Debug ar;
 		int n;
-		for (n = 0; lua_getstack(L, n + 1, &ar) != 0; ++n)
+		for (n = 0; lua_getstack(L, n + 1, (lua_Debug*)&ar) != 0; ++n)
 		{ }
 		return n;
 	}
@@ -194,7 +194,7 @@ namespace vscode
 		return step_ == step;
 	}
 
-	bool debugger_impl::check_step(lua_State* L, lua_Debug* ar)
+	bool debugger_impl::check_step(lua_State* L, lua::Debug* ar)
 	{
 		return stepping_lua_state_ == L && stepping_current_level_ <= stepping_target_level_;
 	}
@@ -205,7 +205,7 @@ namespace vscode
 		set_step(step::in);
 	}
 
-	void debugger_impl::step_over(lua_State* L, lua_Debug* ar)
+	void debugger_impl::step_over(lua_State* L, lua::Debug* ar)
 	{
 		set_state(state::stepping);
 		set_step(step::over);
@@ -213,7 +213,7 @@ namespace vscode
 		stepping_lua_state_ = L;
 	}
 
-	void debugger_impl::step_out(lua_State* L, lua_Debug* ar)
+	void debugger_impl::step_out(lua_State* L, lua::Debug* ar)
 	{
 		set_state(state::stepping);
 		set_step(step::out);
@@ -222,7 +222,7 @@ namespace vscode
 		stepping_lua_state_ = L;
 	}
 
-	void debugger_impl::hook(lua_State *L, lua_Debug *ar)
+	void debugger_impl::hook(lua_State *L, lua::Debug *ar)
 	{
 		if (!allowhook_) { return; }
 
@@ -281,8 +281,8 @@ namespace vscode
 		}
 
 		allowhook_ = false;
-		lua_Debug ar;
-		if (lua_getstack(L, 0, &ar))
+		lua::Debug ar;
+		if (lua_getstack(L, 0, (lua_Debug*)&ar))
 		{
 			event_stopped("exception", msg);
 			step_in();
@@ -291,7 +291,7 @@ namespace vscode
 		allowhook_ = true;
 	}
 
-	void debugger_impl::run_stopped(lua_State *L, lua_Debug *ar)
+	void debugger_impl::run_stopped(lua_State *L, lua::Debug *ar)
 	{
 		bool quit = false;
 		while (!quit)

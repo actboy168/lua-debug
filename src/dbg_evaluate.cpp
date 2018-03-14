@@ -1,6 +1,6 @@
 #include "dbg_evaluate.h"
 #include "dbg_format.h"
-#include <lua.hpp>
+#include "lua_compatibility.h"
 #include <vector>
 #include <map>
 
@@ -58,7 +58,7 @@ namespace vscode
 	};
 
 	
-	bool evaluate(lua_State* L, lua_Debug *ar, const char* script, int& nresult, bool writeable)
+	bool evaluate(lua_State* L, lua::Debug *ar, const char* script, int& nresult, bool writeable)
 	{
 		strbuilder code;
 		strbuilder local;
@@ -70,7 +70,7 @@ namespace vscode
 		lua_checkstack(L, 16);
 		for (int i = 1;; ++i)
 		{
-			const char* name = lua_getlocal(L, ar, i);
+			const char* name = lua_getlocal(L, (lua_Debug*)ar, i);
 			if (!name) break;
 			if (name[0] == '(') { lua_pop(L, 1); continue; }
 			code += format("local %s\n", name);
@@ -83,7 +83,7 @@ namespace vscode
 			}
 		}
 
-		if (lua_getinfo(L, "f", ar))
+		if (lua_getinfo(L, "f", (lua_Debug*)ar))
 		{
 			srcfunc = lua_gettop(L);
 			for (int i = 1;; ++i)
@@ -154,7 +154,7 @@ namespace vscode
 		int vararg = 1;
 		for (;; ++vararg)
 		{
-			if (!lua_getlocal(L, ar, -vararg))
+			if (!lua_getlocal(L, (lua_Debug*)ar, -vararg))
 				break;
 		}
 		int start = lua_gettop(L) - vararg;
@@ -173,7 +173,7 @@ namespace vscode
 			lua_pushnil(L);
 			while (lua_next(L, -2))
 			{
-				if (!lua_setlocal(L, ar, (int)lua_tointeger(L, -2))) {
+				if (!lua_setlocal(L, (lua_Debug*)ar, (int)lua_tointeger(L, -2))) {
 					lua_pop(L, 1);
 				}
 			}

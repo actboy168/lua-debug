@@ -1,7 +1,7 @@
 #include "dbg_breakpoint.h"	
 #include "dbg_evaluate.h"		
 #include "dbg_path.h"
-#include <lua.hpp>
+#include "lua_compatibility.h"
 
 namespace vscode
 {
@@ -84,7 +84,7 @@ namespace vscode
 		return false;
 	}
 
-	bool breakpoint::evaluate_isok(lua_State* L, lua_Debug *ar, const std::string& script) const
+	bool breakpoint::evaluate_isok(lua_State* L, lua::Debug *ar, const std::string& script) const
 	{
 		int nresult = 0;
 		if (!evaluate(L, ar, ("return " + script).c_str(), nresult))
@@ -101,7 +101,7 @@ namespace vscode
 		return false;
 	}
 
-	bool breakpoint::has(bp_source* src, size_t line, lua_State* L, lua_Debug* ar) const
+	bool breakpoint::has(bp_source* src, size_t line, lua_State* L, lua::Debug* ar) const
 	{
 		auto it = src->find(line);
 		if (it == src->end())
