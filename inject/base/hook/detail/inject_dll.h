@@ -1,10 +1,11 @@
 #pragma once
 
+#if !defined(_M_X64)
 #include <base/config.h>
+#include <base/filesystem.h>
 #include <Windows.h>
 
-#if !defined(_M_X64)
 namespace base { namespace hook { namespace detail {
-	bool inject_dll(HANDLE process_handle, HANDLE thread_handle, const wchar_t* dll_name);
+	bool injectdll(HANDLE process, HANDLE thread, const fs::path& dll);
 }}}
 #endif

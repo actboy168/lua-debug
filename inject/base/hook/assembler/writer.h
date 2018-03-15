@@ -6,29 +6,34 @@
 #include <cassert>
 #include <Windows.h>
 
-namespace base { 
-namespace hook { namespace assembler {
+namespace base { namespace hook { namespace assembler {
 
-	template <size_t BufSizeT = 256>
-	class writer : public std::array<uint8_t, BufSizeT>
+	struct basic_writer
 	{
-		typedef std::array<uint8_t, BufSizeT> mybase;
-	public:
-		writer()
-			: cur_(mybase::data())
+		basic_writer(uint8_t* buf, size_t len)
+			: beg_(buf)
+			, cur_(buf)
+			, max_(len)
 		{ }
 
 		template <class T>
-		inline void emit(T val) 
+		inline void emit(T val)
 		{
 			static_assert(std::is_integral<T>::value, "emit's param must be integer.");
-			assert((size() + sizeof T) <= BufSizeT);
+			assert((_size() + sizeof T) <= max_);
 
 			*reinterpret_cast<T*>(cur_) = val;
 			cur_ += sizeof T;
 		}
 
-		void emit_operand(reg r, const operand& adr) 
+		inline void emit(const void* buf, size_t len)
+		{
+			assert((_size() + len) <= max_);
+			memcpy(cur_, buf, len);
+			cur_ += len;
+		}
+
+		void emit_operand(reg r, const operand& adr)
 		{
 			assert(adr.len_ > 0);
 
@@ -40,13 +45,13 @@ namespace hook { namespace assembler {
 			}
 		}
 
-		void mov(reg dst, uint32_t imm32) 
+		void mov(reg dst, uint32_t imm32)
 		{
 			emit<uint8_t>(0xB8 | dst.code());
 			emit(imm32);
 		}
 
-		void mov(reg dst, const operand& src) 
+		void mov(reg dst, const operand& src)
 		{
 			emit<uint8_t>(0x8B);
 			emit_operand(dst, src);
@@ -64,12 +69,12 @@ namespace hook { namespace assembler {
 			emit<uint32_t>(imm32);
 		}
 
-		void push(reg src) 
+		void push(reg src)
 		{
 			emit<uint8_t>(0x50 | src.code());
 		}
 
-		void pop(reg dst) 
+		void pop(reg dst)
 		{
 			emit<uint8_t>(0x58 | dst.code());
 		}
@@ -81,25 +86,25 @@ namespace hook { namespace assembler {
 			emit<uint8_t>(imm8);
 		}
 
-		void jmp(uintptr_t jmp_dst, uintptr_t jmp_src) 
+		void jmp(uintptr_t jmp_dst, uintptr_t jmp_src)
 		{
 			emit<uint8_t>(0xE9);
 			emit<uint32_t>(jmp_dst - (jmp_src + 5));
 		}
 
-		void call(uintptr_t call_dst, uintptr_t call_src) 
+		void call(uintptr_t call_dst, uintptr_t call_src)
 		{
 			emit<uint8_t>((uint8_t)0xE8);
-			emit<uint32_t>((call_dst) - (call_src + 5));
+			emit<uint32_t>((call_dst)-(call_src + 5));
 		}
 
-		void ret(uint16_t imm16 = 0) 
+		void ret(uint16_t imm16 = 0)
 		{
-			if (imm16 == 0) 
+			if (imm16 == 0)
 			{
 				emit<uint8_t>(0xC3);
-			} 
-			else 
+			}
+			else
 			{
 				emit<uint8_t>(0xC2);
 				emit<uint8_t>(imm16 & 0xFF);
@@ -107,25 +112,41 @@ namespace hook { namespace assembler {
 			}
 		}
 
-		void clear()
+		void _clear()
 		{
-			cur_ = mybase::data();
+			cur_ = beg_;
 		}
 
-		size_t size() const
+		const void* _data() const
 		{
-			return cur_ - mybase::data();
+			return beg_;
 		}
 
-		bool executable()
+		size_t _size() const
+		{
+			return cur_ - beg_;
+		}
+
+		size_t _maxsize() const
+		{
+			return max_;
+		}
+
+		void _seek(size_t n) {
+			assert(n >= _size());
+			assert(n < max_);
+			cur_ = beg_ + n;
+		}
+
+		bool _executable()
 		{
 			DWORD protect = 0;
-			if (!::VirtualProtectEx(::GetCurrentProcess(), (void*)this, sizeof mybase, PAGE_EXECUTE_READWRITE, &protect)) 
+			if (!::VirtualProtectEx(::GetCurrentProcess(), (void*)this, max_, PAGE_EXECUTE_READWRITE, &protect))
 			{
 				return false;
 			}
 
-			if (!::FlushInstructionCache(::GetCurrentProcess(), (void*)this, sizeof mybase)) 
+			if (!::FlushInstructionCache(::GetCurrentProcess(), (void*)this, max_))
 			{
 				return false;
 			}
@@ -133,8 +154,29 @@ namespace hook { namespace assembler {
 			return true;
 		}
 
-	private:
+		uint8_t* beg_;
 		uint8_t* cur_;
+		size_t   max_;
 	};
-}}
-}
+
+	template <size_t BufSizeT = 256>
+	struct writer
+		: public basic_writer
+	{
+		std::array<uint8_t, BufSizeT> data;
+
+		writer()
+			: basic_writer(data.data(), data.size())
+		{ }
+	};
+
+	struct dynwriter
+		: public basic_writer
+	{
+		dynwriter(size_t n)
+			: basic_writer(new uint8_t[n], n)
+		{ }
+
+		~dynwriter() { delete basic_writer::beg_; }
+	};
+}}}
