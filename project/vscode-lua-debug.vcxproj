@@ -19,6 +19,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\inject\wow64ext\src\wow64ext.vcxproj">
+      <Project>{9da7f232-0096-45bc-a452-24c7f3afa0f8}</Project>
+    </ProjectReference>
     <ProjectReference Include="debugger.vcxproj">
       <Project>{9fd838ac-a5a2-4a24-8166-105ba0d8a973}</Project>
     </ProjectReference>
@@ -39,6 +42,7 @@
     <ClInclude Include="..\client\launch.h" />
     <ClInclude Include="..\client\stdinput.h" />
     <ClInclude Include="..\inject\base\hook\detail\inject_dll.h" />
+    <ClInclude Include="..\inject\base\hook\detail\wow64ext.h" />
     <ClInclude Include="..\inject\base\win\process.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
@@ -125,7 +129,7 @@
       <AdditionalDependencies>Ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>
       </ModuleDefinitionFile>
-      <DelayLoadDLLs>debugger.dll</DelayLoadDLLs>
+      <DelayLoadDLLs>debugger.dll;wow64ext.dll</DelayLoadDLLs>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -167,7 +171,7 @@
       <AdditionalDependencies>Ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>
       </ModuleDefinitionFile>
-      <DelayLoadDLLs>debugger.dll</DelayLoadDLLs>
+      <DelayLoadDLLs>debugger.dll;wow64ext.dll</DelayLoadDLLs>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
