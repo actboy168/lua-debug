@@ -56,7 +56,9 @@ bool create_process_with_debugger(vscode::rprotocol& req, uint16_t port)
 	}
 
 	base::win::process p;
-	p.inject(get_self_path().remove_filename() / L"debugger-inject.dll");
+	auto dir = get_self_path().remove_filename().remove_filename();
+	p.inject(dir / L"x86" / L"debugger-inject.dll");
+	p.inject_x64(dir / L"x64" / L"debugger-inject.dll");
 
 	if (args.HasMember("env")) {
 		if (args["env"].IsObject()) {

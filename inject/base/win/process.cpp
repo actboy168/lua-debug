@@ -24,13 +24,14 @@ namespace base { namespace win {
 			const wchar_t*                 current_directory,
 			LPSTARTUPINFOW                 startup_info,
 			LPPROCESS_INFORMATION          process_information,
-			const fs::path& inject_dll,
+			const fs::path& injectdll_x86,
+			const fs::path& injectdll_x64,
 			const std::map<std::string, fs::path>& replace_dll
 		)
 		{
 			bool pause = !replace_dll.empty();
 			bool suc = false;
-			if (fs::exists(inject_dll))
+			if (fs::exists(injectdll_x86) || fs::exists(injectdll_x64))
 			{
 				pause = true;
 #if !defined(DISABLE_DETOURS)
@@ -53,7 +54,7 @@ namespace base { namespace win {
 #if !defined(_M_X64)
 				if (suc) 
 				{
-					hook::detail::injectdll(process_information->hProcess, process_information->hThread, inject_dll);
+					hook::detail::injectdll(process_information->hProcess, process_information->hThread, injectdll_x86, injectdll_x64);
 				}
 #endif
 #endif
@@ -267,7 +268,18 @@ namespace base { namespace win {
 	{
 		if (statue_ == PROCESS_STATUE_READY)
 		{
-			inject_dll_ = dllpath;
+			injectdll_x86_ = dllpath;
+			return true;
+		}
+
+		return false;
+	}
+
+	bool process::inject_x64(const fs::path& dllpath)
+	{
+		if (statue_ == PROCESS_STATUE_READY)
+		{
+			injectdll_x64_ = dllpath;
 			return true;
 		}
 
@@ -369,7 +381,7 @@ namespace base { namespace win {
 				flags_ | NORMAL_PRIORITY_CLASS,
 				environment.get(),
 				current_directory ? current_directory->c_str() : nullptr,
-				&si_, &pi_, inject_dll_, replace_dll_
+				&si_, &pi_, injectdll_x86_, injectdll_x64_, replace_dll_
 				))
 			{
 				return false;
