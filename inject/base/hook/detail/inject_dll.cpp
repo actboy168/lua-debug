@@ -5,7 +5,7 @@
 #include <base/hook/assembler/writer.h>
 #include <windows.h>
 #include <stdint.h>
-#include <base/hook/detail/wow64ext.h>
+#include <wow64ext.h>
 
 namespace base { namespace hook { namespace detail {
 	static bool is_process64(HANDLE hProcess) {
