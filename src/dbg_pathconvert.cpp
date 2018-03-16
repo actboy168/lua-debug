@@ -96,7 +96,9 @@ namespace vscode
 		}
 		else if (server_path[0] == '=')
 		{
-			res = debugger_->custom_->path_convert(server_path, client_path);
+			if (debugger_->custom_) {
+				res = debugger_->custom_->path_convert(server_path, client_path);
+			}
 		}
 		else
 		{

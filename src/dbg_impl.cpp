@@ -9,8 +9,6 @@
 
 namespace vscode
 {
-	static custom         global_custom;
-
 	static void debughook(debugger_impl* dbg, lua_State *L, lua::Debug *ar)
 	{
 		dbg->hook(L, ar);
@@ -420,7 +418,7 @@ namespace vscode
 		, stack_()
 		, watch_()
 		, pathconvert_(this, coding)
-		, custom_(&global_custom)
+		, custom_(nullptr)
 		, thunk_(0)
 		, has_source_(false)
 		, cur_source_(0)
