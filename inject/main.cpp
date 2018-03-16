@@ -137,6 +137,7 @@ namespace lua {
 			}
 			rollback.push(h);
 		}
+		luadll = m;
 		return true;
 	}
 }
@@ -198,7 +199,7 @@ BOOL APIENTRY DllMain(HMODULE module, DWORD reason, LPVOID /*pReserved*/)
 	if (reason == DLL_PROCESS_ATTACH)
 	{
 		::DisableThreadLibraryCalls(module);
-		if (FindLuaDll()) {
+		if (!FindLuaDll()) {
 			WaitLuaDll();
 		}
 	}

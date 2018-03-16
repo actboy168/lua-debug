@@ -25,9 +25,6 @@
     <ClInclude Include="..\inject\base\win\process.h">
       <Filter>base\win</Filter>
     </ClInclude>
-    <ClInclude Include="..\inject\base\hook\detail\wow64ext.h">
-      <Filter>base\hook</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="base">

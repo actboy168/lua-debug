@@ -42,7 +42,6 @@
     <ClInclude Include="..\client\launch.h" />
     <ClInclude Include="..\client\stdinput.h" />
     <ClInclude Include="..\inject\base\hook\detail\inject_dll.h" />
-    <ClInclude Include="..\inject\base\hook\detail\wow64ext.h" />
     <ClInclude Include="..\inject\base\win\process.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
