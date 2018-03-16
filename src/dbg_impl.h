@@ -6,7 +6,6 @@
 #include <vector> 
 #include <mutex>
 #include <atomic>
-#include <asmjit/asmjit.h>	
 #include <rapidjson/document.h>
 #include "lua_compatibility.h"	 
 #include "dbg_breakpoint.h"	 
@@ -175,8 +174,6 @@ namespace vscode
 		void response_source(rprotocol& req, const char* content);
 
 	private:
-		void create_asmjit();
-		void release_asmjit();
 		void open_hook(lua_State* L);
 		void close_hook();
 		bool update_main(rprotocol& req, bool& quit);
@@ -204,8 +201,7 @@ namespace vscode
 		std::unique_ptr<watchs> watch_;
 		pathconvert        pathconvert_;
 		custom*            custom_;
-		asmjit::JitRuntime asm_jit_;
-		lua_Hook           asm_func_;
+		lua_Hook           thunk_;
 		bool               has_source_;
 		bp_source*         cur_source_;
 		bool               exception_;

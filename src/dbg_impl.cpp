@@ -3,6 +3,7 @@
 #include "dbg_io.h" 
 #include "dbg_format.h"
 #include "dbg_thread.h"
+#include "dbg_thunk.h"
 #include <thread>
 #include <atomic>
 
@@ -15,47 +16,12 @@ namespace vscode
 		dbg->hook(L, ar);
 	}
 
-	void debugger_impl::create_asmjit()
-	{
-		release_asmjit();
-		using namespace asmjit;
-		CodeHolder code;
-		code.init(asm_jit_.getCodeInfo());
-		X86Assembler assemblr(&code);
-#if defined(_M_X64)
-		assemblr.push(x86::rdi);
-		assemblr.sub(x86::rsp, 0x20);
-		assemblr.mov(x86::rdi, x86::rsp);
-		assemblr.mov(x86::r8, x86::rdx);
-		assemblr.mov(x86::rdx, x86::rcx);
-		assemblr.mov(x86::rcx, imm(reinterpret_cast<intptr_t>(this)));
-		assemblr.call(imm(reinterpret_cast<intptr_t>(&debughook)));
-		assemblr.add(x86::rsp, 0x20);
-		assemblr.pop(x86::rdi);
-#else
-		assemblr.push(x86::dword_ptr(x86::esp, 8));
-		assemblr.push(x86::dword_ptr(x86::esp, 8));
-		assemblr.push(imm(reinterpret_cast<intptr_t>(this)));
-		assemblr.call(imm(reinterpret_cast<intptr_t>(&debughook)));
-		assemblr.add(x86::esp, 12);
-#endif
-		assemblr.ret();
-		Error err = asm_jit_.add(&asm_func_, &code);
-		assert(!err);
-	}
-
-	void debugger_impl::release_asmjit()
-	{
-		if (asm_func_)
-			asm_jit_.release(asm_func_);
-	}
-
 	void debugger_impl::open_hook(lua_State* L)
 	{
 		if (hookL_ && hookL_ != L) {
 			lua_sethook(hookL_, 0, 0, 0);
 		}
-		lua_sethook(L, asm_func_, LUA_MASKCALL | LUA_MASKLINE | LUA_MASKRET, 0);
+		lua_sethook(L, thunk_, LUA_MASKCALL | LUA_MASKLINE | LUA_MASKRET, 0);
 		hookL_ = L;
 	}
 
@@ -441,7 +407,7 @@ namespace vscode
 
 	debugger_impl::~debugger_impl()
 	{
-		release_asmjit();
+		thunk_destory(thunk_);
 	}
 
 #define DBG_REQUEST_MAIN(name) std::bind(&debugger_impl:: ## name, this, std::placeholders::_1)
@@ -460,8 +426,7 @@ namespace vscode
 		, watch_()
 		, pathconvert_(this, coding)
 		, custom_(&global_custom)
-		, asm_jit_()
-		, asm_func_(0)
+		, thunk_(0)
 		, has_source_(false)
 		, cur_source_(0)
 		, exception_(false)
@@ -503,7 +468,7 @@ namespace vscode
 			{ "evaluate", DBG_REQUEST_HOOK(request_evaluate) },
 		})
 	{
-		create_asmjit();
+		thunk_ = (lua_Hook)thunk_create(reinterpret_cast<intptr_t>(this), reinterpret_cast<intptr_t>(&debughook));
 		thread_->start();
 	}
 

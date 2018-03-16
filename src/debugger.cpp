@@ -3,6 +3,7 @@
 #include "dbg_network.h"
 #include "dbg_delayload.h"
 #include "dbg_unicode.h"
+#include <intrin.h>  
 
 namespace vscode
 {
