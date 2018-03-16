@@ -17,3 +17,6 @@ build/
 *.vs/
 *.VC.db
 *.VC.opendb
+*.ipdb
+*.iobj
+*.lib
