@@ -5,41 +5,29 @@
 #include <mutex>
 #include <stack>
 #include "utility.h"
+#include "debugger.h"
 
 HMODULE luadll = 0;
 
-void initialize_debugger(void* L)
+void initialize_debugger(lua_State* L)
 {
 	if (GetModuleHandleW(L"debugger.dll")) {
 		return;
 	}
-	fs::path debugger = get_self_path().remove_filename() / L"debugger.dll";
-	HMODULE dll = LoadLibraryW(debugger.c_str());
-	if (!dll) {
+	if (!LoadLibraryW((get_self_path().remove_filename() / L"debugger.dll").c_str())) {
 		return;
 	}
-	uintptr_t set_luadll   = (uintptr_t)GetProcAddress(dll, "set_luadll");
-	uintptr_t start_server = (uintptr_t)GetProcAddress(dll, "start_server");
-	uintptr_t attach_lua   = (uintptr_t)GetProcAddress(dll, "attach_lua");
-	if (!set_luadll || !start_server || !attach_lua) {
-		return;
-	}
-	base::c_call<void>(set_luadll, luadll);
-	base::c_call<void>(start_server, "127.0.0.1", 0, true, false);
-	base::c_call<void>(attach_lua, L, true);
+	debugger_set_luadll(luadll);
+	debugger_start_server("127.0.0.1", 0, true, false);
+	debugger_attach_lua(L, true);
 }
 
-void uninitialize_debugger(void* L)
+void uninitialize_debugger(lua_State* L)
 {
-	HMODULE dll = GetModuleHandleW(L"debugger.dll");
-	if (!dll) {
+	if (!GetModuleHandleW(L"debugger.dll")) {
 		return;
 	}
-	uintptr_t detach_lua = (uintptr_t)GetProcAddress(dll, "detach_lua");
-	if (!detach_lua) {
-		return;
-	}
-	base::c_call<void>(detach_lua, L);
+	debugger_detach_lua(L);
 	Sleep(1000);
 }
 
@@ -90,17 +78,17 @@ namespace lua {
 	namespace fake {
 		static void* __cdecl lua_newstate(void* f, void* ud)
 		{
-			void* L = base::c_call<void*>(real::lua_newstate, f, ud);
+			lua_State* L = base::c_call<lua_State*>(real::lua_newstate, f, ud);
 			if (L) initialize_debugger(L);
 			return L;
 		}
 		static void* __cdecl luaL_newstate()
 		{
-			void* L = base::c_call<void*>(real::luaL_newstate);
+			lua_State* L = base::c_call<lua_State*>(real::luaL_newstate);
 			if (L) initialize_debugger(L);
 			return L;
 		}
-		void __cdecl lua_close(void* L)
+		void __cdecl lua_close(lua_State* L)
 		{
 			uninitialize_debugger(L);
 			return base::c_call<void>(real::lua_close, L);

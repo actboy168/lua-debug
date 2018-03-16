@@ -51,14 +51,14 @@ std::unique_ptr<vscode::network>  global_io;
 std::unique_ptr<vscode::debugger> global_dbg;
 vscode::coding                    global_coding = vscode::coding::ansi;
 
-void __cdecl set_luadll(void* luadll)
+void __cdecl debugger_set_luadll(void* luadll)
 {
 #if defined(DEBUGGER_DELAYLOAD_LUA)
 	delayload::set_luadll((HMODULE)luadll);
 #endif
 }
 
-void __cdecl set_coding(int coding)
+void __cdecl debugger_set_coding(int coding)
 {
 	global_coding = coding == 0 ? vscode::coding::ansi : vscode::coding::utf8;
 	if (global_dbg) {
@@ -66,7 +66,7 @@ void __cdecl set_coding(int coding)
 	}
 }
 
-void __cdecl start_server(const char* ip, uint16_t port, bool launch, bool rebind)
+void __cdecl debugger_start_server(const char* ip, uint16_t port, bool launch, bool rebind)
 {
 	if (!global_io || !global_dbg)
 	{
@@ -77,12 +77,12 @@ void __cdecl start_server(const char* ip, uint16_t port, bool launch, bool rebin
 	}
 }
 
-void __cdecl attach_lua(lua_State* L, bool pause)
+void __cdecl debugger_attach_lua(lua_State* L, bool pause)
 {
 	if (global_dbg) global_dbg->attach_lua(L, pause);
 }
 
-void __cdecl detach_lua(lua_State* L)
+void __cdecl debugger_detach_lua(lua_State* L)
 {
 	if (global_dbg) global_dbg->detach_lua(L);
 }
@@ -92,10 +92,10 @@ namespace luaw {
 	{
 		const char* str = luaL_checkstring(L, 1);
 		if (strcmp(str, "ansi") == 0) {
-			::set_coding(0);
+			debugger_set_coding(0);
 		}
 		else if (strcmp(str, "utf8") == 0) {
-			::set_coding(1);
+			debugger_set_coding(1);
 		}
 		lua_pushvalue(L, lua_upvalueindex(1));
 		return 1;
@@ -103,15 +103,15 @@ namespace luaw {
 
 	int listen(lua_State* L)
 	{
-		::start_server(luaL_checkstring(L, 1), (uint16_t)luaL_checkinteger(L, 2), false, lua_toboolean(L, 3));
-		::attach_lua(L, false);
+		debugger_start_server(luaL_checkstring(L, 1), (uint16_t)luaL_checkinteger(L, 2), false, lua_toboolean(L, 3));
+		debugger_attach_lua(L, false);
 		lua_pushvalue(L, lua_upvalueindex(1));
 		return 1;
 	}
 
 	int start(lua_State* L)
 	{
-		::attach_lua(L, true);
+		debugger_attach_lua(L, true);
 		lua_pushvalue(L, lua_upvalueindex(1));
 		return 1;
 	}
