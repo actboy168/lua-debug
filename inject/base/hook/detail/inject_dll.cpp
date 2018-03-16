@@ -61,7 +61,8 @@ namespace base { namespace hook { namespace detail {
 			0xFF, 0x25, 0x00, 0x00, 0x00, 0x00,                                     // jmp offset
 			0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00                          // rip
 		};
-
+		
+		InitWow64ext();
 		DWORD64 pfLoadLibrary = (DWORD64)GetProcAddress64(GetModuleHandle64(L"ntdll.dll"), "LdrLoadDll");
 		if (!pfLoadLibrary) {
 			return false;
