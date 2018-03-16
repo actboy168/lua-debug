@@ -31,13 +31,6 @@ namespace vscode
 			lua_sethook(hookL_, 0, 0, 0);
 			hookL_ = 0;
 		}
-		breakpoints_.clear();
-		stack_.clear();
-		seq = 1;
-		watch_.reset();
-		update_redirect();
-		stdout_.reset();
-		stderr_.reset();
 	}
 
 	bool debugger_impl::update_main(rprotocol& req, bool& quit)
@@ -346,19 +339,21 @@ namespace vscode
 #endif
 	}
 
-	void debugger_impl::attach_lua(lua_State* L, bool pause)
+	void debugger_impl::wait_attach()
+	{
+		if (thread_->mode() == threadmode::async) {
+			semaphore sem;
+			attach_callback_ = [&]() {
+				sem.signal();
+			};
+			sem.wait();
+			attach_callback_ = std::function<void()>();
+		}
+	}
+
+	void debugger_impl::attach_lua(lua_State* L)
 	{
 		attachL_ = L;
-		if (pause && L) {
-			if (thread_->mode() == threadmode::async) {
-				semaphore sem;
-				attach_callback_ = [&]() {
-					sem.signal();
-				};
-				sem.wait();
-				attach_callback_ = std::function<void()>();
-			}
-		}
 	}
 
 	void debugger_impl::detach_lua(lua_State* L)

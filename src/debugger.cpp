@@ -21,9 +21,14 @@ namespace vscode
 		impl_->update();
 	}
 
-	void debugger::attach_lua(lua_State* L, bool pause)
+	void debugger::wait_attach()
 	{
-		impl_->attach_lua(L, pause);
+		impl_->wait_attach();
+	}
+
+	void debugger::attach_lua(lua_State* L)
+	{
+		impl_->attach_lua(L);
 	}
 
 	void debugger::detach_lua(lua_State* L)
@@ -77,9 +82,14 @@ void __cdecl debugger_start_server(const char* ip, uint16_t port, bool launch, b
 	}
 }
 
-void __cdecl debugger_attach_lua(lua_State* L, bool pause)
+void __cdecl debugger_wait_attach()
 {
-	if (global_dbg) global_dbg->attach_lua(L, pause);
+	if (global_dbg) global_dbg->wait_attach();
+}
+
+void __cdecl debugger_attach_lua(lua_State* L)
+{
+	if (global_dbg) global_dbg->attach_lua(L);
 }
 
 void __cdecl debugger_detach_lua(lua_State* L)
@@ -104,14 +114,15 @@ namespace luaw {
 	int listen(lua_State* L)
 	{
 		debugger_start_server(luaL_checkstring(L, 1), (uint16_t)luaL_checkinteger(L, 2), false, lua_toboolean(L, 3));
-		debugger_attach_lua(L, false);
+		debugger_attach_lua(L);
 		lua_pushvalue(L, lua_upvalueindex(1));
 		return 1;
 	}
 
 	int start(lua_State* L)
 	{
-		debugger_attach_lua(L, true);
+		debugger_attach_lua(L);
+		debugger_wait_attach();
 		lua_pushvalue(L, lua_upvalueindex(1));
 		return 1;
 	}

@@ -19,7 +19,8 @@ void initialize_debugger(lua_State* L)
 	}
 	debugger_set_luadll(luadll);
 	debugger_start_server("127.0.0.1", 0, true, false);
-	debugger_attach_lua(L, true);
+	debugger_attach_lua(L);
+	debugger_wait_attach();
 }
 
 void uninitialize_debugger(lua_State* L)

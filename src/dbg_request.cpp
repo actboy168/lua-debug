@@ -18,6 +18,14 @@ namespace vscode
 		case state::terminated:
 			event_terminated();
 			close_hook();
+
+			breakpoints_.clear();
+			stack_.clear();
+			seq = 1;
+			watch_.reset();
+			update_redirect();
+			stdout_.reset();
+			stderr_.reset();
 			break;
 		default:
 			break;

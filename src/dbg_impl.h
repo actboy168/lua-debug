@@ -58,7 +58,8 @@ namespace vscode
 		void run_stopped(lua_State *L, lua::Debug *ar);
 		void run_idle();
 		void update();
-		void attach_lua(lua_State* L, bool pause);
+		void wait_attach();
+		void attach_lua(lua_State* L);
 		void detach_lua(lua_State* L);
 		void set_custom(custom* custom);
 		void set_coding(coding coding);
