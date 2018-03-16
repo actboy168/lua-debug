@@ -1,7 +1,7 @@
 {
     "name": "lua-debug",
     "displayName": "Lua 5.3 Debugger",
-    "version": "0.1.6",
+    "version": "0.1.8",
     "publisher": "actboy168",
     "icon": "images/logo.png",
     "description": "Visual Studio Code debugger extension for Lua 5.3",
@@ -135,17 +135,17 @@
                                 "description": "Working directory at program startup",
                                 "default": "${workspaceRoot}"
                             },
-							"env": {
-								"type": "object",
-								"additionalProperties": {
-									"type": [
-										"string",
-										"null"
-									]
-								},
-								"description": "Environment variables passed to the program. The value 'null' removes the variable from the environment.",
-								"default": {}
-							},
+                            "env": {
+                                "type": "object",
+                                "additionalProperties": {
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
+                                },
+                                "description": "Environment variables passed to the program. The value 'null' removes the variable from the environment.",
+                                "default": {}
+                            },
                             "stopOnEntry": {
                                 "type": "boolean",
                                 "description": "Automatically stop after launch.",
