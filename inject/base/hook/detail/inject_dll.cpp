@@ -110,7 +110,10 @@ namespace base { namespace hook { namespace detail {
 		memcpy(sc + 40, &memory, sizeof(memory));
 		memcpy(sc + 50, &pfLoadLibrary, sizeof(pfLoadLibrary));
 		memcpy(sc + 98, &ctx.Rip, sizeof(ctx.Rip));
-		WriteProcessMemory64(process, shellcode, &sc, sizeof(sc), NULL);
+		ok = WriteProcessMemory64(process, shellcode, &sc, sizeof(sc), &written);
+		if (!ok || written != sizeof(sc)) {
+			return false;
+		}
 
 		ctx.ContextFlags = CONTEXT_CONTROL;
 		ctx.Rip = shellcode;
