@@ -95,20 +95,28 @@ namespace vscode
 
 	bool debugger_impl::request_attach(rprotocol& req)
 	{
+		initproto_ = rprotocol();
 		if (!is_state(state::initialized)) {
 			response_error(req, "not initialized or unexpected state");
 			return false;
 		}
 		auto& args = req["arguments"];
-		bool stopOnEntry = true;
-		if (args.HasMember("stopOnEntry") && args["stopOnEntry"].IsBool()) {
-			stopOnEntry = args["stopOnEntry"].GetBool();
-		}
 		initialize_sourcemaps(args);
 		init_redirector(req, nullptr);
 		response_success(req);
-		event_thread(true);
+		initproto_ = std::move(req);
+		return false;
+	}
 
+	bool debugger_impl::request_attach_done(rprotocol& req)
+	{
+		bool stopOnEntry = true;
+		auto& args = req["arguments"];
+		if (args.HasMember("stopOnEntry") && args["stopOnEntry"].IsBool()) {
+			stopOnEntry = args["stopOnEntry"].GetBool();
+		}
+
+		event_thread(true);
 		if (stopOnEntry)
 		{
 			set_state(state::stepping);
@@ -121,22 +129,20 @@ namespace vscode
 		if (attach_callback_) {
 			attach_callback_();
 		}
-#if !defined(DEBUGGER_DISABLE_LAUNCH)
-		cache_launch_ = rprotocol();
-#endif
 		return !stopOnEntry;
 	}
 
 	bool debugger_impl::request_configuration_done(rprotocol& req) {
-#if !defined(DEBUGGER_DISABLE_LAUNCH)
 		response_success(req);
-		if (cache_launch_.IsNull()) {
+		if (initproto_.IsNull()) {
 			return false;
 		}
-		return request_launch_done(cache_launch_);
-#else
-		return false;
+#if !defined(DEBUGGER_DISABLE_LAUNCH)
+		if (req["command"].Get<std::string>() == "launch") {
+			return request_launch_done(initproto_);
+		}
 #endif
+		return request_attach_done(initproto_);
 	}
 
 	bool debugger_impl::request_thread(rprotocol& req, lua_State* L, lua::Debug *ar) {

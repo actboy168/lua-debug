@@ -19,14 +19,14 @@ namespace vscode
 	}
 
 	bool debugger_impl::request_launch(rprotocol& req) {
-		cache_launch_ = rprotocol();
+		initproto_ = rprotocol();
 		if (!is_state(state::initialized)) {
 			response_error(req, "not initialized or unexpected state");
 			return false;
 		}
 		auto& args = req["arguments"];
 		if (args.HasMember("runtimeExecutable") && args["runtimeExecutable"].IsString()) {
-			cache_launch_ = std::move(req);
+			initproto_ = std::move(req);
 			return false;
 		}
 		if (!args.HasMember("program") || !args["program"].IsString()) {
@@ -54,14 +54,15 @@ namespace vscode
 				}
 			}
 		}
-		cache_launch_ = std::move(req);
+		initproto_ = std::move(req);
 		return false;
 	}
 
 	bool debugger_impl::request_launch_done(rprotocol& req) {
 		auto& args = req["arguments"];
 		if (args.HasMember("runtimeExecutable") && args["runtimeExecutable"].IsString()) {
-			return request_attach(req);
+			 request_attach(req);
+			 return request_attach_done(req);
 		}
 		if (launchL_) {
 			lua_close(launchL_);

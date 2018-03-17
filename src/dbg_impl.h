@@ -79,6 +79,7 @@ namespace vscode
 		bool request_initialize(rprotocol& req);
 		bool request_set_breakpoints(rprotocol& req);
 		bool request_attach(rprotocol& req);
+		bool request_attach_done(rprotocol& req);
 		bool request_configuration_done(rprotocol& req);
 		bool request_disconnect(rprotocol& req);
 		bool request_pause(rprotocol& req);
@@ -212,8 +213,8 @@ namespace vscode
 		std::string        console_;
 		std::unique_ptr<redirector> stdout_;
 		std::unique_ptr<redirector> stderr_;
+		rprotocol          initproto_;
 #if !defined(DEBUGGER_DISABLE_LAUNCH)
-		rprotocol          cache_launch_;
 		lua_State*         launchL_;
 #endif
 		std::map<std::string, std::function<bool(rprotocol&)>>                            main_dispatch_;
