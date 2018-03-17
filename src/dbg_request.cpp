@@ -155,9 +155,10 @@ namespace vscode
 		{
 			lua::Debug entry;
 			auto& args = req["arguments"];
-			int levels = args.HasMember("levels") ? args["levels"].GetInt(): 20;
+			int levels = args.HasMember("levels") ? args["levels"].GetInt(): 200;
 			int depth = args.HasMember("startFrame") ? args["startFrame"].GetInt() : 0;
 			int n = 0;
+			levels = levels != 0 ? levels : 200;
 			for (auto _ : res("stackFrames").Array())
 			{
 				while (lua_getstack(L, depth, (lua_Debug*)&entry) && n < levels)
@@ -179,7 +180,7 @@ namespace vscode
 									res("presentationHint").String("deemphasize");
 								}
 								res("id").Int(depth);
-								res("column").Int(1);
+								res("column").Int(0);
 								res("name").String(entry.name ? entry.name : "?");
 								res("line").Int(entry.currentline);
 							}
@@ -200,7 +201,7 @@ namespace vscode
 									res("sourceReference").Int64(0);
 								}
 								res("id").Int(depth);
-								res("column").Int(1);
+								res("column").Int(0);
 								res("name").String(entry.name ? entry.name : "?");
 								res("line").Int(entry.currentline);
 							}
@@ -219,7 +220,7 @@ namespace vscode
 								res("sourceReference").Int64(reference);
 							}
 							res("id").Int(depth);
-							res("column").Int(1);
+							res("column").Int(0);
 							res("name").String(entry.name ? entry.name : "?");
 							res("line").Int(entry.currentline);
 						}
