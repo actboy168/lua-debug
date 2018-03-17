@@ -17,7 +17,7 @@ namespace vscode
 			break;
 		case state::terminated:
 			event_terminated();
-			close_hook();
+			detach_all();
 
 			breakpoints_.clear();
 			stack_.clear();
@@ -95,7 +95,7 @@ namespace vscode
 
 	bool debugger_impl::request_attach(rprotocol& req)
 	{
-		if (!is_state(state::initialized) || !attachL_) {
+		if (!is_state(state::initialized)) {
 			response_error(req, "not initialized or unexpected state");
 			return false;
 		}
@@ -105,7 +105,7 @@ namespace vscode
 			stopOnEntry = args["stopOnEntry"].GetBool();
 		}
 		initialize_sourcemaps(args);
-		init_redirector(req, attachL_);
+		init_redirector(req, nullptr);
 		response_success(req);
 		event_thread(true);
 
@@ -118,7 +118,6 @@ namespace vscode
 		{
 			set_state(state::running);
 		}
-		open_hook(attachL_);
 		if (attach_callback_) {
 			attach_callback_();
 		}

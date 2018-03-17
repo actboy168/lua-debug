@@ -150,7 +150,6 @@ namespace vscode
 		{
 			set_state(state::running);
 		}
-		open_hook(L);
 		launchL_ = L;
 		return false;
 	}
@@ -162,6 +161,7 @@ namespace vscode
 			lua_State *L = launchL_;
 			launchL_ = 0;
 
+			attach_lua(L);
 			lua_pushlightuserdata(L, this);
 			lua_pushcclosure(L, errfunc, 1);
 			lua_insert(L, -2);

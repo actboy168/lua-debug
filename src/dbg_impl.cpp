@@ -14,21 +14,27 @@ namespace vscode
 		dbg->hook(L, ar);
 	}
 
-	void debugger_impl::open_hook(lua_State* L)
+	void debugger_impl::attach_lua(lua_State* L)
 	{
-		if (hookL_ && hookL_ != L) {
-			lua_sethook(hookL_, 0, 0, 0);
+		if (hookL_.insert(L).second) {
+			lua_sethook(L, thunk_, LUA_MASKCALL | LUA_MASKLINE | LUA_MASKRET, 0);
 		}
-		lua_sethook(L, thunk_, LUA_MASKCALL | LUA_MASKLINE | LUA_MASKRET, 0);
-		hookL_ = L;
 	}
 
-	void debugger_impl::close_hook()
+	void debugger_impl::detach_lua(lua_State* L)
 	{
-		if (hookL_) {
-			lua_sethook(hookL_, 0, 0, 0);
-			hookL_ = 0;
+		if (hookL_.find(L) != hookL_.end()) {
+			lua_sethook(L, 0, 0, 0);
 		}
+	}
+
+	void debugger_impl::detach_all()
+	{
+		for (auto& L : hookL_)
+		{
+			lua_sethook(L, 0, 0, 0);
+		}
+		hookL_.clear();
 	}
 
 	bool debugger_impl::update_main(rprotocol& req, bool& quit)
@@ -90,7 +96,7 @@ namespace vscode
 			console_ = args["console"].Get<std::string>();
 		}
 
-		if (req.HasMember("__stdout")) {
+		if (L) {
 			if (console_ == "none") {
 				lua_pushcclosure(L, print_empty, 0);
 				lua_setglobal(L, "print");
@@ -112,6 +118,7 @@ namespace vscode
 			}
 		}
 	}
+
 	void debugger_impl::update_redirect()
 	{
 		if (stdout_) {
@@ -220,6 +227,7 @@ namespace vscode
 			}
 		}
 
+		if (watch_) watch_->clear(L);
 		if (bp)
 			event_stopped("breakpoint");
 		else
@@ -241,6 +249,7 @@ namespace vscode
 		lua::Debug ar;
 		if (lua_getstack(L, 0, (lua_Debug*)&ar))
 		{
+			if (watch_) watch_->clear(L);
 			event_stopped("exception", msg);
 			step_in();
 			run_stopped(L, &ar);
@@ -349,20 +358,6 @@ namespace vscode
 		}
 	}
 
-	void debugger_impl::attach_lua(lua_State* L)
-	{
-		attachL_ = L;
-	}
-
-	void debugger_impl::detach_lua(lua_State* L)
-	{
-		if (attachL_ == L)
-		{
-			attachL_ = 0;
-			set_state(state::terminated);
-		}
-	}
-
 	void debugger_impl::set_custom(custom* custom)
 	{
 		custom_ = custom;
@@ -423,8 +418,7 @@ namespace vscode
 		, has_source_(false)
 		, cur_source_(0)
 		, exception_(false)
-		, attachL_(0)
-		, hookL_(0)
+		, hookL_()
 		, attach_callback_()
 		, console_("none")
 #if !defined(DEBUGGER_DISABLE_LAUNCH)

@@ -175,8 +175,7 @@ namespace vscode
 		void response_source(rprotocol& req, const char* content);
 
 	private:
-		void open_hook(lua_State* L);
-		void close_hook();
+		void detach_all();
 		bool update_main(rprotocol& req, bool& quit);
 		bool update_hook(rprotocol& req, lua_State *L, lua::Debug *ar, bool& quit);
 		void initialize_sourcemaps(rapidjson::Value& args);
@@ -206,8 +205,7 @@ namespace vscode
 		bool               has_source_;
 		bp_source*         cur_source_;
 		bool               exception_;
-		lua_State*         attachL_;
-		lua_State*         hookL_;
+		std::set<lua_State*> hookL_;
 		dbg_thread*        thread_;
 		std::atomic<bool>  allowhook_;
 		std::function<void()> attach_callback_;

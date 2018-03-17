@@ -128,7 +128,6 @@ int main()
 						launch_.reset(new launch(io));
 						if (seq > 1) initproto.AddMember("__initseq", seq, initproto.GetAllocator());
 						launch_->send(std::move(initproto));
-						rp.AddMember("__stdout", "print", rp.GetAllocator());
 						launch_->send(std::move(rp));
 						break;
 					}
