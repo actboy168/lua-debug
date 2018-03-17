@@ -138,7 +138,7 @@ namespace vscode
 			return false;
 		}
 #if !defined(DEBUGGER_DISABLE_LAUNCH)
-		if (req["command"].Get<std::string>() == "launch") {
+		if (initproto_["command"].Get<std::string>() == "launch") {
 			return request_launch_done(initproto_);
 		}
 #endif

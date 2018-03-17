@@ -61,8 +61,9 @@ namespace vscode
 	bool debugger_impl::request_launch_done(rprotocol& req) {
 		auto& args = req["arguments"];
 		if (args.HasMember("runtimeExecutable") && args["runtimeExecutable"].IsString()) {
-			 request_attach(req);
-			 return request_attach_done(req);
+			rprotocol tmp = std::move(req);
+			request_attach(tmp);
+			return request_attach_done(initproto_);
 		}
 		if (launchL_) {
 			lua_close(launchL_);
