@@ -346,7 +346,7 @@ namespace vscode
 			{
 				for (auto type : { var_type::local, var_type::vararg, var_type::upvalue, var_type::global, var_type::standard })
 				{
-					if (has_scopes(L, ar, type))
+					if (has_scopes(L, &entry, type))
 					{
 						for (auto _ : res.Object())
 						{
