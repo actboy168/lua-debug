@@ -18,6 +18,7 @@ namespace vscode
 			{
 				for (auto _ : res.Object())
 				{
+					res("default").Bool(true);
 					res("filter").String("error");
 					res("label").String("Uncaught Error");
 				}
