@@ -51,9 +51,9 @@ namespace vscode
 		impl_->set_coding(coding);
 	}
 
-	void debugger::output(const char* category, const char* buf, size_t len)
+	void debugger::output(const char* category, const char* buf, size_t len, lua_State* L)
 	{
-		impl_->output(category, buf, len, nullptr);
+		impl_->output(category, buf, len, L);
 	}
 
 	void debugger::exception(lua_State* L, const char* msg)
