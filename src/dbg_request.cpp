@@ -560,4 +560,20 @@ namespace vscode
 		});
 		return false;
 	}
+
+	bool debugger_impl::request_exception_info(rprotocol& req, lua_State *L, lua::Debug *ar)
+	{
+		response_success(req, [&](wprotocol& res)
+		{
+			res("breakMode").String("always");
+			res("exceptionId").String(lua_tostring(L, -1));
+			for (auto _ : res("details").Object())
+			{
+				luaL_traceback(L, L, 0, 1);
+				res("stackTrace").String(lua_tostring(L, -1));
+				lua_pop(L, 1);
+			}
+		});
+		return false;
+	}
 }

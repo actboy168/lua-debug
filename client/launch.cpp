@@ -9,9 +9,8 @@
 
 static int errfunc(lua_State* L) {
 	vscode::debugger* dbg = (vscode::debugger*)lua_touserdata(L, lua_upvalueindex(1));
-	luaL_traceback(L, L, lua_tostring(L, 1), 1);
-	dbg->exception(L, lua_tostring(L, -1));
-	lua_settop(L, 2);
+	lua_settop(L, 1);
+	dbg->exception(L);
 	return 1;
 }
 

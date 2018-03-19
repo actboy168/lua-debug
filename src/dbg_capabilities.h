@@ -13,6 +13,7 @@ namespace vscode
 			res("supportsConditionalBreakpoints").Bool(true);
 			res("supportsHitConditionalBreakpoints").Bool(true);
 			res("supportsDelayedStackTraceLoading").Bool(true);
+			res("supportsExceptionInfoRequest").Bool(true);
 			for (auto _ : res("exceptionBreakpointFilters").Array())
 			{
 				for (auto _ : res.Object())

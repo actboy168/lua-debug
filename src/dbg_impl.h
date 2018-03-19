@@ -54,7 +54,7 @@ namespace vscode
 		~debugger_impl();
 		void close();
 		void hook(lua_State* L, lua::Debug* ar);
-		void exception(lua_State* L, const char* msg);
+		void exception(lua_State* L);
 		void run_stopped(lua_State* L, lua::Debug* ar);
 		void run_idle();
 		void update();
@@ -99,6 +99,7 @@ namespace vscode
 		bool request_next(rprotocol& req, lua_State *L, lua::Debug *ar);
 		bool request_continue(rprotocol& req, lua_State *L, lua::Debug *ar);
 		bool request_evaluate(rprotocol& req, lua_State *L, lua::Debug *ar);
+		bool request_exception_info(rprotocol& req, lua_State *L, lua::Debug *ar);
 
 	private:
 		void event_stopped(const char *msg, const char* text = nullptr);

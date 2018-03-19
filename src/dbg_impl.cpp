@@ -24,9 +24,7 @@ namespace vscode
 
 	static void debugger_panic(debugger_impl* dbg, lua_State *L)
 	{
-		luaL_traceback(L, L, lua_tostring(L, -1), 1);
-		dbg->exception(L, lua_tostring(L, -1));
-		lua_pop(L, 1);
+		dbg->exception(L);
 	}
 
 	void debugger_impl::attach_lua(lua_State* L)
@@ -206,7 +204,7 @@ namespace vscode
 		run_stopped(L, ar);
 	}
 
-	void debugger_impl::exception(lua_State *L, const char* msg)
+	void debugger_impl::exception(lua_State* L)
 	{
 		std::lock_guard<dbg_thread> lock(*thread_);
 
@@ -220,7 +218,7 @@ namespace vscode
 		if (lua_getstack(L, 0, (lua_Debug*)&ar))
 		{
 			if (watch_) watch_->clear(L);
-			event_stopped("exception", msg);
+			event_stopped("exception");
 			step_in();
 			run_stopped(L, &ar);
 		}
@@ -426,6 +424,7 @@ namespace vscode
 			{ "source", DBG_REQUEST_HOOK(request_source) },
 			{ "threads", DBG_REQUEST_HOOK(request_thread) },
 			{ "evaluate", DBG_REQUEST_HOOK(request_evaluate) },
+			{ "exceptionInfo", DBG_REQUEST_HOOK(request_exception_info) },
 		})
 	{
 		thread_->start();

@@ -56,9 +56,9 @@ namespace vscode
 		impl_->output(category, buf, len, L);
 	}
 
-	void debugger::exception(lua_State* L, const char* msg)
+	void debugger::exception(lua_State* L)
 	{
-		impl_->exception(L, msg);
+		impl_->exception(L);
 	}
 
 	bool debugger::is_state(state state) const

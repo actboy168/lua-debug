@@ -54,7 +54,7 @@ namespace vscode
 		void set_custom(custom* custom);
 		void set_coding(coding coding);
 		void output(const char* category, const char* buf, size_t len, lua_State* L = nullptr);
-		void exception(lua_State* L, const char* msg);
+		void exception(lua_State* L);
 		bool is_state(state state) const;
 		void redirect_stdout();
 		void redirect_stderr();
