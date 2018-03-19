@@ -1,29 +1,61 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="..\client\attach.cpp" />
-    <ClCompile Include="..\client\create_process.cpp" />
-    <ClCompile Include="..\client\server.cpp" />
-    <ClCompile Include="..\client\launch.cpp" />
-    <ClCompile Include="..\client\main.cpp" />
-    <ClCompile Include="..\client\stdinput.cpp" />
     <ClCompile Include="..\inject\base\hook\detail\inject_dll.cpp">
       <Filter>base\hook</Filter>
     </ClCompile>
     <ClCompile Include="..\inject\base\win\process.cpp">
       <Filter>base\win</Filter>
     </ClCompile>
+    <ClCompile Include="..\client\attach.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\client\create_process.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\dbg_delayload.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\lua_compatibility.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\client\launch.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\client\main.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\client\server.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\client\stdinput.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\client\attach.h" />
-    <ClInclude Include="..\client\server.h" />
-    <ClInclude Include="..\client\launch.h" />
-    <ClInclude Include="..\client\stdinput.h" />
     <ClInclude Include="..\inject\base\hook\detail\inject_dll.h">
       <Filter>base\hook</Filter>
     </ClInclude>
     <ClInclude Include="..\inject\base\win\process.h">
       <Filter>base\win</Filter>
+    </ClInclude>
+    <ClInclude Include="..\client\attach.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\dbg_delayload.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\client\launch.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\lua_compatibility.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\client\server.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\client\stdinput.h">
+      <Filter>inc</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -35,6 +67,12 @@
     </Filter>
     <Filter Include="base\win">
       <UniqueIdentifier>{1388b723-ce88-46bb-91c4-9b02d58ca6b3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="inc">
+      <UniqueIdentifier>{aa8ca654-c9ca-46d7-97dd-2c064ca17c03}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="cpp">
+      <UniqueIdentifier>{45f68082-2f44-4395-9592-cc7e5768f3e5}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
