@@ -127,9 +127,6 @@
     <ClInclude Include="..\src\dbg_pathconvert.h">
       <Filter>inc</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\dbg_enum.h">
-      <Filter>inc</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\dbg_watchs.h">
       <Filter>inc</Filter>
     </ClInclude>

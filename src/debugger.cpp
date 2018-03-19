@@ -50,6 +50,11 @@ namespace vscode
 	{
 		impl_->output(category, buf, len, nullptr);
 	}
+
+	bool debugger::is_state(state state) const
+	{
+		return impl_->is_state(state);
+	}
 }
 
 std::unique_ptr<vscode::network>  global_io;

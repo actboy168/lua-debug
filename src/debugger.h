@@ -33,6 +33,14 @@ namespace vscode
 		utf8,
 	};
 
+	enum class state {
+		birth = 1,
+		initialized = 2,
+		stepping = 3,
+		running = 4,
+		terminated = 5,
+	};
+
 	class DEBUGGER_API debugger
 	{
 	public:
@@ -45,6 +53,7 @@ namespace vscode
 		void set_custom(custom* custom);
 		void set_coding(coding coding);
 		void output(const char* category, const char* buf, size_t len);
+		bool is_state(state state) const;
 
 	private:
 		debugger_impl* impl_;
