@@ -72,7 +72,7 @@ namespace vscode
 		network_->output(res);
 	}
 
-	void debugger_impl::event_stopped(const char *msg, const char* text)
+	void debugger_impl::event_stopped(const char *msg)
 	{
 		wprotocol res;
 		for (auto _ : res.Object())
@@ -84,10 +84,6 @@ namespace vscode
 			{
 				res("reason").String(msg);
 				res("threadId").Int(1);
-				if (text)
-				{
-					res("text").String(text);
-				}
 			}
 		}
 		network_->output(res);

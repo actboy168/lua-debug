@@ -102,7 +102,7 @@ namespace vscode
 		bool request_exception_info(rprotocol& req, lua_State *L, lua::Debug *ar);
 
 	private:
-		void event_stopped(const char *msg, const char* text = nullptr);
+		void event_stopped(const char *msg);
 		void event_thread(bool started);
 		void event_terminated();
 		void event_initialized();
