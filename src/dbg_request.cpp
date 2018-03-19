@@ -163,36 +163,40 @@ namespace vscode
 		{
 			lua::Debug entry;
 			auto& args = req["arguments"];
-			int levels = args.HasMember("levels") ? args["levels"].GetInt(): 200;
-			int depth = args.HasMember("startFrame") ? args["startFrame"].GetInt() : 0;
-			int n = 0;
-			levels = levels != 0 ? levels : 200;
+			int depth = 0;
+			int levels = args.HasMember("levels") ? args["levels"].GetInt() : 200;
+			levels = (levels != 0 ? levels : 200);
+			int startFrame = args.HasMember("startFrame") ? args["startFrame"].GetInt() : 0;
+			int endFrame = startFrame + levels;
+			int curFrame = 0;
 			for (auto _ : res("stackFrames").Array())
 			{
-				while (lua_getstack(L, depth, (lua_Debug*)&entry) && n < levels)
+				while (lua_getstack(L, depth, (lua_Debug*)&entry))
 				{
 					int status = lua_getinfo(L, "Sln", (lua_Debug*)&entry);
 					assert(status);
 					const char *src = entry.source;
 					if (memcmp(src, "=[C]", 4) == 0)
 					{
-						if (n != 0)
+						if (curFrame != 0)
 						{
-							intptr_t reference = ensure_value_fits_in_mantissa((intptr_t)src);
-							for (auto _ : res.Object())
-							{
-								for (auto _ : res("source").Object())
+							if (curFrame >= startFrame && curFrame < endFrame) {
+								intptr_t reference = ensure_value_fits_in_mantissa((intptr_t)src);
+								for (auto _ : res.Object())
 								{
-									res("name").String("<C function>");
-									res("sourceReference").Int64(reference);
-									res("presentationHint").String("deemphasize");
+									for (auto _ : res("source").Object())
+									{
+										res("name").String("<C function>");
+										res("sourceReference").Int64(reference);
+										res("presentationHint").String("deemphasize");
+									}
+									res("id").Int(depth);
+									res("column").Int(1);
+									res("name").String(entry.name ? entry.name : "?");
+									res("line").Int(entry.currentline);
 								}
-								res("id").Int(depth);
-								res("column").Int(1);
-								res("name").String(entry.name ? entry.name : "?");
-								res("line").Int(entry.currentline);
 							}
-							n++;
+							curFrame++;
 						}
 					}
 					else if (*src == '@' || *src == '=')
@@ -200,45 +204,49 @@ namespace vscode
 						std::string path;
 						if (pathconvert_.get(src, path))
 						{
+							if (curFrame >= startFrame && curFrame < endFrame) {
+								for (auto _ : res.Object())
+								{
+									for (auto _ : res("source").Object())
+									{
+										res("name").String(w2u(fs::path(u2w(path)).filename().wstring()));
+										res("path").String(path);
+										res("sourceReference").Int64(0);
+									}
+									res("id").Int(depth);
+									res("column").Int(1);
+									res("name").String(entry.name ? entry.name : "?");
+									res("line").Int(entry.currentline);
+								}
+							}
+							curFrame++;
+						}
+					}
+					else
+					{
+						if (curFrame >= startFrame && curFrame < endFrame) {
+							intptr_t reference = ensure_value_fits_in_mantissa((intptr_t)src);
+							stack_.push_back({ depth, reference });
 							for (auto _ : res.Object())
 							{
 								for (auto _ : res("source").Object())
 								{
-									res("name").String(w2u(fs::path(u2w(path)).filename().wstring()));
-									res("path").String(path);
-									res("sourceReference").Int64(0);
+									res("name").String("<Memory funtion>");
+									res("sourceReference").Int64(reference);
 								}
 								res("id").Int(depth);
 								res("column").Int(1);
 								res("name").String(entry.name ? entry.name : "?");
 								res("line").Int(entry.currentline);
 							}
-							n++;
 						}
-					}
-					else
-					{
-						intptr_t reference = ensure_value_fits_in_mantissa((intptr_t)src);
-						stack_.push_back({ depth, reference });
-						for (auto _ : res.Object())
-						{
-							for (auto _ : res("source").Object())
-							{
-								res("name").String("<Memory funtion>");
-								res("sourceReference").Int64(reference);
-							}
-							res("id").Int(depth);
-							res("column").Int(1);
-							res("name").String(entry.name ? entry.name : "?");
-							res("line").Int(entry.currentline);
-						}
-						n++;
+						curFrame++;
 					}
 
 					depth++;
 				}
 			}
-			res("totalFrames").Int(n);
+			res("totalFrames").Int(curFrame);
 		});
 		return false;
 	}
