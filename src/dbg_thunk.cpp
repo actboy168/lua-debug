@@ -10,7 +10,6 @@ namespace vscode {
 			0x57,                                                       // push rdi
 			0x50,                                                       // push rax
 			0x48, 0x83, 0xec, 0x28,                                     // sub rsp, 40
-			0x48, 0x8b, 0xfc,                                           // mov rdi, rsp
 			0x4c, 0x8b, 0xc2,                                           // mov r8, rdx
 			0x48, 0x8b, 0xd1,                                           // mov rdx, rcx
 			0x48, 0xb9, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // mov rcx, dbg
@@ -35,8 +34,8 @@ namespace vscode {
 			return 0;
 		}
 #if defined(_M_X64)
-		memcpy(sc + 17, &dbg, sizeof(dbg));
-		memcpy(sc + 27, &hook, sizeof(hook));
+		memcpy(sc + 14, &dbg, sizeof(dbg));
+		memcpy(sc + 24, &hook, sizeof(hook));
 #else
 		memcpy(sc + 9, &dbg, sizeof(dbg));
 		hook = hook - ((intptr_t)shellcode + 18);
