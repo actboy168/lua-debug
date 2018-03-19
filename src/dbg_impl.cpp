@@ -308,10 +308,6 @@ namespace vscode
 			}
 			run_idle();
 		}
-
-#if !defined(DEBUGGER_DISABLE_LAUNCH)
-		update_launch();
-#endif
 	}
 
 	void debugger_impl::wait_attach()
@@ -401,18 +397,13 @@ namespace vscode
 		, hookL_()
 		, attach_callback_()
 		, console_("none")
-#if !defined(DEBUGGER_DISABLE_LAUNCH)
-		, launchL_(0)
-#endif
 		, allowhook_(true)
 		, thread_(mode == threadmode::async 
 			? (dbg_thread*)new async(std::bind(&debugger_impl::update, this))
 			: (dbg_thread*)new sync(std::bind(&debugger_impl::run_idle, this)))
 		, main_dispatch_
 		({
-#if !defined(DEBUGGER_DISABLE_LAUNCH)
 			{ "launch", DBG_REQUEST_MAIN(request_attach) },
-#endif
 			{ "attach", DBG_REQUEST_MAIN(request_attach) },
 			{ "configurationDone", DBG_REQUEST_MAIN(request_configuration_done) },
 			{ "disconnect", DBG_REQUEST_MAIN(request_disconnect) },

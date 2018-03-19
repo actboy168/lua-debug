@@ -187,12 +187,6 @@ namespace vscode
 		void initialize_sourcemaps(rapidjson::Value& args);
 		void update_redirect();
 
-#if !defined(DEBUGGER_DISABLE_LAUNCH)
-		bool request_launch(rprotocol& req);
-		bool request_launch_done(rprotocol& req);
-		void update_launch();
-#endif
-
 	private:
 		int64_t            seq;
 		io*                network_;
@@ -218,9 +212,6 @@ namespace vscode
 		std::unique_ptr<redirector> stdout_;
 		std::unique_ptr<redirector> stderr_;
 		rprotocol          initproto_;
-#if !defined(DEBUGGER_DISABLE_LAUNCH)
-		lua_State*         launchL_;
-#endif
 		std::map<std::string, std::function<bool(rprotocol&)>>                            main_dispatch_;
 		std::map<std::string, std::function<bool(rprotocol&, lua_State*, lua::Debug *ar)>> hook_dispatch_;
 	};

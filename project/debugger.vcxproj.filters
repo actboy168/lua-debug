@@ -71,9 +71,6 @@
     <ClCompile Include="..\src\dbg_delayload.cpp">
       <Filter>cpp</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\dbg_launch.cpp">
-      <Filter>cpp</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\dbg_redirect.cpp">
       <Filter>cpp</Filter>
     </ClCompile>
