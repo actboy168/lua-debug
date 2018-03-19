@@ -9,20 +9,50 @@
 
 namespace vscode
 {
-	static void debughook(debugger_impl* dbg, lua_State *L, lua::Debug *ar)
+	lua_State* get_mainthread(lua_State* thread)
+	{
+		lua_rawgeti(thread, LUA_REGISTRYINDEX, LUA_RIDX_MAINTHREAD);
+		lua_State* ml = lua_tothread(thread, -1);
+		lua_pop(thread, 1);
+		return ml;
+	}
+
+	static void debugger_hook(debugger_impl* dbg, lua_State *L, lua::Debug *ar)
 	{
 		dbg->hook(L, ar);
 	}
 
+	static void debugger_panic(debugger_impl* dbg, lua_State *L)
+	{
+		luaL_traceback(L, L, lua_tostring(L, -1), 1);
+		dbg->exception(L, lua_tostring(L, -1));
+		lua_pop(L, 1);
+	}
+
 	void debugger_impl::attach_lua(lua_State* L)
 	{
+		L = get_mainthread(L);
 		if (hookL_.insert(L).second) {
-			lua_sethook(L, thunk_, LUA_MASKCALL | LUA_MASKLINE | LUA_MASKRET, 0);
+			if (!thunk_hook_) {
+				thunk_hook_ = (lua_Hook)thunk_create_hook(
+					reinterpret_cast<intptr_t>(this), 
+					reinterpret_cast<intptr_t>(&debugger_hook)
+				);
+			}
+			lua_sethook(L, thunk_hook_, LUA_MASKCALL | LUA_MASKLINE | LUA_MASKRET, 0);
+
+			lua_CFunction thunk_panic = (lua_CFunction)thunk_create_panic(
+				reinterpret_cast<intptr_t>(this),
+				reinterpret_cast<intptr_t>(&debugger_panic), 
+				reinterpret_cast<intptr_t>(lua_atpanic(L, 0))
+			);
+			lua_atpanic(L, thunk_panic);
 		}
 	}
 
 	void debugger_impl::detach_lua(lua_State* L)
 	{
+		L = get_mainthread(L);
 		if (hookL_.find(L) != hookL_.end()) {
 			lua_sethook(L, 0, 0, 0);
 		}
@@ -343,7 +373,7 @@ namespace vscode
 
 	debugger_impl::~debugger_impl()
 	{
-		thunk_destory(thunk_);
+		thunk_destory(thunk_hook_);
 	}
 
 #define DBG_REQUEST_MAIN(name) std::bind(&debugger_impl:: ## name, this, std::placeholders::_1)
@@ -362,7 +392,7 @@ namespace vscode
 		, watch_()
 		, pathconvert_(this, coding)
 		, custom_(nullptr)
-		, thunk_(0)
+		, thunk_hook_(0)
 		, has_source_(false)
 		, cur_source_(0)
 		, exception_(false)
@@ -398,7 +428,6 @@ namespace vscode
 			{ "evaluate", DBG_REQUEST_HOOK(request_evaluate) },
 		})
 	{
-		thunk_ = (lua_Hook)thunk_create(reinterpret_cast<intptr_t>(this), reinterpret_cast<intptr_t>(&debughook));
 		thread_->start();
 	}
 

@@ -198,7 +198,7 @@ namespace vscode
 		std::unique_ptr<watchs> watch_;
 		pathconvert        pathconvert_;
 		custom*            custom_;
-		lua_Hook           thunk_;
+		lua_Hook           thunk_hook_;
 		bool               has_source_;
 		bp_source*         cur_source_;
 		bool               exception_;
