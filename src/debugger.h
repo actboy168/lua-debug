@@ -53,6 +53,7 @@ namespace vscode
 		void set_custom(custom* custom);
 		void set_coding(coding coding);
 		void output(const char* category, const char* buf, size_t len);
+		void exception(lua_State* L, const char* msg);
 		bool is_state(state state) const;
 
 	private:
