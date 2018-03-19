@@ -138,9 +138,6 @@ bool launch::request_launch(vscode::rprotocol& req) {
 	}
 	debugger_.redirect_stderr();
 
-	lua_pushcclosure(L, print_empty, 0);
-	lua_setglobal(L, "print");
-
 	std::string program = vscode::u2a(args["program"]);
 	int status = luaL_loadfile(L, program.c_str());
 	if (status != LUA_OK) {

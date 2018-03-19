@@ -151,7 +151,6 @@ namespace vscode
 									res("sourceReference").Int64(0);
 								};
 								res("line").Int(entry.currentline);
-								res("column").Int(0);
 							}
 						}
 						else
@@ -164,7 +163,6 @@ namespace vscode
 							}
 							res("name").String(entry.name ? entry.name : "?");
 							res("line").Int(entry.currentline);
-							res("column").Int(0);
 						}
 					}
 				}

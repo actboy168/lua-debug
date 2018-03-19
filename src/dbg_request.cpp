@@ -188,7 +188,7 @@ namespace vscode
 									res("presentationHint").String("deemphasize");
 								}
 								res("id").Int(depth);
-								res("column").Int(0);
+								res("column").Int(1);
 								res("name").String(entry.name ? entry.name : "?");
 								res("line").Int(entry.currentline);
 							}
@@ -209,7 +209,7 @@ namespace vscode
 									res("sourceReference").Int64(0);
 								}
 								res("id").Int(depth);
-								res("column").Int(0);
+								res("column").Int(1);
 								res("name").String(entry.name ? entry.name : "?");
 								res("line").Int(entry.currentline);
 							}
@@ -228,7 +228,7 @@ namespace vscode
 								res("sourceReference").Int64(reference);
 							}
 							res("id").Int(depth);
-							res("column").Int(0);
+							res("column").Int(1);
 							res("name").String(entry.name ? entry.name : "?");
 							res("line").Int(entry.currentline);
 						}
