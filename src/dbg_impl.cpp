@@ -59,34 +59,6 @@ namespace vscode
 		return false;
 	}
 
-	static int print_empty(lua_State *L) {
-		return 0;
-	}
-
-	static int print(lua_State *L) {
-		std::string out;
-		int n = lua_gettop(L);
-		int i;
-		lua_getglobal(L, "tostring");
-		for (i = 1; i <= n; i++) {
-			const char *s;
-			size_t l;
-			lua_pushvalue(L, -1);
-			lua_pushvalue(L, i);
-			lua_call(L, 1, 1);
-			s = lua_tolstring(L, -1, &l);
-			if (s == NULL)
-				return luaL_error(L, "'tostring' must return a string to 'print'");
-			if (i>1) out += "\t";
-			out += std::string(s, l);
-			lua_pop(L, 1);
-		}
-		out += "\n";
-		debugger_impl* dbg = (debugger_impl*)lua_touserdata(L, lua_upvalueindex(1));
-		dbg->output("stdout", out.data(), out.size(), L);
-		return 0;
-	}
-
 	void debugger_impl::update_redirect()
 	{
 		if (stdout_) {
