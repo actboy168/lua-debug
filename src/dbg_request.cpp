@@ -355,7 +355,7 @@ namespace vscode
 			response_error(req, "Error retrieving stack frame");
 			return false;
 		}
-
+		
 		response_success(req, [&](wprotocol& res)
 		{
 			for (auto _ : res("scopes").Array())
@@ -372,8 +372,6 @@ namespace vscode
 						}
 					}
 				}
-
-				
 			}
 		});
 		return false;

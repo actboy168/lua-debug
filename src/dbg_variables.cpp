@@ -933,6 +933,7 @@ namespace vscode
 		case var_type::upvalue: {
 			const char* name = 0;
 			if (getlocal(L, ar, type, 1, name) && name) {
+				lua_pop(L, 1);
 				return true;
 			}
 			return false;
