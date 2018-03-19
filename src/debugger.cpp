@@ -16,6 +16,11 @@ namespace vscode
 		delete impl_;
 	}
 
+	void debugger::close()
+	{
+		impl_->close();
+	}
+
 	void debugger::update()
 	{
 		impl_->update();

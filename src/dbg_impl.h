@@ -13,7 +13,6 @@
 #include "dbg_path.h" 
 #include "dbg_custom.h"	
 #include "dbg_pathconvert.h" 
-#include "dbg_enum.h"   
 #include "dbg_watchs.h"
 #include "dbg_protocol.h"
 #include "debugger.h"
@@ -53,9 +52,10 @@ namespace vscode
 	public:
 		debugger_impl(io* io, threadmode mode, coding coding);
 		~debugger_impl();
-		void hook(lua_State *L, lua::Debug *ar);
-		void exception(lua_State *L, const char* msg);
-		void run_stopped(lua_State *L, lua::Debug *ar);
+		void close();
+		void hook(lua_State* L, lua::Debug* ar);
+		void exception(lua_State* L, const char* msg);
+		void run_stopped(lua_State* L, lua::Debug* ar);
 		void run_idle();
 		void update();
 		void wait_attach();
@@ -66,7 +66,7 @@ namespace vscode
 		void output(const char* category, const char* buf, size_t len, lua_State* L);
 
 		void set_state(state state);
-		bool is_state(state state);
+		bool is_state(state state) const;
 		void set_step(step step);
 		bool is_step(step step);
 		void step_in();

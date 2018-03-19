@@ -46,6 +46,7 @@ namespace vscode
 	public:
 		debugger(io* io, threadmode mode, coding coding);
 		~debugger();
+		void close();
 		void update();
 		void wait_attach();
 		void attach_lua(lua_State* L);
