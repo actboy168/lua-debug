@@ -87,38 +87,6 @@ namespace vscode
 		return 0;
 	}
 
-
-	void debugger_impl::init_redirector(rprotocol& req, lua_State* L) {
-		auto& args = req["arguments"];
-		console_ = "none";
-		if (args.HasMember("console") && args["console"].IsString())
-		{
-			console_ = args["console"].Get<std::string>();
-		}
-
-		if (L) {
-			if (console_ == "none") {
-				lua_pushcclosure(L, print_empty, 0);
-				lua_setglobal(L, "print");
-			}
-			else {
-				lua_pushlightuserdata(L, this);
-				lua_pushcclosure(L, print, 1);
-				lua_setglobal(L, "print");
-				stderr_.reset(new redirector);
-				stderr_->open("stderr", std_fd::STDERR);
-			}
-		}
-		else {
-			if (console_ != "none") {
-				stdout_.reset(new redirector);
-				stdout_->open("stdout", std_fd::STDOUT);
-				stderr_.reset(new redirector);
-				stderr_->open("stderr", std_fd::STDERR);
-			}
-		}
-	}
-
 	void debugger_impl::update_redirect()
 	{
 		if (stdout_) {
@@ -393,6 +361,18 @@ namespace vscode
 		event_output(category, easy_string(buf, len), L);
 	}
 
+	void debugger_impl::redirect_stdout()
+	{
+		stdout_.reset(new redirector);
+		stdout_->open("stdout", std_fd::STDOUT);
+	}
+		
+	void debugger_impl::redirect_stderr()
+	{
+		stderr_.reset(new redirector);
+		stderr_->open("stderr", std_fd::STDERR);
+	}
+
 	debugger_impl::~debugger_impl()
 	{
 		thunk_destory(thunk_);
@@ -431,7 +411,7 @@ namespace vscode
 		, main_dispatch_
 		({
 #if !defined(DEBUGGER_DISABLE_LAUNCH)
-			{ "launch", DBG_REQUEST_MAIN(request_launch) },
+			{ "launch", DBG_REQUEST_MAIN(request_attach) },
 #endif
 			{ "attach", DBG_REQUEST_MAIN(request_attach) },
 			{ "configurationDone", DBG_REQUEST_MAIN(request_configuration_done) },

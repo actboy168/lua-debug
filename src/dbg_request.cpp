@@ -6,6 +6,20 @@
 
 namespace vscode
 {
+	void debugger_impl::close()
+	{
+		set_state(state::terminated);
+		detach_all();
+
+		breakpoints_.clear();
+		stack_.clear();
+		seq = 1;
+		watch_.reset();
+		update_redirect();
+		stdout_.reset();
+		stderr_.reset();
+	}
+
 	void debugger_impl::set_state(state state)
 	{
 		if (state_ == state) return;
@@ -17,22 +31,13 @@ namespace vscode
 			break;
 		case state::terminated:
 			event_terminated();
-			detach_all();
-
-			breakpoints_.clear();
-			stack_.clear();
-			seq = 1;
-			watch_.reset();
-			update_redirect();
-			stdout_.reset();
-			stderr_.reset();
 			break;
 		default:
 			break;
 		}
 	}
 
-	bool debugger_impl::is_state(state state)
+	bool debugger_impl::is_state(state state) const
 	{
 		return state_ == state;
 	}
@@ -102,7 +107,10 @@ namespace vscode
 		}
 		auto& args = req["arguments"];
 		initialize_sourcemaps(args);
-		init_redirector(req, nullptr);
+		console_ = "none";
+		if (args.HasMember("console") && args["console"].IsString()) {
+			console_ = args["console"].Get<std::string>();
+		}
 		response_success(req);
 		initproto_ = std::move(req);
 		return false;
@@ -138,9 +146,9 @@ namespace vscode
 			return false;
 		}
 #if !defined(DEBUGGER_DISABLE_LAUNCH)
-		if (initproto_["command"].Get<std::string>() == "launch") {
-			return request_launch_done(initproto_);
-		}
+		//if (initproto_["command"].Get<std::string>() == "launch") {
+		//	return request_launch_done(initproto_);
+		//}
 #endif
 		return request_attach_done(initproto_);
 	}
@@ -427,7 +435,7 @@ namespace vscode
 	bool debugger_impl::request_disconnect(rprotocol& req)
 	{
 		response_success(req);
-		set_state(state::terminated);
+		close();
 		network_->close();
 		return true;
 	}

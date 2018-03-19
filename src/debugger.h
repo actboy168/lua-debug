@@ -56,6 +56,8 @@ namespace vscode
 		void output(const char* category, const char* buf, size_t len, lua_State* L = nullptr);
 		void exception(lua_State* L, const char* msg);
 		bool is_state(state state) const;
+		void redirect_stdout();
+		void redirect_stderr();
 
 	private:
 		debugger_impl* impl_;

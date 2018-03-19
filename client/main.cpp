@@ -126,6 +126,11 @@ int main()
 					}
 					else {
 						launch_.reset(new launch(io));
+						if (!launch_->request_launch(rp)) {
+							response_error(io, rp, "Launch failed");
+							exit(0);
+							continue;
+						}
 						if (seq > 1) initproto.AddMember("__initseq", seq, initproto.GetAllocator());
 						launch_->send(std::move(initproto));
 						launch_->send(std::move(rp));

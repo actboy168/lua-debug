@@ -65,6 +65,16 @@ namespace vscode
 	{
 		return impl_->is_state(state);
 	}
+
+	void debugger::redirect_stdout()
+	{
+		impl_->redirect_stdout();
+	}
+
+	void debugger::redirect_stderr()
+	{
+		impl_->redirect_stderr();
+	}
 }
 
 std::unique_ptr<vscode::network>  global_io;
@@ -92,6 +102,8 @@ void __cdecl debugger_start_server(const char* ip, uint16_t port, bool launch, b
 	{
 		global_io.reset(new vscode::network(ip, port, rebind));
 		global_dbg.reset(new vscode::debugger(global_io.get(), vscode::threadmode::async, global_coding));
+		global_dbg->redirect_stdout();
+		global_dbg->redirect_stderr();
 		if (launch)
 			global_io->kill_process_when_close();
 	}

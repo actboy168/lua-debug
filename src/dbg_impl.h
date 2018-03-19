@@ -74,6 +74,8 @@ namespace vscode
 		void step_out(lua_State* L, lua::Debug* ar);
 		bool check_step(lua_State* L, lua::Debug* ar);
 		bool check_breakpoint(lua_State *L, lua::Debug *ar);
+		void redirect_stdout();
+		void redirect_stderr();
 
 	private:
 		bool request_initialize(rprotocol& req);
@@ -109,6 +111,9 @@ namespace vscode
 		template <class T>
 		void event_output(const std::string& category, const T& msg, lua_State* L = nullptr)
 		{
+			if (console_ == "none") {
+				return;
+			}
 			wprotocol res;
 			for (auto _ : res.Object())
 			{
@@ -180,7 +185,6 @@ namespace vscode
 		bool update_main(rprotocol& req, bool& quit);
 		bool update_hook(rprotocol& req, lua_State *L, lua::Debug *ar, bool& quit);
 		void initialize_sourcemaps(rapidjson::Value& args);
-		void init_redirector(rprotocol& req, lua_State* L);
 		void update_redirect();
 
 #if !defined(DEBUGGER_DISABLE_LAUNCH)

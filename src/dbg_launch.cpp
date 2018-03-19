@@ -71,7 +71,11 @@ namespace vscode
 		}
 		lua_State* L = luaL_newstate();
 		luaL_openlibs(L);
-		init_redirector(req, L);
+
+		console_ = "none";
+		if (args.HasMember("console") && args["console"].IsString()) {
+			console_ = args["console"].Get<std::string>();
+		}
 
 		if (args.HasMember("path") && args["path"].IsString())
 		{
