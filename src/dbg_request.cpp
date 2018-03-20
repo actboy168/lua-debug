@@ -175,74 +175,59 @@ namespace vscode
 				{
 					int status = lua_getinfo(L, "Sln", (lua_Debug*)&entry);
 					assert(status);
-					const char *src = entry.source;
-					if (memcmp(src, "=[C]", 4) == 0)
-					{
-						if (curFrame != 0)
-						{
-							if (curFrame >= startFrame && curFrame < endFrame) {
-								intptr_t reference = ensure_value_fits_in_mantissa((intptr_t)src);
-								for (auto _ : res.Object())
-								{
-									for (auto _ : res("source").Object())
-									{
-										res("name").String("<C function>");
-										res("sourceReference").Int64(reference);
-										res("presentationHint").String("deemphasize");
-									}
-									res("id").Int(depth);
-									res("column").Int(1);
-									res("name").String(entry.name ? entry.name : "?");
-									res("line").Int(entry.currentline);
-								}
-							}
-							curFrame++;
+					if (*entry.what == 'C' && curFrame == 0) {
+						depth++;
+						continue;
+					}
+					if (curFrame < startFrame || curFrame >= endFrame) {
+						depth++;
+						curFrame++;
+						continue;
+					}
+					curFrame++;
+
+					if (*entry.what == 'C') {
+						for (auto _ : res.Object()) {
+							res("id").Int(depth);
+							res("presentationHint").String("label");
+							res("name").String(*entry.what == 'm' ? "[main chunk]" : (entry.name ? entry.name : "?"));
+							res("line").Int(0);
+							res("column").Int(0);
 						}
 					}
-					else if (*src == '@' || *src == '=')
-					{
-						std::string path;
-						if (pathconvert_.get(src, path))
-						{
-							if (curFrame >= startFrame && curFrame < endFrame) {
-								for (auto _ : res.Object())
-								{
-									for (auto _ : res("source").Object())
-									{
-										res("name").String(w2u(fs::path(u2w(path)).filename().wstring()));
-										res("path").String(path);
-										res("sourceReference").Int64(0);
-									}
-									res("id").Int(depth);
-									res("column").Int(1);
-									res("name").String(entry.name ? entry.name : "?");
-									res("line").Int(entry.currentline);
-								}
-							}
-							curFrame++;
-						}
-					}
-					else
-					{
-						if (curFrame >= startFrame && curFrame < endFrame) {
-							intptr_t reference = ensure_value_fits_in_mantissa((intptr_t)src);
-							stack_.push_back({ depth, reference });
-							for (auto _ : res.Object())
-							{
+					else if (*entry.source == '@' || *entry.source == '=') {
+						for (auto _ : res.Object()) {
+							std::string path;
+							if (pathconvert_.get(entry.source, path)) {
 								for (auto _ : res("source").Object())
 								{
-									res("name").String("<Memory funtion>");
-									res("sourceReference").Int64(reference);
+									res("name").String(w2u(fs::path(u2w(path)).filename().wstring()));
+									res("path").String(path);
 								}
-								res("id").Int(depth);
-								res("column").Int(1);
-								res("name").String(entry.name ? entry.name : "?");
-								res("line").Int(entry.currentline);
 							}
+							else {
+								res("presentationHint").String("label");
+							}
+							res("id").Int(depth);
+							res("name").String(*entry.what == 'm' ? "[main chunk]" : (entry.name ? entry.name : "?"));
+							res("line").Int(entry.currentline);
+							res("column").Int(1);
 						}
-						curFrame++;
 					}
-
+					else {
+						intptr_t reference = ensure_value_fits_in_mantissa((intptr_t)entry.source);
+						stack_.push_back({ depth, reference });
+						for (auto _ : res.Object()) {
+							for (auto _ : res("source").Object()) {
+								res("name").String("<Memory>");
+								res("sourceReference").Int64(reference);
+							}
+							res("id").Int(depth);
+							res("name").String(*entry.what == 'm' ? "[main chunk]" : (entry.name ? entry.name : "?"));
+							res("line").Int(entry.currentline);
+							res("column").Int(1);
+						}
+					}
 					depth++;
 				}
 			}
