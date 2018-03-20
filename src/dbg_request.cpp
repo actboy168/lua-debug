@@ -169,10 +169,16 @@ namespace vscode
 			int startFrame = args.HasMember("startFrame") ? args["startFrame"].GetInt() : 0;
 			int endFrame = startFrame + levels;
 			int curFrame = 0;
+
 			for (auto _ : res("stackFrames").Array())
 			{
 				while (lua_getstack(L, depth, (lua_Debug*)&entry))
 				{
+					if (curFrame != 0 && (curFrame < startFrame || curFrame >= endFrame)) {
+						depth++;
+						curFrame++;
+						continue;
+					}
 					int status = lua_getinfo(L, "Sln", (lua_Debug*)&entry);
 					assert(status);
 					if (*entry.what == 'C' && curFrame == 0) {
