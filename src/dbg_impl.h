@@ -137,10 +137,10 @@ namespace vscode
 						int status = lua_getinfo(L, "Sln", (lua_Debug*)&entry);
 						assert(status);
 						const char *src = entry.source;
-						if (memcmp(src, "=[C]", 4) == 0) 
+						if (*entry.what == 'C')
 						{
 						}
-						else if (*src == '@' || *src == '=')
+						else if (*entry.source == '@' || *entry.source == '=')
 						{
 							std::string path;
 							if (pathconvert_.get(src, path))
@@ -149,9 +149,9 @@ namespace vscode
 								{
 									res("name").String(w2u(fs::path(u2w(path)).filename().wstring()));
 									res("path").String(path);
-									res("sourceReference").Int64(0);
 								};
 								res("line").Int(entry.currentline);
+								res("column").Int(1);
 							}
 						}
 						else
@@ -159,11 +159,11 @@ namespace vscode
 							intptr_t reference = (intptr_t)src;
 							for (auto _ : res("source").Object())
 							{
-								res("name").String("<Memory funtion>");
+								res("name").String("<Memory>");
 								res("sourceReference").Int64(reference);
 							}
-							res("name").String(entry.name ? entry.name : "?");
 							res("line").Int(entry.currentline);
+							res("column").Int(1);
 						}
 					}
 				}
