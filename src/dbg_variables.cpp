@@ -912,6 +912,13 @@ namespace vscode
 		lua_pop(L, 1);
 	}
 
+	static std::string lua_tostrview(lua_State* L, int idx)
+	{
+		size_t len = 0;
+		const char* str = lua_tolstring(L, idx, &len);
+		return std::string(str, len);
+	}
+
 	bool has_scopes(lua_State *L, lua::Debug* ar, var_type type)
 	{
 		switch (type)
@@ -921,7 +928,14 @@ namespace vscode
 		case var_type::global: {
 			lua_pushglobaltable(L);
 			lua_pushnil(L);
-			if (lua_next(L, -2)) {
+			while (lua_next(L, -2)) {
+				if (lua_type(L, -2) == LUA_TSTRING) {
+					std::string name = lua_tostrview(L, -2);
+					if (standard.find(name) != standard.end()) {
+						lua_pop(L, 1);
+						continue;
+					}
+				}
 				lua_pop(L, 3);
 				return true;
 			}
