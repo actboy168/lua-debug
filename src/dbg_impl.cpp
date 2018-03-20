@@ -116,6 +116,20 @@ namespace vscode
 		return n;
 	}
 
+	static int get_stacklevel(lua_State* L, int pos)
+	{
+		lua::Debug ar;
+		if (lua_getstack(L, pos, (lua_Debug*)&ar) != 0) {
+			for (; lua_getstack(L, pos + 1, (lua_Debug*)&ar) != 0; ++pos)
+			{ }
+		}
+		else if (pos > 0) {
+			for (--pos; pos > 0 && lua_getstack(L, pos, (lua_Debug*)&ar) == 0; --pos)
+			{ }
+		}
+		return pos;
+	}
+
 	void debugger_impl::set_step(step step)
 	{
 		step_ = step;
@@ -172,7 +186,7 @@ namespace vscode
 		{
 			has_source_ = false;
 			if (stepping_lua_state_ == L) {
-				stepping_current_level_ = get_stacklevel(L) - 1;
+				stepping_current_level_ = get_stacklevel(L, stepping_current_level_) - 1;
 			}
 			return;
 		}
