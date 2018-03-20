@@ -347,8 +347,12 @@ namespace vscode
 
 	bool debugger_impl::request_scopes(rprotocol& req, lua_State* L, lua::Debug *ar) {
 		auto& args = req["arguments"];
-		lua::Debug entry;
+		if (!args.HasMember("frameId")) {
+			response_error(req, "Error retrieving stack frame");
+			return false;
+		}
 		int depth = args["frameId"].GetInt();
+		lua::Debug entry;
 		if (!lua_getstack(L, depth, (lua_Debug*)&entry)) {
 			response_error(req, "Error retrieving stack frame");
 			return false;
