@@ -108,69 +108,6 @@ namespace vscode
 		void event_initialized();
 		void event_capabilities();
 
-	public:
-		template <class T>
-		void event_output(const std::string& category, const T& msg, lua_State* L = nullptr)
-		{
-			if (console_ == "none") {
-				return;
-			}
-			wprotocol res;
-			for (auto _ : res.Object())
-			{
-				res("type").String("event");
-				res("seq").Int64(seq++);
-				res("event").String("output");
-				for (auto _ : res("body").Object())
-				{
-					res("category").String(category);
-					if (console_ == "ansi") {
-						res("output").String(vscode::a2u(msg));
-					}
-					else {
-						res("output").String(msg);
-					}
-
-					lua::Debug entry;
-					if (L && lua_getstack(L, 1, (lua_Debug*)&entry))
-					{
-						int status = lua_getinfo(L, "Sln", (lua_Debug*)&entry);
-						assert(status);
-						const char *src = entry.source;
-						if (*entry.what == 'C')
-						{
-						}
-						else if (*entry.source == '@' || *entry.source == '=')
-						{
-							std::string path;
-							if (pathconvert_.get(src, path))
-							{
-								for (auto _ : res("source").Object())
-								{
-									res("name").String(w2u(fs::path(u2w(path)).filename().wstring()));
-									res("path").String(path);
-								};
-								res("line").Int(entry.currentline);
-								res("column").Int(1);
-							}
-						}
-						else
-						{
-							intptr_t reference = (intptr_t)src;
-							for (auto _ : res("source").Object())
-							{
-								res("name").String("<Memory>");
-								res("sourceReference").Int64(reference);
-							}
-							res("line").Int(entry.currentline);
-							res("column").Int(1);
-						}
-					}
-				}
-			}
-			network_->output(res);
-		}
-
 	private:
 		void response_error(rprotocol& req, const char *msg);
 		void response_success(rprotocol& req);

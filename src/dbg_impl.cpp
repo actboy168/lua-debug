@@ -332,29 +332,65 @@ namespace vscode
 		pathconvert_.set_coding(coding);
 	}
 
-	struct easy_string
-	{
-		easy_string(const char* buf, size_t len)
-			: buf_(buf)
-			, len_(len)
-		{ }
-
-		const char* data() const
-		{
-			return buf_;
-		}
-		size_t size() const
-		{
-			return len_;
-		}
-
-		const char* buf_;
-		size_t      len_;
-	};
-
 	void debugger_impl::output(const char* category, const char* buf, size_t len, lua_State* L)
 	{
-		event_output(category, easy_string(buf, len), L);
+		if (console_ == "none") {
+			return;
+		}
+		wprotocol res;
+		for (auto _ : res.Object())
+		{
+			res("type").String("event");
+			res("seq").Int64(seq++);
+			res("event").String("output");
+			for (auto _ : res("body").Object())
+			{
+				res("category").String(category);
+				if (console_ == "ansi") {
+					res("output").String(vscode::a2u(strview(buf, len)));
+				}
+				else {
+					res("output").String(strview(buf, len));
+				}
+
+				lua::Debug entry;
+				if (L && lua_getstack(L, 1, (lua_Debug*)&entry))
+				{
+					int status = lua_getinfo(L, "Sln", (lua_Debug*)&entry);
+					assert(status);
+					const char *src = entry.source;
+					if (*entry.what == 'C')
+					{
+					}
+					else if (*entry.source == '@' || *entry.source == '=')
+					{
+						std::string path;
+						if (pathconvert_.get(src, path))
+						{
+							for (auto _ : res("source").Object())
+							{
+								res("name").String(w2u(fs::path(u2w(path)).filename().wstring()));
+								res("path").String(path);
+							};
+							res("line").Int(entry.currentline);
+							res("column").Int(1);
+						}
+					}
+					else
+					{
+						intptr_t reference = (intptr_t)src;
+						for (auto _ : res("source").Object())
+						{
+							res("name").String("<Memory>");
+							res("sourceReference").Int64(reference);
+						}
+						res("line").Int(entry.currentline);
+						res("column").Int(1);
+					}
+				}
+			}
+		}
+		network_->output(res);
 	}
 
 	void debugger_impl::redirect_stdout()
