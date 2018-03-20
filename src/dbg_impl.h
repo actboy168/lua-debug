@@ -55,7 +55,7 @@ namespace vscode
 		void close();
 		void hook(lua_State* L, lua::Debug* ar);
 		void exception(lua_State* L);
-		void run_stopped(lua_State* L, lua::Debug* ar);
+		void run_stopped(lua_State* L, lua::Debug* ar, const char* reason);
 		void run_idle();
 		void update();
 		void wait_attach();

@@ -195,13 +195,7 @@ namespace vscode
 			}
 		}
 
-		if (watch_) watch_->clear(L);
-		if (bp)
-			event_stopped("breakpoint");
-		else
-			event_stopped("step");
-		step_in();
-		run_stopped(L, ar);
+		run_stopped(L, ar, bp? "breakpoint": "step");
 	}
 
 	void debugger_impl::exception(lua_State* L)
@@ -217,16 +211,17 @@ namespace vscode
 		lua::Debug ar;
 		if (lua_getstack(L, 0, (lua_Debug*)&ar))
 		{
-			if (watch_) watch_->clear(L);
-			event_stopped("exception");
-			step_in();
-			run_stopped(L, &ar);
+			run_stopped(L, &ar, "exception");
 		}
 		allowhook_ = true;
 	}
 
-	void debugger_impl::run_stopped(lua_State *L, lua::Debug *ar)
+	void debugger_impl::run_stopped(lua_State *L, lua::Debug *ar, const char* reason)
 	{
+		event_stopped(reason);
+		step_in();
+		if (watch_) watch_->clear(L);
+
 		bool quit = false;
 		while (!quit)
 		{
