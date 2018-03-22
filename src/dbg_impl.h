@@ -12,11 +12,11 @@
 #include "dbg_evaluate.h"
 #include "dbg_path.h" 
 #include "dbg_custom.h"	
-#include "dbg_pathconvert.h" 
-#include "dbg_watchs.h"
+#include "dbg_pathconvert.h"
 #include "dbg_protocol.h"
 #include "debugger.h"
 #include "dbg_redirect.h"
+#include "dbg_observer.h"
 
 namespace vscode
 {
@@ -76,6 +76,7 @@ namespace vscode
 		bool check_breakpoint(lua_State *L, lua::Debug *ar);
 		void redirect_stdout();
 		void redirect_stderr();
+		pathconvert& get_pathconvert();
 
 	private:
 		bool request_initialize(rprotocol& req);
@@ -108,10 +109,12 @@ namespace vscode
 		void event_initialized();
 		void event_capabilities();
 
-	private:
+	public:
 		void response_error(rprotocol& req, const char *msg);
 		void response_success(rprotocol& req);
 		void response_success(rprotocol& req, std::function<void(wprotocol&)> body);
+
+	private:
 		void response_initialize(rprotocol& req);
 		void response_thread(rprotocol& req);
 		void response_source(rprotocol& req, const char* content);
@@ -133,7 +136,6 @@ namespace vscode
 		lua_State*         stepping_lua_state_;
 		breakpoint         breakpoints_;
 		std::vector<stack> stack_;
-		std::unique_ptr<watchs> watch_;
 		pathconvert        pathconvert_;
 		custom*            custom_;
 		lua_Hook           thunk_hook_;
@@ -148,6 +150,7 @@ namespace vscode
 		std::unique_ptr<redirector> stdout_;
 		std::unique_ptr<redirector> stderr_;
 		rprotocol          initproto_;
+		observer           ob_;
 		std::map<std::string, std::function<bool(rprotocol&)>>                            main_dispatch_;
 		std::map<std::string, std::function<bool(rprotocol&, lua_State*, lua::Debug *ar)>> hook_dispatch_;
 	};

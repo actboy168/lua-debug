@@ -234,7 +234,6 @@ namespace vscode
 	{
 		event_stopped(reason);
 		step_in();
-		if (watch_) watch_->clear(L);
 
 		bool quit = false;
 		while (!quit)
@@ -266,6 +265,8 @@ namespace vscode
 			}
 			response_error(req, format("%s not yet implemented", req["command"].GetString()).c_str());
 		}
+
+		ob_.reset(L);
 	}
 
 	void debugger_impl::run_idle()
@@ -414,6 +415,11 @@ namespace vscode
 		stderr_->open("stderr", std_fd::STDERR);
 	}
 
+	pathconvert& debugger_impl::get_pathconvert()
+	{
+		return pathconvert_;
+	}
+
 	debugger_impl::~debugger_impl()
 	{
 		thunk_destory(thunk_hook_);
@@ -432,7 +438,6 @@ namespace vscode
 		, stepping_lua_state_(NULL)
 		, breakpoints_()
 		, stack_()
-		, watch_()
 		, pathconvert_(this, coding)
 		, custom_(nullptr)
 		, thunk_hook_(0)

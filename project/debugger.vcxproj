@@ -27,12 +27,11 @@
     <ClCompile Include="..\src\dbg_redirect.cpp" />
     <ClCompile Include="..\src\dbg_thunk.cpp" />
     <ClCompile Include="..\src\dbg_unicode.cpp" />
-    <ClCompile Include="..\src\dbg_watchs.cpp" />
+    <ClCompile Include="..\src\dbg_observer.cpp" />
     <ClCompile Include="..\src\debugger.cpp" />
     <ClCompile Include="..\src\dbg_impl.cpp" />
     <ClCompile Include="..\src\dbg_request.cpp" />
     <ClCompile Include="..\src\dbg_response.cpp" />
-    <ClCompile Include="..\src\dbg_variables.cpp" />
     <ClCompile Include="..\src\dbg_network.cpp" />
     <ClCompile Include="..\src\lua_compatibility.cpp" />
   </ItemGroup>
@@ -52,10 +51,9 @@
     <ClInclude Include="..\src\dbg_thread.h" />
     <ClInclude Include="..\src\dbg_thunk.h" />
     <ClInclude Include="..\src\dbg_unicode.h" />
-    <ClInclude Include="..\src\dbg_watchs.h" />
+    <ClInclude Include="..\src\dbg_observer.h" />
     <ClInclude Include="..\src\debugger.h" />
     <ClInclude Include="..\src\dbg_impl.h" />
-    <ClInclude Include="..\src\dbg_variables.h" />
     <ClInclude Include="..\src\dbg_protocol.h" />
     <ClInclude Include="..\src\dbg_network.h" />
     <ClInclude Include="..\src\lua_compatibility.h" />
