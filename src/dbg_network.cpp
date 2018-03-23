@@ -21,7 +21,8 @@
 template <class... Args>
 static void log(const char* fmt, const Args& ... args)
 {
-	vscode::printf(fmt, args...);
+	auto s = vscode::format(fmt, args...);
+	OutputDebugStringA(s.c_str());
 }
 #endif	 
 
