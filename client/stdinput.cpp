@@ -70,6 +70,7 @@ bool fileio::output(const vscode::wprotocol& wp) {
 	auto l = vscode::format("Content-Length: %d\r\n\r\n", wp.size());
 	output(l.data(), l.size());
 	output(wp.data(), wp.size());
+	log("%s\n", std::string(wp.data(), wp.size()));
 	return true;
 }
 
