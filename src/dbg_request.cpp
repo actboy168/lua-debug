@@ -127,7 +127,6 @@ namespace vscode
 		if (stopOnEntry)
 		{
 			set_state(state::stepping);
-			event_stopped("entry");
 		}
 		else
 		{
