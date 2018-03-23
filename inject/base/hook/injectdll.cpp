@@ -11,7 +11,7 @@ namespace base { namespace hook {
 	static bool is_process64(HANDLE hProcess) {
 		BOOL is_x64 = FALSE;
 		if (!IsWow64Process(hProcess, &is_x64)) {
-			return FALSE;
+			return false;
 		}
 		return !is_x64;
 	}
@@ -159,9 +159,6 @@ namespace base { namespace hook {
 		}
 		DWORD nWritten = 0;
 		if (!::WriteProcessMemory(process, (void*)code_base, code._data(), code._maxsize(), &nWritten)) {
-			return false;
-		}
-		if (!::FlushInstructionCache(process, (void*)code_base, code._maxsize())) {
 			return false;
 		}
 		if (!::SetThreadContext(thread, &ctx)) {
