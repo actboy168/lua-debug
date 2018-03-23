@@ -1,5 +1,5 @@
 #include <base/win/process.h>
-#include <base/hook/detail/inject_dll.h>
+#include <base/hook/injectdll.h>
 #include <base/util/dynarray.h>
 #include <Windows.h>
 #include <memory>
@@ -54,7 +54,7 @@ namespace base { namespace win {
 #if !defined(_M_X64)
 				if (suc) 
 				{
-					hook::detail::injectdll(process_information->hProcess, process_information->hThread, injectdll_x86, injectdll_x64);
+					hook::injectdll(process_information->hProcess, process_information->hThread, injectdll_x86, injectdll_x64);
 				}
 #endif
 #endif

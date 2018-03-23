@@ -5,7 +5,7 @@
 #include <base/filesystem.h>
 #include <Windows.h>
 
-namespace base { namespace hook { namespace detail {
+namespace base { namespace hook { 
 	bool injectdll(HANDLE process, HANDLE thread, const fs::path& x86dll, const fs::path& x64dll);
-}}}
+}}
 #endif

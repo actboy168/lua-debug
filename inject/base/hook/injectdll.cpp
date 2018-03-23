@@ -1,13 +1,13 @@
 
 #if !defined(_M_X64)
 
-#include <base/hook/detail/inject_dll.h>
+#include <base/hook/injectdll.h>
 #include <base/hook/assembler/writer.h>
 #include <windows.h>
 #include <stdint.h>
 #include <wow64ext.h>
 
-namespace base { namespace hook { namespace detail {
+namespace base { namespace hook {
 	static bool is_process64(HANDLE hProcess) {
 		BOOL is_x64 = FALSE;
 		if (!IsWow64Process(hProcess, &is_x64)) {
@@ -178,6 +178,6 @@ namespace base { namespace hook { namespace detail {
 			return injectdll_x86(process, thread, x86dll);
 		}
 	}
-}}}
+}}
 
 #endif

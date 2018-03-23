@@ -1,9 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="..\inject\base\hook\detail\inject_dll.cpp">
-      <Filter>base\hook</Filter>
-    </ClCompile>
     <ClCompile Include="..\inject\base\win\process.cpp">
       <Filter>base\win</Filter>
     </ClCompile>
@@ -31,11 +28,11 @@
     <ClCompile Include="..\client\stdinput.cpp">
       <Filter>cpp</Filter>
     </ClCompile>
+    <ClCompile Include="..\inject\base\hook\injectdll.cpp">
+      <Filter>base\hook</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\inject\base\hook\detail\inject_dll.h">
-      <Filter>base\hook</Filter>
-    </ClInclude>
     <ClInclude Include="..\inject\base\win\process.h">
       <Filter>base\win</Filter>
     </ClInclude>
@@ -56,6 +53,9 @@
     </ClInclude>
     <ClInclude Include="..\client\stdinput.h">
       <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\inject\base\hook\injectdll.h">
+      <Filter>base\hook</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
