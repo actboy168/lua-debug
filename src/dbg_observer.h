@@ -44,7 +44,7 @@ namespace vscode {
 		int64_t new_variable(size_t parent, value::Type type, int index);
 
 		frame(int frameId);
-		frame(lua_State* L, lua::Debug* ar, int frameId, wprotocol& res);
+		void new_scope(lua_State* L, lua::Debug* ar, wprotocol& res);
 		void clear();
 		bool push_value(lua_State* L, lua::Debug* ar, size_t value_idx);
 		bool push_value(lua_State* L, lua::Debug* ar, const value& v);
@@ -72,9 +72,10 @@ namespace vscode {
 
 		observer();
 		void    reset(lua_State* L = nullptr);
+		frame*  create_or_get_frame(int frameId);
 		void    new_frame(lua_State* L, debugger_impl* dbg, rprotocol& req);
-		int64_t new_watch(lua_State* L);
-		void    evaluate(lua_State* L, debugger_impl* dbg, rprotocol& req, int n);
+		int64_t new_watch(lua_State* L, frame* frame, const std::string& expression);
+		void    evaluate(lua_State* L, lua::Debug *ar, debugger_impl* dbg, rprotocol& req);
 		void    get_variable(lua_State* L, debugger_impl* dbg, rprotocol& req);
 		void    set_variable(lua_State* L, debugger_impl* dbg, rprotocol& req);
 	};

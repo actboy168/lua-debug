@@ -2,6 +2,7 @@
 #include "dbg_format.h"
 #include "dbg_pathconvert.h"
 #include "dbg_impl.h"
+#include "dbg_evaluate.h"
 #include <set>
 #include <array>
 
@@ -534,8 +535,7 @@ namespace vscode {
 		: frameId(frameId)
 	{ }
 
-	frame::frame(lua_State* L, lua::Debug* ar, int frameId, wprotocol& res)
-		: frameId(frameId)
+	void frame::new_scope(lua_State* L, lua::Debug* ar, wprotocol& res)
 	{
 		for (auto _ : res("scopes").Array()) 
 		{
@@ -1046,6 +1046,16 @@ namespace vscode {
 		watch_frame.clear();
 	}
 
+	frame* observer::create_or_get_frame(int frameId)
+	{
+		auto it = frames.find(frameId);
+		if (it != frames.end()) {
+			return &(it->second);
+		}
+		auto res = frames.insert(std::make_pair(frameId, frame(frameId)));
+		return &(res.first->second);
+	}
+
 	void observer::new_frame(lua_State* L, debugger_impl* dbg, rprotocol& req)
 	{
 		auto& args = req["arguments"];
@@ -1054,50 +1064,112 @@ namespace vscode {
 			return;
 		}
 		int frameId = args["frameId"].GetInt();
-		if (frames.find(frameId) != frames.end()) {
-			dbg->response_error(req, "Error retrieving stack frame");
-			return;
-		}
 		lua::Debug entry;
 		if (!lua_getstack(L, frameId, (lua_Debug*)&entry)) {
 			dbg->response_error(req, "Error retrieving stack frame");
 			return;
 		}
+		frame* frame = create_or_get_frame(frameId);
 		dbg->response_success(req, [&](wprotocol& res)
 		{
-			frames.insert(std::make_pair(frameId, frame(L, &entry, frameId, res)));
+			frame->new_scope(L, &entry, res);
 		});
 	}
 
-	int64_t observer::new_watch(lua_State* L)
+	int64_t observer::new_watch(lua_State* L, frame* frame, const std::string& expression)
 	{
 		if (!var::can_extand(L, -1)) {
 			return 0;
 		}
 		watch_table(L);
+		lua_pushlstring(L, expression.data(), expression.size());
+		if (LUA_TNUMBER == lua_rawget(L, -2)) {
+			int n = (int)lua_tointeger(L, -1);
+			lua_pushvalue(L, -3);
+			lua_rawset(L, -3);
+			lua_pop(L, 1);
+			return frame->new_variable(-1, value::Type::watch, n);
+		}
+		lua_pop(L, 1);
 		int n = (int)(1 + luaL_len(L, -1));
 		lua_pushvalue(L, -2);
 		lua_rawseti(L, -2, n);
+
+		lua_pushlstring(L, expression.data(), expression.size());
+		lua_pushinteger(L, n);
+		lua_rawset(L, -3);
+
 		lua_pop(L, 1);
-		return watch_frame.new_variable(-1, value::Type::watch, n);
+		return frame->new_variable(-1, value::Type::watch, n);
 	}
 
-	void observer::evaluate(lua_State* L, debugger_impl* dbg, rprotocol& req, int n)
+	void observer::evaluate(lua_State* L, lua::Debug *ar, debugger_impl* dbg, rprotocol& req)
 	{
+		auto& args = req["arguments"];
+		
+		std::string context = "";
+		if (args.HasMember("context")) {
+			context = args["context"].Get<std::string>();
+		}
+		if (!args.HasMember("expression")) {
+			dbg->response_error(req, "Error expression");
+			return;
+		}
+		std::string expression = args["expression"].Get<std::string>();
+
+		frame* watchFrame = &watch_frame;
+		int frameId = kWatchFrameId;
+		lua::Debug current;
+		if (args.HasMember("frameId")) {
+			frameId = args["frameId"].GetInt();
+			if (!lua_getstack(L, frameId, (lua_Debug*)&current)) {
+				dbg->response_error(req, "Error stack frame");
+				return;
+			}
+			watchFrame = create_or_get_frame(frameId);
+		}
+		else {
+			current = *ar;
+		}
+
+		int nresult = 0;
+		if (!vscode::evaluate(L, &current, ("return " + expression).c_str(), nresult, context == "repl"))
+		{
+			if (context != "repl")
+			{
+				dbg->response_error(req, lua_tostring(L, -1));
+				lua_pop(L, 1);
+				return;
+			}
+			if (!vscode::evaluate(L, &current, expression.c_str(), nresult, true))
+			{
+				dbg->response_error(req, lua_tostring(L, -1));
+				lua_pop(L, 1);
+				return;
+			}
+			dbg->response_success(req, [&](wprotocol& res)
+			{
+				res("result").String("ok");
+				res("variablesReference").Int64(0);
+			});
+			lua_pop(L, nresult);
+			return;
+		}
+
 		dbg->response_success(req, [&](wprotocol& res)
 		{
 			std::vector<var> rets;
-			for (int i = 0; i < (int)rets.size(); ++i)
+			for (int i = 0; i < nresult; ++i)
 			{
-				var var(L, i, "", i - (int)rets.size(), dbg->get_pathconvert());
+				var var(L, i, "", i - nresult, dbg->get_pathconvert());
 				rets.emplace_back(std::move(var));
 			}
 			int64_t reference = 0;
 			if (rets.size() == 1 && req["arguments"]["context"] == "watch")
 			{
-				reference = new_watch(L);
+				reference = new_watch(L, watchFrame, expression);
 			}
-			lua_pop(L, n);
+			lua_pop(L, nresult);
 			if (rets.size() == 0)
 			{
 				res("result").String("nil");

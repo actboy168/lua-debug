@@ -389,46 +389,7 @@ namespace vscode
 
 	bool debugger_impl::request_evaluate(rprotocol& req, lua_State *L, lua::Debug *ar)
 	{
-		auto& args = req["arguments"];
-		auto& context = args["context"];
-		std::string expression = args["expression"].Get<std::string>();
-
-		lua::Debug current;
-		if (args.HasMember("frameId")) {
-			int depth = args["frameId"].GetInt();
-			if (!lua_getstack(L, depth, (lua_Debug*)&current)) {
-				response_error(req, "error stack frame");
-				return false;
-			}
-		}
-		else {
-			current = *ar;
-		}
-
-		int nresult = 0;
-		if (!evaluate(L, &current, ("return " + expression).c_str(), nresult, context == "repl"))
-		{
-			if (context != "repl")
-			{
-				response_error(req, lua_tostring(L, -1));
-				lua_pop(L, 1);
-				return false;
-			}
-			if (!evaluate(L, &current, expression.c_str(), nresult, true))
-			{
-				response_error(req, lua_tostring(L, -1));
-				lua_pop(L, 1);
-				return false;
-			}
-			response_success(req, [&](wprotocol& res)
-			{
-				res("result").String("ok");
-				res("variablesReference").Int64(0);
-			});
-			lua_pop(L, nresult);
-			return false;
-		}
-		ob_.evaluate(L, this, req, nresult);
+		ob_.evaluate(L, ar, this, req);
 		return false;
 	}
 
