@@ -2,7 +2,6 @@
 #if !defined(_M_X64)
 
 #include <base/hook/injectdll.h>
-#include <base/hook/assembler/writer.h>
 #include <windows.h>
 #include <stdint.h>
 #include <wow64ext.h>
@@ -124,43 +123,53 @@ namespace base { namespace hook {
 	}
 
 	bool injectdll_x86(HANDLE process, HANDLE thread, const fs::path& dll) {
+		static unsigned char sc[] = {
+			0x68, 0x00, 0x00, 0x00, 0x00,	// push eip
+			0x9C,							// pushfd
+			0x60,							// pushad
+			0x68, 0x00, 0x00, 0x00, 0x00,	// push DllPath
+			0xB8, 0x00, 0x00, 0x00, 0x00,	// mov eax, LoadLibraryW
+			0xFF, 0xD0,						// call eax
+			0x61,							// popad
+			0x9D,							// popfd
+			0xC3							// ret
+		};
+
 		DWORD pfLoadLibrary = (DWORD)::GetProcAddress(::GetModuleHandleW(L"Kernel32"), "LoadLibraryW");
 		if (!pfLoadLibrary) {
 			return false;
 		}
 
+		SIZE_T memsize = (dll.wstring().size() + 1) * sizeof(wchar_t);
+		LPVOID memory = VirtualAllocEx(process, NULL, memsize, MEM_COMMIT, PAGE_READWRITE);
+		if (!memory) {
+			return false;
+		}
+		LPVOID shellcode = VirtualAllocEx(process, NULL, sizeof(sc), MEM_COMMIT, PAGE_EXECUTE_READWRITE);
+		if (!shellcode) {
+			return false;
+		}
+		SIZE_T written = 0;
+		BOOL ok = FALSE;
+		ok = WriteProcessMemory(process, memory, dll.wstring().data(), memsize, &written);
+		if (!ok || written != memsize) {
+			return false;
+		}
 		CONTEXT ctx = { 0 };
 		ctx.ContextFlags = CONTEXT_FULL;
 		if (!::GetThreadContext(thread, &ctx)) {
 			return false;
 		}
-
-		assembler::dynwriter code(128 + dll.wstring().size() * sizeof(wchar_t));
-		uintptr_t code_base = (ctx.Esp - sizeof(code)) & ~0x1Fu;
-		code.push(code_base + 100);
-		code.call((uintptr_t)pfLoadLibrary, code_base + code._size());
-		code.mov(assembler::eax, ctx.Eax);
-		code.mov(assembler::ebx, ctx.Ebx);
-		code.mov(assembler::ecx, ctx.Ecx);
-		code.mov(assembler::edx, ctx.Edx);
-		code.mov(assembler::esi, ctx.Esi);
-		code.mov(assembler::edi, ctx.Edi);
-		code.mov(assembler::ebp, ctx.Ebp);
-		code.mov(assembler::esp, ctx.Esp);
-		code.jmp(ctx.Eip, code_base + code._size());
-		code._seek(100);
-		code.emit(dll.wstring().data(), (dll.wstring().size() + 1) * sizeof(wchar_t));
-		ctx.Esp = code_base - 4;
-		ctx.Eip = code_base;
-
-		DWORD nProtect = 0;
-		if (!::VirtualProtectEx(process, (void*)code_base, code._maxsize(), PAGE_EXECUTE_READWRITE, &nProtect)) {
+		memcpy(sc + 1, &ctx.Eip, sizeof(ctx.Eip));
+		memcpy(sc + 8, &memory, sizeof(memory));
+		memcpy(sc + 13, &pfLoadLibrary, sizeof(pfLoadLibrary));
+		ok = WriteProcessMemory(process, shellcode, &sc, sizeof(sc), &written);
+		if (!ok || written != sizeof(sc)) {
 			return false;
 		}
-		DWORD nWritten = 0;
-		if (!::WriteProcessMemory(process, (void*)code_base, code._data(), code._maxsize(), &nWritten)) {
-			return false;
-		}
+
+		ctx.ContextFlags = CONTEXT_CONTROL;
+		ctx.Eip = (DWORD)shellcode;
 		if (!::SetThreadContext(thread, &ctx)) {
 			return false;
 		}
