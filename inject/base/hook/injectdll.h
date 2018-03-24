@@ -6,6 +6,6 @@
 #include <Windows.h>
 
 namespace base { namespace hook { 
-	bool injectdll(HANDLE process, HANDLE thread, const fs::path& x86dll, const fs::path& x64dll);
+	bool injectdll(const PROCESS_INFORMATION& pi, const fs::path& x86dll, const fs::path& x64dll);
 }}
 #endif

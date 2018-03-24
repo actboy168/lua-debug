@@ -15,7 +15,7 @@ namespace base { namespace hook {
 		return !is_x64;
 	}
 
-	bool injectdll_x64(HANDLE process, HANDLE thread, const fs::path& dll) {
+	bool injectdll_x64(const PROCESS_INFORMATION& pi, const fs::path& dll) {
 		static unsigned char sc[] = {
 			0x9c,                                                                   // pushfq
 			0x50,                                                                   // push rax
@@ -73,11 +73,11 @@ namespace base { namespace hook {
 			DWORD64   Buffer;
 		};
 		SIZE_T memsize = sizeof(DWORD64) + sizeof(UNICODE_STRING) + (dll.wstring().size() + 1) * sizeof(wchar_t);
-		DWORD64 memory = VirtualAllocEx64(process, NULL, memsize, MEM_COMMIT, PAGE_READWRITE);
+		DWORD64 memory = VirtualAllocEx64(pi.hProcess, NULL, memsize, MEM_COMMIT, PAGE_READWRITE);
 		if (!memory) {
 			return false;
 		}
-		DWORD64 shellcode = VirtualAllocEx64(process, NULL, sizeof(sc), MEM_COMMIT, PAGE_EXECUTE_READWRITE);
+		DWORD64 shellcode = VirtualAllocEx64(pi.hProcess, NULL, sizeof(sc), MEM_COMMIT, PAGE_EXECUTE_READWRITE);
 		if (!shellcode) {
 			return false;
 		}
@@ -89,18 +89,18 @@ namespace base { namespace hook {
 
 		SIZE_T written = 0;
 		BOOL ok = FALSE;
-		ok = WriteProcessMemory64(process, memory, &us, sizeof(UNICODE_STRING), &written);
+		ok = WriteProcessMemory64(pi.hProcess, memory, &us, sizeof(UNICODE_STRING), &written);
 		if (!ok || written != sizeof(UNICODE_STRING)) {
 			return false;
 		}
-		ok = WriteProcessMemory64(process, us.Buffer, dll.wstring().data(), us.MaximumLength, &written);
+		ok = WriteProcessMemory64(pi.hProcess, us.Buffer, dll.wstring().data(), us.MaximumLength, &written);
 		if (!ok || written != us.MaximumLength) {
 			return false;
 		}
 
 		_CONTEXT64 ctx = { 0 };
 		ctx.ContextFlags = CONTEXT_CONTROL;
-		if (!GetThreadContext64(thread, &ctx)) {
+		if (!GetThreadContext64(pi.hThread, &ctx)) {
 			return false;
 		}
 
@@ -109,20 +109,20 @@ namespace base { namespace hook {
 		memcpy(sc + 40, &memory, sizeof(memory));
 		memcpy(sc + 50, &pfLoadLibrary, sizeof(pfLoadLibrary));
 		memcpy(sc + 98, &ctx.Rip, sizeof(ctx.Rip));
-		ok = WriteProcessMemory64(process, shellcode, &sc, sizeof(sc), &written);
+		ok = WriteProcessMemory64(pi.hProcess, shellcode, &sc, sizeof(sc), &written);
 		if (!ok || written != sizeof(sc)) {
 			return false;
 		}
 
 		ctx.ContextFlags = CONTEXT_CONTROL;
 		ctx.Rip = shellcode;
-		if (!SetThreadContext64(thread, &ctx)) {
+		if (!SetThreadContext64(pi.hThread, &ctx)) {
 			return false;
 		}
 		return true;
 	}
 
-	bool injectdll_x86(HANDLE process, HANDLE thread, const fs::path& dll) {
+	bool injectdll_x86(const PROCESS_INFORMATION& pi, const fs::path& dll) {
 		static unsigned char sc[] = {
 			0x68, 0x00, 0x00, 0x00, 0x00,	// push eip
 			0x9C,							// pushfd
@@ -141,47 +141,47 @@ namespace base { namespace hook {
 		}
 
 		SIZE_T memsize = (dll.wstring().size() + 1) * sizeof(wchar_t);
-		LPVOID memory = VirtualAllocEx(process, NULL, memsize, MEM_COMMIT, PAGE_READWRITE);
+		LPVOID memory = VirtualAllocEx(pi.hProcess, NULL, memsize, MEM_COMMIT, PAGE_READWRITE);
 		if (!memory) {
 			return false;
 		}
-		LPVOID shellcode = VirtualAllocEx(process, NULL, sizeof(sc), MEM_COMMIT, PAGE_EXECUTE_READWRITE);
+		LPVOID shellcode = VirtualAllocEx(pi.hProcess, NULL, sizeof(sc), MEM_COMMIT, PAGE_EXECUTE_READWRITE);
 		if (!shellcode) {
 			return false;
 		}
 		SIZE_T written = 0;
 		BOOL ok = FALSE;
-		ok = WriteProcessMemory(process, memory, dll.wstring().data(), memsize, &written);
+		ok = WriteProcessMemory(pi.hProcess, memory, dll.wstring().data(), memsize, &written);
 		if (!ok || written != memsize) {
 			return false;
 		}
 		CONTEXT ctx = { 0 };
 		ctx.ContextFlags = CONTEXT_FULL;
-		if (!::GetThreadContext(thread, &ctx)) {
+		if (!::GetThreadContext(pi.hThread, &ctx)) {
 			return false;
 		}
 		memcpy(sc + 1, &ctx.Eip, sizeof(ctx.Eip));
 		memcpy(sc + 8, &memory, sizeof(memory));
 		memcpy(sc + 13, &pfLoadLibrary, sizeof(pfLoadLibrary));
-		ok = WriteProcessMemory(process, shellcode, &sc, sizeof(sc), &written);
+		ok = WriteProcessMemory(pi.hProcess, shellcode, &sc, sizeof(sc), &written);
 		if (!ok || written != sizeof(sc)) {
 			return false;
 		}
 
 		ctx.ContextFlags = CONTEXT_CONTROL;
 		ctx.Eip = (DWORD)shellcode;
-		if (!::SetThreadContext(thread, &ctx)) {
+		if (!::SetThreadContext(pi.hThread, &ctx)) {
 			return false;
 		}
 		return true;
 	}
 
-	bool injectdll(HANDLE process, HANDLE thread, const fs::path& x86dll, const fs::path& x64dll) {
-		if (is_process64(process)) {
-			return injectdll_x64(process, thread, x64dll);
+	bool injectdll(const PROCESS_INFORMATION& pi, const fs::path& x86dll, const fs::path& x64dll) {
+		if (is_process64(pi.hProcess)) {
+			return injectdll_x64(pi, x64dll);
 		}
 		else {
-			return injectdll_x86(process, thread, x86dll);
+			return injectdll_x86(pi, x86dll);
 		}
 	}
 }}

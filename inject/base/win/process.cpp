@@ -54,7 +54,7 @@ namespace base { namespace win {
 #if !defined(_M_X64)
 				if (suc) 
 				{
-					hook::injectdll(process_information->hProcess, process_information->hThread, injectdll_x86, injectdll_x64);
+					hook::injectdll(*process_information, injectdll_x86, injectdll_x64);
 				}
 #endif
 #endif
