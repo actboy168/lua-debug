@@ -1,7 +1,10 @@
-Lua 5.3 Debug Adapter for VSCode
+Lua Debug Adapter for Visual Studio Code
 =========================================
 
-This project aims to provide a debug adapter that allows Microsoft's Visual Studio Code to step through [Lua 5.3](http://www.lua.org) code.
+## Requirements
+
+* Lua 5.3, 5.4
+* OS: Windows
 
 ## Feature
 

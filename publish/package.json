@@ -1,10 +1,10 @@
 {
     "name": "lua-debug",
-    "displayName": "Lua 5.3 Debugger",
+    "displayName": "Lua Debug",
     "version": "0.1.9",
     "publisher": "actboy168",
     "icon": "images/logo.png",
-    "description": "Visual Studio Code debugger extension for Lua 5.3",
+    "description": "Visual Studio Code debugger extension for Lua",
     "categories": [
         "Debuggers"
     ],
@@ -39,7 +39,7 @@
                 "languages": [
                     "lua"
                 ],
-                "label": "Lua Debugger",
+                "label": "Lua Debug",
                 "enableBreakpointsFor": {
                     "languageIds": [
                         "lua"
