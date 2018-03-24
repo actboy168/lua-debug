@@ -5,6 +5,7 @@
 #include <windows.h>
 #include <stdint.h>
 #include <wow64ext.h>
+#include <tlhelp32.h>
 
 namespace base { namespace hook {
 	static bool is_process64(HANDLE hProcess) {
@@ -183,6 +184,91 @@ namespace base { namespace hook {
 		else {
 			return injectdll_x86(pi, x86dll);
 		}
+	}
+
+	bool setdebugprivilege() {
+		TOKEN_PRIVILEGES tp = { 0 };
+		HANDLE hToken = NULL;
+		if (!OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, &hToken)) {
+			return false;
+		}
+		tp.PrivilegeCount = 1;
+		tp.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
+		if (!LookupPrivilegeValueW(NULL, L"SeDebugPrivilege", &tp.Privileges[0].Luid)) {
+			CloseHandle(hToken);
+			return false;
+		}
+		if (!AdjustTokenPrivileges(hToken, FALSE, &tp, 0, NULL, NULL)) {
+			CloseHandle(hToken);
+			return false;
+		}
+		CloseHandle(hToken);
+		return true;
+	}
+
+	DWORD getthreadid(DWORD pid)
+	{
+		HANDLE h = CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, 0);
+		if (h != INVALID_HANDLE_VALUE) {
+			THREADENTRY32 te;
+			te.dwSize = sizeof(te);
+			for (BOOL ok = Thread32First(h, &te); ok; ok = Thread32Next(h, &te)) {
+				if (te.th32OwnerProcessID == pid) {
+					CloseHandle(h);
+					return te.th32ThreadID;
+				}
+			}
+		}
+		CloseHandle(h);
+		return 0;
+	}
+
+	void closeprocess(PROCESS_INFORMATION& pi) {
+		if (pi.hProcess) CloseHandle(pi.hProcess);
+		if (pi.hThread) CloseHandle(pi.hThread);
+		pi = { 0 };
+	}
+
+	bool openprocess(DWORD pid, PROCESS_INFORMATION& pi) {
+		closeprocess(pi);
+
+		static bool ok = setdebugprivilege();
+		if (!ok) {
+			return false;
+		}
+		pi.dwProcessId = pid;
+		pi.hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pi.dwProcessId);
+		if (!pi.hProcess) {
+			closeprocess(pi);
+			return false;
+		}
+		pi.dwThreadId = getthreadid(pi.dwProcessId);
+		if (!pi.dwThreadId) {
+			closeprocess(pi);
+			return false;
+		}
+		pi.hThread = OpenThread(THREAD_GET_CONTEXT | THREAD_SET_CONTEXT | THREAD_SUSPEND_RESUME, FALSE, pi.dwThreadId);
+		if (!pi.hThread) {
+			closeprocess(pi);
+			return false;
+		}
+		return true;
+	}
+
+	bool injectdll(DWORD pid, const fs::path& x86dll, const fs::path& x64dll) {
+		PROCESS_INFORMATION pi = { 0 };
+		if (!openprocess(pid, pi)) {
+			return false;
+		}
+		SuspendThread(pi.hThread);
+		if (!injectdll(pi, x86dll, x64dll)) {
+			ResumeThread(pi.hThread);
+			closeprocess(pi);
+			return false;
+		}
+		ResumeThread(pi.hThread);
+		closeprocess(pi);
+		return true;
 	}
 }}
 
