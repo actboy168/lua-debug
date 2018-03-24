@@ -39,7 +39,7 @@ namespace base { namespace win {
 
 		process();
 		~process();
-		bool     inject(const fs::path& dllpath);
+		bool     inject_x86(const fs::path& dllpath);
 		bool     inject_x64(const fs::path& dllpath);
 		bool     replace(const fs::path& dllpath, const char* dllname);
 		bool     set_console(CONSOLE type);
@@ -71,12 +71,4 @@ namespace base { namespace win {
 		bool                    inherit_handle_;
 		DWORD                   flags_;
 	};
-
-	_BASE_API bool create_process(
-		const fs::path& application, 
-		const std::wstring&            command_line, 
-		const fs::path& current_directory, 
-		const fs::path& injectdll_x86,
-		PROCESS_INFORMATION*           pi_ptr = nullptr
-	);
 }}

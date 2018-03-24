@@ -24,8 +24,8 @@ namespace base { namespace win {
 			const wchar_t*                 current_directory,
 			LPSTARTUPINFOW                 startup_info,
 			LPPROCESS_INFORMATION          process_information,
-			const fs::path& injectdll_x86,
-			const fs::path& injectdll_x64,
+			const fs::path&                injectdll_x86,
+			const fs::path&                injectdll_x64,
 			const std::map<std::string, fs::path>& replace_dll
 		)
 		{
@@ -41,7 +41,7 @@ namespace base { namespace win {
 					inherit_handle, creation_flags | CREATE_SUSPENDED,
 					NULL, current_directory,
 					startup_info, process_information,
-					inject_dll.string().c_str(), NULL
+					injectdll_x86.string().c_str(), NULL
 				);
 #else
 				suc = !!::CreateProcessW(
@@ -52,7 +52,7 @@ namespace base { namespace win {
 					startup_info, process_information
 				);
 #if !defined(_M_X64)
-				if (suc) 
+				if (suc)
 				{
 					hook::injectdll(*process_information, injectdll_x86, injectdll_x64);
 				}
@@ -264,7 +264,7 @@ namespace base { namespace win {
 		close();
 	}
 
-	bool process::inject(const fs::path& dllpath)
+	bool process::inject_x86(const fs::path& dllpath)
 	{
 		if (statue_ == PROCESS_STATUE_READY)
 		{
@@ -478,24 +478,5 @@ namespace base { namespace win {
 	void process::del_env(const std::wstring& key)
 	{
 		del_env_.insert(key);
-	}
-
-
-	bool create_process(const fs::path& application, const std::wstring& command_line, const fs::path& current_directory, const fs::path& inject_dll, PROCESS_INFORMATION* pi_ptr)
-	{
-		process p;
-
-		p.inject(inject_dll);
-
-		if (p.create(application, command_line, current_directory))
-		{
-			if (pi_ptr)
-			{ 
-				p.release(pi_ptr);
-			}
-			return true;
-		}
-
-		return false;
 	}
 }}

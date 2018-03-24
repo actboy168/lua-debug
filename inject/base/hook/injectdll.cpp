@@ -4,8 +4,11 @@
 #include <base/hook/injectdll.h>
 #include <windows.h>
 #include <stdint.h>
-#include <wow64ext.h>
 #include <tlhelp32.h>
+#pragma warning(push)
+#pragma warning(disable:4201)
+#include <wow64ext.h>
+#pragma warning(pop)
 
 namespace base { namespace hook {
 	static bool is_process64(HANDLE hProcess) {
