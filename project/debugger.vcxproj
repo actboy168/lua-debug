@@ -38,7 +38,6 @@
   <ItemGroup>
     <ClInclude Include="..\src\dbg_breakpoint.h" />
     <ClInclude Include="..\src\dbg_capabilities.h" />
-    <ClInclude Include="..\src\dbg_custom.h" />
     <ClInclude Include="..\src\dbg_delayload.h" />
     <ClInclude Include="..\src\dbg_evaluate.h" />
     <ClInclude Include="..\src\dbg_file.h" />

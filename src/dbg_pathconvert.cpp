@@ -17,7 +17,7 @@ namespace vscode
 	void pathconvert::set_coding(coding coding)
 	{
 		coding_ = coding;
-		server2client_.clear();
+		source2clientpath_.clear();
 	}
 
 	void pathconvert::add_sourcemap(const std::string& srv, const std::string& cli)
@@ -61,7 +61,7 @@ namespace vscode
 		return false;
 	}
 
-	std::string pathconvert::source2path(const std::string& s) const
+	std::string pathconvert::source2serverpath(const std::string& s) const
 	{
 		fs::path path(coding_ == coding::utf8? u2w(s) : a2w(s));
 		if (!path.is_absolute())
@@ -71,19 +71,19 @@ namespace vscode
 		return w2u(path_normalize(path).wstring());
 	}
 
-	bool pathconvert::get(const std::string& server_path, std::string& client_path)
+	bool pathconvert::get(const std::string& source, std::string& client_path)
 	{
-		auto it = server2client_.find(server_path);
-		if (it != server2client_.end())
+		auto it = source2clientpath_.find(source);
+		if (it != source2clientpath_.end())
 		{
 			client_path = it->second;
 			return true;
 		}
 
 		bool res = true;
-		if (server_path[0] == '@')
+		if (source[0] == '@')
 		{
-			std::string spath = source2path(server_path.substr(1));
+			std::string spath = source2serverpath(source.substr(1));
 			std::string cpath;
 			if (find_sourcemap(spath, cpath))
 			{
@@ -94,18 +94,16 @@ namespace vscode
 				client_path = spath;
 			}
 		}
-		else if (server_path[0] == '=')
+		else if (source[0] == '=' && debugger_->custom_)
 		{
-			if (debugger_->custom_) {
-				res = debugger_->custom_->path_convert(server_path, client_path);
-			}
+			res = debugger_->custom_->path_convert(source, client_path);
 		}
 		else
 		{
 			client_path.clear();
 			res = false;
 		}
-		server2client_[server_path] = client_path;
+		source2clientpath_[source] = client_path;
 		return res;
 	}
 }

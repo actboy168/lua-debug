@@ -112,9 +112,6 @@
     <ClInclude Include="..\src\dbg_path.h">
       <Filter>inc</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\dbg_custom.h">
-      <Filter>inc</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\dbg_pathconvert.h">
       <Filter>inc</Filter>
     </ClInclude>

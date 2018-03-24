@@ -18,7 +18,6 @@ struct lua_State;
 namespace vscode
 {
 	class io;
-	class custom;
 	class debugger_impl;
 
 	enum class threadmode
@@ -39,6 +38,11 @@ namespace vscode
 		stepping = 3,
 		running = 4,
 		terminated = 5,
+	};
+
+	struct custom
+	{
+		virtual bool path_convert(const std::string& source, std::string& client_path) = 0;
 	};
 
 	class DEBUGGER_API debugger

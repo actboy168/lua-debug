@@ -1,6 +1,5 @@
 #pragma once
 
-#include "dbg_custom.h"
 #include "dbg_path.h"
 #include "debugger.h"
 #include <map> 	   
@@ -25,12 +24,12 @@ namespace vscode
 		void   set_coding(coding coding);
 
 	private:
-		std::string source2path(const std::string& s) const;
+		std::string source2serverpath(const std::string& s) const;
 		bool match_sourcemap(const std::string& srv, std::string& cli, const std::string& srvmatch, const std::string& climatch);
 
 	private:
 		debugger_impl*                     debugger_;
-		std::map<std::string, std::string> server2client_;
+		std::map<std::string, std::string> source2clientpath_;
 		sourcemap_t                        sourcemaps_;
 		coding                             coding_;
 	};
