@@ -14,23 +14,23 @@
   <ItemGroup>
     <ClCompile Include="..\inject\main.cpp" />
     <ClCompile Include="..\inject\utility.cpp" />
-    <ClCompile Include="..\inject\base\hook\inline.cpp">
+    <ClCompile Include="..\src\base\hook\inline.cpp">
       <Filter>base\hook</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\inject\base\hook\fp_call.h">
+    <ClInclude Include="..\inject\utility.h" />
+    <ClInclude Include="..\src\base\hook\fp_call.h">
       <Filter>base\hook</Filter>
     </ClInclude>
-    <ClInclude Include="..\inject\base\config.h">
-      <Filter>base</Filter>
+    <ClInclude Include="..\src\base\hook\inline.h">
+      <Filter>base\hook</Filter>
     </ClInclude>
-    <ClInclude Include="..\inject\base\util\horrible_cast.h">
+    <ClInclude Include="..\src\base\util\horrible_cast.h">
       <Filter>base\util</Filter>
     </ClInclude>
-    <ClInclude Include="..\inject\utility.h" />
-    <ClInclude Include="..\inject\base\hook\inline.h">
-      <Filter>base\hook</Filter>
+    <ClInclude Include="..\src\base\config.h">
+      <Filter>base</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
