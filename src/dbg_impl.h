@@ -10,7 +10,6 @@
 #include "lua_compatibility.h"	 
 #include "dbg_breakpoint.h"	 
 #include "dbg_evaluate.h"
-#include "dbg_path.h" 
 #include "dbg_pathconvert.h"
 #include "dbg_protocol.h"
 #include "debugger.h"

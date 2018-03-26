@@ -1,7 +1,7 @@
-#include "dbg_pathconvert.h"
-#include "dbg_path.h"	  
+#include "dbg_pathconvert.h"  
 #include "dbg_impl.h"
 #include <base/util/unicode.h>
+#include <base/path/helper.h>
 #include <algorithm>
 #include <assert.h>
 #include <regex>
@@ -68,7 +68,7 @@ namespace vscode
 		{
 			path = fs::absolute(path, fs::current_path());
 		}
-		return base::w2u(path_normalize(path).wstring());
+		return base::w2u(base::path::normalize(path).wstring());
 	}
 
 	bool pathconvert::get(const std::string& source, std::string& client_path)

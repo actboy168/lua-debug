@@ -4,6 +4,7 @@
 #include "dbg_thread.h"
 #include "dbg_thunk.h"
 #include <base/util/format.h>
+#include <base/filesystem.h>
 #include <thread>
 #include <atomic>
 

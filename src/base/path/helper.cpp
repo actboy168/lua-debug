@@ -1,10 +1,9 @@
-#include "dbg_path.h" 
+#include <base/path/helper.h>
 #include <deque>
 #include <algorithm>
 
-namespace vscode
-{
-	fs::path path_normalize(const fs::path& p)
+namespace base { namespace path {
+	fs::path normalize(const fs::path& p)
 	{
 		fs::path result = p.root_path();
 		std::deque<std::wstring> stack;
@@ -25,4 +24,4 @@ namespace vscode
 		}
 		return result.wstring();
 	}
-}
+}}

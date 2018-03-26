@@ -36,6 +36,9 @@
     <Filter Include="libs\base\util">
       <UniqueIdentifier>{1971a5bb-d944-4376-aaf7-11e96d593641}</UniqueIdentifier>
     </Filter>
+    <Filter Include="libs\base\path">
+      <UniqueIdentifier>{c2928690-afff-4e71-93bf-9201b5ceeba2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\dbg_network.cpp">
@@ -54,9 +57,6 @@
       <Filter>cpp</Filter>
     </ClCompile>
     <ClCompile Include="..\src\dbg_breakpoint.cpp">
-      <Filter>cpp</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\dbg_path.cpp">
       <Filter>cpp</Filter>
     </ClCompile>
     <ClCompile Include="..\src\dbg_pathconvert.cpp">
@@ -83,6 +83,9 @@
     <ClCompile Include="..\src\base\util\unicode.cpp">
       <Filter>libs\base\util</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\base\path\helper.cpp">
+      <Filter>libs\base\path</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\debugger.h">
@@ -104,9 +107,6 @@
       <Filter>inc</Filter>
     </ClInclude>
     <ClInclude Include="..\src\dbg_evaluate.h">
-      <Filter>inc</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\dbg_path.h">
       <Filter>inc</Filter>
     </ClInclude>
     <ClInclude Include="..\src\dbg_pathconvert.h">
@@ -207,6 +207,15 @@
     </ClInclude>
     <ClInclude Include="..\src\base\util\unicode.h">
       <Filter>libs\base\util</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\base\config.h">
+      <Filter>libs\base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\base\filesystem.h">
+      <Filter>libs\base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\base\path\helper.h">
+      <Filter>libs\base\path</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

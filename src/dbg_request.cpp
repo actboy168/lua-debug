@@ -2,6 +2,7 @@
 #include "dbg_protocol.h"  
 #include "dbg_io.h"
 #include <base/util/unicode.h>
+#include <base/filesystem.h>
 
 namespace vscode
 {

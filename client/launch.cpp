@@ -2,7 +2,7 @@
 #include "launch.h"
 #include "stdinput.h"
 #include "dbg_delayload.h"
-#include "dbg_path.h"
+#include <base/filesystem.h>
 #include <base/util/format.h>
 #include <base/util/unicode.h>
 #include <lua.hpp>
