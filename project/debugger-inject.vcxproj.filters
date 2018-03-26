@@ -10,16 +10,20 @@
     <Filter Include="base\util">
       <UniqueIdentifier>{c1ddd6b2-f708-44b3-a22b-e729648d8ce4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="base\path">
+      <UniqueIdentifier>{a7737912-ca80-4dd2-979c-40a34a917951}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\inject\main.cpp" />
-    <ClCompile Include="..\inject\utility.cpp" />
     <ClCompile Include="..\src\base\hook\inline.cpp">
       <Filter>base\hook</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\base\path\get_path.cpp">
+      <Filter>base\path</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\inject\utility.h" />
     <ClInclude Include="..\src\base\hook\fp_call.h">
       <Filter>base\hook</Filter>
     </ClInclude>
@@ -31,6 +35,12 @@
     </ClInclude>
     <ClInclude Include="..\src\base\config.h">
       <Filter>base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\base\path\get_path.h">
+      <Filter>base\path</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\base\path\self.h">
+      <Filter>base\path</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -1,40 +1,8 @@
 
 #include <base/win/process.h>
-#include "dbg_protocol.h"
 #include <base/util/unicode.h>
-
-// http://blogs.msdn.com/oldnewthing/archive/2004/10/25/247180.aspx
-extern "C" IMAGE_DOS_HEADER __ImageBase;
-
-fs::path get_self_path()
-{
-	HMODULE module = reinterpret_cast<HMODULE>(&__ImageBase);
-	wchar_t buffer[MAX_PATH];
-	DWORD len = ::GetModuleFileNameW(module, buffer, _countof(buffer));
-	if (len == 0)
-	{
-		return fs::path();
-	}
-	if (len < _countof(buffer))
-	{
-		return fs::path(buffer, buffer + len);
-	}
-	for (size_t buf_len = 0x200; buf_len <= 0x10000; buf_len <<= 1)
-	{
-		std::unique_ptr<wchar_t[]> buf(new wchar_t[len]);
-		len = ::GetModuleFileNameW(module, buf.get(), len);
-		if (len == 0)
-		{
-			return fs::path();
-		}
-		if (len < _countof(buffer))
-		{
-			return fs::path(buf.get(), buf.get() + (size_t)len);
-		}
-	}
-	return fs::path();
-}
-
+#include <base/path/self.h>
+#include "dbg_protocol.h"
 
 bool create_process_with_debugger(vscode::rprotocol& req, uint16_t port)
 {
@@ -56,7 +24,7 @@ bool create_process_with_debugger(vscode::rprotocol& req, uint16_t port)
 	}
 
 	base::win::process p;
-	auto dir = get_self_path().remove_filename().remove_filename();
+	auto dir = base::path::self().remove_filename().remove_filename();
 	p.inject_x86(dir / L"x86" / L"debugger-inject.dll");
 	p.inject_x64(dir / L"x64" / L"debugger-inject.dll");
 

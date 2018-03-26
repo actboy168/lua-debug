@@ -2,9 +2,9 @@
 #include <base/hook/inline.h>
 #include <base/hook/fp_call.h>
 #include <base/win/process.h>
+#include <base/path/self.h>
 #include <mutex>
 #include <stack>
-#include "utility.h"
 #include "debugger.h"
 
 HMODULE luadll = 0;
@@ -14,7 +14,7 @@ void initialize_debugger(lua_State* L)
 	if (GetModuleHandleW(L"debugger.dll")) {
 		return;
 	}
-	if (!LoadLibraryW((get_self_path().remove_filename() / L"debugger.dll").c_str())) {
+	if (!LoadLibraryW((base::path::self().remove_filename() / L"debugger.dll").c_str())) {
 		return;
 	}
 	debugger_set_luadll(luadll);
