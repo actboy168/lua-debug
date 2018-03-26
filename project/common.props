@@ -1,15 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ImportGroup Label="PropertySheets" />
-  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Label="UserMacros">
+    <Root>$(SolutionDir)..</Root>
+  </PropertyGroup>
   <PropertyGroup>
-    <IntDir>$(SolutionDir)..\build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\</IntDir>
-    <OutDir>$(SolutionDir)..\publish\windows\$(PlatformTarget)\</OutDir>
+    <IntDir>$(Root)\build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\</IntDir>
+    <OutDir>$(Root)\publish\windows\$(PlatformTarget)\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
   </ItemDefinitionGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <BuildMacro Include="Root">
+      <Value>$(Root)</Value>
+    </BuildMacro>
+  </ItemGroup>
 </Project>

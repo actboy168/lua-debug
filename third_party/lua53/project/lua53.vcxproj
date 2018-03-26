@@ -19,67 +19,67 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\src\lua\lapi.c" />
-    <ClCompile Include="..\src\lua\lauxlib.c" />
-    <ClCompile Include="..\src\lua\lbaselib.c" />
-    <ClCompile Include="..\src\lua\lbitlib.c" />
-    <ClCompile Include="..\src\lua\lcode.c" />
-    <ClCompile Include="..\src\lua\lcorolib.c" />
-    <ClCompile Include="..\src\lua\lctype.c" />
-    <ClCompile Include="..\src\lua\ldblib.c" />
-    <ClCompile Include="..\src\lua\ldebug.c" />
-    <ClCompile Include="..\src\lua\ldo.c" />
-    <ClCompile Include="..\src\lua\ldump.c" />
-    <ClCompile Include="..\src\lua\lfunc.c" />
-    <ClCompile Include="..\src\lua\lgc.c" />
-    <ClCompile Include="..\src\lua\linit.c" />
-    <ClCompile Include="..\src\lua\liolib.c" />
-    <ClCompile Include="..\src\lua\llex.c" />
-    <ClCompile Include="..\src\lua\lmathlib.c" />
-    <ClCompile Include="..\src\lua\lmem.c" />
-    <ClCompile Include="..\src\lua\loadlib.c" />
-    <ClCompile Include="..\src\lua\lobject.c" />
-    <ClCompile Include="..\src\lua\lopcodes.c" />
-    <ClCompile Include="..\src\lua\loslib.c" />
-    <ClCompile Include="..\src\lua\lparser.c" />
-    <ClCompile Include="..\src\lua\lstate.c" />
-    <ClCompile Include="..\src\lua\lstring.c" />
-    <ClCompile Include="..\src\lua\lstrlib.c" />
-    <ClCompile Include="..\src\lua\ltable.c" />
-    <ClCompile Include="..\src\lua\ltablib.c" />
-    <ClCompile Include="..\src\lua\ltm.c" />
-    <ClCompile Include="..\src\lua\lundump.c" />
-    <ClCompile Include="..\src\lua\lutf8lib.c" />
-    <ClCompile Include="..\src\lua\lvm.c" />
-    <ClCompile Include="..\src\lua\lzio.c" />
+    <ClCompile Include="..\src\lapi.c" />
+    <ClCompile Include="..\src\lauxlib.c" />
+    <ClCompile Include="..\src\lbaselib.c" />
+    <ClCompile Include="..\src\lbitlib.c" />
+    <ClCompile Include="..\src\lcode.c" />
+    <ClCompile Include="..\src\lcorolib.c" />
+    <ClCompile Include="..\src\lctype.c" />
+    <ClCompile Include="..\src\ldblib.c" />
+    <ClCompile Include="..\src\ldebug.c" />
+    <ClCompile Include="..\src\ldo.c" />
+    <ClCompile Include="..\src\ldump.c" />
+    <ClCompile Include="..\src\lfunc.c" />
+    <ClCompile Include="..\src\lgc.c" />
+    <ClCompile Include="..\src\linit.c" />
+    <ClCompile Include="..\src\liolib.c" />
+    <ClCompile Include="..\src\llex.c" />
+    <ClCompile Include="..\src\lmathlib.c" />
+    <ClCompile Include="..\src\lmem.c" />
+    <ClCompile Include="..\src\loadlib.c" />
+    <ClCompile Include="..\src\lobject.c" />
+    <ClCompile Include="..\src\lopcodes.c" />
+    <ClCompile Include="..\src\loslib.c" />
+    <ClCompile Include="..\src\lparser.c" />
+    <ClCompile Include="..\src\lstate.c" />
+    <ClCompile Include="..\src\lstring.c" />
+    <ClCompile Include="..\src\lstrlib.c" />
+    <ClCompile Include="..\src\ltable.c" />
+    <ClCompile Include="..\src\ltablib.c" />
+    <ClCompile Include="..\src\ltm.c" />
+    <ClCompile Include="..\src\lundump.c" />
+    <ClCompile Include="..\src\lutf8lib.c" />
+    <ClCompile Include="..\src\lvm.c" />
+    <ClCompile Include="..\src\lzio.c" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\src\lua\lauxlib.h" />
-    <ClInclude Include="..\src\lua\lua.h" />
-    <ClInclude Include="..\src\lua\lua.hpp" />
-    <ClInclude Include="..\src\lua\luaconf.h" />
-    <ClInclude Include="..\src\lua\lualib.h" />
-    <ClInclude Include="..\src\lua\lapi.h" />
-    <ClInclude Include="..\src\lua\lcode.h" />
-    <ClInclude Include="..\src\lua\lctype.h" />
-    <ClInclude Include="..\src\lua\ldebug.h" />
-    <ClInclude Include="..\src\lua\ldo.h" />
-    <ClInclude Include="..\src\lua\lfunc.h" />
-    <ClInclude Include="..\src\lua\lgc.h" />
-    <ClInclude Include="..\src\lua\llex.h" />
-    <ClInclude Include="..\src\lua\llimits.h" />
-    <ClInclude Include="..\src\lua\lmem.h" />
-    <ClInclude Include="..\src\lua\lobject.h" />
-    <ClInclude Include="..\src\lua\lopcodes.h" />
-    <ClInclude Include="..\src\lua\lparser.h" />
-    <ClInclude Include="..\src\lua\lprefix.h" />
-    <ClInclude Include="..\src\lua\lstate.h" />
-    <ClInclude Include="..\src\lua\lstring.h" />
-    <ClInclude Include="..\src\lua\ltable.h" />
-    <ClInclude Include="..\src\lua\ltm.h" />
-    <ClInclude Include="..\src\lua\lundump.h" />
-    <ClInclude Include="..\src\lua\lvm.h" />
-    <ClInclude Include="..\src\lua\lzio.h" />
+    <ClInclude Include="..\src\lauxlib.h" />
+    <ClInclude Include="..\src\lua.h" />
+    <ClInclude Include="..\src\lua.hpp" />
+    <ClInclude Include="..\src\luaconf.h" />
+    <ClInclude Include="..\src\lualib.h" />
+    <ClInclude Include="..\src\lapi.h" />
+    <ClInclude Include="..\src\lcode.h" />
+    <ClInclude Include="..\src\lctype.h" />
+    <ClInclude Include="..\src\ldebug.h" />
+    <ClInclude Include="..\src\ldo.h" />
+    <ClInclude Include="..\src\lfunc.h" />
+    <ClInclude Include="..\src\lgc.h" />
+    <ClInclude Include="..\src\llex.h" />
+    <ClInclude Include="..\src\llimits.h" />
+    <ClInclude Include="..\src\lmem.h" />
+    <ClInclude Include="..\src\lobject.h" />
+    <ClInclude Include="..\src\lopcodes.h" />
+    <ClInclude Include="..\src\lparser.h" />
+    <ClInclude Include="..\src\lprefix.h" />
+    <ClInclude Include="..\src\lstate.h" />
+    <ClInclude Include="..\src\lstring.h" />
+    <ClInclude Include="..\src\ltable.h" />
+    <ClInclude Include="..\src\ltm.h" />
+    <ClInclude Include="..\src\lundump.h" />
+    <ClInclude Include="..\src\lvm.h" />
+    <ClInclude Include="..\src\lzio.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{B84F7231-16CE-41D8-8C08-7B523FF4225B}</ProjectGuid>
@@ -114,21 +114,21 @@
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="common.props" />
+    <Import Project="..\..\..\project\common.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="common.props" />
+    <Import Project="..\..\..\project\common.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="common.props" />
-    <Import Project="common-debug.props" />
+    <Import Project="..\..\..\project\common.props" />
+    <Import Project="..\..\..\project\common-debug.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="common.props" />
-    <Import Project="common-debug.props" />
+    <Import Project="..\..\..\project\common.props" />
+    <Import Project="..\..\..\project\common-debug.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
