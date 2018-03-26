@@ -1,6 +1,6 @@
 #include "attach.h"
 #include "stdinput.h"
-#include "dbg_format.h"
+#include <base/util/format.h>
 
 attach::attach(stdinput& io_)
 	: poller()
@@ -27,7 +27,7 @@ void attach::send(const vscode::rprotocol& rp)
 	rapidjson::StringBuffer buffer;
 	rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
 	rp.Accept(writer);
-	base_type::send(vscode::format("Content-Length: %d\r\n\r\n", buffer.GetSize()));
+	base_type::send(base::format("Content-Length: %d\r\n\r\n", buffer.GetSize()));
 	base_type::send(buffer.GetString(), buffer.GetSize());
 }
 

@@ -1,9 +1,9 @@
 #include "dbg_impl.h"
 #include "dbg_protocol.h"  	
 #include "dbg_io.h" 
-#include "dbg_format.h"
 #include "dbg_thread.h"
 #include "dbg_thunk.h"
+#include <base/util/format.h>
 #include <thread>
 #include <atomic>
 
@@ -263,7 +263,7 @@ namespace vscode
 					continue;
 				}
 			}
-			response_error(req, format("%s not yet implemented", req["command"].GetString()).c_str());
+			response_error(req, base::format("%s not yet implemented", req["command"].GetString()).c_str());
 		}
 
 		ob_.reset(L);
@@ -286,7 +286,7 @@ namespace vscode
 				request_initialize(req);
 				return;
 			}
-			response_error(req, format("%s not yet implemented", req["command"].GetString()).c_str());
+			response_error(req, base::format("%s not yet implemented", req["command"].GetString()).c_str());
 		}
 		else if (is_state(state::initialized) || is_state(state::running) || is_state(state::stepping))
 		{
@@ -299,7 +299,7 @@ namespace vscode
 			}
 			bool quit = false;
 			if (!update_main(req, quit)) {
-				response_error(req, format("%s not yet implemented", req["command"].GetString()).c_str());
+				response_error(req, base::format("%s not yet implemented", req["command"].GetString()).c_str());
 				return;
 			}
 		}
@@ -357,10 +357,10 @@ namespace vscode
 			{
 				res("category").String(category);
 				if (console_ == "ansi") {
-					res("output").String(vscode::a2u(strview(buf, len)));
+					res("output").String(base::a2u(base::strview(buf, len)));
 				}
 				else {
-					res("output").String(strview(buf, len));
+					res("output").String(base::strview(buf, len));
 				}
 
 				lua::Debug entry;
@@ -379,7 +379,7 @@ namespace vscode
 						{
 							for (auto _ : res("source").Object())
 							{
-								res("name").String(w2u(fs::path(u2w(path)).filename().wstring()));
+								res("name").String(base::w2u(fs::path(base::u2w(path)).filename().wstring()));
 								res("path").String(path);
 							};
 							res("line").Int(entry.currentline);

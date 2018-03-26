@@ -63,12 +63,12 @@ namespace vscode
 
 	std::string pathconvert::source2serverpath(const std::string& s) const
 	{
-		fs::path path(coding_ == coding::utf8? u2w(s) : a2w(s));
+		fs::path path(coding_ == coding::utf8? base::u2w(s) : base::a2w(s));
 		if (!path.is_absolute())
 		{
 			path = fs::absolute(path, fs::current_path());
 		}
-		return w2u(path_normalize(path).wstring());
+		return base::w2u(path_normalize(path).wstring());
 	}
 
 	bool pathconvert::get(const std::string& source, std::string& client_path)

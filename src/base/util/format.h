@@ -1,13 +1,17 @@
 #pragma once
 
+#include <base/config.h>
 #include <cassert>
 #include <cstdint>
 #include <stdexcept>
 #include <iostream>
 #include <sstream>
 #include <type_traits>
-#include <base/util/hybrid_array.h> 
+#include <base/util/hybrid_array.h>
+
+#if !defined(BASE_FORMAT_DISABLE_UNICODE)
 #include "dbg_unicode.h"
+#endif
 
 #if defined(_MSC_VER)
 #	pragma warning(push)
@@ -29,7 +33,7 @@
 		} while (0)
 #endif
 
-namespace vscode { namespace format_detail {
+namespace base { namespace format_detail {
 
 template <class T>
 inline int crt_snprintf(char* buf, size_t buf_size, const char* fmt, const T& value)
@@ -256,9 +260,17 @@ private:
 	{
 		format_cast_string(const_cast<const T*>(value));
 	}
-	
+
+#if defined BASE_FORMAT_DISABLE_UNICODE
+	template <class T>
+	void format_cast_string(const std::basic_string<T>& value)
+	{
+		format_value(value.c_str(), value.size());
+	}
+#else 		
 	void format_cast_string(const std::basic_string<char>& value);
 	void format_cast_string(const std::basic_string<wchar_t>& value);
+#endif
 
 	template <class T>
 	void format_cast_char(const T& /*value*/
@@ -548,9 +560,9 @@ private:
 		return c+1;
 	}
 
-	base::hybrid_array<char_t, 512> buffer_;
-	base::hybrid_array<char_t, 16>  format_;
-	base::hybrid_array<char_t, 16>  temp_;
+	hybrid_array<char_t, 512> buffer_;
+	hybrid_array<char_t, 16>  format_;
+	hybrid_array<char_t, 16>  temp_;
 	const char_t*             fmt_;
 	std::size_t               flags_;
 	std::ptrdiff_t            width_;
@@ -606,18 +618,19 @@ inline void format_analyzer<char>::format_cast_string(const char* value)
 	format_value(first, next - first);
 }
 
+#if !defined(BASE_FORMAT_DISABLE_UNICODE)
 
 template <>
 inline void format_analyzer<wchar_t>::format_cast_string(const char* value)
 {
-	std::wstring valstr = u2w(value);
+	std::wstring valstr = base::u2w(value);
 	format_cast_string(valstr.c_str());
 }
 
 template <>
 inline void format_analyzer<char>::format_cast_string(const wchar_t* value)
 {
-	std::string valstr = w2u(value);
+	std::string valstr = base::w2u(value);
 	format_cast_string(valstr.c_str());
 }
 
@@ -630,14 +643,14 @@ inline void  format_analyzer<char>::format_cast_string(const std::basic_string<c
 template <>
 inline void format_analyzer<char>::format_cast_string(const std::basic_string<wchar_t>& value)
 {
-	std::string valstr = w2u(value);
+	std::string valstr = base::w2u(value);
 	format_value(valstr.c_str(), valstr.size());
 }
 
 template <>
 inline void  format_analyzer<wchar_t>::format_cast_string(const std::basic_string<char>& value)
 {
-	std::wstring valstr = u2w(value);
+	std::wstring valstr = base::u2w(value);
 	format_value(valstr.c_str(), valstr.size());
 }
 
@@ -646,6 +659,10 @@ inline void format_analyzer<wchar_t>::format_cast_string(const std::basic_string
 {
 	format_value(value.c_str(), value.size());
 }
+
+#endif
+
+
 
 inline std::ostream& standard_output(const char*) { return std::cout; }
 inline std::wostream& standard_output(const wchar_t*) { return std::wcout; }

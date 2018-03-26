@@ -1,8 +1,8 @@
 ﻿#include "dbg_redirect.h" 
-#include "dbg_format.h"
 #include <windows.h> 
 #include <fcntl.h>
 #include <io.h>
+#include <stdio.h>
 
 namespace vscode
 {

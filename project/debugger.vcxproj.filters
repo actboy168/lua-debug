@@ -100,9 +100,6 @@
     <ClInclude Include="..\src\dbg_unicode.h">
       <Filter>inc</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\dbg_format.h">
-      <Filter>inc</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\dbg_evaluate.h">
       <Filter>inc</Filter>
     </ClInclude>

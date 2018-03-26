@@ -1,6 +1,6 @@
 #include "dbg_evaluate.h"
-#include "dbg_format.h"
 #include "lua_compatibility.h"
+#include <base/util/format.h>
 #include <vector>
 #include <map>
 
@@ -73,9 +73,9 @@ namespace vscode
 			const char* name = lua_getlocal(L, (lua_Debug*)ar, i);
 			if (!name) break;
 			if (name[0] == '(') { lua_pop(L, 1); continue; }
-			code += format("local %s\n", name);
+			code += base::format("local %s\n", name);
 			if (writeable)
-				local += format("[%d]=%s,", i, name);
+				local += base::format("[%d]=%s,", i, name);
 			id_local[name] = lua_gettop(L);
 			if (i % 10 == 0)
 			{
@@ -90,7 +90,7 @@ namespace vscode
 			{
 				const char* name = lua_getupvalue(L, -1, i);
 				if (!name) break;
-				code += format("local %s\n", name);
+				code += base::format("local %s\n", name);
 				id_upvalue[name] = i;
 				lua_pop(L, 1);
 			}

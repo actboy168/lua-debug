@@ -2,9 +2,9 @@
 #include "launch.h"
 #include "stdinput.h"
 #include "dbg_unicode.h"
-#include "dbg_format.h"
 #include "dbg_delayload.h"
 #include "dbg_path.h"
+#include <base/util/format.h>
 #include <lua.hpp>
 
 static int errfunc(lua_State* L) {
@@ -50,19 +50,19 @@ bool launch::request_launch(vscode::rprotocol& req) {
 		return false;
 	}
 	if (args.HasMember("luadll")) {
-		delayload::set_luadll(vscode::u2w(args["luadll"].Get<std::string>()));
+		delayload::set_luadll(base::u2w(args["luadll"].Get<std::string>()));
 	}
 	if (args.HasMember("cwd") && args["cwd"].IsString()) {
-		fs::current_path(fs::path(vscode::u2w(args["cwd"].Get<std::string>())));
+		fs::current_path(fs::path(base::u2w(args["cwd"].Get<std::string>())));
 	}
 	if (args.HasMember("env") && args["env"].IsObject()) {
 		for (auto& v : args["env"].GetObject()) {
 			if (v.name.IsString()) {
 				if (v.value.IsString()) {
-					_wputenv((vscode::u2w(v.name.Get<std::string>()) + L"=" + vscode::u2w(v.value.Get<std::string>())).c_str());
+					_wputenv((base::u2w(v.name.Get<std::string>()) + L"=" + base::u2w(v.value.Get<std::string>())).c_str());
 				}
 				else if (v.value.IsNull()) {
-					_wputenv((vscode::u2w(v.name.Get<std::string>()) + L"=").c_str());
+					_wputenv((base::u2w(v.name.Get<std::string>()) + L"=").c_str());
 				}
 			}
 		}
@@ -73,7 +73,7 @@ bool launch::request_launch(vscode::rprotocol& req) {
 
 	if (args.HasMember("path") && args["path"].IsString())
 	{
-		std::string path = vscode::u2a(args["path"]);
+		std::string path = base::u2a(args["path"]);
 		lua_getglobal(L, "package");
 		lua_pushlstring(L, path.data(), path.size());
 		lua_setfield(L, -2, "path");
@@ -81,7 +81,7 @@ bool launch::request_launch(vscode::rprotocol& req) {
 	}
 	if (args.HasMember("cpath") && args["cpath"].IsString())
 	{
-		std::string path = vscode::u2a(args["cpath"]);
+		std::string path = base::u2a(args["cpath"]);
 		lua_getglobal(L, "package");
 		lua_pushlstring(L, path.data(), path.size());
 		lua_setfield(L, -2, "cpath");
@@ -138,10 +138,10 @@ bool launch::request_launch(vscode::rprotocol& req) {
 	}
 	debugger_.redirect_stderr();
 
-	std::string program = vscode::u2a(args["program"]);
+	std::string program = base::u2a(args["program"]);
 	int status = luaL_loadfile(L, program.c_str());
 	if (status != LUA_OK) {
-		auto msg = vscode::format("Failed to launch %s due to error: %s\n", program, lua_tostring(L, -1));
+		auto msg = base::format("Failed to launch %s due to error: %s\n", program, lua_tostring(L, -1));
 		debugger_.output("console", msg.data(), msg.size());
 		lua_pop(L, 1);
 		return false;
@@ -178,7 +178,7 @@ void launch::update()
 	lua_pushcclosure(L, errfunc, 1);
 	lua_insert(L, -2);
 	if (lua_pcall(L, 0, 0, -2)) {
-		auto msg = vscode::format("Program terminated with error: %s\n", lua_tostring(L, -1));
+		auto msg = base::format("Program terminated with error: %s\n", lua_tostring(L, -1));
 		debugger_.output("console", msg.data(), msg.size());
 		lua_pop(L, 1);
 	}

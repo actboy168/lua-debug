@@ -3,7 +3,7 @@
 #include <string>	 
 #include <rapidjson/document.h>
 
-namespace vscode
+namespace base
 {
 	struct strview {
 		template <class T>

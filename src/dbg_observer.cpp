@@ -1,8 +1,8 @@
 #include "dbg_observer.h"
-#include "dbg_format.h"
 #include "dbg_pathconvert.h"
 #include "dbg_impl.h"
 #include "dbg_evaluate.h"
+#include <base/util/format.h>
 #include <set>
 #include <array>
 
@@ -181,7 +181,7 @@ namespace vscode {
 		}
 		if (name) {
 			static std::string s_name;
-			s_name = format("[%d]", n);
+			s_name = base::format("[%d]", n);
 			*name = s_name.c_str();
 		}
 		return true;
@@ -210,7 +210,7 @@ namespace vscode {
 		long lv = strtol(setvalue.value.c_str(), &end, 10);
 		if (errno != ERANGE && *end == 0)
 		{
-			setvalue.value = format("%d", lv);
+			setvalue.value = base::format("%d", lv);
 			setvalue.type = "integer";
 			lua_pushinteger(L, lv);
 			return true;
@@ -222,7 +222,7 @@ namespace vscode {
 			long lv = strtol(setvalue.value.c_str() + 2, &end, 16);
 			if (errno != ERANGE && *end == 0)
 			{
-				setvalue.value = format("0x%x", lv);
+				setvalue.value = base::format("0x%x", lv);
 				setvalue.type = "integer";
 				lua_pushinteger(L, lv);
 				return true;
@@ -234,7 +234,7 @@ namespace vscode {
 		double dv = strtod(setvalue.value.c_str(), &end);
 		if (errno != ERANGE && *end == 0)
 		{
-			setvalue.value = format("%f", dv);
+			setvalue.value = base::format("%f", dv);
 			setvalue.type = "number";
 			lua_pushnumber(L, dv);
 			return true;
@@ -385,12 +385,12 @@ namespace vscode {
 				if (lua_isinteger(L, idx)) {
 					lua_Integer i = lua_tointeger(L, idx);
 					if (i > 0 && i < 1000) {
-						return format("[%03d]", i);
+						return base::format("[%03d]", i);
 					}
-					return format("[%d]", i);
+					return base::format("[%d]", i);
 				}
 				else
-					return format("%f", lua_tonumber(L, idx));
+					return base::format("%f", lua_tonumber(L, idx));
 			case LUA_TSTRING: {
 				size_t len = 0;
 				const char* buf = lua_tolstring(L, idx, &len);
@@ -403,7 +403,7 @@ namespace vscode {
 			default:
 				break;
 			}
-			return format("%s: %p", luaL_typename(L, idx), lua_topointer(L, idx));
+			return base::format("%s: %p", luaL_typename(L, idx), lua_topointer(L, idx));
 		}
 
 		static std::string getvalue(lua_State *L, int idx, pathconvert& pathconvert)
@@ -411,16 +411,16 @@ namespace vscode {
 			switch (lua_type(L, idx)) {
 			case LUA_TNUMBER:
 				if (lua_isinteger(L, idx)) {
-					return format("%d", lua_tointeger(L, idx));
+					return base::format("%d", lua_tointeger(L, idx));
 				}
-				return format("%f", lua_tonumber(L, idx));
+				return base::format("%f", lua_tonumber(L, idx));
 			case LUA_TSTRING: {
 				size_t len = 0;
 				const char* str = lua_tolstring(L, idx, &len);
 				if (len < 256) {
-					return format("'%s'", str);
+					return base::format("'%s'", str);
 				}
-				return format("'%s...'", std::string(str, 256));
+				return base::format("'%s...'", std::string(str, 256));
 			}
 			case LUA_TBOOLEAN:
 				return lua_toboolean(L, idx) ? "true" : "false";
@@ -437,11 +437,11 @@ namespace vscode {
 						if (pos) {
 							return pos;
 						}
-						return format("[%s:%d]", entry.source, entry.linedefined);
+						return base::format("[%s:%d]", entry.source, entry.linedefined);
 					}
 					std::string client_path;
 					if (pathconvert.get(entry.source, client_path)) {
-						return format("[%s:%d]", client_path, entry.linedefined);
+						return base::format("[%s:%d]", client_path, entry.linedefined);
 					}
 				}
 				break;
@@ -449,7 +449,7 @@ namespace vscode {
 			default:
 				break;
 			}
-			return format("%s: %p", luaL_typename(L, idx), lua_topointer(L, idx));
+			return base::format("%s: %p", luaL_typename(L, idx), lua_topointer(L, idx));
 		}
 
 		static std::string gettype(lua_State *L, int idx)

@@ -10,10 +10,10 @@
 #include <net/tcp/listener.h> 
 #include <net/tcp/stream.h>	
 #include <rapidjson/schema.h> 
-#include <rapidjson/error/en.h>		
+#include <rapidjson/error/en.h>
+#include <base/util/format.h>	
 #include "dbg_protocol.h" 
-#include "dbg_file.h"  		 
-#include "dbg_format.h"
+#include "dbg_file.h"
 
 #if 1	 
 #	define log(...)
@@ -131,7 +131,7 @@ namespace vscode
 		if (!wp.IsComplete())
 			return false;
 		log("%s\n", wp.data());
-		send(format("Content-Length: %d\r\n\r\n", wp.size()));
+		send(base::format("Content-Length: %d\r\n\r\n", wp.size()));
 		send(wp);
 		return true;
 	}

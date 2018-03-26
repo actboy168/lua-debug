@@ -13,7 +13,7 @@ namespace vscode
 		file(const char* filename, std::ios_base::openmode mode)
 		{
 #if defined(_MSC_VER)	   
-			file_.open(u2w(filename), std::ios::binary | mode);
+			file_.open(base::u2w(filename), std::ios::binary | mode);
 #else		 
 			file_.open(filename, std::ios::binary | mode);
 #endif

@@ -3,7 +3,7 @@
 #include <Windows.h>
 #include <vector>
 
-namespace vscode
+namespace base
 {
 	template <class T>
 	struct input_stream

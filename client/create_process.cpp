@@ -42,14 +42,14 @@ bool create_process_with_debugger(vscode::rprotocol& req, uint16_t port)
 	if (!args.HasMember("runtimeExecutable") || !args["runtimeExecutable"].IsString()) {
 		return 0;
 	}
-	std::wstring wapplication = vscode::u2w(args["runtimeExecutable"].Get<std::string>());
+	std::wstring wapplication = base::u2w(args["runtimeExecutable"].Get<std::string>());
 	std::wstring wcommand = L"\"" + wapplication + L"\"";
 	if (args.HasMember("runtimeArgs") && args["runtimeArgs"].IsString()) {
-		wcommand = wcommand + L" " + vscode::u2w(args["runtimeArgs"].Get<std::string>());
+		wcommand = wcommand + L" " + base::u2w(args["runtimeArgs"].Get<std::string>());
 	}
 	std::wstring wcwd;
 	if (args.HasMember("cwd") && args["cwd"].IsString()) {
-		wcwd = vscode::u2w(args["cwd"].Get<std::string>());
+		wcwd = base::u2w(args["cwd"].Get<std::string>());
 	}
 	else {
 		wcwd = fs::path(wapplication).remove_filename();
@@ -65,10 +65,10 @@ bool create_process_with_debugger(vscode::rprotocol& req, uint16_t port)
 			for (auto& v : args["env"].GetObject()) {
 				if (v.name.IsString()) {
 					if (v.value.IsString()) {
-						p.set_env(vscode::u2w(v.name.Get<std::string>()), vscode::u2w(v.value.Get<std::string>()));
+						p.set_env(base::u2w(v.name.Get<std::string>()), base::u2w(v.value.Get<std::string>()));
 					}
 					else if (v.value.IsNull()) {
-						p.del_env(vscode::u2w(v.name.Get<std::string>()));
+						p.del_env(base::u2w(v.name.Get<std::string>()));
 					}
 				}
 			}
