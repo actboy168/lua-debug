@@ -2,8 +2,8 @@
 
 #include <map> 
 #include <set>
-#include <string>				
-#include "dbg_hybridarray.h"  
+#include <string>
+#include <base/util/hybrid_array.h> 
 #include "dbg_pathconvert.h"
 
 struct lua_State;
@@ -40,6 +40,6 @@ namespace vscode
 	private:
 		std::map<std::string, bp_source> files_;
 		std::map<intptr_t, bp_source>    memorys_;
-		hybridarray<size_t, 1024>        fast_table_;
+		base::hybrid_array<size_t, 1024> fast_table_;
 	};
 }

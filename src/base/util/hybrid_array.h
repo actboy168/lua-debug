@@ -1,5 +1,6 @@
 #pragma once
 
+#include <base/config.h>
 #include <algorithm>
 #include <limits>
 #include <iterator>
@@ -7,10 +8,10 @@
 #include <type_traits>
 #include <memory>
 
-namespace vscode {
+namespace base {
 
 	template <typename T, size_t SIZE>
-	class hybridarray
+	class hybrid_array
 	{
 	public:
 		typedef       T                               value_type;
@@ -25,23 +26,23 @@ namespace vscode {
 		typedef size_t                                size_type;
 		typedef ptrdiff_t                             difference_type;
 
-		static_assert(std::is_pod<value_type>::value, "hybridarray::value_type must be a pod type.");
+		static_assert(std::is_pod<value_type>::value, "hybrid_array::value_type must be a pod type.");
 
-		hybridarray() 
+		hybrid_array() 
 			: size_(0)
 			, capacity_(SIZE)
 			, ptr_(data_) 
 		{ }
 
-		hybridarray(size_type n)
+		hybrid_array(size_type n)
 			: size_(0)
 			, capacity_(SIZE)
 			, ptr_(data_)
-		{ 
+		{
 			resize(n);
 		}
 
-		~hybridarray() 
+		~hybrid_array() 
 		{
 			if (ptr_ != data_) 
 			{
@@ -109,16 +110,25 @@ namespace vscode {
 			{
 				grow(size_ + num_elements);
 			}
-			std::uninitialized_copy(first, last, ptr_ + size_);
+			uninitialized_copy(first, last, ptr_ + size_);
 			size_ += num_elements;
 		}
 
 	private:
+		void uninitialized_copy(const_iterator first, const_iterator last, iterator dest)
+		{
+			const char * const first_ch = const_cast<const char *>(reinterpret_cast<const volatile char *>(first));
+			const char * const last_ch = const_cast<const char *>(reinterpret_cast<const volatile char *>(last));
+			char * const dest_ch = const_cast<char *>(reinterpret_cast<volatile char *>(dest));
+			const size_t count = last_ch - first_ch;
+			std::memmove(dest_ch, first_ch, count);
+		}
+
 		void grow(size_type size) 
 		{
 			capacity_ = (std::max)(size, capacity_ + capacity_ / 2);
 			pointer p = new value_type[capacity_];
-			std::uninitialized_copy(ptr_, ptr_ + size_, p);
+			uninitialized_copy(ptr_, ptr_ + size_, p);
 			if (ptr_ != data_)
 			{
 				delete [] ptr_;
@@ -130,12 +140,12 @@ namespace vscode {
 		{ 
 			if (n >= size_)
 			{
-				throw std::out_of_range("hybridarray"); 
+				throw std::out_of_range("hybrid_array"); 
 			}
 		}
 
-		hybridarray(const hybridarray&);
-		hybridarray& operator=(const hybridarray&);
+		hybrid_array(const hybrid_array&);
+		hybrid_array& operator=(const hybrid_array&);
 
 	private:
 		size_type  size_;

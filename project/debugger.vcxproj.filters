@@ -103,9 +103,6 @@
     <ClInclude Include="..\src\dbg_format.h">
       <Filter>inc</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\dbg_hybridarray.h">
-      <Filter>inc</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\dbg_evaluate.h">
       <Filter>inc</Filter>
     </ClInclude>

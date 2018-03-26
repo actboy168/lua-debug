@@ -6,7 +6,7 @@
 #include <iostream>
 #include <sstream>
 #include <type_traits>
-#include "dbg_hybridarray.h"  
+#include <base/util/hybrid_array.h> 
 #include "dbg_unicode.h"
 
 #if defined(_MSC_VER)
@@ -548,9 +548,9 @@ private:
 		return c+1;
 	}
 
-	hybridarray<char_t, 512> buffer_;
-	hybridarray<char_t, 16>  format_;
-	hybridarray<char_t, 16>  temp_;
+	base::hybrid_array<char_t, 512> buffer_;
+	base::hybrid_array<char_t, 16>  format_;
+	base::hybrid_array<char_t, 16>  temp_;
 	const char_t*             fmt_;
 	std::size_t               flags_;
 	std::ptrdiff_t            width_;

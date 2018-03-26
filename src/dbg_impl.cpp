@@ -92,7 +92,7 @@ namespace vscode
 		if (stdout_) {
 			size_t n = stdout_->peek();
 			if (n > 0) {
-				hybridarray<char, 1024> buf(n);
+				base::hybrid_array<char, 1024> buf(n);
 				stdout_->read(buf.data(), buf.size());
 				output("stdout", buf.data(), buf.size(), nullptr);
 			}
@@ -100,7 +100,7 @@ namespace vscode
 		if (stderr_) {
 			size_t n = stderr_->peek();
 			if (n > 0) {
-				hybridarray<char, 1024> buf(n);
+				base::hybrid_array<char, 1024> buf(n);
 				stderr_->read(buf.data(), buf.size());
 				output("stderr", buf.data(), buf.size(), nullptr);
 			}
