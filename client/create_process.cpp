@@ -1,7 +1,7 @@
 
 #include <base/win/process.h>
 #include "dbg_protocol.h"
-#include "dbg_unicode.h"
+#include <base/util/unicode.h>
 
 // http://blogs.msdn.com/oldnewthing/archive/2004/10/25/247180.aspx
 extern "C" IMAGE_DOS_HEADER __ImageBase;

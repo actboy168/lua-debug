@@ -2,13 +2,13 @@
 #include <fcntl.h>
 #include <io.h>	  
 #include <vector>
-#include "dbg_unicode.h"
 #include "stdinput.h"
 #include "launch.h"
 #include "attach.h"
 #include "server.h"
 #include "dbg_capabilities.h"
-#include "dbg_unicode.cpp"
+#include <base/util/unicode.h>
+#include <base/util/unicode.cpp>
 #include <base/filesystem.h>
 
 bool create_process_with_debugger(vscode::rprotocol& req, uint16_t port);

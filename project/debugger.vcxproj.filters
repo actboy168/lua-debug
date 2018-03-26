@@ -30,6 +30,12 @@
     <Filter Include="libs\net\datetime">
       <UniqueIdentifier>{a01d820a-49f3-4414-9d35-5b6c39165eed}</UniqueIdentifier>
     </Filter>
+    <Filter Include="libs\base">
+      <UniqueIdentifier>{d0ec5ab7-310b-4fa2-a72e-71d3ca758df1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="libs\base\util">
+      <UniqueIdentifier>{1971a5bb-d944-4376-aaf7-11e96d593641}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\dbg_network.cpp">
@@ -45,9 +51,6 @@
       <Filter>cpp</Filter>
     </ClCompile>
     <ClCompile Include="..\src\debugger.cpp">
-      <Filter>cpp</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\dbg_unicode.cpp">
       <Filter>cpp</Filter>
     </ClCompile>
     <ClCompile Include="..\src\dbg_breakpoint.cpp">
@@ -77,6 +80,9 @@
     <ClCompile Include="..\src\dbg_observer.cpp">
       <Filter>cpp</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\base\util\unicode.cpp">
+      <Filter>libs\base\util</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\debugger.h">
@@ -95,9 +101,6 @@
       <Filter>inc</Filter>
     </ClInclude>
     <ClInclude Include="..\src\dbg_file.h">
-      <Filter>inc</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\dbg_unicode.h">
       <Filter>inc</Filter>
     </ClInclude>
     <ClInclude Include="..\src\dbg_evaluate.h">
@@ -201,6 +204,9 @@
     </ClInclude>
     <ClInclude Include="..\src\dbg_observer.h">
       <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\base\util\unicode.h">
+      <Filter>libs\base\util</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

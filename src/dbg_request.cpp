@@ -1,7 +1,7 @@
 #include "dbg_impl.h"
 #include "dbg_protocol.h"  
 #include "dbg_io.h"
-#include "dbg_unicode.h"
+#include <base/util/unicode.h>
 
 namespace vscode
 {

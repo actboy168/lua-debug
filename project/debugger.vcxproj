@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\src\base\util\unicode.cpp" />
     <ClCompile Include="..\src\dbg_breakpoint.cpp" />
     <ClCompile Include="..\src\dbg_delayload.cpp" />
     <ClCompile Include="..\src\dbg_evaluate.cpp" />
@@ -26,7 +27,6 @@
     <ClCompile Include="..\src\dbg_pathconvert.cpp" />
     <ClCompile Include="..\src\dbg_redirect.cpp" />
     <ClCompile Include="..\src\dbg_thunk.cpp" />
-    <ClCompile Include="..\src\dbg_unicode.cpp" />
     <ClCompile Include="..\src\dbg_observer.cpp" />
     <ClCompile Include="..\src\debugger.cpp" />
     <ClCompile Include="..\src\dbg_impl.cpp" />
@@ -36,6 +36,7 @@
     <ClCompile Include="..\src\lua_compatibility.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\src\base\util\unicode.h" />
     <ClInclude Include="..\src\dbg_breakpoint.h" />
     <ClInclude Include="..\src\dbg_capabilities.h" />
     <ClInclude Include="..\src\dbg_delayload.h" />
@@ -47,7 +48,6 @@
     <ClInclude Include="..\src\dbg_redirect.h" />
     <ClInclude Include="..\src\dbg_thread.h" />
     <ClInclude Include="..\src\dbg_thunk.h" />
-    <ClInclude Include="..\src\dbg_unicode.h" />
     <ClInclude Include="..\src\dbg_observer.h" />
     <ClInclude Include="..\src\debugger.h" />
     <ClInclude Include="..\src\dbg_impl.h" />

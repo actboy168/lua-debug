@@ -1,8 +1,8 @@
 #pragma once
 
 #include <fstream>	
-#if defined(_MSC_VER)	   
-#include "dbg_unicode.h"
+#if defined(_MSC_VER)
+#include <base/util/unicode.h>
 #endif
 
 namespace vscode

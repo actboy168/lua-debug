@@ -2,7 +2,7 @@
 #include "dbg_impl.h"
 #include "dbg_network.h"
 #include "dbg_delayload.h"
-#include "dbg_unicode.h"
+#include <base/util/unicode.h>
 #include <intrin.h>  
 
 namespace vscode

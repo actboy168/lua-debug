@@ -10,7 +10,7 @@
 #include <base/util/hybrid_array.h>
 
 #if !defined(BASE_FORMAT_DISABLE_UNICODE)
-#include "dbg_unicode.h"
+#include <base/util/unicode.h>
 #endif
 
 #if defined(_MSC_VER)
