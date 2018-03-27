@@ -1,13 +1,46 @@
 #include "dbg_pathconvert.h"  
 #include "dbg_impl.h"
 #include <base/util/unicode.h>
-#include <base/path/helper.h>
+#include <base/filesystem.h>
 #include <algorithm>
 #include <assert.h>
 #include <regex>
+#include <deque>
 
 namespace vscode
 {
+	fs::path path_normalize(const fs::path& p)
+	{
+		fs::path result = p.root_path();
+		std::deque<std::wstring> stack;
+		for (auto e : p.relative_path()) {
+			if (e == L".." && !stack.empty() && stack.back() != L"..") {
+				stack.pop_back();
+			}
+			else if (e != L".") {
+#if _MSC_VER >= 1900
+				stack.push_back(e.wstring());
+#else
+				stack.push_back(e);
+#endif
+			}
+			}
+		for (auto e : stack) {
+			result /= e;
+		}
+		return result.wstring();
+	}
+
+	std::string path_filename(const std::string& path)
+	{
+		for (ptrdiff_t pos = path.size() - 1; pos >= 0; --pos) {
+			char c = path[pos];
+			if (c == '\\' || c == '/') {
+				return path.substr(pos + 1);
+			}
+		}
+		return path;
+	}
 	pathconvert::pathconvert(debugger_impl* dbg, coding coding)
 		: debugger_(dbg)
 		, sourcemaps_()
@@ -68,7 +101,7 @@ namespace vscode
 		{
 			path = fs::absolute(path, fs::current_path());
 		}
-		return base::w2u(base::path::normalize(path).wstring());
+		return base::w2u(path_normalize(path).wstring());
 	}
 
 	bool pathconvert::get(const std::string& source, std::string& client_path)

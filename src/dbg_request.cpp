@@ -2,7 +2,6 @@
 #include "dbg_protocol.h"  
 #include "dbg_io.h"
 #include <base/util/unicode.h>
-#include <base/filesystem.h>
 
 namespace vscode
 {
@@ -206,7 +205,7 @@ namespace vscode
 							if (pathconvert_.get(entry.source, path)) {
 								for (auto _ : res("source").Object())
 								{
-									res("name").String(base::w2u(fs::path(base::u2w(path)).filename().wstring()));
+									res("name").String(path_filename(path));
 									res("path").String(path);
 								}
 							}

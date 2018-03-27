@@ -4,7 +4,6 @@
 #include "dbg_thread.h"
 #include "dbg_thunk.h"
 #include <base/util/format.h>
-#include <base/filesystem.h>
 #include <thread>
 #include <atomic>
 
@@ -380,7 +379,7 @@ namespace vscode
 						{
 							for (auto _ : res("source").Object())
 							{
-								res("name").String(base::w2u(fs::path(base::u2w(path)).filename().wstring()));
+								res("name").String(path_filename(path));
 								res("path").String(path);
 							};
 							res("line").Int(entry.currentline);
