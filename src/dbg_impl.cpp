@@ -472,6 +472,10 @@ namespace vscode
 			{ "exceptionInfo", DBG_REQUEST_HOOK(request_exception_info) },
 		})
 	{
+		config_.init(3, R"({
+			"console" : "none",
+			"sourceCoding" : "ansi"
+		})");
 		thread_->start();
 	}
 

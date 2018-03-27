@@ -16,6 +16,7 @@
 #include "debugger.h"
 #include "dbg_redirect.h"
 #include "dbg_observer.h"
+#include "dbg_config.h"
 
 namespace vscode
 {
@@ -121,7 +122,7 @@ namespace vscode
 		void detach_all();
 		bool update_main(rprotocol& req, bool& quit);
 		bool update_hook(rprotocol& req, lua_State *L, lua::Debug *ar, bool& quit);
-		void initialize_sourcemaps(rapidjson::Value& args);
+		void initialize_sourcemaps();
 		void update_redirect();
 
 	private:
@@ -149,6 +150,7 @@ namespace vscode
 		std::unique_ptr<redirector> stderr_;
 		rprotocol          initproto_;
 		observer           ob_;
+		config             config_;
 		std::map<std::string, std::function<bool(rprotocol&)>>                            main_dispatch_;
 		std::map<std::string, std::function<bool(rprotocol&, lua_State*, lua::Debug *ar)>> hook_dispatch_;
 	};

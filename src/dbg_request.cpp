@@ -73,16 +73,10 @@ namespace vscode
 		return false;
 	}
 
-	void debugger_impl::initialize_sourcemaps(rapidjson::Value& args) {
+	void debugger_impl::initialize_sourcemaps() {
 		pathconvert_.clear_sourcemap();
-		if (!args.HasMember("sourceMaps")) {
-			return;
-		}
-		auto& mapjson = args["sourceMaps"];
-		if (!mapjson.IsArray()) {
-			return;
-		}
-		for (auto& e : mapjson.GetArray())
+		auto& sourceMaps = config_.get("sourceMaps", rapidjson::kArrayType);
+		for (auto& e : sourceMaps.GetArray())
 		{
 			if (!e.IsArray())
 			{
@@ -104,16 +98,15 @@ namespace vscode
 			response_error(req, "not initialized or unexpected state");
 			return false;
 		}
-		auto& args = req["arguments"];
-		initialize_sourcemaps(args);
-		console_ = "none";
-		if (args.HasMember("console") && args["console"].IsString()) {
-			console_ = args["console"].Get<std::string>();
+		config_.init(2, req["arguments"]);
+		initialize_sourcemaps();
+		console_ = config_.get("console", rapidjson::kStringType).Get<std::string>();
+		auto& sourceCoding = config_.get("sourceCoding", rapidjson::kStringType);
+		if (sourceCoding.Get<std::string>() == "utf8") {
+			pathconvert_.set_coding(coding::utf8);
 		}
-		if (args.HasMember("sourceCoding") && args["sourceCoding"].IsString()) {
-			if (args["sourceCoding"].Get<std::string>() == "utf8") {
-				pathconvert_.set_coding(coding::utf8);
-			}
+		else if (sourceCoding.Get<std::string>() == "ansi") {
+			pathconvert_.set_coding(coding::ansi);
 		}
 		response_success(req);
 		initproto_ = std::move(req);
