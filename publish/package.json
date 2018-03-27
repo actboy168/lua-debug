@@ -194,6 +194,15 @@
                                 "description": "The source path of the remote host and the source path of local.",
                                 "default": null
                             },
+                            "sourceCoding": {
+                                "type": "string",
+                                "description": "Source encoding",
+                                "default": "ansi",
+                                "enum": [
+                                    "utf8",
+                                    "ansi"
+                                ]
+                            },
                             "runtimeExecutable": {
                                 "type": [
                                     "string",
@@ -237,6 +246,15 @@
                                     "utf8",
                                     "ansi",
                                     "none"
+                                ]
+                            },
+                            "sourceCoding": {
+                                "type": "string",
+                                "description": "Source encoding",
+                                "default": "ansi",
+                                "enum": [
+                                    "utf8",
+                                    "ansi"
                                 ]
                             },
                             "sourceMaps": {
