@@ -84,75 +84,70 @@ int main()
 		}
 		while (!io.input_empty()) {
 			vscode::rprotocol rp = io.input();
-			if (rp["type"] == "request") {
-				if (rp["command"] == "initialize") {
-					response_initialized(io, rp);
-					initproto = std::move(rp);
-					initproto.AddMember("__norepl", true, initproto.GetAllocator());
-					seq = 1;
-					continue;
-				}
-				else if (rp["command"] == "launch") {
-					auto& args = rp["arguments"];
-					if (args.HasMember("runtimeExecutable")) {
-						if (!server_) {
-							server_.reset(new server("127.0.0.1", 0));
-							server_->event_recv([&](const std::string& msg) {
-								uint16_t port = stoi_nothrow(msg);
-								if (!port) {
-									response_error(io, connectproto, "Launch failed");
-									exit(0);
-									return;
-								}
-								attach_.reset(new attach(io));
-								attach_->connect(net::endpoint("127.0.0.1", port));
-								if (seq > 1) initproto.AddMember("__initseq", seq, initproto.GetAllocator());
-								attach_->send(initproto);
-								attach_->send(connectproto);
-							});
-							server_port = wait_ok(server_.get());
-							if (!server_port) {
-								response_error(io, rp, "Launch failed");
+			if (rp["type"] != "request") {
+				continue;
+			}
+			if (rp["command"] == "initialize") {
+				response_initialized(io, rp);
+				initproto = std::move(rp);
+				initproto.AddMember("__norepl", true, initproto.GetAllocator());
+				seq = 1;
+				continue;
+			}
+			else if (rp["command"] == "launch") {
+				auto& args = rp["arguments"];
+				if (args.HasMember("runtimeExecutable")) {
+					if (!server_) {
+						server_.reset(new server("127.0.0.1", 0));
+						server_->event_recv([&](const std::string& msg) {
+							uint16_t port = stoi_nothrow(msg);
+							if (!port) {
+								response_error(io, connectproto, "Launch failed");
 								exit(0);
-								continue;
+								return;
 							}
-						}
-						if (!create_process_with_debugger(rp, server_port)) {
+							attach_.reset(new attach(io));
+							attach_->connect(net::endpoint("127.0.0.1", port));
+							if (seq > 1) initproto.AddMember("__initseq", seq, initproto.GetAllocator());
+							attach_->send(initproto);
+							attach_->send(connectproto);
+						});
+						server_port = wait_ok(server_.get());
+						if (!server_port) {
 							response_error(io, rp, "Launch failed");
 							exit(0);
 							continue;
 						}
-						connectproto = std::move(rp);
 					}
-					else {
-						launch_.reset(new launch(io));
-						if (!launch_->request_launch(rp)) {
-							response_error(io, rp, "Launch failed");
-							exit(0);
-							continue;
-						}
-						if (seq > 1) initproto.AddMember("__initseq", seq, initproto.GetAllocator());
-						launch_->send(std::move(initproto));
-						launch_->send(std::move(rp));
-						break;
+					if (!create_process_with_debugger(rp, server_port)) {
+						response_error(io, rp, "Launch failed");
+						exit(0);
+						continue;
 					}
+					connectproto = std::move(rp);
 				}
-				else if (rp["command"] == "attach") {
-					attach_.reset(new attach(io));
-					std::string ip = "127.0.0.1";
-					uint16_t port = 4278;
-					auto& args = rp["arguments"];
-					if (args.HasMember("ip")) {
-						ip = args["ip"].Get<std::string>();
+				else {
+					launch_.reset(new launch(io));
+					if (!launch_->request_launch(rp)) {
+						response_error(io, rp, "Launch failed");
+						exit(0);
+						continue;
 					}
-					if (args.HasMember("port")) {
-						port = args["port"].GetUint();
-					}
-					attach_->connect(net::endpoint(ip, port));
 					if (seq > 1) initproto.AddMember("__initseq", seq, initproto.GetAllocator());
-					attach_->send(initproto);
-					attach_->send(rp);
+					launch_->send(std::move(initproto));
+					launch_->send(std::move(rp));
+					break;
 				}
+			}
+			else if (rp["command"] == "attach") {
+				attach_.reset(new attach(io));
+				auto& args = rp["arguments"];
+				std::string ip = args.HasMember("ip") ? args["ip"].Get<std::string>() : "127.0.0.1";
+				uint16_t port = args.HasMember("port") ? args["port"].GetUint() : 4278;
+				attach_->connect(net::endpoint(ip, port));
+				if (seq > 1) initproto.AddMember("__initseq", seq, initproto.GetAllocator());
+				attach_->send(initproto);
+				attach_->send(rp);
 			}
 		}
 	}
