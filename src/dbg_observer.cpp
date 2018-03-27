@@ -595,13 +595,11 @@ namespace vscode {
 			lua_pushnil(L);
 			lua_pushnil(L);
 			for (int i = 0; i < v.index; ++i) {
-				const char* key = lua_tostring(L, -2);
 				lua_pop(L, 1);
 				if (!lua_next(L, -2)) {
 					return false;
 				}
 			}
-			const char* key = lua_tostring(L, -2);
 			lua_remove(L, -2);
 			return true;
 		}
