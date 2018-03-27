@@ -14,7 +14,7 @@ namespace vscode
 		typedef std::vector<std::pair<std::string, std::string>> sourcemap_t;
 
 	public:
-		pathconvert(debugger_impl* dbg, coding coding);
+		pathconvert(debugger_impl* dbg);
 		void   add_sourcemap(const std::string& srv, const std::string& cli);
 		void   clear_sourcemap();
 		bool   find_sourcemap(const std::string& srv, std::string& cli);

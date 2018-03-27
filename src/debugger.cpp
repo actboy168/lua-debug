@@ -6,8 +6,8 @@
 
 namespace vscode
 {
-	debugger::debugger(io* io, threadmode mode, coding coding)
-		: impl_(new debugger_impl(io, mode, coding))
+	debugger::debugger(io* io, threadmode mode)
+		: impl_(new debugger_impl(io, mode))
 	{ }
 
 	debugger::~debugger()
@@ -45,11 +45,6 @@ namespace vscode
 		impl_->set_custom(custom);
 	}
 
-	void debugger::set_coding(coding coding)
-	{
-		impl_->set_coding(coding);
-	}
-
 	void debugger::output(const char* category, const char* buf, size_t len, lua_State* L)
 	{
 		impl_->output(category, buf, len, L);
@@ -78,7 +73,6 @@ namespace vscode
 
 std::unique_ptr<vscode::network>  global_io;
 std::unique_ptr<vscode::debugger> global_dbg;
-vscode::coding                    global_coding = vscode::coding::ansi;
 
 void __cdecl debugger_set_luadll(void* luadll, void* getluaapi)
 {
@@ -87,20 +81,12 @@ void __cdecl debugger_set_luadll(void* luadll, void* getluaapi)
 #endif
 }
 
-void __cdecl debugger_set_coding(int coding)
-{
-	global_coding = coding == 0 ? vscode::coding::ansi : vscode::coding::utf8;
-	if (global_dbg) {
-		global_dbg->set_coding(global_coding);
-	}
-}
-
 void __cdecl debugger_start_server(const char* ip, uint16_t port, bool launch, bool rebind)
 {
 	if (!global_io || !global_dbg)
 	{
 		global_io.reset(new vscode::network(ip, port, rebind));
-		global_dbg.reset(new vscode::debugger(global_io.get(), vscode::threadmode::async, global_coding));
+		global_dbg.reset(new vscode::debugger(global_io.get(), vscode::threadmode::async));
 		if (launch)
 			global_io->kill_process_when_close();
 	}
@@ -126,19 +112,6 @@ void __cdecl debugger_detach_lua(lua_State* L)
 }
 
 namespace luaw {
-	int coding(lua_State* L)
-	{
-		const char* str = luaL_checkstring(L, 1);
-		if (strcmp(str, "ansi") == 0) {
-			debugger_set_coding(0);
-		}
-		else if (strcmp(str, "utf8") == 0) {
-			debugger_set_coding(1);
-		}
-		lua_pushvalue(L, lua_upvalueindex(1));
-		return 1;
-	}
-
 	int listen(lua_State* L)
 	{
 		debugger_start_server(luaL_checkstring(L, 1), (uint16_t)luaL_checkinteger(L, 2), false, lua_toboolean(L, 3));
@@ -176,7 +149,6 @@ namespace luaw {
 	{
 		luaL_checkversion(L);
 		luaL_Reg f[] = {
-			{ "coding", coding },
 			{ "listen", listen },
 			{ "start", start },
 			{ "port", port },

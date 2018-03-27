@@ -148,7 +148,7 @@ bool launch::request_launch(vscode::rprotocol& req) {
 }
 
 launch::launch(stdinput& io)
-	: debugger_(&io, vscode::threadmode::sync, vscode::coding::ansi)
+	: debugger_(&io, vscode::threadmode::sync)
 	, io_(io)
 {
 }

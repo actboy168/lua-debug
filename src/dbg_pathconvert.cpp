@@ -84,10 +84,10 @@ namespace vscode
 		return path;
 	}
 
-	pathconvert::pathconvert(debugger_impl* dbg, coding coding)
+	pathconvert::pathconvert(debugger_impl* dbg)
 		: debugger_(dbg)
 		, sourcemaps_()
-		, coding_(coding)
+		, coding_(coding::ansi)
 	{ }
 
 	void pathconvert::set_coding(coding coding)

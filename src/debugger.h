@@ -47,7 +47,7 @@ namespace vscode
 	class DEBUGGER_API debugger
 	{
 	public:
-		debugger(io* io, threadmode mode, coding coding);
+		debugger(io* io, threadmode mode);
 		~debugger();
 		void close();
 		void update();
@@ -55,7 +55,6 @@ namespace vscode
 		void attach_lua(lua_State* L);
 		void detach_lua(lua_State* L);
 		void set_custom(custom* custom);
-		void set_coding(coding coding);
 		void output(const char* category, const char* buf, size_t len, lua_State* L = nullptr);
 		void exception(lua_State* L);
 		bool is_state(state state) const;
@@ -70,7 +69,6 @@ namespace vscode
 extern "C" {
 	DEBUGGER_API int  __cdecl luaopen_debugger(lua_State* L);
 	DEBUGGER_API void __cdecl debugger_set_luadll(void* luadll, void* getluaapi);
-	DEBUGGER_API void __cdecl debugger_set_coding(int coding);
 	DEBUGGER_API void __cdecl debugger_start_server(const char* ip, uint16_t port, bool launch, bool rebind);
 	DEBUGGER_API void __cdecl debugger_wait_attach();
 	DEBUGGER_API void __cdecl debugger_attach_lua(lua_State* L);

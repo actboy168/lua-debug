@@ -110,6 +110,11 @@ namespace vscode
 		if (args.HasMember("console") && args["console"].IsString()) {
 			console_ = args["console"].Get<std::string>();
 		}
+		if (args.HasMember("sourceCoding") && args["sourceCoding"].IsString()) {
+			if (args["sourceCoding"].Get<std::string>() == "utf8") {
+				pathconvert_.set_coding(coding::utf8);
+			}
+		}
 		response_success(req);
 		initproto_ = std::move(req);
 		return false;

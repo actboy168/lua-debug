@@ -337,11 +337,6 @@ namespace vscode
 		custom_ = custom;
 	}
 
-	void debugger_impl::set_coding(coding coding)
-	{
-		pathconvert_.set_coding(coding);
-	}
-
 	void debugger_impl::output(const char* category, const char* buf, size_t len, lua_State* L)
 	{
 		if (console_ == "none") {
@@ -428,7 +423,7 @@ namespace vscode
 #define DBG_REQUEST_MAIN(name) std::bind(&debugger_impl:: ## name, this, std::placeholders::_1)
 #define DBG_REQUEST_HOOK(name) std::bind(&debugger_impl:: ## name, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
 
-	debugger_impl::debugger_impl(io* io, threadmode mode, coding coding)
+	debugger_impl::debugger_impl(io* io, threadmode mode)
 		: seq(1)
 		, network_(io)
 		, state_(state::birth)
@@ -438,7 +433,7 @@ namespace vscode
 		, stepping_lua_state_(NULL)
 		, breakpoints_()
 		, stack_()
-		, pathconvert_(this, coding)
+		, pathconvert_(this)
 		, custom_(nullptr)
 		, thunk_hook_(0)
 		, has_source_(false)
