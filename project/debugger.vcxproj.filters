@@ -39,6 +39,9 @@
     <Filter Include="libs\base\path">
       <UniqueIdentifier>{c2928690-afff-4e71-93bf-9201b5ceeba2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="libs\base\file">
+      <UniqueIdentifier>{e52e3697-988e-4b9c-ad8c-63e75800858e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\dbg_network.cpp">
@@ -85,6 +88,9 @@
     </ClCompile>
     <ClCompile Include="..\src\base\path\helper.cpp">
       <Filter>libs\base\path</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\base\file\stream.cpp">
+      <Filter>libs\base\file</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -216,6 +222,12 @@
     </ClInclude>
     <ClInclude Include="..\src\base\path\helper.h">
       <Filter>libs\base\path</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\base\file\stream.h">
+      <Filter>libs\base\file</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\base\util\noncopyable.h">
+      <Filter>libs\base\util</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

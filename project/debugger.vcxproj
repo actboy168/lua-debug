@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\src\base\file\stream.cpp" />
     <ClCompile Include="..\src\base\path\helper.cpp" />
     <ClCompile Include="..\src\base\util\unicode.cpp" />
     <ClCompile Include="..\src\dbg_breakpoint.cpp" />
@@ -38,7 +39,9 @@
   <ItemGroup>
     <ClInclude Include="..\src\base\config.h" />
     <ClInclude Include="..\src\base\filesystem.h" />
+    <ClInclude Include="..\src\base\file\stream.h" />
     <ClInclude Include="..\src\base\path\helper.h" />
+    <ClInclude Include="..\src\base\util\noncopyable.h" />
     <ClInclude Include="..\src\base\util\unicode.h" />
     <ClInclude Include="..\src\dbg_breakpoint.h" />
     <ClInclude Include="..\src\dbg_capabilities.h" />

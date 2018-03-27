@@ -11,9 +11,9 @@
 #include <net/tcp/stream.h>	
 #include <rapidjson/schema.h> 
 #include <rapidjson/error/en.h>
-#include <base/util/format.h>	
-#include "dbg_protocol.h" 
-#include "dbg_file.h"
+#include <base/util/format.h>
+#include <base/file/stream.h>
+#include "dbg_protocol.h"
 
 #if 1	 
 #	define log(...)
@@ -233,7 +233,7 @@ namespace vscode
 
 	bool session::open_schema(const std::string& schema_file)
 	{
-		file file(schema_file.c_str(), std::ios_base::in);
+		base::file::stream file(schema_file.c_str(), std::ios_base::in);
 		if (!file.is_open())
 		{
 			return false;
