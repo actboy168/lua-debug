@@ -37,7 +37,7 @@
     * sourceCoding，作用同attach模式
     * env，修改调试进程的环境变量
 
-3. attach模式，调试任意加载了vscode-debug.dll的进程。
+3. attach模式，调试任意加载了debugger.dll的进程。
 
     * stopOnEntry，开始调试时是否先暂停
     * ip，远程调试器的ip
