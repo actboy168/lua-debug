@@ -19,7 +19,7 @@ namespace base { namespace path {
 		for (size_t buf_len = 0x200; buf_len <= 0x10000; buf_len <<= 1)
 		{
 			std::dynarray<wchar_t> buf(path_len);
-			path_len = ::GetModuleFileNameW(module_handle, buf.data(), buf.size());
+			path_len = ::GetModuleFileNameW(module_handle, buf.data(), (DWORD)buf.size());
 			if (path_len == 0)
 			{
 				return fs::path();
