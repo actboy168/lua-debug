@@ -1,9 +1,8 @@
 #pragma once
 
 #include "debugger.h"
-#include <map> 	   
-#include <vector> 
-#include <regex>
+#include <map>
+#include <vector>
 
 namespace vscode
 {

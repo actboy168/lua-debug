@@ -1,5 +1,5 @@
 #include "dbg_impl.h"
-#include "dbg_protocol.h"  
+#include "dbg_protocol.h"
 #include "dbg_io.h"
 #include <base/util/unicode.h>
 

@@ -1,6 +1,6 @@
 #include "dbg_impl.h"
-#include "dbg_protocol.h"  	
-#include "dbg_io.h" 
+#include "dbg_protocol.h"
+#include "dbg_io.h"
 #include "dbg_thread.h"
 #include "dbg_thunk.h"
 #include <base/util/format.h>

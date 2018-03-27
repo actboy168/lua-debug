@@ -1,5 +1,5 @@
-﻿#include "dbg_redirect.h" 
-#include <windows.h> 
+﻿#include "dbg_redirect.h"
+#include <windows.h>
 #include <fcntl.h>
 #include <io.h>
 #include <stdio.h>
