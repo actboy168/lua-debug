@@ -98,7 +98,7 @@ namespace vscode
 			response_error(req, "not initialized or unexpected state");
 			return false;
 		}
-		config_.init(2, req["arguments"]);
+		config_.init(1, req["arguments"]);
 		initialize_sourcemaps();
 		console_ = config_.get("console", rapidjson::kStringType).Get<std::string>();
 		auto& sourceCoding = config_.get("sourceCoding", rapidjson::kStringType);

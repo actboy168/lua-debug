@@ -151,7 +151,7 @@ namespace luaw {
 			size_t len = 0;
 			const char* str = luaL_checklstring(L, 1, &len);
 			std::string err = "unknown";
-			if (!global_dbg->set_config(1, std::string(str, len), err)) {
+			if (!global_dbg->set_config(0, std::string(str, len), err)) {
 				lua_pushlstring(L, err.data(), err.size());
 				return lua_error(L);
 			}
@@ -160,7 +160,7 @@ namespace luaw {
 			size_t len = 0;
 			const char* str = luaL_checklstring(L, 2, &len);
 			std::string err = "unknown";
-			if (!global_dbg->set_config(3, std::string(str, len), err)) {
+			if (!global_dbg->set_config(2, std::string(str, len), err)) {
 				lua_pushlstring(L, err.data(), err.size());
 				return lua_error(L);
 			}
@@ -215,5 +215,6 @@ int __cdecl luaopen_debugger(lua_State* L)
 #if defined(DEBUGGER_DELAYLOAD_LUA)
 	caller_is_luadll(_ReturnAddress());
 #endif
+	MessageBox(0, 0, 0, 0);
 	return luaw::open(L);
 }

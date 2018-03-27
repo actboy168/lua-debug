@@ -5,44 +5,41 @@
 namespace vscode {
 	bool config::init(int level, const rapidjson::Value& cfg)
 	{
-		if (level < 0 || level >= (int)max_size()) {
+		if (level < 0 || level >= (int)doc.max_size()) {
 			return false;
 		}
-		rapidjson::Document doc;
-		(*this)[level] = rapidjson::Value(cfg, doc.GetAllocator(), true);
+		val[level] = rapidjson::Value(cfg, doc[level].GetAllocator(), true);
 		return true;
 	}
 
 	bool config::init(int level, const std::string& cfg)
 	{
-		if (level < 0 || level >= (int)max_size()) {
+		if (level < 0 || level >= (int)doc.max_size()) {
 			return false;
 		}
-		rapidjson::Document doc;
-		if (doc.Parse(cfg.data(), cfg.size()).HasParseError()) {
+		if (doc[level].Parse(cfg.data(), cfg.size()).HasParseError()) {
 			return false;
 		}
-		(*this)[level] = doc.Move();
+		val[level] = doc[level].Move();
 		return true;
 	}
 
 	bool config::init(int level, const std::string& cfg, std::string& err)
 	{
-		if (level < 0 || level >= (int)max_size()) {
+		if (level < 0 || level >= (int)doc.max_size()) {
 			return false;
 		}
-		rapidjson::Document doc;
-		if (doc.Parse(cfg.data(), cfg.size()).HasParseError()) {
-			err = base::format("Error(offset %u): %s\n", static_cast<unsigned>(doc.GetErrorOffset()), rapidjson::GetParseError_En(doc.GetParseError()));
+		if (doc[level].Parse(cfg.data(), cfg.size()).HasParseError()) {
+			err = base::format("Error(offset %u): %s\n", static_cast<unsigned>(doc[level].GetErrorOffset()), rapidjson::GetParseError_En(doc[level].GetParseError()));
 			return false;
 		}
-		(*this)[level] = doc.Move();
+		val[level] = doc[level].Move();
 		return true;
 	}
 
 	rapidjson::Value const& config::get(const std::string& key, rapidjson::Type type) const
 	{
-		for (rapidjson::Value const& cfg : *this) {
+		for (rapidjson::Value const& cfg : val) {
 			if (cfg.IsObject() && cfg.HasMember(key) && cfg[key].GetType() == type) {
 				return cfg[key];
 			}
