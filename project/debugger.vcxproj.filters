@@ -74,10 +74,10 @@
     <ClCompile Include="..\src\dbg_network.cpp">
       <Filter>network</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\dbg_delayload.cpp">
+    <ClCompile Include="..\src\bridge\dbg_delayload.cpp">
       <Filter>bridge</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\dbg_luacompatibility.cpp">
+    <ClCompile Include="..\src\bridge\dbg_luacompatibility.cpp">
       <Filter>bridge</Filter>
     </ClCompile>
   </ItemGroup>
@@ -190,11 +190,14 @@
     <ClInclude Include="..\src\dbg_network.h">
       <Filter>network</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\dbg_delayload.h">
+    <ClInclude Include="..\src\bridge\dbg_delayload.h">
       <Filter>bridge</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\dbg_luacompatibility.h">
+    <ClInclude Include="..\src\bridge\dbg_luacompatibility.h">
       <Filter>bridge</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\dbg_lua.h">
+      <Filter>core</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

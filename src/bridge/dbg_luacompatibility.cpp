@@ -1,3 +1,5 @@
+#if defined(DEBUGGER_BRIDGE)
+
 #include "dbg_luacompatibility.h"
 #include <Windows.h>
 
@@ -21,3 +23,4 @@ namespace lua54 {
 		return lua_getiuservalue(L, idx, 1);
 	}
 }}
+#endif

@@ -1,5 +1,5 @@
 #include "stdinput.h"
-#include "dbg_format.h"
+#include <base/util/format.h>
 
 #if 1	 
 #	define log(...)
@@ -67,7 +67,7 @@ bool fileio::input_empty() const {
 bool fileio::output(const vscode::wprotocol& wp) {
 	if (!wp.IsComplete())
 		return false;
-	auto l = vscode::format("Content-Length: %d\r\n\r\n", wp.size());
+	auto l = base::format("Content-Length: %d\r\n\r\n", wp.size());
 	output(l.data(), l.size());
 	output(wp.data(), wp.size());
 	log("%s\n", std::string(wp.data(), wp.size()));

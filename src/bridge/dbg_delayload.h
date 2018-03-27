@@ -1,6 +1,6 @@
 #pragma once
 
-#if defined(DEBUGGER_DELAYLOAD_LUA)
+#if defined(DEBUGGER_BRIDGE)
 
 #include <string>
 #include <Windows.h>

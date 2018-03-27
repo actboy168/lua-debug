@@ -7,9 +7,6 @@
     <ClCompile Include="..\client\create_process.cpp">
       <Filter>cpp</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\dbg_delayload.cpp">
-      <Filter>cpp</Filter>
-    </ClCompile>
     <ClCompile Include="..\client\launch.cpp">
       <Filter>cpp</Filter>
     </ClCompile>
@@ -31,15 +28,15 @@
     <ClCompile Include="..\src\base\path\get_path.cpp">
       <Filter>base\path</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\dbg_luacompatibility.cpp">
-      <Filter>cpp</Filter>
+    <ClCompile Include="..\src\bridge\dbg_delayload.cpp">
+      <Filter>bridge</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\bridge\dbg_luacompatibility.cpp">
+      <Filter>bridge</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\client\attach.h">
-      <Filter>inc</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\dbg_delayload.h">
       <Filter>inc</Filter>
     </ClInclude>
     <ClInclude Include="..\client\launch.h">
@@ -63,8 +60,11 @@
     <ClInclude Include="..\src\base\path\self.h">
       <Filter>base\path</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\dbg_luacompatibility.h">
-      <Filter>inc</Filter>
+    <ClInclude Include="..\src\bridge\dbg_delayload.h">
+      <Filter>bridge</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\bridge\dbg_luacompatibility.h">
+      <Filter>bridge</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -85,6 +85,9 @@
     </Filter>
     <Filter Include="base\path">
       <UniqueIdentifier>{4c0f522d-12e5-4c25-9f78-cd98a4a23695}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="bridge">
+      <UniqueIdentifier>{af506b17-235f-446a-a593-d71c21b48553}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

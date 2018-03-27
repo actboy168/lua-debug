@@ -19,8 +19,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\src\bridge\dbg_delayload.cpp" />
+    <ClCompile Include="..\src\bridge\dbg_luacompatibility.cpp" />
     <ClCompile Include="..\src\dbg_breakpoint.cpp" />
-    <ClCompile Include="..\src\dbg_delayload.cpp" />
     <ClCompile Include="..\src\dbg_evaluate.cpp" />
     <ClCompile Include="..\src\dbg_inlinebase.cpp" />
     <ClCompile Include="..\src\dbg_pathconvert.cpp" />
@@ -32,14 +33,15 @@
     <ClCompile Include="..\src\dbg_request.cpp" />
     <ClCompile Include="..\src\dbg_response.cpp" />
     <ClCompile Include="..\src\dbg_network.cpp" />
-    <ClCompile Include="..\src\dbg_luacompatibility.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\src\bridge\dbg_delayload.h" />
+    <ClInclude Include="..\src\bridge\dbg_luacompatibility.h" />
     <ClInclude Include="..\src\dbg_breakpoint.h" />
     <ClInclude Include="..\src\dbg_capabilities.h" />
-    <ClInclude Include="..\src\dbg_delayload.h" />
     <ClInclude Include="..\src\dbg_evaluate.h" />
     <ClInclude Include="..\src\dbg_io.h" />
+    <ClInclude Include="..\src\dbg_lua.h" />
     <ClInclude Include="..\src\dbg_pathconvert.h" />
     <ClInclude Include="..\src\dbg_redirect.h" />
     <ClInclude Include="..\src\dbg_thread.h" />
@@ -49,7 +51,6 @@
     <ClInclude Include="..\src\dbg_impl.h" />
     <ClInclude Include="..\src\dbg_protocol.h" />
     <ClInclude Include="..\src\dbg_network.h" />
-    <ClInclude Include="..\src\dbg_luacompatibility.h" />
     <ClInclude Include="..\src\net\datetime\clock.h" />
     <ClInclude Include="..\src\net\datetime\date.h" />
     <ClInclude Include="..\src\net\datetime\now.h" />
@@ -156,7 +157,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>DEBUGGER_EXPORTS;DEBUGGER_DELAYLOAD_LUA;RAPIDJSON_HAS_STDSTRING;_WINSOCK_DEPRECATED_NO_WARNINGS;_WIN32_WINNT=_WIN32_WINNT_WIN7;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>DEBUGGER_EXPORTS;DEBUGGER_BRIDGE;RAPIDJSON_HAS_STDSTRING;_WINSOCK_DEPRECATED_NO_WARNINGS;_WIN32_WINNT=_WIN32_WINNT_WIN7;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(Root)\src\;$(Root)\third_party\;$(Root)\third_party\lua53\src\</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
     </ClCompile>
@@ -175,7 +176,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>DEBUGGER_EXPORTS;DEBUGGER_DELAYLOAD_LUA;RAPIDJSON_HAS_STDSTRING;_WINSOCK_DEPRECATED_NO_WARNINGS;_WIN32_WINNT=_WIN32_WINNT_WIN7;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>DEBUGGER_EXPORTS;DEBUGGER_BRIDGE;RAPIDJSON_HAS_STDSTRING;_WINSOCK_DEPRECATED_NO_WARNINGS;_WIN32_WINNT=_WIN32_WINNT_WIN7;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(Root)\src\;$(Root)\third_party\;$(Root)\third_party\lua53\src\</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
     </ClCompile>
@@ -196,7 +197,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>DEBUGGER_EXPORTS;DEBUGGER_DELAYLOAD_LUA;RAPIDJSON_HAS_STDSTRING;_WINSOCK_DEPRECATED_NO_WARNINGS;_WIN32_WINNT=_WIN32_WINNT_WIN7;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>DEBUGGER_EXPORTS;DEBUGGER_BRIDGE;RAPIDJSON_HAS_STDSTRING;_WINSOCK_DEPRECATED_NO_WARNINGS;_WIN32_WINNT=_WIN32_WINNT_WIN7;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(Root)\src\;$(Root)\third_party\;$(Root)\third_party\lua53\src\</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
     </ClCompile>
@@ -219,7 +220,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>DEBUGGER_EXPORTS;DEBUGGER_DELAYLOAD_LUA;RAPIDJSON_HAS_STDSTRING;_WINSOCK_DEPRECATED_NO_WARNINGS;_WIN32_WINNT=_WIN32_WINNT_WIN7;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>DEBUGGER_EXPORTS;DEBUGGER_BRIDGE;RAPIDJSON_HAS_STDSTRING;_WINSOCK_DEPRECATED_NO_WARNINGS;_WIN32_WINNT=_WIN32_WINNT_WIN7;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(Root)\src\;$(Root)\third_party\;$(Root)\third_party\lua53\src\</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
     </ClCompile>

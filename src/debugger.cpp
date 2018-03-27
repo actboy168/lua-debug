@@ -1,9 +1,8 @@
 #include "debugger.h"
 #include "dbg_impl.h"
 #include "dbg_network.h"
-#include "dbg_delayload.h"
+#include "bridge/dbg_delayload.h"
 #include <base/util/unicode.h>
-#include <intrin.h>  
 
 namespace vscode
 {

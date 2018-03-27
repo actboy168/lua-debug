@@ -1,7 +1,7 @@
 #include <Windows.h>
 #include "launch.h"
 #include "stdinput.h"
-#include "dbg_delayload.h"
+#include "bridge/dbg_delayload.h"
 #include <base/filesystem.h>
 #include <base/util/format.h>
 #include <base/util/unicode.h>

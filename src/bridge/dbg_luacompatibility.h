@@ -1,5 +1,7 @@
 #pragma once
 
+#if defined(DEBUGGER_BRIDGE)
+
 #include <lua.hpp>
 
 namespace lua {
@@ -55,3 +57,5 @@ namespace lua {
 		int __cdecl lua_getuservalue(lua_State* L, int idx);
 	}
 }
+
+#endif

@@ -1,4 +1,4 @@
-#if defined(DEBUGGER_DELAYLOAD_LUA)
+#if defined(DEBUGGER_BRIDGE)
 
 #include "dbg_delayload.h"
 #include <windows.h>
