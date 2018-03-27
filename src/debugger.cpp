@@ -215,6 +215,5 @@ int __cdecl luaopen_debugger(lua_State* L)
 #if defined(DEBUGGER_DELAYLOAD_LUA)
 	caller_is_luadll(_ReturnAddress());
 #endif
-	MessageBox(0, 0, 0, 0);
 	return luaw::open(L);
 }
