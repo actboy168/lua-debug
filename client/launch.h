@@ -17,6 +17,7 @@ public:
 private:
 	vscode::debugger debugger_;
 	stdinput& io_;
+	std::string program_;
 	lua_State* launchL_ = 0;
 };
 

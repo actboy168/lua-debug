@@ -138,19 +138,12 @@ bool launch::request_launch(vscode::rprotocol& req) {
 	}
 	debugger_.redirect_stderr();
 
-	std::string program = base::u2a(args["program"]);
-	int status = luaL_loadfile(L, program.c_str());
-	if (status != LUA_OK) {
-		auto msg = base::format("Failed to launch %s due to error: %s\n", program, lua_tostring(L, -1));
-		debugger_.output("console", msg.data(), msg.size());
-		lua_pop(L, 1);
-		return false;
-	}
 	if (launchL_) {
 		lua_close(launchL_);
 		launchL_ = 0;
 	}
 	launchL_ = L;
+	program_ = base::u2a(args["program"]);
 	return true;
 }
 
@@ -174,6 +167,18 @@ void launch::update()
 	launchL_ = 0;
 
 	debugger_.attach_lua(L);
+
+	int status = luaL_loadfile(L, program_.c_str());
+	if (status != LUA_OK) {
+		auto msg = base::format("Failed to launch %s due to error: %s\n", program_, lua_tostring(L, -1));
+		debugger_.output("console", msg.data(), msg.size());
+		lua_pop(L, 1);
+		debugger_.close();
+		io_.close();
+		lua_close(L);
+		return;
+	}
+
 	lua_pushlightuserdata(L, &debugger_);
 	lua_pushcclosure(L, errfunc, 1);
 	lua_insert(L, -2);
