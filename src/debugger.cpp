@@ -69,6 +69,11 @@ namespace vscode
 	{
 		impl_->redirect_stderr();
 	}
+
+	bool debugger::set_config(int level, const std::string& cfg, std::string& err) 
+	{
+		return impl_->set_config(level, cfg, err);
+	}
 }
 
 std::unique_ptr<vscode::network>  global_io;
@@ -137,6 +142,32 @@ namespace luaw {
 		return 0;
 	}
 
+	int config(lua_State* L)
+	{
+		if (!global_io || !global_dbg) {
+			return 0;
+		}
+		if (lua_type(L, 1) == LUA_TSTRING) {
+			size_t len = 0;
+			const char* str = luaL_checklstring(L, 1, &len);
+			std::string err = "unknown";
+			if (!global_dbg->set_config(1, std::string(str, len), err)) {
+				lua_pushlstring(L, err.data(), err.size());
+				return lua_error(L);
+			}
+		}
+		if (lua_type(L, 2) == LUA_TSTRING) {
+			size_t len = 0;
+			const char* str = luaL_checklstring(L, 2, &len);
+			std::string err = "unknown";
+			if (!global_dbg->set_config(3, std::string(str, len), err)) {
+				lua_pushlstring(L, err.data(), err.size());
+				return lua_error(L);
+			}
+		}
+		return 0;
+	}
+
 	int mt_gc(lua_State* L)
 	{
 		if (global_dbg) {
@@ -152,6 +183,7 @@ namespace luaw {
 			{ "listen", listen },
 			{ "start", start },
 			{ "port", port },
+			{ "config", config },
 			{ "__gc", mt_gc },
 			{ NULL, NULL },
 		};

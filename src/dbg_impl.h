@@ -63,6 +63,7 @@ namespace vscode
 		void detach_lua(lua_State* L);
 		void set_custom(custom* custom);
 		void output(const char* category, const char* buf, size_t len, lua_State* L);
+		bool set_config(int level, const std::string& cfg, std::string& err);
 
 		void set_state(state state);
 		bool is_state(state state) const;

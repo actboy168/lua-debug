@@ -415,6 +415,11 @@ namespace vscode
 		return pathconvert_;
 	}
 
+	bool debugger_impl::set_config(int level, const std::string& cfg, std::string& err)
+	{
+		return config_.init(level, cfg, err);
+	}
+
 	debugger_impl::~debugger_impl()
 	{
 		thunk_destory(thunk_hook_);

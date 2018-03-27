@@ -60,6 +60,7 @@ namespace vscode
 		bool is_state(state state) const;
 		void redirect_stdout();
 		void redirect_stderr();
+		bool set_config(int level, const std::string& cfg, std::string& err);
 
 	private:
 		debugger_impl* impl_;
