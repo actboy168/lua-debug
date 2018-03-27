@@ -1,10 +1,12 @@
 #include <Windows.h>
 #include <base/hook/inline.h>
+#include <base/hook/inline.cpp>
 #include <base/hook/fp_call.h>
-#include <base/win/process.h>
 #include <base/path/self.h>
+#include <base/path/get_path.cpp>
 #include <mutex>
 #include <stack>
+#include <set>
 #include "debugger.h"
 
 HMODULE luadll = 0;
@@ -17,7 +19,7 @@ void initialize_debugger(lua_State* L)
 	if (!LoadLibraryW((base::path::self().remove_filename() / L"debugger.dll").c_str())) {
 		return;
 	}
-	debugger_set_luadll(luadll);
+	debugger_set_luadll(luadll, ::GetProcAddress);
 	debugger_start_server("127.0.0.1", 0, true, false);
 	debugger_attach_lua(L);
 	debugger_wait_attach();
@@ -194,5 +196,3 @@ BOOL APIENTRY DllMain(HMODULE module, DWORD reason, LPVOID /*pReserved*/)
 	}
 	return TRUE;
 }
-
-extern "C" __declspec(dllexport) void inject() {}

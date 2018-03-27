@@ -80,10 +80,10 @@ std::unique_ptr<vscode::network>  global_io;
 std::unique_ptr<vscode::debugger> global_dbg;
 vscode::coding                    global_coding = vscode::coding::ansi;
 
-void __cdecl debugger_set_luadll(void* luadll)
+void __cdecl debugger_set_luadll(void* luadll, void* getluaapi)
 {
 #if defined(DEBUGGER_DELAYLOAD_LUA)
-	delayload::set_luadll((HMODULE)luadll);
+	delayload::set_luadll((HMODULE)luadll, (GetLuaApi)getluaapi);
 #endif
 }
 

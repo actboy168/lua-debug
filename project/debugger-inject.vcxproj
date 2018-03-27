@@ -20,16 +20,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\inject\main.cpp" />
-    <ClCompile Include="..\src\base\hook\inline.cpp" />
-    <ClCompile Include="..\src\base\path\get_path.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\src\base\config.h" />
-    <ClInclude Include="..\src\base\hook\fp_call.h" />
-    <ClInclude Include="..\src\base\hook\inline.h" />
-    <ClInclude Include="..\src\base\path\get_path.h" />
-    <ClInclude Include="..\src\base\path\self.h" />
-    <ClInclude Include="..\src\base\util\horrible_cast.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\third_party\minhook\project\VC15\libMinHook.vcxproj">

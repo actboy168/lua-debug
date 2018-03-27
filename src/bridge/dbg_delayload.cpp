@@ -10,15 +10,18 @@ namespace delayload
 {
 	static std::wstring luadll_path;
 	static HMODULE luadll_handle = 0;
-
-	void set_luadll(HMODULE handle)
-	{
-		luadll_handle = handle;
-	}
+	static GetLuaApi get_lua_api = ::GetProcAddress;
 
 	void set_luadll(const std::wstring& path)
 	{
 		luadll_path = path;
+		get_lua_api = ::GetProcAddress;
+	}
+
+	void set_luadll(HMODULE handle, GetLuaApi fn)
+	{
+		luadll_handle = handle;
+		get_lua_api = fn ? fn : ::GetProcAddress;
 	}
 
 	static FARPROC WINAPI hook(unsigned dliNotify, PDelayLoadInfo pdli)
@@ -40,12 +43,12 @@ namespace delayload
 			}
 			break;
 		case dliNotePreGetProcAddress: {
-			FARPROC ret = GetProcAddress(pdli->hmodCur, pdli->dlp.szProcName);
+			FARPROC ret = get_lua_api(pdli->hmodCur, pdli->dlp.szProcName);
 			if (ret) {
 				return ret;
 			}
 			if (strcmp(pdli->dlp.szProcName, "lua_getuservalue") == 0) {
-				lua::lua54::lua_getiuservalue = (int(__cdecl*)(lua_State*, int, int))GetProcAddress(pdli->hmodCur, "lua_getiuservalue");
+				lua::lua54::lua_getiuservalue = (int(__cdecl*)(lua_State*, int, int))get_lua_api(pdli->hmodCur, "lua_getiuservalue");
 				if (lua::lua54::lua_getiuservalue) {
 					return (FARPROC)lua::lua54::lua_getuservalue;
 				}

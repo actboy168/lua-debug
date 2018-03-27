@@ -1,46 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="base">
-      <UniqueIdentifier>{295c755b-1a02-47f5-972f-c99b3362a5b5}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="base\hook">
-      <UniqueIdentifier>{df0463b5-dbf3-4654-81de-d8713c2f203a}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="base\util">
-      <UniqueIdentifier>{c1ddd6b2-f708-44b3-a22b-e729648d8ce4}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="base\path">
-      <UniqueIdentifier>{a7737912-ca80-4dd2-979c-40a34a917951}</UniqueIdentifier>
-    </Filter>
-  </ItemGroup>
-  <ItemGroup>
     <ClCompile Include="..\inject\main.cpp" />
-    <ClCompile Include="..\src\base\hook\inline.cpp">
-      <Filter>base\hook</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\base\path\get_path.cpp">
-      <Filter>base\path</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\src\base\hook\fp_call.h">
-      <Filter>base\hook</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\base\hook\inline.h">
-      <Filter>base\hook</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\base\util\horrible_cast.h">
-      <Filter>base\util</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\base\config.h">
-      <Filter>base</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\base\path\get_path.h">
-      <Filter>base\path</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\base\path\self.h">
-      <Filter>base\path</Filter>
-    </ClInclude>
   </ItemGroup>
 </Project>
