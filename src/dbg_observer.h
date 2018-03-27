@@ -4,7 +4,7 @@
 #include <map>
 #include "dbg_protocol.h"
 #include "dbg_pathconvert.h"
-#include "lua_compatibility.h"
+#include "dbg_luacompatibility.h"
 
 namespace vscode {
 	class debugger_impl;

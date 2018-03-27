@@ -40,7 +40,7 @@
     <ClCompile Include="..\src\base\path\get_path.cpp" />
     <ClCompile Include="..\src\base\win\process.cpp" />
     <ClCompile Include="..\src\dbg_delayload.cpp" />
-    <ClCompile Include="..\src\lua_compatibility.cpp" />
+    <ClCompile Include="..\src\dbg_luacompatibility.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\client\attach.h" />
@@ -52,7 +52,7 @@
     <ClInclude Include="..\src\base\path\self.h" />
     <ClInclude Include="..\src\base\win\process.h" />
     <ClInclude Include="..\src\dbg_delayload.h" />
-    <ClInclude Include="..\src\lua_compatibility.h" />
+    <ClInclude Include="..\src\dbg_luacompatibility.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{8AC7695F-C946-4B9A-B814-3E789BFD54E8}</ProjectGuid>

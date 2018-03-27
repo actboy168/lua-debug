@@ -7,7 +7,7 @@
 #include <mutex>
 #include <atomic>
 #include <rapidjson/document.h>
-#include "lua_compatibility.h"	 
+#include "dbg_luacompatibility.h"	 
 #include "dbg_breakpoint.h"	 
 #include "dbg_evaluate.h"
 #include "dbg_pathconvert.h"

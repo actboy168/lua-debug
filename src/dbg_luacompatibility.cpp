@@ -1,4 +1,4 @@
-#include "lua_compatibility.h"
+#include "dbg_luacompatibility.h"
 #include <Windows.h>
 
 namespace lua { 

@@ -4,7 +4,7 @@
 #include <windows.h>
 #define DELAYIMP_INSECURE_WRITABLE_HOOKS
 #include <DelayImp.h>
-#include "lua_compatibility.h"
+#include "dbg_luacompatibility.h"
 
 namespace delayload
 {

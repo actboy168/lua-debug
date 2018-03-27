@@ -1,6 +1,6 @@
 #include "dbg_breakpoint.h"	
 #include "dbg_evaluate.h"
-#include "lua_compatibility.h"
+#include "dbg_luacompatibility.h"
 
 namespace vscode
 {

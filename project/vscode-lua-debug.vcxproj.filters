@@ -10,9 +10,6 @@
     <ClCompile Include="..\src\dbg_delayload.cpp">
       <Filter>cpp</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\lua_compatibility.cpp">
-      <Filter>cpp</Filter>
-    </ClCompile>
     <ClCompile Include="..\client\launch.cpp">
       <Filter>cpp</Filter>
     </ClCompile>
@@ -34,6 +31,9 @@
     <ClCompile Include="..\src\base\path\get_path.cpp">
       <Filter>base\path</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\dbg_luacompatibility.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\client\attach.h">
@@ -43,9 +43,6 @@
       <Filter>inc</Filter>
     </ClInclude>
     <ClInclude Include="..\client\launch.h">
-      <Filter>inc</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\lua_compatibility.h">
       <Filter>inc</Filter>
     </ClInclude>
     <ClInclude Include="..\client\server.h">
@@ -65,6 +62,9 @@
     </ClInclude>
     <ClInclude Include="..\src\base\path\self.h">
       <Filter>base\path</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\dbg_luacompatibility.h">
+      <Filter>inc</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

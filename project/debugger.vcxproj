@@ -19,12 +19,10 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\src\base\file\stream.cpp" />
-    <ClCompile Include="..\src\base\path\helper.cpp" />
-    <ClCompile Include="..\src\base\util\unicode.cpp" />
     <ClCompile Include="..\src\dbg_breakpoint.cpp" />
     <ClCompile Include="..\src\dbg_delayload.cpp" />
     <ClCompile Include="..\src\dbg_evaluate.cpp" />
+    <ClCompile Include="..\src\dbg_inlinebase.cpp" />
     <ClCompile Include="..\src\dbg_pathconvert.cpp" />
     <ClCompile Include="..\src\dbg_redirect.cpp" />
     <ClCompile Include="..\src\dbg_thunk.cpp" />
@@ -34,20 +32,13 @@
     <ClCompile Include="..\src\dbg_request.cpp" />
     <ClCompile Include="..\src\dbg_response.cpp" />
     <ClCompile Include="..\src\dbg_network.cpp" />
-    <ClCompile Include="..\src\lua_compatibility.cpp" />
+    <ClCompile Include="..\src\dbg_luacompatibility.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\src\base\config.h" />
-    <ClInclude Include="..\src\base\filesystem.h" />
-    <ClInclude Include="..\src\base\file\stream.h" />
-    <ClInclude Include="..\src\base\path\helper.h" />
-    <ClInclude Include="..\src\base\util\noncopyable.h" />
-    <ClInclude Include="..\src\base\util\unicode.h" />
     <ClInclude Include="..\src\dbg_breakpoint.h" />
     <ClInclude Include="..\src\dbg_capabilities.h" />
     <ClInclude Include="..\src\dbg_delayload.h" />
     <ClInclude Include="..\src\dbg_evaluate.h" />
-    <ClInclude Include="..\src\dbg_file.h" />
     <ClInclude Include="..\src\dbg_io.h" />
     <ClInclude Include="..\src\dbg_pathconvert.h" />
     <ClInclude Include="..\src\dbg_redirect.h" />
@@ -58,7 +49,7 @@
     <ClInclude Include="..\src\dbg_impl.h" />
     <ClInclude Include="..\src\dbg_protocol.h" />
     <ClInclude Include="..\src\dbg_network.h" />
-    <ClInclude Include="..\src\lua_compatibility.h" />
+    <ClInclude Include="..\src\dbg_luacompatibility.h" />
     <ClInclude Include="..\src\net\datetime\clock.h" />
     <ClInclude Include="..\src\net\datetime\date.h" />
     <ClInclude Include="..\src\net\datetime\now.h" />
