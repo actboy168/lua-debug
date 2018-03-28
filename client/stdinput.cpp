@@ -1,18 +1,6 @@
 #include "stdinput.h"
 #include <base/util/format.h>
 
-#if 1	 
-#	define log(...)
-#else
-#include <Windows.h>
-template <class... Args>
-static void log(const char* fmt, const Args& ... args)
-{
-	auto s = vscode::format(fmt, args...);
-	OutputDebugStringA(s.c_str());
-}
-#endif	 
-
 fileio::fileio(FILE* fin, FILE* fout)
 	: fin_(fin)
 	, fout_(fout)
@@ -42,11 +30,6 @@ void fileio::update(int ms) {
 			close();
 		}
 		buffer_[len] = 0;
-		log("%s\n", buffer_.data());
-		rapidjson::Document	d;
-		if (d.Parse(buffer_.data(), len).HasParseError()) {
-			close();
-		}
 		input_.push(std::string(buffer_.data(), len));
 	}
 }

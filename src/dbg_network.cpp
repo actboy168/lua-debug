@@ -10,19 +10,6 @@
 #include <net/tcp/listener.h> 
 #include <net/tcp/stream.h>	
 #include <base/util/format.h>
-#include <base/file/stream.h>
-#include "dbg_protocol.h"
-
-#if 1	 
-#	define log(...)
-#else
-template <class... Args>
-static void log(const char* fmt, const Args& ... args)
-{
-	auto s = vscode::format(fmt, args...);
-	OutputDebugStringA(s.c_str());
-}
-#endif	 
 
 namespace vscode
 {
