@@ -406,7 +406,7 @@ namespace vscode {
 			return base::format("%s: %p", luaL_typename(L, idx), lua_topointer(L, idx));
 		}
 
-		static std::string getvalue(lua_State *L, int idx, pathconvert& pathconvert)
+		static std::string raw_getvalue(lua_State *L, int idx, pathconvert& pathconvert)
 		{
 			switch (lua_type(L, idx)) {
 			case LUA_TNUMBER:
@@ -451,6 +451,18 @@ namespace vscode {
 			}
 			return base::format("%s: %p", luaL_typename(L, idx), lua_topointer(L, idx));
 		}
+
+
+		static std::string getvalue(lua_State *L, int idx, pathconvert& pathconvert)
+		{
+			if (safe_callmeta(L, idx, "__tostring")) {
+				std::string r = raw_getvalue(L, -1, pathconvert);
+				lua_pop(L, 1);
+				return r;
+			}
+			return raw_getvalue(L, idx, pathconvert);
+		}
+
 
 		static std::string gettype(lua_State *L, int idx)
 		{
