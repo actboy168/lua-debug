@@ -47,15 +47,15 @@ void fileio::update(int ms) {
 		if (d.Parse(buffer_.data(), len).HasParseError()) {
 			close();
 		}
-		input_.push(vscode::rprotocol(std::move(d)));
+		input_.push(std::string(buffer_.data(), len));
 	}
 }
 
-vscode::rprotocol fileio::input() {
+std::string fileio::input() {
 	if (input_.empty()) {
-		return vscode::rprotocol();
+		return std::string();
 	}
-	vscode::rprotocol r = std::move(input_.front());
+	std::string r = std::move(input_.front());
 	input_.pop();
 	return r;
 }
@@ -64,22 +64,19 @@ bool fileio::input_empty() const {
 	return input_.empty();
 }
 
-bool fileio::output(const vscode::wprotocol& wp) {
-	if (!wp.IsComplete())
-		return false;
-	auto l = base::format("Content-Length: %d\r\n\r\n", wp.size());
-	output(l.data(), l.size());
-	output(wp.data(), wp.size());
-	log("%s\n", std::string(wp.data(), wp.size()));
-	return true;
-}
-
-void fileio::output(const char* str, size_t len) {
+bool fileio::output(const char* buf, size_t len) {
+	auto l = base::format("Content-Length: %d\r\n\r\n", len);
 	for (;;) {
-		size_t r = fwrite(str, len, 1, fout_);
+		size_t r = fwrite(l.data(), l.size(), 1, fout_);
 		if (r == 1)
 			break;
 	}
+	for (;;) {
+		size_t r = fwrite(buf, len, 1, fout_);
+		if (r == 1)
+			break;
+	}
+	return true;
 }
 
 stdinput::stdinput()
@@ -98,11 +95,11 @@ void stdinput::close() {
 	exit(0);
 }
 
-vscode::rprotocol stdinput::input() {
+std::string stdinput::input() {
 	if (preinput_.empty()) {
 		return fileio::input();
 	}
-	vscode::rprotocol r = std::move(preinput_.front());
+	std::string r = std::move(preinput_.front());
 	preinput_.pop();
 	return r;
 }
@@ -111,9 +108,9 @@ bool stdinput::input_empty() const {
 	return preinput_.empty() && fileio::input_empty();
 }
 
-void stdinput::push_input(vscode::rprotocol&& rp)
+void stdinput::push_input(std::string&& rp)
 {
-	preinput_.push(std::forward<vscode::rprotocol>(rp));
+	preinput_.push(std::forward<std::string>(rp));
 }
 
 void stdinput::update(int ms) {

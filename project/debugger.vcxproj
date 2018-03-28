@@ -25,6 +25,7 @@
     <ClCompile Include="..\src\dbg_config.cpp" />
     <ClCompile Include="..\src\dbg_evaluate.cpp" />
     <ClCompile Include="..\src\dbg_inlinebase.cpp" />
+    <ClCompile Include="..\src\dbg_iohelper.cpp" />
     <ClCompile Include="..\src\dbg_pathconvert.cpp" />
     <ClCompile Include="..\src\dbg_redirect.cpp" />
     <ClCompile Include="..\src\dbg_thunk.cpp" />
@@ -43,6 +44,7 @@
     <ClInclude Include="..\src\dbg_config.h" />
     <ClInclude Include="..\src\dbg_evaluate.h" />
     <ClInclude Include="..\src\dbg_io.h" />
+    <ClInclude Include="..\src\dbg_iohelper.h" />
     <ClInclude Include="..\src\dbg_lua.h" />
     <ClInclude Include="..\src\dbg_pathconvert.h" />
     <ClInclude Include="..\src\dbg_redirect.h" />

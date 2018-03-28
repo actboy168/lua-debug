@@ -9,8 +9,6 @@
 #include <net/tcp/connecter.h>
 #include <net/tcp/listener.h> 
 #include <net/tcp/stream.h>	
-#include <rapidjson/schema.h> 
-#include <rapidjson/error/en.h>
 #include <base/util/format.h>
 #include <base/file/stream.h>
 #include "dbg_protocol.h"
@@ -60,10 +58,9 @@ namespace vscode
 
 	public:
 		session(server* server, net::poller_t* poll);
-		bool      output(const wprotocol& wp);
-		rprotocol input();
+		bool      output(const char* buf, size_t len);
+		std::string input();
 		bool      input_empty() const;
-		bool      open_schema(const std::string& schema_file);
 
 	private:
 		void event_close();
@@ -76,8 +73,7 @@ namespace vscode
 		std::string stream_buf_;
 		size_t      stream_stat_;
 		size_t      stream_len_;
-		net::tcp::buffer<rprotocol, 8> input_queue_;
-		std::unique_ptr<rapidjson::SchemaDocument> schema_;
+		net::tcp::buffer<std::string, 8> input_queue_;
 	};
 
 	class server
@@ -92,10 +88,9 @@ namespace vscode
 		~server();
 		void      update();
 		bool      listen();
-		bool      output(const wprotocol& wp);
-		rprotocol input();
+		bool      output(const char* buf, size_t len);
+		std::string input();
 		bool      input_empty()	const;
-		void      set_schema(const char* file);
 		void      close_session(); 
 		uint16_t  get_port() const;
 
@@ -105,7 +100,6 @@ namespace vscode
 
 	private:
 		std::unique_ptr<session> session_;
-		std::string              schema_file_;
 		net::endpoint            endpoint_;
 		std::vector<std::unique_ptr<session>> clearlist_;
 		bool                     rebind_;
@@ -126,19 +120,18 @@ namespace vscode
 		return input_queue_.empty();
 	}
 
-	bool session::output(const wprotocol& wp)
+	bool session::output(const char* buf, size_t len)
 	{
-		if (!wp.IsComplete())
+		auto l = base::format("Content-Length: %d\r\n\r\n", len);
+		if (l.size() != send(l.data(), l.size())) {
 			return false;
-		log("%s\n", wp.data());
-		send(base::format("Content-Length: %d\r\n\r\n", wp.size()));
-		send(wp);
-		return true;
+		}
+		return len == send(buf, len);
 	}
 
-	rprotocol session::input()
+	std::string session::input()
 	{
-		rprotocol r = std::move(input_queue_.front());
+		std::string r = std::move(input_queue_.front());
 		input_queue_.pop();
 		return r;
 	}
@@ -204,49 +197,7 @@ namespace vscode
 
 	bool session::event_message(const std::string& buf, size_t start, size_t count)
 	{
-		rapidjson::Document	d;
-		if (d.Parse(buf.data() + start, count).HasParseError())
-		{
-			log("Input is not a valid JSON\n");
-			log("Error(offset %u): %s\n", static_cast<unsigned>(d.GetErrorOffset()), rapidjson::GetParseError_En(d.GetParseError()));
-			return true;
-		}
-		if (schema_)
-		{
-			rapidjson::SchemaValidator validator(*schema_);
-			if (!d.Accept(validator))
-			{
-				rapidjson::StringBuffer sb;
-				validator.GetInvalidSchemaPointer().StringifyUriFragment(sb);
-				log("Invalid schema: %s\n", sb.GetString());
-				log("Invalid keyword: %s\n", validator.GetInvalidSchemaKeyword());
-				sb.Clear();
-				validator.GetInvalidDocumentPointer().StringifyUriFragment(sb);
-				log("Invalid document: %s\n", sb.GetString());
-				return true;
-			}
-		}
-		log("%s\n", buf.substr(start, count).c_str());
-		input_queue_.push(rprotocol(std::move(d)));
-		return true;
-	}
-
-	bool session::open_schema(const std::string& schema_file)
-	{
-		base::file::stream file(schema_file.c_str(), std::ios_base::in);
-		if (!file.is_open())
-		{
-			return false;
-		}
-		std::string buf = file.read<std::string>();
-		rapidjson::Document sd;
-		if (sd.Parse(buf.data(), buf.size()).HasParseError())
-		{
-			log("Input is not a valid JSON\n");
-			log("Error(offset %u): %s\n", static_cast<unsigned>(sd.GetErrorOffset()), rapidjson::GetParseError_En(sd.GetParseError()));
-			return false;
-		}
-		schema_.reset(new rapidjson::SchemaDocument(sd));
+		input_queue_.push(buf.substr(start, count));
 		return true;
 	}
 
@@ -310,10 +261,6 @@ namespace vscode
 			return;
 		}
 		session_.reset(new session(this, get_poller()));
-		if (!schema_file_.empty())
-		{
-			session_->open_schema(schema_file_);
-		}
 		session_->attach(fd, ep);
 	}
 
@@ -323,19 +270,19 @@ namespace vscode
 		base_type::event_close();
 	}
 
-	bool server::output(const wprotocol& wp)
+	bool server::output(const char* buf, size_t len)
 	{
 		if (!session_)
 			return false;
-		return session_->output(wp);
+		return session_->output(buf, len);
 	}
 
-	rprotocol server::input()
+	std::string server::input()
 	{
 		if (!session_)
-			return rprotocol();
+			return std::string();
 		if (session_->input_empty())
-			return rprotocol();
+			return std::string();
 		return session_->input();
 	}
 
@@ -344,11 +291,6 @@ namespace vscode
 		if (!session_)
 			return false;
 		return session_->input_empty();
-	}
-
-	void server::set_schema(const char* file)
-	{
-		schema_file_ = file;
 	}
 
 	void server::close_session()
@@ -391,19 +333,19 @@ namespace vscode
 		poller_->wait(1000, ms);
 	}
 
-	bool network::output(const wprotocol& wp)
+	bool network::output(const char* buf, size_t len)
 	{
 		if (!server_)
 			return false;
-		if (!server_->output(wp))
+		if (!server_->output(buf, len))
 			return false;
 		return true;
 	}
 
-	rprotocol network::input()
+	std::string network::input()
 	{
 		if (!server_)
-			return rprotocol();
+			return std::string();
 		return server_->input();
 	}
 
@@ -412,13 +354,6 @@ namespace vscode
 		if (!server_)
 			return false;
 		return server_->input_empty();
-	}
-
-	void network::set_schema(const char* file)
-	{
-		if (!server_)
-			return;
-		return server_->set_schema(file);
 	}
 
 	void network::close()

@@ -22,6 +22,12 @@ bool attach::event_in()
 	return true;
 }
 
+void attach::send(const std::string& rp)
+{
+	base_type::send(base::format("Content-Length: %d\r\n\r\n", rp.size()));
+	base_type::send(rp.data(), rp.size());
+}
+
 void attach::send(const vscode::rprotocol& rp)
 {
 	rapidjson::StringBuffer buffer;
@@ -41,7 +47,7 @@ void attach::update()
 {
 	poller.wait(1000, 0);
 	while (!io.input_empty()) {
-		vscode::rprotocol rp = io.input();
+		std::string rp = io.input();
 		send(rp);
 	}
 }

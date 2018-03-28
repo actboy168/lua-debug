@@ -25,7 +25,7 @@ namespace vscode
 			res("success").Bool(true);
 			capabilities(res);
 		}
-		network_->output(res);
+		io_output(res);
 	}
 
 	void debugger_impl::response_thread(rprotocol& req)
@@ -50,7 +50,7 @@ namespace vscode
 				}
 			}
 		}
-		network_->output(res);
+		io_output(res);
 	}
 
 	void debugger_impl::response_source(rprotocol& req, const char* content)
@@ -69,7 +69,7 @@ namespace vscode
 				res("mimeType").String("text/x-lua");
 			}
 		}
-		network_->output(res);
+		io_output(res);
 	}
 
 	void debugger_impl::event_stopped(const char *msg)
@@ -86,7 +86,7 @@ namespace vscode
 				res("threadId").Int(1);
 			}
 		}
-		network_->output(res);
+		io_output(res);
 	}
 
 	void debugger_impl::event_thread(bool started)
@@ -103,7 +103,7 @@ namespace vscode
 				res("threadId").Int(1);
 			}
 		}
-		network_->output(res);
+		io_output(res);
 	}
 
 	void debugger_impl::event_terminated()
@@ -119,7 +119,7 @@ namespace vscode
 				res("restart").Bool(false);
 			}
 		}
-		network_->output(res);
+		io_output(res);
 	}
 
 	void debugger_impl::event_initialized()
@@ -131,7 +131,7 @@ namespace vscode
 			res("seq").Int64(seq++);
 			res("event").String("initialized");
 		}
-		network_->output(res);
+		io_output(res);
 	}
 
 	void debugger_impl::event_capabilities()
@@ -144,7 +144,7 @@ namespace vscode
 			res("event").String("capabilities");
 			capabilities(res);
 		}
-		network_->output(res);
+		io_output(res);
 	}
 	void debugger_impl::response_error(rprotocol& req, const char *msg)
 	{
@@ -158,7 +158,7 @@ namespace vscode
 			res("success").Bool(false);
 			res("message").String(msg);
 		}
-		network_->output(res);
+		io_output(res);
 	}
 
 	void debugger_impl::response_success(rprotocol& req)
@@ -172,7 +172,7 @@ namespace vscode
 			res("request_seq").Int64(req["seq"].GetInt64());
 			res("success").Bool(true);
 		}
-		network_->output(res);
+		io_output(res);
 	}
 
 	void debugger_impl::response_success(rprotocol& req, std::function<void(wprotocol&)> body)
@@ -190,6 +190,6 @@ namespace vscode
 				body(res);
 			}
 		}
-		network_->output(res);
+		io_output(res);
 	}
 }

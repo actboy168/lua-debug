@@ -195,5 +195,8 @@ void launch::update()
 
 void launch::send(vscode::rprotocol&& rp)
 {
-	io_.push_input(std::forward<vscode::rprotocol>(rp));
+	rapidjson::StringBuffer buffer;
+	rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+	rp.Accept(writer);
+	io_.push_input(std::string(buffer.GetString(), buffer.GetSize()));
 }

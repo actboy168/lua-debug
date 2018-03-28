@@ -11,16 +11,15 @@ class fileio
 public:
 	fileio(FILE* fin, FILE* fout);
 	void update(int ms);
-	vscode::rprotocol input();
+	std::string input();
 	bool input_empty() const;
-	bool output(const vscode::wprotocol& wp);
-	void output(const char* str, size_t len);
+	bool output(const char* buf, size_t len);
 
 private:
 	FILE* fin_;
 	FILE* fout_;
 	std::vector<char> buffer_;
-	net::queue<vscode::rprotocol, 8> input_;
+	net::queue<std::string, 8> input_;
 };
 
 class stdinput
@@ -32,10 +31,10 @@ public:
 	void run();
 	void update(int ms);
 	void close();
-	vscode::rprotocol input();
+	std::string input();
 	bool input_empty() const;
-	void push_input(vscode::rprotocol&& rp);
+	void push_input(std::string&& rp);
 
 private:
-	net::queue<vscode::rprotocol, 8> preinput_;
+	net::queue<std::string, 8> preinput_;
 };

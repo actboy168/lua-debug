@@ -20,7 +20,7 @@
 
 namespace vscode
 {
-	class io;
+	struct io;
 	class rprotocol;
 	class wprotocol;
 
@@ -77,6 +77,8 @@ namespace vscode
 		void redirect_stdout();
 		void redirect_stderr();
 		pathconvert& get_pathconvert();
+		rprotocol io_input();
+		void io_output(const wprotocol& wp);
 
 	private:
 		bool request_initialize(rprotocol& req);

@@ -14,6 +14,7 @@ public:
 	attach(stdinput& io);
 	bool event_in();
 	void send(const vscode::rprotocol& rp);
+	void send(const std::string& rp);
 	void event_close();
 	void update();
 

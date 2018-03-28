@@ -83,6 +83,9 @@
     <ClCompile Include="..\src\dbg_config.cpp">
       <Filter>core\cpp</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\dbg_iohelper.cpp">
+      <Filter>core\cpp</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\debugger.h">
@@ -199,10 +202,13 @@
     <ClInclude Include="..\src\bridge\dbg_luacompatibility.h">
       <Filter>bridge</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\dbg_lua.h">
-      <Filter>core</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\dbg_config.h">
+      <Filter>core\inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\dbg_lua.h">
+      <Filter>core\inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\dbg_iohelper.h">
       <Filter>core\inc</Filter>
     </ClInclude>
   </ItemGroup>

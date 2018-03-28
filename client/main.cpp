@@ -9,7 +9,10 @@
 #include "dbg_capabilities.h"
 #include <base/util/unicode.h>
 #include <base/util/unicode.cpp>
+#include <base/file/stream.cpp>
 #include <base/filesystem.h>
+#include "dbg_iohelper.h"
+#include "dbg_iohelper.cpp"
 
 bool create_process_with_debugger(vscode::rprotocol& req, uint16_t port);
 
@@ -29,7 +32,7 @@ void response_initialized(stdinput& io, vscode::rprotocol& req)
 		res("success").Bool(true);
 		vscode::capabilities(res);
 	}
-	io.output(res);
+	vscode::io_output(&io, res);
 }
 
 void response_error(stdinput& io, vscode::rprotocol& req, const char *msg)
@@ -44,7 +47,7 @@ void response_error(stdinput& io, vscode::rprotocol& req, const char *msg)
 		res("success").Bool(false);
 		res("message").String(msg);
 	}
-	io.output(res);
+	vscode::io_output(&io, res);
 }
 
 int stoi_nothrow(std::string const& str)
@@ -83,7 +86,7 @@ int main()
 			continue;
 		}
 		while (!io.input_empty()) {
-			vscode::rprotocol rp = io.input();
+			vscode::rprotocol rp = vscode::io_input(&io);
 			if (rp["type"] != "request") {
 				continue;
 			}

@@ -3,6 +3,7 @@
 #include "dbg_io.h"
 #include "dbg_thread.h"
 #include "dbg_thunk.h"
+#include "dbg_iohelper.h"
 #include <base/util/format.h>
 #include <thread>
 #include <atomic>
@@ -241,7 +242,7 @@ namespace vscode
 			update_redirect();
 			network_->update(0);
 
-			rprotocol req = network_->input();
+			rprotocol req = io_input();
 			if (req.IsNull()) {
 				std::this_thread::sleep_for(std::chrono::milliseconds(10));
 				continue;
@@ -275,7 +276,7 @@ namespace vscode
 		network_->update(0);
 		if (is_state(state::birth))
 		{
-			rprotocol req = network_->input();
+			rprotocol req = io_input();
 			if (req.IsNull()) {
 				return;
 			}
@@ -290,7 +291,7 @@ namespace vscode
 		}
 		else if (is_state(state::initialized) || is_state(state::running) || is_state(state::stepping))
 		{
-			rprotocol req = network_->input();
+			rprotocol req = io_input();
 			if (req.IsNull()) {
 				return;
 			}
@@ -395,7 +396,7 @@ namespace vscode
 				}
 			}
 		}
-		network_->output(res);
+		io_output(res);
 	}
 
 	void debugger_impl::redirect_stdout()
@@ -418,6 +419,16 @@ namespace vscode
 	bool debugger_impl::set_config(int level, const std::string& cfg, std::string& err)
 	{
 		return config_.init(level, cfg, err);
+	}
+
+	void debugger_impl::io_output(const wprotocol& wp)
+	{
+		vscode::io_output(network_, wp);
+	}
+
+	rprotocol debugger_impl::io_input()
+	{
+		return vscode::io_input(network_);
 	}
 
 	debugger_impl::~debugger_impl()
