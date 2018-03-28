@@ -1,9 +1,10 @@
-
 #include "bridge/dbg_delayload.h"
 #include "dbg_lua.h"
 #include "debugger.h"
 #include "dbg_network.h"
 #include <memory>
+#include <intrin.h>  
+
 
 namespace luaw {
 	struct ud {
@@ -133,7 +134,7 @@ static void caller_is_luadll(void* callerAddress)
 
 int __cdecl luaopen_debugger(lua_State* L)
 {
-#if defined(DEBUGGER_DELAYLOAD_LUA)
+#if defined(DEBUGGER_BRIDGE)
 	caller_is_luadll(_ReturnAddress());
 #endif
 	return luaw::open(L);
