@@ -10,6 +10,22 @@ namespace lua { union Debug; }
 
 namespace vscode
 {
+	namespace ignore_case {
+		template <class T> struct less;
+		template <> struct less<char> {
+			bool operator()(const char& lft, const char& rht) const
+			{
+				return (tolower((int)(unsigned char)(lft)) < tolower((int)(unsigned char)(rht)));
+			}
+		};
+		template <> struct less<std::string> {
+			bool operator()(const std::string& lft, const std::string& rht) const
+			{
+				return std::lexicographical_compare(lft.begin(), lft.end(), rht.begin(), rht.end(), less<char>());
+			}
+		};
+	}
+
 	struct bp {
 		std::string condition;
 		std::string hitcondition;
@@ -37,7 +53,7 @@ namespace vscode
 		bool evaluate_isok(lua_State* L, lua::Debug *ar, const std::string& script) const;
 
 	private:
-		std::map<std::string, bp_source> files_;
+		std::map<std::string, bp_source, ignore_case::less<std::string>> files_;
 		std::map<intptr_t, bp_source>    memorys_;
 		base::hybrid_array<size_t, 1024> fast_table_;
 	};
