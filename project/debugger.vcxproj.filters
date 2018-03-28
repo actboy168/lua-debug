@@ -86,6 +86,9 @@
     <ClCompile Include="..\src\dbg_iohelper.cpp">
       <Filter>core\cpp</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\bridge\dbg_luaopen.cpp">
+      <Filter>bridge</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\debugger.h">

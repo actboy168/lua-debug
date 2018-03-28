@@ -21,6 +21,7 @@
   <ItemGroup>
     <ClCompile Include="..\src\bridge\dbg_delayload.cpp" />
     <ClCompile Include="..\src\bridge\dbg_luacompatibility.cpp" />
+    <ClCompile Include="..\src\bridge\dbg_luaopen.cpp" />
     <ClCompile Include="..\src\dbg_breakpoint.cpp" />
     <ClCompile Include="..\src\dbg_config.cpp" />
     <ClCompile Include="..\src\dbg_evaluate.cpp" />

@@ -8,8 +8,12 @@
 #include <stack>
 #include <set>
 #include "debugger.h"
+#include "dbg_network.h"
 
 HMODULE luadll = 0;
+
+std::unique_ptr<vscode::network>  global_io;
+std::unique_ptr<vscode::debugger> global_dbg;
 
 void initialize_debugger(lua_State* L)
 {
@@ -20,9 +24,15 @@ void initialize_debugger(lua_State* L)
 		return;
 	}
 	debugger_set_luadll(luadll, ::GetProcAddress);
-	debugger_start_server("127.0.0.1", 0, true, false);
-	debugger_attach_lua(L);
-	debugger_wait_attach();
+
+	global_io.reset(new vscode::network("127.0.0.1", 0, false));
+	global_io->kill_process_when_close();
+
+	global_dbg.reset(new vscode::debugger(global_io.get(), vscode::threadmode::async));
+	global_dbg->attach_lua(L);
+	global_dbg->wait_attach();
+	global_dbg->redirect_stdout();
+	global_dbg->redirect_stderr();
 }
 
 void uninitialize_debugger(lua_State* L)
@@ -30,7 +40,9 @@ void uninitialize_debugger(lua_State* L)
 	if (!GetModuleHandleW(L"debugger.dll")) {
 		return;
 	}
-	debugger_detach_lua(L);
+	if (global_dbg) {
+		global_dbg->detach_lua(L);
+	}
 	Sleep(1000);
 }
 
