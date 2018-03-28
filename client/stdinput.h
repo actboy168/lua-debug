@@ -11,8 +11,7 @@ class fileio
 public:
 	fileio(FILE* fin, FILE* fout);
 	void update(int ms);
-	std::string input();
-	bool input_empty() const;
+	bool input(std::string& buf);
 	bool output(const char* buf, size_t len);
 
 private:
@@ -31,8 +30,7 @@ public:
 	void run();
 	void update(int ms);
 	void close();
-	std::string input();
-	bool input_empty() const;
+	bool input(std::string& buf);
 	void push_input(std::string&& rp);
 
 private:

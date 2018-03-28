@@ -85,8 +85,11 @@ int main()
 			server_->update();
 			continue;
 		}
-		while (!io.input_empty()) {
+		for (;;) {
 			vscode::rprotocol rp = vscode::io_input(&io);
+			if (rp.IsNull()) {
+				continue;
+			}
 			if (rp["type"] != "request") {
 				continue;
 			}

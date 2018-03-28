@@ -46,8 +46,8 @@ void attach::event_close()
 void attach::update()
 {
 	poller.wait(1000, 0);
-	while (!io.input_empty()) {
-		std::string rp = io.input();
-		send(rp);
+	std::string buf;
+	while (io.input(buf)) {
+		send(buf);
 	}
 }

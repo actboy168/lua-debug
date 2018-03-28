@@ -34,17 +34,13 @@ void fileio::update(int ms) {
 	}
 }
 
-std::string fileio::input() {
+bool fileio::input(std::string& buf) {
 	if (input_.empty()) {
-		return std::string();
+		return false;
 	}
-	std::string r = std::move(input_.front());
+	buf = std::move(input_.front());
 	input_.pop();
-	return r;
-}
-
-bool fileio::input_empty() const {
-	return input_.empty();
+	return true;
 }
 
 bool fileio::output(const char* buf, size_t len) {
@@ -78,17 +74,13 @@ void stdinput::close() {
 	exit(0);
 }
 
-std::string stdinput::input() {
+bool stdinput::input(std::string& buf) {
 	if (preinput_.empty()) {
-		return fileio::input();
+		return fileio::input(buf);
 	}
-	std::string r = std::move(preinput_.front());
+	buf = std::move(preinput_.front());
 	preinput_.pop();
-	return r;
-}
-
-bool stdinput::input_empty() const {
-	return preinput_.empty() && fileio::input_empty();
+	return true;
 }
 
 void stdinput::push_input(std::string&& rp)

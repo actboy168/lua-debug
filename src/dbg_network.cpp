@@ -46,8 +46,7 @@ namespace vscode
 	public:
 		session(server* server, net::poller_t* poll);
 		bool      output(const char* buf, size_t len);
-		std::string input();
-		bool      input_empty() const;
+		bool      input(std::string& buf);
 
 	private:
 		void event_close();
@@ -76,8 +75,7 @@ namespace vscode
 		void      update();
 		bool      listen();
 		bool      output(const char* buf, size_t len);
-		std::string input();
-		bool      input_empty()	const;
+		bool      input(std::string& buf);
 		void      close_session(); 
 		uint16_t  get_port() const;
 
@@ -102,11 +100,6 @@ namespace vscode
 	{
 	}
 
-	bool session::input_empty() const
-	{
-		return input_queue_.empty();
-	}
-
 	bool session::output(const char* buf, size_t len)
 	{
 		auto l = base::format("Content-Length: %d\r\n\r\n", len);
@@ -116,11 +109,13 @@ namespace vscode
 		return len == send(buf, len);
 	}
 
-	std::string session::input()
+	bool session::input(std::string& buf)
 	{
-		std::string r = std::move(input_queue_.front());
+		if (input_queue_.empty())
+			return false;
+		buf = std::move(input_queue_.front());
 		input_queue_.pop();
-		return r;
+		return true;
 	}
 
 	void session::event_close()
@@ -264,20 +259,11 @@ namespace vscode
 		return session_->output(buf, len);
 	}
 
-	std::string server::input()
-	{
-		if (!session_)
-			return std::string();
-		if (session_->input_empty())
-			return std::string();
-		return session_->input();
-	}
-
-	bool server::input_empty()	const
+	bool server::input(std::string& buf)
 	{
 		if (!session_)
 			return false;
-		return session_->input_empty();
+		return session_->input(buf);
 	}
 
 	void server::close_session()
@@ -329,18 +315,11 @@ namespace vscode
 		return true;
 	}
 
-	std::string network::input()
-	{
-		if (!server_)
-			return std::string();
-		return server_->input();
-	}
-
-	bool network::input_empty() const
+	bool network::input(std::string& buf)
 	{
 		if (!server_)
 			return false;
-		return server_->input_empty();
+		return server_->input(buf);
 	}
 
 	void network::close()

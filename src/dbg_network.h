@@ -28,8 +28,7 @@ namespace vscode
 		virtual   ~network();
 		void      update(int ms);
 		bool      output(const char* buf, size_t len);
-		std::string input();
-		bool      input_empty() const;
+		bool      input(std::string& buf);
 		void      close();
 		void      kill_process_when_close();
 		uint16_t  get_port() const;

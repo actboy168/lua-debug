@@ -35,7 +35,10 @@ namespace vscode {
 
 	rprotocol io_input(io* io, schema* schema)
 	{
-		std::string buf = io->input();
+		std::string buf;
+		if (!io->input(buf)) {
+			return rprotocol();
+		}
 		rapidjson::Document	d;
 		if (d.Parse(buf.data(), buf.size()).HasParseError())
 		{
