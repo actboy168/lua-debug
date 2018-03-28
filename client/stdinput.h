@@ -13,6 +13,7 @@ public:
 	void update(int ms);
 	bool input(std::string& buf);
 	bool output(const char* buf, size_t len);
+	void raw_output(const char* buf, size_t len);
 
 private:
 	FILE* fin_;

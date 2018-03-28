@@ -88,7 +88,7 @@ int main()
 		for (;;) {
 			vscode::rprotocol rp = vscode::io_input(&io);
 			if (rp.IsNull()) {
-				continue;
+				break;
 			}
 			if (rp["type"] != "request") {
 				continue;

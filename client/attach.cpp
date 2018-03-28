@@ -18,7 +18,7 @@ bool attach::event_in()
 	size_t len = base_type::recv(tmp.data(), tmp.size());
 	if (len == 0)
 		return true;
-	io.output(tmp.data(), len);
+	io.raw_output(tmp.data(), len);
 	return true;
 }
 

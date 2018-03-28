@@ -45,17 +45,17 @@ bool fileio::input(std::string& buf) {
 
 bool fileio::output(const char* buf, size_t len) {
 	auto l = base::format("Content-Length: %d\r\n\r\n", len);
-	for (;;) {
-		size_t r = fwrite(l.data(), l.size(), 1, fout_);
-		if (r == 1)
-			break;
-	}
+	raw_output(l.data(), l.size());
+	raw_output(buf, len);
+	return true;
+}
+
+void fileio::raw_output(const char* buf, size_t len) {
 	for (;;) {
 		size_t r = fwrite(buf, len, 1, fout_);
 		if (r == 1)
 			break;
 	}
-	return true;
 }
 
 stdinput::stdinput()
