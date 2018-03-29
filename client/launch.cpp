@@ -43,7 +43,6 @@ static int print(lua_State* L) {
 	return 0;
 }
 
-
 bool launch::request_launch(vscode::rprotocol& req) {
 	auto& args = req["arguments"];
 	if (!args.HasMember("program") || !args["program"].IsString()) {
@@ -51,6 +50,11 @@ bool launch::request_launch(vscode::rprotocol& req) {
 	}
 	if (args.HasMember("luadll")) {
 		delayload::set_luadll(base::u2w(args["luadll"].Get<std::string>()));
+	}
+	bool sourceCodingUtf8 = false;
+	std::string sourceCoding = "ansi";
+	if (args.HasMember("sourceCoding") && args["sourceCoding"].IsString()) {
+		sourceCodingUtf8 = "utf8" == args["sourceCoding"].Get<std::string>();
 	}
 	if (args.HasMember("cwd") && args["cwd"].IsString()) {
 		fs::current_path(fs::path(base::u2w(args["cwd"].Get<std::string>())));
@@ -73,7 +77,7 @@ bool launch::request_launch(vscode::rprotocol& req) {
 
 	if (args.HasMember("path") && args["path"].IsString())
 	{
-		std::string path = base::u2a(args["path"]);
+		std::string path = sourceCodingUtf8 ? args["path"].Get<std::string>() : base::u2a(args["path"]);
 		lua_getglobal(L, "package");
 		lua_pushlstring(L, path.data(), path.size());
 		lua_setfield(L, -2, "path");
@@ -81,7 +85,7 @@ bool launch::request_launch(vscode::rprotocol& req) {
 	}
 	if (args.HasMember("cpath") && args["cpath"].IsString())
 	{
-		std::string path = base::u2a(args["cpath"]);
+		std::string path = sourceCodingUtf8 ? args["cpath"].Get<std::string>() : base::u2a(args["cpath"]);
 		lua_getglobal(L, "package");
 		lua_pushlstring(L, path.data(), path.size());
 		lua_setfield(L, -2, "cpath");
@@ -143,7 +147,7 @@ bool launch::request_launch(vscode::rprotocol& req) {
 		launchL_ = 0;
 	}
 	launchL_ = L;
-	program_ = base::u2a(args["program"]);
+	program_ = sourceCodingUtf8 ? args["program"].Get<std::string>() : base::u2a(args["program"]);
 	return true;
 }
 
