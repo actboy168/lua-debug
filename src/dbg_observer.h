@@ -49,12 +49,12 @@ namespace vscode {
 		bool push_value(lua_State* L, lua::Debug* ar, size_t value_idx);
 		bool push_value(lua_State* L, lua::Debug* ar, const value& v);
 
-		void extand_local(lua_State* L, lua::Debug* ar, debugger_impl* dbg, value v, wprotocol& res);
-		void extand_global(lua_State* L, lua::Debug* ar, debugger_impl* dbg, value v, wprotocol& res);
-		void extand_table(lua_State* L, lua::Debug* ar, debugger_impl* dbg, value v, wprotocol& res);
-		void extand_metatable(lua_State* L, lua::Debug* ar, debugger_impl* dbg, value v, wprotocol& res);
-		void extand_userdata(lua_State* L, lua::Debug* ar, debugger_impl* dbg, value v, wprotocol& res);
-		void extand_function(lua_State* L, lua::Debug* ar, debugger_impl* dbg, value v, wprotocol& res);
+		void extand_local(lua_State* L, lua::Debug* ar, debugger_impl* dbg, value const& v, wprotocol& res);
+		void extand_global(lua_State* L, lua::Debug* ar, debugger_impl* dbg, value const& v, wprotocol& res);
+		void extand_table(lua_State* L, lua::Debug* ar, debugger_impl* dbg, value const& v, wprotocol& res);
+		void extand_metatable(lua_State* L, lua::Debug* ar, debugger_impl* dbg, value const& v, wprotocol& res);
+		void extand_userdata(lua_State* L, lua::Debug* ar, debugger_impl* dbg, value const& v, wprotocol& res);
+		void extand_function(lua_State* L, lua::Debug* ar, debugger_impl* dbg, value const& v, wprotocol& res);
 		void get_variable(lua_State* L, lua::Debug* ar, debugger_impl* dbg, int64_t valueId, wprotocol& res);
 
 		bool set_table(lua_State* L, lua::Debug* ar, debugger_impl* dbg, set_value& setvalue);

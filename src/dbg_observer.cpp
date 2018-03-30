@@ -653,7 +653,7 @@ namespace vscode {
 		return true;
 	}
 
-	void frame::extand_local(lua_State* L, lua::Debug* ar, debugger_impl* dbg, value v, wprotocol& res)
+	void frame::extand_local(lua_State* L, lua::Debug* ar, debugger_impl* dbg, value const& v, wprotocol& res)
 	{
 		for (int n = 1;; n++)
 		{
@@ -680,7 +680,7 @@ namespace vscode {
 		}
 	}
 
-	void frame::extand_global(lua_State* L, lua::Debug* ar, debugger_impl* dbg, value v, wprotocol& res)
+	void frame::extand_global(lua_State* L, lua::Debug* ar, debugger_impl* dbg, value const& v, wprotocol& res)
 	{
 		int n = 0;
 		std::set<var> vars;
@@ -723,7 +723,7 @@ namespace vscode {
 		}
 	}
 
-	void frame::extand_table(lua_State* L, lua::Debug* ar, debugger_impl* dbg, value v, wprotocol& res)
+	void frame::extand_table(lua_State* L, lua::Debug* ar, debugger_impl* dbg, value const& v, wprotocol& res)
 	{
 		int n = 0;
 		std::set<var> vars;
@@ -760,7 +760,7 @@ namespace vscode {
 		}
 	}
 
-	void frame::extand_metatable(lua_State* L, lua::Debug* ar, debugger_impl* dbg, value v, wprotocol& res)
+	void frame::extand_metatable(lua_State* L, lua::Debug* ar, debugger_impl* dbg, value const& v, wprotocol& res)
 	{
 		if (lua_getmetatable(L, -1)) {
 			var var(L, 0, "[metatable]", -1, dbg->get_pathconvert());
@@ -777,7 +777,7 @@ namespace vscode {
 		}
 	}
 
-	void frame::extand_userdata(lua_State* L, lua::Debug* ar, debugger_impl* dbg, value v, wprotocol& res)
+	void frame::extand_userdata(lua_State* L, lua::Debug* ar, debugger_impl* dbg, value const& v, wprotocol& res)
 	{
 		//TODO: 5.4支持多个uservalue
 		if (lua_getuservalue(L, -1) != LUA_TNIL) {
@@ -821,7 +821,7 @@ namespace vscode {
 		}
 	}
 
-	void frame::extand_function(lua_State* L, lua::Debug* ar, debugger_impl* dbg, value v, wprotocol& res)
+	void frame::extand_function(lua_State* L, lua::Debug* ar, debugger_impl* dbg, value const& v, wprotocol& res)
 	{
 		for (int n = 1;; n++) {
 			const char* name = lua_getupvalue(L, -1, n);
@@ -848,7 +848,7 @@ namespace vscode {
 			return;
 		}
 
-		value& v = values[value_idx];
+		value v = values[value_idx];
 		if (v.parent == -1) {
 			switch (v.type) {
 			case value::Type::local:
