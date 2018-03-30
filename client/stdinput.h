@@ -17,6 +17,7 @@ public:
 
 public:
 	stdinput();
+	~stdinput();
 	void run();
 	void push_input(const char* buf, size_t len);
 	void raw_output(const char* buf, size_t len);

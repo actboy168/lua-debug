@@ -5,6 +5,10 @@ stdinput::stdinput()
 	: std::thread(std::bind(&stdinput::run, this))
 { }
 
+stdinput::~stdinput() {
+	close();
+}
+
 void stdinput::run() {
 	for (;;) {
 		char buf[32] = { 0 };

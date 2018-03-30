@@ -12,12 +12,12 @@ public:
 	launch(stdinput& io);
 	void update();
 	void send(vscode::rprotocol&& rp);
-	bool request_launch(vscode::rprotocol& req);
+	void request_launch(vscode::rprotocol& req);
 
 private:
 	vscode::debugger debugger_;
 	stdinput& io_;
-	std::string program_;
+	std::string program_ = "main.lua";
 	lua_State* launchL_ = 0;
 };
 

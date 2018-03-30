@@ -60,8 +60,22 @@ int stoi_nothrow(std::string const& str)
 	return 0;
 }
 
+int run_launch(stdinput& io, vscode::rprotocol& init, vscode::rprotocol& req)
+{
+	launch launch(io);
+	launch.request_launch(req);
+	if (seq > 1) init.AddMember("__initseq", seq, init.GetAllocator());
+	launch.send(std::move(init));
+	launch.send(std::move(req));
+	for (;; std::this_thread::sleep_for(std::chrono::milliseconds(10))) {
+		launch.update();
+	}
+	return 0;
+}
+
 int main()
 {
+	MessageBox(0,0,0,0);
 	_setmode(_fileno(stdout), _O_BINARY);
 	setbuf(stdout, NULL);
 
@@ -133,16 +147,7 @@ int main()
 					connectproto = std::move(rp);
 				}
 				else {
-					launch_.reset(new launch(io));
-					if (!launch_->request_launch(rp)) {
-						response_error(io, rp, "Launch failed");
-						exit(0);
-						continue;
-					}
-					if (seq > 1) initproto.AddMember("__initseq", seq, initproto.GetAllocator());
-					launch_->send(std::move(initproto));
-					launch_->send(std::move(rp));
-					break;
+					return run_launch(io, initproto, rp);
 				}
 			}
 			else if (rp["command"] == "attach") {

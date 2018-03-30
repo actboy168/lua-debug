@@ -43,11 +43,8 @@ static int print(lua_State* L) {
 	return 0;
 }
 
-bool launch::request_launch(vscode::rprotocol& req) {
+void launch::request_launch(vscode::rprotocol& req) {
 	auto& args = req["arguments"];
-	if (!args.HasMember("program") || !args["program"].IsString()) {
-		return false;
-	}
 	if (args.HasMember("luadll")) {
 		delayload::set_luadll(base::u2w(args["luadll"].Get<std::string>()));
 	}
@@ -147,8 +144,9 @@ bool launch::request_launch(vscode::rprotocol& req) {
 		launchL_ = 0;
 	}
 	launchL_ = L;
-	program_ = sourceCodingUtf8 ? args["program"].Get<std::string>() : base::u2a(args["program"]);
-	return true;
+	if (args.HasMember("program") && args["program"].IsString()) {
+		program_ = sourceCodingUtf8 ? args["program"].Get<std::string>() : base::u2a(args["program"]);
+	}
 }
 
 launch::launch(stdinput& io)
@@ -174,7 +172,7 @@ void launch::update()
 
 	int status = luaL_loadfile(L, program_.c_str());
 	if (status != LUA_OK) {
-		auto msg = base::format("Failed to launch %s due to error: %s\n", program_, lua_tostring(L, -1));
+		auto msg = base::format("Failed to launch `%s` due to error: %s\n", program_, lua_tostring(L, -1));
 		debugger_.output("console", msg.data(), msg.size());
 		lua_pop(L, 1);
 		debugger_.close();
