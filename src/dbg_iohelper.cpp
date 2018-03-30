@@ -1,18 +1,24 @@
 #include "dbg_iohelper.h"
 #include "dbg_impl.h"
 #include "dbg_io.h"
-#include <rapidjson/schema.h> 
+#include <rapidjson/schema.h>
+#include <rapidjson/error/en.h>
 #include <base/file/stream.h>
 
-#if 1	 
+#if 1
 #	define log(...)
 #else
+
+#include <base/util/format.h>
+#include <Windows.h>
+
 template <class... Args>
 static void log(const char* fmt, const Args& ... args)
 {
-	auto s = vscode::format(fmt, args...);
+	auto s = base::format(fmt, args...);
 	OutputDebugStringA(s.c_str());
 }
+
 #endif	 
 
 namespace vscode {
