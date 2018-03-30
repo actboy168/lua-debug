@@ -70,9 +70,12 @@ bool stdinput::input(std::string& buf) {
 	return false;
 }
 
-void stdinput::push_input(const char* buf, size_t len)
+void stdinput::push_input(vscode::rprotocol& rp)
 {
-	preinput_.push(std::string(buf, len));
+	rapidjson::StringBuffer buffer;
+	rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+	rp.Accept(writer);
+	preinput_.push(std::string(buffer.GetString(), buffer.GetSize()));
 }
 
 void stdinput::update(int ms) {

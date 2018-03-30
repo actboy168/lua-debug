@@ -4,6 +4,7 @@
 #include <vector>
 #include <net/queue.h>
 #include "dbg_io.h"
+#include "dbg_protocol.h"
 
 class stdinput
 	: public vscode::io
@@ -19,7 +20,7 @@ public:
 	stdinput();
 	~stdinput();
 	void run();
-	void push_input(const char* buf, size_t len);
+	void push_input(vscode::rprotocol& rp);
 	void raw_output(const char* buf, size_t len);
 
 private:

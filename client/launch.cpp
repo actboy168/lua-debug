@@ -1,5 +1,6 @@
 #include <Windows.h>
 #include "launch.h"
+#include "debugger.h"
 #include "stdinput.h"
 #include "bridge/dbg_delayload.h"
 #include <base/filesystem.h>
@@ -43,7 +44,11 @@ static int print(lua_State* L) {
 	return 0;
 }
 
-void launch::request_launch(vscode::rprotocol& req) {
+int run_launch(stdinput& io, vscode::rprotocol& init, vscode::rprotocol& req)
+{
+	vscode::debugger dbg(&io, vscode::threadmode::sync);
+	dbg.redirect_stderr();
+
 	auto& args = req["arguments"];
 	if (args.HasMember("luadll")) {
 		delayload::set_luadll(base::u2w(args["luadll"].Get<std::string>()));
@@ -133,69 +138,48 @@ void launch::request_launch(vscode::rprotocol& req) {
 		lua_setglobal(L, "print");
 	}
 	else {
-		lua_pushlightuserdata(L, &debugger_);
+		lua_pushlightuserdata(L, &dbg);
 		lua_pushcclosure(L, print, 1);
 		lua_setglobal(L, "print");
 	}
-	debugger_.redirect_stderr();
 
-	if (launchL_) {
-		lua_close(launchL_);
-		launchL_ = 0;
-	}
-	launchL_ = L;
+	std::string program = ".lua";
 	if (args.HasMember("program") && args["program"].IsString()) {
-		program_ = sourceCodingUtf8 ? args["program"].Get<std::string>() : base::u2a(args["program"]);
+		program = sourceCodingUtf8 ? args["program"].Get<std::string>() : base::u2a(args["program"]);
 	}
-}
 
-launch::launch(stdinput& io)
-	: debugger_(&io, vscode::threadmode::sync)
-	, io_(io)
-{
-}
+	io.push_input(init);
+	io.push_input(req);
 
-void launch::start()
-{
-	debugger_.wait_attach();
+	dbg.wait_attach();
+	dbg.attach_lua(L);
 
-	if (!launchL_) {
-		return;
-	}
-	lua_State *L = launchL_;
-	launchL_ = 0;
-
-	debugger_.attach_lua(L);
-
-	int status = luaL_loadfile(L, program_.c_str());
+	int status = luaL_loadfile(L, program.c_str());
 	if (status != LUA_OK) {
-		auto msg = base::format("Failed to launch `%s` due to error: %s\n", program_, lua_tostring(L, -1));
-		debugger_.output("console", msg.data(), msg.size());
+		auto msg = base::format("Failed to launch `%s` due to error: %s\n", program, lua_tostring(L, -1));
+		dbg.output("console", msg.data(), msg.size());
 		lua_pop(L, 1);
-		debugger_.close();
-		io_.close();
+		dbg.close();
+		io.close();
 		lua_close(L);
-		return;
+		return -1;
 	}
 
-	lua_pushlightuserdata(L, &debugger_);
+	lua_pushlightuserdata(L, &dbg);
 	lua_pushcclosure(L, errfunc, 1);
 	lua_insert(L, -2);
 	if (lua_pcall(L, 0, 0, -2)) {
 		auto msg = base::format("Program terminated with error: %s\n", lua_tostring(L, -1));
-		debugger_.output("console", msg.data(), msg.size());
-		lua_pop(L, 1);
+		dbg.output("console", msg.data(), msg.size());
+		lua_pop(L, 2);
+		dbg.close();
+		io.close();
+		lua_close(L);
+		return -1;
 	}
 	lua_pop(L, 1);
-	debugger_.close();
-	io_.close();
+	dbg.close();
+	io.close();
 	lua_close(L);
-}
-
-void launch::send(vscode::rprotocol&& rp)
-{
-	rapidjson::StringBuffer buffer;
-	rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-	rp.Accept(writer);
-	io_.push_input(buffer.GetString(), buffer.GetSize());
+	return 0;
 }

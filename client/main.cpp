@@ -60,17 +60,6 @@ int stoi_nothrow(std::string const& str)
 	return 0;
 }
 
-int run_launch(stdinput& io, vscode::rprotocol& init, vscode::rprotocol& req)
-{
-	launch launch(io);
-	launch.request_launch(req);
-	if (seq > 1) init.AddMember("__initseq", seq, init.GetAllocator());
-	launch.send(std::move(init));
-	launch.send(std::move(req));
-	launch.start();
-	return 0;
-}
-
 int main()
 {
 	_setmode(_fileno(stdout), _O_BINARY);
@@ -139,6 +128,7 @@ int main()
 					connectproto = std::move(rp);
 				}
 				else {
+					if (seq > 1) initproto.AddMember("__initseq", seq, initproto.GetAllocator());
 					return run_launch(io, initproto, rp);
 				}
 			}
