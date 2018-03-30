@@ -10,7 +10,7 @@ class launch
 {
 public:
 	launch(stdinput& io);
-	void update();
+	void start();
 	void send(vscode::rprotocol&& rp);
 	void request_launch(vscode::rprotocol& req);
 

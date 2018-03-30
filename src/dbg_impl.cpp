@@ -325,11 +325,22 @@ namespace vscode
 	{
 		if (thread_->mode() == threadmode::async) {
 			semaphore sem;
-			attach_callback_ = [&]() {
+			on_attach_ = [&]() {
 				sem.signal();
 			};
 			sem.wait();
-			attach_callback_ = std::function<void()>();
+			on_attach_ = std::function<void()>();
+		}
+		else {
+			bool ok = false;
+			on_attach_ = [&]() {
+				ok = true;
+			};
+			for (;!ok;) {
+				std::this_thread::sleep_for(std::chrono::milliseconds(10));
+				update();
+			}
+			on_attach_ = std::function<void()>();
 		}
 	}
 
@@ -456,7 +467,7 @@ namespace vscode
 		, cur_source_(0)
 		, exception_(false)
 		, hookL_()
-		, attach_callback_()
+		, on_attach_()
 		, console_("none")
 		, allowhook_(true)
 		, thread_(mode == threadmode::async 

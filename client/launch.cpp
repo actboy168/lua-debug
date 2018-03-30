@@ -155,14 +155,11 @@ launch::launch(stdinput& io)
 {
 }
 
-void launch::update()
+void launch::start()
 {
-	debugger_.update();
+	debugger_.wait_attach();
 
 	if (!launchL_) {
-		return;
-	}
-	if (!debugger_.is_state(vscode::state::running) && !debugger_.is_state(vscode::state::stepping)) {
 		return;
 	}
 	lua_State *L = launchL_;

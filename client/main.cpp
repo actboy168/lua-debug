@@ -67,15 +67,12 @@ int run_launch(stdinput& io, vscode::rprotocol& init, vscode::rprotocol& req)
 	if (seq > 1) init.AddMember("__initseq", seq, init.GetAllocator());
 	launch.send(std::move(init));
 	launch.send(std::move(req));
-	for (;; std::this_thread::sleep_for(std::chrono::milliseconds(10))) {
-		launch.update();
-	}
+	launch.start();
 	return 0;
 }
 
 int main()
 {
-	MessageBox(0,0,0,0);
 	_setmode(_fileno(stdout), _O_BINARY);
 	setbuf(stdout, NULL);
 
@@ -83,14 +80,9 @@ int main()
 	vscode::rprotocol initproto;
 	vscode::rprotocol connectproto;
 	std::unique_ptr<attach> attach_;
-	std::unique_ptr<launch> launch_;
 	std::unique_ptr<server> server_;
 
 	for (;; std::this_thread::sleep_for(std::chrono::milliseconds(10))) {
-		if (launch_) {
-			launch_->update();
-			continue;
-		}
 		if (attach_) {
 			attach_->update();
 			continue;

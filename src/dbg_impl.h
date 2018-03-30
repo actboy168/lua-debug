@@ -147,7 +147,7 @@ namespace vscode
 		std::set<lua_State*> hookL_;
 		dbg_thread*        thread_;
 		std::atomic<bool>  allowhook_;
-		std::function<void()> attach_callback_;
+		std::function<void()> on_attach_;
 		std::string        console_;
 		std::unique_ptr<redirector> stdout_;
 		std::unique_ptr<redirector> stderr_;
