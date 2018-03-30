@@ -264,7 +264,7 @@ namespace vscode
 					continue;
 				}
 			}
-			response_error(req, base::format("%s not yet implemented", req["command"].GetString()).c_str());
+			response_error(req, base::format("`%s` not yet implemented,(stopped)", req["command"].GetString()).c_str());
 		}
 
 		ob_.reset(L);
@@ -287,7 +287,7 @@ namespace vscode
 				request_initialize(req);
 				return;
 			}
-			response_error(req, base::format("%s not yet implemented", req["command"].GetString()).c_str());
+			response_error(req, base::format("`%s` not yet implemented.(birth)", req["command"].GetString()).c_str());
 		}
 		else if (is_state(state::initialized) || is_state(state::running) || is_state(state::stepping))
 		{
@@ -300,7 +300,7 @@ namespace vscode
 			}
 			bool quit = false;
 			if (!update_main(req, quit)) {
-				response_error(req, base::format("%s not yet implemented", req["command"].GetString()).c_str());
+				response_error(req, base::format("`%s` not yet implemented.(idle)", req["command"].GetString()).c_str());
 				return;
 			}
 		}

@@ -8,7 +8,6 @@
 
 class stdinput
 	: public vscode::io
-	, public std::thread
 {
 public:
 	virtual void update(int ms);
@@ -27,4 +26,5 @@ private:
 	net::queue<std::string, 8> input_;
 	net::queue<std::string, 8> preinput_;
 	std::vector<char>          buffer_;
+	std::thread                thread_;
 };

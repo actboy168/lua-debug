@@ -2,7 +2,10 @@
 #include <base/util/format.h>
 
 stdinput::stdinput()
-	: std::thread(std::bind(&stdinput::run, this))
+	: input_()
+	, preinput_()
+	, buffer_()
+	, thread_(std::bind(&stdinput::run, this))
 { }
 
 stdinput::~stdinput() {
