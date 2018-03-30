@@ -154,7 +154,7 @@ namespace vscode
 		bool res = true;
 		if (source[0] == '@')
 		{
-			std::string spath = source2serverpath(source.substr(1));
+			std::string spath = source.substr(1);
 			std::string cpath;
 			if (find_sourcemap(spath, cpath))
 			{
@@ -162,7 +162,7 @@ namespace vscode
 			}
 			else
 			{
-				client_path = spath;
+				client_path = source2serverpath(spath);
 			}
 		}
 		else if (source[0] == '=' && debugger_->custom_)
