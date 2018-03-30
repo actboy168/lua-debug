@@ -5,35 +5,24 @@
 #include <net/queue.h>
 #include "dbg_io.h"
 
-class fileio
-	: public vscode::io
-{
-public:
-	fileio(FILE* fin, FILE* fout);
-	void update(int ms);
-	bool input(std::string& buf);
-	bool output(const char* buf, size_t len);
-	void raw_output(const char* buf, size_t len);
-
-private:
-	FILE* fin_;
-	FILE* fout_;
-	std::vector<char> buffer_;
-	net::queue<std::string, 8> input_;
-};
-
 class stdinput
-	: public fileio
+	: public vscode::io
 	, public std::thread
 {
 public:
+	virtual void update(int ms);
+	virtual void close();
+	virtual bool input(std::string& buf);
+	virtual bool output(const char* buf, size_t len);
+
+public:
 	stdinput();
 	void run();
-	void update(int ms);
-	void close();
-	bool input(std::string& buf);
-	void push_input(std::string&& rp);
+	void push_input(const char* buf, size_t len);
+	void raw_output(const char* buf, size_t len);
 
 private:
+	net::queue<std::string, 8> input_;
 	net::queue<std::string, 8> preinput_;
+	std::vector<char>          buffer_;
 };

@@ -202,5 +202,5 @@ void launch::send(vscode::rprotocol&& rp)
 	rapidjson::StringBuffer buffer;
 	rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
 	rp.Accept(writer);
-	io_.push_input(std::string(buffer.GetString(), buffer.GetSize()));
+	io_.push_input(buffer.GetString(), buffer.GetSize());
 }
