@@ -18,7 +18,7 @@ bool create_process_with_debugger(vscode::rprotocol& req, uint16_t port);
 
 uint16_t server_port = 0;
 
-void response_initialized(stdinput& io, vscode::rprotocol& req)
+static void response_initialized(stdinput& io, vscode::rprotocol& req)
 {
 	vscode::wprotocol res;
 
@@ -34,7 +34,7 @@ void response_initialized(stdinput& io, vscode::rprotocol& req)
 	vscode::io_output(&io, res);
 }
 
-void response_error(stdinput& io, vscode::rprotocol& req, const char *msg)
+static void response_error(stdinput& io, vscode::rprotocol& req, const char *msg)
 {
 	vscode::wprotocol res;
 	for (auto _ : res.Object())
@@ -50,12 +50,80 @@ void response_error(stdinput& io, vscode::rprotocol& req, const char *msg)
 	exit(-1);
 }
 
-int stoi_nothrow(std::string const& str)
+static int stoi_nothrow(std::string const& str)
 {
 	try {
 		return std::stoi(str);
 	}
 	catch (...) {
+	}
+	return 0;
+}
+
+static void sleep() {
+	std::this_thread::sleep_for(std::chrono::milliseconds(10));
+}
+
+static uint16_t wait_ok(server& s) {
+	uint16_t port = 0;
+	for (int i = 0; i < 10; ++i) {
+		port = s.get_port();
+		if (port) {
+			return port;
+		}
+		sleep();
+		s.update();
+	}
+	return 0;
+}
+
+static int run_createprocess_then_attach(stdinput& io, vscode::rprotocol& init, vscode::rprotocol& _req)
+{
+	std::unique_ptr<attach> attach_;
+	vscode::rprotocol req = std::move(_req);
+	server server("127.0.0.1", 0);
+	server.event_recv([&](const std::string& msg) {
+		uint16_t port = stoi_nothrow(msg);
+		if (!port) {
+			response_error(io, req, "Launch failed");
+			return;
+		}
+		attach_.reset(new attach(io));
+		attach_->connect(net::endpoint("127.0.0.1", port));
+		attach_->send(init);
+		attach_->send(req);
+	});
+	uint16_t server_port = wait_ok(server);
+	if (!server_port) {
+		response_error(io, req, "Launch failed");
+		return -1;
+	}
+	if (!create_process_with_debugger(req, server_port)) {
+		response_error(io, req, "Launch failed");
+		return -1;
+	}
+	for (;; sleep()) {
+		if (attach_) {
+			attach_->update();
+		}
+		else {
+			server.update();
+		}
+	}
+	return 0;
+}
+
+static int run_attach(stdinput& io, vscode::rprotocol& init, vscode::rprotocol& req)
+{
+	attach attach(io);
+	auto& args = req["arguments"];
+	std::string ip = args.HasMember("ip") ? args["ip"].Get<std::string>() : "127.0.0.1";
+	uint16_t port = args.HasMember("port") ? args["port"].GetUint() : 4278;
+	attach.connect(net::endpoint(ip, port));
+	attach.send(init);
+	attach.send(req);
+	for (;; sleep()) {
+		attach.update();
 	}
 	return 0;
 }
@@ -66,81 +134,39 @@ int main()
 	setbuf(stdout, NULL);
 
 	stdinput io;
-	vscode::rprotocol initproto;
-	vscode::rprotocol connectproto;
-	std::unique_ptr<attach> attach_;
-	std::unique_ptr<server> server_;
+	vscode::rprotocol init;
 
-	for (;; std::this_thread::sleep_for(std::chrono::milliseconds(10))) {
-		if (attach_) {
-			attach_->update();
+	for (;; sleep()) {
+		vscode::rprotocol req = vscode::io_input(&io);
+		if (req.IsNull()) {
 			continue;
 		}
-		if (server_) {
-			server_->update();
-			continue;
+		if (req["type"] != "request") {
+			return -1;
 		}
-		for (;;) {
-			vscode::rprotocol rp = vscode::io_input(&io);
-			if (rp.IsNull()) {
-				break;
-			}
-			if (rp["type"] != "request") {
-				continue;
-			}
-			if (initproto.IsNull()) {
-				if (rp["command"] == "initialize") {
-					response_initialized(io, rp);
-					initproto = std::move(rp);
-					initproto.AddMember("__norepl", true, initproto.GetAllocator());
-				}
-				else {
-					response_error(io, rp, "not initialized");
-					return -1;
-				}
+		if (init.IsNull()) {
+			if (req["command"] == "initialize") {
+				response_initialized(io, req);
+				init = std::move(req);
+				init.AddMember("__norepl", true, init.GetAllocator());
 			}
 			else {
-				if (rp["command"] == "launch") {
-					auto& args = rp["arguments"];
-					if (args.HasMember("runtimeExecutable")) {
-						if (!server_) {
-							server_.reset(new server("127.0.0.1", 0));
-							server_->event_recv([&](const std::string& msg) {
-								uint16_t port = stoi_nothrow(msg);
-								if (!port) {
-									response_error(io, connectproto, "Launch failed");
-									return;
-								}
-								attach_.reset(new attach(io));
-								attach_->connect(net::endpoint("127.0.0.1", port));
-								attach_->send(initproto);
-								attach_->send(connectproto);
-							});
-							server_port = wait_ok(server_.get());
-							if (!server_port) {
-								response_error(io, rp, "Launch failed");
-								continue;
-							}
-						}
-						if (!create_process_with_debugger(rp, server_port)) {
-							response_error(io, rp, "Launch failed");
-							continue;
-						}
-						connectproto = std::move(rp);
-					}
-					else {
-						return run_launch(io, initproto, rp);
-					}
+				response_error(io, req, "not initialized");
+				return -1;
+			}
+		}
+		else {
+			if (req["command"] == "launch") {
+				auto& args = req["arguments"];
+				if (args.HasMember("runtimeExecutable")) {
+					return run_createprocess_then_attach(io, init, req);
 				}
-				else if (rp["command"] == "attach") {
-					attach_.reset(new attach(io));
-					auto& args = rp["arguments"];
-					std::string ip = args.HasMember("ip") ? args["ip"].Get<std::string>() : "127.0.0.1";
-					uint16_t port = args.HasMember("port") ? args["port"].GetUint() : 4278;
-					attach_->connect(net::endpoint(ip, port));
-					attach_->send(initproto);
-					attach_->send(rp);
+				else {
+					return run_launch(io, init, req);
 				}
+			}
+			else if (req["command"] == "attach") {
+				return run_attach(io, init, req);
 			}
 		}
 	}

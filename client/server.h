@@ -23,15 +23,3 @@ private:
 	server_impl* impl_;
 };
 
-inline uint16_t wait_ok(server* s) {
-	uint16_t port = 0;
-	for (int i = 0; i < 10; ++i) {
-		port = s->get_port();
-		if (port) {
-			return port;
-		}
-		std::this_thread::sleep_for(std::chrono::milliseconds(10));
-		s->update();
-	}
-	return 0;
-}
