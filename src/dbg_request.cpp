@@ -130,8 +130,8 @@ namespace vscode
 		{
 			set_state(state::running);
 		}
-		if (attach_callback_) {
-			attach_callback_();
+		if (on_attach_) {
+			on_attach_();
 		}
 		return !stopOnEntry;
 	}

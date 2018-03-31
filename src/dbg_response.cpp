@@ -6,10 +6,6 @@ namespace vscode
 {
 	void debugger_impl::response_initialize(rprotocol& req)
 	{
-		if (req.HasMember("__initseq") && req["__initseq"].IsInt())
-		{
-			seq = req["__initseq"].GetInt64();
-		}
 		if (req.HasMember("__norepl") && req["__norepl"].IsBool() && req["__norepl"].GetBool())
 		{
 			seq++;
