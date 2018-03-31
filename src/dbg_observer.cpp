@@ -655,28 +655,37 @@ namespace vscode {
 
 	void frame::extand_local(lua_State* L, lua::Debug* ar, debugger_impl* dbg, value const& v, wprotocol& res)
 	{
+		std::vector<var> vars;
 		for (int n = 1;; n++)
 		{
 			const char* name = 0;
 			switch (v.type) {
-			case value::Type::upvalue: if (!get_upvalue(L, ar, n, &name)) return; else break;
-			case value::Type::local: if (!get_local(L, ar, n, &name)) return; else break;
-			case value::Type::vararg: if (!get_vararg(L, ar, n, &name)) return; else break;
+			case value::Type::upvalue: if (!get_upvalue(L, ar, n, &name)) goto finish; else break;
+			case value::Type::local: if (!get_local(L, ar, n, &name)) goto finish; else break;
+			case value::Type::vararg: if (!get_vararg(L, ar, n, &name)) goto finish; else break;
 			default: return;
 			}
 			if (name) {
-				var var(L, n, name, -1, dbg->get_pathconvert());
-				for (auto _ : res.Object())
-				{
-					if (var.extand) {
-						res("variablesReference").Int64(new_variable(v.self, v.type, n));
-					}
-					res("name").String(var.name);
-					res("value").String(var.value);
-					res("type").String(var.type);
-				}
+				vars.erase(
+					std::remove_if(vars.begin(), vars.end(), [&](var const& v)->bool {
+						return v.name == name;
+					}), vars.end()
+				);
+				vars.emplace_back(var(L, n, name, -1, dbg->get_pathconvert()));
 			}
 			lua_pop(L, 1);
+		}
+finish:
+		for (auto& var : vars) {
+			for (auto _ : res.Object())
+			{
+				if (var.extand) {
+					res("variablesReference").Int64(new_variable(v.self, v.type, var.n));
+				}
+				res("name").String(var.name);
+				res("value").String(var.value);
+				res("type").String(var.type);
+			}
 		}
 	}
 
