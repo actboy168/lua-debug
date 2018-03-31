@@ -55,6 +55,7 @@ namespace vscode
 		L = get_mainthread(L);
 		if (hookL_.find(L) != hookL_.end()) {
 			lua_sethook(L, 0, 0, 0);
+			hookL_.erase(L);
 		}
 	}
 

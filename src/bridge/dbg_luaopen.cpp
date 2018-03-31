@@ -48,7 +48,9 @@ namespace luaw {
 		if (!self.dbg) {
 			return 0;
 		}
+		self.dbg->detach_lua(L);
 		self.dbg->wait_attach();
+		self.dbg->attach_lua(L);
 		return 0;
 	}
 
