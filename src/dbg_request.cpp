@@ -108,6 +108,8 @@ namespace vscode
 		else if (sourceCoding.Get<std::string>() == "ansi") {
 			pathconvert_.set_coding(coding::ansi);
 		}
+
+		nodebug_ = config_.get("noDebug", rapidjson::kFalseType).GetBool();
 		response_success(req);
 		initproto_ = std::move(req);
 		return false;
