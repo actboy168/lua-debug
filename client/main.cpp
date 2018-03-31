@@ -14,9 +14,6 @@
 #include "dbg_iohelper.h"
 #include "dbg_iohelper.cpp"
 
-bool create_process_with_debugger(vscode::rprotocol& req, uint16_t port);
-
-uint16_t server_port = 0;
 
 static void response_initialized(stdinput& io, vscode::rprotocol& req)
 {
@@ -76,6 +73,8 @@ static uint16_t wait_ok(server& s) {
 	}
 	return 0;
 }
+
+bool create_process_with_debugger(vscode::rprotocol& req, uint16_t port);
 
 static int run_createprocess_then_attach(stdinput& io, vscode::rprotocol& init, vscode::rprotocol& _req)
 {
