@@ -51,14 +51,12 @@ namespace vscode
 	private:
 		void event_close();
 		bool event_in();
-		bool event_message(const std::string& buf, size_t start, size_t count);
-		bool unpack();
 
 	private:
 		server* server_;
-		std::string stream_buf_;
-		size_t      stream_stat_;
-		size_t      stream_len_;
+		std::string buf_;
+		size_t      stat_;
+		size_t      len_;
 		net::tcp::buffer<std::string, 8> input_queue_;
 	};
 
@@ -94,9 +92,9 @@ namespace vscode
 	session::session(server* server, net::poller_t* poll)
 		: net::tcp::stream(poll)
 		, server_(server)
-		, stream_stat_(0)
-		, stream_buf_()
-		, stream_len_(0)
+		, stat_(0)
+		, buf_()
+		, len_(0)
 	{
 	}
 
@@ -128,58 +126,44 @@ namespace vscode
 	{
 		if (!base_type::event_in())
 			return false;
-		if (!unpack())
-			return false;
-		return true;
-	}
-
-	bool session::unpack()
-	{
 		for (size_t n = base_type::recv_size(); n; --n)
 		{
 			char c = 0;
 			base_type::recv(&c, 1);
-			stream_buf_.push_back(c);
-			switch (stream_stat_)
+			buf_.push_back(c);
+			switch (stat_)
 			{
 			case 0:
-				if (c == '\r') stream_stat_ = 1;
+				if (c == '\r') stat_ = 1;
 				break;
 			case 1:
-				stream_stat_ = 0;
+				stat_ = 0;
 				if (c == '\n')
 				{
-					if (stream_buf_.substr(0, 16) != "Content-Length: ")
+					if (buf_.substr(0, 16) != "Content-Length: ")
 					{
 						return false;
 					}
 					try {
-						stream_len_ = (size_t)std::stol(stream_buf_.substr(16, stream_buf_.size() - 18));
-						stream_stat_ = 2;
+						len_ = (size_t)std::stol(buf_.substr(16, buf_.size() - 18));
+						stat_ = 2;
 					}
 					catch (...) {
 						return false;
 					}
-					stream_buf_.clear();
+					buf_.clear();
 				}
 				break;
 			case 2:
-				if (stream_buf_.size() >= (stream_len_ + 2))
+				if (buf_.size() >= (len_ + 2))
 				{
-					if (!event_message(stream_buf_, 2, stream_len_))
-						return false;
-					stream_buf_.clear();
-					stream_stat_ = 0;
+					input_queue_.push(buf_.substr(2, len_));
+					buf_.clear();
+					stat_ = 0;
 				}
 				break;
 			}
 		}
-		return true;
-	}
-
-	bool session::event_message(const std::string& buf, size_t start, size_t count)
-	{
-		input_queue_.push(buf.substr(start, count));
 		return true;
 	}
 
