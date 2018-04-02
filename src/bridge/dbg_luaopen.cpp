@@ -5,7 +5,6 @@
 #include <memory>
 #include <intrin.h>  
 
-
 namespace luaw {
 	struct ud {
 		std::unique_ptr<vscode::network>  io;
@@ -19,16 +18,20 @@ namespace luaw {
 		}
 	};
 
+	static std::unique_ptr<ud> global;
+
 	static ud& to(lua_State* L, int idx)
 	{
-		return *(ud*)luaL_checkudata(L, idx, "vscode::debugger");
+		return *global;
 	}
 
 	static int constructor(lua_State* L)
 	{
-		void* storage = lua_newuserdata(L, sizeof(ud));
+		if (!global) {
+			global.reset(new ud);
+		}
+		lua_newuserdata(L, 1);
 		luaL_setmetatable(L, "vscode::debugger");
-		new (storage)ud();
 		return 1;
 	}
 
@@ -97,7 +100,6 @@ namespace luaw {
 		if (self.dbg) {
 			self.dbg->detach_lua(L);
 		}
-		self.~ud();
 		return 0;
 	}
 
