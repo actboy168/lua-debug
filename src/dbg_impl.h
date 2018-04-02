@@ -146,7 +146,6 @@ namespace vscode
 		bool               exception_;
 		std::set<lua_State*> hookL_;
 		dbg_thread*        thread_;
-		std::atomic<bool>  allowhook_;
 		std::function<void()> on_attach_;
 		std::string        console_;
 		std::unique_ptr<redirector> stdout_;

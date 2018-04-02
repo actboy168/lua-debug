@@ -173,8 +173,6 @@ namespace vscode
 
 	void debugger_impl::hook(lua_State *L, lua::Debug *ar)
 	{
-		if (!allowhook_) { return; }
-
 		std::lock_guard<dbg_thread> lock(*thread_);
 
 		if (ar->event == LUA_HOOKCALL)
@@ -224,13 +222,16 @@ namespace vscode
 			return;
 		}
 
-		allowhook_ = false;
+		lua_Hook f = lua_gethook(L);
+		int mark = lua_gethookmask(L);
+		int count = lua_gethookcount(L);
+		lua_sethook(L, 0, 0, 0);
 		lua::Debug ar;
 		if (lua_getstack(L, 0, (lua_Debug*)&ar))
 		{
 			run_stopped(L, &ar, "exception");
 		}
-		allowhook_ = true;
+		lua_sethook(L, f, mark, count);
 	}
 
 	void debugger_impl::run_stopped(lua_State *L, lua::Debug *ar, const char* reason)
@@ -471,7 +472,6 @@ namespace vscode
 		, hookL_()
 		, on_attach_()
 		, console_("none")
-		, allowhook_(true)
 		, nodebug_(false)
 		, thread_(mode == threadmode::async 
 			? (dbg_thread*)new async(std::bind(&debugger_impl::update, this))
