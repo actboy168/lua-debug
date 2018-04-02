@@ -325,6 +325,9 @@ namespace vscode
 
 	void debugger_impl::wait_attach()
 	{
+		if (!is_state(state::initialized) && !is_state(state::birth)) {
+			return;
+		}
 		if (thread_->mode() == threadmode::async) {
 			semaphore sem;
 			on_attach_ = [&]() {
