@@ -112,7 +112,7 @@ void server_impl::update()
 
 bool server_impl::listen()
 {
-	return base_type::listen(endpoint_, false, std::bind(&server_impl::event_accept, this, std::placeholders::_1, std::placeholders::_2));
+	return base_type::listen(endpoint_, false);
 }
 
 void server_impl::event_accept(net::socket::fd_t fd, const net::endpoint& ep)

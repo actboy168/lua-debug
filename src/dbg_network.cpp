@@ -221,7 +221,7 @@ namespace vscode
 
 	bool server::listen()
 	{
-		bool ok = base_type::listen(endpoint_, rebind_, std::bind(&server::event_accept, this, std::placeholders::_1, std::placeholders::_2));
+		bool ok = base_type::listen(endpoint_, rebind_);
 		if (ok) {
 			const wchar_t* env = _wgetenv(L"LUADBG_PORT");
 			if (env) {
