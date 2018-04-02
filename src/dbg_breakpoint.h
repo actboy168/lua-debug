@@ -29,7 +29,12 @@ namespace vscode
 	struct bp {
 		std::string condition;
 		std::string hitcondition;
-		int hit = 0;
+		int hit;
+		bp(const std::string& cond, const std::string& hcond, int h)
+			: condition(cond)
+			, hitcondition(hcond)
+			, hit(h)
+		{ }
 
 	};
 	typedef std::map<size_t, bp> bp_source;

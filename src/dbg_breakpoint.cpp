@@ -57,13 +57,14 @@ namespace vscode
 
 	void breakpoint::add(bp_source& src, size_t line, const std::string& condition, const std::string& hitcondition)
 	{
-		if (src.find(line) != src.end())
+		auto it = src.find(line);
+		if (it != src.end())
 		{
-			src[line] = { condition, hitcondition, src[line].hit };
+			it->second = bp(condition, hitcondition, it->second.hit);
 			return;
 		}
 
-		src.insert({ line,{ condition, hitcondition, 0 } });
+		src.insert(std::make_pair(line, bp(condition, hitcondition, 0)));
 		if (line >= fast_table_.size())
 		{
 			size_t oldsize = fast_table_.size();

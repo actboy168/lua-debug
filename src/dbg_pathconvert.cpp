@@ -33,7 +33,7 @@ namespace vscode
 		}
 		std::wstring r;
 		r.resize(len); 
-		GetCurrentDirectoryW((DWORD)r.size(), r.data());
+		GetCurrentDirectoryW((DWORD)r.size(), &r.front());
 		return base::w2u(r);
 	}
 
