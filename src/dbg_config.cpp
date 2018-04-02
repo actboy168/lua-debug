@@ -37,11 +37,24 @@ namespace vscode {
 		return true;
 	}
 
+	static bool isBool(rapidjson::Type type) {
+		return (type == rapidjson::kTrueType || type == rapidjson::kFalseType);
+	}
+
 	rapidjson::Value const& config::get(const std::string& key, rapidjson::Type type) const
 	{
-		for (rapidjson::Value const& cfg : val) {
-			if (cfg.IsObject() && cfg.HasMember(key) && cfg[key].GetType() == type) {
-				return cfg[key];
+		if (isBool(type)) {
+			for (rapidjson::Value const& cfg : val) {
+				if (cfg.IsObject() && cfg.HasMember(key) && isBool(cfg[key].GetType())) {
+					return cfg[key];
+				}
+			}
+		}
+		else {
+			for (rapidjson::Value const& cfg : val) {
+				if (cfg.IsObject() && cfg.HasMember(key) && cfg[key].GetType() == type) {
+					return cfg[key];
+				}
 			}
 		}
 		static rapidjson::Value s_dummy;

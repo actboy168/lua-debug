@@ -155,6 +155,7 @@ namespace vscode
 		rprotocol          initproto_;
 		observer           ob_;
 		config             config_;
+		bool               nodebug_;
 		std::map<std::string, std::function<bool(rprotocol&)>>                            main_dispatch_;
 		std::map<std::string, std::function<bool(rprotocol&, lua_State*, lua::Debug *ar)>> hook_dispatch_;
 	};

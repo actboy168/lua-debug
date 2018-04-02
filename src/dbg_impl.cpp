@@ -30,6 +30,7 @@ namespace vscode
 
 	void debugger_impl::attach_lua(lua_State* L)
 	{
+		if (nodebug_) return;
 		L = get_mainthread(L);
 		if (hookL_.insert(L).second) {
 			if (!thunk_hook_) {
@@ -54,6 +55,7 @@ namespace vscode
 		L = get_mainthread(L);
 		if (hookL_.find(L) != hookL_.end()) {
 			lua_sethook(L, 0, 0, 0);
+			hookL_.erase(L);
 		}
 	}
 
@@ -471,6 +473,7 @@ namespace vscode
 		, on_attach_()
 		, console_("none")
 		, allowhook_(true)
+		, nodebug_(false)
 		, thread_(mode == threadmode::async 
 			? (dbg_thread*)new async(std::bind(&debugger_impl::update, this))
 			: (dbg_thread*)new sync(std::bind(&debugger_impl::run_idle, this)))
