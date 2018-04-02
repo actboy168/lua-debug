@@ -444,6 +444,7 @@ namespace vscode
 
 	debugger_impl::~debugger_impl()
 	{
+		thread_->stop();
 		thunk_destory(thunk_hook_);
 	}
 

@@ -28,6 +28,7 @@ namespace vscode
 	{
 		virtual threadmode mode() const = 0;
 		virtual void start() = 0;
+		virtual void stop() = 0;
 		virtual void update() = 0;
 		virtual void lock() = 0;
 		virtual bool try_lock() = 0;

@@ -45,8 +45,7 @@ namespace vscode {
 
 		~async()
 		{
-			exit_ = true;
-			if (thd_) thd_->join();
+			stop();
 		}
 
 		threadmode mode() const { return threadmode::async; }
@@ -54,6 +53,14 @@ namespace vscode {
 		void start()
 		{
 			thd_.reset(new std::thread(std::bind(&async::run, this)));
+		}
+
+		void stop()
+		{
+			if (!exit_) {
+				exit_ = true;
+				if (thd_) thd_->join();
+			}
 		}
 
 		void run()
@@ -88,6 +95,7 @@ namespace vscode {
 
 		threadmode mode() const { return threadmode::sync; }
 		void start() {}
+		void stop() {}
 		void lock() {}
 		bool try_lock() { return true; }
 		void unlock() {}
