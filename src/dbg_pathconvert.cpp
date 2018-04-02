@@ -33,7 +33,7 @@ namespace vscode
 		}
 		std::wstring r;
 		r.resize(len); 
-		GetCurrentDirectoryW((DWORD)r.size(), r.data());
+		GetCurrentDirectoryW((DWORD)r.size(), &r.front());
 		return base::w2u(r);
 	}
 
@@ -125,16 +125,17 @@ namespace vscode
 		return true;
 	}
 
-	bool pathconvert::find_sourcemap(const std::string& srv, std::string& cli)
+	std::string pathconvert::find_sourcemap(const std::string& srv)
 	{
+		std::string cli;
 		for (auto& it : sourcemaps_)
 		{
 			if (match_sourcemap(srv, cli, it.first, it.second))
 			{
-				return true;
+				return cli;
 			}
 		}
-		return false;
+		return source2serverpath(srv);
 	}
 
 	std::string pathconvert::source2serverpath(const std::string& s) const
@@ -154,20 +155,18 @@ namespace vscode
 		bool res = true;
 		if (source[0] == '@')
 		{
-			std::string spath = source.substr(1);
-			std::string cpath;
-			if (find_sourcemap(spath, cpath))
-			{
-				client_path = cpath;
-			}
-			else
-			{
-				client_path = source2serverpath(spath);
-			}
+			client_path = find_sourcemap(source.substr(1));
 		}
 		else if (source[0] == '=' && debugger_->custom_)
 		{
-			res = debugger_->custom_->path_convert(source, client_path);
+			std::string path;
+			if (debugger_->custom_->path_convert(source, path)) {
+				client_path = find_sourcemap(path);
+			}
+			else {
+				client_path.clear();
+				res = false;
+			}
 		}
 		else
 		{

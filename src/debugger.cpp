@@ -1,6 +1,8 @@
 #include "debugger.h"
 #include "dbg_impl.h"
+#if defined(DEBUGGER_BRIDGE)
 #include "bridge/dbg_delayload.h"
+#endif
 
 namespace vscode
 {

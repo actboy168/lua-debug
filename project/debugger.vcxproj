@@ -29,6 +29,7 @@
     <ClCompile Include="..\src\dbg_iohelper.cpp" />
     <ClCompile Include="..\src\dbg_pathconvert.cpp" />
     <ClCompile Include="..\src\dbg_redirect.cpp" />
+    <ClCompile Include="..\src\dbg_thread.cpp" />
     <ClCompile Include="..\src\dbg_thunk.cpp" />
     <ClCompile Include="..\src\dbg_observer.cpp" />
     <ClCompile Include="..\src\debugger.cpp" />

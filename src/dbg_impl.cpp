@@ -326,6 +326,9 @@ namespace vscode
 
 	void debugger_impl::wait_attach()
 	{
+		if (!is_state(state::initialized) && !is_state(state::birth)) {
+			return;
+		}
 		if (thread_->mode() == threadmode::async) {
 			semaphore sem;
 			on_attach_ = [&]() {
@@ -445,8 +448,14 @@ namespace vscode
 		return vscode::io_input(network_);
 	}
 
+	void debugger_impl::io_close() 
+	{
+		network_->close();
+	}
+
 	debugger_impl::~debugger_impl()
 	{
+		thread_->stop();
 		thunk_destory(thunk_hook_);
 	}
 
@@ -474,8 +483,8 @@ namespace vscode
 		, console_("none")
 		, nodebug_(false)
 		, thread_(mode == threadmode::async 
-			? (dbg_thread*)new async(std::bind(&debugger_impl::update, this))
-			: (dbg_thread*)new sync(std::bind(&debugger_impl::run_idle, this)))
+			? (dbg_thread*)new async(this)
+			: (dbg_thread*)new sync(this))
 		, main_dispatch_
 		({
 			{ "launch", DBG_REQUEST_MAIN(request_attach) },

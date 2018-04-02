@@ -5,6 +5,7 @@
 #include <base/util/format.h>
 #include <set>
 #include <array>
+#include <base/util/string_view.h>
 
 namespace vscode {
 

@@ -60,11 +60,11 @@ namespace net { namespace tcp {
 			return 0;
 		}
 
-		bool listen(const endpoint& addr, bool rebind, std::function<void(socket::fd_t, const endpoint&)> connected)
+		virtual void event_accept(net::socket::fd_t fd, const net::endpoint& ep) = 0;
+
+		bool listen(const endpoint& addr, bool rebind)
 		{
 			assert(stat_ == e_idle);
-			assert(!!connected);
-			connected_ = connected;
 			NETLOG_INFO() << "socket(" << event_type::sock << ") " << addr.to_string() << " listening";
 			int rc = socket::listen(event_type::sock, addr, 0x100, rebind);
 			if (rc == 0)
@@ -97,7 +97,7 @@ namespace net { namespace tcp {
 			int rc = socket::accept(event_type::sock, fd, ep);
 			if (rc == 0)
 			{
-				connected_(fd, ep);
+				event_accept(fd, ep);
 				return true;
 			}
 			else if (rc == -2)
@@ -138,7 +138,6 @@ namespace net { namespace tcp {
 		}
 
 	protected:
-		std::function<void(socket::fd_t, const endpoint&)> connected_;
 		stat_t stat_;
 	};
 	typedef listener_t<poller_t> listener;

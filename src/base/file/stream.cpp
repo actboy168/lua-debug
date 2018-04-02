@@ -43,10 +43,6 @@ namespace base { namespace file {
 		: file_(filename.c_str(), std::ios_base::out)
 	{ }
 
-	write_stream::write_stream(const fs::path& filename)
-		: file_(filename.c_str(), std::ios_base::out)
-	{ }
-
 	read_stream::read_stream(const char* filename)
 		: file_(filename, std::ios_base::in)
 	{ }
@@ -60,10 +56,6 @@ namespace base { namespace file {
 	{ }
 
 	read_stream::read_stream(const std::wstring& filename)
-		: file_(filename.c_str(), std::ios_base::in)
-	{ }
-
-	read_stream::read_stream(const fs::path& filename)
 		: file_(filename.c_str(), std::ios_base::in)
 	{ }
 }}

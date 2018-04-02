@@ -17,7 +17,7 @@ namespace vscode
 		pathconvert(debugger_impl* dbg);
 		void   add_sourcemap(const std::string& srv, const std::string& cli);
 		void   clear_sourcemap();
-		bool   find_sourcemap(const std::string& srv, std::string& cli);
+		std::string find_sourcemap(const std::string& srv);
 		bool   get(const std::string& server_path, std::string& client_path);
 		void   set_coding(coding coding);
 

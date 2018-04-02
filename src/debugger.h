@@ -41,7 +41,7 @@ namespace vscode
 
 	struct custom
 	{
-		virtual bool path_convert(const std::string& source, std::string& client_path) = 0;
+		virtual bool path_convert(const std::string& source, std::string& path) = 0;
 	};
 
 	class DEBUGGER_API debugger
