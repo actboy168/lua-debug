@@ -6,7 +6,7 @@
 #include "dbg_pathconvert.h"
 
 struct lua_State;
-namespace lua { union Debug; }
+namespace lua { struct Debug; }
 
 namespace vscode
 {

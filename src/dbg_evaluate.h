@@ -1,7 +1,7 @@
 #pragma once
 
 struct lua_State;
-namespace lua { union Debug; }
+namespace lua { struct Debug; }
 
 namespace vscode
 {
