@@ -12,14 +12,21 @@ namespace delayload
 	static HMODULE luadll_handle = 0;
 	static GetLuaApi get_lua_api = ::GetProcAddress;
 
+	bool has_luadll()
+	{
+		return !luadll_path.empty() || luadll_handle != 0;
+	}
+
 	void set_luadll(const std::wstring& path)
 	{
+		if (has_luadll()) return;
 		luadll_path = path;
 		get_lua_api = ::GetProcAddress;
 	}
 
 	void set_luadll(HMODULE handle, GetLuaApi fn)
 	{
+		if (has_luadll()) return;
 		luadll_handle = handle;
 		get_lua_api = fn ? fn : ::GetProcAddress;
 	}
