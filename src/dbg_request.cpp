@@ -347,7 +347,7 @@ namespace vscode
 	{
 		response_success(req);
 		close();
-		network_->close();
+		io_close();
 		return true;
 	}
 

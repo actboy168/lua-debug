@@ -1,11 +1,26 @@
 #pragma once
 
+#include <atomic>
 #include <condition_variable>
 #include <mutex>
 #include <thread>
 #include <net/datetime/clock.h>
+#include "debugger.h"
 
 namespace vscode {
+
+	class debugger_impl;
+
+	struct dbg_thread
+	{
+		virtual threadmode mode() const = 0;
+		virtual void start() = 0;
+		virtual void stop() = 0;
+		virtual void update() = 0;
+		virtual void lock() = 0;
+		virtual bool try_lock() = 0;
+		virtual void unlock() = 0;
+	};
 
 	class semaphore {
 	public:
@@ -36,77 +51,36 @@ namespace vscode {
 	struct async
 		: public dbg_thread
 	{
-		async(std::function<void()> const& threadfunc)
-			: mtx_()
-			, exit_(false)
-			, func_(threadfunc)
-			, thd_()
-		{ }
+		async(debugger_impl* dbg);
+		~async();
+		threadmode mode() const;
+		void start();
+		void stop();
+		void run();
+		void lock();
+		bool try_lock();
+		void unlock();
+		void update();
 
-		~async()
-		{
-			stop();
-		}
-
-		threadmode mode() const { return threadmode::async; }
-
-		void start()
-		{
-			thd_.reset(new std::thread(std::bind(&async::run, this)));
-		}
-
-		void stop()
-		{
-			if (!exit_) {
-				exit_ = true;
-				if (thd_) thd_->join();
-			}
-		}
-
-		void run()
-		{
-			for (
-				; !exit_
-				; std::this_thread::sleep_for(std::chrono::milliseconds(100)))
-			{
-				func_();
-			}
-		}
-
-		void lock() { return mtx_.lock(); }
-		bool try_lock() { return mtx_.try_lock(); }
-		void unlock() { return mtx_.unlock(); }
-		void update() { }
-
-		std::mutex  mtx_;
-		std::atomic<bool> exit_;
-		std::function<void()> func_;
+		debugger_impl*               dbg_;
+		std::mutex                   mtx_;
+		std::atomic<bool>            exit_;
 		std::unique_ptr<std::thread> thd_;
 	};
 
 	struct sync
 		: public dbg_thread
 	{
-		sync(std::function<void()> const& threadfunc)
-			: func_(threadfunc)
-			, time_()
-			, last_(time_.now_ms())
-		{ }
+		sync(debugger_impl* dbg);
+		threadmode mode() const;
+		void start();
+		void stop();
+		void lock();
+		bool try_lock();
+		void unlock();
+		void update();
 
-		threadmode mode() const { return threadmode::sync; }
-		void start() {}
-		void stop() {}
-		void lock() {}
-		bool try_lock() { return true; }
-		void unlock() {}
-		void update() {
-			uint64_t now = time_.now_ms();
-			if (now - last_ > 100) {
-				now = last_;
-				func_();
-			}
-		}
-		std::function<void()>  func_;
+		debugger_impl*         dbg_;
 		net::datetime::clock_t time_;
 		uint64_t               last_;
 	};

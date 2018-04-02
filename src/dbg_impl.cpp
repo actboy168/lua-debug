@@ -447,6 +447,11 @@ namespace vscode
 		return vscode::io_input(network_);
 	}
 
+	void debugger_impl::io_close() 
+	{
+		network_->close();
+	}
+
 	debugger_impl::~debugger_impl()
 	{
 		thread_->stop();
@@ -478,8 +483,8 @@ namespace vscode
 		, allowhook_(true)
 		, nodebug_(false)
 		, thread_(mode == threadmode::async 
-			? (dbg_thread*)new async(std::bind(&debugger_impl::update, this))
-			: (dbg_thread*)new sync(std::bind(&debugger_impl::run_idle, this)))
+			? (dbg_thread*)new async(this)
+			: (dbg_thread*)new sync(this))
 		, main_dispatch_
 		({
 			{ "launch", DBG_REQUEST_MAIN(request_attach) },

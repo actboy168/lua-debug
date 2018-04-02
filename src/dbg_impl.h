@@ -23,17 +23,7 @@ namespace vscode
 	struct io;
 	class rprotocol;
 	class wprotocol;
-
-	struct dbg_thread
-	{
-		virtual threadmode mode() const = 0;
-		virtual void start() = 0;
-		virtual void stop() = 0;
-		virtual void update() = 0;
-		virtual void lock() = 0;
-		virtual bool try_lock() = 0;
-		virtual void unlock() = 0;
-	};
+	struct dbg_thread;
 
 	class debugger_impl
 	{
@@ -54,6 +44,7 @@ namespace vscode
 		debugger_impl(io* io, threadmode mode);
 		~debugger_impl();
 		void close();
+		void io_close();
 		void hook(lua_State* L, lua::Debug* ar);
 		void exception(lua_State* L);
 		void run_stopped(lua_State* L, lua::Debug* ar, const char* reason);
