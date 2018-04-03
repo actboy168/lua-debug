@@ -1,7 +1,7 @@
 #include <thread> 
 #include <lua.hpp>	 
 #include <debugger/debugger.h>
-#include "dbg_network.h"
+#include <debugger/io/socket.h>
 
 #define STD_SLEEP(n) std::this_thread::sleep_for(std::chrono::milliseconds(n))
 
@@ -10,9 +10,10 @@ int main()
 	lua_State *L = luaL_newstate();
 	luaL_openlibs(L);
 
-	vscode::network  network("0.0.0.0", 4278, false);
-	vscode::debugger debugger(&network, vscode::threadmode::sync, vscode::coding::utf8);
-	debugger.attach_lua(L, true);
+	vscode::io::socket network("0.0.0.0", 4278, false);
+	vscode::debugger debugger(&network, vscode::threadmode::sync);
+	debugger.wait_attach();	
+	debugger.attach_lua(L);
 	for (;;)
 	{
 		for (int i = 0; i < 100; ++i)
