@@ -5,9 +5,17 @@
 #include <rapidjson/schema.h> 
 
 namespace vscode {
-	typedef rapidjson::SchemaDocument schema;
+	class schema
+	{
+	public:
+		bool open(const std::wstring& path);
+		bool accept(const rapidjson::Document& d);
+		operator bool() const;
 
-	schema*   io_schema(const std::wstring& schemafile);
+	private:
+		std::unique_ptr<rapidjson::SchemaDocument> doc;
+	};
+
 	rprotocol io_input (io::base* io, schema* schema = nullptr);
 	void      io_output(io::base* io, const wprotocol& wp);
 	void      io_output(io::base* io, const rprotocol& rp);

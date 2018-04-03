@@ -4,6 +4,7 @@
 #include <debugger/client/stdinput.h>
 #include <debugger/bridge/delayload.h>
 #include <base/filesystem.h>
+#include <base/path/self.h>
 #include <base/util/format.h>
 #include <base/util/unicode.h>
 #include <lua.hpp>

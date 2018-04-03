@@ -445,12 +445,17 @@ namespace vscode
 
 	rprotocol debugger_impl::io_input()
 	{
-		return vscode::io_input(network_);
+		return vscode::io_input(network_, &schema_);
 	}
 
 	void debugger_impl::io_close() 
 	{
 		network_->close();
+	}
+
+	bool debugger_impl::open_schema(const std::wstring& path)
+	{
+		return schema_.open(path);
 	}
 
 	debugger_impl::~debugger_impl()

@@ -18,6 +18,7 @@
 #include <debugger/observer.h>
 #include <debugger/config.h>
 #include <debugger/io/base.h>
+#include <debugger/io/helper.h>
 
 namespace vscode
 {
@@ -43,6 +44,7 @@ namespace vscode
 	public:
 		debugger_impl(io::base* io, threadmode mode);
 		~debugger_impl();
+		bool open_schema(const std::wstring& path);
 		void close();
 		void io_close();
 		void hook(lua_State* L, lua::Debug* ar);
@@ -123,6 +125,7 @@ namespace vscode
 	private:
 		int64_t            seq;
 		io::base*          network_;
+		schema             schema_;
 		state              state_;
 		step               step_;
 		int                stepping_target_level_;

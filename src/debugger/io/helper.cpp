@@ -47,20 +47,45 @@ namespace vscode {
 		std::fstream file_;
 	};
 
-	schema* io_schema(const std::wstring& schemafile)
+	bool schema::open(const std::wstring& path)
 	{
-		file file(schemafile.c_str(), std::ios_base::in);
+		file file(path.c_str(), std::ios_base::in);
 		if (!file.is_open()) {
-			return nullptr;
+			return false;
 		}
 		std::string buf = file.read<std::string>();
 		rapidjson::Document sd;
 		if (sd.Parse(buf.data(), buf.size()).HasParseError()) {
 			log("Input is not a valid JSON\n");
 			log("Error(offset %u): %s\n", static_cast<unsigned>(sd.GetErrorOffset()), rapidjson::GetParseError_En(sd.GetParseError()));
-			return nullptr;
+			return false;
 		}
-		return new schema(sd);
+		doc.reset(new rapidjson::SchemaDocument(sd));
+		return true;
+	}
+
+	bool schema::accept(const rapidjson::Document& d) {
+		if (!doc) {
+			return true;
+		}
+		rapidjson::SchemaValidator validator(*doc);
+		if (!d.Accept(validator))
+		{
+			rapidjson::StringBuffer sb;
+			validator.GetInvalidSchemaPointer().StringifyUriFragment(sb);
+			log("Invalid schema: %s\n", sb.GetString());
+			log("Invalid keyword: %s\n", validator.GetInvalidSchemaKeyword());
+			sb.Clear();
+			validator.GetInvalidDocumentPointer().StringifyUriFragment(sb);
+			log("Invalid document: %s\n", sb.GetString());
+			return false;
+		}
+		return true;
+	}
+
+	schema::operator bool() const
+	{
+		return !!doc;
 	}
 
 	rprotocol io_input(io::base* io, schema* schema)
@@ -77,21 +102,10 @@ namespace vscode {
 			io->close();
 			return rprotocol();
 		}
-		if (schema)
+		if (schema && !schema->accept(d))
 		{
-			rapidjson::SchemaValidator validator(*schema);
-			if (!d.Accept(validator))
-			{
-				rapidjson::StringBuffer sb;
-				validator.GetInvalidSchemaPointer().StringifyUriFragment(sb);
-				log("Invalid schema: %s\n", sb.GetString());
-				log("Invalid keyword: %s\n", validator.GetInvalidSchemaKeyword());
-				sb.Clear();
-				validator.GetInvalidDocumentPointer().StringifyUriFragment(sb);
-				log("Invalid document: %s\n", sb.GetString());		
-				io->close();
-				return rprotocol();
-			}
+			io->close();
+			return rprotocol();
 		}
 		log("%s\n", buf.data());
 		return rprotocol(std::move(d));
