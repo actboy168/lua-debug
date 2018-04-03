@@ -10,5 +10,6 @@ namespace vscode {
 	schema*   io_schema(const std::wstring& schemafile);
 	rprotocol io_input (io::base* io, schema* schema = nullptr);
 	void      io_output(io::base* io, const wprotocol& wp);
+	void      io_output(io::base* io, const rprotocol& rp);
 }
 

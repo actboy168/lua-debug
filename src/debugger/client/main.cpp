@@ -60,14 +60,6 @@ static void sleep() {
 
 bool create_process_with_debugger(vscode::rprotocol& req, const std::wstring& port);
 
-void io_send(vscode::io::base* io, const vscode::rprotocol& rp)
-{
-	rapidjson::StringBuffer buffer;
-	rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-	rp.Accept(writer);
-	io->output(buffer.GetString(), buffer.GetSize());
-}
-
 static int run_createprocess_then_attach(stdinput& io, vscode::rprotocol& init, vscode::rprotocol& req)
 {
 	std::unique_ptr<attach> attach_;
@@ -82,8 +74,8 @@ static int run_createprocess_then_attach(stdinput& io, vscode::rprotocol& init, 
 		response_error(io, req, "Launch failed");
 		return -1;
 	}
-	io_send(&pipe, init);
-	io_send(&pipe, req);
+	io_output(&pipe, init);
+	io_output(&pipe, req);
 	for (;; sleep()) {
 		io.update(10);
 		pipe.update(10);

@@ -105,4 +105,13 @@ namespace vscode {
 			return;
 		log("%s\n", wp.data());
 	}
+
+	void io_output(io::base* io, const rprotocol& rp)
+	{
+		rapidjson::StringBuffer buffer;
+		rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+		rp.Accept(writer);
+		io->output(buffer.GetString(), buffer.GetSize());
+	}
+
 }
