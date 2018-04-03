@@ -8,6 +8,8 @@
     <ClCompile Include="..\include\base\path\get_path.cpp">
       <Filter>base\path</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\debugger\io\namedpipe.cpp" />
+    <ClCompile Include="..\src\debugger\io\stream.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="base">

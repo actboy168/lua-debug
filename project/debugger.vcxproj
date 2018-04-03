@@ -28,6 +28,8 @@
     <ClCompile Include="..\src\debugger\impl.cpp" />
     <ClCompile Include="..\src\debugger\inlinebase.cpp" />
     <ClCompile Include="..\src\debugger\io\helper.cpp" />
+    <ClCompile Include="..\src\debugger\io\namedpipe.cpp" />
+    <ClCompile Include="..\src\debugger\io\stream.cpp" />
     <ClCompile Include="..\src\debugger\observer.cpp" />
     <ClCompile Include="..\src\debugger\pathconvert.cpp" />
     <ClCompile Include="..\src\debugger\redirect.cpp" />
@@ -48,6 +50,8 @@
     <ClInclude Include="..\include\debugger\impl.h" />
     <ClInclude Include="..\include\debugger\io\base.h" />
     <ClInclude Include="..\include\debugger\io\helper.h" />
+    <ClInclude Include="..\include\debugger\io\namedpipe.h" />
+    <ClInclude Include="..\include\debugger\io\stream.h" />
     <ClInclude Include="..\include\debugger\lua.h" />
     <ClInclude Include="..\include\debugger\observer.h" />
     <ClInclude Include="..\include\debugger\pathconvert.h" />

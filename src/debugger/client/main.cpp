@@ -7,9 +7,11 @@
 #include <debugger/client/attach.h>
 #include <debugger/client/server.h>
 #include <base/util/unicode.h>
+#include <base/util/format.h>
 #include <base/filesystem.h>
 #include <debugger/capabilities.h>
 #include <debugger/io/helper.h>
+#include <debugger/io/namedpipe.h>
 
 static void response_initialized(stdinput& io, vscode::rprotocol& req)
 {
@@ -70,39 +72,42 @@ static uint16_t wait_ok(server& s) {
 	return 0;
 }
 
-bool create_process_with_debugger(vscode::rprotocol& req, uint16_t port);
+bool create_process_with_debugger(vscode::rprotocol& req, const std::wstring& port);
 
-static int run_createprocess_then_attach(stdinput& io, vscode::rprotocol& init, vscode::rprotocol& _req)
+void io_send(vscode::io::base* io, const vscode::rprotocol& rp)
+{
+	rapidjson::StringBuffer buffer;
+	rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+	rp.Accept(writer);
+	io->output(buffer.GetString(), buffer.GetSize());
+}
+
+
+static int run_createprocess_then_attach(stdinput& io, vscode::rprotocol& init, vscode::rprotocol& req)
 {
 	std::unique_ptr<attach> attach_;
-	vscode::rprotocol req = std::move(_req);
-	server server("127.0.0.1", 0);
-	server.event_recv([&](const std::string& msg) {
-		uint16_t port = stoi_nothrow(msg);
-		if (!port) {
-			response_error(io, req, "Launch failed");
-			return;
-		}
-		attach_.reset(new attach(io));
-		attach_->connect(net::endpoint("127.0.0.1", port));
-		attach_->send(init);
-		attach_->send(req);
-	});
-	uint16_t server_port = wait_ok(server);
-	if (!server_port) {
+	auto port = base::format(L"vscode-lua-debug-%d", GetCurrentProcessId());
+	if (!create_process_with_debugger(req, port)) {
 		response_error(io, req, "Launch failed");
 		return -1;
 	}
-	if (!create_process_with_debugger(req, server_port)) {
+
+	vscode::io::namedpipe pipe;
+	if (!pipe.open_server(port)) {
 		response_error(io, req, "Launch failed");
 		return -1;
 	}
+	io_send(&pipe, init);
+	io_send(&pipe, req);
 	for (;; sleep()) {
-		if (attach_) {
-			attach_->update();
+		io.update(10);
+		pipe.update(10);
+		std::string buf;
+		while (io.input(buf)) {
+			pipe.output(buf.data(), buf.size());
 		}
-		else {
-			server.update();
+		while (pipe.input(buf)) {
+			io.output(buf.data(), buf.size());
 		}
 	}
 	return 0;
@@ -125,6 +130,7 @@ static int run_attach(stdinput& io, vscode::rprotocol& init, vscode::rprotocol& 
 
 int main()
 {
+	MessageBox(0, 0, 0, 0);
 	_setmode(_fileno(stdout), _O_BINARY);
 	setbuf(stdout, NULL);
 

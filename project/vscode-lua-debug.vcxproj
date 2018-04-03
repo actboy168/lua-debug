@@ -43,6 +43,8 @@
     <ClCompile Include="..\src\debugger\client\server.cpp" />
     <ClCompile Include="..\src\debugger\client\stdinput.cpp" />
     <ClCompile Include="..\src\debugger\io\helper.cpp" />
+    <ClCompile Include="..\src\debugger\io\namedpipe.cpp" />
+    <ClCompile Include="..\src\debugger\io\stream.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\base\hook\injectdll.h" />

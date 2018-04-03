@@ -6,11 +6,11 @@
 #include <base/hook/fp_call.h>
 #include <base/path/self.h>
 #include <debugger/debugger.h>
-#include <debugger/io/socket.h>
+#include <debugger/io/namedpipe.h>
 
 HMODULE luadll = 0;
 
-std::unique_ptr<vscode::io::socket> global_io;
+std::unique_ptr<vscode::io::namedpipe> global_io;
 std::unique_ptr<vscode::debugger> global_dbg;
 
 void initialize_debugger(lua_State* L)
@@ -23,8 +23,16 @@ void initialize_debugger(lua_State* L)
 	}
 	debugger_set_luadll(luadll, ::GetProcAddress);
 
-	global_io.reset(new vscode::io::socket("127.0.0.1", 0, false));
-	global_io->kill_process_when_close();
+	MessageBox(0, 0, 0, 0);
+	const wchar_t* pipename = _wgetenv(L"LUADBG_PORT");
+	if (!pipename) {
+		return;
+	}
+	global_io.reset(new vscode::io::namedpipe());
+	if (!global_io->open_client(pipename, 3)) {
+		return;
+	}
+	//global_io->kill_process_when_close();
 
 	global_dbg.reset(new vscode::debugger(global_io.get(), vscode::threadmode::async));
 	global_dbg->wait_attach();
