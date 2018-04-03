@@ -3,10 +3,8 @@
 #include <stack>
 #include <set>
 #include <base/hook/inline.h>
-#include <base/hook/inline.cpp>
 #include <base/hook/fp_call.h>
 #include <base/path/self.h>
-#include <base/path/get_path.cpp>
 #include <debugger/debugger.h>
 #include <debugger/io/socket.h>
 

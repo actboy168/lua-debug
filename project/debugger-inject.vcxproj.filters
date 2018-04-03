@@ -1,6 +1,37 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="..\inject\main.cpp" />
+    <ClCompile Include="..\src\debugger\inject\main.cpp" />
+    <ClCompile Include="..\include\base\hook\inline.cpp">
+      <Filter>base\hook</Filter>
+    </ClCompile>
+    <ClCompile Include="..\include\base\path\get_path.cpp">
+      <Filter>base\path</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="base">
+      <UniqueIdentifier>{1a0f8dcb-335e-4f56-a201-f97adbf278c4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="base\hook">
+      <UniqueIdentifier>{de1b1dc0-a51f-4b6d-afc7-0e2b593f1817}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="base\path">
+      <UniqueIdentifier>{d6d5ae00-2c54-493e-9e8d-2c5d579fe6cb}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\include\base\hook\inline.h">
+      <Filter>base\hook</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\base\path\get_path.h">
+      <Filter>base\path</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\base\path\self.h">
+      <Filter>base\path</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\base\hook\fp_call.h">
+      <Filter>base\hook</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

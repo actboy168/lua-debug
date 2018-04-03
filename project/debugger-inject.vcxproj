@@ -19,15 +19,23 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\inject\main.cpp" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\third_party\minhook\project\VC15\libMinHook.vcxproj">
       <Project>{f142a341-5ee0-442d-a15f-98ae9b48dbae}</Project>
     </ProjectReference>
     <ProjectReference Include="debugger.vcxproj">
       <Project>{9fd838ac-a5a2-4a24-8166-105ba0d8a973}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\include\base\hook\inline.cpp" />
+    <ClCompile Include="..\include\base\path\get_path.cpp" />
+    <ClCompile Include="..\src\debugger\inject\main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\include\base\hook\fp_call.h" />
+    <ClInclude Include="..\include\base\hook\inline.h" />
+    <ClInclude Include="..\include\base\path\get_path.h" />
+    <ClInclude Include="..\include\base\path\self.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{20F15A76-D908-475B-A904-6ACD1763D5FB}</ProjectGuid>
