@@ -5,7 +5,6 @@
 #include <debugger/client/stdinput.h>
 #include <debugger/client/launch.h>
 #include <debugger/client/attach.h>
-#include <debugger/client/server.h>
 #include <base/util/unicode.h>
 #include <base/util/format.h>
 #include <base/filesystem.h>
@@ -57,19 +56,6 @@ static int stoi_nothrow(std::string const& str)
 
 static void sleep() {
 	std::this_thread::sleep_for(std::chrono::milliseconds(10));
-}
-
-static uint16_t wait_ok(server& s) {
-	uint16_t port = 0;
-	for (int i = 0; i < 10; ++i) {
-		port = s.get_port();
-		if (port) {
-			return port;
-		}
-		sleep();
-		s.update();
-	}
-	return 0;
 }
 
 bool create_process_with_debugger(vscode::rprotocol& req, const std::wstring& port);
@@ -130,7 +116,6 @@ static int run_attach(stdinput& io, vscode::rprotocol& init, vscode::rprotocol& 
 
 int main()
 {
-	MessageBox(0, 0, 0, 0);
 	_setmode(_fileno(stdout), _O_BINARY);
 	setbuf(stdout, NULL);
 

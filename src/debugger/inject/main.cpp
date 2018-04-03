@@ -23,7 +23,6 @@ void initialize_debugger(lua_State* L)
 	}
 	debugger_set_luadll(luadll, ::GetProcAddress);
 
-	MessageBox(0, 0, 0, 0);
 	const wchar_t* pipename = _wgetenv(L"LUADBG_PORT");
 	if (!pipename) {
 		return;

@@ -16,26 +16,6 @@ namespace vscode { namespace io {
 	class rprotocol;
 	class wprotocol;
 
-	class shortconnect
-		: public net::tcp::connecter 
-	{
-	public:
-		typedef net::tcp::connecter base_type;
-		shortconnect(net::poller_t* poll, const char* ip, uint16_t port)
-		: base_type(poll)
-		{
-			base_type::connect(net::endpoint(ip, port));
-		}
-
-		bool try_close() {
-			if (write_empty()) {
-				close();
-				return true;
-			}
-			return false;
-		}
-	};
-
 	class session
 		: public net::tcp::stream
 	{
@@ -85,7 +65,6 @@ namespace vscode { namespace io {
 		net::endpoint            endpoint_;
 		std::vector<std::unique_ptr<session>> clearlist_;
 		bool                     rebind_;
-		std::unique_ptr<shortconnect> shortconnect_;
 	};
 
 	session::session(server* server, net::poller_t* poll)
@@ -197,25 +176,11 @@ namespace vscode { namespace io {
 				++s;
 			}
 		}
-		if (shortconnect_ && shortconnect_->try_close()) {
-			shortconnect_.reset();
-		}
 	}
 
 	bool server::listen()
 	{
-		bool ok = base_type::listen(endpoint_, rebind_);
-		if (ok) {
-			const wchar_t* env = _wgetenv(L"LUADBG_PORT");
-			if (env) {
-				int port = _wtoi(env);
-				if (port) {
-					shortconnect_.reset(new shortconnect(poller_, "127.0.0.1", port));
-					shortconnect_->send(std::to_string(get_port()));
-				}
-			}
-		}
-		return ok;
+		return base_type::listen(endpoint_, rebind_);
 	}
 
 	void server::event_accept(net::socket::fd_t fd, const net::endpoint& ep)

@@ -40,7 +40,6 @@
     <ClCompile Include="..\src\debugger\client\create_process.cpp" />
     <ClCompile Include="..\src\debugger\client\launch.cpp" />
     <ClCompile Include="..\src\debugger\client\main.cpp" />
-    <ClCompile Include="..\src\debugger\client\server.cpp" />
     <ClCompile Include="..\src\debugger\client\stdinput.cpp" />
     <ClCompile Include="..\src\debugger\io\helper.cpp" />
     <ClCompile Include="..\src\debugger\io\namedpipe.cpp" />

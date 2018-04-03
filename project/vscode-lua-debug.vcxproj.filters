@@ -31,9 +31,6 @@
     <ClCompile Include="..\src\debugger\client\main.cpp">
       <Filter>cpp\client</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\debugger\client\server.cpp">
-      <Filter>cpp\client</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\debugger\client\stdinput.cpp">
       <Filter>cpp\client</Filter>
     </ClCompile>
