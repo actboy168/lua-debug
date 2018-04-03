@@ -135,12 +135,7 @@ namespace vscode
 				return cli;
 			}
 		}
-		return source2serverpath(srv);
-	}
-
-	std::string pathconvert::source2serverpath(const std::string& s) const
-	{
-		return path_normalize(coding_ == coding::utf8 ? s : base::a2u(s));
+		return path_normalize(srv);
 	}
 
 	bool pathconvert::get(const std::string& source, std::string& client_path)
@@ -153,12 +148,7 @@ namespace vscode
 		}
 
 		bool res = true;
-		if (source[0] == '@')
-		{
-			client_path = find_sourcemap(source.substr(1));
-		}
-		else if (source[0] == '=' && debugger_->custom_)
-		{
+		if (debugger_->custom_) {
 			std::string path;
 			if (debugger_->custom_->path_convert(source, path)) {
 				client_path = find_sourcemap(path);
@@ -168,10 +158,19 @@ namespace vscode
 				res = false;
 			}
 		}
-		else
-		{
-			client_path.clear();
-			res = false;
+		else {
+			if (source[0] == '@') {
+				if (coding_ == coding::utf8) {
+					client_path = find_sourcemap(source.substr(1));
+				}
+				else {
+					client_path = find_sourcemap(base::a2u(base::strview(source.data() + 1, source.size() - 1)));
+				}
+			}
+			else {
+				client_path.clear();
+				res = false;
+			}
 		}
 		source2clientpath_[source] = client_path;
 		return res;

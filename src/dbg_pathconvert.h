@@ -22,7 +22,6 @@ namespace vscode
 		void   set_coding(coding coding);
 
 	private:
-		std::string source2serverpath(const std::string& s) const;
 		bool match_sourcemap(const std::string& srv, std::string& cli, const std::string& srvmatch, const std::string& climatch);
 
 	private:
