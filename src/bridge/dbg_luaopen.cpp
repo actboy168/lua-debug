@@ -1,19 +1,19 @@
 #include "bridge/dbg_delayload.h"
 #include "dbg_lua.h"
 #include "debugger.h"
-#include "dbg_network.h"
+#include "dbg_socket.h"
 #include <memory>
 #include <intrin.h>  
 
 namespace luaw {
 	struct ud {
-		std::unique_ptr<vscode::network>  io;
+		std::unique_ptr<vscode::io_socket>  io;
 		std::unique_ptr<vscode::debugger> dbg;
 
 		void listen(const char* ip, uint16_t port, bool rebind)
 		{
 			if (io || dbg) return;
-			io.reset(new vscode::network(ip, port, rebind));
+			io.reset(new vscode::io_socket(ip, port, rebind));
 			dbg.reset(new vscode::debugger(io.get(), vscode::threadmode::async));
 		}
 	};

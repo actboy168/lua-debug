@@ -21,12 +21,12 @@ namespace vscode
 {
 	class server;
 
-	class DEBUGGER_API network
+	class DEBUGGER_API io_socket
 		: public io
 	{
 	public:
-		network(const char* ip, uint16_t port, bool rebind);
-		virtual   ~network();
+		io_socket(const char* ip, uint16_t port, bool rebind);
+		virtual   ~io_socket();
 		void      update(int ms);
 		bool      output(const char* buf, size_t len);
 		bool      input(std::string& buf);

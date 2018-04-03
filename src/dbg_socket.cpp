@@ -1,4 +1,4 @@
-#include "dbg_network.h"
+#include "dbg_socket.h"
 
 #define NETLOG_BACKEND NETLOG_EMPTY_BACKEND	
 #include <iostream>
@@ -270,7 +270,7 @@ namespace vscode
 		return ::ntohs(addr.sin_port);
 	}
 
-	network::network(const char* ip, uint16_t port, bool rebind)
+	io_socket::io_socket(const char* ip, uint16_t port, bool rebind)
 		: poller_(new net::poller_t)
 		, server_(new server(poller_, net::endpoint(ip, port), rebind))
 		, kill_process_when_close_(false)
@@ -278,19 +278,19 @@ namespace vscode
 		server_->listen();
 	}
 
-	network::~network()
+	io_socket::~io_socket()
 	{
 		delete server_;
 		delete poller_;
 	}
 
-	void network::update(int ms)
+	void io_socket::update(int ms)
 	{
 		server_->update();
 		poller_->wait(1000, ms);
 	}
 
-	bool network::output(const char* buf, size_t len)
+	bool io_socket::output(const char* buf, size_t len)
 	{
 		if (!server_)
 			return false;
@@ -299,14 +299,14 @@ namespace vscode
 		return true;
 	}
 
-	bool network::input(std::string& buf)
+	bool io_socket::input(std::string& buf)
 	{
 		if (!server_)
 			return false;
 		return server_->input(buf);
 	}
 
-	void network::close()
+	void io_socket::close()
 	{
 		if (server_)
 			server_->close_session();
@@ -314,12 +314,12 @@ namespace vscode
 			exit(0);
 	}
 
-	void network::kill_process_when_close()
+	void io_socket::kill_process_when_close()
 	{
 		kill_process_when_close_ = true;
 	}
 
-	uint16_t network::get_port() const
+	uint16_t io_socket::get_port() const
 	{
 		if (server_)
 			return server_->get_port();
