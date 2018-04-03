@@ -16,9 +16,6 @@
     <ClCompile Include="..\include\base\util\unicode.cpp">
       <Filter>base\util</Filter>
     </ClCompile>
-    <ClCompile Include="..\include\base\file\stream.cpp">
-      <Filter>base\file</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\debugger\bridge\lua.cpp">
       <Filter>cpp\bridge</Filter>
     </ClCompile>
@@ -59,9 +56,6 @@
     </ClInclude>
     <ClInclude Include="..\include\base\util\unicode.h">
       <Filter>base\util</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\base\file\stream.h">
-      <Filter>base\file</Filter>
     </ClInclude>
     <ClInclude Include="..\include\debugger\client\attach.h">
       <Filter>inc\client</Filter>
@@ -106,9 +100,6 @@
     </Filter>
     <Filter Include="base\util">
       <UniqueIdentifier>{4a0d655f-35e9-4d3c-b62a-76e62d06ba46}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="base\file">
-      <UniqueIdentifier>{08f86fee-0056-4662-b7c1-ca46b3e81163}</UniqueIdentifier>
     </Filter>
     <Filter Include="cpp\client">
       <UniqueIdentifier>{044d4037-79dc-4570-8cf9-38863708f434}</UniqueIdentifier>

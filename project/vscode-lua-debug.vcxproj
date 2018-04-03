@@ -30,7 +30,6 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\include\base\file\stream.cpp" />
     <ClCompile Include="..\include\base\hook\injectdll.cpp" />
     <ClCompile Include="..\include\base\path\get_path.cpp" />
     <ClCompile Include="..\include\base\util\unicode.cpp" />
@@ -46,7 +45,6 @@
     <ClCompile Include="..\src\debugger\io\helper.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\include\base\file\stream.h" />
     <ClInclude Include="..\include\base\hook\injectdll.h" />
     <ClInclude Include="..\include\base\path\get_path.h" />
     <ClInclude Include="..\include\base\path\self.h" />
