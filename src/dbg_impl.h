@@ -17,10 +17,10 @@
 #include "dbg_redirect.h"
 #include "dbg_observer.h"
 #include "dbg_config.h"
+#include "dbg_io.h"
 
 namespace vscode
 {
-	struct io;
 	class rprotocol;
 	class wprotocol;
 	struct dbg_thread;
@@ -41,7 +41,7 @@ namespace vscode
 		};
 
 	public:
-		debugger_impl(io* io, threadmode mode);
+		debugger_impl(io::base* io, threadmode mode);
 		~debugger_impl();
 		void close();
 		void io_close();
@@ -122,7 +122,7 @@ namespace vscode
 
 	private:
 		int64_t            seq;
-		io*                network_;
+		io::base*          network_;
 		state              state_;
 		step               step_;
 		int                stepping_target_level_;

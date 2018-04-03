@@ -7,13 +7,13 @@
 
 namespace luaw {
 	struct ud {
-		std::unique_ptr<vscode::io_socket>  io;
+		std::unique_ptr<vscode::io::socket> io;
 		std::unique_ptr<vscode::debugger> dbg;
 
 		void listen(const char* ip, uint16_t port, bool rebind)
 		{
 			if (io || dbg) return;
-			io.reset(new vscode::io_socket(ip, port, rebind));
+			io.reset(new vscode::io::socket(ip, port, rebind));
 			dbg.reset(new vscode::debugger(io.get(), vscode::threadmode::async));
 		}
 	};

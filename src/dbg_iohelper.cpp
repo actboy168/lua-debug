@@ -39,7 +39,7 @@ namespace vscode {
 		return new schema(sd);
 	}
 
-	rprotocol io_input(io* io, schema* schema)
+	rprotocol io_input(io::base* io, schema* schema)
 	{
 		std::string buf;
 		if (!io->input(buf)) {
@@ -73,7 +73,7 @@ namespace vscode {
 		return rprotocol(std::move(d));
 	}
 
-	void io_output(io* io, const wprotocol& wp)
+	void io_output(io::base* io, const wprotocol& wp)
 	{
 		if (!wp.IsComplete())
 			return;

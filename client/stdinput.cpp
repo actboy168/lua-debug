@@ -41,7 +41,7 @@ void stdinput::run() {
 }
 
 bool stdinput::output(const char* buf, size_t len) {
-	auto l = base::format("Content-Length: %d\r\n\r\n", len);
+	auto l = ::base::format("Content-Length: %d\r\n\r\n", len);
 	raw_output(l.data(), l.size());
 	raw_output(buf, len);
 	return true;

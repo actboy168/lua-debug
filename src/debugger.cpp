@@ -6,7 +6,7 @@
 
 namespace vscode
 {
-	debugger::debugger(io* io, threadmode mode)
+	debugger::debugger(io::base* io, threadmode mode)
 		: impl_(new debugger_impl(io, mode))
 	{ }
 

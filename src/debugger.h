@@ -16,7 +16,9 @@ struct lua_State;
 
 namespace vscode
 {
-	struct io;
+	namespace io {
+		struct base;
+	};
 	class debugger_impl;
 
 	enum class threadmode
@@ -47,7 +49,7 @@ namespace vscode
 	class DEBUGGER_API debugger
 	{
 	public:
-		debugger(io* io, threadmode mode);
+		debugger(io::base* io, threadmode mode);
 		~debugger();
 		void close();
 		void update();

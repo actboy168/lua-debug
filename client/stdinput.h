@@ -7,7 +7,7 @@
 #include "dbg_protocol.h"
 
 class stdinput
-	: public vscode::io
+	: public vscode::io::base
 {
 public:
 	virtual void update(int ms);

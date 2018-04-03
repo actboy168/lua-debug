@@ -11,8 +11,7 @@
 #include <net/tcp/stream.h>	
 #include <base/util/format.h>
 
-namespace vscode
-{
+namespace vscode { namespace io {
 	class server;
 	class rprotocol;
 	class wprotocol;
@@ -100,7 +99,7 @@ namespace vscode
 
 	bool session::output(const char* buf, size_t len)
 	{
-		auto l = base::format("Content-Length: %d\r\n\r\n", len);
+		auto l = ::base::format("Content-Length: %d\r\n\r\n", len);
 		if (l.size() != send(l.data(), l.size())) {
 			return false;
 		}
@@ -270,7 +269,7 @@ namespace vscode
 		return ::ntohs(addr.sin_port);
 	}
 
-	io_socket::io_socket(const char* ip, uint16_t port, bool rebind)
+	socket::socket(const char* ip, uint16_t port, bool rebind)
 		: poller_(new net::poller_t)
 		, server_(new server(poller_, net::endpoint(ip, port), rebind))
 		, kill_process_when_close_(false)
@@ -278,19 +277,19 @@ namespace vscode
 		server_->listen();
 	}
 
-	io_socket::~io_socket()
+	socket::~socket()
 	{
 		delete server_;
 		delete poller_;
 	}
 
-	void io_socket::update(int ms)
+	void socket::update(int ms)
 	{
 		server_->update();
 		poller_->wait(1000, ms);
 	}
 
-	bool io_socket::output(const char* buf, size_t len)
+	bool socket::output(const char* buf, size_t len)
 	{
 		if (!server_)
 			return false;
@@ -299,14 +298,14 @@ namespace vscode
 		return true;
 	}
 
-	bool io_socket::input(std::string& buf)
+	bool socket::input(std::string& buf)
 	{
 		if (!server_)
 			return false;
 		return server_->input(buf);
 	}
 
-	void io_socket::close()
+	void socket::close()
 	{
 		if (server_)
 			server_->close_session();
@@ -314,15 +313,15 @@ namespace vscode
 			exit(0);
 	}
 
-	void io_socket::kill_process_when_close()
+	void socket::kill_process_when_close()
 	{
 		kill_process_when_close_ = true;
 	}
 
-	uint16_t io_socket::get_port() const
+	uint16_t socket::get_port() const
 	{
 		if (server_)
 			return server_->get_port();
 		return 0;
 	}
-}
+}}

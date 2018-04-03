@@ -17,16 +17,15 @@ namespace net {
 	struct poller_t;
 }
 
-namespace vscode
-{
+namespace vscode { namespace io {
 	class server;
 
-	class DEBUGGER_API io_socket
-		: public io
+	class DEBUGGER_API socket
+		: public base
 	{
 	public:
-		io_socket(const char* ip, uint16_t port, bool rebind);
-		virtual   ~io_socket();
+		socket(const char* ip, uint16_t port, bool rebind);
+		virtual   ~socket();
 		void      update(int ms);
 		bool      output(const char* buf, size_t len);
 		bool      input(std::string& buf);
@@ -39,4 +38,4 @@ namespace vscode
 		server*        server_;
 		bool           kill_process_when_close_;
 	};
-}
+}}

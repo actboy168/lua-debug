@@ -462,7 +462,7 @@ namespace vscode
 #define DBG_REQUEST_MAIN(name) std::bind(&debugger_impl:: ## name, this, std::placeholders::_1)
 #define DBG_REQUEST_HOOK(name) std::bind(&debugger_impl:: ## name, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
 
-	debugger_impl::debugger_impl(io* io, threadmode mode)
+	debugger_impl::debugger_impl(io::base* io, threadmode mode)
 		: seq(1)
 		, network_(io)
 		, state_(state::birth)
