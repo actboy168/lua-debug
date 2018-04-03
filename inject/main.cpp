@@ -8,7 +8,7 @@
 #include <stack>
 #include <set>
 #include "debugger.h"
-#include "dbg_socket.h"
+#include "io/dbg_socket.h"
 
 HMODULE luadll = 0;
 

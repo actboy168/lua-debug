@@ -36,7 +36,7 @@
     <ClCompile Include="..\src\dbg_impl.cpp" />
     <ClCompile Include="..\src\dbg_request.cpp" />
     <ClCompile Include="..\src\dbg_response.cpp" />
-    <ClCompile Include="..\src\dbg_socket.cpp" />
+    <ClCompile Include="..\src\io\dbg_socket.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\bridge\dbg_delayload.h" />
@@ -56,7 +56,7 @@
     <ClInclude Include="..\src\debugger.h" />
     <ClInclude Include="..\src\dbg_impl.h" />
     <ClInclude Include="..\src\dbg_protocol.h" />
-    <ClInclude Include="..\src\dbg_socket.h" />
+    <ClInclude Include="..\src\io\dbg_socket.h" />
     <ClInclude Include="..\src\net\datetime\clock.h" />
     <ClInclude Include="..\src\net\datetime\date.h" />
     <ClInclude Include="..\src\net\datetime\now.h" />

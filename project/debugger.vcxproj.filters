@@ -1,27 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="network">
-      <UniqueIdentifier>{6debda91-03e3-492d-b202-c75d7be97e7d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="network\net">
-      <UniqueIdentifier>{52ddbaab-889f-477d-86f1-0baaeaa9a43d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="network\net\tcp">
-      <UniqueIdentifier>{95e85022-cace-4c43-81f4-60056d7ee179}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="network\net\udp">
-      <UniqueIdentifier>{bc3bc9e4-f345-45d5-b574-285c4fc40efd}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="network\net\log">
-      <UniqueIdentifier>{5cacf5c1-edb5-416d-b1b7-cb7aa5ae1ff5}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="network\net\poller">
-      <UniqueIdentifier>{9bd4b338-88d7-4ebf-8bfb-0c531412b220}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="network\net\datetime">
-      <UniqueIdentifier>{a01d820a-49f3-4414-9d35-5b6c39165eed}</UniqueIdentifier>
-    </Filter>
     <Filter Include="bridge">
       <UniqueIdentifier>{bf9ea1a1-1023-4dba-b3b3-0f2e23238de6}</UniqueIdentifier>
     </Filter>
@@ -35,6 +14,27 @@
     <Filter Include="core\inc">
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="io">
+      <UniqueIdentifier>{6debda91-03e3-492d-b202-c75d7be97e7d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="io\net">
+      <UniqueIdentifier>{52ddbaab-889f-477d-86f1-0baaeaa9a43d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="io\net\tcp">
+      <UniqueIdentifier>{95e85022-cace-4c43-81f4-60056d7ee179}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="io\net\udp">
+      <UniqueIdentifier>{bc3bc9e4-f345-45d5-b574-285c4fc40efd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="io\net\log">
+      <UniqueIdentifier>{5cacf5c1-edb5-416d-b1b7-cb7aa5ae1ff5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="io\net\poller">
+      <UniqueIdentifier>{9bd4b338-88d7-4ebf-8bfb-0c531412b220}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="io\net\datetime">
+      <UniqueIdentifier>{a01d820a-49f3-4414-9d35-5b6c39165eed}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -89,8 +89,8 @@
     <ClCompile Include="..\src\dbg_thread.cpp">
       <Filter>core\cpp</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\dbg_socket.cpp">
-      <Filter>network</Filter>
+    <ClCompile Include="..\src\io\dbg_socket.cpp">
+      <Filter>io</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -122,73 +122,73 @@
       <Filter>core\inc</Filter>
     </ClInclude>
     <ClInclude Include="..\src\net\endpoint.h">
-      <Filter>network\net</Filter>
+      <Filter>io\net</Filter>
     </ClInclude>
     <ClInclude Include="..\src\net\poller.h">
-      <Filter>network\net</Filter>
+      <Filter>io\net</Filter>
     </ClInclude>
     <ClInclude Include="..\src\net\queue.h">
-      <Filter>network\net</Filter>
+      <Filter>io\net</Filter>
     </ClInclude>
     <ClInclude Include="..\src\net\socket.h">
-      <Filter>network\net</Filter>
+      <Filter>io\net</Filter>
     </ClInclude>
     <ClInclude Include="..\src\net\winapi.h">
-      <Filter>network\net</Filter>
+      <Filter>io\net</Filter>
     </ClInclude>
     <ClInclude Include="..\src\net\tcp\buffer.h">
-      <Filter>network\net\tcp</Filter>
+      <Filter>io\net\tcp</Filter>
     </ClInclude>
     <ClInclude Include="..\src\net\tcp\connecter.h">
-      <Filter>network\net\tcp</Filter>
+      <Filter>io\net\tcp</Filter>
     </ClInclude>
     <ClInclude Include="..\src\net\tcp\listener.h">
-      <Filter>network\net\tcp</Filter>
+      <Filter>io\net\tcp</Filter>
     </ClInclude>
     <ClInclude Include="..\src\net\tcp\rcvbuffer.h">
-      <Filter>network\net\tcp</Filter>
+      <Filter>io\net\tcp</Filter>
     </ClInclude>
     <ClInclude Include="..\src\net\tcp\sndbuffer.h">
-      <Filter>network\net\tcp</Filter>
+      <Filter>io\net\tcp</Filter>
     </ClInclude>
     <ClInclude Include="..\src\net\tcp\stream.h">
-      <Filter>network\net\tcp</Filter>
+      <Filter>io\net\tcp</Filter>
     </ClInclude>
     <ClInclude Include="..\src\net\udp\stream.h">
-      <Filter>network\net\udp</Filter>
+      <Filter>io\net\udp</Filter>
     </ClInclude>
     <ClInclude Include="..\src\net\udp\udp.h">
-      <Filter>network\net\udp</Filter>
+      <Filter>io\net\udp</Filter>
     </ClInclude>
     <ClInclude Include="..\src\net\log\logging.h">
-      <Filter>network\net\log</Filter>
+      <Filter>io\net\log</Filter>
     </ClInclude>
     <ClInclude Include="..\src\net\poller\epoll.h">
-      <Filter>network\net\poller</Filter>
+      <Filter>io\net\poller</Filter>
     </ClInclude>
     <ClInclude Include="..\src\net\poller\event.h">
-      <Filter>network\net\poller</Filter>
+      <Filter>io\net\poller</Filter>
     </ClInclude>
     <ClInclude Include="..\src\net\poller\io_object.h">
-      <Filter>network\net\poller</Filter>
+      <Filter>io\net\poller</Filter>
     </ClInclude>
     <ClInclude Include="..\src\net\poller\select.h">
-      <Filter>network\net\poller</Filter>
+      <Filter>io\net\poller</Filter>
     </ClInclude>
     <ClInclude Include="..\src\net\poller\timer.h">
-      <Filter>network\net\poller</Filter>
+      <Filter>io\net\poller</Filter>
     </ClInclude>
     <ClInclude Include="..\src\net\poller\timer_queue.h">
-      <Filter>network\net\poller</Filter>
+      <Filter>io\net\poller</Filter>
     </ClInclude>
     <ClInclude Include="..\src\net\datetime\clock.h">
-      <Filter>network\net\datetime</Filter>
+      <Filter>io\net\datetime</Filter>
     </ClInclude>
     <ClInclude Include="..\src\net\datetime\date.h">
-      <Filter>network\net\datetime</Filter>
+      <Filter>io\net\datetime</Filter>
     </ClInclude>
     <ClInclude Include="..\src\net\datetime\now.h">
-      <Filter>network\net\datetime</Filter>
+      <Filter>io\net\datetime</Filter>
     </ClInclude>
     <ClInclude Include="..\src\dbg_thread.h">
       <Filter>core\inc</Filter>
@@ -214,13 +214,13 @@
     <ClInclude Include="..\src\dbg_iohelper.h">
       <Filter>core\inc</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\dbg_socket.h">
-      <Filter>network</Filter>
+    <ClInclude Include="..\src\io\dbg_socket.h">
+      <Filter>io</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\src\net\socket.inl">
-      <Filter>network\net</Filter>
+      <Filter>io\net</Filter>
     </None>
   </ItemGroup>
 </Project>
