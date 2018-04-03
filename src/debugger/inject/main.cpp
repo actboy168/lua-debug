@@ -10,7 +10,17 @@
 
 HMODULE luadll = 0;
 
-std::unique_ptr<vscode::io::namedpipe> global_io;
+class namedpipe
+	: public vscode::io::namedpipe
+{
+public:
+	void close() {
+		vscode::io::namedpipe::close();
+		exit(0);
+	}
+};
+
+std::unique_ptr<namedpipe>        global_io;
 std::unique_ptr<vscode::debugger> global_dbg;
 
 void initialize_debugger(lua_State* L)
@@ -27,11 +37,10 @@ void initialize_debugger(lua_State* L)
 	if (!pipename) {
 		return;
 	}
-	global_io.reset(new vscode::io::namedpipe());
+	global_io.reset(new namedpipe());
 	if (!global_io->open_client(pipename, 3)) {
 		return;
 	}
-	//global_io->kill_process_when_close();
 
 	global_dbg.reset(new vscode::debugger(global_io.get(), vscode::threadmode::async));
 	global_dbg->wait_attach();

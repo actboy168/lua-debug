@@ -30,12 +30,10 @@ namespace vscode { namespace io {
 		bool      output(const char* buf, size_t len);
 		bool      input(std::string& buf);
 		void      close();
-		void      kill_process_when_close();
 		uint16_t  get_port() const;
 
 	private:
 		net::poller_t* poller_;
 		server*        server_;
-		bool           kill_process_when_close_;
 	};
 }}

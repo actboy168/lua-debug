@@ -68,7 +68,6 @@ void io_send(vscode::io::base* io, const vscode::rprotocol& rp)
 	io->output(buffer.GetString(), buffer.GetSize());
 }
 
-
 static int run_createprocess_then_attach(stdinput& io, vscode::rprotocol& init, vscode::rprotocol& req)
 {
 	std::unique_ptr<attach> attach_;

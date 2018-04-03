@@ -237,7 +237,6 @@ namespace vscode { namespace io {
 	socket::socket(const char* ip, uint16_t port, bool rebind)
 		: poller_(new net::poller_t)
 		, server_(new server(poller_, net::endpoint(ip, port), rebind))
-		, kill_process_when_close_(false)
 	{
 		server_->listen();
 	}
@@ -274,13 +273,6 @@ namespace vscode { namespace io {
 	{
 		if (server_)
 			server_->close_session();
-		if (kill_process_when_close_)
-			exit(0);
-	}
-
-	void socket::kill_process_when_close()
-	{
-		kill_process_when_close_ = true;
 	}
 
 	uint16_t socket::get_port() const
