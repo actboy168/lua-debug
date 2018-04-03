@@ -3,7 +3,7 @@
 #include <thread>
 #include <vector>
 #include <net/queue.h>
-#include <debugger/io.h>
+#include <debugger/io/base.h>
 #include <debugger/protocol.h>
 
 class stdinput

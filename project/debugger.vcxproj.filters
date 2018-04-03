@@ -27,9 +27,6 @@
     <ClCompile Include="..\src\debugger\bridge\delayload.cpp">
       <Filter>cpp\bridge</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\debugger\bridge\luacompatibility.cpp">
-      <Filter>cpp\bridge</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\debugger\bridge\luaopen.cpp">
       <Filter>cpp\bridge</Filter>
     </ClCompile>
@@ -49,9 +46,6 @@
       <Filter>cpp</Filter>
     </ClCompile>
     <ClCompile Include="..\src\debugger\inlinebase.cpp">
-      <Filter>cpp</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\debugger\iohelper.cpp">
       <Filter>cpp</Filter>
     </ClCompile>
     <ClCompile Include="..\src\debugger\observer.cpp">
@@ -75,6 +69,12 @@
     <ClCompile Include="..\src\debugger\redirect.cpp">
       <Filter>cpp</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\debugger\io\helper.cpp">
+      <Filter>cpp\io</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\debugger\bridge\lua.cpp">
+      <Filter>cpp\bridge</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\debugger\debugger.h">
@@ -93,12 +93,6 @@
       <Filter>inc</Filter>
     </ClInclude>
     <ClInclude Include="..\include\debugger\impl.h">
-      <Filter>inc</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\debugger\io.h">
-      <Filter>inc</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\debugger\iohelper.h">
       <Filter>inc</Filter>
     </ClInclude>
     <ClInclude Include="..\include\debugger\lua.h">
@@ -125,11 +119,17 @@
     <ClInclude Include="..\include\debugger\bridge\delayload.h">
       <Filter>inc\bridge</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\debugger\bridge\luacompatibility.h">
-      <Filter>inc\bridge</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\debugger\io\socket.h">
       <Filter>inc\io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\debugger\io\base.h">
+      <Filter>inc\io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\debugger\io\helper.h">
+      <Filter>inc\io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\debugger\bridge\lua.h">
+      <Filter>inc\bridge</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

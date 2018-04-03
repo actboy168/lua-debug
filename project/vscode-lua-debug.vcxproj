@@ -36,23 +36,27 @@
     <ClCompile Include="..\client\launch.cpp" />
     <ClCompile Include="..\client\main.cpp" />
     <ClCompile Include="..\client\stdinput.cpp" />
+    <ClCompile Include="..\include\base\file\stream.cpp" />
     <ClCompile Include="..\include\base\hook\injectdll.cpp" />
     <ClCompile Include="..\include\base\path\get_path.cpp" />
+    <ClCompile Include="..\include\base\util\unicode.cpp" />
     <ClCompile Include="..\include\base\win\process.cpp" />
     <ClCompile Include="..\src\debugger\bridge\delayload.cpp" />
-    <ClCompile Include="..\src\debugger\bridge\luacompatibility.cpp" />
+    <ClCompile Include="..\src\debugger\bridge\lua.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\client\attach.h" />
     <ClInclude Include="..\client\server.h" />
     <ClInclude Include="..\client\launch.h" />
     <ClInclude Include="..\client\stdinput.h" />
+    <ClInclude Include="..\include\base\file\stream.h" />
     <ClInclude Include="..\include\base\hook\injectdll.h" />
     <ClInclude Include="..\include\base\path\get_path.h" />
     <ClInclude Include="..\include\base\path\self.h" />
+    <ClInclude Include="..\include\base\util\unicode.h" />
     <ClInclude Include="..\include\base\win\process.h" />
     <ClInclude Include="..\include\debugger\bridge\delayload.h" />
-    <ClInclude Include="..\include\debugger\bridge\luacompatibility.h" />
+    <ClInclude Include="..\include\debugger\bridge\lua.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{8AC7695F-C946-4B9A-B814-3E789BFD54E8}</ProjectGuid>

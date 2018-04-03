@@ -1,7 +1,7 @@
 #pragma once
 
 #include <debugger/protocol.h>
-#include <debugger/io.h>
+#include <debugger/io/base.h>
 #include <rapidjson/schema.h> 
 
 namespace vscode {

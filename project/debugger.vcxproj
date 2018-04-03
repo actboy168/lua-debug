@@ -20,14 +20,14 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\debugger\bridge\delayload.cpp" />
-    <ClCompile Include="..\src\debugger\bridge\luacompatibility.cpp" />
+    <ClCompile Include="..\src\debugger\bridge\lua.cpp" />
     <ClCompile Include="..\src\debugger\bridge\luaopen.cpp" />
     <ClCompile Include="..\src\debugger\breakpoint.cpp" />
     <ClCompile Include="..\src\debugger\config.cpp" />
     <ClCompile Include="..\src\debugger\evaluate.cpp" />
     <ClCompile Include="..\src\debugger\impl.cpp" />
     <ClCompile Include="..\src\debugger\inlinebase.cpp" />
-    <ClCompile Include="..\src\debugger\iohelper.cpp" />
+    <ClCompile Include="..\src\debugger\io\helper.cpp" />
     <ClCompile Include="..\src\debugger\observer.cpp" />
     <ClCompile Include="..\src\debugger\pathconvert.cpp" />
     <ClCompile Include="..\src\debugger\redirect.cpp" />
@@ -40,14 +40,14 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\debugger\bridge\delayload.h" />
-    <ClInclude Include="..\include\debugger\bridge\luacompatibility.h" />
+    <ClInclude Include="..\include\debugger\bridge\lua.h" />
     <ClInclude Include="..\include\debugger\breakpoint.h" />
     <ClInclude Include="..\include\debugger\capabilities.h" />
     <ClInclude Include="..\include\debugger\config.h" />
     <ClInclude Include="..\include\debugger\evaluate.h" />
     <ClInclude Include="..\include\debugger\impl.h" />
-    <ClInclude Include="..\include\debugger\io.h" />
-    <ClInclude Include="..\include\debugger\iohelper.h" />
+    <ClInclude Include="..\include\debugger\io\base.h" />
+    <ClInclude Include="..\include\debugger\io\helper.h" />
     <ClInclude Include="..\include\debugger\lua.h" />
     <ClInclude Include="..\include\debugger\observer.h" />
     <ClInclude Include="..\include\debugger\pathconvert.h" />

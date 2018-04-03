@@ -1,5 +1,5 @@
 #include <debugger/impl.h>
-#include <debugger/io.h>
+#include <debugger/io/base.h>
 #include <debugger/capabilities.h>
 
 namespace vscode

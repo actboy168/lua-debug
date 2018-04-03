@@ -1,9 +1,9 @@
 #include <debugger/impl.h>
 #include <debugger/protocol.h>
-#include <debugger/io.h>
+#include <debugger/io/base.h>
 #include <debugger/thread.h>
 #include <debugger/thunk.h>
-#include <debugger/iohelper.h>
+#include <debugger/io/helper.h>
 #include <base/util/format.h>
 #include <thread>
 #include <atomic>

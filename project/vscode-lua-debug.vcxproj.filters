@@ -22,9 +22,6 @@
     <ClCompile Include="..\src\debugger\bridge\delayload.cpp">
       <Filter>bridge</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\debugger\bridge\luacompatibility.cpp">
-      <Filter>bridge</Filter>
-    </ClCompile>
     <ClCompile Include="..\include\base\win\process.cpp">
       <Filter>base\win</Filter>
     </ClCompile>
@@ -33,6 +30,15 @@
     </ClCompile>
     <ClCompile Include="..\include\base\hook\injectdll.cpp">
       <Filter>base\hook</Filter>
+    </ClCompile>
+    <ClCompile Include="..\include\base\util\unicode.cpp">
+      <Filter>base\util</Filter>
+    </ClCompile>
+    <ClCompile Include="..\include\base\file\stream.cpp">
+      <Filter>base\file</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\debugger\bridge\lua.cpp">
+      <Filter>bridge</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -51,9 +57,6 @@
     <ClInclude Include="..\include\debugger\bridge\delayload.h">
       <Filter>bridge</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\debugger\bridge\luacompatibility.h">
-      <Filter>bridge</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\base\win\process.h">
       <Filter>base\win</Filter>
     </ClInclude>
@@ -65,6 +68,15 @@
     </ClInclude>
     <ClInclude Include="..\include\base\hook\injectdll.h">
       <Filter>base\hook</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\base\util\unicode.h">
+      <Filter>base\util</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\base\file\stream.h">
+      <Filter>base\file</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\debugger\bridge\lua.h">
+      <Filter>bridge</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -88,6 +100,12 @@
     </Filter>
     <Filter Include="bridge">
       <UniqueIdentifier>{af506b17-235f-446a-a593-d71c21b48553}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="base\util">
+      <UniqueIdentifier>{4a0d655f-35e9-4d3c-b62a-76e62d06ba46}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="base\file">
+      <UniqueIdentifier>{08f86fee-0056-4662-b7c1-ca46b3e81163}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

@@ -1,6 +1,6 @@
 #include <debugger/impl.h>
 #include <debugger/protocol.h>
-#include <debugger/io.h>
+#include <debugger/io/base.h>
 #include <base/util/unicode.h>
 
 namespace vscode

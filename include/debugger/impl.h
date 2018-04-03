@@ -17,7 +17,7 @@
 #include <debugger/redirect.h>
 #include <debugger/observer.h>
 #include <debugger/config.h>
-#include <debugger/io.h>
+#include <debugger/io/base.h>
 
 namespace vscode
 {
