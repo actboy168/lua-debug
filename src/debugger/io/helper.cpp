@@ -3,7 +3,7 @@
 #include <debugger/io/base.h>
 #include <rapidjson/schema.h>
 #include <rapidjson/error/en.h>
-#include <base/file/stream.h>
+#include <fstream>
 
 #if 1
 #	define log(...)
@@ -23,9 +23,33 @@ static void log(const char* fmt, const Args& ... args)
 
 namespace vscode {
 
+	class file {
+	public:
+		file(const wchar_t* filename, std::ios_base::openmode mode) {
+			file_.open(filename, std::ios::binary | mode);
+		}
+		~file() {
+			file_.close();
+		}
+		bool is_open() const {
+			return !!file_;
+		}
+		template <class SequenceT>
+		SequenceT read() {
+			return std::move(SequenceT((std::istreambuf_iterator<char>(file_)), (std::istreambuf_iterator<char>())));
+		}
+		template <class SequenceT>
+		void write(SequenceT buf) {
+			std::copy(buf.begin(), buf.end(), std::ostreambuf_iterator<char>(file_));
+		}
+	private:
+		file();
+		std::fstream file_;
+	};
+
 	schema* io_schema(const std::wstring& schemafile)
 	{
-		base::file::stream file(schemafile.c_str(), std::ios_base::in);
+		file file(schemafile.c_str(), std::ios_base::in);
 		if (!file.is_open()) {
 			return nullptr;
 		}
