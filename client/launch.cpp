@@ -1,8 +1,8 @@
 #include <Windows.h>
 #include "launch.h"
-#include "debugger.h"
+#include <debugger/debugger.h>
 #include "stdinput.h"
-#include "bridge/dbg_delayload.h"
+#include <debugger/bridge/delayload.h>
 #include <base/filesystem.h>
 #include <base/util/format.h>
 #include <base/util/unicode.h>

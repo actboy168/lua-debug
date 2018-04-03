@@ -1,6 +1,6 @@
 #if defined(DEBUGGER_BRIDGE)
 
-#include "dbg_luacompatibility.h"
+#include <debugger/bridge/luacompatibility.h>
 #include <Windows.h>
 
 namespace lua { 

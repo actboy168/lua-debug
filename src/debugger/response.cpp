@@ -1,6 +1,6 @@
-#include "dbg_impl.h"
-#include "dbg_io.h"
-#include "dbg_capabilities.h"
+#include <debugger/impl.h>
+#include <debugger/io.h>
+#include <debugger/capabilities.h>
 
 namespace vscode
 {

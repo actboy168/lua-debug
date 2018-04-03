@@ -1,6 +1,6 @@
 #pragma once
 
-#include "dbg_io.h"
+#include <debugger/io.h>
 #include <stdint.h>
 
 #if defined(DEBUGGER_INLINE)

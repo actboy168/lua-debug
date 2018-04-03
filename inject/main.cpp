@@ -7,8 +7,8 @@
 #include <mutex>
 #include <stack>
 #include <set>
-#include "debugger.h"
-#include "io/dbg_socket.h"
+#include <debugger/debugger.h>
+#include <debugger/io/socket.h>
 
 HMODULE luadll = 0;
 

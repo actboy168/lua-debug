@@ -3,7 +3,7 @@
 #include <map>
 #include <string>
 #include <base/util/hybrid_array.h> 
-#include "dbg_pathconvert.h"
+#include <debugger/pathconvert.h>
 
 struct lua_State;
 namespace lua { struct Debug; }

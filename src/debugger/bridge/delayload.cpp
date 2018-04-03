@@ -1,10 +1,10 @@
 #if defined(DEBUGGER_BRIDGE)
 
-#include "dbg_delayload.h"
+#include <debugger/bridge/delayload.h>
 #include <windows.h>
 #define DELAYIMP_INSECURE_WRITABLE_HOOKS
 #include <DelayImp.h>
-#include "dbg_luacompatibility.h"
+#include <debugger/bridge/luacompatibility.h>
 
 namespace delayload
 {

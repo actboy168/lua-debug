@@ -1,6 +1,6 @@
-#include "dbg_breakpoint.h"
-#include "dbg_evaluate.h"
-#include "dbg_lua.h"
+#include <debugger/breakpoint.h>
+#include <debugger/evaluate.h>
+#include <debugger/lua.h>
 
 namespace vscode
 {

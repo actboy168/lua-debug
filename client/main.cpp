@@ -6,13 +6,13 @@
 #include "launch.h"
 #include "attach.h"
 #include "server.h"
-#include "dbg_capabilities.h"
+#include <debugger/capabilities.h>
 #include <base/util/unicode.h>
 #include <base/util/unicode.cpp>
 #include <base/file/stream.cpp>
 #include <base/filesystem.h>
-#include "dbg_iohelper.h"
-#include "dbg_iohelper.cpp"
+#include <debugger/iohelper.h>
+#include <debugger/iohelper.cpp>
 
 
 static void response_initialized(stdinput& io, vscode::rprotocol& req)

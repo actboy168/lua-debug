@@ -1,6 +1,6 @@
-#include "dbg_impl.h"
-#include "dbg_protocol.h"
-#include "dbg_io.h"
+#include <debugger/impl.h>
+#include <debugger/protocol.h>
+#include <debugger/io.h>
 #include <base/util/unicode.h>
 
 namespace vscode

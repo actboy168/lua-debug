@@ -8,16 +8,16 @@
 #include <mutex>
 #include <atomic>
 #include <rapidjson/document.h>
-#include "dbg_lua.h"	 
-#include "dbg_breakpoint.h"	 
-#include "dbg_evaluate.h"
-#include "dbg_pathconvert.h"
-#include "dbg_protocol.h"
-#include "debugger.h"
-#include "dbg_redirect.h"
-#include "dbg_observer.h"
-#include "dbg_config.h"
-#include "dbg_io.h"
+#include <debugger/lua.h>
+#include <debugger/breakpoint.h>	 
+#include <debugger/evaluate.h>
+#include <debugger/pathconvert.h>
+#include <debugger/protocol.h>
+#include <debugger/debugger.h>
+#include <debugger/redirect.h>
+#include <debugger/observer.h>
+#include <debugger/config.h>
+#include <debugger/io.h>
 
 namespace vscode
 {

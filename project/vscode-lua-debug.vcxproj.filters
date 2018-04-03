@@ -19,20 +19,20 @@
     <ClCompile Include="..\client\stdinput.cpp">
       <Filter>cpp</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\base\win\process.cpp">
+    <ClCompile Include="..\src\debugger\bridge\delayload.cpp">
+      <Filter>bridge</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\debugger\bridge\luacompatibility.cpp">
+      <Filter>bridge</Filter>
+    </ClCompile>
+    <ClCompile Include="..\include\base\win\process.cpp">
       <Filter>base\win</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\base\hook\injectdll.cpp">
-      <Filter>base\hook</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\base\path\get_path.cpp">
+    <ClCompile Include="..\include\base\path\get_path.cpp">
       <Filter>base\path</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\bridge\dbg_delayload.cpp">
-      <Filter>bridge</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\bridge\dbg_luacompatibility.cpp">
-      <Filter>bridge</Filter>
+    <ClCompile Include="..\include\base\hook\injectdll.cpp">
+      <Filter>base\hook</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -48,23 +48,23 @@
     <ClInclude Include="..\client\stdinput.h">
       <Filter>inc</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\base\win\process.h">
+    <ClInclude Include="..\include\debugger\bridge\delayload.h">
+      <Filter>bridge</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\debugger\bridge\luacompatibility.h">
+      <Filter>bridge</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\base\win\process.h">
       <Filter>base\win</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\base\hook\injectdll.h">
+    <ClInclude Include="..\include\base\path\get_path.h">
+      <Filter>base\path</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\base\path\self.h">
+      <Filter>base\path</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\base\hook\injectdll.h">
       <Filter>base\hook</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\base\path\get_path.h">
-      <Filter>base\path</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\base\path\self.h">
-      <Filter>base\path</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\bridge\dbg_delayload.h">
-      <Filter>bridge</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\bridge\dbg_luacompatibility.h">
-      <Filter>bridge</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

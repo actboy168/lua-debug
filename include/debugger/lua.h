@@ -1,7 +1,7 @@
 #pragma once
 
 #if defined(DEBUGGER_BRIDGE)
-#include "bridge/dbg_luacompatibility.h"
+#include <debugger/bridge/luacompatibility.h>
 #else
 #include <lua.hpp>
 

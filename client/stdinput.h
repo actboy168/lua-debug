@@ -3,8 +3,8 @@
 #include <thread>
 #include <vector>
 #include <net/queue.h>
-#include "dbg_io.h"
-#include "dbg_protocol.h"
+#include <debugger/io.h>
+#include <debugger/protocol.h>
 
 class stdinput
 	: public vscode::io::base

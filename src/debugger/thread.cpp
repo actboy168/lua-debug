@@ -1,5 +1,5 @@
-#include "dbg_thread.h"
-#include "dbg_impl.h"
+#include <debugger/thread.h>
+#include <debugger/impl.h>
 
 namespace vscode {
 	

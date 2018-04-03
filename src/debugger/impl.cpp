@@ -1,9 +1,9 @@
-#include "dbg_impl.h"
-#include "dbg_protocol.h"
-#include "dbg_io.h"
-#include "dbg_thread.h"
-#include "dbg_thunk.h"
-#include "dbg_iohelper.h"
+#include <debugger/impl.h>
+#include <debugger/protocol.h>
+#include <debugger/io.h>
+#include <debugger/thread.h>
+#include <debugger/thunk.h>
+#include <debugger/iohelper.h>
 #include <base/util/format.h>
 #include <thread>
 #include <atomic>

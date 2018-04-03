@@ -5,7 +5,7 @@
 #include <mutex>
 #include <thread>
 #include <net/datetime/clock.h>
-#include "debugger.h"
+#include <debugger/debugger.h>
 
 namespace vscode {
 

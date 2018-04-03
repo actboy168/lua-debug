@@ -2,9 +2,9 @@
 
 #include <vector>
 #include <map>
-#include "dbg_protocol.h"
-#include "dbg_pathconvert.h"
-#include "dbg_lua.h"
+#include <debugger/protocol.h>
+#include <debugger/pathconvert.h>
+#include <debugger/lua.h>
 
 namespace vscode {
 	class debugger_impl;

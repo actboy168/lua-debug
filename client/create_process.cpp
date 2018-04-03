@@ -2,7 +2,7 @@
 #include <base/win/process.h>
 #include <base/util/unicode.h>
 #include <base/path/self.h>
-#include "dbg_protocol.h"
+#include <debugger/protocol.h>
 
 bool create_process_with_debugger(vscode::rprotocol& req, uint16_t port)
 {

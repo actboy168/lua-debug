@@ -1,5 +1,5 @@
-#include "dbg_pathconvert.h"
-#include "dbg_impl.h"
+#include <debugger/pathconvert.h>
+#include <debugger/impl.h>
 #include <base/util/unicode.h>
 #include <base/util/dynarray.h>
 #include <deque>

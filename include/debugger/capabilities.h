@@ -1,6 +1,6 @@
 #pragma once
 
-#include "dbg_protocol.h"
+#include <debugger/protocol.h>
 
 namespace vscode
 {

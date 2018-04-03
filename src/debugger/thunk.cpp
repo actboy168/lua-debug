@@ -1,5 +1,5 @@
 #include <Windows.h>
-#include "dbg_thunk.h"
+#include <debugger/thunk.h>
 
 namespace vscode {
 

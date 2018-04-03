@@ -19,70 +19,44 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\src\bridge\dbg_delayload.cpp" />
-    <ClCompile Include="..\src\bridge\dbg_luacompatibility.cpp" />
-    <ClCompile Include="..\src\bridge\dbg_luaopen.cpp" />
-    <ClCompile Include="..\src\dbg_breakpoint.cpp" />
-    <ClCompile Include="..\src\dbg_config.cpp" />
-    <ClCompile Include="..\src\dbg_evaluate.cpp" />
-    <ClCompile Include="..\src\dbg_inlinebase.cpp" />
-    <ClCompile Include="..\src\dbg_iohelper.cpp" />
-    <ClCompile Include="..\src\dbg_pathconvert.cpp" />
-    <ClCompile Include="..\src\dbg_redirect.cpp" />
-    <ClCompile Include="..\src\dbg_thread.cpp" />
-    <ClCompile Include="..\src\dbg_thunk.cpp" />
-    <ClCompile Include="..\src\dbg_observer.cpp" />
-    <ClCompile Include="..\src\debugger.cpp" />
-    <ClCompile Include="..\src\dbg_impl.cpp" />
-    <ClCompile Include="..\src\dbg_request.cpp" />
-    <ClCompile Include="..\src\dbg_response.cpp" />
-    <ClCompile Include="..\src\io\dbg_socket.cpp" />
+    <ClCompile Include="..\src\debugger\bridge\delayload.cpp" />
+    <ClCompile Include="..\src\debugger\bridge\luacompatibility.cpp" />
+    <ClCompile Include="..\src\debugger\bridge\luaopen.cpp" />
+    <ClCompile Include="..\src\debugger\breakpoint.cpp" />
+    <ClCompile Include="..\src\debugger\config.cpp" />
+    <ClCompile Include="..\src\debugger\evaluate.cpp" />
+    <ClCompile Include="..\src\debugger\impl.cpp" />
+    <ClCompile Include="..\src\debugger\inlinebase.cpp" />
+    <ClCompile Include="..\src\debugger\iohelper.cpp" />
+    <ClCompile Include="..\src\debugger\observer.cpp" />
+    <ClCompile Include="..\src\debugger\pathconvert.cpp" />
+    <ClCompile Include="..\src\debugger\redirect.cpp" />
+    <ClCompile Include="..\src\debugger\request.cpp" />
+    <ClCompile Include="..\src\debugger\response.cpp" />
+    <ClCompile Include="..\src\debugger\thread.cpp" />
+    <ClCompile Include="..\src\debugger\thunk.cpp" />
+    <ClCompile Include="..\src\debugger\debugger.cpp" />
+    <ClCompile Include="..\src\debugger\io\socket.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\src\bridge\dbg_delayload.h" />
-    <ClInclude Include="..\src\bridge\dbg_luacompatibility.h" />
-    <ClInclude Include="..\src\dbg_breakpoint.h" />
-    <ClInclude Include="..\src\dbg_capabilities.h" />
-    <ClInclude Include="..\src\dbg_config.h" />
-    <ClInclude Include="..\src\dbg_evaluate.h" />
-    <ClInclude Include="..\src\dbg_io.h" />
-    <ClInclude Include="..\src\dbg_iohelper.h" />
-    <ClInclude Include="..\src\dbg_lua.h" />
-    <ClInclude Include="..\src\dbg_pathconvert.h" />
-    <ClInclude Include="..\src\dbg_redirect.h" />
-    <ClInclude Include="..\src\dbg_thread.h" />
-    <ClInclude Include="..\src\dbg_thunk.h" />
-    <ClInclude Include="..\src\dbg_observer.h" />
-    <ClInclude Include="..\src\debugger.h" />
-    <ClInclude Include="..\src\dbg_impl.h" />
-    <ClInclude Include="..\src\dbg_protocol.h" />
-    <ClInclude Include="..\src\io\dbg_socket.h" />
-    <ClInclude Include="..\src\net\datetime\clock.h" />
-    <ClInclude Include="..\src\net\datetime\date.h" />
-    <ClInclude Include="..\src\net\datetime\now.h" />
-    <ClInclude Include="..\src\net\endpoint.h" />
-    <ClInclude Include="..\src\net\log\logging.h" />
-    <ClInclude Include="..\src\net\poller.h" />
-    <ClInclude Include="..\src\net\poller\epoll.h" />
-    <ClInclude Include="..\src\net\poller\event.h" />
-    <ClInclude Include="..\src\net\poller\io_object.h" />
-    <ClInclude Include="..\src\net\poller\select.h" />
-    <ClInclude Include="..\src\net\poller\timer.h" />
-    <ClInclude Include="..\src\net\poller\timer_queue.h" />
-    <ClInclude Include="..\src\net\queue.h" />
-    <ClInclude Include="..\src\net\socket.h" />
-    <ClInclude Include="..\src\net\tcp\buffer.h" />
-    <ClInclude Include="..\src\net\tcp\connecter.h" />
-    <ClInclude Include="..\src\net\tcp\listener.h" />
-    <ClInclude Include="..\src\net\tcp\rcvbuffer.h" />
-    <ClInclude Include="..\src\net\tcp\sndbuffer.h" />
-    <ClInclude Include="..\src\net\tcp\stream.h" />
-    <ClInclude Include="..\src\net\udp\stream.h" />
-    <ClInclude Include="..\src\net\udp\udp.h" />
-    <ClInclude Include="..\src\net\winapi.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\src\net\socket.inl" />
+    <ClInclude Include="..\include\debugger\bridge\delayload.h" />
+    <ClInclude Include="..\include\debugger\bridge\luacompatibility.h" />
+    <ClInclude Include="..\include\debugger\breakpoint.h" />
+    <ClInclude Include="..\include\debugger\capabilities.h" />
+    <ClInclude Include="..\include\debugger\config.h" />
+    <ClInclude Include="..\include\debugger\evaluate.h" />
+    <ClInclude Include="..\include\debugger\impl.h" />
+    <ClInclude Include="..\include\debugger\io.h" />
+    <ClInclude Include="..\include\debugger\iohelper.h" />
+    <ClInclude Include="..\include\debugger\lua.h" />
+    <ClInclude Include="..\include\debugger\observer.h" />
+    <ClInclude Include="..\include\debugger\pathconvert.h" />
+    <ClInclude Include="..\include\debugger\protocol.h" />
+    <ClInclude Include="..\include\debugger\redirect.h" />
+    <ClInclude Include="..\include\debugger\thread.h" />
+    <ClInclude Include="..\include\debugger\thunk.h" />
+    <ClInclude Include="..\include\debugger\debugger.h" />
+    <ClInclude Include="..\include\debugger\io\socket.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\third_party\lua53\project\lua53.vcxproj">
@@ -164,7 +138,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>DEBUGGER_EXPORTS;DEBUGGER_BRIDGE;RAPIDJSON_HAS_STDSTRING;_WINSOCK_DEPRECATED_NO_WARNINGS;_WIN32_WINNT=_WIN32_WINNT_WIN7;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(Root)\src\;$(Root)\third_party\;$(Root)\third_party\lua53\src\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(Root)\include\;$(Root)\third_party\;$(Root)\third_party\lua53\src\</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
     </ClCompile>
     <Link>
@@ -183,7 +157,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>DEBUGGER_EXPORTS;DEBUGGER_BRIDGE;RAPIDJSON_HAS_STDSTRING;_WINSOCK_DEPRECATED_NO_WARNINGS;_WIN32_WINNT=_WIN32_WINNT_WIN7;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(Root)\src\;$(Root)\third_party\;$(Root)\third_party\lua53\src\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(Root)\include\;$(Root)\third_party\;$(Root)\third_party\lua53\src\</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
     </ClCompile>
     <Link>
@@ -204,7 +178,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>DEBUGGER_EXPORTS;DEBUGGER_BRIDGE;RAPIDJSON_HAS_STDSTRING;_WINSOCK_DEPRECATED_NO_WARNINGS;_WIN32_WINNT=_WIN32_WINNT_WIN7;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(Root)\src\;$(Root)\third_party\;$(Root)\third_party\lua53\src\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(Root)\include\;$(Root)\third_party\;$(Root)\third_party\lua53\src\</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
     </ClCompile>
     <Link>
@@ -227,7 +201,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>DEBUGGER_EXPORTS;DEBUGGER_BRIDGE;RAPIDJSON_HAS_STDSTRING;_WINSOCK_DEPRECATED_NO_WARNINGS;_WIN32_WINNT=_WIN32_WINNT_WIN7;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(Root)\src\;$(Root)\third_party\;$(Root)\third_party\lua53\src\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(Root)\include\;$(Root)\third_party\;$(Root)\third_party\lua53\src\</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
     </ClCompile>
     <Link>

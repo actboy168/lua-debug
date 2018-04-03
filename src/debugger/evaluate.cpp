@@ -1,5 +1,5 @@
-#include "dbg_evaluate.h"
-#include "dbg_lua.h"
+#include <debugger/evaluate.h>
+#include <debugger/lua.h>
 #include <base/util/format.h>
 #include <vector>
 #include <map>

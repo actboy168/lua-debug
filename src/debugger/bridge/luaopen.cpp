@@ -1,7 +1,7 @@
-#include "bridge/dbg_delayload.h"
-#include "dbg_lua.h"
-#include "debugger.h"
-#include "io/dbg_socket.h"
+#include <debugger/bridge/delayload.h>
+#include <debugger/lua.h>
+#include <debugger/debugger.h>
+#include <debugger/io/socket.h>
 #include <memory>
 #include <intrin.h>  
 

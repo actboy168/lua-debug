@@ -1,6 +1,6 @@
-#include "dbg_iohelper.h"
-#include "dbg_impl.h"
-#include "dbg_io.h"
+#include <debugger/iohelper.h>
+#include <debugger/impl.h>
+#include <debugger/io.h>
 #include <rapidjson/schema.h>
 #include <rapidjson/error/en.h>
 #include <base/file/stream.h>

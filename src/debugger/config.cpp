@@ -1,4 +1,4 @@
-#include "dbg_config.h"
+#include <debugger/config.h>
 #include <rapidjson/error/en.h>
 #include <base/util/format.h>
 

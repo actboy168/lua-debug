@@ -1,4 +1,4 @@
-﻿#include "dbg_redirect.h"
+﻿#include <debugger/redirect.h>
 #include <windows.h>
 #include <fcntl.h>
 #include <io.h>

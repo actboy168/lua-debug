@@ -1,6 +1,6 @@
 #pragma once
 
-#include "debugger.h"
+#include <debugger/debugger.h>
 #include <map>
 #include <vector>
 

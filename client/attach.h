@@ -2,7 +2,7 @@
 
 #include <net/tcp/connecter.h>
 #include <net/poller.h>
-#include "dbg_protocol.h"	
+#include <debugger/protocol.h>
 
 class stdinput;
 

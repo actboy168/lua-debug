@@ -1,6 +1,6 @@
 #include <thread> 
 #include <lua.hpp>	 
-#include "debugger.h"
+#include <debugger/debugger.h>
 #include "dbg_network.h"
 
 #define STD_SLEEP(n) std::this_thread::sleep_for(std::chrono::milliseconds(n))
