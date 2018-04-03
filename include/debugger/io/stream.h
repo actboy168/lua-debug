@@ -3,8 +3,18 @@
 #include <debugger/io/base.h>
 #include <net/queue.h>
 
+#if defined(DEBUGGER_INLINE)
+#	define DEBUGGER_API
+#else
+#	if defined(DEBUGGER_EXPORTS)
+#		define DEBUGGER_API __declspec(dllexport)
+#	else
+#		define DEBUGGER_API __declspec(dllimport)
+#	endif
+#endif
+
 namespace vscode { namespace io {
-	struct stream
+	struct DEBUGGER_API stream
 		: public base
 	{
 		virtual size_t raw_peek() = 0;
@@ -17,8 +27,11 @@ namespace vscode { namespace io {
 		bool output(const char* buf, size_t len);
 		bool input(std::string& buf);
 
+#pragma warning(push)
+#pragma warning(disable:4251)
 		net::queue<std::string, 8> queue;
 		std::string                buf;
+#pragma warning(pop)
 		size_t                     stat;
 		size_t                     len;
 	};

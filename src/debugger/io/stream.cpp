@@ -3,7 +3,7 @@
 
 namespace vscode { namespace io {
 	stream::stream()
-	:  stat(0)
+	: stat(0)
 	, buf()
 	, len(0)
 	{ }

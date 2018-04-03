@@ -31,7 +31,6 @@
     <ClCompile Include="..\include\base\path\get_path.cpp" />
     <ClCompile Include="..\src\debugger\inject\main.cpp" />
     <ClCompile Include="..\src\debugger\io\namedpipe.cpp" />
-    <ClCompile Include="..\src\debugger\io\stream.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\base\hook\fp_call.h" />

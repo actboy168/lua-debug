@@ -10,159 +10,125 @@
 #include <net/tcp/listener.h> 
 #include <net/tcp/stream.h>	
 #include <base/util/format.h>
+#include <debugger/io/stream.h>
 
 namespace vscode { namespace io {
-	class server;
-	class rprotocol;
-	class wprotocol;
+	class sock_server;
+	class sock_session;
 
-	class session
+	typedef std::function<bool()> EventIn;
+
+	class sock_session
 		: public net::tcp::stream
 	{
 	public:
 		typedef net::tcp::stream base_type;
 
 	public:
-		session(server* server, net::poller_t* poll);
-		bool      output(const char* buf, size_t len);
-		bool      input(std::string& buf);
+		sock_session(sock_server* server, EventIn event_in, net::poller_t* poll);
+		bool output(const char* buf, size_t len);
+		bool input(std::string& buf);
 
 	private:
 		void event_close();
 		bool event_in();
 
 	private:
-		server* server_;
-		std::string buf_;
-		size_t      stat_;
-		size_t      len_;
-		net::tcp::buffer<std::string, 8> input_queue_;
+		sock_server* server_;
+		EventIn      event_in_;
 	};
 
-	class server
+	class sock_server
 		: public net::tcp::listener
 	{
 	public:
-		friend class session;
+		friend class sock_session;
 		typedef net::tcp::listener base_type;
 
 	public:
-		server(net::poller_t* poll, const net::endpoint& ep, bool rebind);
-		~server();
+		sock_server(net::poller_t* poll, sock_stream& stream, const net::endpoint& ep, bool rebind);
+		~sock_server();
 		void      update();
 		bool      listen();
-		bool      output(const char* buf, size_t len);
-		bool      input(std::string& buf);
 		void      close_session(); 
 		uint16_t  get_port() const;
+		bool      stream_update();
 
 	private:
 		void event_accept(net::socket::fd_t fd, const net::endpoint& ep);
 		void event_close();
 
 	private:
-		std::unique_ptr<session> session_;
+		std::unique_ptr<sock_session> session_;
 		net::endpoint            endpoint_;
-		std::vector<std::unique_ptr<session>> clearlist_;
+		std::vector<std::unique_ptr<sock_session>> clearlist_;
 		bool                     rebind_;
+		sock_stream&             stream_;
 	};
 
-	session::session(server* server, net::poller_t* poll)
+	sock_stream::sock_stream()
+		: s(nullptr)
+	{ }
+	size_t sock_stream::raw_peek() {
+		if (is_closed()) return 0;
+		return s->recv_size();
+	}
+	bool sock_stream::raw_recv(char* buf, size_t len) {
+		if (is_closed()) return false;
+		return len = s->recv(buf, len);
+	}
+	bool sock_stream::raw_send(const char* buf, size_t len) {
+		if (is_closed()) return false;
+		return len = s->send(buf, len);
+	}
+	void sock_stream::open(sock_session* s) {
+		this->s = s;
+	}
+	void sock_stream::close() {
+		s = nullptr;
+	}
+	bool sock_stream::is_closed() const {
+		return s == nullptr;
+	}
+
+	sock_session::sock_session(sock_server* server, EventIn event_in, net::poller_t* poll)
 		: net::tcp::stream(poll)
 		, server_(server)
-		, stat_(0)
-		, buf_()
-		, len_(0)
-	{
-	}
+		, event_in_(event_in)
+	{ }
 
-	bool session::output(const char* buf, size_t len)
-	{
-		auto l = ::base::format("Content-Length: %d\r\n\r\n", len);
-		if (l.size() != send(l.data(), l.size())) {
-			return false;
-		}
-		return len == send(buf, len);
-	}
-
-	bool session::input(std::string& buf)
-	{
-		if (input_queue_.empty())
-			return false;
-		buf = std::move(input_queue_.front());
-		input_queue_.pop();
-		return true;
-	}
-
-	void session::event_close()
+	void sock_session::event_close()
 	{
 		base_type::event_close();
 		server_->close_session();
 	}
 
-	bool session::event_in()
+	bool sock_session::event_in()
 	{
 		if (!base_type::event_in())
 			return false;
-		for (size_t n = base_type::recv_size(); n; --n)
-		{
-			char c = 0;
-			base_type::recv(&c, 1);
-			buf_.push_back(c);
-			switch (stat_)
-			{
-			case 0:
-				if (c == '\r') stat_ = 1;
-				break;
-			case 1:
-				stat_ = 0;
-				if (c == '\n')
-				{
-					if (buf_.substr(0, 16) != "Content-Length: ")
-					{
-						return false;
-					}
-					try {
-						len_ = (size_t)std::stol(buf_.substr(16, buf_.size() - 18));
-						stat_ = 2;
-					}
-					catch (...) {
-						return false;
-					}
-					buf_.clear();
-				}
-				break;
-			case 2:
-				if (buf_.size() >= (len_ + 2))
-				{
-					input_queue_.push(buf_.substr(2, len_));
-					buf_.clear();
-					stat_ = 0;
-				}
-				break;
-			}
-		}
-		return true;
+		return event_in_();
 	}
 
-	server::server(net::poller_t* poll, const net::endpoint& ep, bool rebind)
+	sock_server::sock_server(net::poller_t* poll, sock_stream& stream, const net::endpoint& ep, bool rebind)
 		: base_type(poll)
 		, session_()
 		, endpoint_(ep)
 		, rebind_(false)
+		, stream_(stream)
 	{
 		net::socket::initialize();
 		base_type::open();
 	}
 
-	server::~server()
+	sock_server::~sock_server()
 	{
 		base_type::close();
 		if (session_)
 			session_->close();
 	}
 
-	void server::update()
+	void sock_server::update()
 	{
 		if (!is_listening()) {
 			listen();
@@ -178,52 +144,39 @@ namespace vscode { namespace io {
 		}
 	}
 
-	bool server::listen()
+	bool sock_server::listen()
 	{
 		return base_type::listen(endpoint_, rebind_);
 	}
 
-	void server::event_accept(net::socket::fd_t fd, const net::endpoint& ep)
+	void sock_server::event_accept(net::socket::fd_t fd, const net::endpoint& ep)
 	{
 		if (session_)
 		{
 			net::socket::close(fd);
 			return;
 		}
-		session_.reset(new session(this, get_poller()));
+		session_.reset(new sock_session(this, std::bind(&sock_server::stream_update, this), get_poller()));
 		session_->attach(fd, ep);
+		stream_.open(session_.get());
 	}
 
-	void server::event_close()
+	void sock_server::event_close()
 	{
 		session_.reset();
 		base_type::event_close();
 	}
 
-	bool server::output(const char* buf, size_t len)
-	{
-		if (!session_)
-			return false;
-		return session_->output(buf, len);
-	}
-
-	bool server::input(std::string& buf)
-	{
-		if (!session_)
-			return false;
-		return session_->input(buf);
-	}
-
-	void server::close_session()
+	void sock_server::close_session()
 	{
 		if (!session_)
 			return;
-		std::unique_ptr<session> s(session_.release());
+		std::unique_ptr<sock_session> s(session_.release());
 		s->close();
 		clearlist_.push_back(std::move(s));
 	}
 
-	uint16_t server::get_port() const
+	uint16_t sock_server::get_port() const
 	{
 		if (sock == net::socket::retired_fd) {
 			return 0;
@@ -234,9 +187,16 @@ namespace vscode { namespace io {
 		return ::ntohs(addr.sin_port);
 	}
 
+	bool sock_server::stream_update()
+	{
+		stream_.sock_stream::update(10);
+		return !stream_.is_closed();
+	}
+
 	socket::socket(const char* ip, uint16_t port, bool rebind)
-		: poller_(new net::poller_t)
-		, server_(new server(poller_, net::endpoint(ip, port), rebind))
+		: sock_stream()
+		, poller_(new net::poller_t)
+		, server_(new sock_server(poller_, *this, net::endpoint(ip, port), rebind))
 	{
 		server_->listen();
 	}
@@ -251,22 +211,6 @@ namespace vscode { namespace io {
 	{
 		server_->update();
 		poller_->wait(1000, ms);
-	}
-
-	bool socket::output(const char* buf, size_t len)
-	{
-		if (!server_)
-			return false;
-		if (!server_->output(buf, len))
-			return false;
-		return true;
-	}
-
-	bool socket::input(std::string& buf)
-	{
-		if (!server_)
-			return false;
-		return server_->input(buf);
 	}
 
 	void socket::close()
