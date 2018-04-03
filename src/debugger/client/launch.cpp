@@ -1,7 +1,7 @@
 #include <Windows.h>
-#include "launch.h"
+#include <debugger/client/launch.h>
 #include <debugger/debugger.h>
-#include "stdinput.h"
+#include <debugger/client/stdinput.h>
 #include <debugger/bridge/delayload.h>
 #include <base/filesystem.h>
 #include <base/util/format.h>

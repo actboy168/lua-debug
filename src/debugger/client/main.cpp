@@ -2,16 +2,14 @@
 #include <fcntl.h>
 #include <io.h>	  
 #include <vector>
-#include "stdinput.h"
-#include "launch.h"
-#include "attach.h"
-#include "server.h"
+#include <debugger/client/stdinput.h>
+#include <debugger/client/launch.h>
+#include <debugger/client/attach.h>
+#include <debugger/client/server.h>
 #include <base/util/unicode.h>
 #include <base/filesystem.h>
 #include <debugger/capabilities.h>
 #include <debugger/io/helper.h>
-#include <debugger/io/helper.cpp>
-
 
 static void response_initialized(stdinput& io, vscode::rprotocol& req)
 {

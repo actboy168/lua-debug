@@ -30,12 +30,6 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\client\attach.cpp" />
-    <ClCompile Include="..\client\create_process.cpp" />
-    <ClCompile Include="..\client\server.cpp" />
-    <ClCompile Include="..\client\launch.cpp" />
-    <ClCompile Include="..\client\main.cpp" />
-    <ClCompile Include="..\client\stdinput.cpp" />
     <ClCompile Include="..\include\base\file\stream.cpp" />
     <ClCompile Include="..\include\base\hook\injectdll.cpp" />
     <ClCompile Include="..\include\base\path\get_path.cpp" />
@@ -43,12 +37,15 @@
     <ClCompile Include="..\include\base\win\process.cpp" />
     <ClCompile Include="..\src\debugger\bridge\delayload.cpp" />
     <ClCompile Include="..\src\debugger\bridge\lua.cpp" />
+    <ClCompile Include="..\src\debugger\client\attach.cpp" />
+    <ClCompile Include="..\src\debugger\client\create_process.cpp" />
+    <ClCompile Include="..\src\debugger\client\launch.cpp" />
+    <ClCompile Include="..\src\debugger\client\main.cpp" />
+    <ClCompile Include="..\src\debugger\client\server.cpp" />
+    <ClCompile Include="..\src\debugger\client\stdinput.cpp" />
+    <ClCompile Include="..\src\debugger\io\helper.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\client\attach.h" />
-    <ClInclude Include="..\client\server.h" />
-    <ClInclude Include="..\client\launch.h" />
-    <ClInclude Include="..\client\stdinput.h" />
     <ClInclude Include="..\include\base\file\stream.h" />
     <ClInclude Include="..\include\base\hook\injectdll.h" />
     <ClInclude Include="..\include\base\path\get_path.h" />
@@ -57,6 +54,11 @@
     <ClInclude Include="..\include\base\win\process.h" />
     <ClInclude Include="..\include\debugger\bridge\delayload.h" />
     <ClInclude Include="..\include\debugger\bridge\lua.h" />
+    <ClInclude Include="..\include\debugger\client\attach.h" />
+    <ClInclude Include="..\include\debugger\client\launch.h" />
+    <ClInclude Include="..\include\debugger\client\server.h" />
+    <ClInclude Include="..\include\debugger\client\stdinput.h" />
+    <ClInclude Include="..\include\debugger\io\helper.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{8AC7695F-C946-4B9A-B814-3E789BFD54E8}</ProjectGuid>
@@ -133,7 +135,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>DEBUGGER_BRIDGE;DISABLE_DETOURS;RAPIDJSON_HAS_STDSTRING;_WINSOCK_DEPRECATED_NO_WARNINGS;_WIN32_WINNT=_WIN32_WINNT_WIN7;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(Root)\include\;$(Root)\src\;$(Root)\third_party\;$(Root)\third_party\lua53\src\;$(Root)\third_party\wow64ext\src\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(Root)\include\;$(Root)\third_party\;$(Root)\third_party\lua53\src\;$(Root)\third_party\wow64ext\src\</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
     </ClCompile>
     <Link>
@@ -152,7 +154,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>DEBUGGER_BRIDGE;DISABLE_DETOURS;RAPIDJSON_HAS_STDSTRING;_WINSOCK_DEPRECATED_NO_WARNINGS;_WIN32_WINNT=_WIN32_WINNT_WIN7;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(Root)\include\;$(Root)\src\;$(Root)\third_party\;$(Root)\third_party\lua53\src\;$(Root)\third_party\wow64ext\src\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(Root)\include\;$(Root)\third_party\;$(Root)\third_party\lua53\src\;$(Root)\third_party\wow64ext\src\</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
     </ClCompile>
     <Link>
@@ -173,7 +175,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>DEBUGGER_BRIDGE;DISABLE_DETOURS;RAPIDJSON_HAS_STDSTRING;_WINSOCK_DEPRECATED_NO_WARNINGS;_WIN32_WINNT=_WIN32_WINNT_WIN7;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(Root)\include\;$(Root)\src\;$(Root)\third_party\;$(Root)\third_party\lua53\src\;$(Root)\third_party\wow64ext\src\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(Root)\include\;$(Root)\third_party\;$(Root)\third_party\lua53\src\;$(Root)\third_party\wow64ext\src\</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
     </ClCompile>
     <Link>
@@ -196,7 +198,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>DEBUGGER_BRIDGE;DISABLE_DETOURS;RAPIDJSON_HAS_STDSTRING;_WINSOCK_DEPRECATED_NO_WARNINGS;_WIN32_WINNT=_WIN32_WINNT_WIN7;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(Root)\include\;$(Root)\src\;$(Root)\third_party\;$(Root)\third_party\lua53\src\;$(Root)\third_party\wow64ext\src\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(Root)\include\;$(Root)\third_party\;$(Root)\third_party\lua53\src\;$(Root)\third_party\wow64ext\src\</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
     </ClCompile>
     <Link>

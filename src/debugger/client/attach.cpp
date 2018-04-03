@@ -1,5 +1,5 @@
-#include "attach.h"
-#include "stdinput.h"
+#include <debugger/client/attach.h>
+#include <debugger/client/stdinput.h>
 #include <base/util/format.h>
 
 attach::attach(stdinput& io_)

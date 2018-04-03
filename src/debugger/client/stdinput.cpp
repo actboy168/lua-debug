@@ -1,4 +1,4 @@
-#include "stdinput.h"
+#include <debugger/client/stdinput.h>
 #include <base/util/format.h>
 
 stdinput::stdinput()
