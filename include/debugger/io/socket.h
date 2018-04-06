@@ -32,7 +32,7 @@ namespace vscode { namespace io {
 		: public sock_stream
 	{
 	public:
-		socket(const char* ip, uint16_t port, bool rebind);
+		socket(const char* ip, uint16_t port);
 		virtual   ~socket();
 		void      update(int ms);
 		void      close();

@@ -303,24 +303,8 @@ namespace net { namespace socket {
 		return ::bind(s, ep.addr(), (int)ep.addrlen());
 	}
 
-	NET_INLINE int listen(fd_t s, const endpoint& ep, int backlog, bool rebind)
+	NET_INLINE int listen(fd_t s, int backlog)
 	{
-		if (::bind(s, ep.addr(), (int)ep.addrlen()) == -1)
-		{
-			if (rebind)
-			{
-				endpoint newep = ep;
-				newep.port(0);
-				if (::bind(s, newep.addr(), (int)newep.addrlen()) == -1)
-				{
-					return -1;
-				}
-			}
-			else
-			{
-				return -1;
-			}
-		}
 		if (::listen(s, backlog) == -1)
 		{
 			return -2;

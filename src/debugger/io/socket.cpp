@@ -46,7 +46,7 @@ namespace vscode { namespace io {
 		typedef net::tcp::listener base_type;
 
 	public:
-		sock_server(net::poller_t* poll, sock_stream& stream, const net::endpoint& ep, bool rebind);
+		sock_server(net::poller_t* poll, sock_stream& stream, const net::endpoint& ep);
 		~sock_server();
 		void      update();
 		bool      listen();
@@ -62,7 +62,6 @@ namespace vscode { namespace io {
 		std::unique_ptr<sock_session> session_;
 		net::endpoint            endpoint_;
 		std::vector<std::unique_ptr<sock_session>> clearlist_;
-		bool                     rebind_;
 		sock_stream&             stream_;
 	};
 
@@ -110,11 +109,10 @@ namespace vscode { namespace io {
 		return event_in_();
 	}
 
-	sock_server::sock_server(net::poller_t* poll, sock_stream& stream, const net::endpoint& ep, bool rebind)
+	sock_server::sock_server(net::poller_t* poll, sock_stream& stream, const net::endpoint& ep)
 		: base_type(poll)
 		, session_()
 		, endpoint_(ep)
-		, rebind_(false)
 		, stream_(stream)
 	{
 		net::socket::initialize();
@@ -146,7 +144,7 @@ namespace vscode { namespace io {
 
 	bool sock_server::listen()
 	{
-		return base_type::listen(endpoint_, rebind_);
+		return base_type::listen(endpoint_);
 	}
 
 	void sock_server::event_accept(net::socket::fd_t fd, const net::endpoint& ep)
@@ -193,10 +191,10 @@ namespace vscode { namespace io {
 		return !stream_.is_closed();
 	}
 
-	socket::socket(const char* ip, uint16_t port, bool rebind)
+	socket::socket(const char* ip, uint16_t port)
 		: sock_stream()
 		, poller_(new net::poller_t)
-		, server_(new sock_server(poller_, *this, net::endpoint(ip, port), rebind))
+		, server_(new sock_server(poller_, *this, net::endpoint(ip, port)))
 	{
 		server_->listen();
 	}

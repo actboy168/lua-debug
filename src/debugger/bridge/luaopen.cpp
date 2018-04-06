@@ -10,10 +10,10 @@ namespace luaw {
 		std::unique_ptr<vscode::io::socket> io;
 		std::unique_ptr<vscode::debugger> dbg;
 
-		void listen(const char* ip, uint16_t port, bool rebind)
+		void listen(const char* ip, uint16_t port)
 		{
 			if (io || dbg) return;
-			io.reset(new vscode::io::socket(ip, port, rebind));
+			io.reset(new vscode::io::socket(ip, port));
 			dbg.reset(new vscode::debugger(io.get(), vscode::threadmode::async));
 		}
 	};
@@ -38,7 +38,7 @@ namespace luaw {
 	static int listen(lua_State* L)
 	{
 		ud& self = to(L, 1);
-		self.listen(luaL_checkstring(L, 2), (uint16_t)luaL_checkinteger(L, 3), lua_toboolean(L, 4));
+		self.listen(luaL_checkstring(L, 2), (uint16_t)luaL_checkinteger(L, 3));
 		if (self.dbg) {
 			self.dbg->attach_lua(L);
 		}

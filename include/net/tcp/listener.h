@@ -62,11 +62,12 @@ namespace net { namespace tcp {
 
 		virtual void event_accept(net::socket::fd_t fd, const net::endpoint& ep) = 0;
 
-		bool listen(const endpoint& addr, bool rebind)
+		bool listen(const endpoint& addr)
 		{
 			assert(stat_ == e_idle);
 			NETLOG_INFO() << "socket(" << event_type::sock << ") " << addr.to_string() << " listening";
-			int rc = socket::listen(event_type::sock, addr, 0x100, rebind);
+			int rc = socket::bind(event_type::sock, addr) 
+				|| socket::listen(event_type::sock, 0x100);
 			if (rc == 0)
 			{
 				stat_ = e_listening;
