@@ -3,6 +3,7 @@
 #include <debugger/protocol.h>
 #include <debugger/io/base.h>
 #include <rapidjson/schema.h> 
+#include <memory>
 
 namespace vscode {
 	class schema

@@ -3,7 +3,7 @@
 #include <io.h>	  
 #include <vector>
 #include <debugger/client/stdinput.h>
-#include <debugger/client/launch.h>
+#include <debugger/client/run.h>
 #include <debugger/client/attach.h>
 #include <base/util/unicode.h>
 #include <base/util/format.h>
@@ -137,6 +137,10 @@ int main()
 				auto& args = req["arguments"];
 				if (args.HasMember("runtimeExecutable")) {
 					return run_createprocess_then_attach(io, init, req);
+				}
+				else if (args.HasMember("console") 
+					&& (args["console"] == "integratedTerminal" || args["console"] == "externalTerminal")) {
+					return run_terminal_then_attach(io, init, req);
 				}
 				else {
 					return run_launch(io, init, req);

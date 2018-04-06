@@ -38,8 +38,9 @@
     <ClCompile Include="..\src\debugger\bridge\lua.cpp" />
     <ClCompile Include="..\src\debugger\client\attach.cpp" />
     <ClCompile Include="..\src\debugger\client\create_process.cpp" />
-    <ClCompile Include="..\src\debugger\client\launch.cpp" />
+    <ClCompile Include="..\src\debugger\client\run_launch.cpp" />
     <ClCompile Include="..\src\debugger\client\main.cpp" />
+    <ClCompile Include="..\src\debugger\client\run_terminal_then_attach.cpp" />
     <ClCompile Include="..\src\debugger\client\stdinput.cpp" />
     <ClCompile Include="..\src\debugger\io\helper.cpp" />
     <ClCompile Include="..\src\debugger\io\namedpipe.cpp" />
@@ -53,7 +54,7 @@
     <ClInclude Include="..\include\debugger\bridge\delayload.h" />
     <ClInclude Include="..\include\debugger\bridge\lua.h" />
     <ClInclude Include="..\include\debugger\client\attach.h" />
-    <ClInclude Include="..\include\debugger\client\launch.h" />
+    <ClInclude Include="..\include\debugger\client\run.h" />
     <ClInclude Include="..\include\debugger\client\server.h" />
     <ClInclude Include="..\include\debugger\client\stdinput.h" />
     <ClInclude Include="..\include\debugger\io\helper.h" />

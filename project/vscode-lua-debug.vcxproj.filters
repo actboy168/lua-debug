@@ -25,9 +25,6 @@
     <ClCompile Include="..\src\debugger\client\create_process.cpp">
       <Filter>cpp\client</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\debugger\client\launch.cpp">
-      <Filter>cpp\client</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\debugger\client\main.cpp">
       <Filter>cpp\client</Filter>
     </ClCompile>
@@ -39,6 +36,12 @@
     </ClCompile>
     <ClCompile Include="..\src\debugger\io\namedpipe.cpp">
       <Filter>cpp\io</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\debugger\client\run_launch.cpp">
+      <Filter>cpp\client</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\debugger\client\run_terminal_then_attach.cpp">
+      <Filter>cpp\client</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -60,9 +63,6 @@
     <ClInclude Include="..\include\debugger\client\attach.h">
       <Filter>inc\client</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\debugger\client\launch.h">
-      <Filter>inc\client</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\debugger\client\server.h">
       <Filter>inc\client</Filter>
     </ClInclude>
@@ -77,6 +77,9 @@
     </ClInclude>
     <ClInclude Include="..\include\debugger\io\helper.h">
       <Filter>inc\io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\debugger\client\run.h">
+      <Filter>inc\client</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
