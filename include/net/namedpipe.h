@@ -84,7 +84,7 @@ namespace net {
 
 	bool namedpipe::recv(char* buf, size_t& len) {
 		DWORD rlen = 0;
-		if (!ReadFile(pipefd, buf, len, &rlen, NULL)) {
+		if (!ReadFile(pipefd, buf, (DWORD)len, &rlen, NULL)) {
 			return false;
 		}
 		len = rlen;
