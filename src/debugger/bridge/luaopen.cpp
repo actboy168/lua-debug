@@ -10,11 +10,13 @@ namespace luaw {
 		std::unique_ptr<vscode::io::socket> io;
 		std::unique_ptr<vscode::debugger> dbg;
 
-		void listen(const char* ip, uint16_t port)
+		uint16_t listen(const char* ip, uint16_t port)
 		{
-			if (io || dbg) return;
+			if (io) return io->get_port();
+			if (dbg) return 0;
 			io.reset(new vscode::io::socket(ip, port));
 			dbg.reset(new vscode::debugger(io.get(), vscode::threadmode::async));
+			return io->get_port();
 		}
 	};
 
@@ -55,16 +57,6 @@ namespace luaw {
 		self.dbg->wait_attach();
 		self.dbg->attach_lua(L);
 		return 0;
-	}
-
-	static int port(lua_State* L)
-	{
-		ud& self = to(L, 1);
-		if (!self.io) {
-			return 0;
-		}
-		lua_pushinteger(L, self.io->get_port());
-		return 1;
 	}
 
 	static int config(lua_State* L)
@@ -109,7 +101,6 @@ namespace luaw {
 		luaL_Reg mt[] = {
 			{ "listen", listen },
 			{ "start", start },
-			{ "port", port },
 			{ "config", config },
 			{ "__gc", mt_gc },
 			{ NULL, NULL },
