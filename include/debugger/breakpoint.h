@@ -55,7 +55,6 @@ namespace vscode
 	private:
 		void clear(bp_source& src);
 		void add(bp_source& src, size_t line, rapidjson::Value const& bp);
-		bool evaluate_isok(lua_State* L, lua::Debug *ar, const std::string& script) const;
 
 	private:
 		debugger_impl* dbg_;

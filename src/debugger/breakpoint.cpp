@@ -2,9 +2,65 @@
 #include <debugger/evaluate.h>
 #include <debugger/impl.h>
 #include <debugger/lua.h>
+#include <regex>
 
 namespace vscode
 {
+	static bool evaluate_isok(lua_State* L, lua::Debug *ar, const std::string& script)
+	{
+		int nresult = 0;
+		if (!evaluate(L, ar, ("return " + script).c_str(), nresult))
+		{
+			lua_pop(L, 1);
+			return false;
+		}
+		if (nresult > 0 && lua_type(L, -nresult) == LUA_TBOOLEAN && lua_toboolean(L, -nresult))
+		{
+			lua_pop(L, nresult);
+			return true;
+		}
+		lua_pop(L, nresult);
+		return false;
+	}
+
+	static std::string evaluate_getstr(lua_State* L, lua::Debug *ar, const std::string& script)
+	{
+		int nresult = 0;
+		if (!evaluate(L, ar, ("return tostring(" + script + ")").c_str(), nresult))
+		{
+			lua_pop(L, 1);
+			return "";
+		}
+		if (nresult <= 0)
+		{
+			return "";
+		}
+		std::string res;
+		size_t len = 0;
+		const char* str = lua_tolstring(L, -nresult, &len);
+		lua_pop(L, nresult);
+		return std::string(str, len);
+	}
+
+	static std::string evaluate_log(lua_State* L, lua::Debug *ar, const std::string& log)
+	{
+		try {
+			std::string res;
+			std::regex re(R"(\{[^\}]*\})");
+			std::smatch m;
+			auto it = log.begin();
+			for (; std::regex_search(it, log.end(), m, re); it = m[0].second) {
+				res += std::string(it, m[0].first);
+				res += evaluate_getstr(L, ar, std::string(m[0].first + 1, m[0].second - 1));
+			}
+			res += std::string(it, log.end());
+			return res;
+		}
+		catch (std::exception& e) {
+			return e.what();
+		}
+	}
+
 	bp::bp(rapidjson::Value const& info, int h)
 		: cond()
 		, hitcond()
@@ -103,23 +159,6 @@ namespace vscode
 		return false;
 	}
 
-	bool breakpoint::evaluate_isok(lua_State* L, lua::Debug *ar, const std::string& script) const
-	{
-		int nresult = 0;
-		if (!evaluate(L, ar, ("return " + script).c_str(), nresult))
-		{
-			lua_pop(L, 1);
-			return false;
-		}
-		if (nresult > 0 && lua_type(L, -nresult) == LUA_TBOOLEAN && lua_toboolean(L, -nresult))
-		{
-			lua_pop(L, nresult);
-			return true;
-		}
-		lua_pop(L, nresult);
-		return false;
-	}
-
 	bool breakpoint::has(bp_source* src, size_t line, lua_State* L, lua::Debug* ar) const
 	{
 		auto it = src->find(line);
@@ -139,8 +178,9 @@ namespace vscode
 		}
 		if (!bp.log.empty())
 		{
-			dbg_->output("stdout", bp.log.data(), bp.log.size(), L, ar);
-			return true;
+			std::string res = evaluate_log(L, ar, bp.log);
+			dbg_->output("stdout", res.data(), res.size(), L, ar);
+			return false;
 		}
 		return true;
 	}
