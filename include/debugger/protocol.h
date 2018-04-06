@@ -61,6 +61,18 @@ namespace vscode
 			return *this;
 		}
 
+		wprotocol& operator() (const std::string& str)
+		{
+			base_type::Key(str);
+			return *this;
+		}
+
+		wprotocol& operator() (const rapidjson::Value& str)
+		{
+			base_type::Key(str.GetString(), str.GetStringLength());
+			return *this;
+		}
+
 		bool String(const rapidjson::Value& str)
 		{
 			return base_type::String(str.GetString(), str.GetStringLength());
