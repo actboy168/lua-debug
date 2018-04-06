@@ -50,9 +50,9 @@ namespace vscode
 		impl_->set_custom(custom);
 	}
 
-	void debugger::output(const char* category, const char* buf, size_t len, lua_State* L)
+	void debugger::output(const char* category, const char* buf, size_t len, lua_State* L, lua_Debug* ar)
 	{
-		impl_->output(category, buf, len, L);
+		impl_->output(category, buf, len, L, (lua::Debug*)ar);
 	}
 
 	void debugger::exception(lua_State* L)

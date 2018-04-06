@@ -51,7 +51,7 @@ namespace vscode
 				cur_source_ = 0;
 				if (!lua_getinfo(L, "S", (lua_Debug*)ar))
 					return false;
-				cur_source_ = breakpoints_.get(ar->source, pathconvert_);
+				cur_source_ = breakpoints_.get(ar->source);
 			}
 			if (cur_source_ && breakpoints_.has(cur_source_, ar->currentline, L, ar))
 			{

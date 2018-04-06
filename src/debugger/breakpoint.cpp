@@ -1,5 +1,6 @@
 #include <debugger/breakpoint.h>
 #include <debugger/evaluate.h>
+#include <debugger/impl.h>
 #include <debugger/lua.h>
 
 namespace vscode
@@ -17,12 +18,13 @@ namespace vscode
 			hitcond = info["hitCondition"].Get<std::string>();
 		}
 		if (info.HasMember("logMessage")) {
-			log = info["logMessage"].Get<std::string>();
+			log = info["logMessage"].Get<std::string>() + "\n";
 		}
 	}
 
-	breakpoint::breakpoint()
-		: files_()
+	breakpoint::breakpoint(debugger_impl* dbg)
+		: dbg_(dbg)
+		, files_()
 		, fast_table_()
 	{
 		fast_table_.fill(0);
@@ -135,15 +137,20 @@ namespace vscode
 		{
 			return false;
 		}
+		if (!bp.log.empty())
+		{
+			dbg_->output("stdout", bp.log.data(), bp.log.size(), L, ar);
+			return true;
+		}
 		return true;
 	}
 
-	bp_source* breakpoint::get(const char* source, pathconvert& pathconvert)
+	bp_source* breakpoint::get(const char* source)
 	{
 		if (source[0] == '@' || source[0] == '=')
 		{
 			std::string client_path;
-			if (pathconvert.get(source, client_path))
+			if (dbg_->get_pathconvert().get(source, client_path))
 			{
 				auto it = files_.find(client_path);
 				if (it != files_.end())

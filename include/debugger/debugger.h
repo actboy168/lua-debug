@@ -13,6 +13,7 @@
 #endif
 
 struct lua_State;
+struct lua_Debug;
 
 namespace vscode
 {
@@ -58,7 +59,7 @@ namespace vscode
 		void attach_lua(lua_State* L);
 		void detach_lua(lua_State* L);
 		void set_custom(custom* custom);
-		void output(const char* category, const char* buf, size_t len, lua_State* L = nullptr);
+		void output(const char* category, const char* buf, size_t len, lua_State* L = nullptr, lua_Debug* ar = nullptr);
 		void exception(lua_State* L);
 		bool is_state(state state) const;
 		void redirect_stdout();

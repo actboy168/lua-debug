@@ -56,7 +56,7 @@ namespace vscode
 		void attach_lua(lua_State* L);
 		void detach_lua(lua_State* L);
 		void set_custom(custom* custom);
-		void output(const char* category, const char* buf, size_t len, lua_State* L);
+		void output(const char* category, const char* buf, size_t len, lua_State* L = nullptr, lua::Debug* ar = nullptr);
 		bool set_config(int level, const std::string& cfg, std::string& err);
 
 		void set_state(state state);

@@ -97,7 +97,7 @@ namespace vscode
 			if (n > 0) {
 				base::hybrid_array<char, 1024> buf(n);
 				stdout_->read(buf.data(), buf.size());
-				output("stdout", buf.data(), buf.size(), nullptr);
+				output("stdout", buf.data(), buf.size());
 			}
 		}
 		if (stderr_) {
@@ -105,7 +105,7 @@ namespace vscode
 			if (n > 0) {
 				base::hybrid_array<char, 1024> buf(n);
 				stderr_->read(buf.data(), buf.size());
-				output("stderr", buf.data(), buf.size(), nullptr);
+				output("stderr", buf.data(), buf.size());
 			}
 		}
 	}
@@ -355,7 +355,7 @@ namespace vscode
 		custom_ = custom;
 	}
 
-	void debugger_impl::output(const char* category, const char* buf, size_t len, lua_State* L)
+	void debugger_impl::output(const char* category, const char* buf, size_t len, lua_State* L, lua::Debug* ar)
 	{
 		if (console_ == "none") {
 			return;
@@ -376,16 +376,20 @@ namespace vscode
 					res("output").String(base::strview(buf, len));
 				}
 
-				lua::Debug entry;
-				if (L && lua_getstack(L, 1, (lua_Debug*)&entry))
-				{
-					int status = lua_getinfo(L, "Sln", (lua_Debug*)&entry);
+				if (L) {
+					lua::Debug entry;
+					if (!ar && lua_getstack(L, 1, (lua_Debug*)&entry)) {
+						ar = &entry;
+					}
+					if (!ar) continue;
+
+					int status = lua_getinfo(L, "Sln", (lua_Debug*)ar);
 					assert(status);
-					const char *src = entry.source;
-					if (*entry.what == 'C')
+					const char *src = ar->source;
+					if (*ar->what == 'C')
 					{
 					}
-					else if (*entry.source == '@' || *entry.source == '=')
+					else if (*ar->source == '@' || *ar->source == '=')
 					{
 						std::string path;
 						if (pathconvert_.get(src, path))
@@ -395,7 +399,7 @@ namespace vscode
 								res("name").String(path_filename(path));
 								res("path").String(path);
 							};
-							res("line").Int(entry.currentline);
+							res("line").Int(ar->currentline);
 							res("column").Int(1);
 						}
 					}
@@ -407,7 +411,7 @@ namespace vscode
 							res("name").String("<Memory>");
 							res("sourceReference").Int64(reference);
 						}
-						res("line").Int(entry.currentline);
+						res("line").Int(ar->currentline);
 						res("column").Int(1);
 					}
 				}
@@ -475,7 +479,7 @@ namespace vscode
 		, stepping_target_level_(0)
 		, stepping_current_level_(0)
 		, stepping_lua_state_(NULL)
-		, breakpoints_()
+		, breakpoints_(this)
 		, stack_()
 		, pathconvert_(this)
 		, custom_(nullptr)
