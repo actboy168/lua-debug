@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include <debugger/io/stream.h>
 #include <stdint.h>
 
@@ -32,6 +31,7 @@ namespace vscode { namespace io {
 		: public sock_stream
 	{
 	public:
+		socket(const char* addr);
 		socket(const char* ip, uint16_t port);
 		virtual   ~socket();
 		void      update(int ms);

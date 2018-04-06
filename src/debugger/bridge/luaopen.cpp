@@ -2,21 +2,32 @@
 #include <debugger/lua.h>
 #include <debugger/debugger.h>
 #include <debugger/io/socket.h>
+#include <debugger/io/namedpipe.h>
+#include <base/util/unicode.h>
 #include <memory>
 #include <intrin.h>  
 
 namespace luaw {
 	struct ud {
-		std::unique_ptr<vscode::io::socket> io;
+		std::unique_ptr<vscode::io::socket> socket;
+		std::unique_ptr<vscode::io::namedpipe> namedpipe;
 		std::unique_ptr<vscode::debugger> dbg;
 
-		uint16_t listen(const char* ip, uint16_t port)
+		uint16_t listen_tcp(const char* addr)
 		{
-			if (io) return io->get_port();
+			if (socket) return socket->get_port();
 			if (dbg) return 0;
-			io.reset(new vscode::io::socket(ip, port));
-			dbg.reset(new vscode::debugger(io.get(), vscode::threadmode::async));
-			return io->get_port();
+			socket.reset(new vscode::io::socket(addr));
+			dbg.reset(new vscode::debugger(socket.get(), vscode::threadmode::async));
+			return socket->get_port();
+		}
+
+		void listen_pipe(const char* name)
+		{
+			if (namedpipe || dbg) return;
+			namedpipe.reset(new vscode::io::namedpipe());
+			namedpipe->open_server(base::u2w(name));
+			dbg.reset(new vscode::debugger(namedpipe.get(), vscode::threadmode::async));
 		}
 	};
 
@@ -40,9 +51,27 @@ namespace luaw {
 	static int listen(lua_State* L)
 	{
 		ud& self = to(L, 1);
-		self.listen(luaL_checkstring(L, 2), (uint16_t)luaL_checkinteger(L, 3));
-		if (self.dbg) {
-			self.dbg->attach_lua(L);
+		const char* addr = luaL_checkstring(L, 2);
+		if (strncmp(addr, "pipe:", 5) == 0) {
+			self.listen_pipe(addr + 5);
+			if (self.dbg) {
+				self.dbg->attach_lua(L);
+			}
+			return 0;
+		}
+		else if (strncmp(addr, "tcp:", 4) == 0) {
+			uint16_t port = self.listen_tcp(addr + 4);
+			if (self.dbg) {
+				self.dbg->attach_lua(L);
+			}
+			return 1;
+		}
+		else {
+			uint16_t port = self.listen_tcp(addr);
+			if (self.dbg) {
+				self.dbg->attach_lua(L);
+			}
+			return 1;
 		}
 		return 0;
 	}
