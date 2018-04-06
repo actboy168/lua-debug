@@ -100,7 +100,7 @@ namespace vscode
 		}
 		config_.init(1, req["arguments"]);
 		initialize_sourcemaps();
-		console_ = config_.get("console", rapidjson::kStringType).Get<std::string>();
+		console_ = config_.get("consoleCoding", rapidjson::kStringType).Get<std::string>();
 		auto& sourceCoding = config_.get("sourceCoding", rapidjson::kStringType);
 		if (sourceCoding.Get<std::string>() == "utf8") {
 			pathconvert_.set_coding(coding::utf8);

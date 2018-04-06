@@ -59,7 +59,7 @@
                         "path": "${workspaceRoot}/?.lua",
                         "cpath": "${workspaceRoot}/?.dll",
                         "arg": [],
-                        "console": "utf8"
+                        "consoleCoding": "utf8"
                     },
                     {
                         "name": "attach",
@@ -90,7 +90,7 @@
                             "path": "^\"\\${workspaceRoot}/?.lua\"",
                             "cpath": "^\"\\${workspaceRoot}/?.dll\"",
                             "arg": [],
-                            "console": "utf8"
+                            "consoleCoding": "utf8"
                         }
                     },
                     {
@@ -103,7 +103,7 @@
                             "stopOnEntry": true,
                             "runtimeExecutable": "^\"\\${workspaceRoot}/lua.exe\"",
                             "runtimeArgs": "^\"\\${workspaceRoot}/${2:main.lua}\"",
-                            "console": "utf8"
+                            "consoleCoding": "utf8"
                         }
                     },
                     {
@@ -179,7 +179,7 @@
                                 "description": "Command line argument, arg[1] ... arg[n]",
                                 "default": []
                             },
-                            "console": {
+                            "consoleCoding": {
                                 "type": "string",
                                 "description": "Console encoding",
                                 "default": "utf8",
@@ -238,7 +238,7 @@
                                 "description": "Debug port to attach to. Default is 4278.",
                                 "default": 4278
                             },
-                            "console": {
+                            "consoleCoding": {
                                 "type": "string",
                                 "description": "Console encoding",
                                 "default": "utf8",

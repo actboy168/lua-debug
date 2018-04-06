@@ -130,11 +130,11 @@ int run_launch(stdinput& io, vscode::rprotocol& init, vscode::rprotocol& req)
 	}
 	lua_setglobal(L, "arg");
 
-	std::string console = "none";
-	if (args.HasMember("console") && args["console"].IsString()) {
-		console = args["console"].Get<std::string>();
+	std::string consoleCoding = "none";
+	if (args.HasMember("consoleCoding") && args["consoleCoding"].IsString()) {
+		consoleCoding = args["consoleCoding"].Get<std::string>();
 	}
-	if (console == "none") {
+	if (consoleCoding == "none") {
 		lua_pushcclosure(L, print_empty, 0);
 		lua_setglobal(L, "print");
 	}
