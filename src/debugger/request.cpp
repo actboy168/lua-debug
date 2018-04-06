@@ -279,10 +279,7 @@ namespace vscode
 			{
 				unsigned int line = m["line"].GetUint();
 				lines.push_back(line);
-				breakpoints_.add(path, line,
-					m.HasMember("condition") ? m["condition"].Get<std::string>() : std::string(),
-					m.HasMember("hitCondition") ? m["hitCondition"].Get<std::string>() : std::string()
-				);
+				breakpoints_.add(path, line, m);
 			}
 		}
 		else if (source.HasMember("name")
@@ -295,10 +292,7 @@ namespace vscode
 			{
 				unsigned int line = m["line"].GetUint();
 				lines.push_back(line);
-				breakpoints_.add(source_ref, line,
-					m.HasMember("condition") ? m["condition"].Get<std::string>() : std::string(),
-					m.HasMember("hitCondition") ? m["hitCondition"].Get<std::string>() : std::string()
-				);
+				breakpoints_.add(source_ref, line, m);
 			}
 		}
 		else {

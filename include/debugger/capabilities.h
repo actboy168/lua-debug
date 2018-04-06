@@ -14,6 +14,7 @@ namespace vscode
 			res("supportsHitConditionalBreakpoints").Bool(true);
 			res("supportsDelayedStackTraceLoading").Bool(true);
 			res("supportsExceptionInfoRequest").Bool(true);
+			res("supportsLogPoints").Bool(true);
 			for (auto _ : res("exceptionBreakpointFilters").Array())
 			{
 				for (auto _ : res.Object())

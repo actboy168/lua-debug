@@ -4,6 +4,23 @@
 
 namespace vscode
 {
+	bp::bp(rapidjson::Value const& info, int h)
+		: cond()
+		, hitcond()
+		, log()
+		, hit(h)
+	{
+		if (info.HasMember("condition")) {
+			cond = info["condition"].Get<std::string>();
+		}
+		if (info.HasMember("hitCondition")) {
+			hitcond = info["hitCondition"].Get<std::string>();
+		}
+		if (info.HasMember("logMessage")) {
+			log = info["logMessage"].Get<std::string>();
+		}
+	}
+
 	breakpoint::breakpoint()
 		: files_()
 		, fast_table_()
@@ -45,26 +62,26 @@ namespace vscode
 		src.clear();
 	}
 
-	void breakpoint::add(const std::string& client_path, size_t line, const std::string& condition, const std::string& hitcondition)
+	void breakpoint::add(const std::string& client_path, size_t line, rapidjson::Value const& bp)
 	{
-		return add(files_[client_path], line, condition, hitcondition);
+		return add(files_[client_path], line, bp);
 	}
 
-	void breakpoint::add(intptr_t source_ref, size_t line, const std::string& condition, const std::string& hitcondition)
+	void breakpoint::add(intptr_t source_ref, size_t line, rapidjson::Value const& bp)
 	{
-		return add(memorys_[source_ref], line, condition, hitcondition);
+		return add(memorys_[source_ref], line, bp);
 	}
 
-	void breakpoint::add(bp_source& src, size_t line, const std::string& condition, const std::string& hitcondition)
+	void breakpoint::add(bp_source& src, size_t line, rapidjson::Value const& bpinfo)
 	{
 		auto it = src.find(line);
 		if (it != src.end())
 		{
-			it->second = bp(condition, hitcondition, it->second.hit);
+			it->second = bp(bpinfo, it->second.hit);
 			return;
 		}
 
-		src.insert(std::make_pair(line, bp(condition, hitcondition, 0)));
+		src.insert(std::make_pair(line, bp(bpinfo, 0)));
 		if (line >= fast_table_.size())
 		{
 			size_t oldsize = fast_table_.size();
@@ -109,12 +126,12 @@ namespace vscode
 			return false;
 		}
 		bp& bp = it->second;
-		if (!bp.condition.empty() && !evaluate_isok(L, ar, bp.condition))
+		if (!bp.cond.empty() && !evaluate_isok(L, ar, bp.cond))
 		{
 			return false;
 		}
 		bp.hit++;
-		if (!bp.hitcondition.empty() && !evaluate_isok(L, ar, std::to_string(bp.hit) + " " + bp.hitcondition))
+		if (!bp.hitcond.empty() && !evaluate_isok(L, ar, std::to_string(bp.hit) + " " + bp.hitcond))
 		{
 			return false;
 		}
