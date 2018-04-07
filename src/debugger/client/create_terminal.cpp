@@ -58,7 +58,7 @@ bool create_terminal_with_debugger(stdinput& io, vscode::rprotocol& req, const s
 			res.String((base::path::self().remove_filename() / "lua.exe").string());
 
 			res.String("-e");
-			res.String(base::format(R"(local dbg = require [[debugger]] dbg:listen([[pipe:%s]]) dbg:start())", port));
+			res.String(base::format(R"(require([[debugger]]):listen([[pipe:%s]]):start())", port));
 
 			if (args.HasMember("path") && args["path"].IsString()) {
 				std::string path = sourceCodingUtf8 ? args["path"].Get<std::string>() : base::u2a(args["path"]);

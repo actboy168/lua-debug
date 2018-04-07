@@ -13,13 +13,11 @@ namespace luaw {
 		std::unique_ptr<vscode::io::namedpipe> namedpipe;
 		std::unique_ptr<vscode::debugger> dbg;
 
-		uint16_t listen_tcp(const char* addr)
+		void listen_tcp(const char* addr)
 		{
-			if (socket) return socket->get_port();
-			if (dbg) return 0;
+			if (namedpipe || dbg) return;
 			socket.reset(new vscode::io::socket(addr));
 			dbg.reset(new vscode::debugger(socket.get(), vscode::threadmode::async));
-			return socket->get_port();
 		}
 
 		void listen_pipe(const char* name)
@@ -57,42 +55,43 @@ namespace luaw {
 			if (self.dbg) {
 				self.dbg->attach_lua(L);
 			}
-			return 0;
 		}
 		else if (strncmp(addr, "tcp:", 4) == 0) {
-			uint16_t port = self.listen_tcp(addr + 4);
+			self.listen_tcp(addr + 4);
 			if (self.dbg) {
 				self.dbg->attach_lua(L);
 			}
-			return 1;
 		}
-		else {
-			uint16_t port = self.listen_tcp(addr);
+		else { 
+			self.listen_tcp(addr);
 			if (self.dbg) {
 				self.dbg->attach_lua(L);
 			}
-			return 1;
 		}
-		return 0;
+		lua_pushvalue(L, 1);
+		return 1;
 	}
 
 	static int start(lua_State* L)
 	{
 		ud& self = to(L, 1);
 		if (!self.dbg) {
-			return 0;
+			lua_pushvalue(L, 1);
+			return 1;
 		}
 		self.dbg->detach_lua(L);
 		self.dbg->wait_attach();
 		self.dbg->attach_lua(L);
-		return 0;
+		lua_pushvalue(L, 1);
+		return 1;
 	}
 
 	static int config(lua_State* L)
 	{
 		ud& self = to(L, 1);
 		if (!self.dbg) {
-			return 0;
+			lua_pushvalue(L, 1);
+			return 1;
 		}
 		if (lua_type(L, 2) == LUA_TSTRING) {
 			size_t len = 0;
@@ -112,7 +111,8 @@ namespace luaw {
 				return lua_error(L);
 			}
 		}
-		return 0;
+		lua_pushvalue(L, 1);
+		return 1;
 	}
 
 	static int mt_gc(lua_State* L)
