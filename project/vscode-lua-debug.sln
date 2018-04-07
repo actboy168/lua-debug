@@ -16,6 +16,12 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "debugger-inject", "debugger-inject.vcxproj", "{20F15A76-D908-475B-A904-6ACD1763D5FB}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vscode-lua-debug", "vscode-lua-debug.vcxproj", "{8AC7695F-C946-4B9A-B814-3E789BFD54E8}"
+	ProjectSection(ProjectDependencies) = postProject
+		{76338556-5419-494A-A4C6-D79090629054} = {76338556-5419-494A-A4C6-D79090629054}
+		{20F15A76-D908-475B-A904-6ACD1763D5FB} = {20F15A76-D908-475B-A904-6ACD1763D5FB}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "lua", "..\third_party\lua53\project\lua.vcxproj", "{76338556-5419-494A-A4C6-D79090629054}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -71,6 +77,12 @@ Global
 		{8AC7695F-C946-4B9A-B814-3E789BFD54E8}.Release|Win32.Build.0 = Release|Win32
 		{8AC7695F-C946-4B9A-B814-3E789BFD54E8}.Release|x64.ActiveCfg = Release|x64
 		{8AC7695F-C946-4B9A-B814-3E789BFD54E8}.Release|x64.Build.0 = Release|x64
+		{76338556-5419-494A-A4C6-D79090629054}.Debug|Win32.ActiveCfg = Debug|Win32
+		{76338556-5419-494A-A4C6-D79090629054}.Debug|Win32.Build.0 = Debug|Win32
+		{76338556-5419-494A-A4C6-D79090629054}.Debug|x64.ActiveCfg = Debug|Win32
+		{76338556-5419-494A-A4C6-D79090629054}.Release|Win32.ActiveCfg = Release|Win32
+		{76338556-5419-494A-A4C6-D79090629054}.Release|Win32.Build.0 = Release|Win32
+		{76338556-5419-494A-A4C6-D79090629054}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -79,6 +91,7 @@ Global
 		{9DA7F232-0096-45BC-A452-24C7F3AFA0F8} = {E37DCA1E-4985-4019-AFCC-11E38734A438}
 		{B84F7231-16CE-41D8-8C08-7B523FF4225B} = {E37DCA1E-4985-4019-AFCC-11E38734A438}
 		{F142A341-5EE0-442D-A15F-98AE9B48DBAE} = {E37DCA1E-4985-4019-AFCC-11E38734A438}
+		{76338556-5419-494A-A4C6-D79090629054} = {E37DCA1E-4985-4019-AFCC-11E38734A438}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {7581734B-8D88-4E5E-A66D-DAA87CD797A9}
