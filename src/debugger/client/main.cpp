@@ -58,8 +58,6 @@ static void sleep() {
 	std::this_thread::sleep_for(std::chrono::milliseconds(10));
 }
 
-bool create_process_with_debugger(vscode::rprotocol& req, const std::wstring& port);
-
 static int run_createprocess_then_attach(stdinput& io, vscode::rprotocol& init, vscode::rprotocol& req)
 {
 	auto port = base::format(L"vscode-lua-debug-%d", GetCurrentProcessId());
@@ -68,28 +66,28 @@ static int run_createprocess_then_attach(stdinput& io, vscode::rprotocol& init, 
 		return -1;
 	}
 
-	vscode::io::namedpipe pipe;
-	if (!pipe.open_server(port)) {
+	if (!run_pipe_attach(io, init, req, port)) {
 		response_error(io, req, "Launch failed");
 		return -1;
-	}
-	io_output(&pipe, init);
-	io_output(&pipe, req);
-	for (;; sleep()) {
-		io.update(10);
-		pipe.update(10);
-		std::string buf;
-		while (io.input(buf)) {
-			pipe.output(buf.data(), buf.size());
-		}
-		while (pipe.input(buf)) {
-			io.output(buf.data(), buf.size());
-		}
 	}
 	return 0;
 }
 
-static int run_attach(stdinput& io, vscode::rprotocol& init, vscode::rprotocol& req)
+int run_terminal_then_attach(stdinput& io, vscode::rprotocol& init, vscode::rprotocol& req)
+{
+	auto port = base::format(L"vscode-lua-debug-%d", GetCurrentProcessId());
+	if (!create_terminal_with_debugger(io, req, port)) {
+		response_error(io, req, "Launch failed");
+		return -1;
+	}
+	if (!run_pipe_attach(io, init, req, port)) {
+		response_error(io, req, "Launch failed");
+		return -1;
+	}
+	return 0;
+}
+
+static int run_tcp_attach(stdinput& io, vscode::rprotocol& init, vscode::rprotocol& req)
 {
 	tcp_attach attach(io);
 	auto& args = req["arguments"];
@@ -146,7 +144,7 @@ int main()
 				}
 			}
 			else if (req["command"] == "attach") {
-				return run_attach(io, init, req);
+				return run_tcp_attach(io, init, req);
 			}
 		}
 	}

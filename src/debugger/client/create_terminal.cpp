@@ -8,10 +8,6 @@
 #include <base/path/self.h>
 #include <functional>
 
-static void sleep() {
-	std::this_thread::sleep_for(std::chrono::milliseconds(10));
-}
-
 void request_runInTerminal(vscode::io::base* io, std::function<void(vscode::wprotocol&)> args)
 {
 	vscode::wprotocol res;
@@ -28,7 +24,7 @@ void request_runInTerminal(vscode::io::base* io, std::function<void(vscode::wpro
 	vscode::io_output(io, res);
 }
 
-int run_terminal_then_attach(stdinput& io, vscode::rprotocol& init, vscode::rprotocol& req)
+bool create_terminal_with_debugger(stdinput& io, vscode::rprotocol& req, const std::wstring& port)
 {
 	auto& args = req["arguments"];
 	bool sourceCodingUtf8 = false;
@@ -36,7 +32,6 @@ int run_terminal_then_attach(stdinput& io, vscode::rprotocol& init, vscode::rpro
 	if (args.HasMember("sourceCoding") && args["sourceCoding"].IsString()) {
 		sourceCodingUtf8 = "utf8" == args["sourceCoding"].Get<std::string>();
 	}
-	auto pipename = base::format(L"vscode-lua-debug-%d", GetCurrentProcessId());
 
 	request_runInTerminal(&io, [&](vscode::wprotocol& res) {
 		res("kind").String(args["console"] == "integratedTerminal" ? "integrated" : "external");
@@ -63,7 +58,7 @@ int run_terminal_then_attach(stdinput& io, vscode::rprotocol& init, vscode::rpro
 			res.String((base::path::self().remove_filename() / "lua.exe").string());
 
 			res.String("-e");
-			res.String(base::format(R"(local dbg = require [[debugger]] dbg:listen([[pipe:%s]]) dbg:start())", pipename));
+			res.String(base::format(R"(local dbg = require [[debugger]] dbg:listen([[pipe:%s]]) dbg:start())", port));
 
 			if (args.HasMember("path") && args["path"].IsString()) {
 				std::string path = sourceCodingUtf8 ? args["path"].Get<std::string>() : base::u2a(args["path"]);
@@ -105,23 +100,5 @@ int run_terminal_then_attach(stdinput& io, vscode::rprotocol& init, vscode::rpro
 			}
 		}
 	});
-
-	vscode::io::namedpipe pipe;
-	if (!pipe.open_client(pipename, 10000)) {
-		return -1;
-	}
-	io_output(&pipe, init);
-	io_output(&pipe, req);
-	for (;; sleep()) {
-		io.update(10);
-		pipe.update(10);
-		std::string buf;
-		while (io.input(buf)) {
-			pipe.output(buf.data(), buf.size());
-		}
-		while (pipe.input(buf)) {
-			io.output(buf.data(), buf.size());
-		}
-	}
-	return 0;
+	return true;
 }
