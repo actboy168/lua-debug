@@ -218,6 +218,21 @@
                                 ],
                                 "description": "Arguments passed to the runtime executable.",
                                 "default": null
+                            },
+                            "console": {
+                                "type": "string",
+                                "enum": [
+                                    "internalConsole",
+                                    "integratedTerminal",
+                                    "externalTerminal"
+                                ],
+                                "enumDescriptions": [
+                                    "VS Code Debug Console (which doesn't support to read input from a program)",
+                                    "VS Code's integrated terminal",
+                                    "external terminal that can be configured via user settings"
+                                ],
+                                "description": "Where to launch the debug target.",
+                                "default": "internalConsole"
                             }
                         }
                     },
