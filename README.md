@@ -21,10 +21,11 @@
     * cpath，用于初始化package.cpath
     * arg0，lua.exe的命令行参数，用于初始化arg的arg[-n] .. arg[0]
     * arg，lua.exe的命令行参数，用于初始化arg的arg[1] .. arg[n]
-    * console，lua的标准输出的编码，可选择utf8、ansi、none， 等于none时不会重定向标准输出到vscode
+    * consoleCoding，lua的标准输出的编码，可选择utf8、ansi、none， 等于none时不会重定向标准输出到vscode
     * sourceMaps，一般不需要，作用同attach模式
     * sourceCoding，作用同attach模式
     * env，修改调试进程的环境变量
+    * console，lua.exe在哪个环境下执行，可选择internalConsole，integratedTerminal，externalTerminal
 
 2. launch模式，启动一个进程(比如lua.exe或者其他动态链接了luadll的exe)并调试。如果需要调试的目标和lua.exe的行为不一致，可以采用这个模式。
 
@@ -90,14 +91,14 @@ f(L);
 确保debugger.dll在package.cpath的搜索范围内，然后执行以下代码
 ```lua
 local dbg = require 'debugger'
-dbg:listen('0.0.0.0', 4278)
+dbg:listen('0.0.0.0:4278')
 ```
 此时调试器会监听4278端口，配置好你的vscode，然后用attach模式启动，调试就会被激活。
 
 调试器初始化之后，并不会阻止lua的继续执行，如果你希望调试器不会错过任何东西，你应该立刻激活调试，并等待vscode连接上来。例如
 ```lua
 local dbg = require 'debugger'
-dbg:listen('0.0.0.0', 4278)
+dbg:listen('0.0.0.0:4278')
 dbg:start()
 ```
 ## 64位的支持
