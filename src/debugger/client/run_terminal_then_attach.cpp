@@ -1,4 +1,4 @@
-#include <debugger/client/attach.h>
+#include <debugger/io/namedpipe.h>
 #include <Windows.h>
 #include <debugger/client/run.h>
 #include <debugger/io/base.h>
@@ -36,6 +36,7 @@ int run_terminal_then_attach(stdinput& io, vscode::rprotocol& init, vscode::rpro
 	if (args.HasMember("sourceCoding") && args["sourceCoding"].IsString()) {
 		sourceCodingUtf8 = "utf8" == args["sourceCoding"].Get<std::string>();
 	}
+	auto pipename = base::format(L"vscode-lua-debug-%d", GetCurrentProcessId());
 
 	request_runInTerminal(&io, [&](vscode::wprotocol& res) {
 		res("kind").String(args["console"] == "integratedTerminal" ? "integrated" : "external");
@@ -62,7 +63,7 @@ int run_terminal_then_attach(stdinput& io, vscode::rprotocol& init, vscode::rpro
 			res.String((base::path::self().remove_filename() / "lua.exe").string());
 
 			res.String("-e");
-			res.String(R"(local dbg = require [[debugger]] dbg:listen([[127.0.0.1:4278]]) dbg:start())");
+			res.String(base::format(R"(local dbg = require [[debugger]] dbg:listen([[pipe:%s]]) dbg:start())", pipename));
 
 			if (args.HasMember("path") && args["path"].IsString()) {
 				std::string path = sourceCodingUtf8 ? args["path"].Get<std::string>() : base::u2a(args["path"]);
@@ -105,14 +106,22 @@ int run_terminal_then_attach(stdinput& io, vscode::rprotocol& init, vscode::rpro
 		}
 	});
 
-	attach attach(io);
-	std::string ip = "127.0.0.1";
-	uint16_t port = 4278;
-	attach.connect(net::endpoint(ip, port));
-	attach.send(init);
-	attach.send(req);
+	vscode::io::namedpipe pipe;
+	if (!pipe.open_client(pipename, 10000)) {
+		return -1;
+	}
+	io_output(&pipe, init);
+	io_output(&pipe, req);
 	for (;; sleep()) {
-		attach.update();
+		io.update(10);
+		pipe.update(10);
+		std::string buf;
+		while (io.input(buf)) {
+			pipe.output(buf.data(), buf.size());
+		}
+		while (pipe.input(buf)) {
+			io.output(buf.data(), buf.size());
+		}
 	}
 	return 0;
 }

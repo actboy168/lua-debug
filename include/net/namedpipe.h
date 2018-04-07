@@ -52,19 +52,20 @@ namespace net {
 
 	bool namedpipe::open_client(std::wstring const& pipename, int timeout) {
 		std::wstring name = make_name(pipename);
-		for (int i = 0; i < timeout; ++i) {
+		for (uint64_t endtick = timeout + GetTickCount64();  GetTickCount64() < endtick;) {
 			pipefd = CreateFileW(name.c_str(), GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
 			if (pipefd != INVALID_HANDLE_VALUE) {
 				is_open = true;
 				break;
 			}
-			if (GetLastError() != ERROR_PIPE_BUSY) {
-				is_open = false;
-				return false;
+			if (GetLastError() == ERROR_PIPE_BUSY) {
+				if (!WaitNamedPipeW(name.c_str(), 20000)) {
+					is_open = false;
+					return false;
+				}
 			}
-			if (!WaitNamedPipeW(name.c_str(), 20000)) {
-				is_open = false;
-				return false;
+			else {
+				Sleep(1000);
 			}
 		}
 		if (is_open) {

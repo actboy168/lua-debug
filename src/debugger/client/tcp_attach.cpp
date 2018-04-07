@@ -1,8 +1,8 @@
-#include <debugger/client/attach.h>
+#include <debugger/client/tcp_attach.h>
 #include <debugger/client/stdinput.h>
 #include <base/util/format.h>
 
-attach::attach(stdinput& io_)
+tcp_attach::tcp_attach(stdinput& io_)
 	: poller()
 	, io(io_)
 	, base_type(&poller)
@@ -10,7 +10,7 @@ attach::attach(stdinput& io_)
 	net::socket::initialize();
 }
 
-bool attach::event_in()
+bool tcp_attach::event_in()
 {
 	if (!base_type::event_in())
 		return false;
@@ -22,13 +22,13 @@ bool attach::event_in()
 	return true;
 }
 
-void attach::send(const std::string& rp)
+void tcp_attach::send(const std::string& rp)
 {
 	base_type::send(base::format("Content-Length: %d\r\n\r\n", rp.size()));
 	base_type::send(rp.data(), rp.size());
 }
 
-void attach::send(const vscode::rprotocol& rp)
+void tcp_attach::send(const vscode::rprotocol& rp)
 {
 	rapidjson::StringBuffer buffer;
 	rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
@@ -37,13 +37,13 @@ void attach::send(const vscode::rprotocol& rp)
 	base_type::send(buffer.GetString(), buffer.GetSize());
 }
 
-void attach::event_close()
+void tcp_attach::event_close()
 {
 	base_type::event_close();
 	exit(0);
 }
 
-void attach::update()
+void tcp_attach::update()
 {
 	poller.wait(1000, 0);
 	std::string buf;

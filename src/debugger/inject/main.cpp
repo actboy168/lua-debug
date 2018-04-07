@@ -38,7 +38,7 @@ void initialize_debugger(lua_State* L)
 		return;
 	}
 	global_io.reset(new namedpipe());
-	if (!global_io->open_client(pipename, 3)) {
+	if (!global_io->open_client(pipename, 10000)) {
 		return;
 	}
 

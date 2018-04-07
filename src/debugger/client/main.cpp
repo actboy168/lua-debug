@@ -4,7 +4,7 @@
 #include <vector>
 #include <debugger/client/stdinput.h>
 #include <debugger/client/run.h>
-#include <debugger/client/attach.h>
+#include <debugger/client/tcp_attach.h>
 #include <base/util/unicode.h>
 #include <base/util/format.h>
 #include <base/filesystem.h>
@@ -62,7 +62,6 @@ bool create_process_with_debugger(vscode::rprotocol& req, const std::wstring& po
 
 static int run_createprocess_then_attach(stdinput& io, vscode::rprotocol& init, vscode::rprotocol& req)
 {
-	std::unique_ptr<attach> attach_;
 	auto port = base::format(L"vscode-lua-debug-%d", GetCurrentProcessId());
 	if (!create_process_with_debugger(req, port)) {
 		response_error(io, req, "Launch failed");
@@ -92,7 +91,7 @@ static int run_createprocess_then_attach(stdinput& io, vscode::rprotocol& init, 
 
 static int run_attach(stdinput& io, vscode::rprotocol& init, vscode::rprotocol& req)
 {
-	attach attach(io);
+	tcp_attach attach(io);
 	auto& args = req["arguments"];
 	std::string ip = args.HasMember("ip") ? args["ip"].Get<std::string>() : "127.0.0.1";
 	uint16_t port = args.HasMember("port") ? args["port"].GetUint() : 4278;

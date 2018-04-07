@@ -19,9 +19,6 @@
     <ClCompile Include="..\src\debugger\bridge\lua.cpp">
       <Filter>cpp\bridge</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\debugger\client\attach.cpp">
-      <Filter>cpp\client</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\debugger\client\create_process.cpp">
       <Filter>cpp\client</Filter>
     </ClCompile>
@@ -43,6 +40,9 @@
     <ClCompile Include="..\src\debugger\client\run_terminal_then_attach.cpp">
       <Filter>cpp\client</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\debugger\client\tcp_attach.cpp">
+      <Filter>cpp\client</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\base\win\process.h">
@@ -60,9 +60,6 @@
     <ClInclude Include="..\include\base\util\unicode.h">
       <Filter>base\util</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\debugger\client\attach.h">
-      <Filter>inc\client</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\debugger\client\server.h">
       <Filter>inc\client</Filter>
     </ClInclude>
@@ -79,6 +76,9 @@
       <Filter>inc\io</Filter>
     </ClInclude>
     <ClInclude Include="..\include\debugger\client\run.h">
+      <Filter>inc\client</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\debugger\client\tcp_attach.h">
       <Filter>inc\client</Filter>
     </ClInclude>
   </ItemGroup>
