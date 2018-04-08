@@ -30,6 +30,4 @@ namespace vscode
 		sourcemap_t                        sourcemaps_;
 		coding                             coding_;
 	};
-
-	std::string path_filename(const std::string& path);
 }

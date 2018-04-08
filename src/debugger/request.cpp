@@ -1,5 +1,6 @@
 #include <debugger/impl.h>
 #include <debugger/protocol.h>
+#include <debugger/path.h>
 #include <debugger/io/base.h>
 #include <base/util/unicode.h>
 
@@ -200,7 +201,7 @@ namespace vscode
 							if (pathconvert_.get(entry.source, path)) {
 								for (auto _ : res("source").Object())
 								{
-									res("name").String(path_filename(path));
+									res("name").String(path::filename(path));
 									res("path").String(path);
 								}
 							}

@@ -3,6 +3,7 @@
 #include <debugger/io/base.h>
 #include <debugger/thread.h>
 #include <debugger/thunk.h>
+#include <debugger/path.h>
 #include <debugger/io/helper.h>
 #include <base/util/format.h>
 #include <thread>
@@ -396,7 +397,7 @@ namespace vscode
 						{
 							for (auto _ : res("source").Object())
 							{
-								res("name").String(path_filename(path));
+								res("name").String(path::filename(path));
 								res("path").String(path);
 							};
 							res("line").Int(ar->currentline);
