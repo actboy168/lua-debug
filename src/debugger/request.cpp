@@ -284,7 +284,7 @@ namespace vscode
 		}
 		else if (source.HasMember("name")
 			&& source.HasMember("sourceReference")
-			&& source["name"].Get<std::string>() == "<Memory funtion>")
+			&& source["name"].Get<std::string>() == "<Memory>")
 		{
 			intptr_t source_ref = source["sourceReference"].Get<intptr_t>();
 			breakpoints_.clear(source_ref);

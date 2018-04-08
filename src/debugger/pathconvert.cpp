@@ -144,7 +144,7 @@ namespace vscode
 		if (it != source2clientpath_.end())
 		{
 			client_path = it->second;
-			return true;
+			return !client_path.empty();
 		}
 
 		bool res = true;
