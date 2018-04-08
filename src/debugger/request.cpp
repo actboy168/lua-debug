@@ -151,11 +151,6 @@ namespace vscode
 		return false;
 	}
 
-	static intptr_t ensure_value_fits_in_mantissa(intptr_t sourceReference) {
-		assert(sourceReference <= 9007199254740991);
-		return sourceReference;
-	}
-
 	bool debugger_impl::request_stack_trace(rprotocol& req, lua_State* L, lua::Debug *ar) {
 		response_success(req, [&](wprotocol& res)
 		{
@@ -219,12 +214,12 @@ namespace vscode
 						}
 					}
 					else {
-						intptr_t reference = ensure_value_fits_in_mantissa((intptr_t)entry.source);
+						intptr_t reference = (intptr_t)entry.source;
 						stack_.push_back({ depth, reference });
 						for (auto _ : res.Object()) {
 							for (auto _ : res("source").Object()) {
 								res("name").String("<Memory>");
-								res("sourceReference").Int64(reference);
+								res("sourceReference").Int64((intptr_t)entry.source);
 							}
 							res("id").Int(depth);
 							res("name").String(*entry.what == 'm' ? "[main chunk]" : (entry.name ? entry.name : "?"));
@@ -283,8 +278,7 @@ namespace vscode
 			}
 		}
 		else if (source.HasMember("name")
-			&& source.HasMember("sourceReference")
-			&& source["name"].Get<std::string>() == "<Memory>")
+			&& source.HasMember("sourceReference"))
 		{
 			intptr_t source_ref = source["sourceReference"].Get<intptr_t>();
 			breakpoints_.clear(source_ref);
