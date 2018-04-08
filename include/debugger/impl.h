@@ -119,7 +119,7 @@ namespace vscode
 		void detach_all();
 		bool update_main(rprotocol& req, bool& quit);
 		bool update_hook(rprotocol& req, lua_State *L, lua::Debug *ar, bool& quit);
-		void initialize_sourcemaps();
+		void initialize_pathconvert();
 		void update_redirect();
 
 	private:

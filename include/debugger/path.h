@@ -3,9 +3,10 @@
 #include <string>
 
 namespace vscode { namespace path {
+	int tochar(char c);
 	std::string normalize(const std::string& path);
 	std::string filename(const std::string& path);
-	int tochar(char c);
+	bool        glob_match(const std::string& pattern, const std::string& target);
 
 	template <class T> struct less;
 	template <> struct less<char> {

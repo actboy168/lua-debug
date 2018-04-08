@@ -12,11 +12,13 @@ namespace vscode
 	{
 	public:
 		typedef std::vector<std::pair<std::string, std::string>> sourcemap_t;
+		typedef std::vector<std::string>                         skipfiles_t;
 
 	public:
 		pathconvert(debugger_impl* dbg);
 		void   add_sourcemap(const std::string& server, const std::string& client);
-		void   clear_sourcemap();
+		void   add_skipfiles(const std::string& pattern);
+		void   clear();
 		bool   server2client(const std::string& server, std::string& client);
 		bool   get(const std::string& source, std::string& client);
 		void   set_coding(coding coding);
@@ -28,6 +30,7 @@ namespace vscode
 		debugger_impl*                     debugger_;
 		std::map<std::string, std::string> source2client_;
 		sourcemap_t                        sourcemap_;
+		skipfiles_t                        skipfiles_;
 		coding                             coding_;
 	};
 }

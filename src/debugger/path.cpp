@@ -60,6 +60,42 @@ namespace vscode { namespace path {
 		return root;
 	}
 
+	template <typename EQUAL>
+	bool glob_match(const std::string_view& pattern, const std::string_view& target, EQUAL equal)
+	{
+		auto p = pattern.data();
+		auto pe = pattern.data() + pattern.size();
+		auto q = target.data();
+		auto qe = target.data() + target.size();
+		for (;;) {
+			if (p == pe) {
+				return q == qe;
+			}
+			if (*p == '*') {
+				++p;
+				for (auto backtracker = qe; backtracker >= q; --backtracker) {
+					if (glob_match(std::string_view(p, pe - p), std::string_view(backtracker, qe - backtracker), equal)) {
+						return true;
+					}
+				}
+				break;
+			}
+			if (q == qe) {
+				break;
+			}
+			if (*p != '?' && !equal(*p, *q)) {
+				break;
+			}
+			++p, ++q;
+		}
+		return false;
+	}
+
+	int tochar(char c) {
+		if (c == '/') return '\\';
+		return tolower((int)(unsigned char)c);
+	}
+
 	std::string normalize(const std::string& path)
 	{
 		std::deque<std::string> stack;
@@ -81,8 +117,8 @@ namespace vscode { namespace path {
 		return path;
 	}
 
-	int tochar(char c) {
-		if (c == '/') return '\\';
-		return tolower((int)(unsigned char)c);
+	bool glob_match(const std::string& pattern, const std::string& target)
+	{
+		return glob_match(pattern, target, [](char a, char b) { return tochar(a) == tochar(b); });
 	}
 }}

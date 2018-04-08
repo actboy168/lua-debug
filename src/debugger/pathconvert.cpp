@@ -25,7 +25,12 @@ namespace vscode
 		sourcemap_.push_back(std::make_pair(server, client));
 	}
 
-	void pathconvert::clear_sourcemap()
+	void pathconvert::add_skipfiles(const std::string& pattern)
+	{
+		skipfiles_.push_back(pattern);
+	}
+
+	void pathconvert::clear()
 	{
 		sourcemap_.clear();
 	}
