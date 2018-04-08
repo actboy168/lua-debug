@@ -22,12 +22,6 @@ namespace vscode
 	};
 	class debugger_impl;
 
-	enum class threadmode
-	{
-		async,
-		sync,
-	};
-
 	enum class coding
 	{
 		ansi,
@@ -50,7 +44,7 @@ namespace vscode
 	class DEBUGGER_API debugger
 	{
 	public:
-		debugger(io::base* io, threadmode mode);
+		debugger(io::base* io);
 		~debugger();
 		bool open_schema(const std::wstring& path);
 		void close();

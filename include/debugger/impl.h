@@ -42,7 +42,7 @@ namespace vscode
 		};
 
 	public:
-		debugger_impl(io::base* io, threadmode mode);
+		debugger_impl(io::base* io);
 		~debugger_impl();
 		bool open_schema(const std::wstring& path);
 		void close();

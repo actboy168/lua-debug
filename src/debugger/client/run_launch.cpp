@@ -47,7 +47,7 @@ static int print(lua_State* L) {
 
 int run_launch(stdinput& io, vscode::rprotocol& init, vscode::rprotocol& req)
 {
-	vscode::debugger dbg(&io, vscode::threadmode::sync);
+	vscode::debugger dbg(&io);
 	dbg.redirect_stderr();
 
 	auto& args = req["arguments"];

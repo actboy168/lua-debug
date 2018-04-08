@@ -3,26 +3,24 @@
 
 namespace vscode {
 	
-	async::async(debugger_impl* dbg)
+	dbg_thread::dbg_thread(debugger_impl* dbg)
 		: dbg_(dbg)
 		, mtx_()
 		, exit_(false)
 		, thd_()
 	{ }
 
-	async::~async()
+	dbg_thread::~dbg_thread()
 	{
 		stop();
 	}
 
-	threadmode async::mode() const { return threadmode::async; }
-
-	void async::start()
+	void dbg_thread::start()
 	{
-		thd_.reset(new std::thread(std::bind(&async::run, this)));
+		thd_.reset(new std::thread(std::bind(&dbg_thread::run, this)));
 	}
 
-	void async::stop()
+	void dbg_thread::stop()
 	{
 		if (!exit_) {
 			exit_ = true;
@@ -30,7 +28,7 @@ namespace vscode {
 		}
 	}
 
-	void async::run()
+	void dbg_thread::run()
 	{
 		for (
 			; !exit_
@@ -43,31 +41,7 @@ namespace vscode {
 		dbg_->io_close();
 	}
 
-	void async::lock() { return mtx_.lock(); }
-	bool async::try_lock() { return mtx_.try_lock(); }
-	void async::unlock() { return mtx_.unlock(); }
-	void async::update() { }
-
-	sync::sync(debugger_impl* dbg)
-		: dbg_(dbg)
-		, time_()
-		, last_(time_.now_ms())
-	{ }
-
-	threadmode sync::mode() const { return threadmode::sync; }
-	void sync::start() {}
-	void sync::stop() {
-		dbg_->close();
-		dbg_->io_close();
-	}
-	void sync::lock() {}
-	bool sync::try_lock() { return true; }
-	void sync::unlock() {}
-	void sync::update() {
-		uint64_t now = time_.now_ms();
-		if (now - last_ > 100) {
-			now = last_;
-			dbg_->run_idle();
-		}
-	}
+	void dbg_thread::lock() { return mtx_.lock(); }
+	bool dbg_thread::try_lock() { return mtx_.try_lock(); }
+	void dbg_thread::unlock() { return mtx_.unlock(); }
 }

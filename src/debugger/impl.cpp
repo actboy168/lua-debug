@@ -201,10 +201,10 @@ namespace vscode
 		bool bp = check_breakpoint(L, ar);
 		if (!bp) {
 			if (is_state(state::running)) {
-				return thread_->update();
+				return;
 			}
 			else if (is_state(state::stepping) && !is_step(step::in) && !check_step(L, ar)) {
-				return thread_->update();
+				return;
 			}
 			else {
 				assert(is_state(state::stepping));
@@ -330,25 +330,12 @@ namespace vscode
 		if (!is_state(state::initialized) && !is_state(state::birth)) {
 			return;
 		}
-		if (thread_->mode() == threadmode::async) {
-			semaphore sem;
-			on_attach_ = [&]() {
-				sem.signal();
-			};
-			sem.wait();
-			on_attach_ = std::function<void()>();
-		}
-		else {
-			bool ok = false;
-			on_attach_ = [&]() {
-				ok = true;
-			};
-			for (;!ok;) {
-				std::this_thread::sleep_for(std::chrono::milliseconds(10));
-				update();
-			}
-			on_attach_ = std::function<void()>();
-		}
+		semaphore sem;
+		on_attach_ = [&]() {
+			sem.signal();
+		};
+		sem.wait();
+		on_attach_ = std::function<void()>();
 	}
 
 	void debugger_impl::set_custom(custom* custom)
@@ -472,7 +459,7 @@ namespace vscode
 #define DBG_REQUEST_MAIN(name) std::bind(&debugger_impl:: ## name, this, std::placeholders::_1)
 #define DBG_REQUEST_HOOK(name) std::bind(&debugger_impl:: ## name, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
 
-	debugger_impl::debugger_impl(io::base* io, threadmode mode)
+	debugger_impl::debugger_impl(io::base* io)
 		: seq(1)
 		, network_(io)
 		, state_(state::birth)
@@ -492,9 +479,7 @@ namespace vscode
 		, on_attach_()
 		, console_("none")
 		, nodebug_(false)
-		, thread_(mode == threadmode::async 
-			? (dbg_thread*)new async(this)
-			: (dbg_thread*)new sync(this))
+		, thread_(new dbg_thread(this))
 		, main_dispatch_
 		({
 			{ "launch", DBG_REQUEST_MAIN(request_attach) },

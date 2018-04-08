@@ -42,7 +42,7 @@ void initialize_debugger(lua_State* L)
 		return;
 	}
 
-	global_dbg.reset(new vscode::debugger(global_io.get(), vscode::threadmode::async));
+	global_dbg.reset(new vscode::debugger(global_io.get()));
 	global_dbg->wait_attach();
 	global_dbg->attach_lua(L);
 	global_dbg->redirect_stdout();

@@ -17,7 +17,7 @@ namespace luaw {
 		{
 			if (namedpipe || dbg) return;
 			socket.reset(new vscode::io::socket(addr));
-			dbg.reset(new vscode::debugger(socket.get(), vscode::threadmode::async));
+			dbg.reset(new vscode::debugger(socket.get()));
 		}
 
 		void listen_pipe(const char* name)
@@ -25,7 +25,7 @@ namespace luaw {
 			if (namedpipe || dbg) return;
 			namedpipe.reset(new vscode::io::namedpipe());
 			namedpipe->open_server(base::u2w(name));
-			dbg.reset(new vscode::debugger(namedpipe.get(), vscode::threadmode::async));
+			dbg.reset(new vscode::debugger(namedpipe.get()));
 		}
 	};
 
