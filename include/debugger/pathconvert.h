@@ -27,7 +27,7 @@ namespace vscode
 	private:
 		debugger_impl*                     debugger_;
 		std::map<std::string, std::string> source2path_;
-		sourcemap_t                        sourcemaps_;
+		sourcemap_t                        sourcemap_;
 		coding                             coding_;
 	};
 }

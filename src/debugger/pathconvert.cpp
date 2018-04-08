@@ -10,7 +10,7 @@ namespace vscode
 {
 	pathconvert::pathconvert(debugger_impl* dbg)
 		: debugger_(dbg)
-		, sourcemaps_()
+		, sourcemap_()
 		, coding_(coding::ansi)
 	{ }
 
@@ -22,12 +22,12 @@ namespace vscode
 
 	void pathconvert::add_sourcemap(const std::string& srv, const std::string& cli)
 	{
-		sourcemaps_.push_back(std::make_pair(srv, cli));
+		sourcemap_.push_back(std::make_pair(srv, cli));
 	}
 
 	void pathconvert::clear_sourcemap()
 	{
-		sourcemaps_.clear();
+		sourcemap_.clear();
 	}
 
 	bool pathconvert::match_sourcemap(const std::string& srv, std::string& cli, const std::string& srvmatch, const std::string& climatch)
@@ -49,7 +49,7 @@ namespace vscode
 	std::string pathconvert::find_sourcemap(const std::string& srv)
 	{
 		std::string cli;
-		for (auto& it : sourcemaps_)
+		for (auto& it : sourcemap_)
 		{
 			if (match_sourcemap(srv, cli, it.first, it.second))
 			{
