@@ -440,9 +440,11 @@ namespace vscode {
 						}
 						return base::format("[%s:%d]", entry.source, entry.linedefined);
 					}
-					std::string client_path;
-					if (pathconvert.get(entry.source, client_path)) {
-						return base::format("[%s:%d]", client_path, entry.linedefined);
+					if (entry.source) {
+						std::string client_path;
+						if (pathconvert.get(entry.source, client_path)) {
+							return base::format("[%s:%d]", client_path, entry.linedefined);
+						}
 					}
 				}
 				break;
