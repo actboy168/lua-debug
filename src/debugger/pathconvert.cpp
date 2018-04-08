@@ -17,7 +17,7 @@ namespace vscode
 	void pathconvert::set_coding(coding coding)
 	{
 		coding_ = coding;
-		source2clientpath_.clear();
+		source2path_.clear();
 	}
 
 	void pathconvert::add_sourcemap(const std::string& srv, const std::string& cli)
@@ -61,8 +61,8 @@ namespace vscode
 
 	bool pathconvert::get(const std::string& source, std::string& client_path)
 	{
-		auto it = source2clientpath_.find(source);
-		if (it != source2clientpath_.end())
+		auto it = source2path_.find(source);
+		if (it != source2path_.end())
 		{
 			client_path = it->second;
 			return !client_path.empty();
@@ -93,7 +93,7 @@ namespace vscode
 				res = false;
 			}
 		}
-		source2clientpath_[source] = client_path;
+		source2path_[source] = client_path;
 		return res;
 	}
 }
