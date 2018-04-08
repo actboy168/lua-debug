@@ -15,10 +15,10 @@ namespace vscode
 
 	public:
 		pathconvert(debugger_impl* dbg);
-		void   add_sourcemap(const std::string& srv, const std::string& cli);
+		void   add_sourcemap(const std::string& server, const std::string& client);
 		void   clear_sourcemap();
-		std::string find_sourcemap(const std::string& srv);
-		bool   get(const std::string& server_path, std::string& client_path);
+		bool   server2client(const std::string& server, std::string& client);
+		bool   get(const std::string& source, std::string& client);
 		void   set_coding(coding coding);
 
 	private:
@@ -26,7 +26,7 @@ namespace vscode
 
 	private:
 		debugger_impl*                     debugger_;
-		std::map<std::string, std::string> source2path_;
+		std::map<std::string, std::string> source2client_;
 		sourcemap_t                        sourcemap_;
 		coding                             coding_;
 	};

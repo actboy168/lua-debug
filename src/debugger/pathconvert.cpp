@@ -17,12 +17,12 @@ namespace vscode
 	void pathconvert::set_coding(coding coding)
 	{
 		coding_ = coding;
-		source2path_.clear();
+		source2client_.clear();
 	}
 
-	void pathconvert::add_sourcemap(const std::string& srv, const std::string& cli)
+	void pathconvert::add_sourcemap(const std::string& server, const std::string& client)
 	{
-		sourcemap_.push_back(std::make_pair(srv, cli));
+		sourcemap_.push_back(std::make_pair(server, client));
 	}
 
 	void pathconvert::clear_sourcemap()
@@ -46,54 +46,53 @@ namespace vscode
 		return true;
 	}
 
-	std::string pathconvert::find_sourcemap(const std::string& srv)
+	bool pathconvert::server2client(const std::string& server, std::string& client)
 	{
-		std::string cli;
 		for (auto& it : sourcemap_)
 		{
-			if (match_sourcemap(srv, cli, it.first, it.second))
+			if (match_sourcemap(server, client, it.first, it.second))
 			{
-				return cli;
+				return true;
 			}
 		}
-		return path::normalize(srv);
+		client = path::normalize(server);
+		return true;
 	}
 
-	bool pathconvert::get(const std::string& source, std::string& client_path)
+	bool pathconvert::get(const std::string& source, std::string& client)
 	{
-		auto it = source2path_.find(source);
-		if (it != source2path_.end())
+		auto it = source2client_.find(source);
+		if (it != source2client_.end())
 		{
-			client_path = it->second;
-			return !client_path.empty();
+			client = it->second;
+			return !client.empty();
 		}
 
 		bool res = true;
 		if (debugger_->custom_) {
-			std::string path;
-			if (debugger_->custom_->path_convert(source, path)) {
-				client_path = find_sourcemap(path);
+			std::string server;
+			if (debugger_->custom_->path_convert(source, server)) {
+				res = server2client(server, client);
 			}
 			else {
-				client_path.clear();
+				client.clear();
 				res = false;
 			}
 		}
 		else {
 			if (source[0] == '@') {
-				if (coding_ == coding::utf8) {
-					client_path = find_sourcemap(source.substr(1));
-				}
-				else {
-					client_path = find_sourcemap(base::a2u(base::strview(source.data() + 1, source.size() - 1)));
-				}
+				std::string server = coding_ == coding::utf8
+					? source.substr(1) 
+					: base::a2u(base::strview(source.data() + 1, source.size() - 1))
+					;
+				res = server2client(server, client);
 			}
 			else {
-				client_path.clear();
+				client.clear();
 				res = false;
 			}
 		}
-		source2path_[source] = client_path;
+		source2client_[source] = client;
 		return res;
 	}
 }
