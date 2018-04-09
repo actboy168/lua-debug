@@ -41,9 +41,10 @@ namespace vscode {
 	struct frame {
 		std::vector<value> values;
 		int frameId;
+		int threadId;
 		int64_t new_variable(size_t parent, value::Type type, int index);
 
-		frame(int frameId);
+		frame(int threadId, int frameId);
 		void new_scope(lua_State* L, lua::Debug* ar, wprotocol& res);
 		void clear();
 		bool push_value(lua_State* L, lua::Debug* ar, size_t value_idx);
@@ -68,9 +69,10 @@ namespace vscode {
 
 	struct observer {
 		std::map<int, frame> frames;
-		bool                 watch_;
+		bool                 watch;
+		int                  threadId;
 
-		observer(bool watch = false);
+		observer(int threadId, bool watch = false);
 		bool    is_watch();
 		void    reset(lua_State* L = nullptr);
 		frame*  create_or_get_frame(int frameId);

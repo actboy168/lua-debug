@@ -544,8 +544,9 @@ namespace vscode {
 		}
 	};
 
-	frame::frame(int frameId)
-		: frameId(frameId)
+	frame::frame(int threadId, int frameId)
+		: threadId(threadId)
+		, frameId(frameId)
 	{ }
 
 	void frame::new_scope(lua_State* L, lua::Debug* ar, wprotocol& res)
@@ -582,7 +583,7 @@ namespace vscode {
 			index,
 		};
 		values.emplace_back(std::move(v));
-		return (1 + n) | (frameId << 16);
+		return (1 + n) | (frameId << 16) | ((int64_t)threadId << 32);
 	}
 
 	bool frame::push_value(lua_State* L, lua::Debug* ar, const value& v)
@@ -1054,14 +1055,15 @@ finish:
 		return ok;
 	}
 
-	observer::observer(bool watch)
-		: frames()
-		, watch_(watch)
+	observer::observer(int threadId, bool watch)
+		: threadId(threadId)
+		, frames()
+		, watch(watch)
 	{ }
 
 	bool observer::is_watch()
 	{
-		return watch_;
+		return watch;
 	}
 
 	void observer::reset(lua_State* L)
@@ -1076,7 +1078,7 @@ finish:
 		if (it != frames.end()) {
 			return &(it->second);
 		}
-		auto res = frames.insert(std::make_pair(frameId, frame(frameId)));
+		auto res = frames.insert(std::make_pair(frameId, frame(threadId, frameId)));
 		return &(res.first->second);
 	}
 

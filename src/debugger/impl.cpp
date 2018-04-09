@@ -75,6 +75,7 @@ namespace vscode
 		, stepping_lua_state_(NULL)
 		, has_source_(false)
 		, cur_source_(0)
+		, ob_(id)
 	{
 		lua_sethook(L, thunk_hook, LUA_MASKCALL | LUA_MASKLINE | LUA_MASKRET, 0);
 		lua_atpanic(L, thunk_panic);;
@@ -189,7 +190,7 @@ namespace vscode
 		if (nodebug_) return;
 		if (find_luathread(L)) return;
 		std::unique_ptr<lua_thread> thread(new lua_thread(++threadid_, this, get_mainthread(L)));
-		luathreads_.insert(std::make_pair(thread->id, thread.release()));
+		luathreads_.insert(std::make_pair(threadid_, thread.release()));
 	}
 
 	void debugger_impl::detach_lua(lua_State* L)
@@ -553,7 +554,7 @@ namespace vscode
 		, nodebug_(false)
 		, thread_(new dbg_thread(this))
 		, threadid_(0)
-		, watchob_(true)
+		, watchob_(0, true)
 		, main_dispatch_
 		({
 			{ "launch", DBG_REQUEST_MAIN(request_attach) },
