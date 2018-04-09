@@ -56,6 +56,7 @@ namespace vscode
 			lua_State*     stepping_lua_state_;
 			bool           has_source_;
 			bp_source*     cur_source_;
+			observer       ob_;
 
 			lua_thread(int id, debugger_impl* dbg, lua_State* L);
 			~lua_thread();
@@ -68,6 +69,12 @@ namespace vscode
 			void step_out(lua_State* L, lua::Debug* ar);
 			void hook_call(lua_State* L, lua::Debug* ar);
 			void hook_return(lua_State* L, lua::Debug* ar);
+
+			void reset_frame(lua_State* L);
+			void evaluate(lua_State* L, lua::Debug *ar, debugger_impl* dbg, rprotocol& req, int frameId);
+			void new_frame(lua_State* L, debugger_impl* dbg, rprotocol& req, int frameId);
+			void get_variable(lua_State* L, debugger_impl* dbg, rprotocol& req, int64_t valueId, int frameId);
+			void set_variable(lua_State* L, debugger_impl* dbg, rprotocol& req, int64_t valueId, int frameId);
 		};
 
 	public:
@@ -167,7 +174,6 @@ namespace vscode
 		bool               nodebug_;
 		int                threadid_;
 		bool               exception_;
-		observer           ob_;
 		std::map<int, std::unique_ptr<lua_thread>>                                         luathreads_;
 		std::map<std::string, std::function<bool(rprotocol&)>>                             main_dispatch_;
 		std::map<std::string, std::function<bool(rprotocol&, lua_State*, lua::Debug *ar)>> hook_dispatch_;

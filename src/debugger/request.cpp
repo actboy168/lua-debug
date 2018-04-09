@@ -14,7 +14,6 @@ namespace vscode
 		breakpoints_.clear();
 		stack_.clear();
 		seq = 1;
-		ob_.reset();
 		update_redirect();
 		stdout_.reset();
 		stderr_.reset();
@@ -161,17 +160,28 @@ namespace vscode
 	}
 
 	bool debugger_impl::request_stack_trace(rprotocol& req, lua_State* L, lua::Debug *ar) {
+		auto& args = req["arguments"];
+		if (!args.HasMember("threadId") || !args["threadId"].IsInt()) {
+			response_error(req, "Not found thread");
+			return false;
+		}
+		int threadId = args["threadId"].GetInt();
+		lua_thread* thread = find_luathread(threadId);
+		if (!thread) {
+			response_error(req, "Not found thread");
+			return false;
+		}
+
+		int depth = 0;
+		int levels = args.HasMember("levels") ? args["levels"].GetInt() : 200;
+		levels = (levels != 0 ? levels : 200);
+		int startFrame = args.HasMember("startFrame") ? args["startFrame"].GetInt() : 0;
+		int endFrame = startFrame + levels;
+		int curFrame = 0;
+
 		response_success(req, [&](wprotocol& res)
 		{
 			lua::Debug entry;
-			auto& args = req["arguments"];
-			int depth = 0;
-			int levels = args.HasMember("levels") ? args["levels"].GetInt() : 200;
-			levels = (levels != 0 ? levels : 200);
-			int startFrame = args.HasMember("startFrame") ? args["startFrame"].GetInt() : 0;
-			int endFrame = startFrame + levels;
-			int curFrame = 0;
-
 			for (auto _ : res("stackFrames").Array())
 			{
 				while (lua_getstack(L, depth, (lua_Debug*)&entry))
@@ -196,7 +206,7 @@ namespace vscode
 
 					if (*entry.what == 'C') {
 						for (auto _ : res.Object()) {
-							res("id").Int(depth);
+							res("id").Int(threadId << 16 | depth);
 							res("presentationHint").String("label");
 							res("name").String(*entry.what == 'm' ? "[main chunk]" : (entry.name ? entry.name : "?"));
 							res("line").Int(0);
@@ -216,7 +226,7 @@ namespace vscode
 							else {
 								res("presentationHint").String("label");
 							}
-							res("id").Int(depth);
+							res("id").Int(threadId << 16 | depth);
 							res("name").String(*entry.what == 'm' ? "[main chunk]" : (entry.name ? entry.name : "?"));
 							res("line").Int(entry.currentline);
 							res("column").Int(1);
@@ -230,7 +240,7 @@ namespace vscode
 								res("name").String("<Memory>");
 								res("sourceReference").Int64((intptr_t)entry.source);
 							}
-							res("id").Int(depth);
+							res("id").Int(threadId << 16 | depth);
 							res("name").String(*entry.what == 'm' ? "[main chunk]" : (entry.name ? entry.name : "?"));
 							res("line").Int(entry.currentline);
 							res("column").Int(1);
@@ -326,17 +336,50 @@ namespace vscode
 	}
 
 	bool debugger_impl::request_scopes(rprotocol& req, lua_State* L, lua::Debug *ar) {
-		ob_.new_frame(L, this, req);
+		auto& args = req["arguments"];
+		if (!args.HasMember("frameId")) {
+			response_error(req, "Not found frame");
+			return false;
+		}
+		int threadAndFrameId = args["frameId"].GetInt();
+		int threadId = threadAndFrameId >> 16;
+		int frameId = threadAndFrameId & 0xFFFF;
+		lua_thread* thread = find_luathread(threadId);
+		if (!thread) {
+			response_error(req, "Not found thread");
+			return false;
+		}
+		thread->new_frame(L, this, req, frameId);
 		return false;
 	}
 
 	bool debugger_impl::request_variables(rprotocol& req, lua_State* L, lua::Debug *ar) {
-		ob_.get_variable(L, this, req);
+		auto& args = req["arguments"];
+		int64_t valueId = args["variablesReference"].GetInt64();
+		int threadAndFrameId = (int)(valueId >> 16);
+		int threadId = threadAndFrameId >> 16;
+		int frameId = threadAndFrameId & 0xFFFF;
+		lua_thread* thread = find_luathread(threadId);
+		if (!thread) {
+			response_error(req, "Not found thread");
+			return false;
+		}
+		thread->get_variable(L, this, req, valueId, frameId);
 		return false;
 	}
 
 	bool debugger_impl::request_set_variable(rprotocol& req, lua_State *L, lua::Debug *ar) {
-		ob_.set_variable(L, this, req);
+		auto& args = req["arguments"];
+		int64_t valueId = args["variablesReference"].GetInt64();
+		int threadAndFrameId = (int)(valueId >> 16);
+		int threadId = threadAndFrameId >> 16;
+		int frameId = threadAndFrameId & 0xFFFF;
+		lua_thread* thread = find_luathread(threadId);
+		if (!thread) {
+			response_error(req, "Not found thread");
+			return false;
+		}
+		thread->set_variable(L, this, req, valueId, frameId);
 		return false;
 	}
 
@@ -355,8 +398,8 @@ namespace vscode
 			response_error(req, "Not found thread");
 			return false;
 		}
-		int tid = args["threadId"].GetInt();
-		lua_thread* thread = find_luathread(tid);
+		int threadId = args["threadId"].GetInt();
+		lua_thread* thread = find_luathread(threadId);
 		if (!thread) {
 			response_error(req, "Not found thread");
 			return false;
@@ -374,8 +417,8 @@ namespace vscode
 			response_error(req, "Not found thread");
 			return false;
 		}
-		int tid = args["threadId"].GetInt();
-		lua_thread* thread = find_luathread(tid);
+		int threadId = args["threadId"].GetInt();
+		lua_thread* thread = find_luathread(threadId);
 		if (!thread) {
 			response_error(req, "Not found thread");
 			return false;
@@ -393,8 +436,8 @@ namespace vscode
 			response_error(req, "Not found thread");
 			return false;
 		}
-		int tid = args["threadId"].GetInt();
-		lua_thread* thread = find_luathread(tid);
+		int threadId = args["threadId"].GetInt();
+		lua_thread* thread = find_luathread(threadId);
 		if (!thread) {
 			response_error(req, "Not found thread");
 			return false;
@@ -419,8 +462,8 @@ namespace vscode
 			response_error(req, "Not found thread");
 			return false;
 		}
-		int tid = args["threadId"].GetInt();
-		lua_thread* thread = find_luathread(tid);
+		int threadId = args["threadId"].GetInt();
+		lua_thread* thread = find_luathread(threadId);
 		if (!thread) {
 			response_error(req, "Not found thread");
 			return false;
@@ -433,12 +476,26 @@ namespace vscode
 
 	bool debugger_impl::request_evaluate(rprotocol& req, lua_State *L, lua::Debug *ar)
 	{
-		ob_.evaluate(L, ar, this, req);
+		auto& args = req["arguments"];
+		if (!args.HasMember("frameId")) {
+			response_error(req, "Not found frame");
+			return false;
+		}
+		int threadAndFrameId = args["frameId"].GetInt();
+		int threadId = threadAndFrameId >> 16;
+		int frameId = threadAndFrameId & 0xFFFF;
+		lua_thread* thread = find_luathread(threadId);
+		if (!thread) {
+			response_error(req, "Not found thread");
+			return false;
+		}
+		thread->evaluate(L, ar, this, req, frameId);
 		return false;
 	}
 
 	bool debugger_impl::request_exception_info(rprotocol& req, lua_State *L, lua::Debug *ar)
 	{
+		//TODO: threadId
 		response_success(req, [&](wprotocol& res)
 		{
 			res("breakMode").String("always");

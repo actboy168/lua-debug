@@ -139,6 +139,31 @@ namespace vscode
 		}
 	}
 
+	void debugger_impl::lua_thread::reset_frame(lua_State* L)
+	{
+		ob_.reset(L);
+	}
+
+	void debugger_impl::lua_thread::evaluate(lua_State* L, lua::Debug *ar, debugger_impl* dbg, rprotocol& req, int frameId)
+	{
+		ob_.evaluate(L, ar, dbg, req, frameId);
+	}
+
+	void debugger_impl::lua_thread::new_frame(lua_State* L, debugger_impl* dbg, rprotocol& req, int frameId)
+	{
+		ob_.new_frame(L, dbg, req, frameId);
+	}
+
+	void debugger_impl::lua_thread::get_variable(lua_State* L, debugger_impl* dbg, rprotocol& req, int64_t valueId, int frameId)
+	{
+		ob_.get_variable(L, dbg, req, valueId, frameId);
+	}
+
+	void debugger_impl::lua_thread::set_variable(lua_State* L, debugger_impl* dbg, rprotocol& req, int64_t valueId, int frameId)
+	{
+		ob_.set_variable(L, dbg, req, valueId, frameId);
+	}
+
 	debugger_impl::lua_thread* debugger_impl::find_luathread(lua_State* L)
 	{
 		L = get_mainthread(L);
@@ -324,7 +349,7 @@ namespace vscode
 			response_error(req, base::format("`%s` not yet implemented,(stopped)", req["command"].GetString()).c_str());
 		}
 
-		ob_.reset(L);
+		thread->reset_frame(L);
 	}
 
 	void debugger_impl::run_idle()

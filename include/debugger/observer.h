@@ -73,10 +73,10 @@ namespace vscode {
 		observer();
 		void    reset(lua_State* L = nullptr);
 		frame*  create_or_get_frame(int frameId);
-		void    new_frame(lua_State* L, debugger_impl* dbg, rprotocol& req);
 		int64_t new_watch(lua_State* L, frame* frame, const std::string& expression);
-		void    evaluate(lua_State* L, lua::Debug *ar, debugger_impl* dbg, rprotocol& req);
-		void    get_variable(lua_State* L, debugger_impl* dbg, rprotocol& req);
-		void    set_variable(lua_State* L, debugger_impl* dbg, rprotocol& req);
+		void    evaluate(lua_State* L, lua::Debug *ar, debugger_impl* dbg, rprotocol& req, int frameId);
+		void    new_frame(lua_State* L, debugger_impl* dbg, rprotocol& req, int frameId);
+		void    get_variable(lua_State* L, debugger_impl* dbg, rprotocol& req, int64_t valueId, int frameId);
+		void    set_variable(lua_State* L, debugger_impl* dbg, rprotocol& req, int64_t valueId, int frameId);
 	};
 }

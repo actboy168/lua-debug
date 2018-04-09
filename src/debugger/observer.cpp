@@ -1078,26 +1078,6 @@ finish:
 		return &(res.first->second);
 	}
 
-	void observer::new_frame(lua_State* L, debugger_impl* dbg, rprotocol& req)
-	{
-		auto& args = req["arguments"];
-		if (!args.HasMember("frameId")) {
-			dbg->response_error(req, "Error retrieving stack frame");
-			return;
-		}
-		int frameId = args["frameId"].GetInt();
-		lua::Debug entry;
-		if (!lua_getstack(L, frameId, (lua_Debug*)&entry)) {
-			dbg->response_error(req, "Error retrieving stack frame");
-			return;
-		}
-		frame* frame = create_or_get_frame(frameId);
-		dbg->response_success(req, [&](wprotocol& res)
-		{
-			frame->new_scope(L, &entry, res);
-		});
-	}
-
 	int64_t observer::new_watch(lua_State* L, frame* frame, const std::string& expression)
 	{
 		if (!var::can_extand(L, -1)) {
@@ -1125,7 +1105,7 @@ finish:
 		return frame->new_variable(-1, value::Type::watch, n);
 	}
 
-	void observer::evaluate(lua_State* L, lua::Debug *ar, debugger_impl* dbg, rprotocol& req)
+	void observer::evaluate(lua_State* L, lua::Debug *ar, debugger_impl* dbg, rprotocol& req, int frameId)
 	{
 		auto& args = req["arguments"];
 		
@@ -1140,10 +1120,13 @@ finish:
 		std::string expression = args["expression"].Get<std::string>();
 
 		frame* watchFrame = &watch_frame;
-		int frameId = kWatchFrameId;
+		frameId = kWatchFrameId;
 		lua::Debug current;
 		if (args.HasMember("frameId")) {
-			frameId = args["frameId"].GetInt();
+			int threadAndFrameId = args["frameId"].GetInt();
+			// TODO
+			int threadId = threadAndFrameId >> 16;
+			frameId = threadAndFrameId & 0xFFFF;
 			if (!lua_getstack(L, frameId, (lua_Debug*)&current)) {
 				dbg->response_error(req, "Error stack frame");
 				return;
@@ -1213,11 +1196,22 @@ finish:
 		});
 	}
 
-	void observer::get_variable(lua_State* L, debugger_impl* dbg, rprotocol& req)
+	void observer::new_frame(lua_State* L, debugger_impl* dbg, rprotocol& req, int frameId)
 	{
-		auto& args = req["arguments"];
-		int64_t valueId =args["variablesReference"].GetInt64();
-		int frameId = (int)(valueId >> 16);
+		lua::Debug entry;
+		if (!lua_getstack(L, frameId, (lua_Debug*)&entry)) {
+			dbg->response_error(req, "Error retrieving stack frame");
+			return;
+		}
+		frame* frame = create_or_get_frame(frameId);
+		dbg->response_success(req, [&](wprotocol& res)
+		{
+			frame->new_scope(L, &entry, res);
+		});
+	}
+
+	void observer::get_variable(lua_State* L, debugger_impl* dbg, rprotocol& req, int64_t valueId, int frameId)
+	{
 		if (frameId == kWatchFrameId) {
 			dbg->response_success(req, [&](wprotocol& res)
 			{
@@ -1245,11 +1239,9 @@ finish:
 		});
 	}
 
-	void observer::set_variable(lua_State* L, debugger_impl* dbg, rprotocol& req)
+	void observer::set_variable(lua_State* L, debugger_impl* dbg, rprotocol& req, int64_t valueId, int frameId)
 	{
 		auto& args = req["arguments"];
-		int64_t valueId = args["variablesReference"].GetInt64();
-		int frameId = (int)(valueId >> 16);
 		auto it = frames.find(frameId);
 		if (it == frames.end()) {
 			dbg->response_error(req, "Error retrieving stack frame");
