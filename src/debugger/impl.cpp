@@ -104,18 +104,17 @@ namespace vscode
 	{
 		std::lock_guard<osthread> lock(*thread_);
 
-		if (ar->event == LUA_HOOKCALL)
-		{
-			thread->hook_call(L, ar);
+		if (ar->event == LUA_HOOKCALL) {
+			thread->hook_call(L, ar, breakpoints_);
 			return;
 		}
-		if (ar->event == LUA_HOOKRET)
-		{
+		if (ar->event == LUA_HOOKRET) {
 			thread->hook_return(L, ar);
 			return;
 		}
-		if (ar->event != LUA_HOOKLINE)
+		if (ar->event != LUA_HOOKLINE) {
 			return;
+		}
 		if (is_state(state::terminated) || is_state(state::birth) || is_state(state::initialized)) {
 			return;
 		}

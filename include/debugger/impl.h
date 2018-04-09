@@ -123,7 +123,7 @@ namespace vscode
 		std::vector<stack> stack_;
 		pathconvert        pathconvert_;
 		custom*            custom_;
-		osthread*        thread_;
+		osthread*          thread_;
 		std::function<void()> on_attach_;
 		std::string        console_;
 		std::unique_ptr<redirector> stdout_;

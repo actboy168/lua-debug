@@ -7,6 +7,7 @@
 namespace vscode
 {
 	class debugger_impl;
+	class breakpoint;
 
 	struct luathread {
 		enum class step {
@@ -26,7 +27,6 @@ namespace vscode
 		int            stepping_target_level_;
 		int            stepping_current_level_;
 		lua_State*     stepping_lua_state_;
-		bool           has_source_;
 		bp_source*     cur_source_;
 		observer       ob_;
 
@@ -39,7 +39,7 @@ namespace vscode
 		void step_in();
 		void step_over(lua_State* L, lua::Debug* ar);
 		void step_out(lua_State* L, lua::Debug* ar);
-		void hook_call(lua_State* L, lua::Debug* ar);
+		void hook_call(lua_State* L, lua::Debug* ar, breakpoint& breakpoint);
 		void hook_return(lua_State* L, lua::Debug* ar);
 
 		void reset_frame(lua_State* L);

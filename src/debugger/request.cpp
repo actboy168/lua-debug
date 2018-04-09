@@ -45,18 +45,8 @@ namespace vscode
 	bool debugger_impl::check_breakpoint(luathread* thread, lua_State *L, lua::Debug *ar)
 	{
 		// TODO
-		if (ar->currentline > 0 && breakpoints_.has(ar->currentline))
-		{
-			if (!thread->has_source_)
-			{
-				thread->has_source_ = true;
-				thread->cur_source_ = 0;
-				if (!lua_getinfo(L, "S", (lua_Debug*)ar))
-					return false;
-				thread->cur_source_ = breakpoints_.get(ar->source);
-			}
-			if (thread->cur_source_ && breakpoints_.has(thread->cur_source_, ar->currentline, L, ar))
-			{
+		if (ar->currentline > 0 && breakpoints_.has(ar->currentline)) {
+			if (thread->cur_source_ && breakpoints_.has(thread->cur_source_, ar->currentline, L, ar)) {
 				return true;
 			}
 		}

@@ -78,6 +78,24 @@ namespace vscode
 		}
 	}
 
+	bp_function::bp_function(lua_State* L, lua::Debug* ar, breakpoint* breakpoint)
+		: path()
+		, sourceref(0)
+		, source(nullptr)
+	{
+		if (!lua_getinfo(L, "S", (lua_Debug*)ar)) {
+			return;
+		}
+		if (ar->source[0] == '@' || ar->source[0] == '=') {
+			sourceref = 0;
+			path = ar->source;
+		}
+		else {
+			sourceref = (intptr_t)ar->source;
+		}
+		source = breakpoint->get(ar->source);
+	}
+
 	breakpoint::breakpoint(debugger_impl* dbg)
 		: dbg_(dbg)
 		, files_()
@@ -208,5 +226,19 @@ namespace vscode
 			}
 		}
 		return nullptr;
+	}
+
+	bp_source* breakpoint::get(lua_State* L, lua::Debug* ar)
+	{
+		if (!lua_getinfo(L, "f", (lua_Debug*)ar)) {
+			return nullptr;
+		}
+		intptr_t f = (intptr_t)lua_topointer(L, -1);
+		lua_pop(L, 1);
+		auto it = functions_.find(f);
+		if (it != functions_.end()) {
+			return it->second.source;
+		}
+		return functions_.insert(std::make_pair(f, bp_function(L, ar, this))).first->second.source;
 	}
 }
