@@ -29,6 +29,25 @@ namespace vscode
 		thread->dbg->exception(thread, L);
 	}
 
+	debugger_impl::lua_thread::lua_thread(int id, debugger_impl* dbg, lua_State* L)
+		: id(id)
+		, dbg(dbg)
+		, L(L)
+		, oldpanic(lua_atpanic(L, 0))
+		, thunk_hook((lua_Hook)thunk_create_hook(
+			reinterpret_cast<intptr_t>(this),
+			reinterpret_cast<intptr_t>(&debugger_hook)
+		))
+		, thunk_panic((lua_CFunction)thunk_create_panic(
+			reinterpret_cast<intptr_t>(this),
+			reinterpret_cast<intptr_t>(&debugger_panic),
+			reinterpret_cast<intptr_t>(oldpanic)
+		))
+	{
+		lua_sethook(L, thunk_hook, LUA_MASKCALL | LUA_MASKLINE | LUA_MASKRET, 0);
+		lua_atpanic(L, thunk_panic);;
+	}
+
 	debugger_impl::lua_thread::~lua_thread()
 	{
 		lua_sethook(L, 0, 0, 0);
@@ -37,37 +56,31 @@ namespace vscode
 		thunk_destory(thunk_panic);
 	}
 
+	debugger_impl::lua_thread* debugger_impl::find_luathread(lua_State* L)
+	{
+		L = get_mainthread(L);
+		for (auto& lt : luathreads_) {
+			if (lt.second->L == L) {
+				return lt.second.get();
+			}
+		}
+		return nullptr;
+	}
+
 	void debugger_impl::attach_lua(lua_State* L)
 	{
 		if (nodebug_) return;
-		L = get_mainthread(L);
-		auto it = luathreads_.find(L);
-		if (it == luathreads_.end()) {
-			std::unique_ptr<lua_thread> thread(new lua_thread);
-			thread->dbg = this;
-			thread->L = L;
-			thread->thunk_hook = (lua_Hook)thunk_create_hook(
-				reinterpret_cast<intptr_t>(thread.get()),
-				reinterpret_cast<intptr_t>(&debugger_hook)
-			);
-			lua_sethook(thread->L, thread->thunk_hook, LUA_MASKCALL | LUA_MASKLINE | LUA_MASKRET, 0);
-
-			thread->oldpanic = lua_atpanic(L, 0);
-			thread->thunk_panic = (lua_CFunction)thunk_create_panic(
-				reinterpret_cast<intptr_t>(thread.get()),
-				reinterpret_cast<intptr_t>(&debugger_panic), 
-				reinterpret_cast<intptr_t>(thread->oldpanic)
-			);
-			lua_atpanic(thread->L, thread->thunk_panic);
-
-			luathreads_.insert(std::make_pair(L, thread.release()));
-		}
+		if (find_luathread(L)) return;
+		std::unique_ptr<lua_thread> thread(new lua_thread(++threadid_, this, get_mainthread(L)));
+		luathreads_.insert(std::make_pair(thread->id, thread.release()));
 	}
 
 	void debugger_impl::detach_lua(lua_State* L)
 	{
-		L = get_mainthread(L);
-		luathreads_.erase(L);
+		lua_thread* thread = find_luathread(L);
+		if (thread) {
+			luathreads_.erase(thread->id);
+		}
 	}
 
 	void debugger_impl::detach_all()
@@ -222,12 +235,10 @@ namespace vscode
 
 	void debugger_impl::exception(lua_State* L)
 	{
-		lua_State* mL = get_mainthread(L);
-		auto it = luathreads_.find(mL);
-		if (it == luathreads_.end()) {
-			return;
+		lua_thread* thread = find_luathread(L);
+		if (thread) {
+			return exception(thread, L);
 		}
-		return exception(it->second.get(), L);
 	}
 
 	void debugger_impl::exception(lua_thread* thread, lua_State* L)
@@ -495,6 +506,7 @@ namespace vscode
 		, console_("none")
 		, nodebug_(false)
 		, thread_(new dbg_thread(this))
+		, threadid_(0)
 		, main_dispatch_
 		({
 			{ "launch", DBG_REQUEST_MAIN(request_attach) },

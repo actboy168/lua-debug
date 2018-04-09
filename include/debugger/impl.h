@@ -43,12 +43,14 @@ namespace vscode
 		};
 
 		struct lua_thread {
+			int            id;
 			debugger_impl* dbg;
 			lua_State*     L;
 			lua_Hook       thunk_hook;
 			lua_CFunction  thunk_panic;
 			lua_CFunction  oldpanic;
 
+			lua_thread(int id, debugger_impl* dbg, lua_State* L);
 			~lua_thread();
 		};
 
@@ -85,6 +87,7 @@ namespace vscode
 		pathconvert& get_pathconvert();
 		rprotocol io_input();
 		void io_output(const wprotocol& wp);
+		lua_thread* find_luathread(lua_State* L);
 
 	private:
 		bool request_initialize(rprotocol& req);
@@ -151,8 +154,9 @@ namespace vscode
 		rprotocol          initproto_;
 		config             config_;
 		bool               nodebug_;
-		std::map<lua_State*, std::unique_ptr<lua_thread>> luathreads_;
-		std::map<std::string, std::function<bool(rprotocol&)>>                            main_dispatch_;
+		int                threadid_;
+		std::map<int, std::unique_ptr<lua_thread>>                                         luathreads_;
+		std::map<std::string, std::function<bool(rprotocol&)>>                             main_dispatch_;
 		std::map<std::string, std::function<bool(rprotocol&, lua_State*, lua::Debug *ar)>> hook_dispatch_;
 
 		step               step_;
