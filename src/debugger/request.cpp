@@ -477,6 +477,10 @@ namespace vscode
 	bool debugger_impl::request_evaluate(rprotocol& req, lua_State *L, lua::Debug *ar)
 	{
 		auto& args = req["arguments"];
+		if (req["arguments"]["context"] == "watch") {
+			watchob_.evaluate(L, ar, this, req, 0);
+			return false;
+		}
 		if (!args.HasMember("frameId")) {
 			response_error(req, "Not found frame");
 			return false;
@@ -489,7 +493,12 @@ namespace vscode
 			response_error(req, "Not found thread");
 			return false;
 		}
-		thread->evaluate(L, ar, this, req, frameId);
+		lua::Debug current;
+		if (!lua_getstack(L, frameId, (lua_Debug*)&current)) {
+			response_error(req, "Error frame");
+			return false;
+		}
+		thread->evaluate(L, &current, this, req, frameId);
 		return false;
 	}
 

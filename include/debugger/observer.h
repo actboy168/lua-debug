@@ -68,9 +68,10 @@ namespace vscode {
 
 	struct observer {
 		std::map<int, frame> frames;
-		frame                watch_frame;
+		bool                 watch_;
 
-		observer();
+		observer(bool watch = false);
+		bool    is_watch();
 		void    reset(lua_State* L = nullptr);
 		frame*  create_or_get_frame(int frameId);
 		int64_t new_watch(lua_State* L, frame* frame, const std::string& expression);

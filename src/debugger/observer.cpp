@@ -9,8 +9,6 @@
 
 namespace vscode {
 
-	int kWatchFrameId = 10000;
-
 	intptr_t WATCH_TABLE;
 
 	static std::set<std::string_view> standard = {
@@ -1056,16 +1054,20 @@ finish:
 		return ok;
 	}
 
-	observer::observer()
+	observer::observer(bool watch)
 		: frames()
-		, watch_frame(kWatchFrameId)
+		, watch_(watch)
 	{ }
+
+	bool observer::is_watch()
+	{
+		return watch_;
+	}
 
 	void observer::reset(lua_State* L)
 	{
-		if (L) watch_table_clear(L);
+		if (L && is_watch()) watch_table_clear(L);
 		frames.clear();
-		watch_frame.clear();
 	}
 
 	frame* observer::create_or_get_frame(int frameId)
@@ -1119,26 +1121,8 @@ finish:
 		}
 		std::string expression = args["expression"].Get<std::string>();
 
-		frame* watchFrame = &watch_frame;
-		frameId = kWatchFrameId;
-		lua::Debug current;
-		if (args.HasMember("frameId")) {
-			int threadAndFrameId = args["frameId"].GetInt();
-			// TODO
-			int threadId = threadAndFrameId >> 16;
-			frameId = threadAndFrameId & 0xFFFF;
-			if (!lua_getstack(L, frameId, (lua_Debug*)&current)) {
-				dbg->response_error(req, "Error stack frame");
-				return;
-			}
-			watchFrame = create_or_get_frame(frameId);
-		}
-		else {
-			current = *ar;
-		}
-
 		int nresult = 0;
-		if (!vscode::evaluate(L, &current, ("return " + expression).c_str(), nresult, context == "repl"))
+		if (!vscode::evaluate(L, ar, ("return " + expression).c_str(), nresult, context == "repl"))
 		{
 			if (context != "repl")
 			{
@@ -1146,7 +1130,7 @@ finish:
 				lua_pop(L, 1);
 				return;
 			}
-			if (!vscode::evaluate(L, &current, expression.c_str(), nresult, true))
+			if (!vscode::evaluate(L, ar, expression.c_str(), nresult, true))
 			{
 				dbg->response_error(req, lua_tostring(L, -1));
 				lua_pop(L, 1);
@@ -1170,9 +1154,9 @@ finish:
 				rets.emplace_back(std::move(var));
 			}
 			int64_t reference = 0;
-			if (rets.size() == 1 && req["arguments"]["context"] == "watch")
+			if (rets.size() == 1 && is_watch())
 			{
-				reference = new_watch(L, watchFrame, expression);
+				reference = new_watch(L, create_or_get_frame(frameId), expression);
 			}
 			lua_pop(L, nresult);
 			if (rets.size() == 0)
@@ -1212,18 +1196,18 @@ finish:
 
 	void observer::get_variable(lua_State* L, debugger_impl* dbg, rprotocol& req, int64_t valueId, int frameId)
 	{
-		if (frameId == kWatchFrameId) {
-			dbg->response_success(req, [&](wprotocol& res)
-			{
-				res("variables").StartArray();
-				watch_frame.get_variable(L, nullptr, dbg, valueId, res);
-				res("variables").EndArray();
-			});
-			return;
-		}
 		auto it = frames.find(frameId);
 		if (it == frames.end()) {
 			dbg->response_error(req, "Error retrieving stack frame");
+			return;
+		}
+		if (is_watch()) {
+			dbg->response_success(req, [&](wprotocol& res)
+			{
+				res("variables").StartArray();
+				it->second.get_variable(L, nullptr, dbg, valueId, res);
+				res("variables").EndArray();
+			});
 			return;
 		}
 		lua::Debug entry;
