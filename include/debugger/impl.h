@@ -174,7 +174,6 @@ namespace vscode
 		bool               nodebug_;
 		int                threadid_;
 		bool               exception_;
-		observer           watchob_;
 		std::map<int, std::unique_ptr<lua_thread>>                                         luathreads_;
 		std::map<std::string, std::function<bool(rprotocol&)>>                             main_dispatch_;
 		std::map<std::string, std::function<bool(rprotocol&, lua_State*, lua::Debug *ar)>> hook_dispatch_;

@@ -1055,20 +1055,14 @@ finish:
 		return ok;
 	}
 
-	observer::observer(int threadId, bool watch)
+	observer::observer(int threadId)
 		: threadId(threadId)
 		, frames()
-		, watch(watch)
 	{ }
-
-	bool observer::is_watch()
-	{
-		return watch;
-	}
 
 	void observer::reset(lua_State* L)
 	{
-		if (L && is_watch()) watch_table_clear(L);
+		if (L) watch_table_clear(L);
 		frames.clear();
 	}
 
@@ -1112,11 +1106,13 @@ finish:
 	void observer::evaluate(lua_State* L, lua::Debug *ar, debugger_impl* dbg, rprotocol& req, int frameId)
 	{
 		auto& args = req["arguments"];
-		
+
 		std::string context = "";
 		if (args.HasMember("context")) {
 			context = args["context"].Get<std::string>();
 		}
+		bool watch = context == "watch";
+
 		if (!args.HasMember("expression")) {
 			dbg->response_error(req, "Error expression");
 			return;
@@ -1156,7 +1152,7 @@ finish:
 				rets.emplace_back(std::move(var));
 			}
 			int64_t reference = 0;
-			if (rets.size() == 1 && is_watch())
+			if (rets.size() == 1 && watch)
 			{
 				reference = new_watch(L, create_or_get_frame(frameId), expression);
 			}
@@ -1201,15 +1197,6 @@ finish:
 		auto it = frames.find(frameId);
 		if (it == frames.end()) {
 			dbg->response_error(req, "Error retrieving stack frame");
-			return;
-		}
-		if (is_watch()) {
-			dbg->response_success(req, [&](wprotocol& res)
-			{
-				res("variables").StartArray();
-				it->second.get_variable(L, nullptr, dbg, valueId, res);
-				res("variables").EndArray();
-			});
 			return;
 		}
 		lua::Debug entry;

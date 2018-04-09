@@ -358,10 +358,6 @@ namespace vscode
 		int64_t valueId = args["variablesReference"].GetInt64();
 		int threadId = valueId >> 32;
 		int frameId = (valueId >> 16) & 0xFFFF;
-		if (threadId == 0) {
-			watchob_.get_variable(L, this, req, valueId, frameId);
-			return false;
-		}
 		lua_thread* thread = find_luathread(threadId);
 		if (!thread) {
 			response_error(req, "Not found thread");
@@ -376,10 +372,6 @@ namespace vscode
 		int64_t valueId = args["variablesReference"].GetInt64();
 		int threadId = valueId >> 32;
 		int frameId = (valueId >> 16) & 0xFFFF;
-		if (threadId == 0) {
-			watchob_.set_variable(L, this, req, valueId, frameId);
-			return false;
-		}
 		lua_thread* thread = find_luathread(threadId);
 		if (!thread) {
 			response_error(req, "Not found thread");
@@ -483,12 +475,8 @@ namespace vscode
 	bool debugger_impl::request_evaluate(rprotocol& req, lua_State *L, lua::Debug *ar)
 	{
 		auto& args = req["arguments"];
-		if (req["arguments"]["context"] == "watch") {
-			watchob_.evaluate(L, ar, this, req, 0);
-			return false;
-		}
 		if (!args.HasMember("frameId")) {
-			response_error(req, "Not found frame");
+			response_error(req, "Not yet implemented.");
 			return false;
 		}
 		int threadAndFrameId = args["frameId"].GetInt();

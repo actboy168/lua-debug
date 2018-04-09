@@ -351,7 +351,6 @@ namespace vscode
 		}
 
 		thread->reset_frame(L);
-		watchob_.reset(L);
 	}
 
 	void debugger_impl::run_idle()
@@ -554,7 +553,6 @@ namespace vscode
 		, nodebug_(false)
 		, thread_(new dbg_thread(this))
 		, threadid_(0)
-		, watchob_(0, true)
 		, main_dispatch_
 		({
 			{ "launch", DBG_REQUEST_MAIN(request_attach) },
