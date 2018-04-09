@@ -37,10 +37,10 @@ namespace vscode {
 		int count_;
 	};
 
-	struct dbg_thread
+	struct osthread
 	{
-		dbg_thread(debugger_impl* dbg);
-		~dbg_thread();
+		osthread(debugger_impl* dbg);
+		~osthread();
 		void start();
 		void stop();
 		void run();

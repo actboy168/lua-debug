@@ -25,7 +25,7 @@ namespace vscode
 {
 	class rprotocol;
 	class wprotocol;
-	struct dbg_thread;
+	struct osthread;
 
 	class debugger_impl
 	{
@@ -164,7 +164,7 @@ namespace vscode
 		std::vector<stack> stack_;
 		pathconvert        pathconvert_;
 		custom*            custom_;
-		dbg_thread*        thread_;
+		osthread*        thread_;
 		std::function<void()> on_attach_;
 		std::string        console_;
 		std::unique_ptr<redirector> stdout_;

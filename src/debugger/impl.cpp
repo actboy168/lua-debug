@@ -1,7 +1,7 @@
 #include <debugger/impl.h>
 #include <debugger/protocol.h>
 #include <debugger/io/base.h>
-#include <debugger/thread.h>
+#include <debugger/osthread.h>
 #include <debugger/thunk.h>
 #include <debugger/path.h>
 #include <debugger/io/helper.h>
@@ -250,7 +250,7 @@ namespace vscode
 
 	void debugger_impl::hook(lua_thread* thread, lua_State *L, lua::Debug *ar)
 	{
-		std::lock_guard<dbg_thread> lock(*thread_);
+		std::lock_guard<osthread> lock(*thread_);
 
 		if (ar->event == LUA_HOOKCALL)
 		{
@@ -294,7 +294,7 @@ namespace vscode
 
 	void debugger_impl::exception(lua_thread* thread, lua_State* L)
 	{
-		std::lock_guard<dbg_thread> lock(*thread_);
+		std::lock_guard<osthread> lock(*thread_);
 
 		if (!exception_)
 		{
@@ -396,7 +396,7 @@ namespace vscode
 	void debugger_impl::update()
 	{
 		{
-			std::unique_lock<dbg_thread> lock(*thread_, std::try_to_lock_t());
+			std::unique_lock<osthread> lock(*thread_, std::try_to_lock_t());
 			if (!lock) {
 				return;
 			}
@@ -551,7 +551,7 @@ namespace vscode
 		, on_attach_()
 		, console_("none")
 		, nodebug_(false)
-		, thread_(new dbg_thread(this))
+		, thread_(new osthread(this))
 		, threadid_(0)
 		, main_dispatch_
 		({
