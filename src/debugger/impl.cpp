@@ -104,6 +104,10 @@ namespace vscode
 	{
 		std::lock_guard<osthread> lock(*thread_);
 
+		if (is_state(state::terminated) || is_state(state::birth) || is_state(state::initialized)) {
+			return;
+		}
+
 		if (ar->event == LUA_HOOKCALL) {
 			thread->hook_call(L, ar);
 			return;
@@ -115,30 +119,19 @@ namespace vscode
 		if (ar->event != LUA_HOOKLINE) {
 			return;
 		}
-		if (is_state(state::terminated) || is_state(state::birth) || is_state(state::initialized)) {
-			return;
-		}
 
 		thread->hook_line(L, ar, breakpoints_);
-		bool bp = (ar->currentline > 0
+		
+		if ((ar->currentline > 0
 			&& thread->cur_source_
 			&& breakpoints_.has(ar->currentline)
 			&& breakpoints_.has(thread->cur_source_, ar->currentline, L, ar)
-			);
-
-		if (!bp) {
-			if (is_state(state::running)) {
-				return;
-			}
-			else if (is_state(state::stepping) && !thread->is_step(luathread::step::in) && !thread->check_step(L, ar)) {
-				return;
-			}
-			else {
-				assert(is_state(state::stepping));
-			}
+			)) {
+			run_stopped(thread, L, ar, "breakpoint");
 		}
-
-		run_stopped(thread, L, ar, bp? "breakpoint": "step");
+		else if (is_state(state::stepping) && thread->check_step(L, ar)) {
+			run_stopped(thread, L, ar, "step");
+		}
 	}
 
 	void debugger_impl::exception(lua_State* L)

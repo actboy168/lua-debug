@@ -91,6 +91,7 @@ namespace vscode
 
 	bool luathread::check_step(lua_State* L, lua::Debug* ar)
 	{
+		if (is_step(luathread::step::in)) return true;
 		return stepping_lua_state_ == L && stepping_current_level_ <= stepping_target_level_;
 	}
 
