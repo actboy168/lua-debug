@@ -105,7 +105,7 @@ namespace vscode
 		std::lock_guard<osthread> lock(*thread_);
 
 		if (ar->event == LUA_HOOKCALL) {
-			thread->hook_call(L, ar, breakpoints_);
+			thread->hook_call(L, ar);
 			return;
 		}
 		if (ar->event == LUA_HOOKRET) {
@@ -119,7 +119,13 @@ namespace vscode
 			return;
 		}
 
-		bool bp = check_breakpoint(thread, L, ar);
+		thread->hook_line(L, ar, breakpoints_);
+		bool bp = (ar->currentline > 0
+			&& thread->cur_source_
+			&& breakpoints_.has(ar->currentline)
+			&& breakpoints_.has(thread->cur_source_, ar->currentline, L, ar)
+			);
+
 		if (!bp) {
 			if (is_state(state::running)) {
 				return;

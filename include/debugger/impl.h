@@ -57,7 +57,6 @@ namespace vscode
 
 		void set_state(state state);
 		bool is_state(state state) const;
-		bool check_breakpoint(luathread* thread, lua_State *L, lua::Debug *ar);
 		void redirect_stdout();
 		void redirect_stderr();
 		pathconvert& get_pathconvert();

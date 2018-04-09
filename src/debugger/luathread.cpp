@@ -59,10 +59,11 @@ namespace vscode
 		, stepping_current_level_(0)
 		, stepping_lua_state_(NULL)
 		, cur_source_(0)
+		, has_source_(false)
 		, ob_(id)
 	{
-		lua_sethook(L, thunk_hook, LUA_MASKCALL | LUA_MASKLINE | LUA_MASKRET, 0);
-		lua_atpanic(L, thunk_panic);;
+		install_hook(LUA_MASKCALL | LUA_MASKRET | LUA_MASKLINE);
+		lua_atpanic(L, thunk_panic);
 	}
 
 	luathread::~luathread()
@@ -71,6 +72,11 @@ namespace vscode
 		lua_atpanic(L, oldpanic);
 		thunk_destory(thunk_hook);
 		thunk_destory(thunk_panic);
+	}
+
+	void luathread::install_hook(int mask)
+	{
+		lua_sethook(L, thunk_hook, mask, 0);
 	}
 
 	void luathread::set_step(step step)
@@ -108,9 +114,10 @@ namespace vscode
 		stepping_lua_state_ = L;
 	}
 
-	void luathread::hook_call(lua_State* L, lua::Debug* ar, breakpoint& breakpoint)
+	void luathread::hook_call(lua_State* L, lua::Debug* ar)
 	{
-		cur_source_ = breakpoint.get(L, ar);
+		has_source_ = false;
+		cur_source_ = nullptr;
 		if (stepping_lua_state_ == L) {
 			stepping_current_level_++;
 		}
@@ -118,9 +125,18 @@ namespace vscode
 
 	void luathread::hook_return(lua_State* L, lua::Debug* ar)
 	{
+		has_source_ = false;
 		cur_source_ = nullptr;
 		if (stepping_lua_state_ == L) {
 			stepping_current_level_ = get_stacklevel(L, stepping_current_level_) - 1;
+		}
+	}
+
+	void luathread::hook_line(lua_State* L, lua::Debug* ar, breakpoint& breakpoint)
+	{
+		if (!has_source_) {
+			has_source_ = true;
+			cur_source_ = breakpoint.get(L, ar);
 		}
 	}
 

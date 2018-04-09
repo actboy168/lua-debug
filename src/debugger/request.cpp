@@ -42,17 +42,6 @@ namespace vscode
 		return state_ == state;
 	}
 
-	bool debugger_impl::check_breakpoint(luathread* thread, lua_State *L, lua::Debug *ar)
-	{
-		// TODO
-		if (ar->currentline > 0 && breakpoints_.has(ar->currentline)) {
-			if (thread->cur_source_ && breakpoints_.has(thread->cur_source_, ar->currentline, L, ar)) {
-				return true;
-			}
-		}
-		return false;
-	}
-
 	bool debugger_impl::request_initialize(rprotocol& req) {
 		if (!is_state(state::birth)) {
 			response_error(req, "already initialized");

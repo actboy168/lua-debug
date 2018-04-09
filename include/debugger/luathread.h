@@ -27,11 +27,14 @@ namespace vscode
 		int            stepping_target_level_;
 		int            stepping_current_level_;
 		lua_State*     stepping_lua_state_;
+		bool           has_source_;
 		bp_source*     cur_source_;
 		observer       ob_;
 
 		luathread(int id, debugger_impl* dbg, lua_State* L);
 		~luathread();
+
+		void install_hook(int mask);
 
 		void set_step(step step);
 		bool is_step(step step);
@@ -39,8 +42,9 @@ namespace vscode
 		void step_in();
 		void step_over(lua_State* L, lua::Debug* ar);
 		void step_out(lua_State* L, lua::Debug* ar);
-		void hook_call(lua_State* L, lua::Debug* ar, breakpoint& breakpoint);
+		void hook_call(lua_State* L, lua::Debug* ar);
 		void hook_return(lua_State* L, lua::Debug* ar);
+		void hook_line(lua_State* L, lua::Debug* ar, breakpoint& breakpoint);
 
 		void reset_frame(lua_State* L);
 		void evaluate(lua_State* L, lua::Debug *ar, debugger_impl* dbg, rprotocol& req, int frameId);
