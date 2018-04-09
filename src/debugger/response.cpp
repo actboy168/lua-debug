@@ -1,6 +1,7 @@
 #include <debugger/impl.h>
 #include <debugger/io/base.h>
 #include <debugger/capabilities.h>
+#include <debugger/luathread.h>
 
 namespace vscode
 {
@@ -68,7 +69,7 @@ namespace vscode
 		io_output(res);
 	}
 
-	void debugger_impl::event_stopped(lua_thread* thread, const char *msg)
+	void debugger_impl::event_stopped(luathread* thread, const char *msg)
 	{
 		wprotocol res;
 		for (auto _ : res.Object())
@@ -85,7 +86,7 @@ namespace vscode
 		io_output(res);
 	}
 
-	void debugger_impl::event_thread(lua_thread* thread, bool started)
+	void debugger_impl::event_thread(luathread* thread, bool started)
 	{
 		wprotocol res;
 		for (auto _ : res.Object())

@@ -1,6 +1,7 @@
 #include <debugger/impl.h>
 #include <debugger/protocol.h>
 #include <debugger/path.h>
+#include <debugger/luathread.h>
 #include <debugger/io/base.h>
 #include <base/util/unicode.h>
 
@@ -41,7 +42,7 @@ namespace vscode
 		return state_ == state;
 	}
 
-	bool debugger_impl::check_breakpoint(lua_thread* thread, lua_State *L, lua::Debug *ar)
+	bool debugger_impl::check_breakpoint(luathread* thread, lua_State *L, lua::Debug *ar)
 	{
 		// TODO
 		if (ar->currentline > 0 && breakpoints_.has(ar->currentline))
@@ -166,7 +167,7 @@ namespace vscode
 			return false;
 		}
 		int threadId = args["threadId"].GetInt();
-		lua_thread* thread = find_luathread(threadId);
+		luathread* thread = find_luathread(threadId);
 		if (!thread) {
 			response_error(req, "Not found thread");
 			return false;
@@ -344,7 +345,7 @@ namespace vscode
 		int threadAndFrameId = args["frameId"].GetInt();
 		int threadId = threadAndFrameId >> 16;
 		int frameId = threadAndFrameId & 0xFFFF;
-		lua_thread* thread = find_luathread(threadId);
+		luathread* thread = find_luathread(threadId);
 		if (!thread) {
 			response_error(req, "Not found thread");
 			return false;
@@ -358,7 +359,7 @@ namespace vscode
 		int64_t valueId = args["variablesReference"].GetInt64();
 		int threadId = valueId >> 32;
 		int frameId = (valueId >> 16) & 0xFFFF;
-		lua_thread* thread = find_luathread(threadId);
+		luathread* thread = find_luathread(threadId);
 		if (!thread) {
 			response_error(req, "Not found thread");
 			return false;
@@ -372,7 +373,7 @@ namespace vscode
 		int64_t valueId = args["variablesReference"].GetInt64();
 		int threadId = valueId >> 32;
 		int frameId = (valueId >> 16) & 0xFFFF;
-		lua_thread* thread = find_luathread(threadId);
+		luathread* thread = find_luathread(threadId);
 		if (!thread) {
 			response_error(req, "Not found thread");
 			return false;
@@ -397,7 +398,7 @@ namespace vscode
 			return false;
 		}
 		int threadId = args["threadId"].GetInt();
-		lua_thread* thread = find_luathread(threadId);
+		luathread* thread = find_luathread(threadId);
 		if (!thread) {
 			response_error(req, "Not found thread");
 			return false;
@@ -416,7 +417,7 @@ namespace vscode
 			return false;
 		}
 		int threadId = args["threadId"].GetInt();
-		lua_thread* thread = find_luathread(threadId);
+		luathread* thread = find_luathread(threadId);
 		if (!thread) {
 			response_error(req, "Not found thread");
 			return false;
@@ -435,7 +436,7 @@ namespace vscode
 			return false;
 		}
 		int threadId = args["threadId"].GetInt();
-		lua_thread* thread = find_luathread(threadId);
+		luathread* thread = find_luathread(threadId);
 		if (!thread) {
 			response_error(req, "Not found thread");
 			return false;
@@ -461,7 +462,7 @@ namespace vscode
 			return false;
 		}
 		int threadId = args["threadId"].GetInt();
-		lua_thread* thread = find_luathread(threadId);
+		luathread* thread = find_luathread(threadId);
 		if (!thread) {
 			response_error(req, "Not found thread");
 			return false;
@@ -482,7 +483,7 @@ namespace vscode
 		int threadAndFrameId = args["frameId"].GetInt();
 		int threadId = threadAndFrameId >> 16;
 		int frameId = threadAndFrameId & 0xFFFF;
-		lua_thread* thread = find_luathread(threadId);
+		luathread* thread = find_luathread(threadId);
 		if (!thread) {
 			response_error(req, "Not found thread");
 			return false;

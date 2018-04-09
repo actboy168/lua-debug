@@ -10,13 +10,11 @@
 #include <stdint.h>
 #include <rapidjson/document.h>
 #include <debugger/lua.h>
-#include <debugger/breakpoint.h>	 
-#include <debugger/evaluate.h>
+#include <debugger/breakpoint.h>
 #include <debugger/pathconvert.h>
 #include <debugger/protocol.h>
 #include <debugger/debugger.h>
 #include <debugger/redirect.h>
-#include <debugger/observer.h>
 #include <debugger/config.h>
 #include <debugger/io/base.h>
 #include <debugger/io/helper.h>
@@ -26,55 +24,16 @@ namespace vscode
 	class rprotocol;
 	class wprotocol;
 	struct osthread;
+	struct luathread;
 
 	class debugger_impl
 	{
 		friend class pathconvert;
 	public:	
-		enum class step {
-			in = 1,
-			over = 2,
-			out = 3,
-		};
 
 		struct stack {
 			int depth;
 			int64_t reference;
-		};
-
-		struct lua_thread {
-			int            id;
-			debugger_impl* dbg;
-			lua_State*     L;
-			lua_Hook       thunk_hook;
-			lua_CFunction  thunk_panic;
-			lua_CFunction  oldpanic;
-
-			step           step_;
-			int            stepping_target_level_;
-			int            stepping_current_level_;
-			lua_State*     stepping_lua_state_;
-			bool           has_source_;
-			bp_source*     cur_source_;
-			observer       ob_;
-
-			lua_thread(int id, debugger_impl* dbg, lua_State* L);
-			~lua_thread();
-
-			void set_step(step step);
-			bool is_step(step step);
-			bool check_step(lua_State* L, lua::Debug* ar);
-			void step_in();
-			void step_over(lua_State* L, lua::Debug* ar);
-			void step_out(lua_State* L, lua::Debug* ar);
-			void hook_call(lua_State* L, lua::Debug* ar);
-			void hook_return(lua_State* L, lua::Debug* ar);
-
-			void reset_frame(lua_State* L);
-			void evaluate(lua_State* L, lua::Debug *ar, debugger_impl* dbg, rprotocol& req, int frameId);
-			void new_frame(lua_State* L, debugger_impl* dbg, rprotocol& req, int frameId);
-			void get_variable(lua_State* L, debugger_impl* dbg, rprotocol& req, int64_t valueId, int frameId);
-			void set_variable(lua_State* L, debugger_impl* dbg, rprotocol& req, int64_t valueId, int frameId);
 		};
 
 	public:
@@ -83,10 +42,10 @@ namespace vscode
 		bool open_schema(const std::wstring& path);
 		void close();
 		void io_close();
-		void hook(lua_thread* thread, lua_State* L, lua::Debug* ar);
+		void hook(luathread* thread, lua_State* L, lua::Debug* ar);
 		void exception(lua_State* L);
-		void exception(lua_thread* thread, lua_State* L);
-		void run_stopped(lua_thread* thread, lua_State* L, lua::Debug* ar, const char* reason);
+		void exception(luathread* thread, lua_State* L);
+		void run_stopped(luathread* thread, lua_State* L, lua::Debug* ar, const char* reason);
 		void run_idle();
 		void update();
 		void wait_attach();
@@ -98,14 +57,14 @@ namespace vscode
 
 		void set_state(state state);
 		bool is_state(state state) const;
-		bool check_breakpoint(lua_thread* thread, lua_State *L, lua::Debug *ar);
+		bool check_breakpoint(luathread* thread, lua_State *L, lua::Debug *ar);
 		void redirect_stdout();
 		void redirect_stderr();
 		pathconvert& get_pathconvert();
 		rprotocol io_input();
 		void io_output(const wprotocol& wp);
-		lua_thread* find_luathread(lua_State* L);
-		lua_thread* find_luathread(int threadid);
+		luathread* find_luathread(lua_State* L);
+		luathread* find_luathread(int threadid);
 
 	private:
 		bool request_initialize(rprotocol& req);
@@ -132,8 +91,8 @@ namespace vscode
 		bool request_exception_info(rprotocol& req, lua_State *L, lua::Debug *ar);
 
 	private:
-		void event_stopped(lua_thread* thread, const char *msg);
-		void event_thread(lua_thread* thread, bool started);
+		void event_stopped(luathread* thread, const char *msg);
+		void event_thread(luathread* thread, bool started);
 		void event_terminated();
 		void event_initialized();
 		void event_capabilities();
@@ -174,7 +133,7 @@ namespace vscode
 		bool               nodebug_;
 		int                threadid_;
 		bool               exception_;
-		std::map<int, std::unique_ptr<lua_thread>>                                         luathreads_;
+		std::map<int, std::unique_ptr<luathread>>                                          luathreads_;
 		std::map<std::string, std::function<bool(rprotocol&)>>                             main_dispatch_;
 		std::map<std::string, std::function<bool(rprotocol&, lua_State*, lua::Debug *ar)>> hook_dispatch_;
 
