@@ -7,6 +7,7 @@
 #include <vector> 
 #include <mutex>
 #include <atomic>
+#include <stdint.h>
 #include <rapidjson/document.h>
 #include <debugger/lua.h>
 #include <debugger/breakpoint.h>	 
@@ -41,14 +42,25 @@ namespace vscode
 			int64_t reference;
 		};
 
+		struct lua_thread {
+			debugger_impl* dbg;
+			lua_State*     L;
+			lua_Hook       thunk_hook;
+			lua_CFunction  thunk_panic;
+			lua_CFunction  oldpanic;
+
+			~lua_thread();
+		};
+
 	public:
 		debugger_impl(io::base* io);
 		~debugger_impl();
 		bool open_schema(const std::wstring& path);
 		void close();
 		void io_close();
-		void hook(lua_State* L, lua::Debug* ar);
+		void hook(lua_thread* thread, lua_State* L, lua::Debug* ar);
 		void exception(lua_State* L);
+		void exception(lua_thread* thread, lua_State* L);
 		void run_stopped(lua_State* L, lua::Debug* ar, const char* reason);
 		void run_idle();
 		void update();
@@ -127,29 +139,29 @@ namespace vscode
 		io::base*          network_;
 		schema             schema_;
 		state              state_;
-		step               step_;
-		int                stepping_target_level_;
-		int                stepping_current_level_;
-		lua_State*         stepping_lua_state_;
 		breakpoint         breakpoints_;
 		std::vector<stack> stack_;
 		pathconvert        pathconvert_;
 		custom*            custom_;
-		lua_Hook           thunk_hook_;
-		bool               has_source_;
-		bp_source*         cur_source_;
-		bool               exception_;
-		std::set<lua_State*> hookL_;
 		dbg_thread*        thread_;
 		std::function<void()> on_attach_;
 		std::string        console_;
 		std::unique_ptr<redirector> stdout_;
 		std::unique_ptr<redirector> stderr_;
 		rprotocol          initproto_;
-		observer           ob_;
 		config             config_;
 		bool               nodebug_;
+		std::map<lua_State*, std::unique_ptr<lua_thread>> luathreads_;
 		std::map<std::string, std::function<bool(rprotocol&)>>                            main_dispatch_;
 		std::map<std::string, std::function<bool(rprotocol&, lua_State*, lua::Debug *ar)>> hook_dispatch_;
+
+		step               step_;
+		int                stepping_target_level_;
+		int                stepping_current_level_;
+		lua_State*         stepping_lua_state_;
+		bool               has_source_;
+		bp_source*         cur_source_;
+		bool               exception_;
+		observer           ob_;
 	};
 }
