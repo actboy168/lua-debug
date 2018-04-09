@@ -4,14 +4,6 @@
 
 namespace vscode
 {
-	static lua_State* get_mainthread(lua_State* thread)
-	{
-		lua_rawgeti(thread, LUA_REGISTRYINDEX, LUA_RIDX_MAINTHREAD);
-		lua_State* ml = lua_tothread(thread, -1);
-		lua_pop(thread, 1);
-		return ml;
-	}
-
 	static int get_stacklevel(lua_State* L)
 	{
 		lua::Debug ar;
