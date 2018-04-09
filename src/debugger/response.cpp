@@ -68,7 +68,7 @@ namespace vscode
 		io_output(res);
 	}
 
-	void debugger_impl::event_stopped(const char *msg)
+	void debugger_impl::event_stopped(lua_thread* thread, const char *msg)
 	{
 		wprotocol res;
 		for (auto _ : res.Object())
@@ -79,13 +79,13 @@ namespace vscode
 			for (auto _ : res("body").Object())
 			{
 				res("reason").String(msg);
-				res("threadId").Int(1);
+				res("threadId").Int(thread->id);
 			}
 		}
 		io_output(res);
 	}
 
-	void debugger_impl::event_thread(bool started)
+	void debugger_impl::event_thread(lua_thread* thread, bool started)
 	{
 		wprotocol res;
 		for (auto _ : res.Object())
@@ -96,7 +96,7 @@ namespace vscode
 			for (auto _ : res("body").Object())
 			{
 				res("reason").String(started ? "started" : "exited");
-				res("threadId").Int(1);
+				res("threadId").Int(thread->id);
 			}
 		}
 		io_output(res);

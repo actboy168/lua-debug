@@ -50,8 +50,24 @@ namespace vscode
 			lua_CFunction  thunk_panic;
 			lua_CFunction  oldpanic;
 
+			step           step_;
+			int            stepping_target_level_;
+			int            stepping_current_level_;
+			lua_State*     stepping_lua_state_;
+			bool           has_source_;
+			bp_source*     cur_source_;
+
 			lua_thread(int id, debugger_impl* dbg, lua_State* L);
 			~lua_thread();
+
+			void set_step(step step);
+			bool is_step(step step);
+			bool check_step(lua_State* L, lua::Debug* ar);
+			void step_in();
+			void step_over(lua_State* L, lua::Debug* ar);
+			void step_out(lua_State* L, lua::Debug* ar);
+			void hook_call(lua_State* L, lua::Debug* ar);
+			void hook_return(lua_State* L, lua::Debug* ar);
 		};
 
 	public:
@@ -63,7 +79,7 @@ namespace vscode
 		void hook(lua_thread* thread, lua_State* L, lua::Debug* ar);
 		void exception(lua_State* L);
 		void exception(lua_thread* thread, lua_State* L);
-		void run_stopped(lua_State* L, lua::Debug* ar, const char* reason);
+		void run_stopped(lua_thread* thread, lua_State* L, lua::Debug* ar, const char* reason);
 		void run_idle();
 		void update();
 		void wait_attach();
@@ -75,19 +91,14 @@ namespace vscode
 
 		void set_state(state state);
 		bool is_state(state state) const;
-		void set_step(step step);
-		bool is_step(step step);
-		void step_in();
-		void step_over(lua_State* L, lua::Debug* ar);
-		void step_out(lua_State* L, lua::Debug* ar);
-		bool check_step(lua_State* L, lua::Debug* ar);
-		bool check_breakpoint(lua_State *L, lua::Debug *ar);
+		bool check_breakpoint(lua_thread* thread, lua_State *L, lua::Debug *ar);
 		void redirect_stdout();
 		void redirect_stderr();
 		pathconvert& get_pathconvert();
 		rprotocol io_input();
 		void io_output(const wprotocol& wp);
 		lua_thread* find_luathread(lua_State* L);
+		lua_thread* find_luathread(int threadid);
 
 	private:
 		bool request_initialize(rprotocol& req);
@@ -114,8 +125,8 @@ namespace vscode
 		bool request_exception_info(rprotocol& req, lua_State *L, lua::Debug *ar);
 
 	private:
-		void event_stopped(const char *msg);
-		void event_thread(bool started);
+		void event_stopped(lua_thread* thread, const char *msg);
+		void event_thread(lua_thread* thread, bool started);
 		void event_terminated();
 		void event_initialized();
 		void event_capabilities();
@@ -155,17 +166,11 @@ namespace vscode
 		config             config_;
 		bool               nodebug_;
 		int                threadid_;
+		bool               exception_;
+		observer           ob_;
 		std::map<int, std::unique_ptr<lua_thread>>                                         luathreads_;
 		std::map<std::string, std::function<bool(rprotocol&)>>                             main_dispatch_;
 		std::map<std::string, std::function<bool(rprotocol&, lua_State*, lua::Debug *ar)>> hook_dispatch_;
 
-		step               step_;
-		int                stepping_target_level_;
-		int                stepping_current_level_;
-		lua_State*         stepping_lua_state_;
-		bool               has_source_;
-		bp_source*         cur_source_;
-		bool               exception_;
-		observer           ob_;
 	};
 }

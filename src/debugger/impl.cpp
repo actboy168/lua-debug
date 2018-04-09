@@ -11,12 +11,38 @@
 
 namespace vscode
 {
-	lua_State* get_mainthread(lua_State* thread)
+	static lua_State* get_mainthread(lua_State* thread)
 	{
 		lua_rawgeti(thread, LUA_REGISTRYINDEX, LUA_RIDX_MAINTHREAD);
 		lua_State* ml = lua_tothread(thread, -1);
 		lua_pop(thread, 1);
 		return ml;
+	}
+
+	static int get_stacklevel(lua_State* L)
+	{
+		lua::Debug ar;
+		int n;
+		for (n = 0; lua_getstack(L, n + 1, (lua_Debug*)&ar) != 0; ++n)
+		{
+		}
+		return n;
+	}
+
+	static int get_stacklevel(lua_State* L, int pos)
+	{
+		lua::Debug ar;
+		if (lua_getstack(L, pos, (lua_Debug*)&ar) != 0) {
+			for (; lua_getstack(L, pos + 1, (lua_Debug*)&ar) != 0; ++pos)
+			{
+			}
+		}
+		else if (pos > 0) {
+			for (--pos; pos > 0 && lua_getstack(L, pos, (lua_Debug*)&ar) == 0; --pos)
+			{
+			}
+		}
+		return pos;
 	}
 
 	static void debugger_hook(debugger_impl::lua_thread* thread, lua_State *L, lua::Debug *ar)
@@ -43,6 +69,12 @@ namespace vscode
 			reinterpret_cast<intptr_t>(&debugger_panic),
 			reinterpret_cast<intptr_t>(oldpanic)
 		))
+		, step_(step::in)
+		, stepping_target_level_(0)
+		, stepping_current_level_(0)
+		, stepping_lua_state_(NULL)
+		, has_source_(false)
+		, cur_source_(0)
 	{
 		lua_sethook(L, thunk_hook, LUA_MASKCALL | LUA_MASKLINE | LUA_MASKRET, 0);
 		lua_atpanic(L, thunk_panic);;
@@ -56,6 +88,57 @@ namespace vscode
 		thunk_destory(thunk_panic);
 	}
 
+	void debugger_impl::lua_thread::set_step(step step)
+	{
+		step_ = step;
+	}
+
+	bool debugger_impl::lua_thread::is_step(step step)
+	{
+		return step_ == step;
+	}
+
+	bool debugger_impl::lua_thread::check_step(lua_State* L, lua::Debug* ar)
+	{
+		return stepping_lua_state_ == L && stepping_current_level_ <= stepping_target_level_;
+	}
+
+	void debugger_impl::lua_thread::step_in()
+	{
+		set_step(step::in);
+	}
+
+	void debugger_impl::lua_thread::step_over(lua_State* L, lua::Debug* ar)
+	{
+		set_step(step::over);
+		stepping_target_level_ = stepping_current_level_ = get_stacklevel(L);
+		stepping_lua_state_ = L;
+	}
+
+	void debugger_impl::lua_thread::step_out(lua_State* L, lua::Debug* ar)
+	{
+		set_step(step::out);
+		stepping_target_level_ = stepping_current_level_ = get_stacklevel(L);
+		stepping_target_level_--;
+		stepping_lua_state_ = L;
+	}
+
+	void debugger_impl::lua_thread::hook_call(lua_State* L, lua::Debug* ar)
+	{
+		has_source_ = false;
+		if (stepping_lua_state_ == L) {
+			stepping_current_level_++;
+		}
+	}
+
+	void debugger_impl::lua_thread::hook_return(lua_State* L, lua::Debug* ar)
+	{
+		has_source_ = false;
+		if (stepping_lua_state_ == L) {
+			stepping_current_level_ = get_stacklevel(L, stepping_current_level_) - 1;
+		}
+	}
+
 	debugger_impl::lua_thread* debugger_impl::find_luathread(lua_State* L)
 	{
 		L = get_mainthread(L);
@@ -63,6 +146,15 @@ namespace vscode
 			if (lt.second->L == L) {
 				return lt.second.get();
 			}
+		}
+		return nullptr;
+	}
+
+	debugger_impl::lua_thread* debugger_impl::find_luathread(int threadid)
+	{
+		auto it = luathreads_.find(threadid);
+		if (it != luathreads_.end()) {
+			return it->second.get();
 		}
 		return nullptr;
 	}
@@ -130,85 +222,18 @@ namespace vscode
 		}
 	}
 
-	static int get_stacklevel(lua_State* L)
-	{
-		lua::Debug ar;
-		int n;
-		for (n = 0; lua_getstack(L, n + 1, (lua_Debug*)&ar) != 0; ++n)
-		{ }
-		return n;
-	}
-
-	static int get_stacklevel(lua_State* L, int pos)
-	{
-		lua::Debug ar;
-		if (lua_getstack(L, pos, (lua_Debug*)&ar) != 0) {
-			for (; lua_getstack(L, pos + 1, (lua_Debug*)&ar) != 0; ++pos)
-			{ }
-		}
-		else if (pos > 0) {
-			for (--pos; pos > 0 && lua_getstack(L, pos, (lua_Debug*)&ar) == 0; --pos)
-			{ }
-		}
-		return pos;
-	}
-
-	void debugger_impl::set_step(step step)
-	{
-		step_ = step;
-	}
-
-	bool debugger_impl::is_step(step step)
-	{
-		return step_ == step;
-	}
-
-	bool debugger_impl::check_step(lua_State* L, lua::Debug* ar)
-	{
-		return stepping_lua_state_ == L && stepping_current_level_ <= stepping_target_level_;
-	}
-
-	void debugger_impl::step_in()
-	{
-		set_state(state::stepping);
-		set_step(step::in);
-	}
-
-	void debugger_impl::step_over(lua_State* L, lua::Debug* ar)
-	{
-		set_state(state::stepping);
-		set_step(step::over);
-		stepping_target_level_ = stepping_current_level_ = get_stacklevel(L);
-		stepping_lua_state_ = L;
-	}
-
-	void debugger_impl::step_out(lua_State* L, lua::Debug* ar)
-	{
-		set_state(state::stepping);
-		set_step(step::out);
-		stepping_target_level_ = stepping_current_level_ = get_stacklevel(L);
-		stepping_target_level_--;
-		stepping_lua_state_ = L;
-	}
-
 	void debugger_impl::hook(lua_thread* thread, lua_State *L, lua::Debug *ar)
 	{
 		std::lock_guard<dbg_thread> lock(*thread_);
 
 		if (ar->event == LUA_HOOKCALL)
 		{
-			has_source_ = false;
-			if (stepping_lua_state_ == L) {
-				stepping_current_level_++;
-			}
+			thread->hook_call(L, ar);
 			return;
 		}
 		if (ar->event == LUA_HOOKRET)
 		{
-			has_source_ = false;
-			if (stepping_lua_state_ == L) {
-				stepping_current_level_ = get_stacklevel(L, stepping_current_level_) - 1;
-			}
+			thread->hook_return(L, ar);
 			return;
 		}
 		if (ar->event != LUA_HOOKLINE)
@@ -217,12 +242,12 @@ namespace vscode
 			return;
 		}
 
-		bool bp = check_breakpoint(L, ar);
+		bool bp = check_breakpoint(thread, L, ar);
 		if (!bp) {
 			if (is_state(state::running)) {
 				return;
 			}
-			else if (is_state(state::stepping) && !is_step(step::in) && !check_step(L, ar)) {
+			else if (is_state(state::stepping) && !thread->is_step(step::in) && !thread->check_step(L, ar)) {
 				return;
 			}
 			else {
@@ -230,7 +255,7 @@ namespace vscode
 			}
 		}
 
-		run_stopped(L, ar, bp? "breakpoint": "step");
+		run_stopped(thread, L, ar, bp? "breakpoint": "step");
 	}
 
 	void debugger_impl::exception(lua_State* L)
@@ -257,15 +282,16 @@ namespace vscode
 		lua::Debug ar;
 		if (lua_getstack(L, 0, (lua_Debug*)&ar))
 		{
-			run_stopped(L, &ar, "exception");
+			run_stopped(thread, L, &ar, "exception");
 		}
 		lua_sethook(L, f, mark, count);
 	}
 
-	void debugger_impl::run_stopped(lua_State *L, lua::Debug *ar, const char* reason)
+	void debugger_impl::run_stopped(lua_thread* thread, lua_State *L, lua::Debug *ar, const char* reason)
 	{
-		event_stopped(reason);
-		step_in();
+		event_stopped(thread, reason);
+		set_state(state::stepping);
+		thread->step_in();
 
 		bool quit = false;
 		while (!quit)
@@ -490,16 +516,10 @@ namespace vscode
 		: seq(1)
 		, network_(io)
 		, state_(state::birth)
-		, step_(step::in)
-		, stepping_target_level_(0)
-		, stepping_current_level_(0)
-		, stepping_lua_state_(NULL)
 		, breakpoints_(this)
 		, stack_()
 		, pathconvert_(this)
 		, custom_(nullptr)
-		, has_source_(false)
-		, cur_source_(0)
 		, exception_(false)
 		, luathreads_()
 		, on_attach_()

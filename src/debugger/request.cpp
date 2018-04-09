@@ -42,21 +42,21 @@ namespace vscode
 		return state_ == state;
 	}
 
-	bool debugger_impl::check_breakpoint(lua_State *L, lua::Debug *ar)
+	bool debugger_impl::check_breakpoint(lua_thread* thread, lua_State *L, lua::Debug *ar)
 	{
+		// TODO
 		if (ar->currentline > 0 && breakpoints_.has(ar->currentline))
 		{
-			if (!has_source_)
+			if (!thread->has_source_)
 			{
-				has_source_ = true;
-				cur_source_ = 0;
+				thread->has_source_ = true;
+				thread->cur_source_ = 0;
 				if (!lua_getinfo(L, "S", (lua_Debug*)ar))
 					return false;
-				cur_source_ = breakpoints_.get(ar->source);
+				thread->cur_source_ = breakpoints_.get(ar->source);
 			}
-			if (cur_source_ && breakpoints_.has(cur_source_, ar->currentline, L, ar))
+			if (thread->cur_source_ && breakpoints_.has(thread->cur_source_, ar->currentline, L, ar))
 			{
-				step_in();
 				return true;
 			}
 		}
@@ -133,7 +133,6 @@ namespace vscode
 			stopOnEntry = args["stopOnEntry"].GetBool();
 		}
 
-		event_thread(true);
 		if (stopOnEntry)
 		{
 			set_state(state::stepping);
@@ -351,22 +350,58 @@ namespace vscode
 
 	bool debugger_impl::request_stepin(rprotocol& req, lua_State* L, lua::Debug *ar)
 	{
+		auto& args = req["arguments"];
+		if (!args.HasMember("threadId") || !args["threadId"].IsInt()) {
+			response_error(req, "Not found thread");
+			return false;
+		}
+		int tid = args["threadId"].GetInt();
+		lua_thread* thread = find_luathread(tid);
+		if (!thread) {
+			response_error(req, "Not found thread");
+			return false;
+		}
+		set_state(state::stepping);
+		thread->step_in();
 		response_success(req);
-		step_in();
 		return true;
 	}
 
 	bool debugger_impl::request_stepout(rprotocol& req, lua_State* L, lua::Debug *ar)
 	{
+		auto& args = req["arguments"];
+		if (!args.HasMember("threadId") || !args["threadId"].IsInt()) {
+			response_error(req, "Not found thread");
+			return false;
+		}
+		int tid = args["threadId"].GetInt();
+		lua_thread* thread = find_luathread(tid);
+		if (!thread) {
+			response_error(req, "Not found thread");
+			return false;
+		}
+		set_state(state::stepping);
+		thread->step_out(L, ar);
 		response_success(req);
-		step_out(L, ar);
 		return true;
 	}
 
 	bool debugger_impl::request_next(rprotocol& req, lua_State* L, lua::Debug *ar)
 	{
+		auto& args = req["arguments"];
+		if (!args.HasMember("threadId") || !args["threadId"].IsInt()) {
+			response_error(req, "Not found thread");
+			return false;
+		}
+		int tid = args["threadId"].GetInt();
+		lua_thread* thread = find_luathread(tid);
+		if (!thread) {
+			response_error(req, "Not found thread");
+			return false;
+		}
+		set_state(state::stepping);
+		thread->step_over(L, ar);
 		response_success(req);
-		step_over(L, ar);
 		return true;
 	}
 
@@ -379,8 +414,20 @@ namespace vscode
 
 	bool debugger_impl::request_pause(rprotocol& req)
 	{
+		auto& args = req["arguments"];
+		if (!args.HasMember("threadId") || !args["threadId"].IsInt()) {
+			response_error(req, "Not found thread");
+			return false;
+		}
+		int tid = args["threadId"].GetInt();
+		lua_thread* thread = find_luathread(tid);
+		if (!thread) {
+			response_error(req, "Not found thread");
+			return false;
+		}
+		set_state(state::stepping);
+		thread->step_in();
 		response_success(req);
-		step_in();
 		return true;
 	}
 
