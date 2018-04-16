@@ -371,7 +371,7 @@ namespace vscode {
 		}
 
 		static std::string getname(lua_State *L, int idx) {
-			if (safe_callmeta(L, idx, "__tostring")) {
+			if (safe_callmeta(L, idx, "__debugger_tostring")) {
 				size_t len = 0;
 				const char* buf = lua_tolstring(L, idx, &len);
 				std::string result(buf ? buf : "", len);
@@ -453,17 +453,15 @@ namespace vscode {
 			return base::format("%s: %p", luaL_typename(L, idx), lua_topointer(L, idx));
 		}
 
-
 		static std::string getvalue(lua_State *L, int idx, pathconvert& pathconvert)
 		{
-			if (safe_callmeta(L, idx, "__tostring")) {
+			if (safe_callmeta(L, idx, "__debugger_tostring")) {
 				std::string r = raw_getvalue(L, -1, pathconvert);
 				lua_pop(L, 1);
 				return r;
 			}
 			return raw_getvalue(L, idx, pathconvert);
 		}
-
 
 		static std::string gettype(lua_State *L, int idx)
 		{
