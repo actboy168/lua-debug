@@ -17,11 +17,11 @@ static int errfunc(lua_State* L) {
 	return 1;
 }
 
-static int print_empty(lua_State* L) {
+static int stdout_empty(lua_State* L) {
 	return 0;
 }
 
-static int print(lua_State* L) {
+static int stdout_print(lua_State* L) {
 	std::string out;
 	int n = lua_gettop(L);
 	int i;
@@ -43,6 +43,28 @@ static int print(lua_State* L) {
 	vscode::debugger* dbg = (vscode::debugger*)lua_touserdata(L, lua_upvalueindex(1));
 	dbg->output("stdout", out.data(), out.size(), L);
 	return 0;
+}
+
+static int stdout_write(lua_State* L) {
+	lua_pushvalue(L, 1);
+	int arg = 2;
+	int nargs = lua_gettop(L) - arg;
+	std::string out;
+	for (; nargs--; arg++) {
+		if (lua_type(L, arg) == LUA_TNUMBER) {
+			out += lua_isinteger(L, arg)
+				? base::format(LUA_INTEGER_FMT, (LUAI_UACINT)lua_tointeger(L, arg))
+				: base::format(LUA_NUMBER_FMT, (LUAI_UACNUMBER)lua_tonumber(L, arg));
+		}
+		else {
+			size_t l;
+			const char *s = luaL_checklstring(L, arg, &l);
+			out += std::string(s, l);
+		}
+	}
+	vscode::debugger* dbg = (vscode::debugger*)lua_touserdata(L, lua_upvalueindex(1));
+	dbg->output("stdout", out.data(), out.size(), L);
+	return 1;
 }
 
 int run_launch(stdinput& io, vscode::rprotocol& init, vscode::rprotocol& req)
@@ -135,13 +157,28 @@ int run_launch(stdinput& io, vscode::rprotocol& init, vscode::rprotocol& req)
 		consoleCoding = args["consoleCoding"].Get<std::string>();
 	}
 	if (consoleCoding == "none") {
-		lua_pushcclosure(L, print_empty, 0);
+		lua_pushcclosure(L, stdout_empty, 0);
 		lua_setglobal(L, "print");
+		if (LUA_TTABLE == lua_getglobal(L, "io")) {
+			lua_newtable(L);
+			lua_pushcclosure(L, stdout_empty, 0);
+			lua_setfield(L, -2, "write");
+			lua_setfield(L, -2, "stdout");
+		}
+		lua_pop(L, 1);
 	}
 	else {
 		lua_pushlightuserdata(L, &dbg);
-		lua_pushcclosure(L, print, 1);
+		lua_pushcclosure(L, stdout_print, 1);
 		lua_setglobal(L, "print");
+		if (LUA_TTABLE == lua_getglobal(L, "io")) {
+			lua_newtable(L);
+			lua_pushlightuserdata(L, &dbg);
+			lua_pushcclosure(L, stdout_write, 1);
+			lua_setfield(L, -2, "write");
+			lua_setfield(L, -2, "stdout");
+		}
+		lua_pop(L, 1);
 	}
 
 	std::string program = ".lua";
