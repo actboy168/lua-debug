@@ -30,6 +30,7 @@ namespace vscode
 		int            stepping_current_level_;
 		lua_State*     stepping_lua_state_;
 		bool           has_source_;
+		bp_function*   cur_func_;
 		bp_source*     cur_bp_;
 		observer       ob_;
 

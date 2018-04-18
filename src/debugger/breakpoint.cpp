@@ -79,21 +79,25 @@ namespace vscode
 	}
 
 	bp_function::bp_function(lua_State* L, lua::Debug* ar, breakpoint* breakpoint)
-		: path()
-		, sourceref(0)
+		: vaild(false)
+		, clientpath()
 		, bp(nullptr)
 	{
 		if (!lua_getinfo(L, "S", (lua_Debug*)ar)) {
 			return;
 		}
+
 		if (ar->source[0] == '@' || ar->source[0] == '=') {
-			sourceref = 0;
-			path = ar->source;
+			if (breakpoint->get_pathconvert().get(ar->source, clientpath))
+			{
+				bp = breakpoint->get_file_bp(clientpath);
+				vaild = true;
+			}
 		}
 		else {
-			sourceref = (intptr_t)ar->source;
+			bp = breakpoint->get_memory_bp((intptr_t)ar->source);
+			vaild = true;
 		}
-		bp = breakpoint->get(ar->source);
 	}
 
 	breakpoint::breakpoint(debugger_impl* dbg)
@@ -203,32 +207,27 @@ namespace vscode
 		return true;
 	}
 
-	bp_source* breakpoint::get(const char* source)
+	bp_source* breakpoint::get_file_bp(const std::string& clientpath)
 	{
-		if (source[0] == '@' || source[0] == '=')
+		auto it = files_.find(clientpath);
+		if (it != files_.end())
 		{
-			std::string client_path;
-			if (dbg_->get_pathconvert().get(source, client_path))
-			{
-				auto it = files_.find(client_path);
-				if (it != files_.end())
-				{
-					return &it->second;
-				}
-			}
-		}
-		else
-		{
-			auto it = memorys_.find((intptr_t)source);
-			if (it != memorys_.end())
-			{
-				return &it->second;
-			}
+			return &it->second;
 		}
 		return nullptr;
 	}
 
-	bp_source* breakpoint::get(lua_State* L, lua::Debug* ar)
+	bp_source* breakpoint::get_memory_bp(intptr_t sourceref)
+	{
+		auto it = memorys_.find(sourceref);
+		if (it != memorys_.end())
+		{
+			return &it->second;
+		}
+		return nullptr;
+	}
+
+	bp_function* breakpoint::get(lua_State* L, lua::Debug* ar)
 	{
 		if (!lua_getinfo(L, "f", (lua_Debug*)ar)) {
 			return nullptr;
@@ -237,8 +236,13 @@ namespace vscode
 		lua_pop(L, 1);
 		auto it = functions_.find(f);
 		if (it != functions_.end()) {
-			return it->second.bp;
+			return &(it->second);
 		}
-		return functions_.insert(std::make_pair(f, bp_function(L, ar, this))).first->second.bp;
+		return &(functions_.insert(std::make_pair(f, bp_function(L, ar, this))).first->second);
+	}
+
+	pathconvert& breakpoint::get_pathconvert()
+	{
+		return dbg_->get_pathconvert();
 	}
 }

@@ -25,8 +25,8 @@ namespace vscode
 	typedef std::map<size_t, bp> bp_source;
 
 	struct bp_function {
-		std::string path;
-		intptr_t    sourceref;
+		bool vaild;
+		std::string clientpath;
 		bp_source*  bp;
 		bp_function(lua_State* L, lua::Debug* ar, breakpoint* breakpoint);
 	};
@@ -42,8 +42,10 @@ namespace vscode
 		void add(intptr_t source_ref, size_t line, rapidjson::Value const& bp);
 		bool has(size_t line) const;
 		bool has(bp_source* src, size_t line, lua_State* L, lua::Debug* ar) const;
-		bp_source* get(const char* source);
-		bp_source* get(lua_State* L, lua::Debug* ar);
+		bp_function* get(lua_State* L, lua::Debug* ar);
+		bp_source* get_memory_bp(intptr_t sourceref);
+		bp_source* get_file_bp(const std::string& clientpath);
+		pathconvert& get_pathconvert();
 
 	private:
 		void clear(bp_source& src);

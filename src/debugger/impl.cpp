@@ -140,8 +140,11 @@ namespace vscode
 		if (ar->event != LUA_HOOKLINE) {
 			return;
 		}
-
 		thread->hook_line(L, ar, breakpoints_);
+		if (!thread->cur_func_) {
+			return;
+		}
+
 		if ((ar->currentline > 0
 			&& thread->cur_bp_
 			&& breakpoints_.has(ar->currentline)
