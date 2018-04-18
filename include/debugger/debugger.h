@@ -51,7 +51,7 @@ namespace vscode
 		void update();
 		void wait_attach();
 		void attach_lua(lua_State* L);
-		void detach_lua(lua_State* L);
+		void detach_lua(lua_State* L, bool remove = false);
 		void set_custom(custom* custom);
 		void output(const char* category, const char* buf, size_t len, lua_State* L = nullptr, lua_Debug* ar = nullptr);
 		void exception(lua_State* L);

@@ -17,6 +17,8 @@ namespace vscode
 		};
 
 		int            id;
+		bool           enable;
+		bool           release;
 		debugger_impl* dbg;
 		lua_State*     L;
 		lua_Hook       thunk_hook;
@@ -36,6 +38,9 @@ namespace vscode
 
 		void install_hook(int mask);
 
+		void release_thread();
+		void enable_thread();
+		void disable_thread();
 		void set_step(step step);
 		bool is_step(step step);
 		bool check_step(lua_State* L, lua::Debug* ar);

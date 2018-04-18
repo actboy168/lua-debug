@@ -50,7 +50,7 @@ namespace vscode
 		void update();
 		void wait_attach();
 		void attach_lua(lua_State* L);
-		void detach_lua(lua_State* L);
+		void detach_lua(lua_State* L, bool remove);
 		void set_custom(custom* custom);
 		void output(const char* category, const char* buf, size_t len, lua_State* L = nullptr, lua::Debug* ar = nullptr);
 		bool set_config(int level, const std::string& cfg, std::string& err);
@@ -107,7 +107,7 @@ namespace vscode
 		void response_source(rprotocol& req, const char* content);
 
 	private:
-		void detach_all();
+		void detach_all(bool release);
 		bool update_main(rprotocol& req, bool& quit);
 		bool update_hook(rprotocol& req, lua_State *L, lua::Debug *ar, bool& quit);
 		void initialize_pathconvert();
@@ -130,7 +130,7 @@ namespace vscode
 		rprotocol          initproto_;
 		config             config_;
 		bool               nodebug_;
-		int                threadid_;
+		int                next_threadid_;
 		bool               exception_;
 		std::map<int, std::unique_ptr<luathread>>                                          luathreads_;
 		std::map<std::string, std::function<bool(rprotocol&)>>                             main_dispatch_;

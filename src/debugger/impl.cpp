@@ -40,22 +40,43 @@ namespace vscode
 	void debugger_impl::attach_lua(lua_State* L)
 	{
 		if (nodebug_) return;
-		if (find_luathread(L)) return;
-		std::unique_ptr<luathread> thread(new luathread(++threadid_, this, get_mainthread(L)));
-		luathreads_.insert(std::make_pair(threadid_, thread.release()));
+		luathread* thread = find_luathread(L);
+		if (thread) {
+			thread->enable_thread();
+			return;
+		}
+		int new_threadid = ++next_threadid_;
+		std::unique_ptr<luathread> newthread(new luathread(new_threadid, this, get_mainthread(L)));
+		luathreads_.insert(std::make_pair(new_threadid, newthread.release()));
 	}
 
-	void debugger_impl::detach_lua(lua_State* L)
+	void debugger_impl::detach_lua(lua_State* L, bool remove)
 	{
 		luathread* thread = find_luathread(L);
 		if (thread) {
-			luathreads_.erase(thread->id);
+			if (remove) {
+				luathreads_.erase(thread->id);
+			}
+			else {
+				thread->disable_thread();
+			}
 		}
 	}
 
-	void debugger_impl::detach_all()
+	void debugger_impl::detach_all(bool release)
 	{
-		luathreads_.clear();
+		if (release) {
+			for (auto& lt : luathreads_) {
+				lt.second->release_thread();
+				lt.second->disable_thread();
+			}
+			luathreads_.clear();
+		}
+		else {
+			for (auto& lt : luathreads_) {
+				lt.second->disable_thread();
+			}
+		}
 	}
 
 	bool debugger_impl::update_main(rprotocol& req, bool& quit)
@@ -382,7 +403,7 @@ namespace vscode
 	debugger_impl::~debugger_impl()
 	{
 		thread_->stop();
-		detach_all();
+		detach_all(true);
 	}
 
 #define DBG_REQUEST_MAIN(name) std::bind(&debugger_impl:: ## name, this, std::placeholders::_1)
@@ -402,7 +423,7 @@ namespace vscode
 		, console_("none")
 		, nodebug_(false)
 		, thread_(new osthread(this))
-		, threadid_(0)
+		, next_threadid_(0)
 		, main_dispatch_
 		({
 			{ "launch", DBG_REQUEST_MAIN(request_attach) },

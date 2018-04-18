@@ -55,7 +55,7 @@ void uninitialize_debugger(lua_State* L)
 		return;
 	}
 	if (global_dbg) {
-		global_dbg->detach_lua(L);
+		global_dbg->detach_lua(L, true);
 	}
 	Sleep(1000);
 }

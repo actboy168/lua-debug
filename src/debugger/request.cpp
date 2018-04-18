@@ -10,7 +10,7 @@ namespace vscode
 	void debugger_impl::close()
 	{
 		set_state(state::terminated);
-		detach_all();
+		detach_all(false);
 
 		breakpoints_.clear();
 		stack_.clear();

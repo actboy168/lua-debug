@@ -40,9 +40,9 @@ namespace vscode
 		impl_->attach_lua(L);
 	}
 
-	void debugger::detach_lua(lua_State* L)
+	void debugger::detach_lua(lua_State* L, bool remove)
 	{
-		impl_->detach_lua(L);
+		impl_->detach_lua(L, remove);
 	}
 
 	void debugger::set_custom(custom* custom)

@@ -32,16 +32,20 @@ namespace vscode
 
 	static void debugger_hook(luathread* thread, lua_State *L, lua::Debug *ar)
 	{
+		if (!thread->enable) return;
 		thread->dbg->hook(thread, L, ar);
 	}
 
 	static void debugger_panic(luathread* thread, lua_State *L)
 	{
+		if (!thread->enable) return;
 		thread->dbg->exception(thread, L);
 	}
 
 	luathread::luathread(int id, debugger_impl* dbg, lua_State* L)
 		: id(id)
+		, enable(true)
+		, release(false)
 		, dbg(dbg)
 		, L(L)
 		, oldpanic(lua_atpanic(L, 0))
@@ -68,6 +72,7 @@ namespace vscode
 
 	luathread::~luathread()
 	{
+		if (release) return;
 		lua_sethook(L, 0, 0, 0);
 		lua_atpanic(L, oldpanic);
 		thunk_destory(thunk_hook);
@@ -77,6 +82,21 @@ namespace vscode
 	void luathread::install_hook(int mask)
 	{
 		lua_sethook(L, thunk_hook, mask, 0);
+	}
+
+	void luathread::release_thread()
+	{
+		release = true;
+	}
+
+	void luathread::enable_thread()
+	{
+		enable = true;
+	}
+
+	void luathread::disable_thread()
+	{
+		enable = false;
 	}
 
 	void luathread::set_step(step step)
