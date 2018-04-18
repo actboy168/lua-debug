@@ -39,10 +39,13 @@ namespace vscode
 			{
 				for (auto _ : res("threads").Array())
 				{
-					for (auto _ : res.Object())
+					for (auto& lt : luathreads_) 
 					{
-						res("name").String("LuaThread");
-						res("id").Int(1);
+						for (auto _ : res.Object())
+						{
+							res("name").String("LuaThread");
+							res("id").Int(lt.second->id);
+						}
 					}
 				}
 			}
