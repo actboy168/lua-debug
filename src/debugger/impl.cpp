@@ -142,11 +142,10 @@ namespace vscode
 		}
 
 		thread->hook_line(L, ar, breakpoints_);
-		
 		if ((ar->currentline > 0
-			&& thread->cur_source_
+			&& thread->cur_bp_
 			&& breakpoints_.has(ar->currentline)
-			&& breakpoints_.has(thread->cur_source_, ar->currentline, L, ar)
+			&& breakpoints_.has(thread->cur_bp_, ar->currentline, L, ar)
 			)) {
 			run_stopped(thread, L, ar, "breakpoint");
 		}

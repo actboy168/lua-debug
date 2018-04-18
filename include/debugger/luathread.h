@@ -30,7 +30,7 @@ namespace vscode
 		int            stepping_current_level_;
 		lua_State*     stepping_lua_state_;
 		bool           has_source_;
-		bp_source*     cur_source_;
+		bp_source*     cur_bp_;
 		observer       ob_;
 
 		luathread(int id, debugger_impl* dbg, lua_State* L);

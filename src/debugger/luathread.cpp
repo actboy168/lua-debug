@@ -62,7 +62,7 @@ namespace vscode
 		, stepping_target_level_(0)
 		, stepping_current_level_(0)
 		, stepping_lua_state_(NULL)
-		, cur_source_(0)
+		, cur_bp_(0)
 		, has_source_(false)
 		, ob_(id)
 	{
@@ -138,7 +138,7 @@ namespace vscode
 	void luathread::hook_call(lua_State* L, lua::Debug* ar)
 	{
 		has_source_ = false;
-		cur_source_ = nullptr;
+		cur_bp_ = nullptr;
 		if (stepping_lua_state_ == L) {
 			stepping_current_level_++;
 		}
@@ -147,7 +147,7 @@ namespace vscode
 	void luathread::hook_return(lua_State* L, lua::Debug* ar)
 	{
 		has_source_ = false;
-		cur_source_ = nullptr;
+		cur_bp_ = nullptr;
 		if (stepping_lua_state_ == L) {
 			stepping_current_level_ = get_stacklevel(L, stepping_current_level_) - 1;
 		}
@@ -157,7 +157,7 @@ namespace vscode
 	{
 		if (!has_source_) {
 			has_source_ = true;
-			cur_source_ = breakpoint.get(L, ar);
+			cur_bp_ = breakpoint.get(L, ar);
 		}
 	}
 

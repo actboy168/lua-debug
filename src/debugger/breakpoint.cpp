@@ -81,7 +81,7 @@ namespace vscode
 	bp_function::bp_function(lua_State* L, lua::Debug* ar, breakpoint* breakpoint)
 		: path()
 		, sourceref(0)
-		, source(nullptr)
+		, bp(nullptr)
 	{
 		if (!lua_getinfo(L, "S", (lua_Debug*)ar)) {
 			return;
@@ -93,7 +93,7 @@ namespace vscode
 		else {
 			sourceref = (intptr_t)ar->source;
 		}
-		source = breakpoint->get(ar->source);
+		bp = breakpoint->get(ar->source);
 	}
 
 	breakpoint::breakpoint(debugger_impl* dbg)
@@ -237,8 +237,8 @@ namespace vscode
 		lua_pop(L, 1);
 		auto it = functions_.find(f);
 		if (it != functions_.end()) {
-			return it->second.source;
+			return it->second.bp;
 		}
-		return functions_.insert(std::make_pair(f, bp_function(L, ar, this))).first->second.source;
+		return functions_.insert(std::make_pair(f, bp_function(L, ar, this))).first->second.bp;
 	}
 }

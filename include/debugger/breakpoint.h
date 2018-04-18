@@ -27,7 +27,7 @@ namespace vscode
 	struct bp_function {
 		std::string path;
 		intptr_t    sourceref;
-		bp_source*  source;
+		bp_source*  bp;
 		bp_function(lua_State* L, lua::Debug* ar, breakpoint* breakpoint);
 	};
 
