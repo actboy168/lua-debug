@@ -57,7 +57,7 @@ namespace vscode
 
 		void set_state(eState state);
 		bool is_state(eState state) const;
-		void open_redirect(eRedirect type);
+		void open_redirect(eRedirect type, lua_State* L);
 		pathconvert& get_pathconvert();
 		rprotocol io_input();
 		void io_output(const wprotocol& wp);

@@ -62,7 +62,7 @@ namespace vscode
 		void output(const char* category, const char* buf, size_t len, lua_State* L = nullptr, lua_Debug* ar = nullptr);
 		void exception(lua_State* L);
 		bool is_state(eState state) const;
-		void open_redirect(eRedirect type);
+		void open_redirect(eRedirect type, lua_State* L = nullptr);
 		bool set_config(int level, const std::string& cfg, std::string& err);
 
 	private:

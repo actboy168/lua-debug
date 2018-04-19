@@ -65,9 +65,9 @@ namespace vscode
 		return impl_->is_state(state);
 	}
 
-	void debugger::open_redirect(eRedirect type)
+	void debugger::open_redirect(eRedirect type, lua_State* L)
 	{
-		impl_->open_redirect(type);
+		impl_->open_redirect(type, L);
 	}
 
 	bool debugger::set_config(int level, const std::string& cfg, std::string& err) 

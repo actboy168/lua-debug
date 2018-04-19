@@ -18,7 +18,7 @@ bool create_luaexe_with_debugger(stdinput& io, vscode::rprotocol& req, const std
 		wcwd = fs::path(wapplication).remove_filename();
 	}
 
-	std::wstring preenv = base::format(L"require([[debugger]]):listen([[pipe:%s]]):redirect('stdout'):redirect('stderr'):start()", port);
+	std::wstring preenv = base::format(L"require([[debugger]]):listen([[pipe:%s]]):redirect('print'):redirect('stdout'):redirect('stderr'):start()", port);
 	if (args.HasMember("path") && args["path"].IsString()) {
 		preenv += base::format(L";package.path=[[%s]]", base::u2w(args["path"]));
 	}

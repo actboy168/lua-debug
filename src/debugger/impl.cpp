@@ -9,6 +9,30 @@
 
 namespace vscode
 {
+	static int redirect_print(lua_State* L) {
+		std::string out;
+		int n = lua_gettop(L);
+		int i;
+		lua_getglobal(L, "tostring");
+		for (i = 1; i <= n; i++) {
+			const char *s;
+			size_t l;
+			lua_pushvalue(L, -1);
+			lua_pushvalue(L, i);
+			lua_call(L, 1, 1);
+			s = lua_tolstring(L, -1, &l);
+			if (s == NULL)
+				return luaL_error(L, "'tostring' must return a string to 'print'");
+			if (i>1) out += "\t";
+			out += std::string(s, l);
+			lua_pop(L, 1);
+		}
+		out += "\n";
+		debugger_impl* dbg = (debugger_impl*)lua_touserdata(L, lua_upvalueindex(1));
+		dbg->output("stdout", out.data(), out.size(), L);
+		return 0;
+	}
+
 	static lua_State* get_mainthread(lua_State* thread)
 	{
 		lua_rawgeti(thread, LUA_REGISTRYINDEX, LUA_RIDX_MAINTHREAD);
@@ -360,10 +384,15 @@ namespace vscode
 		io_output(res);
 	}
 
-	void debugger_impl::open_redirect(eRedirect type)
+	void debugger_impl::open_redirect(eRedirect type, lua_State* L)
 	{
 		switch (type) {
 		case eRedirect::print:
+			if (L) {
+				lua_pushlightuserdata(L, this);
+				lua_pushcclosure(L, redirect_print, 1);
+				lua_setglobal(L, "print");
+			}
 			break;
 		case eRedirect::stdoutput:
 			stdout_.reset(new redirector);

@@ -131,7 +131,7 @@ dbg.reset(new vscode::debugger(namedpipe.get()));
 				self.dbg->open_redirect(vscode::eRedirect::stderror);
 			}
 			else if (strcmp(type, "print") == 0) {
-				self.dbg->open_redirect(vscode::eRedirect::print);
+				self.dbg->open_redirect(vscode::eRedirect::print, L);
 			}
 		}
 		lua_pushvalue(L, 1);
