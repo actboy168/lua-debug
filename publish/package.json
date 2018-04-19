@@ -129,7 +129,7 @@
                         "properties": {
                             "program": {
                                 "type": "string",
-                                "description": "Lua 5.3 program to debug - set this to the path of the script",
+                                "description": "Lua program to debug - set this to the path of the script",
                                 "default": "${workspaceRoot}/main.lua"
                             },
                             "cwd": {
@@ -155,6 +155,11 @@
                                 "type": "boolean",
                                 "description": "Automatically stop after launch.",
                                 "default": true
+                            },
+                            "luaexe": {
+                                "type": "string",
+                                "description": "Absolute path to the lua exe.",
+                                "default": null
                             },
                             "luadll": {
                                 "type": "string",
@@ -238,6 +243,14 @@
                                 ],
                                 "description": "Where to launch the debug target.",
                                 "default": "internalConsole"
+                            },
+                            "skipFiles": {
+                                "type": "array",
+                                "description": "An array of glob patterns for files to skip when debugging.",
+                                "items": {
+                                    "type": "string"
+                                },
+                                "default": []
                             }
                         }
                     },
@@ -286,6 +299,14 @@
                                         "${workspaceRoot}"
                                     ]
                                 ]
+                            },
+                            "skipFiles": {
+                                "type": "array",
+                                "description": "An array of glob patterns for files to skip when debugging.",
+                                "items": {
+                                    "type": "string"
+                                },
+                                "default": []
                             }
                         }
                     }
