@@ -31,6 +31,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\include\base\hook\injectdll.cpp" />
+    <ClCompile Include="..\include\base\hook\replacedll.cpp" />
     <ClCompile Include="..\include\base\path\get_path.cpp" />
     <ClCompile Include="..\include\base\util\unicode.cpp" />
     <ClCompile Include="..\include\base\win\process.cpp" />
@@ -49,6 +50,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\base\hook\injectdll.h" />
+    <ClInclude Include="..\include\base\hook\replacedll.h" />
     <ClInclude Include="..\include\base\path\get_path.h" />
     <ClInclude Include="..\include\base\path\self.h" />
     <ClInclude Include="..\include\base\util\unicode.h" />

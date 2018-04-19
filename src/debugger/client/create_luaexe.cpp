@@ -8,14 +8,25 @@
 bool create_luaexe_with_debugger(stdinput& io, vscode::rprotocol& req, const std::wstring& port)
 {
 	auto& args = req["arguments"];
-	std::wstring wapplication = base::path::self().remove_filename() / "lua.exe";
-	std::wstring wcommand = L"\"" + wapplication + L"\"";
+	base::win::process p;
+	std::wstring luaexe;
+	if (args.HasMember("luaexe") && args["luaexe"].IsString()) {
+		luaexe = base::u2w(args["luaexe"].Get<std::string>());
+	}
+	else {
+		luaexe = base::path::self().remove_filename() / "lua.exe";
+		if (args.HasMember("luadll") && args["luadll"].IsString()) {
+			p.replace(base::u2w(args["luadll"].Get<std::string>()), "lua53.dll");
+		}
+	}
+
+	std::wstring wcommand = L"\"" + luaexe + L"\"";
 	std::wstring wcwd;
 	if (args.HasMember("cwd") && args["cwd"].IsString()) {
 		wcwd = base::u2w(args["cwd"].Get<std::string>());
 	}
 	else {
-		wcwd = fs::path(wapplication).remove_filename();
+		wcwd = fs::path(luaexe).remove_filename();
 	}
 
 	std::wstring preenv = base::format(L"require([[debugger]]):listen([[pipe:%s]]):redirect('print'):redirect('stdout'):redirect('stderr'):start()", port);
@@ -55,8 +66,6 @@ bool create_luaexe_with_debugger(stdinput& io, vscode::rprotocol& req, const std
 		}
 	}
 
-	base::win::process p;
-
 	if (args.HasMember("env")) {
 		if (args["env"].IsObject()) {
 			for (auto& v : args["env"].GetObject()) {
@@ -72,5 +81,5 @@ bool create_luaexe_with_debugger(stdinput& io, vscode::rprotocol& req, const std
 		}
 		req.RemoveMember("env");
 	}
-	return p.create(wapplication.c_str(), wcommand.c_str(), wcwd.c_str());
+	return p.create(luaexe.c_str(), wcommand.c_str(), wcwd.c_str());
 }

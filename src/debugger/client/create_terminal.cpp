@@ -29,10 +29,21 @@ bool create_terminal_with_debugger(stdinput& io, vscode::rprotocol& req, const s
 	auto& args = req["arguments"];
 
 	request_runInTerminal(&io, [&](vscode::wprotocol& res) {
+		std::string luaexe;
+		if (args.HasMember("luaexe") && args["luaexe"].IsString()) {
+			luaexe = args["luaexe"].Get<std::string>();
+		}
+		else {
+			luaexe = base::w2u((base::path::self().remove_filename() / "lua.exe").wstring());
+		}
+
 		res("kind").String(args["console"] == "integratedTerminal" ? "integrated" : "external");
 		res("title").String("Lua Debug");
 		if (args.HasMember("cwd") && args["cwd"].IsString()) {
 			res("cwd").String(args["cwd"]);
+		}
+		else {
+			res("cwd").String(base::w2u(fs::path(luaexe).remove_filename().wstring()));
 		}
 		if (args.HasMember("env") && args["env"].IsObject()) {
 			for (auto _ : res("env").Object()) {
@@ -50,7 +61,7 @@ bool create_terminal_with_debugger(stdinput& io, vscode::rprotocol& req, const s
 		}
 
 		for (auto _ : res("args").Array()) {
-			res.String((base::path::self().remove_filename() / "lua.exe").string());
+			res.String(luaexe);
 
 			res.String("-e");
 			res.String(base::format(R"(require([[debugger]]):listen([[pipe:%s]]):start())", port));
