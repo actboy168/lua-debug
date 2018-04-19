@@ -3,7 +3,7 @@
   <ImportGroup Label="PropertySheets" />
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <OutDir>$(USERPROFILE)\.vscode\extensions\actboy168.lua-debug-0.2.9\windows\$(PlatformTarget)\</OutDir>
+    <OutDir>$(USERPROFILE)\.vscode\extensions\actboy168.lua-debug-0.2.10\windows\$(PlatformTarget)\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup />
   <ItemGroup />
