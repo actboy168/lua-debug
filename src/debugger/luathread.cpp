@@ -161,12 +161,19 @@ namespace vscode
 		if (!has_source_) {
 			has_source_ = true;
 			cur_func_ = breakpoint.get(L, ar);
-			if (cur_func_ && cur_func_->vaild) {
-				cur_bp_ = cur_func_->bp;
+			if (cur_func_) {
+				cur_bp_ = cur_func_->update_bp(&breakpoint);
 			}
 			else {
 				cur_func_ = nullptr;
 			}
+		}
+	}
+
+	void luathread::update_breakpoint()
+	{
+		if (cur_func_ && !cur_bp_) {
+			has_source_ = false;
 		}
 	}
 

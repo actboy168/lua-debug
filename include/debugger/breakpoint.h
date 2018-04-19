@@ -27,8 +27,10 @@ namespace vscode
 	struct bp_function {
 		bool vaild;
 		std::string clientpath;
-		bp_source*  bp;
+		intptr_t sourceref;
+		bp_source* bp;
 		bp_function(lua_State* L, lua::Debug* ar, breakpoint* breakpoint);
+		bp_source* update_bp(breakpoint* breakpoint);
 	};
 
 	class breakpoint

@@ -51,6 +51,7 @@ namespace vscode
 		void hook_call(lua_State* L, lua::Debug* ar);
 		void hook_return(lua_State* L, lua::Debug* ar);
 		void hook_line(lua_State* L, lua::Debug* ar, breakpoint& breakpoint);
+		void update_breakpoint();
 
 		void reset_frame(lua_State* L);
 		void evaluate(lua_State* L, lua::Debug *ar, debugger_impl* dbg, rprotocol& req, int frameId);

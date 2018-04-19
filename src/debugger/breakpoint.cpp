@@ -81,25 +81,34 @@ namespace vscode
 	bp_function::bp_function(lua_State* L, lua::Debug* ar, breakpoint* breakpoint)
 		: vaild(false)
 		, clientpath()
+		, sourceref(0)
 		, bp(nullptr)
 	{
 		if (!lua_getinfo(L, "S", (lua_Debug*)ar)) {
 			return;
 		}
-
 		if (ar->source[0] == '@' || ar->source[0] == '=') {
-			if (breakpoint->get_pathconvert().get(ar->source, clientpath))
-			{
-				bp = breakpoint->get_file_bp(clientpath);
+			if (breakpoint->get_pathconvert().get(ar->source, clientpath)) {
 				vaild = true;
 			}
 		}
 		else {
-			bp = breakpoint->get_memory_bp((intptr_t)ar->source);
+			sourceref = (intptr_t)ar->source;
 			vaild = true;
 		}
 	}
 
+	bp_source* bp_function::update_bp(breakpoint* breakpoint) {
+		if (!vaild) return nullptr;
+		if (bp) return bp;
+		if (sourceref) {
+			bp = breakpoint->get_memory_bp(sourceref);
+		}
+		else {
+			bp = breakpoint->get_file_bp(clientpath);
+		}
+		return bp;
+	}
 	breakpoint::breakpoint(debugger_impl* dbg)
 		: dbg_(dbg)
 		, files_()

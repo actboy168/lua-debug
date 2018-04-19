@@ -293,6 +293,10 @@ namespace vscode
 			return false;
 		}
 
+		for (auto& lt : luathreads_) {
+			lt.second->update_breakpoint();
+		}
+
 		response_success(req, [&](wprotocol& res)
 		{
 			for (size_t d : res("breakpoints").Array(lines.size()))
