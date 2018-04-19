@@ -27,11 +27,6 @@ void request_runInTerminal(vscode::io::base* io, std::function<void(vscode::wpro
 bool create_terminal_with_debugger(stdinput& io, vscode::rprotocol& req, const std::wstring& port)
 {
 	auto& args = req["arguments"];
-	bool sourceCodingUtf8 = false;
-	std::string sourceCoding = "ansi";
-	if (args.HasMember("sourceCoding") && args["sourceCoding"].IsString()) {
-		sourceCodingUtf8 = "utf8" == args["sourceCoding"].Get<std::string>();
-	}
 
 	request_runInTerminal(&io, [&](vscode::wprotocol& res) {
 		res("kind").String(args["console"] == "integratedTerminal" ? "integrated" : "external");
@@ -61,12 +56,12 @@ bool create_terminal_with_debugger(stdinput& io, vscode::rprotocol& req, const s
 			res.String(base::format(R"(require([[debugger]]):listen([[pipe:%s]]):start())", port));
 
 			if (args.HasMember("path") && args["path"].IsString()) {
-				std::string path = sourceCodingUtf8 ? args["path"].Get<std::string>() : base::u2a(args["path"]);
+				std::string path = args["path"].Get<std::string>();
 				res.String("-e");
 				res.String(base::format("package.path=[[%s]]", path));
 			}
 			if (args.HasMember("cpath") && args["cpath"].IsString()) {
-				std::string path = sourceCodingUtf8 ? args["cpath"].Get<std::string>() : base::u2a(args["cpath"]);
+				std::string path = args["cpath"].Get<std::string>();
 				res.String("-e");
 				res.String(base::format("package.cpath=[[%s]]", path));
 			}
@@ -87,7 +82,7 @@ bool create_terminal_with_debugger(stdinput& io, vscode::rprotocol& req, const s
 
 			std::string program = ".lua";
 			if (args.HasMember("program") && args["program"].IsString()) {
-				program = sourceCodingUtf8 ? args["program"].Get<std::string>() : base::u2a(args["program"]);
+				program = args["program"].Get<std::string>();
 			}
 			res.String(program);
 
