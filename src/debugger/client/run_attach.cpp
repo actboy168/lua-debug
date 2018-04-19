@@ -11,7 +11,7 @@ static void sleep() {
 bool run_pipe_attach(stdinput& io, vscode::rprotocol& init, vscode::rprotocol& req, const std::wstring& pipename)
 {
 	vscode::io::namedpipe pipe;
-	if (!pipe.open_client(pipename, 10000)) {
+	if (!pipe.open_client(pipename, 60000)) {
 		return false;
 	}
 	io_output(&pipe, init);
