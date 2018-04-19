@@ -360,16 +360,20 @@ namespace vscode
 		io_output(res);
 	}
 
-	void debugger_impl::redirect_stdout()
+	void debugger_impl::open_redirect(eRedirect type)
 	{
-		stdout_.reset(new redirector);
-		stdout_->open("stdout", std_fd::STDOUT);
-	}
-		
-	void debugger_impl::redirect_stderr()
-	{
-		stderr_.reset(new redirector);
-		stderr_->open("stderr", std_fd::STDERR);
+		switch (type) {
+		case eRedirect::print:
+			break;
+		case eRedirect::stdoutput:
+			stdout_.reset(new redirector);
+			stdout_->open("stdout", std_fd::STDOUT);
+			break;
+		case eRedirect::stderror:
+			stderr_.reset(new redirector);
+			stderr_->open("stderr", std_fd::STDERR);
+			break;
+		} 
 	}
 
 	pathconvert& debugger_impl::get_pathconvert()

@@ -70,7 +70,7 @@ static int stdout_write(lua_State* L) {
 int run_launch(stdinput& io, vscode::rprotocol& init, vscode::rprotocol& req)
 {
 	vscode::debugger dbg(&io);
-	dbg.redirect_stderr();
+	dbg.open_redirect(vscode::eRedirect::stderror);
 
 	auto& args = req["arguments"];
 	if (args.HasMember("luadll")) {

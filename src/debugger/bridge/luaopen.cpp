@@ -125,10 +125,13 @@ dbg.reset(new vscode::debugger(namedpipe.get()));
 		if (lua_type(L, 2) == LUA_TSTRING) {
 			const char* type = luaL_checkstring(L, 2);
 			if (strcmp(type, "stdout") == 0) {
-				self.dbg->redirect_stdout();
+				self.dbg->open_redirect(vscode::eRedirect::stdoutput);
 			}
 			else if (strcmp(type, "stderr") == 0) {
-				self.dbg->redirect_stderr();
+				self.dbg->open_redirect(vscode::eRedirect::stderror);
+			}
+			else if (strcmp(type, "print") == 0) {
+				self.dbg->open_redirect(vscode::eRedirect::print);
 			}
 		}
 		lua_pushvalue(L, 1);

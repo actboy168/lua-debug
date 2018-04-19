@@ -65,14 +65,9 @@ namespace vscode
 		return impl_->is_state(state);
 	}
 
-	void debugger::redirect_stdout()
+	void debugger::open_redirect(eRedirect type)
 	{
-		impl_->redirect_stdout();
-	}
-
-	void debugger::redirect_stderr()
-	{
-		impl_->redirect_stderr();
+		impl_->open_redirect(type);
 	}
 
 	bool debugger::set_config(int level, const std::string& cfg, std::string& err) 

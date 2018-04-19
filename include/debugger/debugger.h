@@ -36,6 +36,12 @@ namespace vscode
 		terminated = 5,
 	};
 
+	enum class eRedirect {
+		stderror = 1,
+		stdoutput = 2,
+		print = 3,
+	};
+
 	struct custom
 	{
 		virtual bool path_convert(const std::string& source, std::string& path) = 0;
@@ -56,8 +62,7 @@ namespace vscode
 		void output(const char* category, const char* buf, size_t len, lua_State* L = nullptr, lua_Debug* ar = nullptr);
 		void exception(lua_State* L);
 		bool is_state(eState state) const;
-		void redirect_stdout();
-		void redirect_stderr();
+		void open_redirect(eRedirect type);
 		bool set_config(int level, const std::string& cfg, std::string& err);
 
 	private:
