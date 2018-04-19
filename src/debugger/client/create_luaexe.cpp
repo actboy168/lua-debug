@@ -5,16 +5,39 @@
 #include <base/path/self.h>
 #include <base/win/process.h>
 
+std::string create_install_script(vscode::rprotocol& req, const fs::path& dbg_path, const std::wstring& port)
+{
+	auto& args = req["arguments"];
+	bool isUtf8 = false;
+	std::string sourceCoding = "ansi";
+	if (args.HasMember("sourceCoding") && args["sourceCoding"].IsString()) {
+		isUtf8 = "utf8" == args["sourceCoding"].Get<std::string>();
+	}
+	std::string res;
+	if (args.HasMember("path") && args["path"].IsString()) {
+		res += base::format("package.path=[[%s]];", isUtf8 ? args["path"].Get<std::string>() : base::u2a(args["path"]));
+	}
+	if (args.HasMember("cpath") && args["cpath"].IsString()) {
+		res += base::format("package.cpath=[[%s]];", isUtf8 ? args["cpath"].Get<std::string>() : base::u2a(args["cpath"]));
+	}
+	res += base::format("local dbg=package.loadlib([[%s]], 'luaopen_debugger')();package.loaded['debugger']=dbg;dbg:listen([[pipe:%s]]):redirect('print'):redirect('stdout'):redirect('stderr'):start()"
+		, isUtf8 ? base::w2u((dbg_path / L"debugger.dll").wstring()) : base::w2a((dbg_path / L"debugger.dll").wstring())
+		, base::w2u(port)
+	);
+	return res;
+}
+
 bool create_luaexe_with_debugger(stdinput& io, vscode::rprotocol& req, const std::wstring& port)
 {
 	auto& args = req["arguments"];
 	base::win::process p;
+	fs::path dbg_path = base::path::self().remove_filename();
 	std::wstring luaexe;
 	if (args.HasMember("luaexe") && args["luaexe"].IsString()) {
 		luaexe = base::u2w(args["luaexe"].Get<std::string>());
 	}
 	else {
-		luaexe = base::path::self().remove_filename() / "lua.exe";
+		luaexe = dbg_path / "lua.exe";
 		if (args.HasMember("luadll") && args["luadll"].IsString()) {
 			p.replace(base::u2w(args["luadll"].Get<std::string>()), "lua53.dll");
 		}
@@ -28,16 +51,9 @@ bool create_luaexe_with_debugger(stdinput& io, vscode::rprotocol& req, const std
 	else {
 		wcwd = fs::path(luaexe).remove_filename();
 	}
+	std::string script = create_install_script(req, dbg_path, port);
 
-	std::wstring preenv = base::format(L"require([[debugger]]):listen([[pipe:%s]]):redirect('print'):redirect('stdout'):redirect('stderr'):start()", port);
-	if (args.HasMember("path") && args["path"].IsString()) {
-		preenv += base::format(L";package.path=[[%s]]", base::u2w(args["path"]));
-	}
-	if (args.HasMember("cpath") && args["cpath"].IsString()) {
-		preenv += base::format(L";package.cpath=[[%s]]", base::u2w(args["cpath"]));
-	}
-
-	wcommand += base::format(LR"( -e "%s")", preenv);
+	wcommand += base::format(LR"( -e "%s")", base::u2w(script));
 	if (args.HasMember("arg0")) {
 		if (args["arg0"].IsString()) {
 			auto& v = args["arg0"];

@@ -29,12 +29,13 @@ bool create_terminal_with_debugger(stdinput& io, vscode::rprotocol& req, const s
 	auto& args = req["arguments"];
 
 	request_runInTerminal(&io, [&](vscode::wprotocol& res) {
+		fs::path dbg_path = base::path::self().remove_filename();
 		std::string luaexe;
 		if (args.HasMember("luaexe") && args["luaexe"].IsString()) {
 			luaexe = args["luaexe"].Get<std::string>();
 		}
 		else {
-			luaexe = base::w2u((base::path::self().remove_filename() / "lua.exe").wstring());
+			luaexe = base::w2u((dbg_path / L"lua.exe").wstring());
 		}
 
 		res("kind").String(args["console"] == "integratedTerminal" ? "integrated" : "external");
@@ -63,19 +64,9 @@ bool create_terminal_with_debugger(stdinput& io, vscode::rprotocol& req, const s
 		for (auto _ : res("args").Array()) {
 			res.String(luaexe);
 
+			std::string script = create_install_script(req, dbg_path, port);
 			res.String("-e");
-			res.String(base::format(R"(require([[debugger]]):listen([[pipe:%s]]):start())", port));
-
-			if (args.HasMember("path") && args["path"].IsString()) {
-				std::string path = args["path"].Get<std::string>();
-				res.String("-e");
-				res.String(base::format("package.path=[[%s]]", path));
-			}
-			if (args.HasMember("cpath") && args["cpath"].IsString()) {
-				std::string path = args["cpath"].Get<std::string>();
-				res.String("-e");
-				res.String(base::format("package.cpath=[[%s]]", path));
-			}
+			res.String(script);
 
 			if (args.HasMember("arg0")) {
 				if (args["arg0"].IsString()) {
