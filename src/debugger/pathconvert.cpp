@@ -53,6 +53,14 @@ namespace vscode
 
 	bool pathconvert::server2client(const std::string& server, std::string& client)
 	{
+		for (auto& it : skipfiles_)
+		{
+			if (path::glob_match(it, server))
+			{
+				return false;
+			}
+		}
+
 		for (auto& it : sourcemap_)
 		{
 			if (match_sourcemap(server, client, it.first, it.second))
