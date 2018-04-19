@@ -46,6 +46,9 @@
     <ClCompile Include="..\src\debugger\client\create_terminal.cpp">
       <Filter>cpp\client</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\debugger\client\create_luaexe.cpp">
+      <Filter>cpp\client</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\base\win\process.h">

@@ -24,8 +24,8 @@ namespace luaw {
 		{
 			if (namedpipe || dbg) return;
 			namedpipe.reset(new vscode::io::namedpipe());
-			namedpipe->open_server(base::u2w(name));
-			dbg.reset(new vscode::debugger(namedpipe.get()));
+namedpipe->open_server(base::u2w(name));
+dbg.reset(new vscode::debugger(namedpipe.get()));
 		}
 	};
 
@@ -62,7 +62,7 @@ namespace luaw {
 				self.dbg->attach_lua(L);
 			}
 		}
-		else { 
+		else {
 			self.listen_tcp(addr);
 			if (self.dbg) {
 				self.dbg->attach_lua(L);
@@ -115,6 +115,26 @@ namespace luaw {
 		return 1;
 	}
 
+	static int redirect(lua_State* L)
+	{
+		ud& self = to(L, 1);
+		if (!self.dbg) {
+			lua_pushvalue(L, 1);
+			return 1;
+		}
+		if (lua_type(L, 2) == LUA_TSTRING) {
+			const char* type = luaL_checkstring(L, 2);
+			if (strcmp(type, "stdout") == 0) {
+				self.dbg->redirect_stdout();
+			}
+			else if (strcmp(type, "stderr") == 0) {
+				self.dbg->redirect_stderr();
+			}
+		}
+		lua_pushvalue(L, 1);
+		return 1;
+	}
+
 	static int mt_gc(lua_State* L)
 	{
 		ud& self = to(L, 1);
@@ -131,6 +151,7 @@ namespace luaw {
 			{ "listen", listen },
 			{ "start", start },
 			{ "config", config },
+			{ "redirect", redirect },
 			{ "__gc", mt_gc },
 			{ NULL, NULL },
 		};

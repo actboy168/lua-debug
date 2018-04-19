@@ -87,6 +87,20 @@ int run_terminal_then_attach(stdinput& io, vscode::rprotocol& init, vscode::rpro
 	return 0;
 }
 
+int run_luaexe_then_attach(stdinput& io, vscode::rprotocol& init, vscode::rprotocol& req)
+{
+	auto port = base::format(L"vscode-lua-debug-%d", GetCurrentProcessId());
+	if (!create_luaexe_with_debugger(io, req, port)) {
+		response_error(io, req, "Launch failed");
+		return -1;
+	}
+	if (!run_pipe_attach(io, init, req, port)) {
+		response_error(io, req, "Launch failed");
+		return -1;
+	}
+	return 0;
+}
+
 static int run_tcp_attach(stdinput& io, vscode::rprotocol& init, vscode::rprotocol& req)
 {
 	tcp_attach attach(io);
@@ -140,7 +154,8 @@ int main()
 					return run_terminal_then_attach(io, init, req);
 				}
 				else {
-					return run_launch(io, init, req);
+					return run_luaexe_then_attach(io, init, req);
+					//return run_launch(io, init, req);
 				}
 			}
 			else if (req["command"] == "attach") {
