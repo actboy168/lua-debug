@@ -125,7 +125,7 @@ namespace vscode
 	{
 		std::lock_guard<osthread> lock(*thread_);
 
-		if (is_state(state::terminated) || is_state(state::birth) || is_state(state::initialized)) {
+		if (is_state(eState::terminated) || is_state(eState::birth) || is_state(eState::initialized)) {
 			return;
 		}
 
@@ -152,7 +152,7 @@ namespace vscode
 			)) {
 			run_stopped(thread, L, ar, "breakpoint");
 		}
-		else if (is_state(state::stepping) && thread->check_step(L, ar)) {
+		else if (is_state(eState::stepping) && thread->check_step(L, ar)) {
 			run_stopped(thread, L, ar, "step");
 		}
 	}
@@ -189,7 +189,7 @@ namespace vscode
 	void debugger_impl::run_stopped(luathread* thread, lua_State *L, lua::Debug *ar, const char* reason)
 	{
 		event_stopped(thread, reason);
-		set_state(state::stepping);
+		set_state(eState::stepping);
 		thread->step_in();
 
 		bool quit = false;
@@ -206,7 +206,7 @@ namespace vscode
 			if (req["type"] != "request") {
 				continue;
 			}
-			if (is_state(state::birth)) {
+			if (is_state(eState::birth)) {
 				if (req["command"] == "initialize") {
 					request_initialize(req);
 					continue;
@@ -230,7 +230,7 @@ namespace vscode
 	{
 		update_redirect();
 		network_->update(0);
-		if (is_state(state::birth))
+		if (is_state(eState::birth))
 		{
 			rprotocol req = io_input();
 			if (req.IsNull()) {
@@ -245,7 +245,7 @@ namespace vscode
 			}
 			response_error(req, base::format("`%s` not yet implemented.(birth)", req["command"].GetString()).c_str());
 		}
-		else if (is_state(state::initialized) || is_state(state::running) || is_state(state::stepping))
+		else if (is_state(eState::initialized) || is_state(eState::running) || is_state(eState::stepping))
 		{
 			rprotocol req = io_input();
 			if (req.IsNull()) {
@@ -260,9 +260,9 @@ namespace vscode
 				return;
 			}
 		}
-		else if (is_state(state::terminated))
+		else if (is_state(eState::terminated))
 		{
-			set_state(state::birth);
+			set_state(eState::birth);
 		}
 	}
 
@@ -279,7 +279,7 @@ namespace vscode
 
 	void debugger_impl::wait_attach()
 	{
-		if (!is_state(state::initialized) && !is_state(state::birth)) {
+		if (!is_state(eState::initialized) && !is_state(eState::birth)) {
 			return;
 		}
 		semaphore sem;
@@ -414,7 +414,7 @@ namespace vscode
 	debugger_impl::debugger_impl(io::base* io)
 		: seq(1)
 		, network_(io)
-		, state_(state::birth)
+		, state_(eState::birth)
 		, breakpoints_(this)
 		, stack_()
 		, pathconvert_(this)

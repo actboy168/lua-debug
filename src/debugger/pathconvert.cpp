@@ -11,10 +11,10 @@ namespace vscode
 	pathconvert::pathconvert(debugger_impl* dbg)
 		: debugger_(dbg)
 		, sourcemap_()
-		, coding_(coding::ansi)
+		, coding_(eCoding::ansi)
 	{ }
 
-	void pathconvert::set_coding(coding coding)
+	void pathconvert::set_coding(eCoding coding)
 	{
 		coding_ = coding;
 		source2client_.clear();
@@ -86,7 +86,7 @@ namespace vscode
 		}
 		else {
 			if (source[0] == '@') {
-				std::string server = coding_ == coding::utf8
+				std::string server = coding_ == eCoding::utf8
 					? source.substr(1) 
 					: base::a2u(base::strview(source.data() + 1, source.size() - 1))
 					;

@@ -9,7 +9,7 @@ namespace vscode
 {
 	void debugger_impl::close()
 	{
-		set_state(state::terminated);
+		set_state(eState::terminated);
 		detach_all(false);
 
 		breakpoints_.clear();
@@ -20,16 +20,16 @@ namespace vscode
 		stderr_.reset();
 	}
 
-	void debugger_impl::set_state(state state)
+	void debugger_impl::set_state(eState state)
 	{
 		if (state_ == state) return;
 		state_ = state;
 		switch (state_)
 		{
-		case state::initialized:
+		case eState::initialized:
 			event_initialized();
 			break;
-		case state::terminated:
+		case eState::terminated:
 			event_terminated();
 			break;
 		default:
@@ -37,18 +37,18 @@ namespace vscode
 		}
 	}
 
-	bool debugger_impl::is_state(state state) const
+	bool debugger_impl::is_state(eState state) const
 	{
 		return state_ == state;
 	}
 
 	bool debugger_impl::request_initialize(rprotocol& req) {
-		if (!is_state(state::birth)) {
+		if (!is_state(eState::birth)) {
 			response_error(req, "already initialized");
 			return false;
 		}
 		response_initialize(req);
-		set_state(state::initialized);
+		set_state(eState::initialized);
 		//event_capabilities();
 		return false;
 	}
@@ -83,7 +83,7 @@ namespace vscode
 	bool debugger_impl::request_attach(rprotocol& req)
 	{
 		initproto_ = rprotocol();
-		if (!is_state(state::initialized)) {
+		if (!is_state(eState::initialized)) {
 			response_error(req, "not initialized or unexpected state");
 			return false;
 		}
@@ -92,10 +92,10 @@ namespace vscode
 		console_ = config_.get("consoleCoding", rapidjson::kStringType).Get<std::string>();
 		auto& sourceCoding = config_.get("sourceCoding", rapidjson::kStringType);
 		if (sourceCoding.Get<std::string>() == "utf8") {
-			pathconvert_.set_coding(coding::utf8);
+			pathconvert_.set_coding(eCoding::utf8);
 		}
 		else if (sourceCoding.Get<std::string>() == "ansi") {
-			pathconvert_.set_coding(coding::ansi);
+			pathconvert_.set_coding(eCoding::ansi);
 		}
 
 		nodebug_ = config_.get("noDebug", rapidjson::kFalseType).GetBool();
@@ -114,11 +114,11 @@ namespace vscode
 
 		if (stopOnEntry)
 		{
-			set_state(state::stepping);
+			set_state(eState::stepping);
 		}
 		else
 		{
-			set_state(state::running);
+			set_state(eState::running);
 		}
 		if (on_attach_) {
 			on_attach_();
@@ -382,7 +382,7 @@ namespace vscode
 			response_error(req, "Not found thread");
 			return false;
 		}
-		set_state(state::stepping);
+		set_state(eState::stepping);
 		thread->step_in();
 		response_success(req);
 		return true;
@@ -401,7 +401,7 @@ namespace vscode
 			response_error(req, "Not found thread");
 			return false;
 		}
-		set_state(state::stepping);
+		set_state(eState::stepping);
 		thread->step_out(L, ar);
 		response_success(req);
 		return true;
@@ -420,7 +420,7 @@ namespace vscode
 			response_error(req, "Not found thread");
 			return false;
 		}
-		set_state(state::stepping);
+		set_state(eState::stepping);
 		thread->step_over(L, ar);
 		response_success(req);
 		return true;
@@ -429,7 +429,7 @@ namespace vscode
 	bool debugger_impl::request_continue(rprotocol& req, lua_State* L, lua::Debug *ar)
 	{
 		response_success(req);
-		set_state(state::running);
+		set_state(eState::running);
 		return true;
 	}
 
@@ -446,7 +446,7 @@ namespace vscode
 			response_error(req, "Not found thread");
 			return false;
 		}
-		set_state(state::stepping);
+		set_state(eState::stepping);
 		thread->step_in();
 		response_success(req);
 		return true;

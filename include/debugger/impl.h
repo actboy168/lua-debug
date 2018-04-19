@@ -55,8 +55,8 @@ namespace vscode
 		void output(const char* category, const char* buf, size_t len, lua_State* L = nullptr, lua::Debug* ar = nullptr);
 		bool set_config(int level, const std::string& cfg, std::string& err);
 
-		void set_state(state state);
-		bool is_state(state state) const;
+		void set_state(eState state);
+		bool is_state(eState state) const;
 		void redirect_stdout();
 		void redirect_stderr();
 		pathconvert& get_pathconvert();
@@ -117,7 +117,7 @@ namespace vscode
 		int64_t            seq;
 		io::base*          network_;
 		schema             schema_;
-		state              state_;
+		eState              state_;
 		breakpoint         breakpoints_;
 		std::vector<stack> stack_;
 		pathconvert        pathconvert_;

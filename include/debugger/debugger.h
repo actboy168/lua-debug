@@ -22,13 +22,13 @@ namespace vscode
 	};
 	class debugger_impl;
 
-	enum class coding
+	enum class eCoding
 	{
 		ansi,
 		utf8,
 	};
 
-	enum class state {
+	enum class eState {
 		birth = 1,
 		initialized = 2,
 		stepping = 3,
@@ -55,7 +55,7 @@ namespace vscode
 		void set_custom(custom* custom);
 		void output(const char* category, const char* buf, size_t len, lua_State* L = nullptr, lua_Debug* ar = nullptr);
 		void exception(lua_State* L);
-		bool is_state(state state) const;
+		bool is_state(eState state) const;
 		void redirect_stdout();
 		void redirect_stderr();
 		bool set_config(int level, const std::string& cfg, std::string& err);

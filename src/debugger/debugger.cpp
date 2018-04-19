@@ -60,7 +60,7 @@ namespace vscode
 		impl_->exception(L);
 	}
 
-	bool debugger::is_state(state state) const
+	bool debugger::is_state(eState state) const
 	{
 		return impl_->is_state(state);
 	}
