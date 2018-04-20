@@ -321,7 +321,7 @@ namespace vscode
 
 	void debugger_impl::output(const char* category, const char* buf, size_t len, lua_State* L, lua::Debug* ar)
 	{
-		if (console_ == "none") {
+		if (consoleSourceCoding_ == eCoding::none) {
 			return;
 		}
 		wprotocol res;
@@ -333,11 +333,15 @@ namespace vscode
 			for (auto _ : res("body").Object())
 			{
 				res("category").String(category);
-				if (console_ == "ansi") {
+
+				if (consoleTargetCoding_ == consoleSourceCoding_) {
+					res("output").String(base::strview(buf, len));
+				}
+				else if (consoleSourceCoding_ == eCoding::ansi) {
 					res("output").String(base::a2u(base::strview(buf, len)));
 				}
-				else {
-					res("output").String(base::strview(buf, len));
+				else if (consoleSourceCoding_ == eCoding::utf8) {
+					res("output").String(base::u2a(base::strview(buf, len)));
 				}
 
 				if (L) {
@@ -456,7 +460,8 @@ namespace vscode
 		, exception_(false)
 		, luathreads_()
 		, on_attach_()
-		, console_("none")
+		, consoleSourceCoding_(eCoding::none)
+		, consoleTargetCoding_(eCoding::utf8)
 		, nodebug_(false)
 		, thread_(new osthread(this))
 		, next_threadid_(0)

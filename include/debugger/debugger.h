@@ -24,6 +24,7 @@ namespace vscode
 
 	enum class eCoding
 	{
+		none,
 		ansi,
 		utf8,
 	};

@@ -5,7 +5,7 @@
 #include <base/path/self.h>
 #include <base/win/process.h>
 
-std::string create_install_script(vscode::rprotocol& req, const fs::path& dbg_path, const std::wstring& port)
+std::string create_install_script(vscode::rprotocol& req, const fs::path& dbg_path, const std::wstring& port, bool redirect)
 {
 	auto& args = req["arguments"];
 	bool isUtf8 = false;
@@ -20,10 +20,16 @@ std::string create_install_script(vscode::rprotocol& req, const fs::path& dbg_pa
 	if (args.HasMember("cpath") && args["cpath"].IsString()) {
 		res += base::format("package.cpath=[[%s]];", isUtf8 ? args["cpath"].Get<std::string>() : base::u2a(args["cpath"]));
 	}
-	res += base::format("local dbg=package.loadlib([[%s]], 'luaopen_debugger')();package.loaded['debugger']=dbg;dbg:listen([[pipe:%s]]):redirect('print'):redirect('stdout'):redirect('stderr'):guard():start()"
+	res += base::format("local dbg=package.loadlib([[%s]], 'luaopen_debugger')();package.loaded['debugger']=dbg;dbg:listen([[pipe:%s]]):guard()"
 		, isUtf8 ? base::w2u((dbg_path / L"debugger.dll").wstring()) : base::w2a((dbg_path / L"debugger.dll").wstring())
 		, base::w2u(port)
 	);
+	if (redirect) {
+		res += ":redirect('print')";
+		res += ":redirect('stdout')";
+		res += ":redirect('stderr')";
+	}
+	res += ":start()";
 	return res;
 }
 
@@ -51,7 +57,7 @@ bool create_luaexe_with_debugger(stdinput& io, vscode::rprotocol& req, const std
 	else {
 		wcwd = fs::path(luaexe).remove_filename();
 	}
-	std::string script = create_install_script(req, dbg_path, port);
+	std::string script = create_install_script(req, dbg_path, port, true);
 
 	wcommand += base::format(LR"( -e "%s")", base::u2w(script));
 	if (args.HasMember("arg0")) {

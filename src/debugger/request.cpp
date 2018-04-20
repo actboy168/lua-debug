@@ -89,7 +89,13 @@ namespace vscode
 		}
 		config_.init(1, req["arguments"]);
 		initialize_pathconvert();
-		console_ = config_.get("consoleCoding", rapidjson::kStringType).Get<std::string>();
+		auto consoleCoding = config_.get("consoleCoding", rapidjson::kStringType).Get<std::string>();
+		if (consoleCoding == "ansi") {
+			consoleSourceCoding_ = eCoding::ansi;
+		}
+		else if(consoleCoding == "utf8") {
+			consoleSourceCoding_ = eCoding::utf8;
+		}
 		auto& sourceCoding = config_.get("sourceCoding", rapidjson::kStringType);
 		if (sourceCoding.Get<std::string>() == "utf8") {
 			pathconvert_.set_coding(eCoding::utf8);

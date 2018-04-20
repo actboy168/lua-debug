@@ -123,7 +123,8 @@ namespace vscode
 		custom*            custom_;
 		osthread*          thread_;
 		std::function<void()> on_attach_;
-		std::string        console_;
+		eCoding            consoleSourceCoding_;
+		eCoding            consoleTargetCoding_;
 		std::unique_ptr<redirector> stdout_;
 		std::unique_ptr<redirector> stderr_;
 		rprotocol          initproto_;
