@@ -20,7 +20,7 @@ std::string create_install_script(vscode::rprotocol& req, const fs::path& dbg_pa
 	if (args.HasMember("cpath") && args["cpath"].IsString()) {
 		res += base::format("package.cpath=[[%s]];", isUtf8 ? args["cpath"].Get<std::string>() : base::u2a(args["cpath"]));
 	}
-	res += base::format("local dbg=package.loadlib([[%s]], 'luaopen_debugger')();package.loaded['debugger']=dbg;dbg:listen([[pipe:%s]]):redirect('print'):redirect('stdout'):redirect('stderr'):start()"
+	res += base::format("local dbg=package.loadlib([[%s]], 'luaopen_debugger')();package.loaded['debugger']=dbg;dbg:listen([[pipe:%s]]):redirect('print'):redirect('stdout'):redirect('stderr'):guard():start()"
 		, isUtf8 ? base::w2u((dbg_path / L"debugger.dll").wstring()) : base::w2a((dbg_path / L"debugger.dll").wstring())
 		, base::w2u(port)
 	);

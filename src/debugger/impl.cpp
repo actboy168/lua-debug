@@ -427,6 +427,7 @@ namespace vscode
 
 	void debugger_impl::io_close() 
 	{
+		network_->update(0);
 		network_->close();
 	}
 

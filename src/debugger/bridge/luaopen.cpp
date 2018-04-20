@@ -12,6 +12,7 @@ namespace luaw {
 		std::unique_ptr<vscode::io::socket> socket;
 		std::unique_ptr<vscode::io::namedpipe> namedpipe;
 		std::unique_ptr<vscode::debugger> dbg;
+		bool guard = false;
 
 		void listen_tcp(const char* addr)
 		{
@@ -138,11 +139,24 @@ dbg.reset(new vscode::debugger(namedpipe.get()));
 		return 1;
 	}
 
+	static int guard(lua_State* L)
+	{
+		ud& self = to(L, 1);
+		self.guard = true;
+		lua_pushvalue(L, 1);
+		return 1;
+	}
+
 	static int mt_gc(lua_State* L)
 	{
 		ud& self = to(L, 1);
 		if (self.dbg) {
 			self.dbg->detach_lua(L);
+		}
+		if (self.guard) {
+			self.dbg.reset();
+			self.socket.reset();
+			self.namedpipe.reset();
 		}
 		return 0;
 	}
@@ -155,6 +169,7 @@ dbg.reset(new vscode::debugger(namedpipe.get()));
 			{ "start", start },
 			{ "config", config },
 			{ "redirect", redirect },
+			{ "guard", guard },
 			{ "__gc", mt_gc },
 			{ NULL, NULL },
 		};
