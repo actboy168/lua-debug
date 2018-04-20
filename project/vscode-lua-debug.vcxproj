@@ -61,6 +61,7 @@
     <ClInclude Include="..\include\debugger\client\run.h" />
     <ClInclude Include="..\include\debugger\client\stdinput.h" />
     <ClInclude Include="..\include\debugger\io\helper.h" />
+    <ClInclude Include="..\include\debugger\io\namedpipe.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{8AC7695F-C946-4B9A-B814-3E789BFD54E8}</ProjectGuid>

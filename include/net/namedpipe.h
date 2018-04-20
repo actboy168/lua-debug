@@ -10,10 +10,11 @@ namespace net {
 		virtual ~namedpipe();
 		bool open_server(std::wstring const& pipename);
 		bool open_client(std::wstring const& pipename, int timeout);
-		size_t peek() const;
+		size_t peek();
 		bool recv(char* str, size_t& n);
-		bool send(const char* str, size_t& n) const;
+		bool send(const char* str, size_t& n);
 		void close();
+		bool is_close() const;
 		std::wstring make_name(std::wstring const& pipename);
 
 	private:
@@ -75,9 +76,10 @@ namespace net {
 		return is_open;
 	}
 
-	size_t namedpipe::peek() const {
+	size_t namedpipe::peek() {
 		DWORD rlen = 0;
 		if (!PeekNamedPipe(pipefd, NULL, 0, NULL, &rlen, NULL)) {
+			close();
 			return 0;
 		}
 		return (size_t)rlen;
@@ -86,15 +88,17 @@ namespace net {
 	bool namedpipe::recv(char* buf, size_t& len) {
 		DWORD rlen = 0;
 		if (!ReadFile(pipefd, buf, (DWORD)len, &rlen, NULL)) {
+			//close();
 			return false;
 		}
 		len = rlen;
 		return true;
 	}
 
-	bool namedpipe::send(const char* buf, size_t& len) const {
+	bool namedpipe::send(const char* buf, size_t& len) {
 		DWORD wlen = 0;
 		if (!WriteFile(pipefd, buf, (DWORD)len, &wlen, NULL)) {
+			//close();
 			return false;
 		}
 		len = wlen;
@@ -113,5 +117,9 @@ namespace net {
 		}
 		is_open = is_bind = false;
 		pipefd = INVALID_HANDLE_VALUE;
+	}
+
+	bool namedpipe::is_close() const {
+		return !is_open;
 	}
 }

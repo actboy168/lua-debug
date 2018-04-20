@@ -90,6 +90,9 @@
     <ClInclude Include="..\include\base\hook\replacedll.h">
       <Filter>base\hook</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\debugger\io\namedpipe.h">
+      <Filter>inc\io</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="base">
