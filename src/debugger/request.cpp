@@ -9,15 +9,15 @@ namespace vscode
 {
 	void debugger_impl::close()
 	{
+		update_redirect();
+		stdout_.reset();
+		stderr_.reset();
 		set_state(eState::terminated);
 		detach_all(false);
 
 		breakpoints_.clear();
 		stack_.clear();
 		seq = 1;
-		update_redirect();
-		stdout_.reset();
-		stderr_.reset();
 	}
 
 	void debugger_impl::set_state(eState state)
