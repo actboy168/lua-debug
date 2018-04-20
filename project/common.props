@@ -6,7 +6,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <IntDir>$(Root)\build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\</IntDir>
-    <OutDir>$(Root)\publish\windows\$(PlatformTarget)\</OutDir>
+    <OutDir>$(USERPROFILE)\.vscode\extensions\actboy168.lua-debug-0.2.11\windows\$(PlatformTarget)\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
