@@ -161,6 +161,10 @@ namespace vscode
 			thread->hook_return(L, ar);
 			return;
 		}
+		if (ar->event == LUA_HOOKEXCEPTION) {
+			exception_nolock(thread, L);
+			return;
+		}
 		if (ar->event != LUA_HOOKLINE) {
 			return;
 		}
@@ -192,7 +196,11 @@ namespace vscode
 	void debugger_impl::exception(luathread* thread, lua_State* L)
 	{
 		std::lock_guard<osthread> lock(*thread_);
+		exception_nolock(thread, L);
+	}
 
+	void debugger_impl::exception_nolock(luathread* thread, lua_State* L)
+	{
 		if (!exception_)
 		{
 			return;

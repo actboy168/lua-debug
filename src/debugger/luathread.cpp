@@ -67,7 +67,7 @@ namespace vscode
 		, has_source_(false)
 		, ob_(id)
 	{
-		install_hook(LUA_MASKCALL | LUA_MASKRET | LUA_MASKLINE);
+		install_hook(LUA_MASKCALL | LUA_MASKRET | LUA_MASKLINE | LUA_MASKEXCEPTION);
 		lua_atpanic(L, thunk_panic);
 	}
 
