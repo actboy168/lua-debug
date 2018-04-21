@@ -473,6 +473,7 @@ namespace vscode
 		, nodebug_(false)
 		, thread_(new osthread(this))
 		, next_threadid_(0)
+		, translator_(nullptr)
 		, main_dispatch_
 		({
 			{ "launch", DBG_REQUEST_MAIN(request_attach) },

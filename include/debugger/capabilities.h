@@ -20,8 +20,14 @@ namespace vscode
 				for (auto _ : res.Object())
 				{
 					res("default").Bool(true);
-					res("filter").String("error");
-					res("label").String("Uncaught Error");
+					res("filter").String("all");
+					res("label").String("All Exceptions");
+				}
+				for (auto _ : res.Object())
+				{
+					res("default").Bool(true);
+					res("filter").String("uncaught");
+					res("label").String("Uncaught Exceptions");
 				}
 			}
 		}

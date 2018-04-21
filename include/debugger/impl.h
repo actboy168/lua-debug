@@ -25,6 +25,7 @@ namespace vscode
 	class wprotocol;
 	struct osthread;
 	struct luathread;
+	typedef std::map<std::string_view, std::string_view> translator_t;
 
 	class debugger_impl
 	{
@@ -64,6 +65,9 @@ namespace vscode
 		void io_output(const wprotocol& wp);
 		luathread* find_luathread(lua_State* L);
 		luathread* find_luathread(int threadid);
+
+		void setlang(const std::string_view& locale);
+		std::string_view LANG(const std::string_view& text);
 
 	private:
 		bool request_initialize(rprotocol& req);
@@ -133,6 +137,7 @@ namespace vscode
 		bool               nodebug_;
 		int                next_threadid_;
 		bool               exception_;
+		translator_t*      translator_;
 		std::map<int, std::unique_ptr<luathread>>                                          luathreads_;
 		std::map<std::string, std::function<bool(rprotocol&)>>                             main_dispatch_;
 		std::map<std::string, std::function<bool(rprotocol&, lua_State*, lua::Debug *ar)>> hook_dispatch_;

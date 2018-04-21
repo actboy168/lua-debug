@@ -47,6 +47,10 @@ namespace vscode
 			response_error(req, "already initialized");
 			return false;
 		}
+		auto& args = req["arguments"];
+		if (args.HasMember("locale") && args["locale"].IsString()) {
+			setlang(args["locale"].Get <std::string>());
+		}
 		response_initialize(req);
 		set_state(eState::initialized);
 		//event_capabilities();

@@ -87,6 +87,9 @@
     <ClCompile Include="..\src\debugger\luathread.cpp">
       <Filter>cpp</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\debugger\i18n.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\debugger\debugger.h">
