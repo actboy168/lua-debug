@@ -44,9 +44,9 @@ namespace vscode
 		void close();
 		void io_close();
 		void hook(luathread* thread, lua_State* L, lua::Debug* ar);
-		void exception(lua_State* L);
-		void exception(luathread* thread, lua_State* L);
-		void exception_nolock(luathread* thread, lua_State* L);
+		void exception(lua_State* L, eException exceptionType);
+		void exception(luathread* thread, lua_State* L, eException exceptionType);
+		void exception_nolock(luathread* thread, lua_State* L, eException exceptionType);
 		void run_stopped(luathread* thread, lua_State* L, lua::Debug* ar, const char* reason);
 		void run_idle();
 		void update();
@@ -121,7 +121,7 @@ namespace vscode
 		int64_t            seq;
 		io::base*          network_;
 		schema             schema_;
-		eState              state_;
+		eState             state_;
 		breakpoint         breakpoints_;
 		std::vector<stack> stack_;
 		pathconvert        pathconvert_;
@@ -136,7 +136,7 @@ namespace vscode
 		config             config_;
 		bool               nodebug_;
 		int                next_threadid_;
-		bool               exception_;
+		std::set<eException> exception_;
 		translator_t*      translator_;
 		std::map<int, std::unique_ptr<luathread>>                                          luathreads_;
 		std::map<std::string, std::function<bool(rprotocol&)>>                             main_dispatch_;

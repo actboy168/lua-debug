@@ -324,7 +324,22 @@ namespace vscode
 	bool debugger_impl::request_set_exception_breakpoints(rprotocol& req)
 	{
 		auto& args = req["arguments"];
-		exception_ = args.HasMember("filters") && args["filters"].IsArray() && args["filters"].Size() > 0;
+		exception_.clear();
+		if (args.HasMember("filters") && args["filters"].IsArray()) {
+			for (auto& v : args["filters"].GetArray()) {
+				if (v.IsString()) {
+					std::string filter = v.Get<std::string>();
+					if (filter == "all") {
+						exception_.insert(eException::uncaught);
+						exception_.insert(eException::caught);
+					}
+					else if (filter == "uncaught") {
+						exception_.insert(eException::uncaught);
+					}
+				}
+			}
+
+		}
 		response_success(req);
 		return false;
 	}

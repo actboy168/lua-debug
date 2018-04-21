@@ -162,7 +162,7 @@ namespace vscode
 			return;
 		}
 		if (ar->event == LUA_HOOKEXCEPTION) {
-			exception_nolock(thread, L);
+			exception_nolock(thread, L, eException::caught);
 			return;
 		}
 		if (ar->event != LUA_HOOKLINE) {
@@ -185,23 +185,23 @@ namespace vscode
 		}
 	}
 
-	void debugger_impl::exception(lua_State* L)
+	void debugger_impl::exception(lua_State* L, eException exceptionType)
 	{
 		luathread* thread = find_luathread(L);
 		if (thread) {
-			return exception(thread, L);
+			return exception(thread, L, exceptionType);
 		}
 	}
 
-	void debugger_impl::exception(luathread* thread, lua_State* L)
+	void debugger_impl::exception(luathread* thread, lua_State* L, eException exceptionType)
 	{
 		std::lock_guard<osthread> lock(*thread_);
-		exception_nolock(thread, L);
+		exception_nolock(thread, L, exceptionType);
 	}
 
-	void debugger_impl::exception_nolock(luathread* thread, lua_State* L)
+	void debugger_impl::exception_nolock(luathread* thread, lua_State* L, eException exceptionType)
 	{
-		if (!exception_)
+		if (exception_.find(exceptionType) == exception_.end())
 		{
 			return;
 		}
@@ -465,7 +465,7 @@ namespace vscode
 		, stack_()
 		, pathconvert_(this)
 		, custom_(nullptr)
-		, exception_(false)
+		, exception_()
 		, luathreads_()
 		, on_attach_()
 		, consoleSourceCoding_(eCoding::none)
