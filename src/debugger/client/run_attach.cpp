@@ -16,7 +16,7 @@ bool run_pipe_attach(stdinput& io, vscode::rprotocol& init, vscode::rprotocol& r
 	}
 	io_output(&pipe, init);
 	io_output(&pipe, req);
-	for (; !pipe.is_close(); sleep()) {
+	for (; !pipe.is_closed(); sleep()) {
 		io.update(10);
 		pipe.update(10);
 		std::string buf;

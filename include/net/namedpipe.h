@@ -14,7 +14,7 @@ namespace net {
 		bool recv(char* str, size_t& n);
 		bool send(const char* str, size_t& n);
 		void close();
-		bool is_close() const;
+		bool is_closed() const;
 		std::wstring make_name(std::wstring const& pipename);
 
 	private:
@@ -119,7 +119,7 @@ namespace net {
 		pipefd = INVALID_HANDLE_VALUE;
 	}
 
-	bool namedpipe::is_close() const {
+	bool namedpipe::is_closed() const {
 		return !is_open;
 	}
 }

@@ -18,7 +18,7 @@ namespace vscode { namespace io {
 		bool   open_server(std::wstring const& name);
 		bool   open_client(std::wstring const& name, int timeout);
 		void   close();
-		bool   is_close() const;
+		bool   is_closed() const;
 
 	protected:
 		size_t raw_peek();
