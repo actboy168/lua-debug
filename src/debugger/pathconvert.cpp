@@ -4,6 +4,7 @@
 #include <base/util/unicode.h>
 #include <base/util/dynarray.h>
 #include <deque>
+#include <regex>
 #include <Windows.h>
 
 namespace vscode
@@ -106,6 +107,24 @@ namespace vscode
 			}
 		}
 		source2client_[source] = client;
+		return res;
+	}
+
+	std::string pathconvert::exception(const std::string& str)
+	{
+		if (coding_ == eCoding::utf8) {
+			return str;
+		}
+		std::regex re(R"(([^\r\n]+)(\:[0-9]+\:[^\r\n]+))");
+		std::string res;
+		std::smatch m;
+		auto it = str.begin();
+		for (; std::regex_search(it, str.end(), m, re); it = m[0].second) {
+			res += std::string(it, m[0].first);
+			res += base::a2u(std::string(m[1].first, m[1].second));
+			res += std::string(m[2].first, m[2].second);
+		}
+		res += std::string(it, str.end());
 		return res;
 	}
 }

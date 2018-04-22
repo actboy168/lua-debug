@@ -22,6 +22,7 @@ namespace vscode
 		bool   server2client(const std::string& server, std::string& client);
 		bool   get(const std::string& source, std::string& client);
 		void   set_coding(eCoding coding);
+		std::string exception(const std::string& str);
 
 	private:
 		bool match_sourcemap(const std::string& srv, std::string& cli, const std::string& srvmatch, const std::string& climatch);
@@ -31,6 +32,6 @@ namespace vscode
 		std::map<std::string, std::string> source2client_;
 		sourcemap_t                        sourcemap_;
 		skipfiles_t                        skipfiles_;
-		eCoding                             coding_;
+		eCoding                            coding_;
 	};
 }

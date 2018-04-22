@@ -511,12 +511,18 @@ namespace vscode
 		response_success(req, [&](wprotocol& res)
 		{
 			res("breakMode").String("always");
-			res("exceptionId").String(lua_tostring(L, -1));
+			std::string exceptionId = lua_tostring(L, -1);
+			luaL_traceback(L, L, 0, 0);
+			std::string stackTrace = lua_tostring(L, -1);
+			lua_pop(L, 1);
+
+			exceptionId = pathconvert_.exception(exceptionId);
+			stackTrace = pathconvert_.exception(stackTrace);
+
+			res("exceptionId").String(exceptionId);
 			for (auto _ : res("details").Object())
 			{
-				luaL_traceback(L, L, 0, 1);
-				res("stackTrace").String(lua_tostring(L, -1));
-				lua_pop(L, 1);
+				res("stackTrace").String(stackTrace);
 			}
 		});
 		return false;
