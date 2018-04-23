@@ -511,8 +511,8 @@ namespace vscode
 		response_success(req, [&](wprotocol& res)
 		{
 			res("breakMode").String("always");
-			std::string exceptionId = lua_tostring(L, -1);
-			luaL_traceback(L, L, 0, 0);
+			std::string exceptionId = lua_tostring(L, -2);
+			luaL_traceback(L, L, 0, (int)lua_tointeger(L, -1));
 			std::string stackTrace = lua_tostring(L, -1);
 			lua_pop(L, 1);
 

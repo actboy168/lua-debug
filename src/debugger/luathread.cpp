@@ -39,7 +39,7 @@ namespace vscode
 	static void debugger_panic(luathread* thread, lua_State *L)
 	{
 		if (!thread->enable) return;
-		thread->dbg->exception(thread, L, eException::uncaught);
+		thread->dbg->panic(thread, L);
 	}
 
 	luathread::luathread(int id, debugger_impl* dbg, lua_State* L)

@@ -145,6 +145,12 @@ namespace vscode
 		}
 	}
 
+	void debugger_impl::panic(luathread* thread, lua_State *L)
+	{
+		std::lock_guard<osthread> lock(*thread_);
+		exception_nolock(thread, L, eException::uncaught, 0, true);
+	}
+
 	void debugger_impl::hook(luathread* thread, lua_State *L, lua::Debug *ar)
 	{
 		std::lock_guard<osthread> lock(*thread_);
@@ -162,7 +168,7 @@ namespace vscode
 			return;
 		}
 		if (ar->event == LUA_HOOKEXCEPTION) {
-			exception_nolock(thread, L, eException::caught);
+			exception_nolock(thread, L, eException::caught, 0, false);
 			return;
 		}
 		if (ar->event != LUA_HOOKLINE) {
@@ -185,37 +191,45 @@ namespace vscode
 		}
 	}
 
-	void debugger_impl::exception(lua_State* L, eException exceptionType)
+	void debugger_impl::exception(lua_State* L, eException exceptionType, int level)
 	{
 		luathread* thread = find_luathread(L);
 		if (thread) {
-			return exception(thread, L, exceptionType);
+			std::lock_guard<osthread> lock(*thread_);
+			return exception_nolock(thread, L, exceptionType, level, true);
 		}
 	}
 
-	void debugger_impl::exception(luathread* thread, lua_State* L, eException exceptionType)
-	{
-		std::lock_guard<osthread> lock(*thread_);
-		exception_nolock(thread, L, exceptionType);
-	}
-
-	void debugger_impl::exception_nolock(luathread* thread, lua_State* L, eException exceptionType)
+	void debugger_impl::exception_nolock(luathread* thread, lua_State* L, eException exceptionType, int level, bool disableHook)
 	{
 		if (exception_.find(exceptionType) == exception_.end())
 		{
 			return;
 		}
 
-		lua_Hook f = lua_gethook(L);
-		int mark = lua_gethookmask(L);
-		int count = lua_gethookcount(L);
-		lua_sethook(L, 0, 0, 0);
-		lua::Debug ar;
-		if (lua_getstack(L, 0, (lua_Debug*)&ar))
-		{
-			run_stopped(thread, L, &ar, "exception");
+		if (disableHook) {
+			lua_Hook f = lua_gethook(L);
+			int mark = lua_gethookmask(L);
+			int count = lua_gethookcount(L);
+			lua_sethook(L, 0, 0, 0);
+			lua::Debug ar;
+			if (lua_getstack(L, 0, (lua_Debug*)&ar))
+			{
+				lua_pushinteger(L, level);
+				run_stopped(thread, L, &ar, "exception");
+				lua_pop(L, 1);
+			}
+			lua_sethook(L, f, mark, count);
 		}
-		lua_sethook(L, f, mark, count);
+		else {
+			lua::Debug ar;
+			if (lua_getstack(L, 0, (lua_Debug*)&ar))
+			{
+				lua_pushinteger(L, level);
+				run_stopped(thread, L, &ar, "exception");
+				lua_pop(L, 1);
+			}
+		}
 	}
 
 	void debugger_impl::run_stopped(luathread* thread, lua_State *L, lua::Debug *ar, const char* reason)

@@ -43,10 +43,10 @@ namespace vscode
 		bool open_schema(const std::wstring& path);
 		void close();
 		void io_close();
+		void panic(luathread* thread, lua_State* L);
 		void hook(luathread* thread, lua_State* L, lua::Debug* ar);
-		void exception(lua_State* L, eException exceptionType);
-		void exception(luathread* thread, lua_State* L, eException exceptionType);
-		void exception_nolock(luathread* thread, lua_State* L, eException exceptionType);
+		void exception(lua_State* L, eException exceptionType, int level);
+		void exception_nolock(luathread* thread, lua_State* L, eException exceptionType, int level, bool disableHook);
 		void run_stopped(luathread* thread, lua_State* L, lua::Debug* ar, const char* reason);
 		void run_idle();
 		void update();
