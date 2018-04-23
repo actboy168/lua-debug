@@ -1,5 +1,6 @@
 #include <debugger/path.h>
 #include <base/util/unicode.h>
+#include <base/util/string_view.h>
 #include <deque>
 #include <Windows.h>
 

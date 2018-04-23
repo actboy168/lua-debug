@@ -18,6 +18,7 @@
 #include <debugger/config.h>
 #include <debugger/io/base.h>
 #include <debugger/io/helper.h>
+#include <base/util/string_view.h>
 
 namespace vscode
 {

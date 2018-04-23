@@ -74,11 +74,11 @@ namespace vscode { namespace io {
 	}
 	bool sock_stream::raw_recv(char* buf, size_t len) {
 		if (is_closed()) return false;
-		return len = s->recv(buf, len);
+		return len == s->recv(buf, len);
 	}
 	bool sock_stream::raw_send(const char* buf, size_t len) {
 		if (is_closed()) return false;
-		return len = s->send(buf, len);
+		return len == s->send(buf, len);
 	}
 	void sock_stream::open(sock_session* s) {
 		this->s = s;

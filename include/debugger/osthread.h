@@ -4,6 +4,7 @@
 #include <condition_variable>
 #include <mutex>
 #include <thread>
+#include <memory>
 #include <net/datetime/clock.h>
 #include <debugger/debugger.h>
 
