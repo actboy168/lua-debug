@@ -23,6 +23,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vscode-lua-debug", "vscode-
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "lua", "..\third_party\lua53\project\lua.vcxproj", "{76338556-5419-494A-A4C6-D79090629054}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Detours", "..\third_party\detours\project\Detours.vcxproj", "{198D08D6-92BA-46E3-B430-8351244FB61C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -83,6 +85,12 @@ Global
 		{76338556-5419-494A-A4C6-D79090629054}.Release|Win32.ActiveCfg = Release|Win32
 		{76338556-5419-494A-A4C6-D79090629054}.Release|Win32.Build.0 = Release|Win32
 		{76338556-5419-494A-A4C6-D79090629054}.Release|x64.ActiveCfg = Release|Win32
+		{198D08D6-92BA-46E3-B430-8351244FB61C}.Debug|Win32.ActiveCfg = Debug|Win32
+		{198D08D6-92BA-46E3-B430-8351244FB61C}.Debug|Win32.Build.0 = Debug|Win32
+		{198D08D6-92BA-46E3-B430-8351244FB61C}.Debug|x64.ActiveCfg = Debug|x64
+		{198D08D6-92BA-46E3-B430-8351244FB61C}.Release|Win32.ActiveCfg = Release|Win32
+		{198D08D6-92BA-46E3-B430-8351244FB61C}.Release|Win32.Build.0 = Release|Win32
+		{198D08D6-92BA-46E3-B430-8351244FB61C}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -92,6 +100,7 @@ Global
 		{B84F7231-16CE-41D8-8C08-7B523FF4225B} = {E37DCA1E-4985-4019-AFCC-11E38734A438}
 		{F142A341-5EE0-442D-A15F-98AE9B48DBAE} = {E37DCA1E-4985-4019-AFCC-11E38734A438}
 		{76338556-5419-494A-A4C6-D79090629054} = {E37DCA1E-4985-4019-AFCC-11E38734A438}
+		{198D08D6-92BA-46E3-B430-8351244FB61C} = {E37DCA1E-4985-4019-AFCC-11E38734A438}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {7581734B-8D88-4E5E-A66D-DAA87CD797A9}
