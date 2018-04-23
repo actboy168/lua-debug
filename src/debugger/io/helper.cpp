@@ -4,7 +4,7 @@
 #include <rapidjson/error/en.h>
 #include <fstream>
 
-#if 0
+#if 1
 #	define log(...)
 #else
 
