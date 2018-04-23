@@ -197,6 +197,8 @@
     <ClInclude Include="..\src\lprefix.h">
       <Filter>core\include</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\lua.hpp" />
+    <ClInclude Include="..\src\lua.hpp">
+      <Filter>include</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
