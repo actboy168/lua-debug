@@ -48,8 +48,7 @@ namespace vscode
 		void step_in();
 		void step_over(lua_State* L, lua::Debug* ar);
 		void step_out(lua_State* L, lua::Debug* ar);
-		void hook_call(lua_State* L, lua::Debug* ar);
-		void hook_return(lua_State* L, lua::Debug* ar);
+		void hook_callret(lua_State* L, lua::Debug* ar);
 		void hook_line(lua_State* L, lua::Debug* ar, breakpoint& breakpoint);
 		void update_breakpoint();
 

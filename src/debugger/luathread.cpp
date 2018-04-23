@@ -136,23 +136,24 @@ namespace vscode
 		stepping_lua_state_ = L;
 	}
 
-	void luathread::hook_call(lua_State* L, lua::Debug* ar)
+	void luathread::hook_callret(lua_State* L, lua::Debug* ar)
 	{
 		has_source_ = false;
 		cur_func_ = nullptr;
 		cur_bp_ = nullptr;
-		if (stepping_lua_state_ == L) {
-			stepping_current_level_++;
-		}
-	}
-
-	void luathread::hook_return(lua_State* L, lua::Debug* ar)
-	{
-		has_source_ = false;
-		cur_func_ = nullptr;
-		cur_bp_ = nullptr;
-		if (stepping_lua_state_ == L) {
-			stepping_current_level_ = get_stacklevel(L, stepping_current_level_) - 1;
+		switch (ar->event) {
+		case LUA_HOOKTAILCALL:
+			break;
+		case LUA_HOOKCALL:
+			if (stepping_lua_state_ == L) {
+				stepping_current_level_++;
+			}
+			break;
+		case LUA_HOOKRET:
+			if (stepping_lua_state_ == L) {
+				stepping_current_level_ = get_stacklevel(L, stepping_current_level_) - 1;
+			}
+			break;
 		}
 	}
 

@@ -159,12 +159,8 @@ namespace vscode
 			return;
 		}
 
-		if (ar->event == LUA_HOOKCALL) {
-			thread->hook_call(L, ar);
-			return;
-		}
-		if (ar->event == LUA_HOOKRET) {
-			thread->hook_return(L, ar);
+		if (ar->event == LUA_HOOKCALL || ar->event == LUA_HOOKTAILCALL || ar->event == LUA_HOOKRET) {
+			thread->hook_callret(L, ar);
 			return;
 		}
 		if (ar->event == LUA_HOOKEXCEPTION) {
