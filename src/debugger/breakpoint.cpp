@@ -149,7 +149,9 @@ namespace vscode
 			defined.emplace_back(eLine::unknown);
 		}
 		for (int i = ar->linedefined; i <= ar->lastlinedefined; ++i) {
-			defined[i] = eLine::undef;
+			if (defined[i] != eLine::defined) {
+				defined[i] = eLine::undef;
+			}
 		}
 		lua_pushnil(L);
 		while (lua_next(L, -2)) {
