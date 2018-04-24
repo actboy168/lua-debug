@@ -255,32 +255,6 @@ namespace vscode
 		memorys_.clear();
 	}
 
-	void breakpoint::clear(source& source)
-	{
-		if (source.ref) {
-			auto it = memorys_.find(source.ref);
-			if (it != memorys_.end()) {
-				it->second.clear();
-				return;
-			}
-		}
-		else {
-			auto it = files_.find(source.path);
-			if (it != files_.end()) {
-				it->second.clear();
-				return;
-			}
-		}
-	}
-
-	bp_breakpoint& breakpoint::add(source& source, size_t line, rapidjson::Value const& bpinfo)
-	{
-		bp_source& src = get_source(source); 
-		bp_breakpoint& bp = src.add(line, bpinfo, next_id_);
-		bp.verify(src);
-		return bp;
-	}
-
 	bool breakpoint::has(bp_source* src, size_t line, lua_State* L, lua::Debug* ar) const
 	{
 		bp_breakpoint* bp = src->get(line);
@@ -331,5 +305,20 @@ namespace vscode
 	void breakpoint::event_breakpoint(const char* reason, bp_source* src, bp_breakpoint* bp)
 	{
 		dbg_->event_breakpoint(reason, src, bp);
+	}
+
+	std::vector<bp_breakpoint*> breakpoint::set_breakpoint(source& s, rapidjson::Value const& breakpoints)
+	{
+		bp_source& src = get_source(s);
+		src.clear();
+		std::vector<bp_breakpoint*> bps;
+		for (auto& m : breakpoints.GetArray())
+		{
+			unsigned int line = m["line"].GetUint();
+			bp_breakpoint& bp = src.add(line, m, next_id_);
+			bp.verify(src);
+			bps.push_back(&bp);
+		}
+		return bps;
 	}
 }

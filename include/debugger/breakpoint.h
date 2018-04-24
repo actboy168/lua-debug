@@ -74,13 +74,12 @@ namespace vscode
 	public:
 		breakpoint(debugger_impl* dbg);
 		void clear();
-		void clear(source& source);
-		bp_breakpoint& add(source& source, size_t line, rapidjson::Value const& bpinfo);
 		bool has(bp_source* src, size_t line, lua_State* L, lua::Debug* ar) const;
 		bp_function* get_function(lua_State* L, lua::Debug* ar);
 		bp_source& get_source(source& source);
 		pathconvert& get_pathconvert();
 		void event_breakpoint(const char* reason, bp_source* src, bp_breakpoint* bp);
+		std::vector<bp_breakpoint*> set_breakpoint(source& s, rapidjson::Value const& breakpoints);
 
 	private:
 		debugger_impl* dbg_;

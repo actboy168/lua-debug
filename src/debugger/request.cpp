@@ -278,18 +278,12 @@ namespace vscode
 			response_error(req, "not yet implemented");
 			return false;
 		}
-		breakpoints_.clear(s);
-		std::vector<bp_breakpoint*> bps;
-		for (auto& m : args["breakpoints"].GetArray())
-		{
-			unsigned int line = m["line"].GetUint();
-			bp_breakpoint& bp = breakpoints_.add(s, line, m);
-			bps.push_back(&bp);
-		}
 
 		for (auto& lt : luathreads_) {
 			lt.second->update_breakpoint();
 		}
+
+		std::vector<bp_breakpoint*> bps = breakpoints_.set_breakpoint(s, args["breakpoints"]);
 
 		response_success(req, [&](wprotocol& res)
 		{
