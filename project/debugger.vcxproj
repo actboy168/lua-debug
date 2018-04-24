@@ -50,6 +50,7 @@
     <ClInclude Include="..\include\debugger\capabilities.h" />
     <ClInclude Include="..\include\debugger\config.h" />
     <ClInclude Include="..\include\debugger\evaluate.h" />
+    <ClInclude Include="..\include\debugger\hashmap.h" />
     <ClInclude Include="..\include\debugger\impl.h" />
     <ClInclude Include="..\include\debugger\io\base.h" />
     <ClInclude Include="..\include\debugger\io\helper.h" />

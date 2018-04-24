@@ -6,6 +6,7 @@
 #include <debugger/pathconvert.h>
 #include <debugger/protocol.h>
 #include <debugger/path.h>
+#include <debugger/hashmap.h>
 
 struct lua_State;
 namespace lua { struct Debug; }
@@ -57,7 +58,7 @@ namespace vscode
 		debugger_impl* dbg_;
 		std::map<std::string, bp_source, path::less<std::string>> files_;
 		std::map<intptr_t, bp_source>    memorys_;
-		std::map<intptr_t, bp_function>  functions_;
+		hashmap<bp_function>             functions_;
 		base::hybrid_array<size_t, 1024> fast_table_;
 	};
 }

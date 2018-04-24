@@ -158,5 +158,8 @@
     <ClInclude Include="..\include\debugger\luathread.h">
       <Filter>inc</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\debugger\hashmap.h">
+      <Filter>inc</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -243,11 +243,12 @@ namespace vscode
 		}
 		intptr_t f = (intptr_t)lua_topointer(L, -1);
 		lua_pop(L, 1);
-		auto it = functions_.find(f);
-		if (it != functions_.end()) {
-			return &(it->second);
+		auto func = functions_.get(f);
+		if (!func) {
+			func = new bp_function(L, ar, this);
+			functions_.put(f, func);
 		}
-		return &(functions_.insert(std::make_pair(f, bp_function(L, ar, this))).first->second);
+		return func;
 	}
 
 	pathconvert& breakpoint::get_pathconvert()
