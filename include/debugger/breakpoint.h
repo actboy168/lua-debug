@@ -56,7 +56,7 @@ namespace vscode
 		std::map<size_t, bp_breakpoint> verified;
 
 		bp_source(source& s);
-		void update(lua_State* L, lua::Debug* ar, breakpoint* breakpoint);
+		void update(lua_State* L, lua::Debug* ar, debugger_impl* dbg);
 
 		bp_breakpoint& add(size_t line, rapidjson::Value const& bpinfo, size_t& next_id);
 		bp_breakpoint* get(size_t line);
@@ -66,7 +66,7 @@ namespace vscode
 
 	struct bp_function {
 		bp_source* src;
-		bp_function(lua_State* L, lua::Debug* ar, breakpoint* breakpoint);
+		bp_function(lua_State* L, lua::Debug* ar, debugger_impl* dbg, breakpoint* breakpoint);
 	};
 
 	class breakpoint
@@ -76,9 +76,7 @@ namespace vscode
 		void clear();
 		bool has(bp_source* src, size_t line, lua_State* L, lua::Debug* ar) const;
 		bp_function* get_function(lua_State* L, lua::Debug* ar);
-		bp_source& get_source(source& source);
-		pathconvert& get_pathconvert();
-		void event_breakpoint(const char* reason, bp_source* src, bp_breakpoint* bp);
+		bp_source&   get_source(source& source);
 		std::vector<bp_breakpoint*> set_breakpoint(source& s, rapidjson::Value const& breakpoints);
 
 	private:

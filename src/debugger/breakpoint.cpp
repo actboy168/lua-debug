@@ -160,7 +160,7 @@ namespace vscode
 		: src(s)
 	{ }
 
-	void bp_source::update(lua_State* L, lua::Debug* ar, breakpoint* breakpoint)
+	void bp_source::update(lua_State* L, lua::Debug* ar, debugger_impl* dbg)
 	{
 		while (defined.size() <= (size_t)ar->lastlinedefined) {
 			defined.emplace_back(eLine::unknown);
@@ -183,7 +183,7 @@ namespace vscode
 		for (auto it : verified) {
 			bp_breakpoint& bp = it.second;
 			if (!bp.verified && bp.verify(*this)) {
-				breakpoint->event_breakpoint("changed", this, &bp);
+				dbg->event_breakpoint("changed", this, &bp);
 			}
 		}
 	}
@@ -219,7 +219,7 @@ namespace vscode
 		return !verified.empty();
 	}
 
-	bp_function::bp_function(lua_State* L, lua::Debug* ar, breakpoint* breakpoint)
+	bp_function::bp_function(lua_State* L, lua::Debug* ar, debugger_impl* dbg, breakpoint* breakpoint)
 		: src(nullptr)
 	{
 		if (!lua_getinfo(L, "SL", (lua_Debug*)ar)) {
@@ -228,7 +228,7 @@ namespace vscode
 
 		source s;
 		if (ar->source[0] == '@' || ar->source[0] == '=') {
-			if (breakpoint->get_pathconvert().get(ar->source, s.path)) {
+			if (dbg->get_pathconvert().get(ar->source, s.path)) {
 				src = &breakpoint->get_source(s);
 			}
 		}
@@ -238,7 +238,7 @@ namespace vscode
 		}
 		if (src) {
 			s.vaild = true;
-			src->update(L, ar, breakpoint);
+			src->update(L, ar, dbg);
 		}
 		lua_pop(L, 1);
 	}
@@ -291,27 +291,17 @@ namespace vscode
 		lua_pop(L, 1);
 		auto func = functions_.get(f);
 		if (!func) {
-			func = new bp_function(L, ar, this);
+			func = new bp_function(L, ar, dbg_, this);
 			functions_.put(f, func);
 		}
 		return func->src ? func : nullptr;
 	}
 
-	pathconvert& breakpoint::get_pathconvert()
-	{
-		return dbg_->get_pathconvert();
-	}
-
-	void breakpoint::event_breakpoint(const char* reason, bp_source* src, bp_breakpoint* bp)
-	{
-		dbg_->event_breakpoint(reason, src, bp);
-	}
-
 	std::vector<bp_breakpoint*> breakpoint::set_breakpoint(source& s, rapidjson::Value const& breakpoints)
 	{
+		std::vector<bp_breakpoint*> bps;
 		bp_source& src = get_source(s);
 		src.clear();
-		std::vector<bp_breakpoint*> bps;
 		for (auto& m : breakpoints.GetArray())
 		{
 			unsigned int line = m["line"].GetUint();
