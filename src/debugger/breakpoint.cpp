@@ -139,6 +139,23 @@ namespace vscode
 		res("line").Uint(verified ? verified_line : line);
 	}
 
+	bool bp_breakpoint::run(lua_State* L, lua::Debug* ar, debugger_impl* dbg)
+	{
+		if (!cond.empty() && !evaluate_isok(L, ar, cond)) {
+			return false;
+		}
+		hit++;
+		if (!hitcond.empty() && !evaluate_isok(L, ar, std::to_string(hit) + " " + hitcond)) {
+			return false;
+		}
+		if (!log.empty()) {
+			std::string res = evaluate_log(L, ar, log);
+			dbg->output("stdout", res.data(), res.size(), L, ar);
+			return false;
+		}
+		return true;
+	}
+
 	bp_source::bp_source(source& s)
 		: src(s)
 	{ }
@@ -163,12 +180,43 @@ namespace vscode
 			defined[line] = eLine::defined;
 		}
 
-		for (auto it : *this) {
+		for (auto it : verified) {
 			bp_breakpoint& bp = it.second;
 			if (!bp.verified && bp.verify(*this)) {
 				breakpoint->event_breakpoint("changed", this, &bp);
 			}
 		}
+	}
+
+	bp_breakpoint& bp_source::add(size_t line, rapidjson::Value const& bpinfo, size_t& next_id)
+	{
+		auto it = verified.find(line);
+		if (it != verified.end()) {
+			it->second = bp_breakpoint(next_id++, bpinfo, it->second.hit);
+			return it->second;
+		}
+		else {
+			return verified.insert(std::make_pair(line, bp_breakpoint(next_id++, bpinfo, 0))).first->second;
+		}
+	}
+
+	bp_breakpoint* bp_source::get(size_t line)
+	{
+		auto it = verified.find(line);
+		if (it == verified.end()) {
+			return 0;
+		}
+		return &it->second;
+	}
+
+	void bp_source::clear()
+	{
+		verified.clear();
+	}
+
+	bool bp_source::has_breakpoint()
+	{
+		return !verified.empty();
 	}
 
 	bp_function::bp_function(lua_State* L, lua::Debug* ar, breakpoint* breakpoint)
@@ -225,50 +273,21 @@ namespace vscode
 		}
 	}
 
-	bp_breakpoint& breakpoint::add_breakpoint(bp_source& src, size_t line, rapidjson::Value const& bpinfo)
-	{
-		auto it = src.find(line);
-		if (it != src.end()) {
-			it->second = bp_breakpoint(next_id_++, bpinfo, it->second.hit);
-			return it->second;
-		}
-		else {
-			return src.insert(std::make_pair(line, bp_breakpoint(next_id_++, bpinfo, 0))).first->second;
-		}
-	}
-
 	bp_breakpoint& breakpoint::add(source& source, size_t line, rapidjson::Value const& bpinfo)
 	{
 		bp_source& src = get_source(source); 
-		bp_breakpoint& bp = add_breakpoint(src, line, bpinfo);
+		bp_breakpoint& bp = src.add(line, bpinfo, next_id_);
 		bp.verify(src);
 		return bp;
 	}
 
 	bool breakpoint::has(bp_source* src, size_t line, lua_State* L, lua::Debug* ar) const
 	{
-		auto it = src->find(line);
-		if (it == src->end())
-		{
+		bp_breakpoint* bp = src->get(line);
+		if (!bp) {
 			return false;
 		}
-		bp_breakpoint& bp = it->second;
-		if (!bp.cond.empty() && !evaluate_isok(L, ar, bp.cond))
-		{
-			return false;
-		}
-		bp.hit++;
-		if (!bp.hitcond.empty() && !evaluate_isok(L, ar, std::to_string(bp.hit) + " " + bp.hitcond))
-		{
-			return false;
-		}
-		if (!bp.log.empty())
-		{
-			std::string res = evaluate_log(L, ar, bp.log);
-			dbg_->output("stdout", res.data(), res.size(), L, ar);
-			return false;
-		}
-		return true;
+		return bp->run(L, ar, dbg_);
 	}
 
 	bp_source& breakpoint::get_source(source& source)

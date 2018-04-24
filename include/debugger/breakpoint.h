@@ -39,6 +39,7 @@ namespace vscode
 
 		bp_breakpoint(size_t id, rapidjson::Value const& info, int h);
 		bool verify(bp_source& src);
+		bool run(lua_State* L, lua::Debug* ar, debugger_impl* dbg);
 		void output(wprotocol& res);
 	};
 
@@ -48,11 +49,19 @@ namespace vscode
 		defined = 2,
 	};
 
-	struct bp_source : public std::map<size_t, bp_breakpoint> {
+	struct bp_source {
 		source src;
-		std::deque<eLine> defined;
+		std::deque<eLine>               defined;
+		//std::vector<bp_breakpoint>      waitverfy;
+		std::map<size_t, bp_breakpoint> verified;
+
 		bp_source(source& s);
 		void update(lua_State* L, lua::Debug* ar, breakpoint* breakpoint);
+
+		bp_breakpoint& add(size_t line, rapidjson::Value const& bpinfo, size_t& next_id);
+		bp_breakpoint* get(size_t line);
+		void clear();
+		bool has_breakpoint();
 	};
 
 	struct bp_function {
@@ -72,9 +81,6 @@ namespace vscode
 		bp_source& get_source(source& source);
 		pathconvert& get_pathconvert();
 		void event_breakpoint(const char* reason, bp_source* src, bp_breakpoint* bp);
-
-	private:
-		bp_breakpoint& add_breakpoint(bp_source& src, size_t line, rapidjson::Value const& bpinfo);
 
 	private:
 		debugger_impl* dbg_;
