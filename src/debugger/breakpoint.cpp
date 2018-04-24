@@ -79,8 +79,7 @@ namespace vscode
 	}
 
 	bp_function::bp_function(lua_State* L, lua::Debug* ar, breakpoint* breakpoint)
-		: vaild(false)
-		, clientpath()
+		: clientpath()
 		, sourceref(0)
 		, bp(nullptr)
 	{
@@ -89,26 +88,15 @@ namespace vscode
 		}
 		if (ar->source[0] == '@' || ar->source[0] == '=') {
 			if (breakpoint->get_pathconvert().get(ar->source, clientpath)) {
-				vaild = true;
+				bp = breakpoint->get_file_bp(clientpath);
 			}
 		}
 		else {
 			sourceref = (intptr_t)ar->source;
-			vaild = true;
+			bp = breakpoint->get_memory_bp(sourceref);
 		}
 	}
 
-	bp_source* bp_function::update_bp(breakpoint* breakpoint) {
-		if (!vaild) return nullptr;
-		if (bp) return bp;
-		if (sourceref) {
-			bp = breakpoint->get_memory_bp(sourceref);
-		}
-		else {
-			bp = breakpoint->get_file_bp(clientpath);
-		}
-		return bp;
-	}
 	breakpoint::breakpoint(debugger_impl* dbg)
 		: dbg_(dbg)
 		, files_()
@@ -234,7 +222,7 @@ namespace vscode
 			func = new bp_function(L, ar, this);
 			functions_.put(f, func);
 		}
-		return func;
+		return func->bp ? func : nullptr;
 	}
 
 	pathconvert& breakpoint::get_pathconvert()

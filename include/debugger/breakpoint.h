@@ -26,12 +26,10 @@ namespace vscode
 	typedef std::map<size_t, bp> bp_source;
 
 	struct bp_function {
-		bool vaild;
 		std::string clientpath;
 		intptr_t sourceref;
 		bp_source* bp;
 		bp_function(lua_State* L, lua::Debug* ar, breakpoint* breakpoint);
-		bp_source* update_bp(breakpoint* breakpoint);
 	};
 
 	class breakpoint
