@@ -78,12 +78,31 @@ namespace vscode
 		}
 	}
 
+	void bp_source::update(lua_State* L, lua::Debug* ar)
+	{
+		while (defined.size() <= (size_t)ar->lastlinedefined) {
+			defined.emplace_back(eLine::unknown);
+		}
+		for (int i = ar->linedefined; i < ar->lastlinedefined; ++i) {
+			defined[i] = eLine::undef;
+		}
+		lua_pushnil(L);
+		while (lua_next(L, -2)) {
+			int line = (int)lua_tointeger(L, -2);
+			lua_pop(L, 1);
+			while (defined.size() <= (size_t)line) {
+				defined.emplace_back(eLine::unknown);
+			}
+			defined[line] = eLine::defined;
+		}
+	}
+
 	bp_function::bp_function(lua_State* L, lua::Debug* ar, breakpoint* breakpoint)
 		: clientpath()
 		, sourceref(0)
 		, bp(nullptr)
 	{
-		if (!lua_getinfo(L, "S", (lua_Debug*)ar)) {
+		if (!lua_getinfo(L, "SL", (lua_Debug*)ar)) {
 			return;
 		}
 		if (ar->source[0] == '@' || ar->source[0] == '=') {
@@ -95,6 +114,10 @@ namespace vscode
 			sourceref = (intptr_t)ar->source;
 			bp = &breakpoint->get_bp(sourceref);
 		}
+		if (bp) {
+			bp->update(L, ar);
+		}
+		lua_pop(L, 1);
 	}
 
 	breakpoint::breakpoint(debugger_impl* dbg)

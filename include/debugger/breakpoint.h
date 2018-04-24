@@ -2,6 +2,7 @@
 
 #include <map>
 #include <string>
+#include <deque>
 #include <base/util/hybrid_array.h> 
 #include <debugger/pathconvert.h>
 #include <debugger/protocol.h>
@@ -21,9 +22,18 @@ namespace vscode
 		std::string log;
 		int hit;
 		bp(rapidjson::Value const& info, int h);
-
 	};
-	typedef std::map<size_t, bp> bp_source;
+
+	enum class eLine : uint8_t {
+		unknown = 0,
+		undef = 1,
+		defined = 2,
+	};
+
+	struct bp_source : public std::map<size_t, bp> {
+		std::deque<eLine> defined;
+		void update(lua_State* L, lua::Debug* ar);
+	};
 
 	struct bp_function {
 		std::string clientpath;
