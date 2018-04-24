@@ -88,12 +88,12 @@ namespace vscode
 		}
 		if (ar->source[0] == '@' || ar->source[0] == '=') {
 			if (breakpoint->get_pathconvert().get(ar->source, clientpath)) {
-				bp = breakpoint->get_file_bp(clientpath);
+				bp = &breakpoint->get_bp(clientpath);
 			}
 		}
 		else {
 			sourceref = (intptr_t)ar->source;
-			bp = breakpoint->get_memory_bp(sourceref);
+			bp = &breakpoint->get_bp(sourceref);
 		}
 	}
 
@@ -130,35 +130,35 @@ namespace vscode
 		}
 	}
 
-	void breakpoint::clear(bp_source& src)
+	void breakpoint::clear(bp_source& bps)
 	{
-		for (auto line : src)
+		for (auto bp : bps)
 		{
-			fast_table_[line.first]--;
+			fast_table_[bp.first]--;
 		}
-		src.clear();
+		bps.clear();
 	}
 
 	void breakpoint::add(const std::string& client_path, size_t line, rapidjson::Value const& bp)
 	{
-		return add(files_[client_path], line, bp);
+		return add(get_bp(client_path), line, bp);
 	}
 
 	void breakpoint::add(intptr_t source_ref, size_t line, rapidjson::Value const& bp)
 	{
-		return add(memorys_[source_ref], line, bp);
+		return add(get_bp(source_ref), line, bp);
 	}
 
-	void breakpoint::add(bp_source& src, size_t line, rapidjson::Value const& bpinfo)
+	void breakpoint::add(bp_source& bps, size_t line, rapidjson::Value const& bpinfo)
 	{
-		auto it = src.find(line);
-		if (it != src.end())
+		auto it = bps.find(line);
+		if (it != bps.end())
 		{
 			it->second = bp(bpinfo, it->second.hit);
 			return;
 		}
 
-		src.insert(std::make_pair(line, bp(bpinfo, 0)));
+		bps.insert(std::make_pair(line, bp(bpinfo, 0)));
 		if (line >= fast_table_.size())
 		{
 			size_t oldsize = fast_table_.size();
@@ -200,17 +200,17 @@ namespace vscode
 		return true;
 	}
 
-	bp_source* breakpoint::get_file_bp(const std::string& clientpath)
+	bp_source& breakpoint::get_bp(const std::string& clientpath)
 	{
-		return &files_[clientpath];
+		return files_[clientpath];
 	}
 
-	bp_source* breakpoint::get_memory_bp(intptr_t sourceref)
+	bp_source& breakpoint::get_bp(intptr_t sourceref)
 	{
-		return &memorys_[sourceref];
+		return memorys_[sourceref];
 	}
 
-	bp_function* breakpoint::get(lua_State* L, lua::Debug* ar)
+	bp_function* breakpoint::get_function(lua_State* L, lua::Debug* ar)
 	{
 		if (!lua_getinfo(L, "f", (lua_Debug*)ar)) {
 			return nullptr;

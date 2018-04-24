@@ -42,9 +42,9 @@ namespace vscode
 		void add(const std::string& client_path, size_t line, rapidjson::Value const& bp);
 		void add(intptr_t source_ref, size_t line, rapidjson::Value const& bp);
 		bool has(bp_source* src, size_t line, lua_State* L, lua::Debug* ar) const;
-		bp_function* get(lua_State* L, lua::Debug* ar);
-		bp_source* get_memory_bp(intptr_t sourceref);
-		bp_source* get_file_bp(const std::string& clientpath);
+		bp_function* get_function(lua_State* L, lua::Debug* ar);
+		bp_source& get_bp(intptr_t sourceref);
+		bp_source& get_bp(const std::string& clientpath);
 		pathconvert& get_pathconvert();
 
 	private:
