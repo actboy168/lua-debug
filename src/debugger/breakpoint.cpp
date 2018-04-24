@@ -181,17 +181,13 @@ namespace vscode
 		fast_table_[line]++;
 	}
 
-	bool breakpoint::has(size_t line) const
-	{
-		if (line < fast_table_.size())
-		{
-			return fast_table_[line] > 0;
-		}
-		return false;
-	}
-
 	bool breakpoint::has(bp_source* src, size_t line, lua_State* L, lua::Debug* ar) const
 	{
+		if (line >= fast_table_.size() || fast_table_[line] == 0)
+		{
+			return false;
+		}
+
 		auto it = src->find(line);
 		if (it == src->end())
 		{

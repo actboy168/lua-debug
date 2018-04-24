@@ -62,7 +62,6 @@ namespace vscode
 		, stepping_target_level_(0)
 		, stepping_current_level_(0)
 		, stepping_lua_state_(NULL)
-		, cur_bp_(0)
 		, cur_func_(0)
 		, has_source_(false)
 		, ob_(id)
@@ -140,7 +139,6 @@ namespace vscode
 	{
 		has_source_ = false;
 		cur_func_ = nullptr;
-		cur_bp_ = nullptr;
 		switch (ar->event) {
 		case LUA_HOOKTAILCALL:
 			break;
@@ -163,18 +161,17 @@ namespace vscode
 			has_source_ = true;
 			cur_func_ = breakpoint.get(L, ar);
 			if (cur_func_ && cur_func_->vaild) {
-				cur_bp_ = cur_func_->update_bp(&breakpoint);
+				cur_func_->update_bp(&breakpoint);
 			}
 			else {
 				cur_func_ = nullptr;
-				cur_bp_ = nullptr;
 			}
 		}
 	}
 
 	void luathread::update_breakpoint()
 	{
-		if (cur_func_ && !cur_bp_) {
+		if (cur_func_) {
 			has_source_ = false;
 		}
 	}
