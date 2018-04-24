@@ -167,6 +167,7 @@ namespace vscode
 			}
 			else {
 				cur_func_ = nullptr;
+				cur_bp_ = nullptr;
 			}
 		}
 	}

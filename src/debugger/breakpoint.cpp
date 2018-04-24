@@ -218,22 +218,12 @@ namespace vscode
 
 	bp_source* breakpoint::get_file_bp(const std::string& clientpath)
 	{
-		auto it = files_.find(clientpath);
-		if (it != files_.end())
-		{
-			return &it->second;
-		}
-		return nullptr;
+		return &files_[clientpath];
 	}
 
 	bp_source* breakpoint::get_memory_bp(intptr_t sourceref)
 	{
-		auto it = memorys_.find(sourceref);
-		if (it != memorys_.end())
-		{
-			return &it->second;
-		}
-		return nullptr;
+		return &memorys_[sourceref];
 	}
 
 	bp_function* breakpoint::get(lua_State* L, lua::Debug* ar)
