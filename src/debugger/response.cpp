@@ -160,9 +160,7 @@ namespace vscode
 				res("reason").String(reason);
 				for (auto _ : res("breakpoint").Object())
 				{
-					res("verified").Bool(true);
-					src->src.output(res);
-					res("line").Uint(bp->line);
+					bp->output(res);
 				}
 			}
 		}

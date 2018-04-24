@@ -279,12 +279,12 @@ namespace vscode
 			return false;
 		}
 		breakpoints_.clear(s);
-		std::vector<unsigned int> lines;
+		std::vector<bp_breakpoint*> lines;
 		for (auto& m : args["breakpoints"].GetArray())
 		{
 			unsigned int line = m["line"].GetUint();
-			lines.push_back(line);
-			breakpoints_.add(s, line, m);
+			bp_breakpoint& bp = breakpoints_.add(s, line, m);
+			lines.push_back(&bp);
 		}
 
 		for (auto& lt : luathreads_) {
@@ -297,8 +297,7 @@ namespace vscode
 			{
 				for (auto _ : res.Object())
 				{
-					res("verified").Bool(true);
-					res("line").Uint(lines[d]);
+					lines[d]->output(res);
 				}
 			}
 		});
