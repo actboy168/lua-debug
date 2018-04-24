@@ -77,7 +77,7 @@ namespace vscode
 		bool has(bp_source* src, size_t line, lua_State* L, lua::Debug* ar) const;
 		bp_function* get_function(lua_State* L, lua::Debug* ar);
 		bp_source&   get_source(source& source);
-		std::vector<bp_breakpoint*> set_breakpoint(source& s, rapidjson::Value const& breakpoints);
+		void set_breakpoint(source& s, rapidjson::Value const& args, wprotocol& res);
 
 	private:
 		debugger_impl* dbg_;

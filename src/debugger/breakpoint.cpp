@@ -297,18 +297,22 @@ namespace vscode
 		return func->src ? func : nullptr;
 	}
 
-	std::vector<bp_breakpoint*> breakpoint::set_breakpoint(source& s, rapidjson::Value const& breakpoints)
+	void breakpoint::set_breakpoint(source& s, rapidjson::Value const& args, wprotocol& res)
 	{
-		std::vector<bp_breakpoint*> bps;
 		bp_source& src = get_source(s);
 		src.clear();
-		for (auto& m : breakpoints.GetArray())
+		for (auto _ : res("breakpoints").Array())
 		{
-			unsigned int line = m["line"].GetUint();
-			bp_breakpoint& bp = src.add(line, m, next_id_);
-			bp.verify(src);
-			bps.push_back(&bp);
+			for (auto& m : args["breakpoints"].GetArray())
+			{
+				unsigned int line = m["line"].GetUint();
+				bp_breakpoint& bp = src.add(line, m, next_id_);
+				bp.verify(src);
+				for (auto _ : res.Object())
+				{
+					bp.output(res);
+				}
+			}
 		}
-		return bps;
 	}
 }

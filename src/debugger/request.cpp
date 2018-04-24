@@ -272,28 +272,17 @@ namespace vscode
 	bool debugger_impl::request_set_breakpoints(rprotocol& req)
 	{
 		auto& args = req["arguments"];
-
 		vscode::source s(args["source"]);
 		if (!s.vaild) {
 			response_error(req, "not yet implemented");
 			return false;
 		}
-
 		for (auto& lt : luathreads_) {
 			lt.second->update_breakpoint();
 		}
-
-		std::vector<bp_breakpoint*> bps = breakpoints_.set_breakpoint(s, args["breakpoints"]);
-
 		response_success(req, [&](wprotocol& res)
 		{
-			for (size_t d : res("breakpoints").Array(bps.size()))
-			{
-				for (auto _ : res.Object())
-				{
-					bps[d]->output(res);
-				}
-			}
+			breakpoints_.set_breakpoint(s, args, res);
 		});
 		return false;
 	}
