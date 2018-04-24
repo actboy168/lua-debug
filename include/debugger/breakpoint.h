@@ -66,6 +66,5 @@ namespace vscode
 		std::map<std::string, bp_source, path::less<std::string>> files_;
 		std::map<intptr_t, bp_source>    memorys_;
 		hashmap<bp_function>             functions_;
-		base::hybrid_array<size_t, 1024> fast_table_;
 	};
 }

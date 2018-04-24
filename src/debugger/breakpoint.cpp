@@ -123,16 +123,12 @@ namespace vscode
 	breakpoint::breakpoint(debugger_impl* dbg)
 		: dbg_(dbg)
 		, files_()
-		, fast_table_()
-	{
-		fast_table_.fill(0);
-	}
+	{ }
 
 	void breakpoint::clear()
 	{
 		files_.clear();
 		memorys_.clear();
-		fast_table_.clear();
 	}
 
 	void breakpoint::clear(const std::string& client_path)
@@ -155,10 +151,6 @@ namespace vscode
 
 	void breakpoint::clear(bp_source& bps)
 	{
-		for (auto bp : bps)
-		{
-			fast_table_[bp.first]--;
-		}
 		bps.clear();
 	}
 
@@ -182,23 +174,10 @@ namespace vscode
 		}
 
 		bps.insert(std::make_pair(line, bp(bpinfo, 0)));
-		if (line >= fast_table_.size())
-		{
-			size_t oldsize = fast_table_.size();
-			size_t newsize = line + 1;
-			fast_table_.resize(newsize);
-			std::fill_n(fast_table_.begin() + oldsize, newsize - oldsize, 0);
-		}
-		fast_table_[line]++;
 	}
 
 	bool breakpoint::has(bp_source* src, size_t line, lua_State* L, lua::Debug* ar) const
 	{
-		if (line >= fast_table_.size() || fast_table_[line] == 0)
-		{
-			return false;
-		}
-
 		auto it = src->find(line);
 		if (it == src->end())
 		{

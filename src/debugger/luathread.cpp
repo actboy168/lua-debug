@@ -64,6 +64,7 @@ namespace vscode
 		, stepping_lua_state_(NULL)
 		, cur_function(0)
 		, has_function(false)
+		, has_breakpoint(false)
 		, ob_(id)
 	{
 		install_hook(LUA_MASKCALL | LUA_MASKRET | LUA_MASKLINE | LUA_MASKEXCEPTION);
@@ -138,6 +139,7 @@ namespace vscode
 	void luathread::hook_callret(lua_State* L, lua::Debug* ar)
 	{
 		has_function = false;
+		has_breakpoint = false;
 		cur_function = nullptr;
 		switch (ar->event) {
 		case LUA_HOOKTAILCALL:
@@ -159,7 +161,11 @@ namespace vscode
 	{
 		if (!has_function) {
 			has_function = true;
+			has_breakpoint = false;
 			cur_function = breakpoint.get_function(L, ar);
+			if (cur_function) {
+				has_breakpoint = !cur_function->bp->empty();
+			}
 		}
 	}
 
@@ -167,6 +173,7 @@ namespace vscode
 	{
 		if (cur_function) {
 			has_function = false;
+			has_breakpoint = false;
 		}
 	}
 
