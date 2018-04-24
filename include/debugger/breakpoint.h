@@ -16,6 +16,26 @@ namespace vscode
 {
 	class breakpoint;
 
+	struct source {
+		bool vaild = false;
+		std::string path;
+		intptr_t ref = 0;
+		source() {}
+
+		source(rapidjson::Value const& info) 
+		{
+			if (info.HasMember("path")) {
+				path = info["path"].Get<std::string>();
+				vaild = true;
+			}
+			else if (info.HasMember("name") && info.HasMember("sourceReference"))
+			{
+				ref = info["sourceReference"].Get<intptr_t>();
+				vaild = true;
+			}
+		}
+	};
+
 	struct bp {
 		std::string cond;
 		std::string hitcond;
@@ -36,8 +56,7 @@ namespace vscode
 	};
 
 	struct bp_function {
-		std::string clientpath;
-		intptr_t sourceref;
+		source source;
 		bp_source* bp;
 		bp_function(lua_State* L, lua::Debug* ar, breakpoint* breakpoint);
 	};
@@ -47,14 +66,11 @@ namespace vscode
 	public:
 		breakpoint(debugger_impl* dbg);
 		void clear();
-		void clear(const std::string& client_path);
-		void clear(intptr_t source_ref);
-		void add(const std::string& client_path, size_t line, rapidjson::Value const& bp);
-		void add(intptr_t source_ref, size_t line, rapidjson::Value const& bp);
+		void clear(source& source);
+		void add(source& source, size_t line, rapidjson::Value const& bp);
 		bool has(bp_source* src, size_t line, lua_State* L, lua::Debug* ar) const;
 		bp_function* get_function(lua_State* L, lua::Debug* ar);
-		bp_source& get_bp(intptr_t sourceref);
-		bp_source& get_bp(const std::string& clientpath);
+		bp_source& get_bp(source& source);
 		pathconvert& get_pathconvert();
 
 	private:

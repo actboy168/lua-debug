@@ -272,35 +272,19 @@ namespace vscode
 	bool debugger_impl::request_set_breakpoints(rprotocol& req)
 	{
 		auto& args = req["arguments"];
-		auto& source = args["source"];
-		std::vector<unsigned int> lines;
 
-		if (source.HasMember("path")) {
-			std::string path = source["path"].Get<std::string>();
-			breakpoints_.clear(path);
-
-			for (auto& m : args["breakpoints"].GetArray())
-			{
-				unsigned int line = m["line"].GetUint();
-				lines.push_back(line);
-				breakpoints_.add(path, line, m);
-			}
-		}
-		else if (source.HasMember("name")
-			&& source.HasMember("sourceReference"))
-		{
-			intptr_t source_ref = source["sourceReference"].Get<intptr_t>();
-			breakpoints_.clear(source_ref);
-			for (auto& m : args["breakpoints"].GetArray())
-			{
-				unsigned int line = m["line"].GetUint();
-				lines.push_back(line);
-				breakpoints_.add(source_ref, line, m);
-			}
-		}
-		else {
+		vscode::source s(args["source"]);
+		if (!s.vaild) {
 			response_error(req, "not yet implemented");
 			return false;
+		}
+		breakpoints_.clear(s);
+		std::vector<unsigned int> lines;
+		for (auto& m : args["breakpoints"].GetArray())
+		{
+			unsigned int line = m["line"].GetUint();
+			lines.push_back(line);
+			breakpoints_.add(s, line, m);
 		}
 
 		for (auto& lt : luathreads_) {

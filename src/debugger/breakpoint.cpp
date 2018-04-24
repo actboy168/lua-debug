@@ -98,21 +98,20 @@ namespace vscode
 	}
 
 	bp_function::bp_function(lua_State* L, lua::Debug* ar, breakpoint* breakpoint)
-		: clientpath()
-		, sourceref(0)
+		: source()
 		, bp(nullptr)
 	{
 		if (!lua_getinfo(L, "SL", (lua_Debug*)ar)) {
 			return;
 		}
 		if (ar->source[0] == '@' || ar->source[0] == '=') {
-			if (breakpoint->get_pathconvert().get(ar->source, clientpath)) {
-				bp = &breakpoint->get_bp(clientpath);
+			if (breakpoint->get_pathconvert().get(ar->source, source.path)) {
+				bp = &breakpoint->get_bp(source);
 			}
 		}
 		else {
-			sourceref = (intptr_t)ar->source;
-			bp = &breakpoint->get_bp(sourceref);
+			source.ref = (intptr_t)ar->source;
+			bp = &breakpoint->get_bp(source);
 		}
 		if (bp) {
 			bp->update(L, ar);
@@ -131,21 +130,19 @@ namespace vscode
 		memorys_.clear();
 	}
 
-	void breakpoint::clear(const std::string& client_path)
+	void breakpoint::clear(source& source)
 	{
-		auto it = files_.find(client_path);
-		if (it != files_.end())
-		{
-			return clear(it->second);
+		if (source.ref) {
+			auto it = memorys_.find(source.ref);
+			if (it != memorys_.end()) {
+				return clear(it->second);
+			}
 		}
-	}
-
-	void breakpoint::clear(intptr_t source_ref)
-	{
-		auto it = memorys_.find(source_ref);
-		if (it != memorys_.end())
-		{
-			return clear(it->second);
+		else {
+			auto it = files_.find(source.path);
+			if (it != files_.end()) {
+				return clear(it->second);
+			}
 		}
 	}
 
@@ -154,14 +151,9 @@ namespace vscode
 		bps.clear();
 	}
 
-	void breakpoint::add(const std::string& client_path, size_t line, rapidjson::Value const& bp)
+	void breakpoint::add(source& source, size_t line, rapidjson::Value const& bp)
 	{
-		return add(get_bp(client_path), line, bp);
-	}
-
-	void breakpoint::add(intptr_t source_ref, size_t line, rapidjson::Value const& bp)
-	{
-		return add(get_bp(source_ref), line, bp);
+		return add(get_bp(source), line, bp);
 	}
 
 	void breakpoint::add(bp_source& bps, size_t line, rapidjson::Value const& bpinfo)
@@ -176,10 +168,10 @@ namespace vscode
 		bps.insert(std::make_pair(line, bp(bpinfo, 0)));
 	}
 
-	bool breakpoint::has(bp_source* src, size_t line, lua_State* L, lua::Debug* ar) const
+	bool breakpoint::has(bp_source* bps, size_t line, lua_State* L, lua::Debug* ar) const
 	{
-		auto it = src->find(line);
-		if (it == src->end())
+		auto it = bps->find(line);
+		if (it == bps->end())
 		{
 			return false;
 		}
@@ -202,14 +194,12 @@ namespace vscode
 		return true;
 	}
 
-	bp_source& breakpoint::get_bp(const std::string& clientpath)
+	bp_source& breakpoint::get_bp(source& source)
 	{
-		return files_[clientpath];
-	}
-
-	bp_source& breakpoint::get_bp(intptr_t sourceref)
-	{
-		return memorys_[sourceref];
+		if (source.ref) {
+			return memorys_[source.ref];
+		}
+		return files_[source.path];
 	}
 
 	bp_function* breakpoint::get_function(lua_State* L, lua::Debug* ar)
