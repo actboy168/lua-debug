@@ -61,12 +61,43 @@ namespace vscode
 		}
 	}
 
+	source::source() {}
+
+	source::source(rapidjson::Value const& info)
+	{
+		if (info.HasMember("path")) {
+			path = info["path"].Get<std::string>();
+			vaild = true;
+		}
+		else if (info.HasMember("name") && info.HasMember("sourceReference"))
+		{
+			ref = info["sourceReference"].Get<intptr_t>();
+			vaild = true;
+		}
+	}
+
+	void source::output(wprotocol& res)
+	{
+		if (!vaild) return;
+		for (auto _ : res("source").Object())
+		{
+			if (ref) {
+				res("sourceReference").Int64(ref);
+			}
+			else {
+				res("path").String(path);
+			}
+		}
+	}
+
 	bp::bp(rapidjson::Value const& info, int h)
-		: cond()
+		: line(0)
+		, cond()
 		, hitcond()
 		, log()
 		, hit(h)
 	{
+		line = info["line"].GetUint();
 		if (info.HasMember("condition")) {
 			cond = info["condition"].Get<std::string>();
 		}
@@ -77,6 +108,10 @@ namespace vscode
 			log = info["logMessage"].Get<std::string>() + "\n";
 		}
 	}
+
+	bp_source::bp_source(source& s)
+		: src(s)
+	{ }
 
 	void bp_source::update(lua_State* L, lua::Debug* ar)
 	{
@@ -98,22 +133,24 @@ namespace vscode
 	}
 
 	bp_function::bp_function(lua_State* L, lua::Debug* ar, breakpoint* breakpoint)
-		: source()
-		, bp(nullptr)
+		: bp(nullptr)
 	{
 		if (!lua_getinfo(L, "SL", (lua_Debug*)ar)) {
 			return;
 		}
+
+		source s;
 		if (ar->source[0] == '@' || ar->source[0] == '=') {
-			if (breakpoint->get_pathconvert().get(ar->source, source.path)) {
-				bp = &breakpoint->get_bp(source);
+			if (breakpoint->get_pathconvert().get(ar->source, s.path)) {
+				bp = &breakpoint->get_bp(s);
 			}
 		}
 		else {
-			source.ref = (intptr_t)ar->source;
-			bp = &breakpoint->get_bp(source);
+			s.ref = (intptr_t)ar->source;
+			bp = &breakpoint->get_bp(s);
 		}
 		if (bp) {
+			s.vaild = true;
 			bp->update(L, ar);
 		}
 		lua_pop(L, 1);
@@ -135,29 +172,22 @@ namespace vscode
 		if (source.ref) {
 			auto it = memorys_.find(source.ref);
 			if (it != memorys_.end()) {
-				return clear(it->second);
+				it->second.clear();
+				return;
 			}
 		}
 		else {
 			auto it = files_.find(source.path);
 			if (it != files_.end()) {
-				return clear(it->second);
+				it->second.clear();
+				return;
 			}
 		}
 	}
 
-	void breakpoint::clear(bp_source& bps)
+	void breakpoint::add(source& source, size_t line, rapidjson::Value const& bpinfo)
 	{
-		bps.clear();
-	}
-
-	void breakpoint::add(source& source, size_t line, rapidjson::Value const& bp)
-	{
-		return add(get_bp(source), line, bp);
-	}
-
-	void breakpoint::add(bp_source& bps, size_t line, rapidjson::Value const& bpinfo)
-	{
+		bp_source& bps = get_bp(source);
 		auto it = bps.find(line);
 		if (it != bps.end())
 		{
@@ -197,9 +227,19 @@ namespace vscode
 	bp_source& breakpoint::get_bp(source& source)
 	{
 		if (source.ref) {
-			return memorys_[source.ref];
+			auto it = memorys_.find(source.ref);
+			if (it != memorys_.end()) {
+				return it->second;
+			}
+			return memorys_.insert(std::make_pair(source.ref, bp_source(source))).first->second;
 		}
-		return files_[source.path];
+		else {
+			auto it = files_.find(source.path);
+			if (it != files_.end()) {
+				return it->second;
+			}
+			return files_.insert(std::make_pair(source.path, bp_source(source))).first->second;
+		}
 	}
 
 	bp_function* breakpoint::get_function(lua_State* L, lua::Debug* ar)

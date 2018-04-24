@@ -100,6 +100,7 @@ namespace vscode
 		void event_terminated();
 		void event_initialized();
 		void event_capabilities();
+		void event_breakpoint(const char* reason, bp_source* bpsrc, bp* bp);
 
 	public:
 		void response_error(rprotocol& req, const char *msg);

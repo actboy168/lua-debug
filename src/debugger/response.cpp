@@ -146,6 +146,29 @@ namespace vscode
 		}
 		io_output(res);
 	}
+
+	void debugger_impl::event_breakpoint(const char* reason, bp_source* bpsrc, bp* bp)
+	{
+		wprotocol res;
+		for (auto _ : res.Object())
+		{
+			res("type").String("event");
+			res("seq").Int64(seq++);
+			res("event").String("breakpoint");
+			for (auto _ : res("body").Object())
+			{
+				res("reason").String(reason);
+				for (auto _ : res("breakpoint").Object())
+				{
+					res("verified").Bool(true);
+					bpsrc->src.output(res);
+					res("line").Uint(bp->line);
+				}
+			}
+		}
+		io_output(res);
+	}
+
 	void debugger_impl::response_error(rprotocol& req, const char *msg)
 	{
 		wprotocol res;
