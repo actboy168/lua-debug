@@ -90,7 +90,7 @@ namespace vscode
 		}
 	}
 
-	bp::bp(rapidjson::Value const& info, int h)
+	bp_breakpoint::bp_breakpoint(rapidjson::Value const& info, int h)
 		: line(0)
 		, cond()
 		, hitcond()
@@ -118,7 +118,7 @@ namespace vscode
 		while (defined.size() <= (size_t)ar->lastlinedefined) {
 			defined.emplace_back(eLine::unknown);
 		}
-		for (int i = ar->linedefined; i < ar->lastlinedefined; ++i) {
+		for (int i = ar->linedefined; i <= ar->lastlinedefined; ++i) {
 			defined[i] = eLine::undef;
 		}
 		lua_pushnil(L);
@@ -189,13 +189,12 @@ namespace vscode
 	{
 		bp_source& src = get_source(source);
 		auto it = src.find(line);
-		if (it != src.end())
-		{
-			it->second = bp(bpinfo, it->second.hit);
-			return;
+		if (it != src.end()) {
+			it->second = bp_breakpoint(bpinfo, it->second.hit);
 		}
-
-		src.insert(std::make_pair(line, bp(bpinfo, 0)));
+		else {
+			src.insert(std::make_pair(line, bp_breakpoint(bpinfo, 0)));
+		}
 	}
 
 	bool breakpoint::has(bp_source* src, size_t line, lua_State* L, lua::Debug* ar) const
@@ -205,7 +204,7 @@ namespace vscode
 		{
 			return false;
 		}
-		bp& bp = it->second;
+		bp_breakpoint& bp = it->second;
 		if (!bp.cond.empty() && !evaluate_isok(L, ar, bp.cond))
 		{
 			return false;

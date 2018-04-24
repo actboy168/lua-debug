@@ -25,7 +25,7 @@ namespace vscode
 		void output(wprotocol& res);
 	};
 
-	struct bp {
+	struct bp_breakpoint {
 		unsigned int line;
 
 		std::string cond;
@@ -33,7 +33,7 @@ namespace vscode
 		std::string log;
 		int hit;
 
-		bp(rapidjson::Value const& info, int h);
+		bp_breakpoint(rapidjson::Value const& info, int h);
 	};
 
 	enum class eLine : uint8_t {
@@ -42,7 +42,7 @@ namespace vscode
 		defined = 2,
 	};
 
-	struct bp_source : public std::map<size_t, bp> {
+	struct bp_source : public std::map<size_t, bp_breakpoint> {
 		source src;
 		std::deque<eLine> defined;
 		bp_source(source& s);

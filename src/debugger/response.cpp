@@ -147,7 +147,7 @@ namespace vscode
 		io_output(res);
 	}
 
-	void debugger_impl::event_breakpoint(const char* reason, bp_source* bpsrc, bp* bp)
+	void debugger_impl::event_breakpoint(const char* reason, bp_source* src, bp_breakpoint* bp)
 	{
 		wprotocol res;
 		for (auto _ : res.Object())
@@ -161,7 +161,7 @@ namespace vscode
 				for (auto _ : res("breakpoint").Object())
 				{
 					res("verified").Bool(true);
-					bpsrc->src.output(res);
+					src->src.output(res);
 					res("line").Uint(bp->line);
 				}
 			}
