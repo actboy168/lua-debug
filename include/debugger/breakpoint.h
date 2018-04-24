@@ -50,7 +50,7 @@ namespace vscode
 	};
 
 	struct bp_function {
-		bp_source* bp;
+		bp_source* src;
 		bp_function(lua_State* L, lua::Debug* ar, breakpoint* breakpoint);
 	};
 
@@ -63,7 +63,7 @@ namespace vscode
 		void add(source& source, size_t line, rapidjson::Value const& bpinfo);
 		bool has(bp_source* src, size_t line, lua_State* L, lua::Debug* ar) const;
 		bp_function* get_function(lua_State* L, lua::Debug* ar);
-		bp_source& get_bp(source& source);
+		bp_source& get_source(source& source);
 		pathconvert& get_pathconvert();
 
 	private:
