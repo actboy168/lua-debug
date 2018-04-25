@@ -38,7 +38,7 @@ namespace vscode
 		int hit;
 
 		bp_breakpoint(size_t id, rapidjson::Value const& info, int h);
-		bool verify(bp_source& src);
+		bool verify(bp_source& src, debugger_impl* dbg = nullptr);
 		bool run(lua_State* L, lua::Debug* ar, debugger_impl* dbg);
 		void output(wprotocol& res);
 	};

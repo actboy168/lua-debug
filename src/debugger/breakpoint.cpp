@@ -108,11 +108,11 @@ namespace vscode
 			hitcond = info["hitCondition"].Get<std::string>();
 		}
 		if (info.HasMember("logMessage")) {
-			log = info["logMessage"].Get<std::string>() + "\n";
+			log = info["logMessage"].Get<std::string>();
 		}
 	}
 
-	bool bp_breakpoint::verify(bp_source& src)
+	bool bp_breakpoint::verify(bp_source& src, debugger_impl* dbg)
 	{
 		if (verified) return true;
 		for (unsigned int i = line; i < src.defined.size(); ++i) {
@@ -121,7 +121,10 @@ namespace vscode
 				return false;
 			case eLine::defined:
 				verified = true;
-				verified_line = line;
+				verified_line = i;
+				if (dbg) {
+					dbg->event_breakpoint("changed", &src, this);
+				}
 				return true;
 			case eLine::undef:
 				break;
@@ -137,6 +140,9 @@ namespace vscode
 		res("id").Uint(id);
 		res("verified").Bool(verified);
 		res("line").Uint(verified ? verified_line : line);
+		//if (cond.empty()) { res("condition").String(cond); }
+		//if (hitcond.empty()) { res("hitCondition").String(hitcond); }
+		//if (log.empty()) { res("logMessage").String(log); }
 	}
 
 	bool bp_breakpoint::run(lua_State* L, lua::Debug* ar, debugger_impl* dbg)
@@ -149,7 +155,7 @@ namespace vscode
 			return false;
 		}
 		if (!log.empty()) {
-			std::string res = evaluate_log(L, ar, log);
+			std::string res = evaluate_log(L, ar, log) + "\n";
 			dbg->output("stdout", res.data(), res.size(), L, ar);
 			return false;
 		}
@@ -184,8 +190,8 @@ namespace vscode
 
 		for (auto it : verified) {
 			bp_breakpoint& bp = it.second;
-			if (!bp.verified && bp.verify(*this)) {
-				dbg->event_breakpoint("changed", this, &bp);
+			if (!bp.verified) {
+				bp.verify(*this, dbg);
 			}
 		}
 	}

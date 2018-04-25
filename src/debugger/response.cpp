@@ -160,6 +160,10 @@ namespace vscode
 				res("reason").String(reason);
 				for (auto _ : res("breakpoint").Object())
 				{
+					// new
+					if (reason[0] == 'n') {
+						src->src.output(res);
+					}
 					bp->output(res);
 				}
 			}
