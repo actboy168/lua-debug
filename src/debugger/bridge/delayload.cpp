@@ -60,6 +60,13 @@ namespace delayload
 					return (FARPROC)lua::lua54::lua_getuservalue;
 				}
 			}
+			else if (strcmp(pdli->dlp.szProcName, "lua_getproto") == 0) {
+				FARPROC f = get_lua_api(pdli->hmodCur, "lua_getproto");
+				if (f) {
+					return f;
+				}
+				return (FARPROC)lua::lua_getproto;
+			}
 			char str[256];
 			sprintf(str, "Can't find lua c function: `%s`.", pdli->dlp.szProcName);
 			MessageBoxA(0, "Fatal Error.", str, 0);

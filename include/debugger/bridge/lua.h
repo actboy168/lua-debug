@@ -54,6 +54,8 @@ namespace lua {
 		};
 	};
 
+	const void* __cdecl lua_getproto(lua_State *L, int idx);
+
 	namespace lua54 {
 		extern int (__cdecl* lua_getiuservalue)(lua_State *L, int idx, int n);
 		int __cdecl lua_getuservalue(lua_State* L, int idx);
