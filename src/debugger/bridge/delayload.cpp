@@ -61,10 +61,6 @@ namespace delayload
 				}
 			}
 			else if (strcmp(pdli->dlp.szProcName, "lua_getproto") == 0) {
-				FARPROC f = get_lua_api(pdli->hmodCur, "lua_getproto");
-				if (f) {
-					return f;
-				}
 				return (FARPROC)lua::lua_getproto;
 			}
 			char str[256];
