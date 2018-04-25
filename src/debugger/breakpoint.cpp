@@ -90,38 +90,54 @@ namespace vscode
 		}
 	}
 
-	bp_breakpoint::bp_breakpoint(size_t id, rapidjson::Value const& info, int h)
+	bp_breakpoint::bp_breakpoint(size_t id, rapidjson::Value const& info)
 		: id(id)
 		, line(0)
 		, verified(false)
-		, verified_line(0)
 		, cond()
 		, hitcond()
 		, log()
-		, hit(h)
+		, hit(0)
 	{
 		line = info["line"].GetUint();
+		update(info);
+	}
+
+	void bp_breakpoint::update(rapidjson::Value const& info)
+	{
 		if (info.HasMember("condition")) {
 			cond = info["condition"].Get<std::string>();
+		}
+		else {
+			cond.clear();
 		}
 		if (info.HasMember("hitCondition")) {
 			hitcond = info["hitCondition"].Get<std::string>();
 		}
+		else {
+			hitcond.clear();
+		}
 		if (info.HasMember("logMessage")) {
 			log = info["logMessage"].Get<std::string>();
+		}
+		else {
+			log.clear();
 		}
 	}
 
 	bool bp_breakpoint::verify(bp_source& src, debugger_impl* dbg)
 	{
 		if (verified) return true;
-		for (unsigned int i = line; i < src.defined.size(); ++i) {
+		for (size_t i = line; i < src.defined.size(); ++i) {
 			switch (src.defined[i]) {
 			case eLine::unknown:
 				return false;
 			case eLine::defined:
+				if (src.verified.find(i) != src.verified.end()) {
+					return false;
+				}
 				verified = true;
-				verified_line = i;
+				line = i;
 				if (dbg) {
 					dbg->event_breakpoint("changed", &src, this);
 				}
@@ -139,7 +155,7 @@ namespace vscode
 	{
 		res("id").Uint(id);
 		res("verified").Bool(verified);
-		res("line").Uint(verified ? verified_line : line);
+		res("line").Uint(line);
 		//if (cond.empty()) { res("condition").String(cond); }
 		//if (hitcond.empty()) { res("hitCondition").String(hitcond); }
 		//if (log.empty()) { res("logMessage").String(log); }
@@ -188,24 +204,38 @@ namespace vscode
 			defined[line] = eLine::defined;
 		}
 
-		for (auto it : verified) {
-			bp_breakpoint& bp = it.second;
-			if (!bp.verified) {
-				bp.verify(*this, dbg);
+		for (size_t i = 0; i < waitverfy.size();) {
+			bp_breakpoint& bp = waitverfy[i];
+			if (bp.verify(*this, dbg)) {
+				std::swap(waitverfy[i], waitverfy.back());
+				verified.insert(std::make_pair(waitverfy.back().line, waitverfy.back()));
+				waitverfy.pop_back();
+			}
+			else {
+				++i;
 			}
 		}
 	}
 
 	bp_breakpoint& bp_source::add(size_t line, rapidjson::Value const& bpinfo, size_t& next_id)
 	{
+		for (auto& bp : waitverfy) {
+			if (bp.line == line) {
+				bp.update(bpinfo);
+				return bp;
+			}
+		}
 		auto it = verified.find(line);
 		if (it != verified.end()) {
-			it->second = bp_breakpoint(next_id++, bpinfo, it->second.hit);
+			it->second.update(bpinfo);;
 			return it->second;
 		}
-		else {
-			return verified.insert(std::make_pair(line, bp_breakpoint(next_id++, bpinfo, 0))).first->second;
+		bp_breakpoint bp(next_id++, bpinfo);
+		if (bp.verify(*this)) {
+			return verified.insert(std::make_pair(line, bp)).first->second;
 		}
+		waitverfy.emplace_back(std::move(bp));
+		return waitverfy.back();
 	}
 
 	bp_breakpoint* bp_source::get(size_t line)
@@ -217,9 +247,32 @@ namespace vscode
 		return &it->second;
 	}
 
-	void bp_source::clear()
+	void bp_source::clear(rapidjson::Value const& args)
 	{
-		verified.clear();
+		std::set<size_t> lines;
+		for (auto& m : args["breakpoints"].GetArray()) {
+			lines.insert(m["line"].GetUint());
+		}
+
+		for (size_t i = 0; i < waitverfy.size();) {
+			bp_breakpoint& bp = waitverfy[i];
+			if (lines.find(bp.line) == lines.end()) {
+				std::swap(waitverfy[i], waitverfy.back());
+				waitverfy.pop_back();
+			}
+			else {
+				++i;
+			}
+		}
+		for (auto& it = verified.begin(); it != verified.end();) {
+			bp_breakpoint& bp = it->second;
+			if (lines.find(bp.line) == lines.end()) {
+				it = verified.erase(it);
+			}
+			else {
+				++it;
+			}
+		}
 	}
 
 	bool bp_source::has_breakpoint()
@@ -308,14 +361,13 @@ namespace vscode
 	void breakpoint::set_breakpoint(source& s, rapidjson::Value const& args, wprotocol& res)
 	{
 		bp_source& src = get_source(s);
-		src.clear();
+		src.clear(args);
 		for (auto _ : res("breakpoints").Array())
 		{
 			for (auto& m : args["breakpoints"].GetArray())
 			{
 				unsigned int line = m["line"].GetUint();
 				bp_breakpoint& bp = src.add(line, m, next_id_);
-				bp.verify(src);
 				for (auto _ : res.Object())
 				{
 					bp.output(res);

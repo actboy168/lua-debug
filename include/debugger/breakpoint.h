@@ -30,17 +30,17 @@ namespace vscode
 		size_t id;
 		unsigned int line;
 		bool verified;
-		unsigned int verified_line;
 
 		std::string cond;
 		std::string hitcond;
 		std::string log;
 		int hit;
 
-		bp_breakpoint(size_t id, rapidjson::Value const& info, int h);
+		bp_breakpoint(size_t id, rapidjson::Value const& info);
 		bool verify(bp_source& src, debugger_impl* dbg = nullptr);
 		bool run(lua_State* L, lua::Debug* ar, debugger_impl* dbg);
 		void output(wprotocol& res);
+		void update(rapidjson::Value const& info);
 	};
 
 	enum class eLine : uint8_t {
@@ -52,7 +52,7 @@ namespace vscode
 	struct bp_source {
 		source src;
 		std::deque<eLine>               defined;
-		//std::vector<bp_breakpoint>      waitverfy;
+		std::vector<bp_breakpoint>      waitverfy;
 		std::map<size_t, bp_breakpoint> verified;
 
 		bp_source(source& s);
@@ -60,7 +60,7 @@ namespace vscode
 
 		bp_breakpoint& add(size_t line, rapidjson::Value const& bpinfo, size_t& next_id);
 		bp_breakpoint* get(size_t line);
-		void clear();
+		void clear(rapidjson::Value const& args);
 		bool has_breakpoint();
 	};
 
