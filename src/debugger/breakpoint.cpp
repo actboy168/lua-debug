@@ -162,12 +162,14 @@ namespace vscode
 
 	void bp_source::update(lua_State* L, lua::Debug* ar, debugger_impl* dbg)
 	{
-		while (defined.size() <= (size_t)ar->lastlinedefined) {
-			defined.emplace_back(eLine::unknown);
-		}
-		for (int i = ar->linedefined; i <= ar->lastlinedefined; ++i) {
-			if (defined[i] != eLine::defined) {
-				defined[i] = eLine::undef;
+		if (ar->what[0] == 'L') {
+			while (defined.size() <= (size_t)ar->lastlinedefined) {
+				defined.emplace_back(eLine::unknown);
+			}
+			for (int i = ar->linedefined; i <= ar->lastlinedefined; ++i) {
+				if (defined[i] != eLine::defined) {
+					defined[i] = eLine::undef;
+				}
 			}
 		}
 		lua_pushnil(L);
