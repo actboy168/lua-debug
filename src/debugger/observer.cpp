@@ -1206,7 +1206,7 @@ finish:
 		{
 			res("variables").StartArray();
 			it->second.get_variable(L, &entry, dbg, valueId, res);
-			res("variables").EndArray();
+			res.EndArray();
 		});
 	}
 
