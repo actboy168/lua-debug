@@ -153,9 +153,9 @@ namespace vscode
 
 	void bp_breakpoint::output(wprotocol& res)
 	{
-		res("id").Uint(id);
+		res("id").Uint64(id);
 		res("verified").Bool(verified);
-		res("line").Uint(line);
+		res("line").Uint64(line);
 		//if (cond.empty()) { res("condition").String(cond); }
 		//if (hitcond.empty()) { res("hitCondition").String(hitcond); }
 		//if (log.empty()) { res("logMessage").String(log); }

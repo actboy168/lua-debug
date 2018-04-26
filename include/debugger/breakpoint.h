@@ -28,7 +28,7 @@ namespace vscode
 
 	struct bp_breakpoint {
 		size_t id;
-		unsigned int line;
+		size_t line;
 		bool verified;
 
 		std::string cond;
