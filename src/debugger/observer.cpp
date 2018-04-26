@@ -324,17 +324,17 @@ namespace vscode {
 		var(lua_State* L, int n, const char* key, int value, pathconvert& pathconvert)
 			: n(n)
 			, name(key)
-			, value(getvalue(L, value, pathconvert))
-			, type(gettype(L, value))
-			, extand(can_extand(L, value))
+			, value(getValue(L, value, pathconvert))
+			, type(getType(L, value))
+			, extand(canExtand(L, value))
 		{ }
 
 		var(lua_State* L, int n, int key, int value, pathconvert& pathconvert)
 		: n(n)
-		, name(getname(L, key))
-		, value(getvalue(L, value, pathconvert))
-		, type(gettype(L, value))
-		, extand(can_extand(L, value))
+		, name(getName(L, key))
+		, value(getValue(L, value, pathconvert))
+		, type(getType(L, value))
+		, extand(canExtand(L, value))
 		{ }
 
 		static int safe_callmeta(lua_State *L, int obj, const char *event) {
@@ -370,7 +370,7 @@ namespace vscode {
 			return nullptr;
 		}
 
-		static std::string getname(lua_State *L, int idx) {
+		static std::string getName(lua_State *L, int idx) {
 			if (safe_callmeta(L, idx, "__debugger_tostring")) {
 				size_t len = 0;
 				const char* buf = lua_tolstring(L, idx, &len);
@@ -405,7 +405,7 @@ namespace vscode {
 			return base::format("%s: %p", luaL_typename(L, idx), lua_topointer(L, idx));
 		}
 
-		static std::string raw_getvalue(lua_State *L, int idx, pathconvert& pathconvert)
+		static std::string rawGetValue(lua_State *L, int idx, pathconvert& pathconvert)
 		{
 			switch (lua_type(L, idx)) {
 			case LUA_TNUMBER:
@@ -453,17 +453,17 @@ namespace vscode {
 			return base::format("%s: %p", luaL_typename(L, idx), lua_topointer(L, idx));
 		}
 
-		static std::string getvalue(lua_State *L, int idx, pathconvert& pathconvert)
+		static std::string getValue(lua_State *L, int idx, pathconvert& pathconvert)
 		{
 			if (safe_callmeta(L, idx, "__debugger_tostring")) {
-				std::string r = raw_getvalue(L, -1, pathconvert);
+				std::string r = rawGetValue(L, -1, pathconvert);
 				lua_pop(L, 1);
 				return r;
 			}
-			return raw_getvalue(L, idx, pathconvert);
+			return rawGetValue(L, idx, pathconvert);
 		}
 
-		static std::string gettype(lua_State *L, int idx)
+		static std::string getType(lua_State *L, int idx)
 		{
 			if (luaL_getmetafield(L, idx, "__name") != LUA_TNIL) {
 				if (lua_type(L, -1) == LUA_TSTRING) {
@@ -506,7 +506,7 @@ namespace vscode {
 			return false;
 		}
 
-		static bool can_extand(lua_State *L, int idx)
+		static bool canExtand(lua_State *L, int idx)
 		{
 			int type = lua_type(L, idx);
 			switch (type)
@@ -899,7 +899,7 @@ finish:
 	{
 		lua_pushnil(L);
 		while (lua_next(L, -2)) {
-			std::string name = var::getname(L, -2);
+			std::string name = var::getName(L, -2);
 			if (name == setvalue.name) {
 				if (!push_setvalue(L, lua_type(L, -1), setvalue)) {
 					lua_pop(L, 2);
@@ -1076,7 +1076,7 @@ finish:
 
 	int64_t observer::new_watch(lua_State* L, frame* frame, const std::string& expression)
 	{
-		if (!var::can_extand(L, -1)) {
+		if (!var::canExtand(L, -1)) {
 			return 0;
 		}
 		watch_table(L);
