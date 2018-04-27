@@ -34,8 +34,14 @@ namespace vscode { namespace io {
 	}
 	void namedpipe::close() {
 		pipe->close();
+		if (kill_when_close_) {
+			exit(0);
+		}
 	}
 	bool namedpipe::is_closed() const {
 		return pipe->is_closed();
+	}
+	void namedpipe::kill_when_close() {
+		kill_when_close_ = true;
 	}
 }}

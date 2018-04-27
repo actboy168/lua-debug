@@ -1,16 +1,7 @@
 #pragma once
 
 #include <string>
-
-#if defined(DEBUGGER_INLINE)
-#	define DEBUGGER_API
-#else
-#	if defined(DEBUGGER_EXPORTS)
-#		define DEBUGGER_API __declspec(dllexport)
-#	else
-#		define DEBUGGER_API __declspec(dllimport)
-#	endif
-#endif
+#include <debugger/io/base.h>
 
 struct lua_State;
 struct lua_Debug;

@@ -3,16 +3,6 @@
 #include <debugger/io/base.h>
 #include <net/queue.h>
 
-#if defined(DEBUGGER_INLINE)
-#	define DEBUGGER_API
-#else
-#	if defined(DEBUGGER_EXPORTS)
-#		define DEBUGGER_API __declspec(dllexport)
-#	else
-#		define DEBUGGER_API __declspec(dllimport)
-#	endif
-#endif
-
 namespace vscode { namespace io {
 	struct DEBUGGER_API stream
 		: public base
