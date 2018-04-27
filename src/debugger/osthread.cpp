@@ -24,7 +24,7 @@ namespace vscode {
 	{
 		if (!exit_) {
 			exit_ = true;
-			if (thd_) thd_->join();
+			if (thd_ && thd_->get_id() != std::this_thread::get_id()) thd_->join();
 		}
 	}
 
