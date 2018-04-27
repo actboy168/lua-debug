@@ -507,7 +507,7 @@ namespace vscode
 		})
 	{
 		config_.init(2, R"({
-			"consoleCoding" : "none",
+			"consoleCoding" : "utf8",
 			"sourceCoding" : "ansi"
 		})");
 		thread_->start();
