@@ -227,12 +227,12 @@ namespace vscode
 		}
 		auto it = verified.find(line);
 		if (it != verified.end()) {
-			it->second.update(bpinfo);;
+			it->second.update(bpinfo);
 			return it->second;
 		}
 		bp_breakpoint bp(next_id++, bpinfo);
 		if (bp.verify(*this)) {
-			return verified.insert(std::make_pair(line, bp)).first->second;
+			return verified.insert(std::make_pair(bp.line, bp)).first->second;
 		}
 		waitverfy.emplace_back(std::move(bp));
 		return waitverfy.back();
