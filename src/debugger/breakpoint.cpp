@@ -190,7 +190,7 @@ namespace vscode
 			}
 			for (int i = ar->linedefined; i <= ar->lastlinedefined; ++i) {
 				if (defined[i] != eLine::defined) {
-					defined[i] = eLine::undef;
+					defined[i] = eLine::unknown;
 				}
 			}
 		}
