@@ -1074,23 +1074,23 @@ finish:
 		return &(res.first->second);
 	}
 
-	int64_t observer::new_watch(lua_State* L, frame* frame, const std::string& expression)
+	int64_t observer::new_watch(lua_State* L, int idx, frame* frame, const std::string& expression)
 	{
-		if (!var::canExtand(L, -1)) {
+		if (!var::canExtand(L, idx)) {
 			return 0;
 		}
 		watch_table(L);
 		lua_pushlstring(L, expression.data(), expression.size());
 		if (LUA_TNUMBER == lua_rawget(L, -2)) {
 			int n = (int)lua_tointeger(L, -1);
-			lua_pushvalue(L, -3);
+			lua_pushvalue(L, idx);
 			lua_rawset(L, -3);
 			lua_pop(L, 1);
 			return frame->new_variable(-1, value::Type::watch, n);
 		}
 		lua_pop(L, 1);
 		int n = (int)(1 + luaL_len(L, -1));
-		lua_pushvalue(L, -2);
+		lua_pushvalue(L, idx);
 		lua_rawseti(L, -2, n);
 
 		lua_pushlstring(L, expression.data(), expression.size());
@@ -1152,7 +1152,7 @@ finish:
 			int64_t reference = 0;
 			if (rets.size() == 1 && watch)
 			{
-				reference = new_watch(L, create_or_get_frame(frameId), expression);
+				reference = new_watch(L, lua_absindex(L, -1), create_or_get_frame(frameId), expression);
 			}
 			lua_pop(L, nresult);
 			if (rets.size() == 0)
