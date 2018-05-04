@@ -167,7 +167,7 @@ namespace vscode
 		nresult = lua_gettop(L) - start;
 		if (writeable)
 		{
-			lua_rotate(L, start, 1);
+			lua_rotate(L, start, nresult);
 			lua_call(L, 0, 1);
 
 			lua_pushnil(L);
