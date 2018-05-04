@@ -1109,7 +1109,6 @@ finish:
 		if (args.HasMember("context")) {
 			context = args["context"].Get<std::string>();
 		}
-		bool watch = context == "watch";
 
 		if (!args.HasMember("expression")) {
 			dbg->response_error(req, "Error expression");
@@ -1149,11 +1148,7 @@ finish:
 				var var(L, i, "", i - nresult, dbg->get_pathconvert());
 				rets.emplace_back(std::move(var));
 			}
-			int64_t reference = 0;
-			if (rets.size() == 1 && watch)
-			{
-				reference = new_watch(L, lua_absindex(L, -1), create_or_get_frame(frameId), expression);
-			}
+			int64_t reference = new_watch(L, lua_absindex(L, -nresult), create_or_get_frame(frameId), expression);
 			lua_pop(L, nresult);
 			if (rets.size() == 0)
 			{
