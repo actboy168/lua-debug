@@ -35,8 +35,10 @@ namespace vscode
 	};
 
 	enum class eException {
-		uncaught,
-		caught,
+		lua_panic,
+		lua_pcall,
+		pcall,
+		xpcall,
 	};
 
 	struct custom

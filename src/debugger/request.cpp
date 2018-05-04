@@ -286,7 +286,7 @@ namespace vscode
 		});
 		return false;
 	}
-	
+
 	bool debugger_impl::request_set_exception_breakpoints(rprotocol& req)
 	{
 		auto& args = req["arguments"];
@@ -296,11 +296,22 @@ namespace vscode
 				if (v.IsString()) {
 					std::string filter = v.Get<std::string>();
 					if (filter == "all") {
-						exception_.insert(eException::uncaught);
-						exception_.insert(eException::caught);
+						exception_.insert(eException::lua_panic);
+						exception_.insert(eException::lua_pcall);
+						exception_.insert(eException::xpcall);
+						exception_.insert(eException::pcall);
 					}
-					else if (filter == "uncaught") {
-						exception_.insert(eException::uncaught);
+					else if (filter == "lua_panic") {
+						exception_.insert(eException::lua_panic);
+					}
+					else if (filter == "lua_pcall") {
+						exception_.insert(eException::lua_pcall);
+					}
+					else if (filter == "pcall") {
+						exception_.insert(eException::pcall);
+					}
+					else if (filter == "xpcall") {
+						exception_.insert(eException::xpcall);
 					}
 				}
 			}

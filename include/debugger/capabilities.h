@@ -19,15 +19,27 @@ namespace vscode
 			{
 				for (auto _ : res.Object())
 				{
-					res("default").Bool(true);
-					res("filter").String("all");
-					res("label").String("All Exceptions");
+					res("default").Bool(false);
+					res("filter").String("pcall");
+					res("label").String("Exception: Lua pcall");
+				}
+				for (auto _ : res.Object())
+				{
+					res("default").Bool(false);
+					res("filter").String("xpcall");
+					res("label").String("Exception: Lua xpcall");
 				}
 				for (auto _ : res.Object())
 				{
 					res("default").Bool(true);
-					res("filter").String("uncaught");
-					res("label").String("Uncaught Exceptions");
+					res("filter").String("lua_pcall");
+					res("label").String("Exception: C lua_pcall");
+				}
+				for (auto _ : res.Object())
+				{
+					res("default").Bool(true);
+					res("filter").String("lua_panic");
+					res("label").String("Exception: C lua_panic");
 				}
 			}
 		}

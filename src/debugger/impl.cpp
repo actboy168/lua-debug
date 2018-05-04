@@ -41,6 +41,38 @@ namespace vscode
 		return ml;
 	}
 
+	enum class eCall {
+		none,
+		pcall,
+		xpcall,
+	};
+	static eCall traceCall(lua_State *L, int level) {
+		lua_Debug ar;
+		if (LUA_TFUNCTION != lua_getglobal(L, "pcall")) {
+			lua_pop(L, 1);
+			lua_pushnil(L);
+		}
+		if (LUA_TFUNCTION != lua_getglobal(L, "xpcall")) {
+			lua_pop(L, 1);
+			lua_pushnil(L);
+		}
+		while (lua_getstack(L, level++, &ar)) {
+			if (lua_getinfo(L, "f", &ar)) {
+				if (lua_rawequal(L, -3, -1)) {
+					lua_pop(L, 3);
+					return eCall::pcall;
+				}
+				if (lua_rawequal(L, -2, -1)) {
+					lua_pop(L, 3);
+					return eCall::xpcall;
+				}
+				lua_pop(L, 1);
+			}
+		}
+		lua_pop(L, 2);
+		return eCall::none;
+	}
+
 	luathread* debugger_impl::find_luathread(lua_State* L)
 	{
 		L = get_mainthread(L);
@@ -148,7 +180,7 @@ namespace vscode
 	void debugger_impl::panic(luathread* thread, lua_State *L)
 	{
 		std::lock_guard<osthread> lock(*thread_);
-		exception_nolock(thread, L, eException::uncaught, 0, true);
+		exception_nolock(thread, L, eException::lua_panic, 0, true);
 	}
 
 	void debugger_impl::hook(luathread* thread, lua_State *L, lua::Debug *ar)
@@ -164,7 +196,18 @@ namespace vscode
 			return;
 		}
 		if (ar->event == LUA_HOOKEXCEPTION) {
-			exception_nolock(thread, L, eException::caught, 0, false);
+			switch (traceCall(L, 0)) {
+			case eCall::pcall:
+				exception_nolock(thread, L, eException::pcall, 0, false);
+				break;
+			case eCall::xpcall:
+				exception_nolock(thread, L, eException::xpcall, 0, false);
+				break;
+			case eCall::none:
+			default:
+				exception_nolock(thread, L, eException::lua_pcall, 0, false);
+				break;
+			}
 			return;
 		}
 		if (ar->event != LUA_HOOKLINE) {
