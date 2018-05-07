@@ -409,7 +409,144 @@ namespace vscode {
 			return base::format("%s: %p", luaL_typename(L, idx), lua_topointer(L, idx));
 		}
 
-		static std::string rawGetValue(lua_State *L, int idx, pathconvert& pathconvert)
+		static std::string getType(lua_State *L, int idx)
+		{
+			if (luaL_getmetafield(L, idx, "__name") != LUA_TNIL) {
+				if (lua_type(L, -1) == LUA_TSTRING) {
+					std::string type = lua_tostr<std::string>(L, -1);
+					lua_pop(L, 1);
+					return type;
+				}
+				lua_pop(L, 1);
+			}
+			switch (lua_type(L, idx)) {
+			case LUA_TNUMBER:
+				return lua_isinteger(L, idx) ? "integer" : "number";
+			case LUA_TLIGHTUSERDATA:
+				return "light userdata";
+			}
+			return luaL_typename(L, idx);
+		}
+
+		static std::string rawGetShortValue(lua_State *L, int idx, int realIdx, pathconvert& pathconvert)
+		{
+			switch (lua_type(L, idx)) {
+			case LUA_TNUMBER:
+				if (lua_isinteger(L, idx)) {
+					return base::format("%d", lua_tointeger(L, idx));
+				}
+				return base::format("%f", lua_tonumber(L, idx));
+			case LUA_TSTRING: {
+				size_t len = 0;
+				const char* str = lua_tolstring(L, idx, &len);
+				if (len < 16) {
+					return base::format("'%s'", str);
+				}
+				return base::format("'%s...'", std::string(str, 16));
+			}
+			case LUA_TBOOLEAN:
+				return lua_toboolean(L, idx) ? "true" : "false";
+			case LUA_TNIL:
+				return "nil";
+			case LUA_TTABLE:
+				if (var::canExtand(L, idx)) {
+					return "...";
+				}
+				return "{}";
+			case LUA_TFUNCTION:
+				return "func";
+			default:
+				break;
+			}
+			return luaL_typename(L, realIdx);
+		}
+
+		static std::string getShortValue(lua_State *L, int idx, pathconvert& pathconvert)
+		{
+			idx = lua_absindex(L, idx);
+			if (safe_callmeta(L, idx, "__debugger_tostring")) {
+				std::string r = rawGetShortValue(L, -1, idx, pathconvert);
+				lua_pop(L, 1);
+				return r;
+			}
+			if (lua_isuserdata(L, idx) && userdata_debugger_extand(L, idx)) {
+				std::string r = rawGetShortValue(L, -1, idx, pathconvert);
+				lua_pop(L, 1);
+				return r;
+			}
+			return rawGetShortValue(L, idx, idx, pathconvert);
+		}
+
+		static std::string getDebuggerExtandValue(lua_State *L, int idx, size_t maxlen, pathconvert& pathconvert)
+		{
+			std::string s = "";
+			for (int n = 1;; ++n) {
+				if (LUA_TSTRING != lua_rawgeti(L, idx, n)) {
+					lua_pop(L, 1);
+					break;
+				}
+				lua_pushvalue(L, -1);
+				if (LUA_TNIL == lua_gettable(L, -3)) {
+					lua_pop(L, 2);
+					continue;
+				}
+				std::string name = getName(L, -2);
+				std::string value = getShortValue(L, -1, pathconvert);
+				s += name + "=" + value + ",";
+				lua_pop(L, 2);
+				if (s.size() >= maxlen) {
+					return base::format("{%s...}", s);
+				}
+			}
+			return base::format("{%s}", s);
+		}
+
+		static std::string getTableValue(lua_State *L, int idx, size_t maxlen, pathconvert& pathconvert)
+		{
+			std::set<int> mark;
+			std::string s = "";
+			for (int n = 1;; ++n) {
+				if (LUA_TNIL == lua_rawgeti(L, idx, n)) {
+					lua_pop(L, 1);
+					break;
+				}
+				std::string value = getShortValue(L, -1, pathconvert);
+				s += value + ",";
+				mark.insert(n);
+				lua_pop(L, 1);
+				if (s.size() >= maxlen) {
+					return base::format("{%s...}", s);
+				}
+			}
+
+			std::map<std::string, std::string> vars;
+			lua_pushnil(L);
+			while (lua_next(L, idx)) {
+				if (lua_isinteger(L, -2)) {
+					int n = (int)lua_tointeger(L, -2);
+					if (mark.find(n) != mark.end()) {
+						lua_pop(L, 1);
+						continue;
+					}
+				}
+				if (vars.size() >= 300) {
+					lua_pop(L, 2);
+					break;
+				}
+				vars.insert(std::make_pair(getName(L, -2), getShortValue(L, -1, pathconvert)));
+				lua_pop(L, 1);
+			}
+
+			for (auto& var : vars) {
+				s += var.first + "=" + var.second + ",";
+				if (s.size() >= maxlen) {
+					return base::format("{%s...}", s);
+				}
+			}
+			return base::format("{%s}", s);
+		}
+
+		static std::string rawGetValue(lua_State *L, int idx, int realIdx, size_t maxlen, pathconvert& pathconvert)
 		{
 			switch (lua_type(L, idx)) {
 			case LUA_TNUMBER:
@@ -430,8 +567,9 @@ namespace vscode {
 			case LUA_TNIL:
 				return "nil";
 			case LUA_TFUNCTION: {
-				if (lua_iscfunction(L, idx))
-					break;
+				if (lua_iscfunction(L, idx)) {
+					return "C function";
+				}
 				lua::Debug entry;
 				lua_pushvalue(L, idx);
 				if (lua_getinfo(L, ">S", (lua_Debug*)&entry)) {
@@ -451,39 +589,39 @@ namespace vscode {
 				}
 				break;
 			}
+			case LUA_TTABLE:
+				return getTableValue(L, idx, maxlen, pathconvert);
+			case LUA_TUSERDATA:
+				if (luaL_getmetafield(L, idx, "__name") != LUA_TNIL) {
+					if (lua_type(L, -1) == LUA_TSTRING) {
+						std::string type = lua_tostr<std::string>(L, -1);
+						lua_pop(L, 1);
+						return base::format("userdata: %s", type);
+					}
+					lua_pop(L, 1);
+				}
+				return "userdata";
 			default:
 				break;
 			}
-			return base::format("%s: %p", luaL_typename(L, idx), lua_topointer(L, idx));
+			return luaL_typename(L, realIdx);
 		}
 
 		static std::string getValue(lua_State *L, int idx, pathconvert& pathconvert)
 		{
+			size_t maxlen = 32;
+			idx = lua_absindex(L, idx);
 			if (safe_callmeta(L, idx, "__debugger_tostring")) {
-				std::string r = rawGetValue(L, -1, pathconvert);
+				std::string r = rawGetValue(L, -1, idx, maxlen, pathconvert);
 				lua_pop(L, 1);
 				return r;
 			}
-			return rawGetValue(L, idx, pathconvert);
-		}
-
-		static std::string getType(lua_State *L, int idx)
-		{
-			if (luaL_getmetafield(L, idx, "__name") != LUA_TNIL) {
-				if (lua_type(L, -1) == LUA_TSTRING) {
-					std::string type = lua_tostr<std::string>(L, -1);
-					lua_pop(L, 1);
-					return type;
-				}
+			if (lua_isuserdata(L, idx) && userdata_debugger_extand(L, idx)) {
+				std::string r = getDebuggerExtandValue(L, -1, maxlen, pathconvert);
 				lua_pop(L, 1);
+				return r;
 			}
-			switch (lua_type(L, idx)) {
-			case LUA_TNUMBER:
-				return lua_isinteger(L, idx) ? "integer" : "number";
-			case LUA_TLIGHTUSERDATA:
-				return "light userdata";
-			}
-			return luaL_typename(L, idx);
+			return rawGetValue(L, idx, idx, maxlen, pathconvert);
 		}
 
 		static bool is_watch_table(lua_State* L, int idx)
