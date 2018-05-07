@@ -20,8 +20,8 @@
     "private": true,
     "scripts": {},
     "engines": {
-        "vscode": "^1.0.0",
-        "node": "^4.1.1"
+        "vscode": "^1.19.0",
+        "node": "^7.4.0"
     },
     "dependencies": {},
     "repository": {
@@ -32,6 +32,10 @@
         "url": "https://github.com/actboy168/vscode-lua-debug/issues"
     },
     "devDependencies": {},
+    "main": "./extension/extension.js",
+    "activationEvents": [
+        "onDebugResolve:lua"
+    ],
     "contributes": {
         "breakpoints": [
             {
