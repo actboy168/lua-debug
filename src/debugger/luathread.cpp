@@ -177,7 +177,7 @@ namespace vscode
 		}
 	}
 
-	void luathread::reset_frame(lua_State* L)
+	void luathread::reset_session(lua_State* L)
 	{
 		ob_.reset(L);
 	}

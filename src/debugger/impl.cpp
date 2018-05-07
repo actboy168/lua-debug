@@ -304,7 +304,7 @@ namespace vscode
 			response_error(req, base::format("`%s` not yet implemented,(stopped)", req["command"].GetString()).c_str());
 		}
 
-		thread->reset_frame(L);
+		thread->reset_session(L);
 	}
 
 	void debugger_impl::run_idle()
