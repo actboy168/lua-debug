@@ -327,7 +327,9 @@ namespace vscode {
 			, value(getValue(L, value, pathconvert))
 			, type(getType(L, value))
 			, extand(canExtand(L, value))
-		{ }
+		{
+			if (name == "") name = " ";
+		}
 
 		var(lua_State* L, int n, int key, int value, pathconvert& pathconvert)
 		: n(n)
@@ -335,7 +337,9 @@ namespace vscode {
 		, value(getValue(L, value, pathconvert))
 		, type(getType(L, value))
 		, extand(canExtand(L, value))
-		{ }
+		{
+			if (name == "") name = " ";
+		}
 
 		static int safe_callmeta(lua_State *L, int obj, const char *event) {
 			obj = lua_absindex(L, obj);
