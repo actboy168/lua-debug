@@ -31,6 +31,10 @@ namespace vscode
 		skipfiles_.push_back(pattern);
 	}
 
+	void pathconvert::setClientWorkPath(const std::string& path) {
+		clientWorkPath = path;
+	}
+
 	void pathconvert::clear()
 	{
 		sourcemap_.clear();
@@ -69,7 +73,7 @@ namespace vscode
 				return true;
 			}
 		}
-		client = path::normalize(server);
+		client = path::normalize(server, '/');
 		return true;
 	}
 
@@ -126,5 +130,12 @@ namespace vscode
 		}
 		res += std::string(it, str.end());
 		return res;
+	}
+
+	std::string pathconvert::uncomplete_client(const std::string& path) {
+		if (clientWorkPath.empty()) {
+			return path;
+		}
+		return path::uncomplete(path, clientWorkPath, '/');
 	}
 }

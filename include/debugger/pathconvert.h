@@ -18,11 +18,13 @@ namespace vscode
 		pathconvert(debugger_impl* dbg);
 		void   add_sourcemap(const std::string& server, const std::string& client);
 		void   add_skipfiles(const std::string& pattern);
+		void   setClientWorkPath(const std::string& path);
 		void   clear();
 		bool   server2client(const std::string& server, std::string& client);
 		bool   get(const std::string& source, std::string& client);
 		void   set_coding(eCoding coding);
 		std::string exception(const std::string& str);
+		std::string uncomplete_client(const std::string& path);
 
 	private:
 		bool match_sourcemap(const std::string& srv, std::string& cli, const std::string& srvmatch, const std::string& climatch);
@@ -33,5 +35,6 @@ namespace vscode
 		sourcemap_t                        sourcemap_;
 		skipfiles_t                        skipfiles_;
 		eCoding                            coding_;
+		std::string                        clientWorkPath;
 	};
 }

@@ -82,6 +82,7 @@ namespace vscode
 			}
 			pathconvert_.add_skipfiles(e.Get<std::string>());
 		}
+		pathconvert_.setClientWorkPath(config_.get("workspaceFolder", rapidjson::kStringType).Get<std::string>());
 	}
 
 	bool debugger_impl::request_attach(rprotocol& req)

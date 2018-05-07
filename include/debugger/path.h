@@ -4,7 +4,8 @@
 
 namespace vscode { namespace path {
 	int tochar(char c);
-	std::string normalize(const std::string& path);
+	std::string normalize(const std::string& path, char sep);
+	std::string uncomplete(const std::string& path, const std::string& base, char sep);
 	std::string filename(const std::string& path);
 	bool        glob_match(const std::string& pattern, const std::string& target);
 

@@ -578,12 +578,12 @@ namespace vscode {
 						if (pos) {
 							return pos;
 						}
-						return base::format("[%s:%d]", entry.source, entry.linedefined);
+						return base::format("%s:%d", entry.source, entry.linedefined);
 					}
 					if (entry.source) {
 						std::string client_path;
 						if (pathconvert.get(entry.source, client_path)) {
-							return base::format("[%s:%d]", client_path, entry.linedefined);
+							return base::format("%s:%d", pathconvert.uncomplete_client(client_path), entry.linedefined);
 						}
 					}
 				}

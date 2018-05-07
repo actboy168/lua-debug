@@ -61,6 +61,15 @@ namespace vscode { namespace path {
 		return root;
 	}
 
+	static std::string path_create(const std::string& path, const std::deque<std::string>& stack, char sep)
+	{
+		std::string result = path;
+		for (auto& e : stack) {
+			result += sep + e;
+		}
+		return result;
+	}
+
 	template <typename EQUAL>
 	bool glob_match(const std::string_view& pattern, const std::string_view& target, EQUAL equal)
 	{
@@ -97,14 +106,11 @@ namespace vscode { namespace path {
 		return tolower((int)(unsigned char)c);
 	}
 
-	std::string normalize(const std::string& path)
+	std::string normalize(const std::string& path, char sep)
 	{
 		std::deque<std::string> stack;
 		std::string result = path_normalize(path, stack);
-		for (auto& e : stack) {
-			result += '\\' + e;
-		}
-		return result;
+		return path_create(result, stack, sep);
 	}
 
 	std::string filename(const std::string& path)
@@ -121,5 +127,30 @@ namespace vscode { namespace path {
 	bool glob_match(const std::string& pattern, const std::string& target)
 	{
 		return glob_match(pattern, target, [](char a, char b) { return tochar(a) == tochar(b); });
+	}
+
+	std::string uncomplete(const std::string& path, const std::string& base, char sep)
+	{
+		std::deque<std::string> spath, sbase;
+		std::string rpath = path_normalize(path, spath);
+		std::string rbase = path_normalize(base, sbase);
+		if (rpath != rbase) {
+			return path_create(rpath, spath, sep);
+		}
+		while (!spath.empty() && !sbase.empty() && spath.front() == sbase.front()) {
+			spath.pop_front();
+			sbase.pop_front();
+		}
+		if (spath.empty() && sbase.empty()) {
+			return "." + sep;
+		}
+		std::string result = "";
+		for (auto& e : sbase) {
+			result += sep + "..";
+		}
+		for (auto& e : spath) {
+			result += sep + e;
+		}
+		return result.substr(1);
 	}
 }}
