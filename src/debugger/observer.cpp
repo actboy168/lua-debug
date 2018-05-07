@@ -1076,9 +1076,6 @@ finish:
 
 	int64_t observer::new_watch(lua_State* L, int idx, frame* frame, const std::string& expression)
 	{
-		if (!var::canExtand(L, idx)) {
-			return 0;
-		}
 		watch_table(L);
 		lua_pushlstring(L, expression.data(), expression.size());
 		if (LUA_TNUMBER == lua_rawget(L, -2)) {
@@ -1133,8 +1130,6 @@ finish:
 			}
 			dbg->response_success(req, [&](wprotocol& res)
 			{
-				res("result").String("ok");
-				res("variablesReference").Int64(0);
 			});
 			lua_pop(L, nresult);
 			return;
@@ -1148,7 +1143,11 @@ finish:
 				var var(L, i, "", i - nresult, dbg->get_pathconvert());
 				rets.emplace_back(std::move(var));
 			}
-			int64_t reference = new_watch(L, lua_absindex(L, -nresult), create_or_get_frame(frameId), expression);
+			int resIdx = lua_absindex(L, -nresult);
+			if (var::canExtand(L, resIdx)) {
+				int64_t reference = new_watch(L, resIdx, create_or_get_frame(frameId), expression);
+				res("variablesReference").Int64(reference);
+			}
 			lua_pop(L, nresult);
 			if (rets.size() == 0)
 			{
@@ -1167,7 +1166,6 @@ finish:
 				}
 				res("result").String(result);
 			}
-			res("variablesReference").Int64(reference);
 		});
 	}
 
