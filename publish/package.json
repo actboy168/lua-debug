@@ -34,6 +34,7 @@
     "devDependencies": {},
     "main": "./extension/extension.js",
     "activationEvents": [
+        "onDebugInitialConfigurations",
         "onDebugResolve:lua"
     ],
     "contributes": {
@@ -57,14 +58,6 @@
                 "windows": {
                     "program": "./windows/x86/vscode-lua-debug.exe"
                 },
-                "initialConfigurations": [
-                    {
-                        "name": "launch",
-                        "type": "lua",
-                        "request": "launch",
-                        "program": "${file}"
-                    }
-                ],
                 "configurationSnippets": [
                     {
                         "label": "Lua Debug: Launch Script",
