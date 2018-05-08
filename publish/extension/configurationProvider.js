@@ -16,16 +16,16 @@ class LuaConfigurationProvider {
         if (config.request != 'attach') {
             config.request = 'launch';
         }
-        if (!config.cwd) {
+        if (typeof config.cwd != 'string') {
             config.cwd = '${workspaceFolder}';
         }
-        if (!config.stopOnEntry) {
+        if (typeof config.stopOnEntry != 'boolean') {
             config.stopOnEntry = true;
         }
-        if (!config.consoleCoding) {
+        if (typeof config.consoleCoding != 'string') {
             config.consoleCoding = 'utf8'
         }
-        if (!config.sourceCoding) {
+        if (typeof config.sourceCoding != 'string') {
             config.sourceCoding = 'ansi'
         }
         if (config.request == 'launch') {
@@ -34,10 +34,10 @@ class LuaConfigurationProvider {
                     return undefined;
                 });
             }
-            if (!config.path) {
+            if (typeof config.path != 'string') {
                 config.path = '${workspaceRoot}/?.lua';
             }
-            if (!config.cpath) {
+            if (typeof config.cpath != 'string') {
                 config.cpath = '${workspaceRoot}/?.dll';
             }
         }
