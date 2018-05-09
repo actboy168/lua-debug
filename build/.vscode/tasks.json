@@ -9,9 +9,26 @@
     "suppressTaskName": true,
     "tasks": [
         {
-            "taskName": "make",
+            "taskName": "Debug",
             "args": [
-                "${workspaceRoot}/main.lua"
+                "${workspaceRoot}/main.lua",
+                "Debug",
+                "IC"
+            ]
+        },
+        {
+            "taskName": "Release",
+            "args": [
+                "${workspaceRoot}/main.lua",
+                "Release",
+                "IC"
+            ]
+        },
+        {
+            "taskName": "Rebuild Release",
+            "args": [
+                "${workspaceRoot}/main.lua",
+                "Release"
             ]
         }
     ]
