@@ -12,11 +12,10 @@
 *.ipch
 *.sln.cache
 *.exe
-bin/
-build/
 *.vs/
 *.VC.db
 *.VC.opendb
 *.ipdb
 *.iobj
 *.lib
+project/obj/

@@ -5,7 +5,7 @@
     <Root>$(SolutionDir)..</Root>
   </PropertyGroup>
   <PropertyGroup>
-    <IntDir>$(Root)\build\$(Configuration)\$(PlatformTarget)\$(ProjectName)\</IntDir>
+    <IntDir>$(Root)\project\obj\$(Configuration)\$(PlatformTarget)\$(ProjectName)\</IntDir>
     <OutDir>$(Root)\publish\windows\$(PlatformTarget)\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup>
