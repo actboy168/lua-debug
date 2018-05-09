@@ -4,7 +4,8 @@ require 'filesystem'
 
 local configuration = arg[1] or 'Release'
 local rebuild = arg[2] ~= 'IC'
-
+local insiders = false
+local vscode = insiders and '.vscode-insiders' or '.vscode'
 local root = fs.absolute(fs.path '../')
 
 local msvc = require 'msvc'
@@ -26,7 +27,7 @@ local outputDir
 if configuration == 'Release' then
     outputDir = root / 'publish'
 else
-    outputDir = fs.path(os.getenv('USERPROFILE')) / '.vscode' / 'extensions' / ('actboy168.lua-debug-' .. version)
+    outputDir = fs.path(os.getenv('USERPROFILE')) / vscode / 'extensions' / ('actboy168.lua-debug-' .. version)
 end
 
 local function copy_directory(from, to, filter)
@@ -65,11 +66,12 @@ if rebuild then
 end
 
 print 'Step 3. compile targetcpu = x86'
-if rebuild then
-    msvc:rebuild(root / 'project' / 'vscode-lua-debug.sln', configuration, 'Win32')
-else
-    msvc:build(root / 'project' / 'vscode-lua-debug.sln', configuration, 'Win32')
-end
+local property = {
+    Configuration = configuration,
+    Platform = 'Win32',
+    VSCode = vscode
+}
+msvc:compile(rebuild and 'rebuild' or 'build', root / 'project' / 'vscode-lua-debug.sln', property)
 if configuration == 'Release' then
     copy_directory(root / 'project' / 'bin' / 'x86', outputDir / 'windows' / 'x86',
         function (path)
@@ -80,11 +82,12 @@ if configuration == 'Release' then
 end
 
 print 'Step 4. compile targetcpu = x64'
-if rebuild then
-    msvc:rebuild(root / 'project' / 'vscode-lua-debug.sln', configuration, 'x64')
-else
-    msvc:build(root / 'project' / 'vscode-lua-debug.sln', configuration, 'x64')
-end
+local property = {
+    Configuration = configuration,
+    Platform = 'x64',
+    VSCode = vscode
+}
+msvc:compile(rebuild and 'rebuild' or 'build', root / 'project' / 'vscode-lua-debug.sln', property)
 if configuration == 'Release' then
     copy_directory(root / 'project' / 'bin' / 'x64', outputDir / 'windows' / 'x64',
         function (path)

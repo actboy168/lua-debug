@@ -4,6 +4,7 @@
   <PropertyGroup Label="UserMacros">
     <Root>$(SolutionDir)..</Root>
     <Version>0.3.1</Version>
+    <VSCode>.vscode</VSCode>
   </PropertyGroup>
   <PropertyGroup>
     <IntDir>$(Root)\project\obj\$(Configuration)\$(PlatformTarget)\$(ProjectName)\</IntDir>
