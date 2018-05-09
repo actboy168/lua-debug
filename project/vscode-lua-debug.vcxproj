@@ -19,9 +19,6 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\third_party\lua53\project\lua53.vcxproj">
-      <Project>{b84f7231-16ce-41d8-8c08-7b523ff4225b}</Project>
-    </ProjectReference>
     <ProjectReference Include="..\third_party\wow64ext\src\wow64ext.vcxproj">
       <Project>{9da7f232-0096-45bc-a452-24c7f3afa0f8}</Project>
     </ProjectReference>
@@ -35,13 +32,10 @@
     <ClCompile Include="..\include\base\path\get_path.cpp" />
     <ClCompile Include="..\include\base\util\unicode.cpp" />
     <ClCompile Include="..\include\base\win\process.cpp" />
-    <ClCompile Include="..\src\debugger\bridge\delayload.cpp" />
-    <ClCompile Include="..\src\debugger\bridge\lua.cpp" />
     <ClCompile Include="..\src\debugger\client\create_luaexe.cpp" />
     <ClCompile Include="..\src\debugger\client\run_attach.cpp" />
     <ClCompile Include="..\src\debugger\client\tcp_attach.cpp" />
     <ClCompile Include="..\src\debugger\client\create_process.cpp" />
-    <ClCompile Include="..\src\debugger\client\run_launch.cpp" />
     <ClCompile Include="..\src\debugger\client\main.cpp" />
     <ClCompile Include="..\src\debugger\client\create_terminal.cpp" />
     <ClCompile Include="..\src\debugger\client\stdinput.cpp" />
@@ -55,8 +49,6 @@
     <ClInclude Include="..\include\base\path\self.h" />
     <ClInclude Include="..\include\base\util\unicode.h" />
     <ClInclude Include="..\include\base\win\process.h" />
-    <ClInclude Include="..\include\debugger\bridge\delayload.h" />
-    <ClInclude Include="..\include\debugger\bridge\lua.h" />
     <ClInclude Include="..\include\debugger\client\tcp_attach.h" />
     <ClInclude Include="..\include\debugger\client\run.h" />
     <ClInclude Include="..\include\debugger\client\stdinput.h" />
@@ -147,7 +139,7 @@
       <AdditionalDependencies>Ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>
       </ModuleDefinitionFile>
-      <DelayLoadDLLs>debugger.dll;lua53.dll</DelayLoadDLLs>
+      <DelayLoadDLLs>debugger.dll</DelayLoadDLLs>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -166,7 +158,7 @@
       <AdditionalDependencies>Ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>
       </ModuleDefinitionFile>
-      <DelayLoadDLLs>debugger.dll;lua53.dll</DelayLoadDLLs>
+      <DelayLoadDLLs>debugger.dll</DelayLoadDLLs>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -189,7 +181,7 @@
       <AdditionalDependencies>Ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>
       </ModuleDefinitionFile>
-      <DelayLoadDLLs>debugger.dll;lua53.dll</DelayLoadDLLs>
+      <DelayLoadDLLs>debugger.dll</DelayLoadDLLs>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -212,7 +204,7 @@
       <AdditionalDependencies>Ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>
       </ModuleDefinitionFile>
-      <DelayLoadDLLs>debugger.dll;lua53.dll</DelayLoadDLLs>
+      <DelayLoadDLLs>debugger.dll</DelayLoadDLLs>
     </Link>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

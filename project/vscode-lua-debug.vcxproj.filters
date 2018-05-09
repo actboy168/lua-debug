@@ -1,9 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="..\src\debugger\bridge\delayload.cpp">
-      <Filter>cpp\bridge</Filter>
-    </ClCompile>
     <ClCompile Include="..\include\base\win\process.cpp">
       <Filter>base\win</Filter>
     </ClCompile>
@@ -15,9 +12,6 @@
     </ClCompile>
     <ClCompile Include="..\include\base\util\unicode.cpp">
       <Filter>base\util</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\debugger\bridge\lua.cpp">
-      <Filter>cpp\bridge</Filter>
     </ClCompile>
     <ClCompile Include="..\src\debugger\client\create_process.cpp">
       <Filter>cpp\client</Filter>
@@ -33,9 +27,6 @@
     </ClCompile>
     <ClCompile Include="..\src\debugger\io\namedpipe.cpp">
       <Filter>cpp\io</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\debugger\client\run_launch.cpp">
-      <Filter>cpp\client</Filter>
     </ClCompile>
     <ClCompile Include="..\src\debugger\client\tcp_attach.cpp">
       <Filter>cpp\client</Filter>
@@ -71,12 +62,6 @@
     </ClInclude>
     <ClInclude Include="..\include\debugger\client\stdinput.h">
       <Filter>inc\client</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\debugger\bridge\delayload.h">
-      <Filter>inc\bridge</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\debugger\bridge\lua.h">
-      <Filter>inc\bridge</Filter>
     </ClInclude>
     <ClInclude Include="..\include\debugger\io\helper.h">
       <Filter>inc\io</Filter>
@@ -121,12 +106,6 @@
     </Filter>
     <Filter Include="inc\client">
       <UniqueIdentifier>{0c8c6ecc-513f-4090-be40-a48c59b86d7b}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="cpp\bridge">
-      <UniqueIdentifier>{af506b17-235f-446a-a593-d71c21b48553}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="inc\bridge">
-      <UniqueIdentifier>{07409c20-b408-41f7-b35a-83898c5b1ead}</UniqueIdentifier>
     </Filter>
     <Filter Include="inc\io">
       <UniqueIdentifier>{605aea22-33e4-43fa-91ec-4e48cd705e9c}</UniqueIdentifier>
