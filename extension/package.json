@@ -32,7 +32,7 @@
         "url": "https://github.com/actboy168/vscode-lua-debug/issues"
     },
     "devDependencies": {},
-    "main": "./extension/extension.js",
+    "main": "./js/extension.js",
     "activationEvents": [
         "onDebugInitialConfigurations",
         "onDebugResolve:lua"
