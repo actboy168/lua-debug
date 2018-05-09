@@ -39,11 +39,13 @@ class LuaConfigurationProvider {
                     return undefined;
                 });
             }
-            if (typeof config.path != 'string') {
-                config.path = '${workspaceRoot}/?.lua';
-            }
-            if (typeof config.cpath != 'string') {
-                config.cpath = '${workspaceRoot}/?.dll';
+            if (typeof config.luaexe != 'string') {
+                if (typeof config.path != 'string') {
+                    config.path = '${workspaceRoot}/?.lua';
+                }
+                if (typeof config.cpath != 'string') {
+                    config.cpath = '${workspaceRoot}/?.dll';
+                }
             }
         }
         else if (config.request == 'attach') {
