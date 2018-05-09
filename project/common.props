@@ -22,5 +22,8 @@
     <BuildMacro Include="Version">
       <Value>$(Version)</Value>
     </BuildMacro>
+    <BuildMacro Include="VSCode">
+      <Value>$(VSCode)</Value>
+    </BuildMacro>
   </ItemGroup>
 </Project>
