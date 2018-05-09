@@ -19,7 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\third_party\wow64ext\src\wow64ext.vcxproj">
+    <ProjectReference Condition="'$(Platform)'=='Win32'" Include="..\third_party\wow64ext\src\wow64ext.vcxproj">
       <Project>{9da7f232-0096-45bc-a452-24c7f3afa0f8}</Project>
     </ProjectReference>
     <ProjectReference Include="debugger.vcxproj">
