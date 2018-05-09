@@ -3,6 +3,7 @@
   <ImportGroup Label="PropertySheets" />
   <PropertyGroup Label="UserMacros">
     <Root>$(SolutionDir)..</Root>
+    <Version>0.3.0</Version>
   </PropertyGroup>
   <PropertyGroup>
     <IntDir>$(Root)\project\obj\$(Configuration)\$(PlatformTarget)\$(ProjectName)\</IntDir>
@@ -16,6 +17,9 @@
   <ItemGroup>
     <BuildMacro Include="Root">
       <Value>$(Root)</Value>
+    </BuildMacro>
+    <BuildMacro Include="Version">
+      <Value>$(Version)</Value>
     </BuildMacro>
   </ItemGroup>
 </Project>

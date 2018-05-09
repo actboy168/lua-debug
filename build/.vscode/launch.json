@@ -9,8 +9,12 @@
             "request": "launch",
             "name": "Launch",
             "program": "${workspaceFolder}/main.lua",
-            "luaexe" : "${workspaceRoot}/luabuild/lua.exe",
+            "luaexe": "${workspaceRoot}/luabuild/lua.exe",
             "cwd": "${workspaceRoot}",
+            "arg": [
+                "Debug",
+                "IC"
+            ]
         }
     ]
 }

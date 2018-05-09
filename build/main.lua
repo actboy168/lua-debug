@@ -13,21 +13,13 @@ if not msvc:initialize(141, 'utf8') then
 end
 
 local version = (function()
-    local vers = {}
-    local path = fs.path(os.getenv('USERPROFILE')) / '.vscode' / 'extensions'
-    for extpath in path:list_directory() do
-        if fs.is_directory(extpath) and extpath:filename():string():sub(1, 20) == 'actboy168.lua-debug-' then
-            local dbgpath = extpath / 'windows' / 'x86' / 'debugger.dll'
-            if fs.exists(dbgpath) then
-                vers[#vers+1] = extpath:filename():string():sub(21)
-            end
+    for line in io.lines((root / 'project' / 'common.props'):string()) do
+        local ver = line:match('<Version>(%d+%.%d+%.%d+)</Version>')
+        if ver then
+            return ver
         end
     end
-    if vers[1] == nil then
-        return
-    end
-    table.sort(vers)
-    return vers[#vers]
+    error 'Cannot found version in common.props.'
 end)()
 
 local outputDir
@@ -48,6 +40,20 @@ local function copy_directory(from, to, filter)
             end
         end
     end
+end
+
+
+function io_load(filepath)
+    local f = assert(io.open(filepath:string(), 'rb'))
+    local buf = f:read 'a'
+    f:close()
+    return buf
+end
+
+function io_save(filepath, buf)
+    local f = assert(io.open(filepath:string(), 'wb'))
+    f:write(buf)
+    f:close()
 end
 
 print 'Step 2. remove old file'
@@ -90,6 +96,15 @@ if configuration == 'Release' then
 end
 
 print 'Step 5. copy extension'
+local str = io_load(root / 'extension' / 'package.json')
+local first, last = str:find '"version": "%d+%.%d+%.%d+"'
+if first then
+    str = str:sub(1, first-1) .. ('"version": "%s"'):format(version) .. str:sub(last+1)
+    io_save(root / 'extension' / 'package.json', str)
+else
+    print 'Failed to write version into package.json.'
+end
+
 copy_directory(root / 'extension', outputDir)
 
 print 'Step 6. copy crt dll'
