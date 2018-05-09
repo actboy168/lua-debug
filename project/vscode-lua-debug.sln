@@ -14,10 +14,6 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "debugger-inject", "debugger-inject.vcxproj", "{20F15A76-D908-475B-A904-6ACD1763D5FB}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vscode-lua-debug", "vscode-lua-debug.vcxproj", "{8AC7695F-C946-4B9A-B814-3E789BFD54E8}"
-	ProjectSection(ProjectDependencies) = postProject
-		{76338556-5419-494A-A4C6-D79090629054} = {76338556-5419-494A-A4C6-D79090629054}
-		{20F15A76-D908-475B-A904-6ACD1763D5FB} = {20F15A76-D908-475B-A904-6ACD1763D5FB}
-	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "lua", "..\third_party\lua53\project\lua.vcxproj", "{76338556-5419-494A-A4C6-D79090629054}"
 EndProject
