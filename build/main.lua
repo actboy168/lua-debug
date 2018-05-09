@@ -42,7 +42,6 @@ local function copy_directory(from, to, filter)
     end
 end
 
-
 function io_load(filepath)
     local f = assert(io.open(filepath:string(), 'rb'))
     local buf = f:read 'a'
