@@ -50,7 +50,7 @@
     * sourceCoding，远程代码路径的编码，utf8或者ansi。如果你没修过过lua，windows下默认是ansi。
     * skipFiles，让调试器忽略某些脚本，例如, ["std/\*", test/\*/init.lua]。
 
-4. attach模式，调试任意加载了lua.dll的本地进程。
+4. attach模式，调试任意加载了lua dll的本地进程。
 
     * stopOnEntry，开始调试时是否先暂停
     * processId，本地进程的Id，processId和processName只需其中一个。
