@@ -6,6 +6,7 @@
 #include <base/hook/fp_call.h>
 #include <base/path/self.h>
 #include <base/util/format.h>
+#include <base/win/process_switch.h>
 #include <debugger/debugger.h>
 #include <debugger/io/namedpipe.h>
 #include <lua.hpp>
@@ -19,13 +20,16 @@ struct DebuggerConfig {
 	HMODULE luaDll = 0;
 	fs::path binPath;
 	std::wstring pipeName;
+	bool isAttachProcess = false;
 
 	DebuggerConfig() {
 		binPath = base::path::self().parent_path();
 	}
 
 	bool initialize() {
-		pipeName = base::format(L"vscode-lua-debug-%d", GetCurrentProcessId());
+		int pid = (int)GetCurrentProcessId();
+		pipeName = base::format(L"vscode-lua-debug-%d", pid);
+		isAttachProcess = base::win::process_switch::has(pid, L"attachprocess");
 		return true;
 	}
 };
@@ -51,7 +55,9 @@ struct DebuggerWatcher {
 		if (!io->open_server(config.pipeName)) {
 			return;
 		}
-		io->kill_when_close();
+		if (!DebuggerConfig::Get().isAttachProcess) {
+			io->kill_when_close();
+		}
 		dbg.reset(new vscode::debugger(io.get()));
 		dbg->wait_client();
 		dbg->open_redirect(vscode::eRedirect::stdoutput);
@@ -107,6 +113,8 @@ namespace lua {
 	namespace real {
 		uintptr_t lua_newstate = 0;
 		uintptr_t luaL_newstate = 0;
+		uintptr_t lua_pcallk = 0;
+		uintptr_t lua_callk = 0;
 		uintptr_t lua_close = 0;
 	}
 	namespace fake {
@@ -121,6 +129,16 @@ namespace lua {
 			lua_State* L = base::c_call<lua_State*>(real::luaL_newstate);
 			DebuggerWatcher::Get().attach(L);
 			return L;
+		}
+		static int __cdecl lua_pcallk(lua_State *L, int nargs, int nresults, int errfunc, lua_KContext ctx, lua_KFunction k)
+		{
+			DebuggerWatcher::Get().attach(L);
+			return base::c_call<int>(real::lua_pcallk, L, nargs, nresults, errfunc, ctx, k);
+		}
+		static void __cdecl lua_callk(lua_State *L, int nargs, int nresults, lua_KContext ctx, lua_KFunction k)
+		{
+			DebuggerWatcher::Get().attach(L);
+			return base::c_call<void>(real::lua_callk, L, nargs, nresults, ctx, k);
 		}
 		static void __cdecl lua_close(lua_State* L)
 		{
@@ -147,6 +165,10 @@ namespace lua {
 		HOOK(lua_newstate);
 		HOOK(luaL_newstate);
 		HOOK(lua_close);
+		if (DebuggerConfig::Get().isAttachProcess) {
+			HOOK(lua_pcallk);
+			HOOK(lua_callk);
+		}
 
 		std::stack<base::hook::hook_t> rollback;
 		for (auto& task : tasks) {

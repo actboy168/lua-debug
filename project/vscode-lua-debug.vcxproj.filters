@@ -81,6 +81,9 @@
     <ClInclude Include="..\include\debugger\io\namedpipe.h">
       <Filter>inc\io</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\base\win\process_switch.h">
+      <Filter>base\win</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="base">
