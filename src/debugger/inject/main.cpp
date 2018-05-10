@@ -8,6 +8,7 @@
 #include <base/util/format.h>
 #include <debugger/debugger.h>
 #include <debugger/io/namedpipe.h>
+#include <lua.hpp>
 
 struct DebuggerConfig {
 	static DebuggerConfig& Get() {
@@ -109,19 +110,19 @@ namespace lua {
 		uintptr_t lua_close = 0;
 	}
 	namespace fake {
-		static void* __cdecl lua_newstate(void* f, void* ud)
+		static lua_State* __cdecl lua_newstate(void* f, void* ud)
 		{
 			lua_State* L = base::c_call<lua_State*>(real::lua_newstate, f, ud);
 			DebuggerWatcher::Get().attach(L);
 			return L;
 		}
-		static void* __cdecl luaL_newstate()
+		static lua_State* __cdecl luaL_newstate()
 		{
 			lua_State* L = base::c_call<lua_State*>(real::luaL_newstate);
 			DebuggerWatcher::Get().attach(L);
 			return L;
 		}
-		void __cdecl lua_close(lua_State* L)
+		static void __cdecl lua_close(lua_State* L)
 		{
 			DebuggerWatcher::Get().detach(L);
 			Sleep(1000);
