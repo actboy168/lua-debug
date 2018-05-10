@@ -46,6 +46,9 @@
     <ClCompile Include="..\src\debugger\client\open_process.cpp">
       <Filter>cpp\client</Filter>
     </ClCompile>
+    <ClCompile Include="..\include\base\win\query_process.cpp">
+      <Filter>base\win</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\base\win\process.h">
@@ -82,6 +85,9 @@
       <Filter>inc\io</Filter>
     </ClInclude>
     <ClInclude Include="..\include\base\win\process_switch.h">
+      <Filter>base\win</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\base\win\query_process.h">
       <Filter>base\win</Filter>
     </ClInclude>
   </ItemGroup>

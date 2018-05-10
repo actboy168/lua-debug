@@ -5,12 +5,13 @@
 #include <debugger/client/stdinput.h>
 #include <debugger/client/run.h>
 #include <debugger/client/tcp_attach.h>
-#include <base/util/unicode.h>
-#include <base/util/format.h>
-#include <base/filesystem.h>
 #include <debugger/capabilities.h>
 #include <debugger/io/helper.h>
 #include <debugger/io/namedpipe.h>
+#include <base/util/unicode.h>
+#include <base/util/format.h>
+#include <base/filesystem.h>
+#include <base/win/query_process.h>
 
 static void response_initialized(stdinput& io, vscode::rprotocol& req)
 {
@@ -101,14 +102,8 @@ int run_luaexe_then_attach(stdinput& io, vscode::rprotocol& init, vscode::rproto
 	return 0;
 }
 
-static int run_attach_process(stdinput& io, vscode::rprotocol& init, vscode::rprotocol& req)
+static int run_attach_process(stdinput& io, vscode::rprotocol& init, vscode::rprotocol& req, int pid)
 {
-	auto& args = req["arguments"];
-	if (!args.HasMember("processId") || !args["processId"].IsInt()) {
-		response_error(io, req, "Attach failed");
-		return -1;
-	}
-	int pid = args["processId"].GetInt();;
 	if (!open_process_with_debugger(req, pid)) {
 		response_error(io, req, "Attach failed");
 		return -1;
@@ -119,6 +114,22 @@ static int run_attach_process(stdinput& io, vscode::rprotocol& init, vscode::rpr
 		return -1;
 	}
 	return 0;
+}
+
+static std::vector<int> get_process_name(const std::string& name)
+{
+	std::vector<int> res;
+	std::wstring wname = base::u2w(name);
+	std::transform(wname.begin(), wname.end(), wname.begin(), ::tolower);
+	base::win::query_process([&](const base::win::SYSTEM_PROCESS_INFORMATION* info)->bool {
+		std::wstring pname(info->ImageName.Buffer, info->ImageName.Length / sizeof(wchar_t));
+		std::transform(pname.begin(), pname.end(), pname.begin(), ::tolower);
+		if (pname == wname) {
+			res.push_back((int)info->ProcessId);
+		}
+		return false;
+	});
+	return res;
 }
 
 
@@ -181,7 +192,28 @@ int main()
 			else if (req["command"] == "attach") {
 				auto& args = req["arguments"];
 				if (args.HasMember("processId")) {
-					return run_attach_process(io, init, req);
+					if (!args["processId"].IsInt()) {
+						response_error(io, req, "Attach failed");
+						return -1;
+					}
+					return run_attach_process(io, init, req, args["processId"].GetInt());
+				}
+				if (args.HasMember("processName")) {
+					if (!args["processName"].IsString()) {
+						response_error(io, req, "Attach failed");
+						return -1;
+					}
+					auto processName = args["processName"].Get<std::string>();
+					auto& pid = get_process_name(processName);
+					if (pid.size() == 0) {
+						response_error(io, req, base::format("Cannot found process `%s`.", processName).c_str());
+						return -1;
+					}
+					if (pid.size() > 1) {
+						response_error(io, req, base::format("There are %d processes `%s`.", pid.size(), processName).c_str());
+						return -1;
+					}
+					return run_attach_process(io, init, req, pid[0]);
 				}
 				return run_tcp_attach(io, init, req);
 			}

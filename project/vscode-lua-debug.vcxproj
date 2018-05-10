@@ -32,6 +32,7 @@
     <ClCompile Include="..\include\base\path\get_path.cpp" />
     <ClCompile Include="..\include\base\util\unicode.cpp" />
     <ClCompile Include="..\include\base\win\process.cpp" />
+    <ClCompile Include="..\include\base\win\query_process.cpp" />
     <ClCompile Include="..\src\debugger\client\create_luaexe.cpp" />
     <ClCompile Include="..\src\debugger\client\open_process.cpp" />
     <ClCompile Include="..\src\debugger\client\run_attach.cpp" />
@@ -50,6 +51,7 @@
     <ClInclude Include="..\include\base\path\self.h" />
     <ClInclude Include="..\include\base\util\unicode.h" />
     <ClInclude Include="..\include\base\win\process.h" />
+    <ClInclude Include="..\include\base\win\query_process.h" />
     <ClInclude Include="..\include\base\win\process_switch.h" />
     <ClInclude Include="..\include\debugger\client\tcp_attach.h" />
     <ClInclude Include="..\include\debugger\client\run.h" />
