@@ -101,6 +101,27 @@ int run_luaexe_then_attach(stdinput& io, vscode::rprotocol& init, vscode::rproto
 	return 0;
 }
 
+static int run_attach_process(stdinput& io, vscode::rprotocol& init, vscode::rprotocol& req)
+{
+	auto& args = req["arguments"];
+	if (!args.HasMember("processId") || !args["processId"].IsInt()) {
+		response_error(io, req, "Attach failed");
+		return -1;
+	}
+	int pid = args["processId"].GetInt();;
+	if (!open_process_with_debugger(req, pid)) {
+		response_error(io, req, "Attach failed");
+		return -1;
+	}
+	auto port = base::format(L"vscode-lua-debug-%d", pid);
+	if (!run_pipe_attach(io, init, req, port)) {
+		response_error(io, req, "Attach failed");
+		return -1;
+	}
+	return 0;
+}
+
+
 static int run_tcp_attach(stdinput& io, vscode::rprotocol& init, vscode::rprotocol& req)
 {
 	tcp_attach attach(io);
@@ -149,16 +170,19 @@ int main()
 				if (args.HasMember("runtimeExecutable")) {
 					return run_createprocess_then_attach(io, init, req);
 				}
-				else if (args.HasMember("console") 
-					&& (args["console"] == "integratedTerminal" || args["console"] == "externalTerminal")) {
+				if (args.HasMember("console") 
+					&& args["console"].IsString() 
+					&& (args["console"] == "integratedTerminal" || args["console"] == "externalTerminal")
+				) {
 					return run_terminal_then_attach(io, init, req);
 				}
-				else {
-					return run_luaexe_then_attach(io, init, req);
-					//return run_launch(io, init, req);
-				}
+				return run_luaexe_then_attach(io, init, req);
 			}
 			else if (req["command"] == "attach") {
+				auto& args = req["arguments"];
+				if (args.HasMember("processId")) {
+					return run_attach_process(io, init, req);
+				}
 				return run_tcp_attach(io, init, req);
 			}
 		}

@@ -43,6 +43,9 @@
     <ClCompile Include="..\include\base\hook\replacedll.cpp">
       <Filter>base\hook</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\debugger\client\open_process.cpp">
+      <Filter>cpp\client</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\base\win\process.h">
