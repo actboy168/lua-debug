@@ -248,16 +248,16 @@
                                 "description": "Debug port to attach to. Default is 4278.",
                                 "default": 4278
                             },
-							"processId": {
-								"type": "integer",
-								"description": "Id of process to attach to.",
-								"default": null
-							},
-							"processName": {
-								"type": "string",
-								"description": "Name of process to attach to.",
-								"default": null
-							},
+                            "processId": {
+                                "type": "integer",
+                                "description": "Id of process to attach to.",
+                                "default": null
+                            },
+                            "processName": {
+                                "type": "string",
+                                "description": "Name of process to attach to.",
+                                "default": null
+                            },
                             "consoleCoding": {
                                 "type": "string",
                                 "description": "Console encoding",
