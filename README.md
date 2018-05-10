@@ -50,7 +50,16 @@
     * sourceCoding，远程代码路径的编码，utf8或者ansi。如果你没修过过lua，windows下默认是ansi。
     * skipFiles，让调试器忽略某些脚本，例如, ["std/\*", test/\*/init.lua]。
 
-4. 如果你只是使用在本机的远程调试器，你还可以不使用vscode-lua-debug.exe，直接使用vscode连接调试器。只需要加上"debugServer"的参数。例如
+4. attach模式，调试任意加载了lua.dll的本地进程。
+
+    * stopOnEntry，开始调试时是否先暂停
+    * processId，本地进程的Id，processId和processName只需其中一个。
+    * processName，本地进程的Name，使用processName但有多个同名进程时，会失败。
+    * sourceMaps，远程代码和本地代码的路径映射
+    * sourceCoding，远程代码路径的编码，utf8或者ansi。如果你没修过过lua，windows下默认是ansi。
+    * skipFiles，让调试器忽略某些脚本，例如, ["std/\*", test/\*/init.lua]。
+
+5. 如果你只是使用在本机的远程调试器，你还可以不使用vscode-lua-debug.exe，直接使用vscode连接调试器。只需要加上"debugServer"的参数。例如
 
 ```json
 {

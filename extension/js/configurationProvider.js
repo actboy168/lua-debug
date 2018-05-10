@@ -49,7 +49,7 @@ class LuaConfigurationProvider {
             }
         }
         else if (config.request == 'attach') {
-            if (!config.ip || !config.port) {
+            if ((!config.ip || !config.port) && !config.processId && !config.processName) {
                 return vscode.window.showInformationMessage('Cannot missing ip or port to debug').then(_ => {
                     return undefined;
                 });
