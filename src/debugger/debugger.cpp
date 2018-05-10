@@ -30,9 +30,9 @@ namespace vscode
 		impl_->update();
 	}
 
-	void debugger::wait_attach()
+	void debugger::wait_client()
 	{
-		impl_->wait_attach();
+		impl_->wait_client();
 	}
 
 	void debugger::attach_lua(lua_State* L)

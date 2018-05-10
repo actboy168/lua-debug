@@ -54,7 +54,7 @@ namespace vscode
 		bool open_schema(const std::wstring& path);
 		void close();
 		void update();
-		void wait_attach();
+		void wait_client();
 		void attach_lua(lua_State* L);
 		void detach_lua(lua_State* L, bool remove = false);
 		void set_custom(custom* custom);

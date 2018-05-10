@@ -131,8 +131,8 @@ namespace vscode
 		{
 			set_state(eState::running);
 		}
-		if (on_attach_) {
-			on_attach_();
+		if (on_clientattach_) {
+			on_clientattach_();
 		}
 		return !stopOnEntry;
 	}

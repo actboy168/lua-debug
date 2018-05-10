@@ -81,7 +81,7 @@ dbg.reset(new vscode::debugger(namedpipe.get()));
 			return 1;
 		}
 		self.dbg->detach_lua(L);
-		self.dbg->wait_attach();
+		self.dbg->wait_client();
 		self.dbg->attach_lua(L);
 		lua_pushvalue(L, 1);
 		return 1;

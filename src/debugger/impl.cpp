@@ -358,17 +358,17 @@ namespace vscode
 		}
 	}
 
-	void debugger_impl::wait_attach()
+	void debugger_impl::wait_client()
 	{
 		if (!is_state(eState::initialized) && !is_state(eState::birth)) {
 			return;
 		}
 		semaphore sem;
-		on_attach_ = [&]() {
+		on_clientattach_ = [&]() {
 			sem.signal();
 		};
 		sem.wait();
-		on_attach_ = std::function<void()>();
+		on_clientattach_ = std::function<void()>();
 	}
 
 	void debugger_impl::set_custom(custom* custom)
@@ -516,7 +516,7 @@ namespace vscode
 		, custom_(nullptr)
 		, exception_()
 		, luathreads_()
-		, on_attach_()
+		, on_clientattach_()
 		, consoleSourceCoding_(eCoding::none)
 		, consoleTargetCoding_(eCoding::utf8)
 		, nodebug_(false)

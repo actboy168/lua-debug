@@ -51,7 +51,7 @@ namespace vscode
 		void run_stopped(luathread* thread, lua_State* L, lua::Debug* ar, const char* reason);
 		void run_idle();
 		void update();
-		void wait_attach();
+		void wait_client();
 		void attach_lua(lua_State* L);
 		void detach_lua(lua_State* L, bool remove);
 		void set_custom(custom* custom);
@@ -131,7 +131,7 @@ namespace vscode
 		pathconvert        pathconvert_;
 		custom*            custom_;
 		osthread*          thread_;
-		std::function<void()> on_attach_;
+		std::function<void()> on_clientattach_;
 		eCoding            consoleSourceCoding_;
 		eCoding            consoleTargetCoding_;
 		std::unique_ptr<redirector> stdout_;
