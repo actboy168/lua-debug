@@ -8,25 +8,49 @@
 #include <debugger/debugger.h>
 #include <debugger/io/namedpipe.h>
 
-HMODULE luadll = 0;
+struct DebuggerConfig {
+	static DebuggerConfig& Get() {
+		static DebuggerConfig s_instance;
+		return s_instance;
+	}
+
+	HMODULE luaDll = 0;
+	fs::path binPath;
+	std::wstring pipeName;
+
+	DebuggerConfig() {
+		binPath = base::path::self().parent_path();
+	}
+
+	bool initialize() {
+		const wchar_t* pipename = _wgetenv(L"LUADBG_PORT");
+		if (!pipename) {
+			return false;
+		}
+		pipeName = pipename;
+		return true;
+	}
+};
 
 struct DebuggerWatcher {
+	static DebuggerWatcher& Get() {
+		static DebuggerWatcher s_instance;
+		return s_instance;
+	}
+
 	std::unique_ptr<vscode::io::namedpipe> io;
 	std::unique_ptr<vscode::debugger>      dbg;
 
 	DebuggerWatcher() {
+		auto& config = DebuggerConfig::Get();
 		if (!GetModuleHandleW(L"debugger.dll")) {
-			if (!LoadLibraryW((base::path::self().remove_filename() / L"debugger.dll").c_str())) {
+			if (!LoadLibraryW((config.binPath / L"debugger.dll").c_str())) {
 				return;
 			}
 		}
-		debugger_set_luadll(luadll, ::GetProcAddress);
-		const wchar_t* pipename = _wgetenv(L"LUADBG_PORT");
-		if (!pipename) {
-			return;
-		}
+		debugger_set_luadll(config.luaDll, ::GetProcAddress);
 		io.reset(new vscode::io::namedpipe());
-		if (!io->open_server(pipename)) {
+		if (!io->open_server(config.pipeName)) {
 			return;
 		}
 		io->kill_when_close();
@@ -34,11 +58,6 @@ struct DebuggerWatcher {
 		dbg->wait_client();
 		dbg->open_redirect(vscode::eRedirect::stdoutput);
 		dbg->open_redirect(vscode::eRedirect::stderror);
-	}
-
-	static DebuggerWatcher& Get() {
-		static DebuggerWatcher s_instance;
-		return s_instance;
 	}
 	void attach(lua_State* L) {
 		if (dbg && L) dbg->attach_lua(L);
@@ -143,7 +162,7 @@ namespace lua {
 			}
 			rollback.push(h);
 		}
-		luadll = m;
+		DebuggerConfig::Get().luaDll = m;
 		return true;
 	}
 }
@@ -205,6 +224,10 @@ BOOL APIENTRY DllMain(HMODULE module, DWORD reason, LPVOID /*pReserved*/)
 	if (reason == DLL_PROCESS_ATTACH)
 	{
 		::DisableThreadLibraryCalls(module);
+		if (!DebuggerConfig::Get().initialize()) {
+			MessageBoxW(0, L"debuggerInject initialize failed.", L"Error!", 0);
+			return TRUE;
+		}
 		if (!FindLuaDll()) {
 			WaitLuaDll();
 		}
