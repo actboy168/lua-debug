@@ -60,12 +60,12 @@ static void sleep() {
 
 static int run_createprocess_then_attach(stdinput& io, vscode::rprotocol& init, vscode::rprotocol& req)
 {
-	auto port = base::format(L"vscode-lua-debug-%d", GetCurrentProcessId());
-	if (!create_process_with_debugger(req, port)) {
+	int pid = 0;
+	if (!create_process_with_debugger(req, pid)) {
 		response_error(io, req, "Launch failed");
 		return -1;
 	}
-
+	auto port = base::format(L"vscode-lua-debug-%d", pid);
 	if (!run_pipe_attach(io, init, req, port)) {
 		response_error(io, req, "Launch failed");
 		return -1;

@@ -5,6 +5,7 @@
 #include <base/hook/inline.h>
 #include <base/hook/fp_call.h>
 #include <base/path/self.h>
+#include <base/util/format.h>
 #include <debugger/debugger.h>
 #include <debugger/io/namedpipe.h>
 
@@ -23,11 +24,7 @@ struct DebuggerConfig {
 	}
 
 	bool initialize() {
-		const wchar_t* pipename = _wgetenv(L"LUADBG_PORT");
-		if (!pipename) {
-			return false;
-		}
-		pipeName = pipename;
+		pipeName = base::format(L"vscode-lua-debug-%d", GetCurrentProcessId());
 		return true;
 	}
 };

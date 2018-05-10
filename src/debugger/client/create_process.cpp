@@ -4,11 +4,11 @@
 #include <base/path/self.h>
 #include <debugger/protocol.h>
 
-bool create_process_with_debugger(vscode::rprotocol& req, const std::wstring& port)
+bool create_process_with_debugger(vscode::rprotocol& req, int& pid)
 {
 	auto& args = req["arguments"];
 	if (!args.HasMember("runtimeExecutable") || !args["runtimeExecutable"].IsString()) {
-		return 0;
+		return false;
 	}
 	std::wstring wapplication = base::u2w(args["runtimeExecutable"].Get<std::string>());
 	std::wstring wcommand = L"\"" + wapplication + L"\"";
@@ -43,6 +43,9 @@ bool create_process_with_debugger(vscode::rprotocol& req, const std::wstring& po
 		}
 		req.RemoveMember("env");
 	}
-	p.set_env(L"LUADBG_PORT", port);
-	return p.create(wapplication.c_str(), wcommand.c_str(), wcwd.c_str());
+	bool ok = p.create(wapplication.c_str(), wcommand.c_str(), wcwd.c_str());
+	if (ok) {
+		pid = p.id();
+	}
+	return ok;
 }
