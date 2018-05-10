@@ -10,46 +10,43 @@
 
 HMODULE luadll = 0;
 
-std::unique_ptr<vscode::io::namedpipe> global_io;
-std::unique_ptr<vscode::debugger>      global_dbg;
+struct DebuggerWatcher {
+	std::unique_ptr<vscode::io::namedpipe> io;
+	std::unique_ptr<vscode::debugger>      dbg;
 
-void initialize_debugger(lua_State* L)
-{
-	if (GetModuleHandleW(L"debugger.dll")) {
-		return;
+	DebuggerWatcher() {
+		if (!GetModuleHandleW(L"debugger.dll")) {
+			if (!LoadLibraryW((base::path::self().remove_filename() / L"debugger.dll").c_str())) {
+				return;
+			}
+		}
+		debugger_set_luadll(luadll, ::GetProcAddress);
+		const wchar_t* pipename = _wgetenv(L"LUADBG_PORT");
+		if (!pipename) {
+			return;
+		}
+		io.reset(new vscode::io::namedpipe());
+		if (!io->open_server(pipename)) {
+			return;
+		}
+		io->kill_when_close();
+		dbg.reset(new vscode::debugger(io.get()));
+		dbg->wait_client();
+		dbg->open_redirect(vscode::eRedirect::stdoutput);
+		dbg->open_redirect(vscode::eRedirect::stderror);
 	}
-	if (!LoadLibraryW((base::path::self().remove_filename() / L"debugger.dll").c_str())) {
-		return;
-	}
-	debugger_set_luadll(luadll, ::GetProcAddress);
 
-	const wchar_t* pipename = _wgetenv(L"LUADBG_PORT");
-	if (!pipename) {
-		return;
+	static DebuggerWatcher& Get() {
+		static DebuggerWatcher s_instance;
+		return s_instance;
 	}
-	global_io.reset(new vscode::io::namedpipe());
-	if (!global_io->open_server(pipename)) {
-		return;
+	void attach(lua_State* L) {
+		if (dbg && L) dbg->attach_lua(L);
 	}
-
-	global_io->kill_when_close();
-	global_dbg.reset(new vscode::debugger(global_io.get()));
-	global_dbg->wait_client();
-	global_dbg->attach_lua(L);
-	global_dbg->open_redirect(vscode::eRedirect::stdoutput);
-	global_dbg->open_redirect(vscode::eRedirect::stderror);
-}
-
-void uninitialize_debugger(lua_State* L)
-{
-	if (!GetModuleHandleW(L"debugger.dll")) {
-		return;
+	void detach(lua_State* L) {
+		if (dbg && L) dbg->detach_lua(L, true);
 	}
-	if (global_dbg) {
-		global_dbg->detach_lua(L, true);
-	}
-	Sleep(1000);
-}
+};
 
 static HMODULE EnumerateModulesInProcess(HANDLE hProcess, HMODULE hModuleLast, PIMAGE_NT_HEADERS32 pNtHeader)
 {
@@ -99,18 +96,19 @@ namespace lua {
 		static void* __cdecl lua_newstate(void* f, void* ud)
 		{
 			lua_State* L = base::c_call<lua_State*>(real::lua_newstate, f, ud);
-			if (L) initialize_debugger(L);
+			DebuggerWatcher::Get().attach(L);
 			return L;
 		}
 		static void* __cdecl luaL_newstate()
 		{
 			lua_State* L = base::c_call<lua_State*>(real::luaL_newstate);
-			if (L) initialize_debugger(L);
+			DebuggerWatcher::Get().attach(L);
 			return L;
 		}
 		void __cdecl lua_close(lua_State* L)
 		{
-			uninitialize_debugger(L);
+			DebuggerWatcher::Get().detach(L);
+			Sleep(1000);
 			return base::c_call<void>(real::lua_close, L);
 		}
 	}
