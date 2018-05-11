@@ -511,7 +511,6 @@ namespace vscode
 		, network_(io)
 		, state_(eState::birth)
 		, breakpoints_(this)
-		, stack_()
 		, pathconvert_(this)
 		, custom_(nullptr)
 		, exception_()

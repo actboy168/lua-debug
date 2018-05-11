@@ -31,12 +31,6 @@ namespace vscode
 	class debugger_impl
 	{
 		friend class pathconvert;
-	public:	
-
-		struct stack {
-			int depth;
-			int64_t reference;
-		};
 
 	public:
 		debugger_impl(io::base* io);
@@ -147,7 +141,6 @@ namespace vscode
 		int64_t              seq;
 		int                  next_threadid_;
 		std::set<eException> exception_;
-		std::vector<stack>   stack_;
 		eState               state_;
 	};
 }

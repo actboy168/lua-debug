@@ -16,7 +16,6 @@ namespace vscode
 		detach_all(false);
 
 		breakpoints_.clear();
-		stack_.clear();
 		seq = 1;
 	}
 
@@ -231,18 +230,14 @@ namespace vscode
 		auto& args = req["arguments"];
 		lua::Debug entry;
 		int64_t sourceReference = args["sourceReference"].GetInt64();
-		int depth = -1;
-		for (auto e : stack_) {
-			if (e.reference == sourceReference) {
-				depth = e.depth;
+		for (int depth = 0;; ++depth) {
+			if (!lua_getstack(L, depth, (lua_Debug*)&entry)) {
 				break;
 			}
-		}
-		if (lua_getstack(L, depth, (lua_Debug*)&entry)) {
-			int status = lua_getinfo(L, "Sln", (lua_Debug*)&entry);
+			int status = lua_getinfo(L, "S", (lua_Debug*)&entry);
 			if (status) {
 				const char *src = entry.source;
-				if (*src != '@' && *src != '=') {
+				if ((int64_t)src == sourceReference) {
 					response_source(req, src);
 					return false;
 				}
