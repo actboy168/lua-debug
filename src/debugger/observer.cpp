@@ -568,17 +568,17 @@ namespace vscode {
 				lua::Debug entry;
 				lua_pushvalue(L, idx);
 				if (lua_getinfo(L, ">S", (lua_Debug*)&entry)) {
-					if (entry.source && entry.source[0] != '@' && entry.source[0] != '=') {
-						const char* pos = skipline(entry.source, entry.linedefined);
-						if (pos) {
-							return pos;
+					source s(&entry, dbg);
+					if (s.vaild) {
+						if (s.ref) {
+							const char* pos = skipline((const char*)s.ref, entry.linedefined);
+							if (pos) {
+								return pos;
+							}
+							return base::format("%s:%d", (const char*)s.ref, entry.linedefined);
 						}
-						return base::format("%s:%d", entry.source, entry.linedefined);
-					}
-					if (entry.source) {
-						std::string client_path;
-						if (dbg.path_convert(entry.source, client_path)) {
-							return base::format("%s:%d", dbg.path_clientrelative(client_path), entry.linedefined);
+						else {
+							return base::format("%s:%d", dbg.path_clientrelative(s.path), entry.linedefined);
 						}
 					}
 				}

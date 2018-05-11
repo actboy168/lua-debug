@@ -89,6 +89,12 @@ namespace vscode
 		return true;
 	}
 
+	bool debugger_impl::path_source2client(const std::string& source, std::string& client)
+	{
+		std::string server;
+		return path_source2server(source, server) && path_server2client(server, client);
+	}
+
 	bool debugger_impl::path_convert(const std::string& source, std::string& client)
 	{
 		auto it = source2client_.find(source);
@@ -96,15 +102,9 @@ namespace vscode
 			client = it->second;
 			return !client.empty();
 		}
-
-		std::string server;
-		if (path_source2server(source, server) && path_server2client(server, client)) {
-			source2client_[source] = client;
-			return true;
-		}
-		client.clear();
+		bool ok = path_source2client(source, client);
 		source2client_[source] = client;
-		return false;
+		return ok;
 	}
 
 	std::string debugger_impl::path_exception(const std::string& str)

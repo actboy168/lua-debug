@@ -120,6 +120,7 @@ namespace vscode
 		void        initialize_pathconvert(config& config);
 		bool        path_source2server(const std::string& source, std::string& server);
 		bool        path_server2client(const std::string& server, std::string& client);
+		bool        path_source2client(const std::string& server, std::string& client);
 		std::string path_exception(const std::string& str);
 
 	public:
