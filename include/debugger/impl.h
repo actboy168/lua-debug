@@ -122,29 +122,30 @@ namespace vscode
 		void update_redirect();
 
 	private:
-		int64_t            seq;
-		io::base*          network_;
-		schema             schema_;
-		eState             state_;
-		breakpoint         breakpoints_;
-		std::vector<stack> stack_;
-		pathconvert        pathconvert_;
-		custom*            custom_;
-		osthread           thread_;
-		std::function<void()> on_clientattach_;
-		eCoding            consoleSourceCoding_;
-		eCoding            consoleTargetCoding_;
+		custom*                     custom_;
+		eCoding                     consoleSourceCoding_;
+		eCoding                     consoleTargetCoding_;
+		std::function<void()>       on_clientattach_;
 		std::unique_ptr<redirector> stdout_;
 		std::unique_ptr<redirector> stderr_;
-		rprotocol          initproto_;
-		config             config_;
-		bool               nodebug_;
-		int                next_threadid_;
-		std::set<eException> exception_;
-		translator_t*      translator_;
-		std::map<int, std::unique_ptr<luathread>>                                          luathreads_;
+		rprotocol                   initproto_;
+		config                      config_;
+		bool                        nodebug_;
+		translator_t*               translator_;
 		std::map<std::string, std::function<bool(rprotocol&)>>                             main_dispatch_;
 		std::map<std::string, std::function<bool(rprotocol&, lua_State*, lua::Debug *ar)>> hook_dispatch_;
 
+		osthread             thread_;
+		io::base*            network_;
+		schema               schema_;
+		breakpoint           breakpoints_;
+		pathconvert          pathconvert_;
+		std::map<int, std::unique_ptr<luathread>> luathreads_;
+
+		int64_t              seq;
+		int                  next_threadid_;
+		std::set<eException> exception_;
+		std::vector<stack>   stack_;
+		eState               state_;
 	};
 }
