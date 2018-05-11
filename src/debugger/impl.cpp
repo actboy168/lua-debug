@@ -41,6 +41,25 @@ namespace vscode
 		return ml;
 	}
 
+	struct disable_hook {
+		disable_hook(lua_State* L)
+			: L(L)
+			, f(lua_gethook(L))
+			, mark(lua_gethookmask(L))
+			, count(lua_gethookcount(L))
+		{
+			lua_sethook(L, 0, 0, 0);
+		}
+		~disable_hook()
+		{
+			lua_sethook(L, f, mark, count);
+		}
+		lua_State* L;
+		lua_Hook f;
+		int mark;
+		int count;
+	};
+
 	enum class eCall {
 		none,
 		pcall,
@@ -180,7 +199,8 @@ namespace vscode
 	void debugger_impl::panic(luathread* thread, lua_State *L)
 	{
 		std::lock_guard<osthread> lock(*thread_);
-		exception_nolock(thread, L, eException::lua_panic, 0, true);
+		disable_hook db(L);
+		exception_nolock(thread, L, eException::lua_panic, 0);
 	}
 
 	void debugger_impl::hook(luathread* thread, lua_State *L, lua::Debug *ar)
@@ -198,14 +218,14 @@ namespace vscode
 		if (ar->event == LUA_HOOKEXCEPTION) {
 			switch (traceCall(L, 0)) {
 			case eCall::pcall:
-				exception_nolock(thread, L, eException::pcall, 0, false);
+				exception_nolock(thread, L, eException::pcall, 0);
 				break;
 			case eCall::xpcall:
-				exception_nolock(thread, L, eException::xpcall, 0, false);
+				exception_nolock(thread, L, eException::xpcall, 0);
 				break;
 			case eCall::none:
 			default:
-				exception_nolock(thread, L, eException::lua_pcall, 0, false);
+				exception_nolock(thread, L, eException::lua_pcall, 0);
 				break;
 			}
 			return;
@@ -231,39 +251,24 @@ namespace vscode
 		luathread* thread = find_luathread(L);
 		if (thread) {
 			std::lock_guard<osthread> lock(*thread_);
-			return exception_nolock(thread, L, exceptionType, level, true);
+			disable_hook db(L);
+			exception_nolock(thread, L, exceptionType, level);
 		}
 	}
 
-	void debugger_impl::exception_nolock(luathread* thread, lua_State* L, eException exceptionType, int level, bool disableHook)
+	void debugger_impl::exception_nolock(luathread* thread, lua_State* L, eException exceptionType, int level)
 	{
 		if (exception_.find(exceptionType) == exception_.end())
 		{
 			return;
 		}
 
-		if (disableHook) {
-			lua_Hook f = lua_gethook(L);
-			int mark = lua_gethookmask(L);
-			int count = lua_gethookcount(L);
-			lua_sethook(L, 0, 0, 0);
-			lua::Debug ar;
-			if (lua_getstack(L, 0, (lua_Debug*)&ar))
-			{
-				lua_pushinteger(L, level);
-				run_stopped(thread, L, &ar, "exception");
-				lua_pop(L, 1);
-			}
-			lua_sethook(L, f, mark, count);
-		}
-		else {
-			lua::Debug ar;
-			if (lua_getstack(L, 0, (lua_Debug*)&ar))
-			{
-				lua_pushinteger(L, level);
-				run_stopped(thread, L, &ar, "exception");
-				lua_pop(L, 1);
-			}
+		lua::Debug ar;
+		if (lua_getstack(L, 0, (lua_Debug*)&ar))
+		{
+			lua_pushinteger(L, level);
+			run_stopped(thread, L, &ar, "exception");
+			lua_pop(L, 1);
 		}
 	}
 
@@ -349,13 +354,11 @@ namespace vscode
 
 	void debugger_impl::update()
 	{
-		{
-			std::unique_lock<osthread> lock(*thread_, std::try_to_lock_t());
-			if (!lock) {
-				return;
-			}
-			run_idle();
+		std::unique_lock<osthread> lock(*thread_, std::try_to_lock_t());
+		if (!lock) {
+			return;
 		}
+		run_idle();
 	}
 
 	void debugger_impl::wait_client()
