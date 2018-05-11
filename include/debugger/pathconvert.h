@@ -17,22 +17,22 @@ namespace vscode
 
 	public:
 		pathconvert(debugger_impl* dbg);
-		void   initialize(config& config);
-		bool   get(const std::string& source, std::string& client);
-		void   set_coding(eCoding coding);
-		std::string exception(const std::string& str);
-		std::string uncomplete_client(const std::string& path);
+		void        initialize(config& config);
+		void        setSourceCoding(eCoding coding);
+		bool        path_convert(const std::string& source, std::string& client);
+		std::string path_exception(const std::string& str);
+		std::string path_clientrelative(const std::string& path);
 
 	private:
-		bool server2client(const std::string& server, std::string& client);
-		bool match_sourcemap(const std::string& srv, std::string& cli, const std::string& srvmatch, const std::string& climatch);
+		bool        source2server(const std::string& source, std::string& server);
+		bool        server2client(const std::string& server, std::string& client);
 
 	private:
 		debugger_impl*                     debugger_;
 		std::map<std::string, std::string> source2client_;
-		sourcemap_t                        sourcemap_;
-		skipfiles_t                        skipfiles_;
-		eCoding                            coding_;
-		std::string                        clientWorkPath;
+		sourcemap_t                        sourceMap_;
+		skipfiles_t                        skipFiles_;
+		eCoding                            sourceCoding_;
+		std::string                        workspaceRoot_;
 	};
 }

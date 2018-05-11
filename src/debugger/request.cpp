@@ -74,10 +74,10 @@ namespace vscode
 		}
 		auto& sourceCoding = config_.get("sourceCoding", rapidjson::kStringType);
 		if (sourceCoding.Get<std::string>() == "utf8") {
-			pathconvert_.set_coding(eCoding::utf8);
+			pathconvert_.setSourceCoding(eCoding::utf8);
 		}
 		else if (sourceCoding.Get<std::string>() == "ansi") {
-			pathconvert_.set_coding(eCoding::ansi);
+			pathconvert_.setSourceCoding(eCoding::ansi);
 		}
 
 		nodebug_ = config_.get("noDebug", rapidjson::kFalseType).GetBool();
@@ -94,12 +94,10 @@ namespace vscode
 			stopOnEntry = args["stopOnEntry"].GetBool();
 		}
 
-		if (stopOnEntry)
-		{
+		if (stopOnEntry) {
 			set_state(eState::stepping);
 		}
-		else
-		{
+		else {
 			set_state(eState::running);
 		}
 		if (on_clientattach_) {
@@ -443,8 +441,8 @@ namespace vscode
 			std::string stackTrace = lua_tostring(L, -1);
 			lua_pop(L, 1);
 
-			exceptionId = pathconvert_.exception(exceptionId);
-			stackTrace = pathconvert_.exception(stackTrace);
+			exceptionId = pathconvert_.path_exception(exceptionId);
+			stackTrace = pathconvert_.path_exception(stackTrace);
 
 			res("exceptionId").String(exceptionId);
 			for (auto _ : res("details").Object())

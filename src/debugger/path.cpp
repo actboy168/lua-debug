@@ -129,7 +129,7 @@ namespace vscode { namespace path {
 		return glob_match(pattern, target, [](char a, char b) { return tochar(a) == tochar(b); });
 	}
 
-	std::string uncomplete(const std::string& path, const std::string& base, char sep)
+	std::string relative(const std::string& path, const std::string& base, char sep)
 	{
 		std::deque<std::string> spath, sbase;
 		std::string rpath = path_normalize(path, spath);

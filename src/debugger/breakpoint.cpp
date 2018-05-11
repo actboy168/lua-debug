@@ -66,7 +66,7 @@ namespace vscode
 	source::source(lua::Debug* ar, pathconvert& pathconvert)
 	{
 		if (ar->source[0] == '@' || ar->source[0] == '=') {
-			if (pathconvert.get(ar->source, path)) {
+			if (pathconvert.path_convert(ar->source, path)) {
 				vaild = true;
 			}
 		}

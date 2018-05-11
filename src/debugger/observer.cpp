@@ -578,8 +578,8 @@ namespace vscode {
 					}
 					if (entry.source) {
 						std::string client_path;
-						if (pathconvert.get(entry.source, client_path)) {
-							return base::format("%s:%d", pathconvert.uncomplete_client(client_path), entry.linedefined);
+						if (pathconvert.path_convert(entry.source, client_path)) {
+							return base::format("%s:%d", pathconvert.path_clientrelative(client_path), entry.linedefined);
 						}
 					}
 				}

@@ -11,13 +11,13 @@ namespace vscode
 {
 	pathconvert::pathconvert(debugger_impl* dbg)
 		: debugger_(dbg)
-		, sourcemap_()
-		, coding_(eCoding::ansi)
+		, sourceMap_()
+		, sourceCoding_(eCoding::ansi)
 	{ }
 
 	void pathconvert::initialize(config& config) 
 	{
-		sourcemap_.clear();
+		sourceMap_.clear();
 		auto& sourceMaps = config.get("sourceMaps", rapidjson::kArrayType);
 		for (auto& e : sourceMaps.GetArray())
 		{
@@ -30,7 +30,7 @@ namespace vscode
 			{
 				continue;
 			}
-			sourcemap_.push_back(std::make_pair(eary[0].Get<std::string>(), eary[1].Get<std::string>()));
+			sourceMap_.push_back(std::make_pair(eary[0].Get<std::string>(), eary[1].Get<std::string>()));
 		}
 		auto& skipFiles = config.get("skipFiles", rapidjson::kArrayType);
 		for (auto& e : skipFiles.GetArray())
@@ -39,18 +39,18 @@ namespace vscode
 			{
 				continue;
 			}
-			skipfiles_.push_back(e.Get<std::string>());
+			skipFiles_.push_back(e.Get<std::string>());
 		}
-		clientWorkPath = config.get("workspaceFolder", rapidjson::kStringType).Get<std::string>();
+		workspaceRoot_ = config.get("workspaceFolder", rapidjson::kStringType).Get<std::string>();
 	}
 
-	void pathconvert::set_coding(eCoding coding)
+	void pathconvert::setSourceCoding(eCoding coding)
 	{
-		coding_ = coding;
+		sourceCoding_ = coding;
 		source2client_.clear();
 	}
 
-	bool pathconvert::match_sourcemap(const std::string& srv, std::string& cli, const std::string& srvmatch, const std::string& climatch)
+	static bool match_sourcemap(const std::string& srv, std::string& cli, const std::string& srvmatch, const std::string& climatch)
 	{
 		size_t i = 0;
 		for (; i < srvmatch.size(); ++i) {
@@ -68,7 +68,7 @@ namespace vscode
 
 	bool pathconvert::server2client(const std::string& server, std::string& client)
 	{
-		for (auto& it : skipfiles_)
+		for (auto& it : skipFiles_)
 		{
 			if (path::glob_match(it, server))
 			{
@@ -76,7 +76,7 @@ namespace vscode
 			}
 		}
 
-		for (auto& it : sourcemap_)
+		for (auto& it : sourceMap_)
 		{
 			if (match_sourcemap(server, client, it.first, it.second))
 			{
@@ -87,46 +87,42 @@ namespace vscode
 		return true;
 	}
 
-	bool pathconvert::get(const std::string& source, std::string& client)
+	bool pathconvert::source2server(const std::string& source, std::string& server)
+	{
+		if (debugger_->custom_) {
+			return debugger_->custom_->path_convert(source, server);
+		}
+		if (source[0] != '@') {
+			return false;
+		}
+		server = sourceCoding_ == eCoding::utf8
+			? source.substr(1)
+			: base::a2u(base::strview(source.data() + 1, source.size() - 1))
+			;
+		return true;
+	}
+
+	bool pathconvert::path_convert(const std::string& source, std::string& client)
 	{
 		auto it = source2client_.find(source);
-		if (it != source2client_.end())
-		{
+		if (it != source2client_.end()) {
 			client = it->second;
 			return !client.empty();
 		}
 
-		bool res = true;
-		if (debugger_->custom_) {
-			std::string server;
-			if (debugger_->custom_->path_convert(source, server)) {
-				res = server2client(server, client);
-			}
-			else {
-				client.clear();
-				res = false;
-			}
+		std::string server;
+		if (source2server(source, server) && server2client(server, client)) {
+			source2client_[source] = client;
+			return true;
 		}
-		else {
-			if (source[0] == '@') {
-				std::string server = coding_ == eCoding::utf8
-					? source.substr(1) 
-					: base::a2u(base::strview(source.data() + 1, source.size() - 1))
-					;
-				res = server2client(server, client);
-			}
-			else {
-				client.clear();
-				res = false;
-			}
-		}
+		client.clear();
 		source2client_[source] = client;
-		return res;
+		return false;
 	}
 
-	std::string pathconvert::exception(const std::string& str)
+	std::string pathconvert::path_exception(const std::string& str)
 	{
-		if (coding_ == eCoding::utf8) {
+		if (sourceCoding_ == eCoding::utf8) {
 			return str;
 		}
 		std::regex re(R"(([^\r\n]+)(\:[0-9]+\:[^\r\n]+))");
@@ -142,10 +138,10 @@ namespace vscode
 		return res;
 	}
 
-	std::string pathconvert::uncomplete_client(const std::string& path) {
-		if (clientWorkPath.empty()) {
+	std::string pathconvert::path_clientrelative(const std::string& path) {
+		if (workspaceRoot_.empty()) {
 			return path;
 		}
-		return path::uncomplete(path, clientWorkPath, '/');
+		return path::relative(path, workspaceRoot_, '/');
 	}
 }
