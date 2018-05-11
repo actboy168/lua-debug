@@ -486,7 +486,10 @@ namespace vscode
 
 	void debugger_impl::on_disconnect()
 	{
-		exit(0);
+		thread_.stop();
+		if (thread_.try_lock()) {
+			thread_.unlock();
+		}
 	}
 
 	void debugger_impl::terminate_on_disconnect()

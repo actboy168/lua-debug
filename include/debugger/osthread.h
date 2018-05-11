@@ -48,6 +48,8 @@ namespace vscode {
 		void lock();
 		bool try_lock();
 		void unlock();
+		bool is_current();
+		void join();
 
 		debugger_impl*               dbg_;
 		std::mutex                   mtx_;

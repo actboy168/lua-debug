@@ -23,8 +23,9 @@ namespace vscode {
 	void osthread::stop()
 	{
 		if (!exit_) {
-			exit_ = true;
-			if (thd_ && thd_->get_id() != std::this_thread::get_id()) thd_->join();
+			exit_ = true; 
+			join();
+			thd_.release();
 		}
 	}
 
@@ -41,7 +42,26 @@ namespace vscode {
 		dbg_->io_close();
 	}
 
-	void osthread::lock() { return mtx_.lock(); }
-	bool osthread::try_lock() { return mtx_.try_lock(); }
-	void osthread::unlock() { return mtx_.unlock(); }
+	bool osthread::is_current()
+	{
+		return thd_ && (thd_->get_id() == std::this_thread::get_id());
+	}
+
+	void osthread::join()
+	{
+		if (thd_ && !is_current()) thd_->join();
+	}
+
+	void osthread::lock() { 
+		return mtx_.lock(); 
+	}
+	bool osthread::try_lock() { 
+		return mtx_.try_lock(); 
+	}
+	void osthread::unlock() { 
+		mtx_.unlock();
+		if (exit_) {
+			exit(0);
+		}
+	}
 }

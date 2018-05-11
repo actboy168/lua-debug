@@ -35,7 +35,9 @@ namespace vscode { namespace io {
 	void namedpipe::close() {
 		pipe->close();
 		if (close_event_fn) {
-			close_event_fn(close_event_ud);
+			auto fn = close_event_fn;
+			close_event_fn = nullptr;
+			fn(close_event_ud);
 		}
 	}
 	bool namedpipe::is_closed() const {
