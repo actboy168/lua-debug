@@ -204,32 +204,16 @@ namespace vscode
 							res("column").Int(0);
 						}
 					}
-					else if (*entry.source == '@' || *entry.source == '=') {
+					else {
 						for (auto _ : res.Object()) {
-							std::string path;
-							if (pathconvert_.get(entry.source, path)) {
-								for (auto _ : res("source").Object())
-								{
-									res("name").String(path::filename(path));
-									res("path").String(path);
-								}
+							source s(ar, pathconvert_);
+							if (s.vaild) {
+								s.output(res);
+								res("line").Int(ar->currentline);
+								res("column").Int(1);
 							}
 							else {
 								res("presentationHint").String("label");
-							}
-							res("id").Int(threadId << 16 | depth);
-							res("name").String(*entry.what == 'm' ? "[main chunk]" : (entry.name ? entry.name : "?"));
-							res("line").Int(entry.currentline);
-							res("column").Int(1);
-						}
-					}
-					else {
-						intptr_t reference = (intptr_t)entry.source;
-						stack_.push_back({ depth, reference });
-						for (auto _ : res.Object()) {
-							for (auto _ : res("source").Object()) {
-								res("name").String("<Memory>");
-								res("sourceReference").Int64((intptr_t)entry.source);
 							}
 							res("id").Int(threadId << 16 | depth);
 							res("name").String(*entry.what == 'm' ? "[main chunk]" : (entry.name ? entry.name : "?"));

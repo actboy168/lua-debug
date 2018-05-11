@@ -95,9 +95,11 @@ namespace vscode
 		for (auto _ : res("source").Object())
 		{
 			if (ref) {
+				res("name").String("<Memory>");
 				res("sourceReference").Int64(ref);
 			}
 			else {
+				res("name").String(path::filename(path));
 				res("path").String(path);
 			}
 		}

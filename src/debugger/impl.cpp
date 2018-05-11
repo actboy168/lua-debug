@@ -413,34 +413,13 @@ namespace vscode
 
 					int status = lua_getinfo(L, "Sln", (lua_Debug*)ar);
 					assert(status);
-					const char *src = ar->source;
-					if (*ar->what == 'C')
-					{
-					}
-					else if (*ar->source == '@' || *ar->source == '=')
-					{
-						std::string path;
-						if (pathconvert_.get(src, path))
-						{
-							for (auto _ : res("source").Object())
-							{
-								res("name").String(path::filename(path));
-								res("path").String(path);
-							};
+					if (*ar->what != 'C') {
+						source s(ar, pathconvert_);
+						if (s.vaild) {
+							s.output(res);
 							res("line").Int(ar->currentline);
 							res("column").Int(1);
 						}
-					}
-					else
-					{
-						intptr_t reference = (intptr_t)src;
-						for (auto _ : res("source").Object())
-						{
-							res("name").String("<Memory>");
-							res("sourceReference").Int64(reference);
-						}
-						res("line").Int(ar->currentline);
-						res("column").Int(1);
 					}
 				}
 			}
