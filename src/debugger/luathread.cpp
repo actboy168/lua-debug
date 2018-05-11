@@ -33,16 +33,16 @@ namespace vscode
 	static void debugger_hook(luathread* thread, lua_State *L, lua::Debug *ar)
 	{
 		if (!thread->enable) return;
-		thread->dbg->hook(thread, L, ar);
+		thread->dbg.hook(thread, L, ar);
 	}
 
 	static void debugger_panic(luathread* thread, lua_State *L)
 	{
 		if (!thread->enable) return;
-		thread->dbg->panic(thread, L);
+		thread->dbg.panic(thread, L);
 	}
 
-	luathread::luathread(int id, debugger_impl* dbg, lua_State* L)
+	luathread::luathread(int id, debugger_impl& dbg, lua_State* L)
 		: id(id)
 		, enable(true)
 		, release(false)
@@ -99,7 +99,7 @@ namespace vscode
 	void luathread::disable_thread()
 	{
 		if (enable) {
-			dbg->event_thread(this, false);
+			dbg.event_thread(this, false);
 		}
 		enable = false;
 	}
@@ -186,22 +186,22 @@ namespace vscode
 		ob_.reset(L);
 	}
 
-	void luathread::evaluate(lua_State* L, lua::Debug *ar, debugger_impl* dbg, rprotocol& req, int frameId)
+	void luathread::evaluate(lua_State* L, lua::Debug *ar, debugger_impl& dbg, rprotocol& req, int frameId)
 	{
 		ob_.evaluate(L, ar, dbg, req, frameId);
 	}
 
-	void luathread::new_frame(lua_State* L, debugger_impl* dbg, rprotocol& req, int frameId)
+	void luathread::new_frame(lua_State* L, debugger_impl& dbg, rprotocol& req, int frameId)
 	{
 		ob_.new_frame(L, dbg, req, frameId);
 	}
 
-	void luathread::get_variable(lua_State* L, debugger_impl* dbg, rprotocol& req, int64_t valueId, int frameId)
+	void luathread::get_variable(lua_State* L, debugger_impl& dbg, rprotocol& req, int64_t valueId, int frameId)
 	{
 		ob_.get_variable(L, dbg, req, valueId, frameId);
 	}
 
-	void luathread::set_variable(lua_State* L, debugger_impl* dbg, rprotocol& req, int64_t valueId, int frameId)
+	void luathread::set_variable(lua_State* L, debugger_impl& dbg, rprotocol& req, int64_t valueId, int frameId)
 	{
 		ob_.set_variable(L, dbg, req, valueId, frameId);
 	}

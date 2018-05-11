@@ -11,7 +11,6 @@
 #include <rapidjson/document.h>
 #include <debugger/lua.h>
 #include <debugger/breakpoint.h>
-#include <debugger/pathconvert.h>
 #include <debugger/protocol.h>
 #include <debugger/debugger.h>
 #include <debugger/redirect.h>
@@ -27,6 +26,8 @@ namespace vscode
 	class wprotocol;
 	struct luathread;
 	typedef std::map<std::string_view, std::string_view> translator_t;
+	typedef std::vector<std::pair<std::string, std::string>> sourcemap_t;
+	typedef std::vector<std::string>                         skipfiles_t;
 
 	class debugger_impl
 	{
@@ -57,7 +58,6 @@ namespace vscode
 		void set_state(eState state);
 		bool is_state(eState state) const;
 		void open_redirect(eRedirect type, lua_State* L);
-		pathconvert& get_pathconvert();
 		rprotocol io_input();
 		void io_output(const wprotocol& wp);
 		luathread* find_luathread(lua_State* L);
@@ -117,9 +117,23 @@ namespace vscode
 		void update_redirect();
 
 	private:
+		void        initialize_pathconvert(config& config);
+		bool        path_source2server(const std::string& source, std::string& server);
+		bool        path_server2client(const std::string& server, std::string& client);
+		std::string path_exception(const std::string& str);
+
+	public:
+		bool        path_convert(const std::string& source, std::string& client);
+		std::string path_clientrelative(const std::string& path);
+
+	private:
 		custom*                     custom_;
 		eCoding                     consoleSourceCoding_;
 		eCoding                     consoleTargetCoding_;
+		eCoding                     sourceCoding_;
+		std::string                 workspaceRoot_;
+		sourcemap_t                 sourceMap_;
+		skipfiles_t                 skipFiles_;
 		std::function<void()>       on_clientattach_;
 		std::unique_ptr<redirector> stdout_;
 		std::unique_ptr<redirector> stderr_;
@@ -134,8 +148,8 @@ namespace vscode
 		io::base*            network_;
 		schema               schema_;
 		breakpoint           breakpoints_;
-		pathconvert          pathconvert_;
 		std::map<int, std::unique_ptr<luathread>> luathreads_;
+		std::map<std::string, std::string> source2client_;
 
 		int64_t              seq;
 		int                  next_threadid_;

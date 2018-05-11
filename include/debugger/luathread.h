@@ -19,7 +19,7 @@ namespace vscode
 		int            id;
 		bool           enable;
 		bool           release;
-		debugger_impl* dbg;
+		debugger_impl& dbg;
 		lua_State*     L;
 		lua_Hook       thunk_hook;
 		lua_CFunction  thunk_panic;
@@ -34,7 +34,7 @@ namespace vscode
 		bp_function*   cur_function;
 		observer       ob_;
 
-		luathread(int id, debugger_impl* dbg, lua_State* L);
+		luathread(int id, debugger_impl& dbg, lua_State* L);
 		~luathread();
 
 		void install_hook(int mask);
@@ -53,9 +53,9 @@ namespace vscode
 		void update_breakpoint();
 
 		void reset_session(lua_State* L);
-		void evaluate(lua_State* L, lua::Debug *ar, debugger_impl* dbg, rprotocol& req, int frameId);
-		void new_frame(lua_State* L, debugger_impl* dbg, rprotocol& req, int frameId);
-		void get_variable(lua_State* L, debugger_impl* dbg, rprotocol& req, int64_t valueId, int frameId);
-		void set_variable(lua_State* L, debugger_impl* dbg, rprotocol& req, int64_t valueId, int frameId);
+		void evaluate(lua_State* L, lua::Debug *ar, debugger_impl& dbg, rprotocol& req, int frameId);
+		void new_frame(lua_State* L, debugger_impl& dbg, rprotocol& req, int frameId);
+		void get_variable(lua_State* L, debugger_impl& dbg, rprotocol& req, int64_t valueId, int frameId);
+		void set_variable(lua_State* L, debugger_impl& dbg, rprotocol& req, int64_t valueId, int frameId);
 	};
 }

@@ -121,7 +121,7 @@ namespace vscode
 			return;
 		}
 		int new_threadid = ++next_threadid_;
-		std::unique_ptr<luathread> newthread(new luathread(new_threadid, this, get_mainthread(L)));
+		std::unique_ptr<luathread> newthread(new luathread(new_threadid, *this, get_mainthread(L)));
 		luathreads_.insert(std::make_pair<int, std::unique_ptr<luathread>>(std::move(new_threadid), std::move(newthread)));
 	}
 
@@ -414,7 +414,7 @@ namespace vscode
 					int status = lua_getinfo(L, "Sln", (lua_Debug*)ar);
 					assert(status);
 					if (*ar->what != 'C') {
-						source s(ar, pathconvert_);
+						source s(ar, *this);
 						if (s.vaild) {
 							s.output(res);
 							res("line").Int(ar->currentline);
@@ -446,11 +446,6 @@ namespace vscode
 			stderr_->open("stderr", std_fd::STDERR);
 			break;
 		} 
-	}
-
-	pathconvert& debugger_impl::get_pathconvert()
-	{
-		return pathconvert_;
 	}
 
 	bool debugger_impl::set_config(int level, const std::string& cfg, std::string& err)
@@ -510,14 +505,15 @@ namespace vscode
 		: seq(1)
 		, network_(io)
 		, state_(eState::birth)
-		, breakpoints_(this)
-		, pathconvert_(this)
+		, breakpoints_(*this)
 		, custom_(nullptr)
 		, exception_()
 		, luathreads_()
 		, on_clientattach_()
 		, consoleSourceCoding_(eCoding::none)
 		, consoleTargetCoding_(eCoding::utf8)
+		, sourceCoding_(eCoding::ansi)
+		, workspaceRoot_()
 		, nodebug_(false)
 		, thread_(this)
 		, next_threadid_(0)

@@ -116,9 +116,6 @@
     <ClInclude Include="..\include\debugger\observer.h">
       <Filter>inc</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\debugger\pathconvert.h">
-      <Filter>inc</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\debugger\protocol.h">
       <Filter>inc</Filter>
     </ClInclude>

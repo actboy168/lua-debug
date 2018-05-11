@@ -3,8 +3,8 @@
 #include <map>
 #include <string>
 #include <deque>
-#include <base/util/hybrid_array.h> 
-#include <debugger/pathconvert.h>
+#include <vector>
+#include <base/util/hybrid_array.h>
 #include <debugger/protocol.h>
 #include <debugger/path.h>
 #include <debugger/hashmap.h>
@@ -14,6 +14,7 @@ namespace lua { struct Debug; }
 
 namespace vscode
 {
+	class debugger_impl;
 	class breakpoint;
 	struct bp_source;
 
@@ -22,7 +23,7 @@ namespace vscode
 		std::string path;
 		intptr_t ref = 0;
 		source();
-		source(lua::Debug* ar, pathconvert& pathconvert);
+		source(lua::Debug* ar, debugger_impl& dbg);
 		source(rapidjson::Value const& info);
 		void output(wprotocol& res);
 	};
@@ -39,7 +40,7 @@ namespace vscode
 
 		bp_breakpoint(size_t id, rapidjson::Value const& info);
 		bool verify(bp_source& src, debugger_impl* dbg = nullptr);
-		bool run(lua_State* L, lua::Debug* ar, debugger_impl* dbg);
+		bool run(lua_State* L, lua::Debug* ar, debugger_impl& dbg);
 		void output(wprotocol& res);
 		void update(rapidjson::Value const& info);
 	};
@@ -57,7 +58,7 @@ namespace vscode
 		std::map<size_t, bp_breakpoint> verified;
 
 		bp_source(source& s);
-		void update(lua_State* L, lua::Debug* ar, debugger_impl* dbg);
+		void update(lua_State* L, lua::Debug* ar, debugger_impl& dbg);
 
 		bp_breakpoint& add(size_t line, rapidjson::Value const& bpinfo, size_t& next_id);
 		bp_breakpoint* get(size_t line);
@@ -67,13 +68,13 @@ namespace vscode
 
 	struct bp_function {
 		bp_source* src;
-		bp_function(lua_State* L, lua::Debug* ar, debugger_impl* dbg, breakpoint* breakpoint);
+		bp_function(lua_State* L, lua::Debug* ar, debugger_impl& dbg, breakpoint* breakpoint);
 	};
 
 	class breakpoint
 	{
 	public:
-		breakpoint(debugger_impl* dbg);
+		breakpoint(debugger_impl& dbg);
 		void clear();
 		bool has(bp_source* src, size_t line, lua_State* L, lua::Debug* ar) const;
 		bp_function* get_function(lua_State* L, lua::Debug* ar);
@@ -81,7 +82,7 @@ namespace vscode
 		void set_breakpoint(source& s, rapidjson::Value const& args, wprotocol& res);
 
 	private:
-		debugger_impl* dbg_;
+		debugger_impl& dbg_;
 		std::map<std::string, bp_source, path::less<std::string>> files_;
 		std::map<intptr_t, bp_source>    memorys_;
 		hashmap<bp_function>             functions_;

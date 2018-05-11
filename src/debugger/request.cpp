@@ -64,7 +64,7 @@ namespace vscode
 			return false;
 		}
 		config_.init(1, req["arguments"]);
-		pathconvert_.initialize(config_);
+		initialize_pathconvert(config_);
 		auto consoleCoding = config_.get("consoleCoding", rapidjson::kStringType).Get<std::string>();
 		if (consoleCoding == "ansi") {
 			consoleSourceCoding_ = eCoding::ansi;
@@ -74,10 +74,10 @@ namespace vscode
 		}
 		auto& sourceCoding = config_.get("sourceCoding", rapidjson::kStringType);
 		if (sourceCoding.Get<std::string>() == "utf8") {
-			pathconvert_.setSourceCoding(eCoding::utf8);
+			sourceCoding_ = eCoding::utf8;
 		}
 		else if (sourceCoding.Get<std::string>() == "ansi") {
-			pathconvert_.setSourceCoding(eCoding::ansi);
+			sourceCoding_ = eCoding::ansi;
 		}
 
 		nodebug_ = config_.get("noDebug", rapidjson::kFalseType).GetBool();
@@ -175,7 +175,7 @@ namespace vscode
 					}
 					else {
 						for (auto _ : res.Object()) {
-							source s(&entry, pathconvert_);
+							source s(&entry, *this);
 							if (s.vaild) {
 								s.output(res);
 							}
@@ -283,7 +283,7 @@ namespace vscode
 			response_error(req, "Not found thread");
 			return false;
 		}
-		thread->new_frame(L, this, req, frameId);
+		thread->new_frame(L, *this, req, frameId);
 		return false;
 	}
 
@@ -297,7 +297,7 @@ namespace vscode
 			response_error(req, "Not found thread");
 			return false;
 		}
-		thread->get_variable(L, this, req, valueId, frameId);
+		thread->get_variable(L, *this, req, valueId, frameId);
 		return false;
 	}
 
@@ -311,7 +311,7 @@ namespace vscode
 			response_error(req, "Not found thread");
 			return false;
 		}
-		thread->set_variable(L, this, req, valueId, frameId);
+		thread->set_variable(L, *this, req, valueId, frameId);
 		return false;
 	}
 
@@ -426,7 +426,7 @@ namespace vscode
 			response_error(req, "Error frame");
 			return false;
 		}
-		thread->evaluate(L, &current, this, req, frameId);
+		thread->evaluate(L, &current, *this, req, frameId);
 		return false;
 	}
 
@@ -441,8 +441,8 @@ namespace vscode
 			std::string stackTrace = lua_tostring(L, -1);
 			lua_pop(L, 1);
 
-			exceptionId = pathconvert_.path_exception(exceptionId);
-			stackTrace = pathconvert_.path_exception(stackTrace);
+			exceptionId = path_exception(exceptionId);
+			stackTrace = path_exception(stackTrace);
 
 			res("exceptionId").String(exceptionId);
 			for (auto _ : res("details").Object())

@@ -60,7 +60,6 @@
     <ClInclude Include="..\include\debugger\luathread.h" />
     <ClInclude Include="..\include\debugger\observer.h" />
     <ClInclude Include="..\include\debugger\path.h" />
-    <ClInclude Include="..\include\debugger\pathconvert.h" />
     <ClInclude Include="..\include\debugger\protocol.h" />
     <ClInclude Include="..\include\debugger\redirect.h" />
     <ClInclude Include="..\include\debugger\osthread.h" />

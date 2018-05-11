@@ -63,10 +63,10 @@ namespace vscode
 
 	source::source() {}
 
-	source::source(lua::Debug* ar, pathconvert& pathconvert)
+	source::source(lua::Debug* ar, debugger_impl& dbg)
 	{
 		if (ar->source[0] == '@' || ar->source[0] == '=') {
-			if (pathconvert.path_convert(ar->source, path)) {
+			if (dbg.path_convert(ar->source, path)) {
 				vaild = true;
 			}
 		}
@@ -176,7 +176,7 @@ namespace vscode
 		//if (log.empty()) { res("logMessage").String(log); }
 	}
 
-	bool bp_breakpoint::run(lua_State* L, lua::Debug* ar, debugger_impl* dbg)
+	bool bp_breakpoint::run(lua_State* L, lua::Debug* ar, debugger_impl& dbg)
 	{
 		if (!cond.empty() && !evaluate_isok(L, ar, cond)) {
 			return false;
@@ -187,7 +187,7 @@ namespace vscode
 		}
 		if (!log.empty()) {
 			std::string res = evaluate_log(L, ar, log) + "\n";
-			dbg->output("stdout", res.data(), res.size(), L, ar);
+			dbg.output("stdout", res.data(), res.size(), L, ar);
 			return false;
 		}
 		return true;
@@ -197,7 +197,7 @@ namespace vscode
 		: src(s)
 	{ }
 
-	void bp_source::update(lua_State* L, lua::Debug* ar, debugger_impl* dbg)
+	void bp_source::update(lua_State* L, lua::Debug* ar, debugger_impl& dbg)
 	{
 		if (ar->what[0] == 'L') {
 			while (defined.size() <= (size_t)ar->lastlinedefined) {
@@ -221,7 +221,7 @@ namespace vscode
 
 		for (size_t i = 0; i < waitverfy.size();) {
 			bp_breakpoint& bp = waitverfy[i];
-			if (bp.verify(*this, dbg)) {
+			if (bp.verify(*this, &dbg)) {
 				std::swap(waitverfy[i], waitverfy.back());
 				verified.insert(std::make_pair(waitverfy.back().line, waitverfy.back()));
 				waitverfy.pop_back();
@@ -295,13 +295,13 @@ namespace vscode
 		return !verified.empty();
 	}
 
-	bp_function::bp_function(lua_State* L, lua::Debug* ar, debugger_impl* dbg, breakpoint* breakpoint)
+	bp_function::bp_function(lua_State* L, lua::Debug* ar, debugger_impl& dbg, breakpoint* breakpoint)
 		: src(nullptr)
 	{
 		if (!lua_getinfo(L, "SL", (lua_Debug*)ar)) {
 			return;
 		}
-		source s(ar, dbg->get_pathconvert());
+		source s(ar, dbg);
 		if (s.vaild) {
 			src = &breakpoint->get_source(s);
 			src->update(L, ar, dbg);
@@ -309,7 +309,7 @@ namespace vscode
 		lua_pop(L, 1);
 	}
 
-	breakpoint::breakpoint(debugger_impl* dbg)
+	breakpoint::breakpoint(debugger_impl& dbg)
 		: dbg_(dbg)
 		, files_()
 		, next_id_(0)

@@ -1,4 +1,3 @@
-#include <debugger/pathconvert.h>
 #include <debugger/impl.h>
 #include <debugger/path.h>
 #include <base/util/unicode.h>
@@ -9,13 +8,23 @@
 
 namespace vscode
 {
-	pathconvert::pathconvert(debugger_impl* dbg)
-		: debugger_(dbg)
-		, sourceMap_()
-		, sourceCoding_(eCoding::ansi)
-	{ }
+	static bool match_sourcemap(const std::string& srv, std::string& cli, const std::string& srvmatch, const std::string& climatch)
+	{
+		size_t i = 0;
+		for (; i < srvmatch.size(); ++i) {
+			if (i >= srv.size()) {
+				return false;
+			}
+			if (path::tochar(srvmatch[i]) == path::tochar(srv[i])) {
+				continue;
+			}
+			return false;
+		}
+		cli = climatch + srv.substr(i);
+		return true;
+	}
 
-	void pathconvert::initialize(config& config) 
+	void debugger_impl::initialize_pathconvert(config& config)
 	{
 		sourceMap_.clear();
 		auto& sourceMaps = config.get("sourceMaps", rapidjson::kArrayType);
@@ -44,29 +53,7 @@ namespace vscode
 		workspaceRoot_ = config.get("workspaceFolder", rapidjson::kStringType).Get<std::string>();
 	}
 
-	void pathconvert::setSourceCoding(eCoding coding)
-	{
-		sourceCoding_ = coding;
-		source2client_.clear();
-	}
-
-	static bool match_sourcemap(const std::string& srv, std::string& cli, const std::string& srvmatch, const std::string& climatch)
-	{
-		size_t i = 0;
-		for (; i < srvmatch.size(); ++i) {
-			if (i >= srv.size()) {
-				return false;
-			}
-			if (path::tochar(srvmatch[i]) == path::tochar(srv[i])) {
-				continue;
-			}
-			return false;
-		}
-		cli = climatch + srv.substr(i);
-		return true;
-	}
-
-	bool pathconvert::server2client(const std::string& server, std::string& client)
+	bool debugger_impl::path_server2client(const std::string& server, std::string& client)
 	{
 		for (auto& it : skipFiles_)
 		{
@@ -87,10 +74,10 @@ namespace vscode
 		return true;
 	}
 
-	bool pathconvert::source2server(const std::string& source, std::string& server)
+	bool debugger_impl::path_source2server(const std::string& source, std::string& server)
 	{
-		if (debugger_->custom_) {
-			return debugger_->custom_->path_convert(source, server);
+		if (custom_) {
+			return custom_->path_convert(source, server);
 		}
 		if (source[0] != '@') {
 			return false;
@@ -102,7 +89,7 @@ namespace vscode
 		return true;
 	}
 
-	bool pathconvert::path_convert(const std::string& source, std::string& client)
+	bool debugger_impl::path_convert(const std::string& source, std::string& client)
 	{
 		auto it = source2client_.find(source);
 		if (it != source2client_.end()) {
@@ -111,7 +98,7 @@ namespace vscode
 		}
 
 		std::string server;
-		if (source2server(source, server) && server2client(server, client)) {
+		if (path_source2server(source, server) && path_server2client(server, client)) {
 			source2client_[source] = client;
 			return true;
 		}
@@ -120,7 +107,7 @@ namespace vscode
 		return false;
 	}
 
-	std::string pathconvert::path_exception(const std::string& str)
+	std::string debugger_impl::path_exception(const std::string& str)
 	{
 		if (sourceCoding_ == eCoding::utf8) {
 			return str;
@@ -138,7 +125,7 @@ namespace vscode
 		return res;
 	}
 
-	std::string pathconvert::path_clientrelative(const std::string& path) {
+	std::string debugger_impl::path_clientrelative(const std::string& path) {
 		if (workspaceRoot_.empty()) {
 			return path;
 		}
