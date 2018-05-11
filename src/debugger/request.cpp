@@ -206,11 +206,9 @@ namespace vscode
 					}
 					else {
 						for (auto _ : res.Object()) {
-							source s(ar, pathconvert_);
+							source s(&entry, pathconvert_);
 							if (s.vaild) {
 								s.output(res);
-								res("line").Int(ar->currentline);
-								res("column").Int(1);
 							}
 							else {
 								res("presentationHint").String("label");
