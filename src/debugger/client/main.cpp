@@ -12,6 +12,7 @@
 #include <base/util/format.h>
 #include <base/filesystem.h>
 #include <base/win/query_process.h>
+#include <base/win/process_switch.h>
 
 static void response_initialized(stdinput& io, vscode::rprotocol& req)
 {
@@ -104,6 +105,7 @@ int run_luaexe_then_attach(stdinput& io, vscode::rprotocol& init, vscode::rproto
 
 static int run_attach_process(stdinput& io, vscode::rprotocol& init, vscode::rprotocol& req, int pid)
 {
+	base::win::process_switch m(pid, L"attachprocess");
 	if (!open_process_with_debugger(req, pid)) {
 		response_error(io, req, "Attach failed");
 		return -1;

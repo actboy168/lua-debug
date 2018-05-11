@@ -48,7 +48,7 @@ namespace base { namespace win {
 		static bool has(int pid, const wchar_t* name) {
 			mutex m(mutex_name(pid, name));
 			std::unique_lock<mutex> lock(m, std::try_to_lock_t());
-			return !!lock;
+			return !lock;
 		}
 		static std::wstring mutex_name(int pid, const wchar_t* name) {
 			return base::format(L"base-process-switch-%s-%d", name, pid);
