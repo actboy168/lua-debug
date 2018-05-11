@@ -18,13 +18,13 @@
 #include <debugger/config.h>
 #include <debugger/io/base.h>
 #include <debugger/io/helper.h>
+#include <debugger/osthread.h>
 #include <base/util/string_view.h>
 
 namespace vscode
 {
 	class rprotocol;
 	class wprotocol;
-	struct osthread;
 	struct luathread;
 	typedef std::map<std::string_view, std::string_view> translator_t;
 
@@ -130,7 +130,7 @@ namespace vscode
 		std::vector<stack> stack_;
 		pathconvert        pathconvert_;
 		custom*            custom_;
-		osthread*          thread_;
+		osthread           thread_;
 		std::function<void()> on_clientattach_;
 		eCoding            consoleSourceCoding_;
 		eCoding            consoleTargetCoding_;

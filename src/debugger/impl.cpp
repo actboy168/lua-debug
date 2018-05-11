@@ -198,14 +198,14 @@ namespace vscode
 
 	void debugger_impl::panic(luathread* thread, lua_State *L)
 	{
-		std::lock_guard<osthread> lock(*thread_);
+		std::lock_guard<osthread> lock(thread_);
 		disable_hook db(L);
 		exception_nolock(thread, L, eException::lua_panic, 0);
 	}
 
 	void debugger_impl::hook(luathread* thread, lua_State *L, lua::Debug *ar)
 	{
-		std::lock_guard<osthread> lock(*thread_);
+		std::lock_guard<osthread> lock(thread_);
 
 		if (is_state(eState::terminated) || is_state(eState::birth) || is_state(eState::initialized)) {
 			return;
@@ -250,7 +250,7 @@ namespace vscode
 	{
 		luathread* thread = find_luathread(L);
 		if (thread) {
-			std::lock_guard<osthread> lock(*thread_);
+			std::lock_guard<osthread> lock(thread_);
 			disable_hook db(L);
 			exception_nolock(thread, L, exceptionType, level);
 		}
@@ -354,7 +354,7 @@ namespace vscode
 
 	void debugger_impl::update()
 	{
-		std::unique_lock<osthread> lock(*thread_, std::try_to_lock_t());
+		std::unique_lock<osthread> lock(thread_, std::try_to_lock_t());
 		if (!lock) {
 			return;
 		}
@@ -502,7 +502,7 @@ namespace vscode
 
 	debugger_impl::~debugger_impl()
 	{
-		thread_->stop();
+		thread_.stop();
 		detach_all(true);
 	}
 
@@ -523,7 +523,7 @@ namespace vscode
 		, consoleSourceCoding_(eCoding::none)
 		, consoleTargetCoding_(eCoding::utf8)
 		, nodebug_(false)
-		, thread_(new osthread(this))
+		, thread_(this)
 		, next_threadid_(0)
 		, translator_(nullptr)
 		, main_dispatch_
@@ -556,7 +556,7 @@ namespace vscode
 			"consoleCoding" : "utf8",
 			"sourceCoding" : "ansi"
 		})");
-		thread_->start();
+		thread_.start();
 	}
 
 #undef DBG_REQUEST_MAIN	 
