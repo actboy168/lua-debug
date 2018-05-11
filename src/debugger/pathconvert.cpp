@@ -15,29 +15,39 @@ namespace vscode
 		, coding_(eCoding::ansi)
 	{ }
 
+	void pathconvert::initialize(config& config) 
+	{
+		sourcemap_.clear();
+		auto& sourceMaps = config.get("sourceMaps", rapidjson::kArrayType);
+		for (auto& e : sourceMaps.GetArray())
+		{
+			if (!e.IsArray())
+			{
+				continue;
+			}
+			auto& eary = e.GetArray();
+			if (eary.Size() < 2 || !eary[0].IsString() || !eary[1].IsString())
+			{
+				continue;
+			}
+			sourcemap_.push_back(std::make_pair(eary[0].Get<std::string>(), eary[1].Get<std::string>()));
+		}
+		auto& skipFiles = config.get("skipFiles", rapidjson::kArrayType);
+		for (auto& e : skipFiles.GetArray())
+		{
+			if (!e.IsString())
+			{
+				continue;
+			}
+			skipfiles_.push_back(e.Get<std::string>());
+		}
+		clientWorkPath = config.get("workspaceFolder", rapidjson::kStringType).Get<std::string>();
+	}
+
 	void pathconvert::set_coding(eCoding coding)
 	{
 		coding_ = coding;
 		source2client_.clear();
-	}
-
-	void pathconvert::add_sourcemap(const std::string& server, const std::string& client)
-	{
-		sourcemap_.push_back(std::make_pair(server, client));
-	}
-
-	void pathconvert::add_skipfiles(const std::string& pattern)
-	{
-		skipfiles_.push_back(pattern);
-	}
-
-	void pathconvert::setClientWorkPath(const std::string& path) {
-		clientWorkPath = path;
-	}
-
-	void pathconvert::clear()
-	{
-		sourcemap_.clear();
 	}
 
 	bool pathconvert::match_sourcemap(const std::string& srv, std::string& cli, const std::string& srvmatch, const std::string& climatch)

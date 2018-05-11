@@ -56,34 +56,6 @@ namespace vscode
 		return false;
 	}
 
-	void debugger_impl::initialize_pathconvert() {
-		pathconvert_.clear();
-		auto& sourceMaps = config_.get("sourceMaps", rapidjson::kArrayType);
-		for (auto& e : sourceMaps.GetArray())
-		{
-			if (!e.IsArray())
-			{
-				continue;
-			}
-			auto& eary = e.GetArray();
-			if (eary.Size() < 2 || !eary[0].IsString() || !eary[1].IsString())
-			{
-				continue;
-			}
-			pathconvert_.add_sourcemap(eary[0].Get<std::string>(), eary[1].Get<std::string>());
-		}
-		auto& skipFiles = config_.get("skipFiles", rapidjson::kArrayType);
-		for (auto& e : skipFiles.GetArray())
-		{
-			if (!e.IsString())
-			{
-				continue;
-			}
-			pathconvert_.add_skipfiles(e.Get<std::string>());
-		}
-		pathconvert_.setClientWorkPath(config_.get("workspaceFolder", rapidjson::kStringType).Get<std::string>());
-	}
-
 	bool debugger_impl::request_attach(rprotocol& req)
 	{
 		initproto_ = rprotocol();
@@ -92,7 +64,7 @@ namespace vscode
 			return false;
 		}
 		config_.init(1, req["arguments"]);
-		initialize_pathconvert();
+		pathconvert_.initialize(config_);
 		auto consoleCoding = config_.get("consoleCoding", rapidjson::kStringType).Get<std::string>();
 		if (consoleCoding == "ansi") {
 			consoleSourceCoding_ = eCoding::ansi;
