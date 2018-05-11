@@ -96,12 +96,12 @@ namespace vscode
 
 	private:
 		void event_stopped(luathread* thread, const char *msg);
-		void event_thread(luathread* thread, bool started);
 		void event_terminated();
 		void event_initialized();
 		void event_capabilities();
 
 	public:
+		void event_thread(luathread* thread, bool started);
 		void event_breakpoint(const char* reason, bp_source* src, bp_breakpoint* bp);
 
 	public:

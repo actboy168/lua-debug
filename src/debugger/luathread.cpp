@@ -73,6 +73,7 @@ namespace vscode
 
 	luathread::~luathread()
 	{
+		disable_thread();
 		if (release) return;
 		lua_sethook(L, 0, 0, 0);
 		lua_atpanic(L, oldpanic);
@@ -97,6 +98,9 @@ namespace vscode
 
 	void luathread::disable_thread()
 	{
+		if (enable) {
+			dbg->event_thread(this, false);
+		}
 		enable = false;
 	}
 
