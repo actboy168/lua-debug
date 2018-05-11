@@ -63,6 +63,7 @@ namespace vscode
 		bool is_state(eState state) const;
 		void open_redirect(eRedirect type, lua_State* L = nullptr);
 		bool set_config(int level, const std::string& cfg, std::string& err);
+		void terminate_on_disconnect();
 
 	private:
 		debugger_impl* impl_;

@@ -55,10 +55,10 @@ struct DebuggerWatcher {
 		if (!io->open_server(config.pipeName)) {
 			return;
 		}
-		if (!DebuggerConfig::Get().isAttachProcess) {
-			io->kill_when_close();
-		}
 		dbg.reset(new vscode::debugger(io.get()));
+		if (!DebuggerConfig::Get().isAttachProcess) {
+			dbg->terminate_on_disconnect();
+		}
 		dbg->wait_client();
 		dbg->open_redirect(vscode::eRedirect::stdoutput);
 		dbg->open_redirect(vscode::eRedirect::stderror);

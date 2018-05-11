@@ -19,7 +19,7 @@ namespace vscode { namespace io {
 		bool   open_client(std::wstring const& name, int timeout);
 		void   close();
 		bool   is_closed() const;
-		void   kill_when_close();
+		void   on_close_event(CloseEvent fn, void* ud);
 
 	protected:
 		size_t raw_peek();
@@ -28,6 +28,7 @@ namespace vscode { namespace io {
 
 	private:
 		net::namedpipe* pipe;
-		bool kill_when_close_ = false;
+		CloseEvent close_event_fn = nullptr;
+		void*      close_event_ud = nullptr;
 	};
 }}

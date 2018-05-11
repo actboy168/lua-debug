@@ -143,8 +143,7 @@ dbg.reset(new vscode::debugger(namedpipe.get()));
 	{
 		ud& self = to(L, 1);
 		self.guard = true;
-		if (self.namedpipe) self.namedpipe->kill_when_close();
-		if (self.socket) self.socket->kill_when_close();
+		self.dbg->terminate_on_disconnect();
 		lua_pushvalue(L, 1);
 		return 1;
 	}

@@ -13,11 +13,12 @@
 #endif
 
 namespace vscode { namespace io {
+	typedef void (*CloseEvent)(void* userdata);
 	struct DEBUGGER_API base {
 		virtual void update(int ms) = 0;
 		virtual bool output(const char* buf, size_t len) = 0;
 		virtual bool input(std::string& buf) = 0;
 		virtual void close() = 0;
-		virtual void kill_when_close() { };
+		virtual void on_close_event(CloseEvent fn, void* ud) { };
 	};
 }}

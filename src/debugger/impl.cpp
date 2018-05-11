@@ -479,6 +479,21 @@ namespace vscode
 		return schema_.open(path);
 	}
 
+	static void debugger_on_disconnect(void* ud)
+	{
+		((debugger_impl*)ud)->on_disconnect();
+	}
+
+	void debugger_impl::on_disconnect()
+	{
+		exit(0);
+	}
+
+	void debugger_impl::terminate_on_disconnect()
+	{
+		network_->on_close_event(debugger_on_disconnect, this);
+	}
+
 	debugger_impl::~debugger_impl()
 	{
 		thread_.stop();

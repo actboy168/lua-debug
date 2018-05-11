@@ -57,6 +57,8 @@ namespace vscode
 		void set_custom(custom* custom);
 		void output(const char* category, const char* buf, size_t len, lua_State* L = nullptr, lua::Debug* ar = nullptr);
 		bool set_config(int level, const std::string& cfg, std::string& err);
+		void terminate_on_disconnect(); 
+		void on_disconnect();
 
 		void set_state(eState state);
 		bool is_state(eState state) const;
