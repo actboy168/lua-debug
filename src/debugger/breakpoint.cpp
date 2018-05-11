@@ -63,6 +63,19 @@ namespace vscode
 
 	source::source() {}
 
+	source::source(lua::Debug* ar, pathconvert& pathconvert)
+	{
+		if (ar->source[0] == '@' || ar->source[0] == '=') {
+			if (pathconvert.get(ar->source, path)) {
+				vaild = true;
+			}
+		}
+		else {
+			ref = (intptr_t)ar->source;
+			vaild = true;
+		}
+	}
+
 	source::source(rapidjson::Value const& info)
 	{
 		if (info.HasMember("path")) {
@@ -286,19 +299,9 @@ namespace vscode
 		if (!lua_getinfo(L, "SL", (lua_Debug*)ar)) {
 			return;
 		}
-
-		source s;
-		if (ar->source[0] == '@' || ar->source[0] == '=') {
-			if (dbg->get_pathconvert().get(ar->source, s.path)) {
-				src = &breakpoint->get_source(s);
-			}
-		}
-		else {
-			s.ref = (intptr_t)ar->source;
+		source s(ar, dbg->get_pathconvert());
+		if (s.vaild) {
 			src = &breakpoint->get_source(s);
-		}
-		if (src) {
-			s.vaild = true;
 			src->update(L, ar, dbg);
 		}
 		lua_pop(L, 1);

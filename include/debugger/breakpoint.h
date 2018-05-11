@@ -22,6 +22,7 @@ namespace vscode
 		std::string path;
 		intptr_t ref = 0;
 		source();
+		source(lua::Debug* ar, pathconvert& pathconvert);
 		source(rapidjson::Value const& info);
 		void output(wprotocol& res);
 	};
