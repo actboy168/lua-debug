@@ -5,6 +5,23 @@
 #include <base/path/self.h>
 #include <base/win/process.h>
 
+std::string cmd_string(const std::string& str) {
+	if (str.size() > 0 && str[str.size() - 1] == '\\' && (str.size() == 1 || str[str.size() - 2] != '\\')) {
+		return "\"" + str + "\\\"";
+	}
+	else {
+		return "\"" + str + "\"";
+	}
+}
+std::wstring cmd_string(const std::wstring& str) {
+	if (str.size() > 0 && str[str.size() - 1] == L'\\' && (str.size() == 1 || str[str.size() - 2] != L'\\')) {
+		return L"\"" + str + L"\\\"";
+	}
+	else {
+		return L"\"" + str + L"\"";
+	}
+}
+
 std::string create_install_script(vscode::rprotocol& req, const fs::path& dbg_path, const std::wstring& port, bool redirect)
 {
 	auto& args = req["arguments"];
@@ -49,7 +66,7 @@ bool create_luaexe_with_debugger(stdinput& io, vscode::rprotocol& req, const std
 		}
 	}
 
-	std::wstring wcommand = L"\"" + luaexe + L"\"";
+	std::wstring wcommand = cmd_string(luaexe);
 	std::wstring wcwd;
 	if (args.HasMember("cwd") && args["cwd"].IsString()) {
 		wcwd = base::u2w(args["cwd"].Get<std::string>());
@@ -63,12 +80,12 @@ bool create_luaexe_with_debugger(stdinput& io, vscode::rprotocol& req, const std
 	if (args.HasMember("arg0")) {
 		if (args["arg0"].IsString()) {
 			auto& v = args["arg0"];
-			wcommand += base::format(LR"( "%s")", base::u2w(v));
+			wcommand += L" " + cmd_string(base::u2w(v));
 		}
 		else if (args["arg0"].IsArray()) {
 			for (auto& v : args["arg0"].GetArray()) {
 				if (v.IsString()) {
-					wcommand += base::format(LR"( "%s")", base::u2w(v));
+					wcommand += L" " + cmd_string(base::u2w(v));
 				}
 			}
 		}
@@ -78,12 +95,12 @@ bool create_luaexe_with_debugger(stdinput& io, vscode::rprotocol& req, const std
 	if (args.HasMember("program") && args["program"].IsString()) {
 		program = base::u2w(args["program"]);
 	}
-	wcommand += base::format(LR"( "%s")", program);
+	wcommand += L" " + cmd_string(program);
 
 	if (args.HasMember("arg") && args["arg"].IsArray()) {
 		for (auto& v : args["arg"].GetArray()) {
 			if (v.IsString()) {
-				wcommand += base::format(LR"( "%s")", base::u2w(v));
+				wcommand += L" " + cmd_string(base::u2w(v));
 			}
 		}
 	}

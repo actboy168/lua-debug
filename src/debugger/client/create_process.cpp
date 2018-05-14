@@ -3,6 +3,7 @@
 #include <base/util/unicode.h>
 #include <base/path/self.h>
 #include <debugger/protocol.h>
+#include <debugger/client/run.h>
 
 bool create_process_with_debugger(vscode::rprotocol& req, int& pid)
 {
@@ -11,7 +12,7 @@ bool create_process_with_debugger(vscode::rprotocol& req, int& pid)
 		return false;
 	}
 	std::wstring wapplication = base::u2w(args["runtimeExecutable"].Get<std::string>());
-	std::wstring wcommand = L"\"" + wapplication + L"\"";
+	std::wstring wcommand = cmd_string(wapplication);
 	if (args.HasMember("runtimeArgs") && args["runtimeArgs"].IsString()) {
 		wcommand = wcommand + L" " + base::u2w(args["runtimeArgs"].Get<std::string>());
 	}
