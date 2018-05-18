@@ -256,6 +256,7 @@ namespace vscode {
 
 	static bool userdata_debugger_extand(lua_State* L, int idx)
 	{
+		idx = lua_absindex(L, idx);
 		if (!lua_getmetatable(L, idx)) {
 			return false;
 		}
