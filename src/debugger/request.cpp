@@ -430,13 +430,15 @@ namespace vscode
 		return false;
 	}
 
+	std::string lua_tostr(lua_State* L, int idx);
+
 	bool debugger_impl::request_exception_info(rprotocol& req, lua_State *L, lua::Debug *ar)
 	{
 		//TODO: threadId
 		response_success(req, [&](wprotocol& res)
 		{
 			res("breakMode").String("always");
-			std::string exceptionId = lua_tostring(L, -2);
+			std::string exceptionId = lua_tostr(L, -2);
 			luaL_traceback(L, L, 0, (int)lua_tointeger(L, -1));
 			std::string stackTrace = lua_tostring(L, -1);
 			lua_pop(L, 1);

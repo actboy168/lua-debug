@@ -6,6 +6,8 @@
 
 namespace vscode
 {
+	std::string lua_tostr(lua_State* L, int idx);
+
 	static bool evaluate_isok(lua_State* L, lua::Debug *ar, const std::string& script)
 	{
 		int nresult = 0;
@@ -35,11 +37,9 @@ namespace vscode
 		{
 			return "";
 		}
-		std::string res;
-		size_t len = 0;
-		const char* str = lua_tolstring(L, -nresult, &len);
+		std::string res = lua_tostr(L, -nresult);
 		lua_pop(L, nresult);
-		return std::string(str, len);
+		return res;
 	}
 
 	static std::string evaluate_log(lua_State* L, lua::Debug *ar, const std::string& log)

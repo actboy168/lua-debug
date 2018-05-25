@@ -9,6 +9,15 @@
 
 namespace vscode
 {
+	std::string lua_tostr(lua_State* L, int idx)
+	{
+		size_t len = 0;
+		const char* str = luaL_tolstring(L, idx, &len);
+		std::string res(str, len);
+		lua_pop(L, 1);
+		return res;
+	}
+
 	static int redirect_print(lua_State* L) {
 		std::string out;
 		int n = lua_gettop(L);

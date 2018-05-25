@@ -1236,6 +1236,8 @@ finish:
 		return frame->new_variable(-1, value::Type::watch, n);
 	}
 
+	std::string lua_tostr(lua_State* L, int idx);
+
 	void observer::evaluate(lua_State* L, lua::Debug *ar, debugger_impl& dbg, rprotocol& req, int frameId)
 	{
 		auto& args = req["arguments"];
@@ -1256,13 +1258,13 @@ finish:
 		{
 			if (context != "repl")
 			{
-				dbg.response_error(req, lua_tostring(L, -1));
+				dbg.response_error(req, lua_tostr(L, -1).c_str());
 				lua_pop(L, 1);
 				return;
 			}
 			if (!vscode::evaluate(L, ar, expression.c_str(), nresult, true))
 			{
-				dbg.response_error(req, lua_tostring(L, -1));
+				dbg.response_error(req, lua_tostr(L, -1).c_str());
 				lua_pop(L, 1);
 				return;
 			}
