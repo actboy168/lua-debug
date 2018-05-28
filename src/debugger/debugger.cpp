@@ -15,7 +15,7 @@ namespace vscode
 		delete impl_;
 	}
 
-	bool debugger::open_schema(const std::wstring& path)
+	bool debugger::open_schema(const std::string& path)
 	{
 		return impl_->open_schema(path);
 	}

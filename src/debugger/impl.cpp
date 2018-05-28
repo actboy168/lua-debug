@@ -478,7 +478,7 @@ namespace vscode
 		network_->close();
 	}
 
-	bool debugger_impl::open_schema(const std::wstring& path)
+	bool debugger_impl::open_schema(const std::string& path)
 	{
 		return schema_.open(path);
 	}

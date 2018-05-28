@@ -51,7 +51,7 @@ namespace vscode
 	public:
 		debugger(io::base* io);
 		~debugger();
-		bool open_schema(const std::wstring& path);
+		bool open_schema(const std::string& path);
 		void close();
 		void update();
 		void wait_client();

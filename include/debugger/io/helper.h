@@ -9,7 +9,7 @@ namespace vscode {
 	class schema
 	{
 	public:
-		bool open(const std::wstring& path);
+		bool open(const std::string& path);
 		bool accept(const rapidjson::Document& d);
 		operator bool() const;
 

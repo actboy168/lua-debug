@@ -36,7 +36,7 @@ namespace vscode
 	public:
 		debugger_impl(io::base* io);
 		~debugger_impl();
-		bool open_schema(const std::wstring& path);
+		bool open_schema(const std::string& path);
 		void close();
 		void io_close();
 		void panic(luathread* thread, lua_State* L);

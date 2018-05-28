@@ -2,6 +2,7 @@
 #include <debugger/io/base.h>
 #include <rapidjson/schema.h>
 #include <rapidjson/error/en.h>
+#include <base/util/unicode.h>
 #include <fstream>
 
 #if 1
@@ -24,8 +25,12 @@ namespace vscode {
 
 	class file {
 	public:
-		file(const wchar_t* filename, std::ios_base::openmode mode) {
+		file(const char* filename, std::ios_base::openmode mode) {
+#if defined(_WIN32)
+			file_.open(base::u2w(filename).c_str(), std::ios::binary | mode);
+#else
 			file_.open(filename, std::ios::binary | mode);
+#endif
 		}
 		~file() {
 			file_.close();
@@ -46,7 +51,7 @@ namespace vscode {
 		std::fstream file_;
 	};
 
-	bool schema::open(const std::wstring& path)
+	bool schema::open(const std::string& path)
 	{
 		file file(path.c_str(), std::ios_base::in);
 		if (!file.is_open()) {
