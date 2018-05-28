@@ -131,7 +131,7 @@ namespace vscode { namespace io {
 		if (!is_listening()) {
 			listen();
 		}
-		for (auto& s = clearlist_.begin(); s != clearlist_.end();)
+		for (auto s = clearlist_.begin(); s != clearlist_.end();)
 		{
 			if ((*s)->sock == net::socket::retired_fd) {
 				s = clearlist_.erase(s);
@@ -180,7 +180,11 @@ namespace vscode { namespace io {
 			return 0;
 		}
 		sockaddr_in addr;
+#if defined WIN32
 		int addrlen = sizeof(sockaddr_in);
+#else
+		socklen_t addrlen = sizeof(sockaddr_in);
+#endif
 		::getsockname(sock, (sockaddr*)&addr, &addrlen);
 		return ::ntohs(addr.sin_port);
 	}

@@ -16,6 +16,9 @@
 #	else
 #		error "Microsoft Visual C++ compiler: unsupported processor architecture"
 #	endif
+#else
+#	include <cstddef>
+#	include <atomic>
 #endif
 
 namespace net {
@@ -38,7 +41,7 @@ namespace net {
 		atomic& operator=(const atomic&);
 	};
 #else
-#	include <atomic>
+	using std::atomic;
 #endif
 
 	template <typename T, ::std::size_t N>
@@ -53,7 +56,7 @@ namespace net {
 		: public Alloc::template rebind<queue_chunk<T, N> >::other
 	{
 	public:
-		typedef typename queue_chunk<T, N>                         chunk_type;
+		typedef queue_chunk<T, N>                                  chunk_type;
 		typedef typename Alloc::template rebind<chunk_type>::other base_type;
 
 	public:

@@ -34,43 +34,43 @@ namespace net { namespace tcp {
 
 		bool empty() const
 		{
-			return ((begin_chunk == back_chunk) && (begin_pos == back_pos));
+			return ((mybase::begin_chunk == mybase::back_chunk) && (mybase::begin_pos == mybase::back_pos));
 		}
 
 		size_t front_size() const
 		{
-			if (begin_chunk == back_chunk) {
-				assert(begin_pos <= back_pos);
-				return back_pos - begin_pos;
+			if (mybase::begin_chunk == mybase::back_chunk) {
+				assert(mybase::begin_pos <= mybase::back_pos);
+				return mybase::back_pos - mybase::begin_pos;
 			}
-			assert(begin_pos < N);
-			return N - begin_pos;
+			assert(mybase::begin_pos < N);
+			return N - mybase::begin_pos;
 		}
 
 		size_t back_size() const
 		{
-			assert(back_pos < N);
-			return N - back_pos;
+			assert(mybase::back_pos < N);
+			return N - mybase::back_pos;
 		}
 
 		void do_push(size_t n)
 		{
 			assert(n > 0);
-			if (end_pos + n > N) {
-				end_pos += n - 2;
+			if (mybase::end_pos + n > N) {
+				mybase::end_pos += n - 2;
 				mybase::do_push();
 				mybase::do_push();
 				return;
 			}
-			assert(n <= N - end_pos);
-			end_pos += n - 1;
+			assert(n <= N - mybase::end_pos);
+			mybase::end_pos += n - 1;
 			mybase::do_push();
 		}
 
 		void do_pop(size_t n)
 		{
-			assert(n > 0 && n <= N - begin_pos);
-			begin_pos += n - 1;
+			assert(n > 0 && n <= N - mybase::begin_pos);
+			mybase::begin_pos += n - 1;
 			mybase::do_pop();
 		}
 
