@@ -2,7 +2,9 @@
 #include <map>
 #include <base/util/string_view.h>
 
+#if defined(_WIN32)
 #pragma execution_character_set("utf-8")
+#endif
 
 namespace vscode {
 	static std::map<std::string_view, translator_t> translators = {

@@ -507,8 +507,8 @@ namespace vscode
 		detach_all(true);
 	}
 
-#define DBG_REQUEST_MAIN(name) std::bind(&debugger_impl:: ## name, this, std::placeholders::_1)
-#define DBG_REQUEST_HOOK(name) std::bind(&debugger_impl:: ## name, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
+#define DBG_REQUEST_MAIN(name) std::bind(&debugger_impl::name, this, std::placeholders::_1)
+#define DBG_REQUEST_HOOK(name) std::bind(&debugger_impl::name, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
 
 	debugger_impl::debugger_impl(io::base* io)
 		: seq(1)

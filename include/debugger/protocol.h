@@ -135,7 +135,7 @@ namespace vscode
 
 			const iterator& operator++ (int)
 			{
-				object_itor old = *this;
+				iterator old = *this;
 				++(*this);
 				return old;
 			}

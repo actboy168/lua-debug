@@ -16,12 +16,15 @@ namespace vscode { namespace io {
 		void update(int ms);
 		bool output(const char* buf, size_t len);
 		bool input(std::string& buf);
-
+#if defined(_WIN32)
 #pragma warning(push)
 #pragma warning(disable:4251)
+#endif
 		net::queue<std::string, 8> queue;
 		std::string                buf;
+#if defined(_WIN32)
 #pragma warning(pop)
+#endif
 		size_t                     stat;
 		size_t                     len;
 	};

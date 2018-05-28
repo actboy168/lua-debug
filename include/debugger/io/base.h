@@ -2,7 +2,7 @@
 
 #include <string>
 
-#if defined(DEBUGGER_INLINE)
+#if !defined(_WIN32) || defined(DEBUGGER_INLINE)
 #	define DEBUGGER_API
 #else
 #	if defined(DEBUGGER_EXPORTS)

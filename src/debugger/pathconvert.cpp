@@ -4,7 +4,6 @@
 #include <base/util/dynarray.h>
 #include <deque>
 #include <regex>
-#include <Windows.h>
 
 namespace vscode
 {

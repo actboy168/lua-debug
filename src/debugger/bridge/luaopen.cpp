@@ -4,8 +4,7 @@
 #include <debugger/io/socket.h>
 #include <debugger/io/namedpipe.h>
 #include <base/util/unicode.h>
-#include <memory>
-#include <intrin.h>  
+#include <memory>  
 
 namespace luaw {
 	struct ud {
@@ -196,7 +195,7 @@ static void caller_is_luadll(void* callerAddress)
 }
 #endif
 
-int __cdecl luaopen_debugger(lua_State* L)
+int luaopen_debugger(lua_State* L)
 {
 #if defined(DEBUGGER_BRIDGE)
 	caller_is_luadll(_ReturnAddress());

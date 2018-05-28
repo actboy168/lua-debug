@@ -214,36 +214,60 @@
     <ClCompile />
     <ClCompile>
       <AdditionalIncludeDirectories>$(RemoteRootDir)/$(ProjectName)/include/;$(RemoteRootDir)/$(ProjectName)/third_party/;$(RemoteRootDir)/lua53/;$(SolutionDir)..\include\;$(SolutionDir)..\third_party\;$(SolutionDir)..\third_party\lua53\src\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>RAPIDJSON_HAS_STDSTRING
+;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <CAdditionalWarning> </CAdditionalWarning>
+      <CppAdditionalWarning> </CppAdditionalWarning>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
     <ClCompile />
     <ClCompile>
       <AdditionalIncludeDirectories>$(RemoteRootDir)/$(ProjectName)/include/;$(RemoteRootDir)/$(ProjectName)/third_party/;$(RemoteRootDir)/lua53/;$(SolutionDir)..\include\;$(SolutionDir)..\third_party\;$(SolutionDir)..\third_party\lua53\src\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>RAPIDJSON_HAS_STDSTRING
+;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <CAdditionalWarning> </CAdditionalWarning>
+      <CppAdditionalWarning> </CppAdditionalWarning>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile />
     <ClCompile>
       <AdditionalIncludeDirectories>$(RemoteRootDir)/$(ProjectName)/include/;$(RemoteRootDir)/$(ProjectName)/third_party/;$(RemoteRootDir)/lua53/;$(SolutionDir)..\include\;$(SolutionDir)..\third_party\;$(SolutionDir)..\third_party\lua53\src\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>RAPIDJSON_HAS_STDSTRING
+;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <CAdditionalWarning> </CAdditionalWarning>
+      <CppAdditionalWarning> </CppAdditionalWarning>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile />
     <ClCompile>
       <AdditionalIncludeDirectories>$(RemoteRootDir)/$(ProjectName)/include/;$(RemoteRootDir)/$(ProjectName)/third_party/;$(RemoteRootDir)/lua53/;$(SolutionDir)..\include\;$(SolutionDir)..\third_party\;$(SolutionDir)..\third_party\lua53\src\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>RAPIDJSON_HAS_STDSTRING
+;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <CAdditionalWarning> </CAdditionalWarning>
+      <CppAdditionalWarning> </CppAdditionalWarning>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
     <ClCompile />
     <ClCompile>
       <AdditionalIncludeDirectories>$(RemoteRootDir)/$(ProjectName)/include/;$(RemoteRootDir)/$(ProjectName)/third_party/;$(RemoteRootDir)/lua53/;$(SolutionDir)..\include\;$(SolutionDir)..\third_party\;$(SolutionDir)..\third_party\lua53\src\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>RAPIDJSON_HAS_STDSTRING
+;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <CAdditionalWarning> </CAdditionalWarning>
+      <CppAdditionalWarning> </CppAdditionalWarning>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
     <ClCompile />
     <ClCompile>
       <AdditionalIncludeDirectories>$(RemoteRootDir)/$(ProjectName)/include/;$(RemoteRootDir)/$(ProjectName)/third_party/;$(RemoteRootDir)/lua53/;$(SolutionDir)..\include\;$(SolutionDir)..\third_party\;$(SolutionDir)..\third_party\lua53\src\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>RAPIDJSON_HAS_STDSTRING
+;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <CAdditionalWarning> </CAdditionalWarning>
+      <CppAdditionalWarning> </CppAdditionalWarning>
     </ClCompile>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

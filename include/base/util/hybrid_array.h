@@ -7,6 +7,7 @@
 #include <stdexcept>
 #include <type_traits>
 #include <memory>
+#include <cstddef>
 
 namespace base {
 

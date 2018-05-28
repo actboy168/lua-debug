@@ -71,6 +71,6 @@ namespace vscode
 }
 
 extern "C" {
-	DEBUGGER_API int  __cdecl luaopen_debugger(lua_State* L);
-	DEBUGGER_API void __cdecl debugger_set_luadll(void* luadll, void* getluaapi);
+	DEBUGGER_API int  luaopen_debugger(lua_State* L);
+	DEBUGGER_API void debugger_set_luadll(void* luadll, void* getluaapi);
 }

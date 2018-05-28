@@ -1,7 +1,9 @@
 #include <base/util/unicode.h>
 #include <rapidjson/encodings.h>
-#include <Windows.h>
 #include <vector>
+#if defined(_WIN32)
+#include <Windows.h>
+#endif
 
 namespace base
 {
@@ -64,6 +66,7 @@ namespace base
 		return w2u(wstr.data());
 	}
 
+#if defined(_WIN32)
 	std::wstring a2w(const strview& str)
 	{
 		if (str.empty())
@@ -105,4 +108,25 @@ namespace base
 	{
 		return w2a(u2w(str));
 	}
+#else
+	std::wstring a2w(const strview& str)
+	{
+		return u2w(str);
+	}
+
+	std::string w2a(const wstrview& wstr)
+	{
+		return w2u(wstr);
+	}
+
+	std::string a2u(const strview& str)
+	{
+		return std::string(str.data(), str.size());
+	}
+
+	std::string u2a(const strview& str)
+	{
+		return std::string(str.data(), str.size());
+	}
+#endif
 }

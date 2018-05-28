@@ -2,7 +2,12 @@
 #include <base/util/unicode.h>
 #include <base/util/string_view.h>
 #include <deque>
+#if defined(_WIN32)
 #include <Windows.h>
+#else
+#include <unistd.h>
+#include <memory>
+#endif
 
 namespace vscode { namespace path {
 	static bool is_sep(char c)
@@ -25,6 +30,7 @@ namespace vscode { namespace path {
 
 	static std::string path_currentpath()
 	{
+#if defined(_WIN32)
 		DWORD len = GetCurrentDirectoryW(0, nullptr);
 		if (len == 0) {
 			return std::string("c:");
@@ -33,6 +39,21 @@ namespace vscode { namespace path {
 		r.resize(len);
 		GetCurrentDirectoryW((DWORD)r.size(), &r.front());
 		return base::w2u(r);
+#else
+		for (long path_max = 128;; path_max *= 2)
+		{
+			std::unique_ptr<char[]> buf(new char[static_cast<std::size_t>(path_max)]);
+			if (::getcwd(buf.get(), static_cast<std::size_t>(path_max)) == 0) {
+				if (errno != ERANGE) {
+					break;
+				}
+			}
+			else {
+				return buf.get();
+			}
+		}
+		return std::string("~/");
+#endif
 	}
 
 	static std::string path_normalize(const std::string& path, std::deque<std::string>& stack)

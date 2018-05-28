@@ -1,13 +1,14 @@
 #pragma once
 
-#include <yvals.h>
-
 #if _HAS_CXX17
 
 #include <string_view>
 
 #else
 
+#if defined(_WIN32)
+#include <yvals.h>
+#endif
 #include <cassert>
 #include <cstddef>
 #include <stdexcept>
