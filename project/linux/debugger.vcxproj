@@ -1,0 +1,251 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|ARM">
+      <Configuration>Debug</Configuration>
+      <Platform>ARM</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|ARM">
+      <Configuration>Release</Configuration>
+      <Platform>ARM</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x86">
+      <Configuration>Debug</Configuration>
+      <Platform>x86</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x86">
+      <Configuration>Release</Configuration>
+      <Platform>x86</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{43dbf977-6a5e-4fd0-8ee1-150409c17bef}</ProjectGuid>
+    <Keyword>Linux</Keyword>
+    <RootNamespace>debugger</RootNamespace>
+    <MinimumVisualStudioVersion>15.0</MinimumVisualStudioVersion>
+    <ApplicationType>Linux</ApplicationType>
+    <ApplicationTypeRevision>1.0</ApplicationTypeRevision>
+    <TargetLinuxPlatform>Generic</TargetLinuxPlatform>
+    <LinuxProjectType>{D51BCBC9-82E9-4017-911E-C93873C4EA2B}</LinuxProjectType>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'" Label="Configuration">
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <RemoteRootDir>/home/actboy168/projects</RemoteRootDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'" Label="Configuration">
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <RemoteRootDir>/home/actboy168/projects</RemoteRootDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'" Label="Configuration">
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <RemoteRootDir>/home/actboy168/projects</RemoteRootDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'" Label="Configuration">
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <RemoteRootDir>/home/actboy168/projects</RemoteRootDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <RemoteRootDir>/home/actboy168/projects</RemoteRootDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <RemoteRootDir>/home/actboy168/projects</RemoteRootDir>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings" />
+  <ImportGroup Label="Shared" />
+  <ImportGroup Label="PropertySheets" />
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
+    <IntDir>$(ProjectDir)obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
+    <IntDir>$(ProjectDir)obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <IntDir>$(ProjectDir)obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <IntDir>$(ProjectDir)obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
+    <IntDir>$(ProjectDir)obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
+    <IntDir>$(ProjectDir)obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+  </PropertyGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\include\base\config.h" />
+    <ClInclude Include="..\..\include\base\util\dynarray.h" />
+    <ClInclude Include="..\..\include\base\util\format.h" />
+    <ClInclude Include="..\..\include\base\util\horrible_cast.h" />
+    <ClInclude Include="..\..\include\base\util\hybrid_array.h" />
+    <ClInclude Include="..\..\include\base\util\noncopyable.h" />
+    <ClInclude Include="..\..\include\base\util\string_view.h" />
+    <ClInclude Include="..\..\include\base\util\unicode.h" />
+    <ClInclude Include="..\..\include\debugger\breakpoint.h" />
+    <ClInclude Include="..\..\include\debugger\bridge\delayload.h" />
+    <ClInclude Include="..\..\include\debugger\bridge\lua.h" />
+    <ClInclude Include="..\..\include\debugger\capabilities.h" />
+    <ClInclude Include="..\..\include\debugger\config.h" />
+    <ClInclude Include="..\..\include\debugger\debugger.h" />
+    <ClInclude Include="..\..\include\debugger\evaluate.h" />
+    <ClInclude Include="..\..\include\debugger\hashmap.h" />
+    <ClInclude Include="..\..\include\debugger\impl.h" />
+    <ClInclude Include="..\..\include\debugger\io\base.h" />
+    <ClInclude Include="..\..\include\debugger\io\helper.h" />
+    <ClInclude Include="..\..\include\debugger\io\namedpipe.h" />
+    <ClInclude Include="..\..\include\debugger\io\socket.h" />
+    <ClInclude Include="..\..\include\debugger\io\stream.h" />
+    <ClInclude Include="..\..\include\debugger\lua.h" />
+    <ClInclude Include="..\..\include\debugger\luathread.h" />
+    <ClInclude Include="..\..\include\debugger\observer.h" />
+    <ClInclude Include="..\..\include\debugger\osthread.h" />
+    <ClInclude Include="..\..\include\debugger\path.h" />
+    <ClInclude Include="..\..\include\debugger\protocol.h" />
+    <ClInclude Include="..\..\include\debugger\redirect.h" />
+    <ClInclude Include="..\..\include\debugger\thunk.h" />
+    <ClInclude Include="..\..\include\net\datetime\clock.h" />
+    <ClInclude Include="..\..\include\net\datetime\date.h" />
+    <ClInclude Include="..\..\include\net\datetime\now.h" />
+    <ClInclude Include="..\..\include\net\endpoint.h" />
+    <ClInclude Include="..\..\include\net\log\logging.h" />
+    <ClInclude Include="..\..\include\net\namedpipe.h" />
+    <ClInclude Include="..\..\include\net\poller.h" />
+    <ClInclude Include="..\..\include\net\poller\epoll.h" />
+    <ClInclude Include="..\..\include\net\poller\event.h" />
+    <ClInclude Include="..\..\include\net\poller\io_object.h" />
+    <ClInclude Include="..\..\include\net\poller\select.h" />
+    <ClInclude Include="..\..\include\net\poller\timer.h" />
+    <ClInclude Include="..\..\include\net\poller\timer_queue.h" />
+    <ClInclude Include="..\..\include\net\queue.h" />
+    <ClInclude Include="..\..\include\net\socket.h" />
+    <ClInclude Include="..\..\include\net\tcp\buffer.h" />
+    <ClInclude Include="..\..\include\net\tcp\connecter.h" />
+    <ClInclude Include="..\..\include\net\tcp\listener.h" />
+    <ClInclude Include="..\..\include\net\tcp\rcvbuffer.h" />
+    <ClInclude Include="..\..\include\net\tcp\sndbuffer.h" />
+    <ClInclude Include="..\..\include\net\tcp\stream.h" />
+    <ClInclude Include="..\..\include\net\udp\stream.h" />
+    <ClInclude Include="..\..\include\net\udp\udp.h" />
+    <ClInclude Include="..\..\include\net\winapi.h" />
+    <ClInclude Include="..\..\third_party\rapidjson\allocators.h" />
+    <ClInclude Include="..\..\third_party\rapidjson\cursorstreamwrapper.h" />
+    <ClInclude Include="..\..\third_party\rapidjson\document.h" />
+    <ClInclude Include="..\..\third_party\rapidjson\encodedstream.h" />
+    <ClInclude Include="..\..\third_party\rapidjson\encodings.h" />
+    <ClInclude Include="..\..\third_party\rapidjson\error\en.h" />
+    <ClInclude Include="..\..\third_party\rapidjson\error\error.h" />
+    <ClInclude Include="..\..\third_party\rapidjson\filereadstream.h" />
+    <ClInclude Include="..\..\third_party\rapidjson\filewritestream.h" />
+    <ClInclude Include="..\..\third_party\rapidjson\fwd.h" />
+    <ClInclude Include="..\..\third_party\rapidjson\internal\biginteger.h" />
+    <ClInclude Include="..\..\third_party\rapidjson\internal\diyfp.h" />
+    <ClInclude Include="..\..\third_party\rapidjson\internal\dtoa.h" />
+    <ClInclude Include="..\..\third_party\rapidjson\internal\ieee754.h" />
+    <ClInclude Include="..\..\third_party\rapidjson\internal\itoa.h" />
+    <ClInclude Include="..\..\third_party\rapidjson\internal\meta.h" />
+    <ClInclude Include="..\..\third_party\rapidjson\internal\pow10.h" />
+    <ClInclude Include="..\..\third_party\rapidjson\internal\regex.h" />
+    <ClInclude Include="..\..\third_party\rapidjson\internal\stack.h" />
+    <ClInclude Include="..\..\third_party\rapidjson\internal\strfunc.h" />
+    <ClInclude Include="..\..\third_party\rapidjson\internal\strtod.h" />
+    <ClInclude Include="..\..\third_party\rapidjson\internal\swap.h" />
+    <ClInclude Include="..\..\third_party\rapidjson\istreamwrapper.h" />
+    <ClInclude Include="..\..\third_party\rapidjson\memorybuffer.h" />
+    <ClInclude Include="..\..\third_party\rapidjson\memorystream.h" />
+    <ClInclude Include="..\..\third_party\rapidjson\msinttypes\inttypes.h" />
+    <ClInclude Include="..\..\third_party\rapidjson\msinttypes\stdint.h" />
+    <ClInclude Include="..\..\third_party\rapidjson\ostreamwrapper.h" />
+    <ClInclude Include="..\..\third_party\rapidjson\pointer.h" />
+    <ClInclude Include="..\..\third_party\rapidjson\prettywriter.h" />
+    <ClInclude Include="..\..\third_party\rapidjson\rapidjson.h" />
+    <ClInclude Include="..\..\third_party\rapidjson\reader.h" />
+    <ClInclude Include="..\..\third_party\rapidjson\schema.h" />
+    <ClInclude Include="..\..\third_party\rapidjson\stream.h" />
+    <ClInclude Include="..\..\third_party\rapidjson\stringbuffer.h" />
+    <ClInclude Include="..\..\third_party\rapidjson\writer.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\include\base\util\unicode.cpp" />
+    <ClCompile Include="..\..\src\debugger\breakpoint.cpp" />
+    <ClCompile Include="..\..\src\debugger\bridge\delayload.cpp" />
+    <ClCompile Include="..\..\src\debugger\bridge\lua.cpp" />
+    <ClCompile Include="..\..\src\debugger\bridge\luaopen.cpp" />
+    <ClCompile Include="..\..\src\debugger\config.cpp" />
+    <ClCompile Include="..\..\src\debugger\debugger.cpp" />
+    <ClCompile Include="..\..\src\debugger\evaluate.cpp" />
+    <ClCompile Include="..\..\src\debugger\i18n.cpp" />
+    <ClCompile Include="..\..\src\debugger\impl.cpp" />
+    <ClCompile Include="..\..\src\debugger\inlinebase.cpp" />
+    <ClCompile Include="..\..\src\debugger\io\helper.cpp" />
+    <ClCompile Include="..\..\src\debugger\io\namedpipe.cpp" />
+    <ClCompile Include="..\..\src\debugger\io\socket.cpp" />
+    <ClCompile Include="..\..\src\debugger\io\stream.cpp" />
+    <ClCompile Include="..\..\src\debugger\luathread.cpp" />
+    <ClCompile Include="..\..\src\debugger\observer.cpp" />
+    <ClCompile Include="..\..\src\debugger\osthread.cpp" />
+    <ClCompile Include="..\..\src\debugger\path.cpp" />
+    <ClCompile Include="..\..\src\debugger\pathconvert.cpp" />
+    <ClCompile Include="..\..\src\debugger\redirect.cpp" />
+    <ClCompile Include="..\..\src\debugger\request.cpp" />
+    <ClCompile Include="..\..\src\debugger\response.cpp" />
+    <ClCompile Include="..\..\src\debugger\thunk.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="lua53.vcxproj">
+      <Project>{be37ae4e-535b-4f94-8b43-2750f279595b}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\include\net\socket.inl" />
+  </ItemGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
+    <ClCompile />
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(RemoteRootDir)/$(ProjectName)/include/;$(RemoteRootDir)/$(ProjectName)/third_party/;$(RemoteRootDir)/lua53/;$(SolutionDir)..\include\;$(SolutionDir)..\third_party\;$(SolutionDir)..\third_party\lua53\src\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
+    <ClCompile />
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(RemoteRootDir)/$(ProjectName)/include/;$(RemoteRootDir)/$(ProjectName)/third_party/;$(RemoteRootDir)/lua53/;$(SolutionDir)..\include\;$(SolutionDir)..\third_party\;$(SolutionDir)..\third_party\lua53\src\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile />
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(RemoteRootDir)/$(ProjectName)/include/;$(RemoteRootDir)/$(ProjectName)/third_party/;$(RemoteRootDir)/lua53/;$(SolutionDir)..\include\;$(SolutionDir)..\third_party\;$(SolutionDir)..\third_party\lua53\src\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile />
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(RemoteRootDir)/$(ProjectName)/include/;$(RemoteRootDir)/$(ProjectName)/third_party/;$(RemoteRootDir)/lua53/;$(SolutionDir)..\include\;$(SolutionDir)..\third_party\;$(SolutionDir)..\third_party\lua53\src\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
+    <ClCompile />
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(RemoteRootDir)/$(ProjectName)/include/;$(RemoteRootDir)/$(ProjectName)/third_party/;$(RemoteRootDir)/lua53/;$(SolutionDir)..\include\;$(SolutionDir)..\third_party\;$(SolutionDir)..\third_party\lua53\src\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
+    <ClCompile />
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(RemoteRootDir)/$(ProjectName)/include/;$(RemoteRootDir)/$(ProjectName)/third_party/;$(RemoteRootDir)/lua53/;$(SolutionDir)..\include\;$(SolutionDir)..\third_party\;$(SolutionDir)..\third_party\lua53\src\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets" />
+</Project>

@@ -1,0 +1,410 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="inc">
+      <UniqueIdentifier>{4fe72cde-8c5f-409e-8d1e-178ba434def1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="inc\io">
+      <UniqueIdentifier>{14aac7bc-6e3b-491d-99bf-d5d17ffac917}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="inc\bridge">
+      <UniqueIdentifier>{40cc47a4-cc9c-471e-a80f-a12f03abf334}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="cpp">
+      <UniqueIdentifier>{1f5eb368-b4b9-436c-942c-dcaf9757f0f8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="cpp\io">
+      <UniqueIdentifier>{6debda91-03e3-492d-b202-c75d7be97e7d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="cpp\bridge">
+      <UniqueIdentifier>{bf9ea1a1-1023-4dba-b3b3-0f2e23238de6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="rapidjson">
+      <UniqueIdentifier>{2d254b25-f09e-441e-9ea3-c3ff7be72977}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="rapidjson\msinttypes">
+      <UniqueIdentifier>{16c0d59f-96ea-43f5-89aa-d11a82fb8e8f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="rapidjson\error">
+      <UniqueIdentifier>{b59b1ad7-9a39-4f5f-9869-046c46f50a00}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="rapidjson\internal">
+      <UniqueIdentifier>{c854ac3b-a938-43e1-829b-e29342d1f04a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="net">
+      <UniqueIdentifier>{1f12c2b4-3da3-47dc-931e-d2ab3a312f9d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="net\tcp">
+      <UniqueIdentifier>{22e07174-0310-464a-93b8-086601faca13}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="net\datetime">
+      <UniqueIdentifier>{9261a11b-3fbb-4cb2-aea0-cc5b93abc696}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="net\log">
+      <UniqueIdentifier>{b31737f1-353a-4cca-8d72-93cc3c981e50}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="net\udp">
+      <UniqueIdentifier>{20397166-d74e-4c0b-9081-544412890774}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="net\poller">
+      <UniqueIdentifier>{d1e29fe4-7ee3-476b-9f3b-63c61b1c39b0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="base">
+      <UniqueIdentifier>{b44236cf-e6bb-494c-8ba6-01ee0f3efde6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="base\util">
+      <UniqueIdentifier>{37f1331a-33bf-42b3-976d-913fedaa6402}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\src\debugger\debugger.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\debugger\bridge\delayload.cpp">
+      <Filter>cpp\bridge</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\debugger\bridge\luaopen.cpp">
+      <Filter>cpp\bridge</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\debugger\io\socket.cpp">
+      <Filter>cpp\io</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\debugger\breakpoint.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\debugger\config.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\debugger\evaluate.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\debugger\impl.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\debugger\inlinebase.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\debugger\observer.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\debugger\pathconvert.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\debugger\thunk.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\debugger\response.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\debugger\request.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\debugger\redirect.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\debugger\io\helper.cpp">
+      <Filter>cpp\io</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\debugger\bridge\lua.cpp">
+      <Filter>cpp\bridge</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\debugger\io\stream.cpp">
+      <Filter>cpp\io</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\debugger\io\namedpipe.cpp">
+      <Filter>cpp\io</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\debugger\path.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\debugger\osthread.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\debugger\luathread.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\debugger\i18n.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\include\base\util\unicode.cpp">
+      <Filter>base\util</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\include\debugger\debugger.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\debugger\breakpoint.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\debugger\capabilities.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\debugger\config.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\debugger\evaluate.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\debugger\impl.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\debugger\lua.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\debugger\observer.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\debugger\protocol.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\debugger\redirect.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\debugger\thunk.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\debugger\bridge\delayload.h">
+      <Filter>inc\bridge</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\debugger\io\socket.h">
+      <Filter>inc\io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\debugger\io\base.h">
+      <Filter>inc\io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\debugger\io\helper.h">
+      <Filter>inc\io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\debugger\bridge\lua.h">
+      <Filter>inc\bridge</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\debugger\io\stream.h">
+      <Filter>inc\io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\debugger\io\namedpipe.h">
+      <Filter>inc\io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\debugger\path.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\debugger\osthread.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\debugger\luathread.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\debugger\hashmap.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\third_party\rapidjson\allocators.h">
+      <Filter>rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\third_party\rapidjson\cursorstreamwrapper.h">
+      <Filter>rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\third_party\rapidjson\document.h">
+      <Filter>rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\third_party\rapidjson\encodedstream.h">
+      <Filter>rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\third_party\rapidjson\encodings.h">
+      <Filter>rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\third_party\rapidjson\filereadstream.h">
+      <Filter>rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\third_party\rapidjson\filewritestream.h">
+      <Filter>rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\third_party\rapidjson\fwd.h">
+      <Filter>rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\third_party\rapidjson\istreamwrapper.h">
+      <Filter>rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\third_party\rapidjson\memorybuffer.h">
+      <Filter>rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\third_party\rapidjson\memorystream.h">
+      <Filter>rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\third_party\rapidjson\ostreamwrapper.h">
+      <Filter>rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\third_party\rapidjson\pointer.h">
+      <Filter>rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\third_party\rapidjson\prettywriter.h">
+      <Filter>rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\third_party\rapidjson\rapidjson.h">
+      <Filter>rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\third_party\rapidjson\reader.h">
+      <Filter>rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\third_party\rapidjson\schema.h">
+      <Filter>rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\third_party\rapidjson\stream.h">
+      <Filter>rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\third_party\rapidjson\stringbuffer.h">
+      <Filter>rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\third_party\rapidjson\writer.h">
+      <Filter>rapidjson</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\third_party\rapidjson\msinttypes\inttypes.h">
+      <Filter>rapidjson\msinttypes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\third_party\rapidjson\msinttypes\stdint.h">
+      <Filter>rapidjson\msinttypes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\third_party\rapidjson\error\en.h">
+      <Filter>rapidjson\error</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\third_party\rapidjson\error\error.h">
+      <Filter>rapidjson\error</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\third_party\rapidjson\internal\biginteger.h">
+      <Filter>rapidjson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\third_party\rapidjson\internal\diyfp.h">
+      <Filter>rapidjson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\third_party\rapidjson\internal\dtoa.h">
+      <Filter>rapidjson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\third_party\rapidjson\internal\ieee754.h">
+      <Filter>rapidjson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\third_party\rapidjson\internal\itoa.h">
+      <Filter>rapidjson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\third_party\rapidjson\internal\meta.h">
+      <Filter>rapidjson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\third_party\rapidjson\internal\pow10.h">
+      <Filter>rapidjson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\third_party\rapidjson\internal\regex.h">
+      <Filter>rapidjson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\third_party\rapidjson\internal\stack.h">
+      <Filter>rapidjson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\third_party\rapidjson\internal\strfunc.h">
+      <Filter>rapidjson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\third_party\rapidjson\internal\strtod.h">
+      <Filter>rapidjson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\third_party\rapidjson\internal\swap.h">
+      <Filter>rapidjson\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\net\endpoint.h">
+      <Filter>net</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\net\namedpipe.h">
+      <Filter>net</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\net\poller.h">
+      <Filter>net</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\net\queue.h">
+      <Filter>net</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\net\socket.h">
+      <Filter>net</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\net\winapi.h">
+      <Filter>net</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\net\tcp\buffer.h">
+      <Filter>net\tcp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\net\tcp\connecter.h">
+      <Filter>net\tcp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\net\tcp\listener.h">
+      <Filter>net\tcp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\net\tcp\rcvbuffer.h">
+      <Filter>net\tcp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\net\tcp\sndbuffer.h">
+      <Filter>net\tcp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\net\tcp\stream.h">
+      <Filter>net\tcp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\net\datetime\clock.h">
+      <Filter>net\datetime</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\net\datetime\date.h">
+      <Filter>net\datetime</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\net\datetime\now.h">
+      <Filter>net\datetime</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\net\log\logging.h">
+      <Filter>net\log</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\net\udp\stream.h">
+      <Filter>net\udp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\net\udp\udp.h">
+      <Filter>net\udp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\net\poller\epoll.h">
+      <Filter>net\poller</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\net\poller\event.h">
+      <Filter>net\poller</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\net\poller\io_object.h">
+      <Filter>net\poller</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\net\poller\select.h">
+      <Filter>net\poller</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\net\poller\timer.h">
+      <Filter>net\poller</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\net\poller\timer_queue.h">
+      <Filter>net\poller</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\base\util\dynarray.h">
+      <Filter>base\util</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\base\util\format.h">
+      <Filter>base\util</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\base\util\horrible_cast.h">
+      <Filter>base\util</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\base\util\hybrid_array.h">
+      <Filter>base\util</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\base\util\noncopyable.h">
+      <Filter>base\util</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\base\util\string_view.h">
+      <Filter>base\util</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\base\util\unicode.h">
+      <Filter>base\util</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\base\config.h">
+      <Filter>base</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\include\net\socket.inl">
+      <Filter>net</Filter>
+    </None>
+  </ItemGroup>
+</Project>
