@@ -11,96 +11,96 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\src\dbg_network.cpp">
+    <ClCompile Include="..\..\src\dbg_network.cpp">
       <Filter>cpp</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\dbg_message.cpp">
+    <ClCompile Include="..\..\src\dbg_message.cpp">
       <Filter>cpp</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\dbg_variables.cpp">
+    <ClCompile Include="..\..\src\dbg_variables.cpp">
       <Filter>cpp</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\dbg_response.cpp">
+    <ClCompile Include="..\..\src\dbg_response.cpp">
       <Filter>cpp</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\dbg_request.cpp">
+    <ClCompile Include="..\..\src\dbg_request.cpp">
       <Filter>cpp</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\dbg_impl.cpp">
+    <ClCompile Include="..\..\src\dbg_impl.cpp">
       <Filter>cpp</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\debugger.cpp">
+    <ClCompile Include="..\..\src\debugger.cpp">
       <Filter>cpp</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\dbg_unicode.cpp">
+    <ClCompile Include="..\..\src\dbg_unicode.cpp">
       <Filter>cpp</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\dbg_breakpoint.cpp">
+    <ClCompile Include="..\..\src\dbg_breakpoint.cpp">
       <Filter>cpp</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\dbg_path.cpp">
+    <ClCompile Include="..\..\src\dbg_path.cpp">
       <Filter>cpp</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\dbg_pathconvert.cpp">
+    <ClCompile Include="..\..\src\dbg_pathconvert.cpp">
       <Filter>cpp</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\dbg_evaluate.cpp">
+    <ClCompile Include="..\..\src\dbg_evaluate.cpp">
       <Filter>cpp</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\dbg_watchs.cpp">
+    <ClCompile Include="..\..\src\dbg_watchs.cpp">
       <Filter>cpp</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\src\debugger.h">
+    <ClInclude Include="..\..\src\debugger.h">
       <Filter>inc</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\dbg_network.h">
+    <ClInclude Include="..\..\src\dbg_network.h">
       <Filter>inc</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\dbg_protocol.h">
+    <ClInclude Include="..\..\src\dbg_protocol.h">
       <Filter>inc</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\dbg_message.h">
+    <ClInclude Include="..\..\src\dbg_message.h">
       <Filter>inc</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\dbg_breakpoint.h">
+    <ClInclude Include="..\..\src\dbg_breakpoint.h">
       <Filter>inc</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\dbg_variables.h">
+    <ClInclude Include="..\..\src\dbg_variables.h">
       <Filter>inc</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\dbg_impl.h">
+    <ClInclude Include="..\..\src\dbg_impl.h">
       <Filter>inc</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\dbg_file.h">
+    <ClInclude Include="..\..\src\dbg_file.h">
       <Filter>inc</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\dbg_unicode.h">
+    <ClInclude Include="..\..\src\dbg_unicode.h">
       <Filter>inc</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\dbg_format.h">
+    <ClInclude Include="..\..\src\dbg_format.h">
       <Filter>inc</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\dbg_hybridarray.h">
+    <ClInclude Include="..\..\src\dbg_hybridarray.h">
       <Filter>inc</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\dbg_evaluate.h">
+    <ClInclude Include="..\..\src\dbg_evaluate.h">
       <Filter>inc</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\dbg_path.h">
+    <ClInclude Include="..\..\src\dbg_path.h">
       <Filter>inc</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\dbg_custom.h">
+    <ClInclude Include="..\..\src\dbg_custom.h">
       <Filter>inc</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\dbg_pathconvert.h">
+    <ClInclude Include="..\..\src\dbg_pathconvert.h">
       <Filter>inc</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\dbg_enum.h">
+    <ClInclude Include="..\..\src\dbg_enum.h">
       <Filter>inc</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\dbg_watchs.h">
+    <ClInclude Include="..\..\src\dbg_watchs.h">
       <Filter>inc</Filter>
     </ClInclude>
   </ItemGroup>

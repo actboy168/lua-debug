@@ -21,141 +21,141 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\src\debugger\debugger.cpp">
+    <ClCompile Include="..\..\src\debugger\debugger.cpp">
       <Filter>cpp</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\debugger\bridge\delayload.cpp">
+    <ClCompile Include="..\..\src\debugger\bridge\delayload.cpp">
       <Filter>cpp\bridge</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\debugger\bridge\luaopen.cpp">
+    <ClCompile Include="..\..\src\debugger\bridge\luaopen.cpp">
       <Filter>cpp\bridge</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\debugger\io\socket.cpp">
+    <ClCompile Include="..\..\src\debugger\io\socket.cpp">
       <Filter>cpp\io</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\debugger\breakpoint.cpp">
+    <ClCompile Include="..\..\src\debugger\breakpoint.cpp">
       <Filter>cpp</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\debugger\config.cpp">
+    <ClCompile Include="..\..\src\debugger\config.cpp">
       <Filter>cpp</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\debugger\evaluate.cpp">
+    <ClCompile Include="..\..\src\debugger\evaluate.cpp">
       <Filter>cpp</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\debugger\impl.cpp">
+    <ClCompile Include="..\..\src\debugger\impl.cpp">
       <Filter>cpp</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\debugger\inlinebase.cpp">
+    <ClCompile Include="..\..\src\debugger\inlinebase.cpp">
       <Filter>cpp</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\debugger\observer.cpp">
+    <ClCompile Include="..\..\src\debugger\observer.cpp">
       <Filter>cpp</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\debugger\pathconvert.cpp">
+    <ClCompile Include="..\..\src\debugger\pathconvert.cpp">
       <Filter>cpp</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\debugger\thunk.cpp">
+    <ClCompile Include="..\..\src\debugger\thunk.cpp">
       <Filter>cpp</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\debugger\response.cpp">
+    <ClCompile Include="..\..\src\debugger\response.cpp">
       <Filter>cpp</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\debugger\request.cpp">
+    <ClCompile Include="..\..\src\debugger\request.cpp">
       <Filter>cpp</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\debugger\redirect.cpp">
+    <ClCompile Include="..\..\src\debugger\redirect.cpp">
       <Filter>cpp</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\debugger\io\helper.cpp">
+    <ClCompile Include="..\..\src\debugger\io\helper.cpp">
       <Filter>cpp\io</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\debugger\bridge\lua.cpp">
+    <ClCompile Include="..\..\src\debugger\bridge\lua.cpp">
       <Filter>cpp\bridge</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\debugger\io\stream.cpp">
+    <ClCompile Include="..\..\src\debugger\io\stream.cpp">
       <Filter>cpp\io</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\debugger\io\namedpipe.cpp">
+    <ClCompile Include="..\..\src\debugger\io\namedpipe.cpp">
       <Filter>cpp\io</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\debugger\path.cpp">
+    <ClCompile Include="..\..\src\debugger\path.cpp">
       <Filter>cpp</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\debugger\osthread.cpp">
+    <ClCompile Include="..\..\src\debugger\osthread.cpp">
       <Filter>cpp</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\debugger\luathread.cpp">
+    <ClCompile Include="..\..\src\debugger\luathread.cpp">
       <Filter>cpp</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\debugger\i18n.cpp">
+    <ClCompile Include="..\..\src\debugger\i18n.cpp">
       <Filter>cpp</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\include\debugger\debugger.h">
+    <ClInclude Include="..\..\include\debugger\debugger.h">
       <Filter>inc</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\debugger\breakpoint.h">
+    <ClInclude Include="..\..\include\debugger\breakpoint.h">
       <Filter>inc</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\debugger\capabilities.h">
+    <ClInclude Include="..\..\include\debugger\capabilities.h">
       <Filter>inc</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\debugger\config.h">
+    <ClInclude Include="..\..\include\debugger\config.h">
       <Filter>inc</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\debugger\evaluate.h">
+    <ClInclude Include="..\..\include\debugger\evaluate.h">
       <Filter>inc</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\debugger\impl.h">
+    <ClInclude Include="..\..\include\debugger\impl.h">
       <Filter>inc</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\debugger\lua.h">
+    <ClInclude Include="..\..\include\debugger\lua.h">
       <Filter>inc</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\debugger\observer.h">
+    <ClInclude Include="..\..\include\debugger\observer.h">
       <Filter>inc</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\debugger\protocol.h">
+    <ClInclude Include="..\..\include\debugger\protocol.h">
       <Filter>inc</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\debugger\redirect.h">
+    <ClInclude Include="..\..\include\debugger\redirect.h">
       <Filter>inc</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\debugger\thunk.h">
+    <ClInclude Include="..\..\include\debugger\thunk.h">
       <Filter>inc</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\debugger\bridge\delayload.h">
+    <ClInclude Include="..\..\include\debugger\bridge\delayload.h">
       <Filter>inc\bridge</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\debugger\io\socket.h">
+    <ClInclude Include="..\..\include\debugger\io\socket.h">
       <Filter>inc\io</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\debugger\io\base.h">
+    <ClInclude Include="..\..\include\debugger\io\base.h">
       <Filter>inc\io</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\debugger\io\helper.h">
+    <ClInclude Include="..\..\include\debugger\io\helper.h">
       <Filter>inc\io</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\debugger\bridge\lua.h">
+    <ClInclude Include="..\..\include\debugger\bridge\lua.h">
       <Filter>inc\bridge</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\debugger\io\stream.h">
+    <ClInclude Include="..\..\include\debugger\io\stream.h">
       <Filter>inc\io</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\debugger\io\namedpipe.h">
+    <ClInclude Include="..\..\include\debugger\io\namedpipe.h">
       <Filter>inc\io</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\debugger\path.h">
+    <ClInclude Include="..\..\include\debugger\path.h">
       <Filter>inc</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\debugger\osthread.h">
+    <ClInclude Include="..\..\include\debugger\osthread.h">
       <Filter>inc</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\debugger\luathread.h">
+    <ClInclude Include="..\..\include\debugger\luathread.h">
       <Filter>inc</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\debugger\hashmap.h">
+    <ClInclude Include="..\..\include\debugger\hashmap.h">
       <Filter>inc</Filter>
     </ClInclude>
   </ItemGroup>

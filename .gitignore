@@ -18,6 +18,6 @@
 *.ipdb
 *.iobj
 *.lib
-project/bin/
-project/obj/
+project/windows/bin/
+project/windows/obj/
 publish/

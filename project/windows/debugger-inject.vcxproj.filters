@@ -1,14 +1,14 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="..\src\debugger\inject\main.cpp" />
-    <ClCompile Include="..\include\base\hook\inline.cpp">
+    <ClCompile Include="..\..\src\debugger\inject\main.cpp" />
+    <ClCompile Include="..\..\include\base\hook\inline.cpp">
       <Filter>base\hook</Filter>
     </ClCompile>
-    <ClCompile Include="..\include\base\path\get_path.cpp">
+    <ClCompile Include="..\..\include\base\path\get_path.cpp">
       <Filter>base\path</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\debugger\io\namedpipe.cpp" />
+    <ClCompile Include="..\..\src\debugger\io\namedpipe.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="base">
@@ -22,16 +22,16 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\include\base\hook\inline.h">
+    <ClInclude Include="..\..\include\base\hook\inline.h">
       <Filter>base\hook</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\base\path\get_path.h">
+    <ClInclude Include="..\..\include\base\path\get_path.h">
       <Filter>base\path</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\base\path\self.h">
+    <ClInclude Include="..\..\include\base\path\self.h">
       <Filter>base\path</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\base\hook\fp_call.h">
+    <ClInclude Include="..\..\include\base\hook\fp_call.h">
       <Filter>base\hook</Filter>
     </ClInclude>
   </ItemGroup>

@@ -7,8 +7,8 @@
     <VSCode>.vscode</VSCode>
   </PropertyGroup>
   <PropertyGroup>
-    <IntDir>$(Root)\project\obj\$(Configuration)\$(PlatformTarget)\$(ProjectName)\</IntDir>
-    <OutDir>$(Root)\project\bin\$(PlatformTarget)\</OutDir>
+    <IntDir>$(Root)\project\windows\obj\$(Configuration)\$(PlatformTarget)\$(ProjectName)\</IntDir>
+    <OutDir>$(Root)\project\windows\bin\$(PlatformTarget)\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>

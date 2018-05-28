@@ -19,7 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Condition="'$(Platform)'=='Win32'" Include="..\third_party\wow64ext\src\wow64ext.vcxproj">
+    <ProjectReference Condition="'$(Platform)'=='Win32'" Include="..\..\third_party\wow64ext\src\wow64ext.vcxproj">
       <Project>{9da7f232-0096-45bc-a452-24c7f3afa0f8}</Project>
     </ProjectReference>
     <ProjectReference Include="debugger.vcxproj">
@@ -27,37 +27,37 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\include\base\hook\injectdll.cpp" />
-    <ClCompile Include="..\include\base\hook\replacedll.cpp" />
-    <ClCompile Include="..\include\base\path\get_path.cpp" />
-    <ClCompile Include="..\include\base\util\unicode.cpp" />
-    <ClCompile Include="..\include\base\win\process.cpp" />
-    <ClCompile Include="..\include\base\win\query_process.cpp" />
-    <ClCompile Include="..\src\debugger\client\create_luaexe.cpp" />
-    <ClCompile Include="..\src\debugger\client\open_process.cpp" />
-    <ClCompile Include="..\src\debugger\client\run_attach.cpp" />
-    <ClCompile Include="..\src\debugger\client\tcp_attach.cpp" />
-    <ClCompile Include="..\src\debugger\client\create_process.cpp" />
-    <ClCompile Include="..\src\debugger\client\main.cpp" />
-    <ClCompile Include="..\src\debugger\client\create_terminal.cpp" />
-    <ClCompile Include="..\src\debugger\client\stdinput.cpp" />
-    <ClCompile Include="..\src\debugger\io\helper.cpp" />
-    <ClCompile Include="..\src\debugger\io\namedpipe.cpp" />
+    <ClCompile Include="..\..\include\base\hook\injectdll.cpp" />
+    <ClCompile Include="..\..\include\base\hook\replacedll.cpp" />
+    <ClCompile Include="..\..\include\base\path\get_path.cpp" />
+    <ClCompile Include="..\..\include\base\util\unicode.cpp" />
+    <ClCompile Include="..\..\include\base\win\process.cpp" />
+    <ClCompile Include="..\..\include\base\win\query_process.cpp" />
+    <ClCompile Include="..\..\src\debugger\client\create_luaexe.cpp" />
+    <ClCompile Include="..\..\src\debugger\client\open_process.cpp" />
+    <ClCompile Include="..\..\src\debugger\client\run_attach.cpp" />
+    <ClCompile Include="..\..\src\debugger\client\tcp_attach.cpp" />
+    <ClCompile Include="..\..\src\debugger\client\create_process.cpp" />
+    <ClCompile Include="..\..\src\debugger\client\main.cpp" />
+    <ClCompile Include="..\..\src\debugger\client\create_terminal.cpp" />
+    <ClCompile Include="..\..\src\debugger\client\stdinput.cpp" />
+    <ClCompile Include="..\..\src\debugger\io\helper.cpp" />
+    <ClCompile Include="..\..\src\debugger\io\namedpipe.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\include\base\hook\injectdll.h" />
-    <ClInclude Include="..\include\base\hook\replacedll.h" />
-    <ClInclude Include="..\include\base\path\get_path.h" />
-    <ClInclude Include="..\include\base\path\self.h" />
-    <ClInclude Include="..\include\base\util\unicode.h" />
-    <ClInclude Include="..\include\base\win\process.h" />
-    <ClInclude Include="..\include\base\win\query_process.h" />
-    <ClInclude Include="..\include\base\win\process_switch.h" />
-    <ClInclude Include="..\include\debugger\client\tcp_attach.h" />
-    <ClInclude Include="..\include\debugger\client\run.h" />
-    <ClInclude Include="..\include\debugger\client\stdinput.h" />
-    <ClInclude Include="..\include\debugger\io\helper.h" />
-    <ClInclude Include="..\include\debugger\io\namedpipe.h" />
+    <ClInclude Include="..\..\include\base\hook\injectdll.h" />
+    <ClInclude Include="..\..\include\base\hook\replacedll.h" />
+    <ClInclude Include="..\..\include\base\path\get_path.h" />
+    <ClInclude Include="..\..\include\base\path\self.h" />
+    <ClInclude Include="..\..\include\base\util\unicode.h" />
+    <ClInclude Include="..\..\include\base\win\process.h" />
+    <ClInclude Include="..\..\include\base\win\query_process.h" />
+    <ClInclude Include="..\..\include\base\win\process_switch.h" />
+    <ClInclude Include="..\..\include\debugger\client\tcp_attach.h" />
+    <ClInclude Include="..\..\include\debugger\client\run.h" />
+    <ClInclude Include="..\..\include\debugger\client\stdinput.h" />
+    <ClInclude Include="..\..\include\debugger\io\helper.h" />
+    <ClInclude Include="..\..\include\debugger\io\namedpipe.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{8AC7695F-C946-4B9A-B814-3E789BFD54E8}</ProjectGuid>

@@ -1,93 +1,93 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="..\include\base\win\process.cpp">
+    <ClCompile Include="..\..\include\base\win\process.cpp">
       <Filter>base\win</Filter>
     </ClCompile>
-    <ClCompile Include="..\include\base\path\get_path.cpp">
+    <ClCompile Include="..\..\include\base\path\get_path.cpp">
       <Filter>base\path</Filter>
     </ClCompile>
-    <ClCompile Include="..\include\base\hook\injectdll.cpp">
+    <ClCompile Include="..\..\include\base\hook\injectdll.cpp">
       <Filter>base\hook</Filter>
     </ClCompile>
-    <ClCompile Include="..\include\base\util\unicode.cpp">
+    <ClCompile Include="..\..\include\base\util\unicode.cpp">
       <Filter>base\util</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\debugger\client\create_process.cpp">
+    <ClCompile Include="..\..\src\debugger\client\create_process.cpp">
       <Filter>cpp\client</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\debugger\client\main.cpp">
+    <ClCompile Include="..\..\src\debugger\client\main.cpp">
       <Filter>cpp\client</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\debugger\client\stdinput.cpp">
+    <ClCompile Include="..\..\src\debugger\client\stdinput.cpp">
       <Filter>cpp\client</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\debugger\io\helper.cpp">
+    <ClCompile Include="..\..\src\debugger\io\helper.cpp">
       <Filter>cpp\io</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\debugger\io\namedpipe.cpp">
+    <ClCompile Include="..\..\src\debugger\io\namedpipe.cpp">
       <Filter>cpp\io</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\debugger\client\tcp_attach.cpp">
+    <ClCompile Include="..\..\src\debugger\client\tcp_attach.cpp">
       <Filter>cpp\client</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\debugger\client\run_attach.cpp">
+    <ClCompile Include="..\..\src\debugger\client\run_attach.cpp">
       <Filter>cpp\client</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\debugger\client\create_terminal.cpp">
+    <ClCompile Include="..\..\src\debugger\client\create_terminal.cpp">
       <Filter>cpp\client</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\debugger\client\create_luaexe.cpp">
+    <ClCompile Include="..\..\src\debugger\client\create_luaexe.cpp">
       <Filter>cpp\client</Filter>
     </ClCompile>
-    <ClCompile Include="..\include\base\hook\replacedll.cpp">
+    <ClCompile Include="..\..\include\base\hook\replacedll.cpp">
       <Filter>base\hook</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\debugger\client\open_process.cpp">
+    <ClCompile Include="..\..\src\debugger\client\open_process.cpp">
       <Filter>cpp\client</Filter>
     </ClCompile>
-    <ClCompile Include="..\include\base\win\query_process.cpp">
+    <ClCompile Include="..\..\include\base\win\query_process.cpp">
       <Filter>base\win</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\include\base\win\process.h">
+    <ClInclude Include="..\..\include\base\win\process.h">
       <Filter>base\win</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\base\path\get_path.h">
+    <ClInclude Include="..\..\include\base\path\get_path.h">
       <Filter>base\path</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\base\path\self.h">
+    <ClInclude Include="..\..\include\base\path\self.h">
       <Filter>base\path</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\base\hook\injectdll.h">
+    <ClInclude Include="..\..\include\base\hook\injectdll.h">
       <Filter>base\hook</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\base\util\unicode.h">
+    <ClInclude Include="..\..\include\base\util\unicode.h">
       <Filter>base\util</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\debugger\client\stdinput.h">
+    <ClInclude Include="..\..\include\debugger\client\stdinput.h">
       <Filter>inc\client</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\debugger\io\helper.h">
+    <ClInclude Include="..\..\include\debugger\io\helper.h">
       <Filter>inc\io</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\debugger\client\run.h">
+    <ClInclude Include="..\..\include\debugger\client\run.h">
       <Filter>inc\client</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\debugger\client\tcp_attach.h">
+    <ClInclude Include="..\..\include\debugger\client\tcp_attach.h">
       <Filter>inc\client</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\base\hook\replacedll.h">
+    <ClInclude Include="..\..\include\base\hook\replacedll.h">
       <Filter>base\hook</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\debugger\io\namedpipe.h">
+    <ClInclude Include="..\..\include\debugger\io\namedpipe.h">
       <Filter>inc\io</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\base\win\process_switch.h">
+    <ClInclude Include="..\..\include\base\win\process_switch.h">
       <Filter>base\win</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\base\win\query_process.h">
+    <ClInclude Include="..\..\include\base\win\query_process.h">
       <Filter>base\win</Filter>
     </ClInclude>
   </ItemGroup>

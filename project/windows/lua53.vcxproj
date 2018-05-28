@@ -19,67 +19,67 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\src\lapi.c" />
-    <ClCompile Include="..\src\lauxlib.c" />
-    <ClCompile Include="..\src\lbaselib.c" />
-    <ClCompile Include="..\src\lbitlib.c" />
-    <ClCompile Include="..\src\lcode.c" />
-    <ClCompile Include="..\src\lcorolib.c" />
-    <ClCompile Include="..\src\lctype.c" />
-    <ClCompile Include="..\src\ldblib.c" />
-    <ClCompile Include="..\src\ldebug.c" />
-    <ClCompile Include="..\src\ldo.c" />
-    <ClCompile Include="..\src\ldump.c" />
-    <ClCompile Include="..\src\lfunc.c" />
-    <ClCompile Include="..\src\lgc.c" />
-    <ClCompile Include="..\src\linit.c" />
-    <ClCompile Include="..\src\liolib.c" />
-    <ClCompile Include="..\src\llex.c" />
-    <ClCompile Include="..\src\lmathlib.c" />
-    <ClCompile Include="..\src\lmem.c" />
-    <ClCompile Include="..\src\loadlib.c" />
-    <ClCompile Include="..\src\lobject.c" />
-    <ClCompile Include="..\src\lopcodes.c" />
-    <ClCompile Include="..\src\loslib.c" />
-    <ClCompile Include="..\src\lparser.c" />
-    <ClCompile Include="..\src\lstate.c" />
-    <ClCompile Include="..\src\lstring.c" />
-    <ClCompile Include="..\src\lstrlib.c" />
-    <ClCompile Include="..\src\ltable.c" />
-    <ClCompile Include="..\src\ltablib.c" />
-    <ClCompile Include="..\src\ltm.c" />
-    <ClCompile Include="..\src\lundump.c" />
-    <ClCompile Include="..\src\lutf8lib.c" />
-    <ClCompile Include="..\src\lvm.c" />
-    <ClCompile Include="..\src\lzio.c" />
+    <ClCompile Include="..\..\third_party\lua53\src\lapi.c" />
+    <ClCompile Include="..\..\third_party\lua53\src\lauxlib.c" />
+    <ClCompile Include="..\..\third_party\lua53\src\lbaselib.c" />
+    <ClCompile Include="..\..\third_party\lua53\src\lbitlib.c" />
+    <ClCompile Include="..\..\third_party\lua53\src\lcode.c" />
+    <ClCompile Include="..\..\third_party\lua53\src\lcorolib.c" />
+    <ClCompile Include="..\..\third_party\lua53\src\lctype.c" />
+    <ClCompile Include="..\..\third_party\lua53\src\ldblib.c" />
+    <ClCompile Include="..\..\third_party\lua53\src\ldebug.c" />
+    <ClCompile Include="..\..\third_party\lua53\src\ldo.c" />
+    <ClCompile Include="..\..\third_party\lua53\src\ldump.c" />
+    <ClCompile Include="..\..\third_party\lua53\src\lfunc.c" />
+    <ClCompile Include="..\..\third_party\lua53\src\lgc.c" />
+    <ClCompile Include="..\..\third_party\lua53\src\linit.c" />
+    <ClCompile Include="..\..\third_party\lua53\src\liolib.c" />
+    <ClCompile Include="..\..\third_party\lua53\src\llex.c" />
+    <ClCompile Include="..\..\third_party\lua53\src\lmathlib.c" />
+    <ClCompile Include="..\..\third_party\lua53\src\lmem.c" />
+    <ClCompile Include="..\..\third_party\lua53\src\loadlib.c" />
+    <ClCompile Include="..\..\third_party\lua53\src\lobject.c" />
+    <ClCompile Include="..\..\third_party\lua53\src\lopcodes.c" />
+    <ClCompile Include="..\..\third_party\lua53\src\loslib.c" />
+    <ClCompile Include="..\..\third_party\lua53\src\lparser.c" />
+    <ClCompile Include="..\..\third_party\lua53\src\lstate.c" />
+    <ClCompile Include="..\..\third_party\lua53\src\lstring.c" />
+    <ClCompile Include="..\..\third_party\lua53\src\lstrlib.c" />
+    <ClCompile Include="..\..\third_party\lua53\src\ltable.c" />
+    <ClCompile Include="..\..\third_party\lua53\src\ltablib.c" />
+    <ClCompile Include="..\..\third_party\lua53\src\ltm.c" />
+    <ClCompile Include="..\..\third_party\lua53\src\lundump.c" />
+    <ClCompile Include="..\..\third_party\lua53\src\lutf8lib.c" />
+    <ClCompile Include="..\..\third_party\lua53\src\lvm.c" />
+    <ClCompile Include="..\..\third_party\lua53\src\lzio.c" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\src\lauxlib.h" />
-    <ClInclude Include="..\src\lua.h" />
-    <ClInclude Include="..\src\lua.hpp" />
-    <ClInclude Include="..\src\luaconf.h" />
-    <ClInclude Include="..\src\lualib.h" />
-    <ClInclude Include="..\src\lapi.h" />
-    <ClInclude Include="..\src\lcode.h" />
-    <ClInclude Include="..\src\lctype.h" />
-    <ClInclude Include="..\src\ldebug.h" />
-    <ClInclude Include="..\src\ldo.h" />
-    <ClInclude Include="..\src\lfunc.h" />
-    <ClInclude Include="..\src\lgc.h" />
-    <ClInclude Include="..\src\llex.h" />
-    <ClInclude Include="..\src\llimits.h" />
-    <ClInclude Include="..\src\lmem.h" />
-    <ClInclude Include="..\src\lobject.h" />
-    <ClInclude Include="..\src\lopcodes.h" />
-    <ClInclude Include="..\src\lparser.h" />
-    <ClInclude Include="..\src\lprefix.h" />
-    <ClInclude Include="..\src\lstate.h" />
-    <ClInclude Include="..\src\lstring.h" />
-    <ClInclude Include="..\src\ltable.h" />
-    <ClInclude Include="..\src\ltm.h" />
-    <ClInclude Include="..\src\lundump.h" />
-    <ClInclude Include="..\src\lvm.h" />
-    <ClInclude Include="..\src\lzio.h" />
+    <ClInclude Include="..\..\third_party\lua53\src\lauxlib.h" />
+    <ClInclude Include="..\..\third_party\lua53\src\lua.h" />
+    <ClInclude Include="..\..\third_party\lua53\src\lua.hpp" />
+    <ClInclude Include="..\..\third_party\lua53\src\luaconf.h" />
+    <ClInclude Include="..\..\third_party\lua53\src\lualib.h" />
+    <ClInclude Include="..\..\third_party\lua53\src\lapi.h" />
+    <ClInclude Include="..\..\third_party\lua53\src\lcode.h" />
+    <ClInclude Include="..\..\third_party\lua53\src\lctype.h" />
+    <ClInclude Include="..\..\third_party\lua53\src\ldebug.h" />
+    <ClInclude Include="..\..\third_party\lua53\src\ldo.h" />
+    <ClInclude Include="..\..\third_party\lua53\src\lfunc.h" />
+    <ClInclude Include="..\..\third_party\lua53\src\lgc.h" />
+    <ClInclude Include="..\..\third_party\lua53\src\llex.h" />
+    <ClInclude Include="..\..\third_party\lua53\src\llimits.h" />
+    <ClInclude Include="..\..\third_party\lua53\src\lmem.h" />
+    <ClInclude Include="..\..\third_party\lua53\src\lobject.h" />
+    <ClInclude Include="..\..\third_party\lua53\src\lopcodes.h" />
+    <ClInclude Include="..\..\third_party\lua53\src\lparser.h" />
+    <ClInclude Include="..\..\third_party\lua53\src\lprefix.h" />
+    <ClInclude Include="..\..\third_party\lua53\src\lstate.h" />
+    <ClInclude Include="..\..\third_party\lua53\src\lstring.h" />
+    <ClInclude Include="..\..\third_party\lua53\src\ltable.h" />
+    <ClInclude Include="..\..\third_party\lua53\src\ltm.h" />
+    <ClInclude Include="..\..\third_party\lua53\src\lundump.h" />
+    <ClInclude Include="..\..\third_party\lua53\src\lvm.h" />
+    <ClInclude Include="..\..\third_party\lua53\src\lzio.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{B84F7231-16CE-41D8-8C08-7B523FF4225B}</ProjectGuid>
@@ -114,21 +114,21 @@
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\..\..\project\common.props" />
+    <Import Project="common.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\..\..\project\common.props" />
+    <Import Project="common.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\..\..\project\common.props" />
-    <Import Project="..\..\..\project\common-debug.props" />
+    <Import Project="common.props" />
+    <Import Project="common-debug.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\..\..\project\common.props" />
-    <Import Project="..\..\..\project\common-debug.props" />
+    <Import Project="common.props" />
+    <Import Project="common-debug.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
