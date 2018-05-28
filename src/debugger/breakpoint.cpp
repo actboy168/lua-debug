@@ -279,7 +279,7 @@ namespace vscode
 				++i;
 			}
 		}
-		for (auto& it = verified.begin(); it != verified.end();) {
+		for (auto it = verified.begin(); it != verified.end();) {
 			bp_breakpoint& bp = it->second;
 			if (lines.find(bp.line) == lines.end()) {
 				it = verified.erase(it);

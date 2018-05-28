@@ -77,8 +77,8 @@ namespace vscode
 		if (release) return;
 		lua_sethook(L, 0, 0, 0);
 		lua_atpanic(L, oldpanic);
-		thunk_destory(thunk_hook);
-		thunk_destory(thunk_panic);
+		thunk_destory((void*)thunk_hook);
+		thunk_destory((void*)thunk_panic);
 	}
 
 	void luathread::install_hook(int mask)

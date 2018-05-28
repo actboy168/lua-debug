@@ -33,7 +33,7 @@ namespace vscode
 			{
 				continue;
 			}
-			auto& eary = e.GetArray();
+			auto eary = e.GetArray();
 			if (eary.Size() < 2 || !eary[0].IsString() || !eary[1].IsString())
 			{
 				continue;

@@ -81,7 +81,7 @@ namespace vscode
 	}
 }
 
-void __cdecl debugger_set_luadll(void* luadll, void* getluaapi)
+void debugger_set_luadll(void* luadll, void* getluaapi)
 {
 #if defined(DEBUGGER_BRIDGE)
 	delayload::set_luadll((HMODULE)luadll, (delayload::GetLuaApi)getluaapi);
