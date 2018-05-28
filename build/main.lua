@@ -7,6 +7,8 @@ local rebuild = arg[2] ~= 'IC'
 local insiders = false
 local vscode = insiders and '.vscode-insiders' or '.vscode'
 local root = fs.absolute(fs.path '../')
+local binDir = root / 'project' / 'windows' / 'bin'
+local objDir = root / 'project' / 'windows' / 'obj'
 
 local msvc = require 'msvc'
 if not msvc:initialize(141, 'utf8') then
@@ -14,7 +16,7 @@ if not msvc:initialize(141, 'utf8') then
 end
 
 local version = (function()
-    for line in io.lines((root / 'project' / 'common.props'):string()) do
+    for line in io.lines((root / 'project' / 'windows' / 'common.props'):string()) do
         local ver = line:match('<Version>(%d+%.%d+%.%d+)</Version>')
         if ver then
             return ver
@@ -59,9 +61,9 @@ end
 print 'Step 2. remove old file'
 if rebuild then
     if configuration == 'Release' then
-        fs.remove_all(root / 'project' / 'bin')
+        fs.remove_all(binDir)
     end
-    fs.remove_all(root / 'project' / 'obj' / configuration)
+    fs.remove_all(objDir / configuration)
     fs.remove_all(outputDir)
 end
 
@@ -73,7 +75,7 @@ local property = {
 }
 msvc:compile(rebuild and 'rebuild' or 'build', root / 'project' / 'vscode-lua-debug.sln', property)
 if configuration == 'Release' then
-    copy_directory(root / 'project' / 'bin' / 'x86', outputDir / 'windows' / 'x86',
+    copy_directory(binDir / 'x86', outputDir / 'windows' / 'x86',
         function (path)
             local ext = path:extension():string():lower()
             return (ext == '.dll') or (ext == '.exe')
@@ -89,7 +91,7 @@ local property = {
 }
 msvc:compile(rebuild and 'rebuild' or 'build', root / 'project' / 'vscode-lua-debug.sln', property)
 if configuration == 'Release' then
-    copy_directory(root / 'project' / 'bin' / 'x64', outputDir / 'windows' / 'x64',
+    copy_directory(binDir / 'x64', outputDir / 'windows' / 'x64',
         function (path)
             local ext = path:extension():string():lower()
             return (ext == '.dll') or (ext == '.exe')
