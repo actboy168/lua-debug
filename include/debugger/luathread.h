@@ -3,6 +3,7 @@
 #include <debugger/lua.h>
 #include <debugger/breakpoint.h>
 #include <debugger/observer.h>
+#include <debugger/thunk.h>
 
 namespace vscode
 {
@@ -21,8 +22,8 @@ namespace vscode
 		bool           release;
 		debugger_impl& dbg;
 		lua_State*     L;
-		lua_Hook       thunk_hook;
-		lua_CFunction  thunk_panic;
+		shellcode      thunk_hook;
+		shellcode      thunk_panic;
 		lua_CFunction  oldpanic;
 
 		step           step_;

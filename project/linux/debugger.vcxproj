@@ -235,7 +235,7 @@
     <ClCompile>
       <AdditionalIncludeDirectories>$(RemoteRootDir)/$(ProjectName)/include/;$(RemoteRootDir)/$(ProjectName)/third_party/;$(RemoteRootDir)/lua53/;$(SolutionDir)..\include\;$(SolutionDir)..\third_party\;$(SolutionDir)..\third_party\lua53\src\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>RAPIDJSON_HAS_STDSTRING
-;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+;_M_X64=100;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <CAdditionalWarning> </CAdditionalWarning>
       <CppAdditionalWarning> </CppAdditionalWarning>
     </ClCompile>
@@ -245,7 +245,7 @@
     <ClCompile>
       <AdditionalIncludeDirectories>$(RemoteRootDir)/$(ProjectName)/include/;$(RemoteRootDir)/$(ProjectName)/third_party/;$(RemoteRootDir)/lua53/;$(SolutionDir)..\include\;$(SolutionDir)..\third_party\;$(SolutionDir)..\third_party\lua53\src\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>RAPIDJSON_HAS_STDSTRING
-;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+;_M_X64=100;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <CAdditionalWarning> </CAdditionalWarning>
       <CppAdditionalWarning> </CppAdditionalWarning>
     </ClCompile>

@@ -1,9 +1,54 @@
-#include <Windows.h>
 #include <debugger/thunk.h>
+
+#if defined(_WIN32)
+#include <Windows.h>
+#else
+#include <sys/mman.h>
+#include <memory.h>
+#endif
 
 namespace vscode {
 
-	void* thunk_create_hook(intptr_t dbg, intptr_t hook)
+	bool shellcode::create(size_t s) {
+#if defined(_WIN32)
+		data = VirtualAllocEx(GetCurrentProcess(), NULL, s, MEM_COMMIT, PAGE_EXECUTE_READWRITE);
+#else
+		data = mmap(NULL, s, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+#endif
+		if (!data) {
+			size = 0;
+			return false;
+		}
+		size = s;
+		return true;
+	}
+
+	void shellcode::destory() {
+		if (!data) return;
+#if defined(_WIN32)
+		VirtualFreeEx(GetCurrentProcess(), data, 0, MEM_RELEASE);
+#else
+		munmap(data, size);
+#endif
+		data = 0;
+		size = 0;
+	}
+
+	bool shellcode::write(void* buf) {
+#if defined(_WIN32)
+		SIZE_T written = 0;
+		BOOL ok = WriteProcessMemory(GetCurrentProcess(), data, buf, size, &written);
+		if (!ok || written != size) {
+			destory();
+			return false;
+		}
+#else
+		memcpy(data, buf, size);
+#endif
+		return true;
+	}
+
+	shellcode thunk_create_hook(intptr_t dbg, intptr_t hook)
 	{
 		// int __cedel thunk_hook(lua_State* L, lua_Debug* ar)
 		// {
@@ -34,28 +79,23 @@ namespace vscode {
 
 #endif
 		};
-		LPVOID shellcode = VirtualAllocEx(GetCurrentProcess(), NULL, sizeof(sc), MEM_COMMIT, PAGE_EXECUTE_READWRITE);
-		if (!shellcode) {
-			return 0;
+		shellcode shellcode;
+		if (!shellcode.create(sizeof(sc))) {
+			return shellcode;
 		}
 #if defined(_M_X64)
 		memcpy(sc + 14, &dbg, sizeof(dbg));
 		memcpy(sc + 24, &hook, sizeof(hook));
 #else
 		memcpy(sc + 9, &dbg, sizeof(dbg));
-		hook = hook - ((intptr_t)shellcode + 18);
+		hook = hook - ((intptr_t)shellcode.data + 18);
 		memcpy(sc + 14, &hook, sizeof(hook));
 #endif
-		SIZE_T written = 0;
-		BOOL ok = WriteProcessMemory(GetCurrentProcess(), shellcode, &sc, sizeof(sc), &written);
-		if (!ok || written != sizeof(sc)) {
-			thunk_destory(shellcode);
-			return 0;
-		}
+		shellcode.write(&sc);
 		return shellcode;
 	}
 
-	void* thunk_create_panic(intptr_t dbg, intptr_t panic)
+	shellcode thunk_create_panic(intptr_t dbg, intptr_t panic)
 	{
 		// int __cedel thunk_panic(lua_State* L)
 		// {
@@ -84,28 +124,23 @@ namespace vscode {
 
 #endif
 		};
-		LPVOID shellcode = VirtualAllocEx(GetCurrentProcess(), NULL, sizeof(sc), MEM_COMMIT, PAGE_EXECUTE_READWRITE);
-		if (!shellcode) {
-			return 0;
+		shellcode shellcode;
+		if (!shellcode.create(sizeof(sc))) {
+			return shellcode;
 		}
 #if defined(_M_X64)
 		memcpy(sc + 11, &dbg, sizeof(dbg));
 		memcpy(sc + 21, &panic, sizeof(panic));
 #else
 		memcpy(sc + 5, &dbg, sizeof(dbg));
-		panic = panic - ((intptr_t)shellcode + 14);
+		panic = panic - ((intptr_t)shellcode.data + 14);
 		memcpy(sc + 10, &panic, sizeof(panic));
 #endif
-		SIZE_T written = 0;
-		BOOL ok = WriteProcessMemory(GetCurrentProcess(), shellcode, &sc, sizeof(sc), &written);
-		if (!ok || written != sizeof(sc)) {
-			thunk_destory(shellcode);
-			return 0;
-		}
+		shellcode.write(&sc);
 		return shellcode;
 	}
 
-	void* thunk_create_panic(intptr_t dbg, intptr_t panic, intptr_t old_panic)
+	shellcode thunk_create_panic(intptr_t dbg, intptr_t panic, intptr_t old_panic)
 	{
 		if (!old_panic) {
 			return thunk_create_panic(dbg, panic);
@@ -147,9 +182,9 @@ namespace vscode {
 
 #endif
 		};
-		LPVOID shellcode = VirtualAllocEx(GetCurrentProcess(), NULL, sizeof(sc), MEM_COMMIT, PAGE_EXECUTE_READWRITE);
-		if (!shellcode) {
-			return 0;
+		shellcode shellcode;
+		if (!shellcode.create(sizeof(sc))) {
+			return shellcode;
 		}
 #if defined(_M_X64)
 		memcpy(sc + 12, &dbg, sizeof(dbg));
@@ -157,24 +192,17 @@ namespace vscode {
 		memcpy(sc + 43, &old_panic, sizeof(old_panic));
 #else
 		memcpy(sc + 5, &dbg, sizeof(dbg));
-		panic = panic - ((intptr_t)shellcode + 14);
+		panic = panic - ((intptr_t)shellcode.data + 14);
 		memcpy(sc + 10, &panic, sizeof(panic));
-		old_panic = old_panic - ((intptr_t)shellcode + 26);
+		old_panic = old_panic - ((intptr_t)shellcode.data + 26);
 		memcpy(sc + 22, &old_panic, sizeof(old_panic));
 #endif
-		SIZE_T written = 0;
-		BOOL ok = WriteProcessMemory(GetCurrentProcess(), shellcode, &sc, sizeof(sc), &written);
-		if (!ok || written != sizeof(sc)) {
-			thunk_destory(shellcode);
-			return 0;
-		}
+		shellcode.write(&sc);
 		return shellcode;
 	}
 
-	void thunk_destory(void* shellcode)
+	void thunk_destory(shellcode shellcode)
 	{
-		if (shellcode) {
-			VirtualFreeEx(GetCurrentProcess(), shellcode, 0, MEM_RELEASE);
-		}
+		shellcode.destory();
 	}
 }

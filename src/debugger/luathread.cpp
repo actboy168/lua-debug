@@ -49,11 +49,11 @@ namespace vscode
 		, dbg(dbg)
 		, L(L)
 		, oldpanic(lua_atpanic(L, 0))
-		, thunk_hook((lua_Hook)thunk_create_hook(
+		, thunk_hook(thunk_create_hook(
 			reinterpret_cast<intptr_t>(this),
 			reinterpret_cast<intptr_t>(&debugger_hook)
 		))
-		, thunk_panic((lua_CFunction)thunk_create_panic(
+		, thunk_panic(thunk_create_panic(
 			reinterpret_cast<intptr_t>(this),
 			reinterpret_cast<intptr_t>(&debugger_panic),
 			reinterpret_cast<intptr_t>(oldpanic)
@@ -68,7 +68,7 @@ namespace vscode
 		, ob_(id)
 	{
 		install_hook(LUA_MASKCALL | LUA_MASKRET | LUA_MASKLINE | LUA_MASKEXCEPTION);
-		lua_atpanic(L, thunk_panic);
+		lua_atpanic(L, (lua_CFunction)thunk_panic.data);
 	}
 
 	luathread::~luathread()
@@ -77,13 +77,13 @@ namespace vscode
 		if (release) return;
 		lua_sethook(L, 0, 0, 0);
 		lua_atpanic(L, oldpanic);
-		thunk_destory((void*)thunk_hook);
-		thunk_destory((void*)thunk_panic);
+		thunk_destory(thunk_hook);
+		thunk_destory(thunk_panic);
 	}
 
 	void luathread::install_hook(int mask)
 	{
-		lua_sethook(L, thunk_hook, mask, 0);
+		lua_sethook(L, (lua_Hook)thunk_hook.data, mask, 0);
 	}
 
 	void luathread::release_thread()
