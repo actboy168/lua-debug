@@ -40,26 +40,32 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'" Label="Configuration">
     <UseDebugLibraries>true</UseDebugLibraries>
     <RemoteRootDir>/home/actboy168/projects</RemoteRootDir>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'" Label="Configuration">
     <UseDebugLibraries>false</UseDebugLibraries>
     <RemoteRootDir>/home/actboy168/projects</RemoteRootDir>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'" Label="Configuration">
     <UseDebugLibraries>true</UseDebugLibraries>
     <RemoteRootDir>/home/actboy168/projects</RemoteRootDir>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'" Label="Configuration">
     <UseDebugLibraries>false</UseDebugLibraries>
     <RemoteRootDir>/home/actboy168/projects</RemoteRootDir>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <UseDebugLibraries>true</UseDebugLibraries>
     <RemoteRootDir>/home/actboy168/projects</RemoteRootDir>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <UseDebugLibraries>false</UseDebugLibraries>
     <RemoteRootDir>/home/actboy168/projects</RemoteRootDir>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings" />
@@ -68,21 +74,27 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
     <IntDir>$(ProjectDir)obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+    <OutDir>$(ProjectDir)bin\$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
     <IntDir>$(ProjectDir)obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+    <OutDir>$(ProjectDir)bin\$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <IntDir>$(ProjectDir)obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+    <OutDir>$(ProjectDir)bin\$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IntDir>$(ProjectDir)obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+    <OutDir>$(ProjectDir)bin\$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
     <IntDir>$(ProjectDir)obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+    <OutDir>$(ProjectDir)bin\$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
     <IntDir>$(ProjectDir)obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+    <OutDir>$(ProjectDir)bin\$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\base\config.h" />
@@ -187,7 +199,6 @@
     <ClCompile Include="..\..\src\debugger\evaluate.cpp" />
     <ClCompile Include="..\..\src\debugger\i18n.cpp" />
     <ClCompile Include="..\..\src\debugger\impl.cpp" />
-    <ClCompile Include="..\..\src\debugger\inlinebase.cpp" />
     <ClCompile Include="..\..\src\debugger\io\helper.cpp" />
     <ClCompile Include="..\..\src\debugger\io\namedpipe.cpp" />
     <ClCompile Include="..\..\src\debugger\io\socket.cpp" />
@@ -203,12 +214,12 @@
     <ClCompile Include="..\..\src\debugger\thunk.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\..\include\net\socket.inl" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="lua53.vcxproj">
       <Project>{be37ae4e-535b-4f94-8b43-2750f279595b}</Project>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\..\include\net\socket.inl" />
   </ItemGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
     <ClCompile />
@@ -219,6 +230,10 @@
       <CAdditionalWarning> </CAdditionalWarning>
       <CppAdditionalWarning> </CppAdditionalWarning>
     </ClCompile>
+    <Link />
+    <Link>
+      <LibraryDependencies>$(RemoteRootDir)/lua53/bin/$(Platform)/$(Configuration)/liblua53.so</LibraryDependencies>
+    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
     <ClCompile />
@@ -229,6 +244,10 @@
       <CAdditionalWarning> </CAdditionalWarning>
       <CppAdditionalWarning> </CppAdditionalWarning>
     </ClCompile>
+    <Link />
+    <Link>
+      <LibraryDependencies>$(RemoteRootDir)/lua53/bin/$(Platform)/$(Configuration)/liblua53.so</LibraryDependencies>
+    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile />
@@ -239,6 +258,8 @@
       <CAdditionalWarning> </CAdditionalWarning>
       <CppAdditionalWarning> </CppAdditionalWarning>
     </ClCompile>
+    <Link />
+    <Link />
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile />
@@ -249,6 +270,10 @@
       <CAdditionalWarning> </CAdditionalWarning>
       <CppAdditionalWarning> </CppAdditionalWarning>
     </ClCompile>
+    <Link />
+    <Link>
+      <LibraryDependencies>$(RemoteRootDir)/lua53/bin/$(Platform)/$(Configuration)/liblua53.so</LibraryDependencies>
+    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
     <ClCompile />
@@ -259,6 +284,10 @@
       <CAdditionalWarning> </CAdditionalWarning>
       <CppAdditionalWarning> </CppAdditionalWarning>
     </ClCompile>
+    <Link />
+    <Link>
+      <LibraryDependencies>$(RemoteRootDir)/lua53/bin/$(Platform)/$(Configuration)/liblua53.so</LibraryDependencies>
+    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
     <ClCompile />
@@ -269,6 +298,10 @@
       <CAdditionalWarning> </CAdditionalWarning>
       <CppAdditionalWarning> </CppAdditionalWarning>
     </ClCompile>
+    <Link />
+    <Link>
+      <LibraryDependencies>$(RemoteRootDir)/lua53/bin/$(Platform)/$(Configuration)/liblua53.so</LibraryDependencies>
+    </Link>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />

@@ -74,8 +74,7 @@ namespace vscode { namespace io {
 		return 0;
 	}
 	bool namedpipe::raw_recv(char* buf, size_t len) {
-		size_t rn = len;
-		return pipe->recv(buf, rn) && rn == len;
+		return false;
 	}
 	bool namedpipe::raw_send(const char* buf, size_t len) {
 		return false;
