@@ -1,4 +1,6 @@
-﻿#include <debugger/redirect.h>
+﻿#if defined(_WIN32)
+
+#include <debugger/redirect.h>
 #include <windows.h>
 #include <fcntl.h>
 #include <io.h>
@@ -102,3 +104,4 @@ namespace vscode
 	}
 }
 
+#endif

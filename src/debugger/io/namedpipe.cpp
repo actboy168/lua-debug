@@ -1,4 +1,7 @@
 #include <debugger/io/namedpipe.h>
+
+#if defined(_WIN32)
+
 #include <base/util/format.h>
 #include <net/namedpipe.h>
 
@@ -48,3 +51,41 @@ namespace vscode { namespace io {
 		close_event_ud = ud;
 	}
 }}
+#else
+
+namespace vscode { namespace io {
+	namedpipe::namedpipe()
+	: pipe(nullptr)
+	{ }
+
+	namedpipe::~namedpipe()
+	{
+	}
+
+	bool namedpipe::open_server(std::wstring const& name) {
+		return false;
+	}
+
+	bool namedpipe::open_client(std::wstring const& name, int timeout) {
+		return false;
+	}
+
+	size_t namedpipe::raw_peek() {
+		return 0;
+	}
+	bool namedpipe::raw_recv(char* buf, size_t len) {
+		size_t rn = len;
+		return pipe->recv(buf, rn) && rn == len;
+	}
+	bool namedpipe::raw_send(const char* buf, size_t len) {
+		return false;
+	}
+	void namedpipe::close() {
+	}
+	bool namedpipe::is_closed() const {
+		return true;
+	}
+	void namedpipe::on_close_event(CloseEvent fn, void* ud) {
+	}
+}}
+#endif

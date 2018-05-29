@@ -136,8 +136,10 @@ namespace vscode
 		sourcemap_t                 sourceMap_;
 		skipfiles_t                 skipFiles_;
 		std::function<void()>       on_clientattach_;
+#if defined(_WIN32)
 		std::unique_ptr<redirector> stdout_;
 		std::unique_ptr<redirector> stderr_;
+#endif
 		rprotocol                   initproto_;
 		config                      config_;
 		bool                        nodebug_;

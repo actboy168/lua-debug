@@ -1,5 +1,7 @@
 #pragma once
 
+#if defined(_WIN32)
+
 namespace vscode
 {
 	enum class std_fd {
@@ -34,3 +36,4 @@ namespace vscode
 		std_fd type_;
 	};
 }
+#endif

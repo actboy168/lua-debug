@@ -187,6 +187,7 @@ namespace vscode
 
 	void debugger_impl::update_redirect()
 	{
+#if defined(_WIN32)
 		if (stdout_) {
 			size_t n = stdout_->peek();
 			if (n > 0) {
@@ -203,6 +204,7 @@ namespace vscode
 				output("stderr", buf.data(), buf.size());
 			}
 		}
+#endif
 	}
 
 	void debugger_impl::panic(luathread* thread, lua_State *L)
@@ -446,6 +448,7 @@ namespace vscode
 				lua_setglobal(L, "print");
 			}
 			break;
+#if defined(_WIN32)
 		case eRedirect::stdoutput:
 			stdout_.reset(new redirector);
 			stdout_->open("stdout", std_fd::STDOUT);
@@ -454,7 +457,8 @@ namespace vscode
 			stderr_.reset(new redirector);
 			stderr_->open("stderr", std_fd::STDERR);
 			break;
-		} 
+#endif
+		}
 	}
 
 	bool debugger_impl::set_config(int level, const std::string& cfg, std::string& err)

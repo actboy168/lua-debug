@@ -20,6 +20,7 @@ namespace luaw {
 			dbg.reset(new vscode::debugger(socket.get()));
 		}
 
+#if defined(_WIN32)
 		void listen_pipe(const char* name)
 		{
 			if (namedpipe || dbg) return;
@@ -27,6 +28,7 @@ namespace luaw {
 namedpipe->open_server(base::u2w(name));
 dbg.reset(new vscode::debugger(namedpipe.get()));
 		}
+#endif
 	};
 
 	static std::unique_ptr<ud> global;
@@ -50,18 +52,20 @@ dbg.reset(new vscode::debugger(namedpipe.get()));
 	{
 		ud& self = to(L, 1);
 		const char* addr = luaL_checkstring(L, 2);
-		if (strncmp(addr, "pipe:", 5) == 0) {
-			self.listen_pipe(addr + 5);
-			if (self.dbg) {
-				self.dbg->attach_lua(L);
-			}
-		}
-		else if (strncmp(addr, "tcp:", 4) == 0) {
+		if (strncmp(addr, "tcp:", 4) == 0) {
 			self.listen_tcp(addr + 4);
 			if (self.dbg) {
 				self.dbg->attach_lua(L);
 			}
 		}
+#if defined(_WIN32)
+		else if (strncmp(addr, "pipe:", 5) == 0) {
+			self.listen_pipe(addr + 5);
+			if (self.dbg) {
+				self.dbg->attach_lua(L);
+			}
+		}
+#endif
 		else {
 			self.listen_tcp(addr);
 			if (self.dbg) {

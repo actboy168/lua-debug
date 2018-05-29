@@ -10,8 +10,10 @@ namespace vscode
 	void debugger_impl::close()
 	{
 		update_redirect();
+#if defined(_WIN32)
 		stdout_.reset();
 		stderr_.reset();
+#endif
 		set_state(eState::terminated);
 		detach_all(false);
 
