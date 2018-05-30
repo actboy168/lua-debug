@@ -74,27 +74,27 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
     <IntDir>$(ProjectDir)obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
-    <OutDir>$(ProjectDir)bin\$(Platform)\$(Configuration)\</OutDir>
+    <TargetName>$(ProjectName)</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
     <IntDir>$(ProjectDir)obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
-    <OutDir>$(ProjectDir)bin\$(Platform)\$(Configuration)\</OutDir>
+    <TargetName>$(ProjectName)</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <IntDir>$(ProjectDir)obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
-    <OutDir>$(ProjectDir)bin\$(Platform)\$(Configuration)\</OutDir>
+    <TargetName>$(ProjectName)</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IntDir>$(ProjectDir)obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
-    <OutDir>$(ProjectDir)bin\$(Platform)\$(Configuration)\</OutDir>
+    <TargetName>$(ProjectName)</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
     <IntDir>$(ProjectDir)obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
-    <OutDir>$(ProjectDir)bin\$(Platform)\$(Configuration)\</OutDir>
+    <TargetName>$(ProjectName)</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
     <IntDir>$(ProjectDir)obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
-    <OutDir>$(ProjectDir)bin\$(Platform)\$(Configuration)\</OutDir>
+    <TargetName>$(ProjectName)</TargetName>
   </PropertyGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\base\config.h" />
@@ -233,6 +233,7 @@
     <Link />
     <Link>
       <LibraryDependencies>$(RemoteRootDir)/lua53/bin/$(Platform)/$(Configuration)/liblua53.so</LibraryDependencies>
+      <OutputFile>/home/actboy168/debugger/$(Configuration)/$(ProjectName).so</OutputFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
@@ -247,6 +248,7 @@
     <Link />
     <Link>
       <LibraryDependencies>$(RemoteRootDir)/lua53/bin/$(Platform)/$(Configuration)/liblua53.so</LibraryDependencies>
+      <OutputFile>/home/actboy168/debugger/$(Configuration)/$(ProjectName).so</OutputFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -260,6 +262,9 @@
     </ClCompile>
     <Link />
     <Link />
+    <Link>
+      <OutputFile>/home/actboy168/debugger/$(Configuration)/$(ProjectName).so</OutputFile>
+    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile />
@@ -273,6 +278,7 @@
     <Link />
     <Link>
       <LibraryDependencies>$(RemoteRootDir)/lua53/bin/$(Platform)/$(Configuration)/liblua53.so</LibraryDependencies>
+      <OutputFile>/home/actboy168/debugger/$(Configuration)/$(ProjectName).so</OutputFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
@@ -287,6 +293,7 @@
     <Link />
     <Link>
       <LibraryDependencies>$(RemoteRootDir)/lua53/bin/$(Platform)/$(Configuration)/liblua53.so</LibraryDependencies>
+      <OutputFile>/home/actboy168/debugger/$(Configuration)/$(ProjectName).so</OutputFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
@@ -301,6 +308,7 @@
     <Link />
     <Link>
       <LibraryDependencies>$(RemoteRootDir)/lua53/bin/$(Platform)/$(Configuration)/liblua53.so</LibraryDependencies>
+      <OutputFile>/home/actboy168/debugger/$(Configuration)/$(ProjectName).so</OutputFile>
     </Link>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
