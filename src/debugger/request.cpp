@@ -54,7 +54,7 @@ namespace vscode
 		}
 		response_initialize(req);
 		set_state(eState::initialized);
-		//event_capabilities();
+		event_capabilities();
 		return false;
 	}
 
