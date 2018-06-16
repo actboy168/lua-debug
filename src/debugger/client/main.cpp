@@ -25,7 +25,10 @@ static void response_initialized(stdinput& io, vscode::rprotocol& req)
 		res("command").String("initialize");
 		res("request_seq").Int64(req["seq"].GetInt64());
 		res("success").Bool(true);
-		vscode::capabilities(res);
+		for (auto _ : res("body").Object())
+		{
+			vscode::capabilities(res);
+		}
 	}
 	vscode::io_output(&io, res);
 }

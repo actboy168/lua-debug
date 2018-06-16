@@ -143,7 +143,13 @@ namespace vscode
 			res("type").String("event");
 			res("seq").Int64(seq++);
 			res("event").String("capabilities");
-			capabilities(res);
+			for (auto _ : res("body").Object())
+			{
+				for (auto _ : res("capabilities").Object())
+				{
+					capabilities(res);
+				}
+			}
 		}
 		io_output(res);
 	}
