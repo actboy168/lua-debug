@@ -107,7 +107,7 @@ static int run_attach_process(stdinput& io, vscode::rprotocol& init, vscode::rpr
 {
 	base::win::process_switch m(pid, L"attachprocess");
 	if (!open_process_with_debugger(req, pid)) {
-		response_error(io, req, "Attach failed");
+		response_error(io, req, base::format("Open process (id=%d) failed.", pid).c_str());
 		return -1;
 	}
 	auto port = base::format(L"vscode-lua-debug-%d", pid);
