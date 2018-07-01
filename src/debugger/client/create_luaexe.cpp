@@ -50,6 +50,13 @@ std::string create_install_script(vscode::rprotocol& req, const fs::path& dbg_pa
 	return res;
 }
 
+int getLuaVersion(const rapidjson::Value& args) {
+	if (args.HasMember("luaversion") && args["luaversion"].IsString() && args["luaversion"].Get<std::string>() == "5.4") {
+		return 54;
+	}
+	return 53;
+}
+
 bool create_luaexe_with_debugger(stdinput& io, vscode::rprotocol& req, const std::wstring& port)
 {
 	auto& args = req["arguments"];
@@ -60,9 +67,17 @@ bool create_luaexe_with_debugger(stdinput& io, vscode::rprotocol& req, const std
 		luaexe = base::u2w(args["luaexe"].Get<std::string>());
 	}
 	else {
-		luaexe = dbg_path / "lua53.exe";
-		if (args.HasMember("luadll") && args["luadll"].IsString()) {
-			p.replace(base::u2w(args["luadll"].Get<std::string>()), "lua53.dll");
+		if (54 == getLuaVersion(args)) {
+			luaexe = dbg_path / "lua54.exe";
+			if (args.HasMember("luadll") && args["luadll"].IsString()) {
+				p.replace(base::u2w(args["luadll"].Get<std::string>()), "lua54.dll");
+			}
+		}
+		else {
+			luaexe = dbg_path / "lua53.exe";
+			if (args.HasMember("luadll") && args["luadll"].IsString()) {
+				p.replace(base::u2w(args["luadll"].Get<std::string>()), "lua53.dll");
+			}
 		}
 	}
 
