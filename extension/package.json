@@ -136,12 +136,12 @@
                             "luaexe": {
                                 "type": "string",
                                 "description": "Absolute path to the lua exe.",
-                                "default": null
+                                "default": "${workspaceRoot}/lua.exe"
                             },
                             "luadll": {
                                 "type": "string",
                                 "description": "Absolute path to the lua dll.",
-                                "default": null
+                                "default": "${workspaceRoot}/lua53.dll"
                             },
                             "path": {
                                 "type": "string",
@@ -159,7 +159,7 @@
                                     "array"
                                 ],
                                 "description": "Command line argument, arg[-n] ... arg[0]",
-                                "default": null
+                                "default": []
                             },
                             "arg": {
                                 "type": "array",
@@ -179,7 +179,12 @@
                             "sourceMaps": {
                                 "type": "array",
                                 "description": "The source path of the remote host and the source path of local.",
-                                "default": null
+                                "default": [
+                                    [
+                                        ".\\",
+                                        "${workspaceRoot}\\"
+                                    ]
+                                ]
                             },
                             "sourceCoding": {
                                 "type": "string",
@@ -196,7 +201,7 @@
                                     "null"
                                 ],
                                 "description": "Runtime to use. Either an absolute path or the name of a runtime available on the PATH.",
-                                "default": null
+                                "default": "${workspaceRoot}/lua.exe"
                             },
                             "runtimeArgs": {
                                 "type": [
@@ -204,7 +209,7 @@
                                     "null"
                                 ],
                                 "description": "Arguments passed to the runtime executable.",
-                                "default": null
+                                "default": ""
                             },
                             "console": {
                                 "type": "string",
@@ -251,12 +256,12 @@
                             "processId": {
                                 "type": "integer",
                                 "description": "Id of process to attach to.",
-                                "default": null
+                                "default": 0
                             },
                             "processName": {
                                 "type": "string",
                                 "description": "Name of process to attach to.",
-                                "default": null
+                                "default": ""
                             },
                             "consoleCoding": {
                                 "type": "string",
