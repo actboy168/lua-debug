@@ -59,6 +59,12 @@ namespace lua {
 	namespace lua54 {
 		extern int (__cdecl* lua_getiuservalue)(lua_State *L, int idx, int n);
 		int __cdecl lua_getuservalue(lua_State* L, int idx);
+
+		extern int(__cdecl* lua_setiuservalue)(lua_State *L, int idx, int n);
+		int __cdecl lua_setuservalue(lua_State* L, int idx);
+
+		extern void*(__cdecl* lua_newuserdatauv)(lua_State *L, size_t size, int nuvalue);
+		void* __cdecl lua_newuserdata(lua_State* L, size_t size, int nuvalue);
 	}
 }
 

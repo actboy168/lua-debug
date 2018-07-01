@@ -60,6 +60,18 @@ namespace delayload
 					return (FARPROC)lua::lua54::lua_getuservalue;
 				}
 			}
+			else if (strcmp(pdli->dlp.szProcName, "lua_setuservalue") == 0) {
+				lua::lua54::lua_setiuservalue = (int(__cdecl*)(lua_State*, int, int))get_lua_api(pdli->hmodCur, "lua_setiuservalue");
+				if (lua::lua54::lua_setiuservalue) {
+					return (FARPROC)lua::lua54::lua_setuservalue;
+				}
+			}
+			else if (strcmp(pdli->dlp.szProcName, "lua_newuserdata") == 0) {
+				lua::lua54::lua_newuserdatauv = (void*(__cdecl*)(lua_State*, size_t, int))get_lua_api(pdli->hmodCur, "lua_newuserdatauv");
+				if (lua::lua54::lua_newuserdatauv) {
+					return (FARPROC)lua::lua54::lua_newuserdata;
+				}
+			}
 			else if (strcmp(pdli->dlp.szProcName, "lua_getproto") == 0) {
 				return (FARPROC)lua::lua_getproto;
 			}
