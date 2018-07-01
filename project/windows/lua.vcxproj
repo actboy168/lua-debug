@@ -16,7 +16,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\third_party\lua53\src\lua.c" />
+    <ClCompile Include="..\..\third_party\lua53\lua.c" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{76338556-5419-494A-A4C6-D79090629054}</ProjectGuid>
