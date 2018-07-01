@@ -75,7 +75,7 @@ namespace vscode
 		xpcall,
 	};
 	static eCall traceCall(lua_State *L, int level) {
-		lua_Debug ar;
+		lua::Debug ar;
 		if (LUA_TFUNCTION != lua_getglobal(L, "pcall")) {
 			lua_pop(L, 1);
 			lua_pushnil(L);
@@ -84,8 +84,8 @@ namespace vscode
 			lua_pop(L, 1);
 			lua_pushnil(L);
 		}
-		while (lua_getstack(L, level++, &ar)) {
-			if (lua_getinfo(L, "f", &ar)) {
+		while (lua_getstack(L, level++, (lua_Debug*)&ar)) {
+			if (lua_getinfo(L, "f", (lua_Debug*)&ar)) {
 				if (lua_rawequal(L, -3, -1)) {
 					lua_pop(L, 3);
 					return eCall::pcall;
