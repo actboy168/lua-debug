@@ -167,7 +167,6 @@ dbg.reset(new vscode::debugger(namedpipe.get()));
 
 	int open(lua_State* L)
 	{
-		luaL_checkversion(L);
 		luaL_Reg mt[] = {
 			{ "listen", listen },
 			{ "start", start },
