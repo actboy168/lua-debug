@@ -65,7 +65,7 @@ namespace delayload
 			}
 			char str[256];
 			sprintf(str, "Can't find lua c function: `%s`.", pdli->dlp.szProcName);
-			MessageBoxA(0, "Fatal Error.", str, 0);
+			MessageBoxA(0, str, "Fatal Error.", 0);
 			return NULL;
 		}
 			break;
