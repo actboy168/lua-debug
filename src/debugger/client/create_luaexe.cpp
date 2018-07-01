@@ -60,7 +60,7 @@ bool create_luaexe_with_debugger(stdinput& io, vscode::rprotocol& req, const std
 		luaexe = base::u2w(args["luaexe"].Get<std::string>());
 	}
 	else {
-		luaexe = dbg_path / "lua.exe";
+		luaexe = dbg_path / "lua53.exe";
 		if (args.HasMember("luadll") && args["luadll"].IsString()) {
 			p.replace(base::u2w(args["luadll"].Get<std::string>()), "lua53.dll");
 		}

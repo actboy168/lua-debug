@@ -35,7 +35,7 @@ bool create_terminal_with_debugger(stdinput& io, vscode::rprotocol& req, const s
 			luaexe = args["luaexe"].Get<std::string>();
 		}
 		else {
-			luaexe = base::w2u((dbg_path / L"lua.exe").wstring());
+			luaexe = base::w2u((dbg_path / L"lua53.exe").wstring());
 		}
 
 		res("kind").String(args["console"] == "integratedTerminal" ? "integrated" : "external");
