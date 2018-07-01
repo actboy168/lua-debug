@@ -11,7 +11,6 @@
 *.opensdf
 *.ipch
 *.sln.cache
-*.exe
 *.vs/
 *.VC.db
 *.VC.opendb
