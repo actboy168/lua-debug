@@ -81,8 +81,8 @@ namespace base { namespace win {
 			return false;
 		}
 		std::unique_ptr<uint8_t[]> buffer;
-		size_t size = 0x20000;
-		size_t returnedSize = 0;
+		ULONG size = 0x20000;
+		ULONG returnedSize = 0;
 		NTSTATUS status = -1;
 		do {
 			buffer.reset(new uint8_t[(size + 7) / 8 * 8]);
@@ -95,7 +95,7 @@ namespace base { namespace win {
 		if (status != 0) {
 			return false;
 		}
-		for (size_t offset = 0; offset < returnedSize;) {
+		for (ULONG offset = 0; offset < returnedSize;) {
 			const SYSTEM_PROCESS_INFORMATION* ptr = (const SYSTEM_PROCESS_INFORMATION*)(buffer.get() + offset);
 			if (ptr->ImageName.Buffer != 0) {
 				if (NtCBProcessInformation(ptr)) {
