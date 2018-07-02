@@ -67,7 +67,7 @@ static int run_createprocess_then_attach(stdinput& io, vscode::rprotocol& init, 
 {
 	int pid = 0;
 	if (!create_process_with_debugger(req, pid)) {
-		response_error(io, req, "Launch failed");
+		response_error(io, req, "Create process failed");
 		return -1;
 	}
 	auto port = base::format(L"vscode-lua-debug-%d", pid);
