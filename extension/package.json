@@ -215,6 +215,7 @@
                             "runtimeArgs": {
                                 "type": [
                                     "string",
+                                    "array",
                                     "null"
                                 ],
                                 "description": "Arguments passed to the runtime executable.",

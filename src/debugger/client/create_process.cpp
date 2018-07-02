@@ -13,8 +13,17 @@ bool create_process_with_debugger(vscode::rprotocol& req, int& pid)
 	}
 	std::wstring wapplication = base::u2w(args["runtimeExecutable"].Get<std::string>());
 	std::wstring wcommand = cmd_string(wapplication);
-	if (args.HasMember("runtimeArgs") && args["runtimeArgs"].IsString()) {
-		wcommand = wcommand + L" " + base::u2w(args["runtimeArgs"].Get<std::string>());
+	if (args.HasMember("runtimeArgs")) {
+		if (args["runtimeArgs"].IsString()) {
+			wcommand = wcommand + L" " + base::u2w(args["runtimeArgs"].Get<std::string>());
+		}
+		else if(args["runtimeArgs"].IsArray()) {
+			for (auto& v : args["runtimeArgs"].GetArray()) {
+				if (v.IsString()) {
+					wcommand = wcommand + L" " + cmd_string(base::u2w(v));
+				}
+			}
+		}
 	}
 	std::wstring wcwd;
 	if (args.HasMember("cwd") && args["cwd"].IsString()) {
