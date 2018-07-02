@@ -32,9 +32,13 @@ bool create_terminal_with_debugger(stdinput& io, vscode::rprotocol& req, const s
 		fs::path dbgPath = base::path::self().parent_path().parent_path();
 		std::string luaexe;
 		if (args.HasMember("luaexe") && args["luaexe"].IsString()) {
-			// TODO: Ö§³Ö64Î»
-			dbgPath /= "x86";
 			luaexe = args["luaexe"].Get<std::string>();
+			if (is64Exe(base::u2w(luaexe).c_str())) {
+				dbgPath /= "x64";
+			}
+			else {
+				dbgPath /= "x86";
+			}
 		}
 		else {
 			if (54064 == getLuaRuntime(args)) {

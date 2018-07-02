@@ -69,6 +69,28 @@ int getLuaRuntime(const rapidjson::Value& args) {
 	return 53032;
 }
 
+bool is64Exe(const wchar_t* exe)
+{
+	HANDLE hExe = CreateFileW(exe, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+	if (hExe == 0) {
+		return false;
+	}
+	DWORD read;
+	char data[sizeof IMAGE_NT_HEADERS + sizeof IMAGE_DOS_HEADER];
+	SetFilePointer(hExe, 0, NULL, FILE_BEGIN);
+	if (!ReadFile(hExe, data, sizeof IMAGE_DOS_HEADER, &read, NULL)) {
+		CloseHandle(hExe);
+		return false;
+	}
+	SetFilePointer(hExe, ((PIMAGE_DOS_HEADER)data)->e_lfanew, NULL, FILE_BEGIN);
+	if (!ReadFile(hExe, data, sizeof IMAGE_NT_HEADERS, &read, NULL)) {
+		CloseHandle(hExe);
+		return false;
+	}
+	CloseHandle(hExe);
+	return !(((PIMAGE_NT_HEADERS)data)->FileHeader.Characteristics & IMAGE_FILE_32BIT_MACHINE);
+}
+
 bool create_luaexe_with_debugger(stdinput& io, vscode::rprotocol& req, const std::wstring& port)
 {
 	auto& args = req["arguments"];
@@ -76,9 +98,13 @@ bool create_luaexe_with_debugger(stdinput& io, vscode::rprotocol& req, const std
 	fs::path dbgPath = base::path::self().parent_path().parent_path();
 	std::wstring luaexe;
 	if (args.HasMember("luaexe") && args["luaexe"].IsString()) {
-		// TODO: Ö§³Ö64Î»
-		dbgPath /= "x86";
 		luaexe = base::u2w(args["luaexe"].Get<std::string>());
+		if (is64Exe(luaexe.c_str())) {
+			dbgPath /= "x64";
+		}
+		else {
+			dbgPath /= "x86";
+		}
 	}
 	else {
 		if (54064 == getLuaRuntime(args)) {
