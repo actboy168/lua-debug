@@ -133,13 +133,15 @@
                                 "description": "Automatically stop after launch.",
                                 "default": true
                             },
-                            "luaversion": {
+                            "luaRuntime": {
                                 "type": "string",
-                                "description": "Default lua runtime version",
-                                "default": "5.3",
+                                "description": "Default lua runtime",
+                                "default": "5.3 32bit",
                                 "enum": [
-                                    "5.3",
-                                    "5.4"
+                                    "5.3 32bit",
+                                    "5.3 64bit",
+                                    "5.4 32bit",
+                                    "5.4 64bit"
                                 ]
                             },
                             "luaexe": {

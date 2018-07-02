@@ -50,31 +50,61 @@ std::string create_install_script(vscode::rprotocol& req, const fs::path& dbg_pa
 	return res;
 }
 
-int getLuaVersion(const rapidjson::Value& args) {
-	if (args.HasMember("luaversion") && args["luaversion"].IsString() && args["luaversion"].Get<std::string>() == "5.4") {
-		return 54;
+int getLuaRuntime(const rapidjson::Value& args) {
+	if (args.HasMember("luaRuntime") && args["luaRuntime"].IsString()) {
+		std::string luaRuntime = args["luaRuntime"].Get<std::string>();
+		if (luaRuntime == "5.4 64bit") {
+			return 54064;
+		}
+		else if (luaRuntime == "5.4 32bit") {
+			return 54032;
+		}
+		else if (luaRuntime == "5.3 64bit") {
+			return 53064;
+		}
+		else if (luaRuntime == "5.3 32bit") {
+			return 53032;
+		}
 	}
-	return 53;
+	return 53032;
 }
 
 bool create_luaexe_with_debugger(stdinput& io, vscode::rprotocol& req, const std::wstring& port)
 {
 	auto& args = req["arguments"];
 	base::win::process p;
-	fs::path dbg_path = base::path::self().remove_filename();
+	fs::path dbgPath = base::path::self().parent_path().parent_path();
 	std::wstring luaexe;
 	if (args.HasMember("luaexe") && args["luaexe"].IsString()) {
+		// TODO: Ö§³Ö64Î»
+		dbgPath /= "x86";
 		luaexe = base::u2w(args["luaexe"].Get<std::string>());
 	}
 	else {
-		if (54 == getLuaVersion(args)) {
-			luaexe = dbg_path / "lua54.exe";
+		if (54064 == getLuaRuntime(args)) {
+			dbgPath /= "x64";
+			luaexe = dbgPath / "lua54.exe";
 			if (args.HasMember("luadll") && args["luadll"].IsString()) {
 				p.replace(base::u2w(args["luadll"].Get<std::string>()), "lua54.dll");
 			}
 		}
+		else if (54032 == getLuaRuntime(args)) {
+			dbgPath /= "x86";
+			luaexe = dbgPath / "lua54.exe";
+			if (args.HasMember("luadll") && args["luadll"].IsString()) {
+				p.replace(base::u2w(args["luadll"].Get<std::string>()), "lua54.dll");
+			}
+		}
+		else if (53064 == getLuaRuntime(args)) {
+			dbgPath /= "x64";
+			luaexe = dbgPath / "lua53.exe";
+			if (args.HasMember("luadll") && args["luadll"].IsString()) {
+				p.replace(base::u2w(args["luadll"].Get<std::string>()), "lua53.dll");
+			}
+		}
 		else {
-			luaexe = dbg_path / "lua53.exe";
+			dbgPath /= "x86";
+			luaexe = dbgPath / "lua53.exe";
 			if (args.HasMember("luadll") && args["luadll"].IsString()) {
 				p.replace(base::u2w(args["luadll"].Get<std::string>()), "lua53.dll");
 			}
@@ -89,7 +119,7 @@ bool create_luaexe_with_debugger(stdinput& io, vscode::rprotocol& req, const std
 	else {
 		wcwd = fs::path(luaexe).remove_filename();
 	}
-	std::string script = create_install_script(req, dbg_path, port, true);
+	std::string script = create_install_script(req, dbgPath, port, true);
 
 	wcommand += base::format(LR"( -e "%s")", base::u2w(script));
 	if (args.HasMember("arg0")) {
