@@ -9,12 +9,17 @@ namespace vscode
 {
 	void debugger_impl::close()
 	{
+		if (is_state(eState::terminated) || is_state(eState::birth)) {
+			return;
+		}
+
 		update_redirect();
 #if defined(_WIN32)
 		stdout_.reset();
 		stderr_.reset();
 #endif
 		set_state(eState::terminated);
+		event_terminated();
 		detach_all(false);
 
 		breakpoints_.clear();
@@ -25,17 +30,6 @@ namespace vscode
 	{
 		if (state_ == state) return;
 		state_ = state;
-		switch (state_)
-		{
-		case eState::initialized:
-			event_initialized();
-			break;
-		case eState::terminated:
-			event_terminated();
-			break;
-		default:
-			break;
-		}
 	}
 
 	bool debugger_impl::is_state(eState state) const
@@ -54,6 +48,7 @@ namespace vscode
 		}
 		response_initialize(req);
 		set_state(eState::initialized);
+		event_initialized();
 		event_capabilities();
 		return false;
 	}
