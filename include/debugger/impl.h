@@ -77,7 +77,7 @@ namespace vscode
 		bool request_set_exception_breakpoints(rprotocol& req);
 
 	private:
-		bool request_thread(rprotocol& req, lua_State *L, lua::Debug *ar);
+		bool request_threads(rprotocol& req, lua_State *L, lua::Debug *ar);
 		bool request_stack_trace(rprotocol& req, lua_State *L, lua::Debug *ar);
 		bool request_source(rprotocol& req, lua_State *L, lua::Debug *ar);
 		bool request_scopes(rprotocol& req, lua_State *L, lua::Debug *ar);
@@ -107,7 +107,7 @@ namespace vscode
 
 	private:
 		void response_initialize(rprotocol& req);
-		void response_thread(rprotocol& req);
+		void response_threads(rprotocol& req);
 		void response_source(rprotocol& req, const char* content);
 
 	private:

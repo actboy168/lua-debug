@@ -116,8 +116,8 @@ namespace vscode
 		return request_attach_done(initproto_);
 	}
 
-	bool debugger_impl::request_thread(rprotocol& req, lua_State* L, lua::Debug *ar) {
-		response_thread(req);
+	bool debugger_impl::request_threads(rprotocol& req, lua_State* L, lua::Debug *ar) {
+		response_threads(req);
 		return false;
 	}
 

@@ -29,7 +29,7 @@ namespace vscode
 		io_output(res);
 	}
 
-	void debugger_impl::response_thread(rprotocol& req)
+	void debugger_impl::response_threads(rprotocol& req)
 	{
 		wprotocol res;
 		for (auto _ : res.Object())
