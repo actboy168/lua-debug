@@ -299,6 +299,7 @@ namespace vscode
 		: src(nullptr)
 	{
 		if (!lua_getinfo(L, "SL", (lua_Debug*)ar)) {
+			lua_pop(L, 1);
 			return;
 		}
 		source s(ar, dbg);
