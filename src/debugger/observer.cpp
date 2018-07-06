@@ -650,6 +650,10 @@ namespace vscode {
 			switch (type)
 			{
 			case LUA_TTABLE:
+				if (lua_getmetatable(L, idx)) {
+					lua_pop(L, 1);
+					return true;
+				}
 				return !is_watch_table(L, idx) && !table_empty(L, idx);
 			case LUA_TLIGHTUSERDATA:
 				if (lua_getmetatable(L, idx)) {
