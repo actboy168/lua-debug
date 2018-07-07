@@ -30,6 +30,12 @@
                 "${workspaceRoot}/build/main.lua",
                 "Release"
             ]
+        },
+        {
+            "taskName": "Copy JS",
+            "args": [
+                "${workspaceRoot}/build/js.lua"
+            ]
         }
     ]
 }

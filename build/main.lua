@@ -6,7 +6,7 @@ local configuration = arg[1] or 'Release'
 local rebuild = arg[2] ~= 'IC'
 local insiders = false
 local vscode = insiders and '.vscode-insiders' or '.vscode'
-local root = fs.absolute(fs.path '../')
+local root = fs.absolute(fs.path '.')
 local binDir = root / 'project' / 'windows' / 'bin'
 local objDir = root / 'project' / 'windows' / 'obj'
 
