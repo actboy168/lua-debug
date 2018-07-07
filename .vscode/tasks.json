@@ -2,7 +2,7 @@
     // See https://go.microsoft.com/fwlink/?LinkId=733558
     // for the documentation about the tasks.json format
     "version": "0.1.0",
-    "command": "\"${workspaceRoot}/luabuild/lua.exe\"",
+    "command": "\"${workspaceRoot}/build/luabuild/lua.exe\"",
     "isShellCommand": true,
     "showOutput": "always",
     "echoCommand": false,
@@ -11,7 +11,7 @@
         {
             "taskName": "Debug",
             "args": [
-                "${workspaceRoot}/main.lua",
+                "${workspaceRoot}/build/main.lua",
                 "Debug",
                 "IC"
             ]
@@ -19,7 +19,7 @@
         {
             "taskName": "Release",
             "args": [
-                "${workspaceRoot}/main.lua",
+                "${workspaceRoot}/build/main.lua",
                 "Release",
                 "IC"
             ]
@@ -27,7 +27,7 @@
         {
             "taskName": "Rebuild Release",
             "args": [
-                "${workspaceRoot}/main.lua",
+                "${workspaceRoot}/build/main.lua",
                 "Release"
             ]
         }
