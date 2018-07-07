@@ -106,15 +106,33 @@ int run_luaexe_then_attach(stdinput& io, vscode::rprotocol& init, vscode::rproto
 	return 0;
 }
 
-static int run_attach_process(stdinput& io, vscode::rprotocol& init, vscode::rprotocol& req, int pid)
+static int run_attach_process_noinject(stdinput& io, vscode::rprotocol& init, vscode::rprotocol& req, int pid)
 {
+	base::win::process_switch m(pid, L"attachprocess", false);
+	if (!m.has()) {
+		response_error(io, req, "Target Procees hasn't debugger.");
+		return -1;
+	}
+	auto port = base::format(L"vscode-lua-debug-%d", pid);
+	if (!run_pipe_attach(io, init, req, port, &m)) {
+		response_error(io, req, "Attach failed");
+		return -1;
+	}
+	return 0;
+}
+
+static int run_attach_process(stdinput& io, vscode::rprotocol& init, vscode::rprotocol& req, int pid, bool noInject)
+{
+	if (noInject) {
+		return run_attach_process_noinject(io, init, req, pid);
+	}
 	base::win::process_switch m(pid, L"attachprocess");
 	if (!open_process_with_debugger(req, pid)) {
 		response_error(io, req, base::format("Open process (id=%d) failed.", pid).c_str());
 		return -1;
 	}
 	auto port = base::format(L"vscode-lua-debug-%d", pid);
-	if (!run_pipe_attach(io, init, req, port)) {
+	if (!run_pipe_attach(io, init, req, port, &m)) {
 		response_error(io, req, "Attach failed");
 		return -1;
 	}
@@ -136,7 +154,6 @@ static std::vector<int> get_process_name(const std::string& name)
 	});
 	return res;
 }
-
 
 static int run_tcp_attach(stdinput& io, vscode::rprotocol& init, vscode::rprotocol& req)
 {
@@ -196,12 +213,13 @@ int main()
 			}
 			else if (req["command"] == "attach") {
 				auto& args = req["arguments"];
+				bool noInject = args.HasMember("noInject") && args["noInject"].IsBool() && args["noInject"].GetBool();
 				if (args.HasMember("processId")) {
 					if (!args["processId"].IsInt()) {
 						response_error(io, req, "Attach failed");
 						return -1;
 					}
-					return run_attach_process(io, init, req, args["processId"].GetInt());
+					return run_attach_process(io, init, req, args["processId"].GetInt(), noInject);
 				}
 				if (args.HasMember("processName")) {
 					if (!args["processName"].IsString()) {
@@ -218,7 +236,7 @@ int main()
 						response_error(io, req, base::format("There are %d processes `%s`.", pid.size(), processName).c_str());
 						return -1;
 					}
-					return run_attach_process(io, init, req, pid[0]);
+					return run_attach_process(io, init, req, pid[0], noInject);
 				}
 				return run_tcp_attach(io, init, req);
 			}
