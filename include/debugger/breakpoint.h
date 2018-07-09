@@ -19,7 +19,7 @@ namespace vscode
 	struct bp_source;
 
 	struct source {
-		bool vaild = false;
+		bool valid = false;
 		std::string path;
 		intptr_t ref = 0;
 		source();

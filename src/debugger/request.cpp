@@ -173,7 +173,7 @@ namespace vscode
 					else {
 						for (auto _ : res.Object()) {
 							source s(&entry, *this);
-							if (s.vaild) {
+							if (s.valid) {
 								s.output(res);
 							}
 							else {
@@ -218,7 +218,7 @@ namespace vscode
 	{
 		auto& args = req["arguments"];
 		vscode::source s(args["source"]);
-		if (!s.vaild) {
+		if (!s.valid) {
 			response_error(req, "not yet implemented");
 			return false;
 		}

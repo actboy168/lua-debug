@@ -67,12 +67,12 @@ namespace vscode
 	{
 		if (ar->source[0] == '@' || ar->source[0] == '=') {
 			if (dbg.path_convert(ar->source, path)) {
-				vaild = true;
+				valid = true;
 			}
 		}
 		else {
 			ref = (intptr_t)ar->source;
-			vaild = true;
+			valid = true;
 		}
 	}
 
@@ -80,18 +80,18 @@ namespace vscode
 	{
 		if (info.HasMember("path")) {
 			path = info["path"].Get<std::string>();
-			vaild = true;
+			valid = true;
 		}
 		else if (info.HasMember("name") && info.HasMember("sourceReference"))
 		{
 			ref = info["sourceReference"].Get<intptr_t>();
-			vaild = true;
+			valid = true;
 		}
 	}
 
 	void source::output(wprotocol& res)
 	{
-		if (!vaild) return;
+		if (!valid) return;
 		for (auto _ : res("source").Object())
 		{
 			if (ref) {
@@ -303,7 +303,7 @@ namespace vscode
 			return;
 		}
 		source s(ar, dbg);
-		if (s.vaild) {
+		if (s.valid) {
 			src = &breakpoint->get_source(s);
 			src->update(L, ar, dbg);
 		}

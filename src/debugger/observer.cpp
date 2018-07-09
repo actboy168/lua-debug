@@ -570,7 +570,7 @@ namespace vscode {
 				lua_pushvalue(L, idx);
 				if (lua_getinfo(L, ">S", (lua_Debug*)&entry)) {
 					source s(&entry, dbg);
-					if (s.vaild) {
+					if (s.valid) {
 						if (s.ref) {
 							const char* pos = skipline((const char*)s.ref, entry.linedefined);
 							if (pos) {

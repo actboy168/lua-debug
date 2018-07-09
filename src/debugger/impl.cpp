@@ -426,7 +426,7 @@ namespace vscode
 					assert(status);
 					if (*ar->what != 'C') {
 						source s(ar, *this);
-						if (s.vaild) {
+						if (s.valid) {
 							s.output(res);
 							res("line").Int(ar->currentline);
 							res("column").Int(1);
