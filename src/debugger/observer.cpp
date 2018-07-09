@@ -349,25 +349,51 @@ namespace vscode {
 			return 1;
 		}
 
-		static const char* skipline(const char* str, size_t n)
+		static const char* getLineStart(const char* str, int n) 
 		{
-			if (n <= 1) return str;
-			size_t lineno = 1;
-			for (const char* z = str; *z; ++z)
-			{
-				if (*z == '\n' || *z == '\r')
-				{
-					z++;
-					if ((*z == '\n' || *z == '\r') && *z != *(z - 1))
+			const char* z = str;
+			for (int i = 1; i < n; ++i) {
+				for (; *z; ++z) {
+					if (*z == '\0') {
+						return nullptr;
+					}
+					if (*z == '\n' || *z == '\r') {
 						z++;
-					lineno++;
-					if (lineno >= n)
-					{
-						return z;
+						if ((*z == '\n' || *z == '\r') && *z != *(z - 1)) {
+							z++;
+						}
+						break;
 					}
 				}
 			}
+			return z;
+		}
+
+		static const char* getLineEnd(const char* str, int n)
+		{
+			const char* pos = getLineStart(str, n);
+			if (!pos) {
+				return nullptr;
+			}
+			for (const char* z = pos; *z; ++z) {
+				if (*z == '\n' || *z == '\r') {
+					return z;
+				}
+			}
 			return nullptr;
+		}
+
+		static std::string_view getFunctionCode(const char* str, int startLn, int endLn)
+		{
+			const char* startPos = getLineStart(str, startLn);
+			if (!startPos) {
+				return std::string_view();
+			}
+			const char* endPos = getLineEnd(startPos, endLn - startLn + 1);
+			if (!endPos) {
+				return std::string_view(startPos);
+			}
+			return std::string_view(startPos, endPos - startPos);
 		}
 
 		static std::string getName(lua_State *L, int idx) {
@@ -572,9 +598,9 @@ namespace vscode {
 					source s(&entry, dbg);
 					if (s.valid) {
 						if (s.ref) {
-							const char* pos = skipline((const char*)s.ref, entry.linedefined);
-							if (pos) {
-								return pos;
+							std::string_view pos = getFunctionCode((const char*)s.ref, entry.linedefined, entry.lastlinedefined);
+							if (!pos.empty()) {
+								return std::string(pos);
 							}
 							return base::format("%s:%d", (const char*)s.ref, entry.linedefined);
 						}
