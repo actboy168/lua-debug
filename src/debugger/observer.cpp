@@ -533,7 +533,12 @@ namespace vscode {
 					break;
 				}
 				std::string value = getShortValue(L, -1, dbg);
-				s += value + ",";
+				if (s == "") {
+					s = value;
+				}
+				else {
+					s += "," + value;
+				}
 				mark.insert(n);
 				lua_pop(L, 1);
 				if (s.size() >= maxlen) {
@@ -560,7 +565,12 @@ namespace vscode {
 			}
 
 			for (auto& var : vars) {
-				s += var.first + "=" + var.second + ",";
+				if (s == "") {
+					s = var.first + "=" + var.second;
+				}
+				else {
+					s += "," + var.first + "=" + var.second;
+				}
 				if (s.size() >= maxlen) {
 					return base::format("{%s...}", s);
 				}
