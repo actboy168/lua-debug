@@ -150,9 +150,18 @@ namespace vscode
 					}
 					int status = lua_getinfo(L, "Sln", (lua_Debug*)&entry);
 					assert(status);
-					if (*entry.what == 'C' && curFrame == 0) {
-						depth++;
-						continue;
+					if (curFrame == 0) {
+						if (*entry.what == 'C') {
+							depth++;
+							continue;
+						}
+						else {
+							source s(&entry, *this);
+							if (!s.valid) {
+								depth++;
+								continue;
+							}
+						}
 					}
 					if (curFrame < startFrame || curFrame >= endFrame) {
 						depth++;
