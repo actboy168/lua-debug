@@ -1,7 +1,7 @@
 #pragma once
 
 #include <debugger/io/base.h>
-#include <net/queue.h>
+#include <readerwriterqueue.h>
 
 namespace vscode { namespace io {
 	struct DEBUGGER_API stream
@@ -20,7 +20,7 @@ namespace vscode { namespace io {
 #pragma warning(push)
 #pragma warning(disable:4251)
 #endif
-		net::queue<std::string, 8> queue;
+		moodycamel::ReaderWriterQueue<std::string, 8> queue;
 		std::string                buf;
 #if defined(_WIN32)
 #pragma warning(pop)

@@ -36,7 +36,7 @@ void stdinput::run() {
 			close();
 		}
 		buffer_[len] = 0;
-		input_.push(std::string(buffer_.data(), len));
+		input_.enqueue(std::string(buffer_.data(), len));
 	}
 }
 
@@ -60,14 +60,10 @@ void stdinput::close() {
 }
 
 bool stdinput::input(std::string& buf) {
-	if (!preinput_.empty()) {
-		buf = std::move(preinput_.front());
-		preinput_.pop();
+	if (preinput_.try_dequeue(buf)) {
 		return true;
 	}
-	if (!input_.empty()) {
-		buf = std::move(input_.front());
-		input_.pop();
+	if (input_.try_dequeue(buf)) {
 		return true;
 	}
 	return false;
@@ -78,7 +74,7 @@ void stdinput::push_input(vscode::rprotocol& rp)
 	rapidjson::StringBuffer buffer;
 	rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
 	rp.Accept(writer);
-	preinput_.push(std::string(buffer.GetString(), buffer.GetSize()));
+	preinput_.enqueue(std::string(buffer.GetString(), buffer.GetSize()));
 }
 
 void stdinput::update(int ms) {

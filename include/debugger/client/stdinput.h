@@ -2,7 +2,7 @@
 
 #include <thread>
 #include <vector>
-#include <net/queue.h>
+#include <readerwriterqueue.h>
 #include <debugger/io/base.h>
 #include <debugger/protocol.h>
 
@@ -23,8 +23,8 @@ public:
 	void raw_output(const char* buf, size_t len);
 
 private:
-	net::queue<std::string, 8> input_;
-	net::queue<std::string, 8> preinput_;
+	moodycamel::ReaderWriterQueue<std::string, 8> input_;
+	moodycamel::ReaderWriterQueue<std::string, 8> preinput_;
 	std::vector<char>          buffer_;
 	std::thread                thread_;
 };

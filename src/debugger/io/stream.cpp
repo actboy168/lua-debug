@@ -40,7 +40,7 @@ namespace vscode { namespace io {
 			case 2:
 				if (buf.size() >= (len + 2))
 				{
-					queue.push(buf.substr(2, len));
+					queue.enqueue(buf.substr(2, len));
 					buf.clear();
 					stat = 0;
 				}
@@ -61,11 +61,6 @@ namespace vscode { namespace io {
 	}
 
 	bool stream::input(std::string& buf) {
-		if (!queue.empty()) {
-			buf = std::move(queue.front());
-			queue.pop();
-			return true;
-		}
-		return false;
+		return queue.try_dequeue(buf);
 	}
 }}

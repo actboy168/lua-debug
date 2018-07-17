@@ -2,7 +2,6 @@
 
 #include <string>
 #include <debugger/io/stream.h>
-#include <net/queue.h>
 
 namespace net {
 	class namedpipe;

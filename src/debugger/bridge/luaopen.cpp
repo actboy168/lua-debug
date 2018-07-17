@@ -6,6 +6,10 @@
 #include <base/util/unicode.h>
 #include <memory>  
 
+#if defined(DEBUGGER_BRIDGE)
+#include <intrin.h>
+#endif
+
 namespace luaw {
 	struct ud {
 		std::unique_ptr<vscode::io::socket> socket;

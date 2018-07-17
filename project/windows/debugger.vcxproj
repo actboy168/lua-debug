@@ -147,7 +147,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>DEBUGGER_EXPORTS;DEBUGGER_BRIDGE;RAPIDJSON_HAS_STDSTRING;_WINSOCK_DEPRECATED_NO_WARNINGS;_WIN32_WINNT=_WIN32_WINNT_WIN7;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(Root)\include\;$(Root)\third_party\;$(Root)\third_party\lua53\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(Root)\include\;$(Root)\third_party\;$(Root)\third_party\lua53\;$(Root)\third_party\readerwriterqueue\</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
@@ -167,7 +167,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>DEBUGGER_EXPORTS;DEBUGGER_BRIDGE;RAPIDJSON_HAS_STDSTRING;_WINSOCK_DEPRECATED_NO_WARNINGS;_WIN32_WINNT=_WIN32_WINNT_WIN7;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(Root)\include\;$(Root)\third_party\;$(Root)\third_party\lua53\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(Root)\include\;$(Root)\third_party\;$(Root)\third_party\lua53\;$(Root)\third_party\readerwriterqueue\</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
@@ -189,7 +189,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>DEBUGGER_EXPORTS;DEBUGGER_BRIDGE;RAPIDJSON_HAS_STDSTRING;_WINSOCK_DEPRECATED_NO_WARNINGS;_WIN32_WINNT=_WIN32_WINNT_WIN7;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(Root)\include\;$(Root)\third_party\;$(Root)\third_party\lua53\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(Root)\include\;$(Root)\third_party\;$(Root)\third_party\lua53\;$(Root)\third_party\readerwriterqueue\</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
@@ -213,7 +213,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>DEBUGGER_EXPORTS;DEBUGGER_BRIDGE;RAPIDJSON_HAS_STDSTRING;_WINSOCK_DEPRECATED_NO_WARNINGS;_WIN32_WINNT=_WIN32_WINNT_WIN7;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(Root)\include\;$(Root)\third_party\;$(Root)\third_party\lua53\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(Root)\include\;$(Root)\third_party\;$(Root)\third_party\lua53\;$(Root)\third_party\readerwriterqueue\</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
