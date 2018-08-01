@@ -2,7 +2,7 @@
 
 #include <net/socket.h>
 #include <assert.h>
-#if defined WIN32
+#if defined _WIN32
 #	include <Mstcpip.h>
 #else
 #	include <fcntl.h>
@@ -17,7 +17,7 @@ namespace net { namespace socket {
 		static bool initialized = false;
 		if (!initialized) {
 			initialized = true;
-#if defined WIN32
+#if defined _WIN32
 			WSADATA wd;
 			int rc = WSAStartup(MAKEWORD(2, 2), &wd);
 			assert(rc >= 0);
@@ -31,14 +31,14 @@ namespace net { namespace socket {
 
 	NET_INLINE int error_no_()
 	{
-#if defined WIN32
+#if defined _WIN32
 		return ::WSAGetLastError();
 #else
 		return errno;
 #endif
 	}
 
-#if defined WIN32
+#if defined _WIN32
 	NET_INLINE int wsa_error_to_errno(int errcode)
 	{
 		switch (errcode) {
@@ -118,7 +118,7 @@ namespace net { namespace socket {
 
 	NET_INLINE int error_no()
 	{
-#if defined WIN32
+#if defined _WIN32
 		return wsa_error_to_errno(error_no_());
 #else
 		return error_no_();
@@ -133,7 +133,7 @@ namespace net { namespace socket {
 	NET_INLINE void close(fd_t s)
 	{
 		assert(s != retired_fd);
-#if defined WIN32
+#if defined _WIN32
 		int rc = closesocket(s);
 #else
 		int rc = ::close(s);
@@ -144,7 +144,7 @@ namespace net { namespace socket {
 	NET_INLINE void shutdown(fd_t s)
 	{
 		assert(s != retired_fd);
-#if defined WIN32
+#if defined _WIN32
 		int rc = ::shutdown(s, SD_BOTH);
 #else
 		int rc = ::shutdown(s, SHUT_RDWR);
@@ -155,7 +155,7 @@ namespace net { namespace socket {
 	NET_INLINE void shutdown_read(fd_t s)
 	{
 		assert(s != retired_fd);
-#if defined WIN32
+#if defined _WIN32
 		int rc = ::shutdown(s, SD_RECEIVE);
 #else
 		int rc = ::shutdown(s, SHUT_RD);
@@ -166,7 +166,7 @@ namespace net { namespace socket {
 	NET_INLINE void shutdown_write(fd_t s)
 	{
 		assert(s != retired_fd);
-#if defined WIN32
+#if defined _WIN32
 		int rc = ::shutdown(s, SD_SEND);
 #else
 		int rc = ::shutdown(s, SHUT_WR);
@@ -176,7 +176,7 @@ namespace net { namespace socket {
 
 	NET_INLINE void nonblocking(fd_t s)
 	{
-#if defined WIN32
+#if defined _WIN32
 		unsigned long nonblock = 1;
 		int rc = ioctlsocket(s, FIONBIO, &nonblock);
 		net_assert_success(rc);
@@ -191,7 +191,7 @@ namespace net { namespace socket {
 
 	NET_INLINE void keepalive(fd_t s, int keepalive, int keepalive_cnt, int keepalive_idle, int keepalive_intvl)
 	{
-#if defined WIN32
+#if defined _WIN32
 		if (keepalive != -1)
 		{
 			tcp_keepalive keepaliveopts;
@@ -229,7 +229,7 @@ namespace net { namespace socket {
 
 	NET_INLINE void udp_connect_reset(fd_t s)
 	{
-#if defined WIN32
+#if defined _WIN32
 		DWORD byte_retruned = 0;
 		bool new_be = false;
 		WSAIoctl(s, SIO_UDP_CONNRESET, &new_be, sizeof(new_be), NULL, 0, &byte_retruned, NULL, NULL);
@@ -251,7 +251,7 @@ namespace net { namespace socket {
 	NET_INLINE void reuse(fd_t s)
 	{
 		int flag = 1;
-#if defined WIN32
+#if defined _WIN32
 		const int rc = setsockopt(s, SOL_SOCKET, SO_EXCLUSIVEADDRUSE, (char*) &flag, sizeof flag);
 #else
 		const int rc = setsockopt(s, SOL_SOCKET, SO_REUSEADDR, (char*) &flag, sizeof flag);
@@ -262,13 +262,13 @@ namespace net { namespace socket {
 	NET_INLINE bool connect_error(fd_t s)
 	{
 		int err = 0;
-#if defined WIN32
+#if defined _WIN32
 		int len = sizeof(err);
 #else
 		socklen_t len = sizeof(err);
 #endif
 		int rc = getsockopt(s, SOL_SOCKET, SO_ERROR, (char*) &err, &len);
-#if defined WIN32
+#if defined _WIN32
 		assert(rc == 0);
 		if (err != 0)
 			return false;
@@ -288,7 +288,7 @@ namespace net { namespace socket {
 			return 0;
 
 		const int error_code = error_no_();
-#if defined WIN32
+#if defined _WIN32
 		if (error_code == WSAEINPROGRESS || error_code == WSAEWOULDBLOCK)
 			return -2;
 #else
@@ -316,7 +316,7 @@ namespace net { namespace socket {
 	{
 		struct sockaddr_storage ss;
 		memset(&ss, 0, sizeof (ss));
-#if defined WIN32
+#if defined _WIN32
 		int ss_len = sizeof (ss);
 #else
 		socklen_t ss_len = sizeof (ss);
@@ -324,7 +324,7 @@ namespace net { namespace socket {
 		fd = ::accept(s, (struct sockaddr *) &ss, &ss_len);
 		if (fd == retired_fd)
 		{
-#if defined WIN32
+#if defined _WIN32
 			return -1;
 #else 
 			const int error_code = error_no_();
@@ -338,7 +338,7 @@ namespace net { namespace socket {
 			}
 #endif
 		}
-#if defined WIN32
+#if defined _WIN32
 		assert(ss_len > 0);
 #endif
 		assert((size_t)ss_len >= ep.addrlen());

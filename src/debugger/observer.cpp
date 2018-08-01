@@ -203,7 +203,7 @@ namespace vscode {
 			return true;
 		}
 
-		char* end = "";
+		char* end = nullptr;
 		errno = 0;
 		long lv = strtol(setvalue.value.c_str(), &end, 10);
 		if (errno != ERANGE && *end == 0)
@@ -227,7 +227,7 @@ namespace vscode {
 			}
 		}
 
-		end = "";
+		end = nullptr;
 		errno = 0;
 		double dv = strtod(setvalue.value.c_str(), &end);
 		if (errno != ERANGE && *end == 0)

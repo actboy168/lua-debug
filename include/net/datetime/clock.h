@@ -1,6 +1,6 @@
 #pragma once
 
-#if defined WIN32			   
+#if defined _WIN32			   
 #	include <net/winapi.h>	
 #	include <intrin.h>
 #	pragma intrinsic(__rdtsc)
@@ -19,7 +19,7 @@ namespace net { namespace datetime {
 		clock_t()
 			: last_tsc(0)
 			, last_time(0)
-#if defined WIN32
+#if defined _WIN32
 			, get_tick_count64(init_get_tick_count64())
 			, rollover_time(0)
 			, lastnow_time(0)
@@ -46,7 +46,7 @@ namespace net { namespace datetime {
 		
 		uint64_t now_ms_sys()
 		{
-#if defined WIN32
+#if defined _WIN32
 			return get_tick_count64 ? get_tick_count64() : custom_get_tick_count64();
 #else
 			struct timespec tv;
@@ -69,7 +69,7 @@ namespace net { namespace datetime {
 #endif
 		}
 		
-#if defined WIN32
+#if defined _WIN32
 		private:
 			typedef uint64_t (WINAPI *get_tick_count64_t)();
 			get_tick_count64_t get_tick_count64;

@@ -7,7 +7,7 @@ namespace vscode { namespace io {
 	, buf()
 	, len(0)
 	{ }
-
+	
 	void stream::update(int ms) {
 		for (size_t n = raw_peek(); n; --n)
 		{
@@ -62,5 +62,14 @@ namespace vscode { namespace io {
 
 	bool stream::input(std::string& buf) {
 		return queue.try_dequeue(buf);
+	}
+
+	void stream::clear() {
+		stat = 0;
+		buf.clear();
+		len = 0;
+		std::string buf;
+		for (; queue.try_dequeue(buf); ) {
+		}
 	}
 }}

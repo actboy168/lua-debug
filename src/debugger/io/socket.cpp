@@ -85,6 +85,7 @@ namespace vscode { namespace io {
 	}
 	void sock_stream::close() {
 		s = nullptr;
+		clear();
 	}
 	bool sock_stream::is_closed() const {
 		return s == nullptr;
@@ -180,13 +181,13 @@ namespace vscode { namespace io {
 			return 0;
 		}
 		sockaddr_in addr;
-#if defined WIN32
+#if defined _WIN32
 		int addrlen = sizeof(sockaddr_in);
 #else
 		socklen_t addrlen = sizeof(sockaddr_in);
 #endif
 		::getsockname(sock, (sockaddr*)&addr, &addrlen);
-		return ::ntohs(addr.sin_port);
+		return ntohs(addr.sin_port);
 	}
 
 	bool sock_server::stream_update()
@@ -225,6 +226,7 @@ namespace vscode { namespace io {
 
 	void socket::close()
 	{
+		sock_stream::close();
 		if (server_)
 			server_->close_session();
 	}

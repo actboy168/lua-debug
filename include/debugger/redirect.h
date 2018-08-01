@@ -2,6 +2,8 @@
 
 #if defined(_WIN32)
 
+#include <stddef.h>
+
 namespace vscode
 {
 	enum class std_fd {

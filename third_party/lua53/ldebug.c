@@ -703,6 +703,6 @@ const void* lua_getproto(lua_State *L, int idx) {
 	const LClosure *c;
 	if (!lua_isfunction(L, idx) || lua_iscfunction(L, idx))
 		return 0;
-	c = lua_topointer(L, idx);
+	c = (const LClosure *)lua_topointer(L, idx);
 	return c->p;
 }

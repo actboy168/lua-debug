@@ -16,6 +16,7 @@ namespace vscode { namespace io {
 		void update(int ms);
 		bool output(const char* buf, size_t len);
 		bool input(std::string& buf);
+		void clear();
 #if defined(_WIN32)
 #pragma warning(push)
 #pragma warning(disable:4251)

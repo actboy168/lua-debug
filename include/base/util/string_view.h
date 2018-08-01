@@ -1,6 +1,6 @@
 #pragma once
 
-#if _HAS_CXX17
+#if __cplusplus >= 201703L || _HAS_CXX17
 
 #include <string_view>
 

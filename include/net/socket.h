@@ -1,6 +1,6 @@
 #pragma once
 
-#if defined WIN32
+#if defined _WIN32
 #	include <winsock2.h>
 #	include <mswsock.h>
 #else
@@ -12,7 +12,7 @@
 #endif
 
 #define net_assert(x) do { assert(x); (x); } while (0)
-#if defined WIN32
+#if defined _WIN32
 #	define net_assert_success(x) net_assert((x) != SOCKET_ERROR)
 #else
 #	define net_assert_success(x) net_assert((x) == 0)
@@ -21,7 +21,7 @@
 #include <net/endpoint.h>
 
 namespace net { namespace socket {
-#if defined WIN32
+#if defined _WIN32
 	typedef SOCKET fd_t;
 	enum { retired_fd = (fd_t)INVALID_SOCKET };
 #else

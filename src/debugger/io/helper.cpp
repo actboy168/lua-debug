@@ -25,35 +25,51 @@ namespace vscode {
 
 	class file {
 	public:
-		file(const char* filename, std::ios_base::openmode mode) {
-#if defined(_WIN32)
-			file_.open(base::u2w(filename).c_str(), std::ios::binary | mode);
+		file(const char* filename) {
+#if defined(__MINGW32__)
+			file_ = _wfopen(base::u2w(filename).c_str(), L"rb");
+#elif defined(_WIN32)
+			file_.open(base::u2w(filename).c_str(), std::ios_base::binary | std::ios_base::in);
 #else
-			file_.open(filename, std::ios::binary | mode);
+			file_.open(filename, std::ios_base::binary | std::ios_base::in);
 #endif
 		}
 		~file() {
+#if defined(__MINGW32__)
+			fclose(file_);
+#else
 			file_.close();
+#endif
 		}
 		bool is_open() const {
 			return !!file_;
 		}
 		template <class SequenceT>
 		SequenceT read() {
+#if defined(__MINGW32__)
+			fseek (file_, 0, SEEK_END);
+			long length = ftell(file_);
+			fseek(file_, 0, SEEK_SET);
+			SequenceT tmp;
+			tmp.resize(length);
+			fread(tmp.data(), 1, length, file_);
+			return std::move(tmp);
+#else
 			return std::move(SequenceT((std::istreambuf_iterator<char>(file_)), (std::istreambuf_iterator<char>())));
-		}
-		template <class SequenceT>
-		void write(SequenceT buf) {
-			std::copy(buf.begin(), buf.end(), std::ostreambuf_iterator<char>(file_));
+#endif
 		}
 	private:
 		file();
+#if defined(__MINGW32__)
+		FILE* file_;
+#else
 		std::fstream file_;
+#endif
 	};
 
 	bool schema::open(const std::string& path)
 	{
-		file file(path.c_str(), std::ios_base::in);
+		file file(path.c_str());
 		if (!file.is_open()) {
 			return false;
 		}

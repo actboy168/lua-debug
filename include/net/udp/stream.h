@@ -34,7 +34,7 @@ namespace net { namespace udp {
 			std::unique_ptr<recvbuf_t> rbuff(new recvbuf_t);
 			memset(rbuff->data(), 0, sizeof(*rbuff));
 			endpoint remote;
-#if defined WIN32
+#if defined _WIN32
 			int len = (int)remote.addrlen();
 #else
 			socklen_t len = remote.addrlen();

@@ -22,7 +22,7 @@ namespace net { namespace log {
 			, size_(N-1)
 		{
 			static_assert(N > 0, "error: N == 0");
-#ifdef WIN32
+#if defined(_WIN32)
 			const char* slash = strrchr(data_, '\\');
 #else
 			const char* slash = strrchr(data_, '/');
@@ -37,7 +37,7 @@ namespace net { namespace log {
 		explicit source_file(const char* filename)
 			: data_(filename)
 		{
-#ifdef WIN32
+#if defined(_WIN32)
 			const char* slash = strrchr(data_, '\\');
 #else
 			const char* slash = strrchr(data_, '/');

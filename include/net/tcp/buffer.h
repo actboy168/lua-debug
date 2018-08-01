@@ -50,7 +50,9 @@ namespace net { namespace tcp {
 			, begin_pos(0)
 			, back_chunk(begin_chunk)
 			, back_pos(0)
-			, spare_chunk(nullptr)
+			, end_chunk(begin_chunk)
+			, end_pos(0)
+			, spare_chunk()
 		{
 			assert(begin_chunk);
 			do_push();
@@ -62,12 +64,13 @@ namespace net { namespace tcp {
 			alloc_type::deallocate(begin_chunk);
 			if (spare_chunk) {
 				alloc_type::deallocate(spare_chunk);
+				spare_chunk = nullptr;
 			}
 		}
 
 		void clear() {
 			for (;;) {
-				if (begin_chunk == back_chunk) {
+				if (begin_chunk == end_chunk) {
 					break;
 				}
 				chunk_type *o = begin_chunk;
@@ -118,20 +121,22 @@ namespace net { namespace tcp {
 		}
 
 		void do_push() {
-			if (++back_pos != N) {
+			back_chunk = end_chunk;
+			back_pos = end_pos;
+
+			if (++end_pos != N)
 				return;
-			}
 
 			if (spare_chunk) {
-				back_chunk->next = spare_chunk;
+				end_chunk->next = spare_chunk;
 				spare_chunk = nullptr;
 			}
 			else {
-				back_chunk->next = alloc_type::allocate();
-				assert(back_chunk->next);
+				end_chunk->next = alloc_type::allocate();
+				assert (end_chunk->next);
 			}
-			back_chunk = back_chunk->next;
-			back_pos = 0;
+			end_chunk = end_chunk->next;
+			end_pos = 0;
 		}
 
 		void do_pop() {
@@ -167,8 +172,15 @@ namespace net { namespace tcp {
 		}
 
 		void do_push(size_t n) {
-			assert(n > 0 && n <= N - back_pos);
-			back_pos += n - 1;
+			assert(n > 0);
+			if (end_pos + n > N) {
+				end_pos += n - 2;
+				do_push();
+				do_push();
+				return;
+			}
+			assert(n <= N - end_pos);
+			end_pos += n - 1;
 			do_push();
 		}
 
@@ -179,10 +191,12 @@ namespace net { namespace tcp {
 		}
 
 	protected:
-		chunk_type * begin_chunk;
+		chunk_type* begin_chunk;
 		size_t      begin_pos;
 		chunk_type* back_chunk;
 		size_t      back_pos;
+		chunk_type* end_chunk;
+		size_t      end_pos;
 		chunk_type* spare_chunk;
 
 	private:

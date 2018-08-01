@@ -19,6 +19,6 @@
 *.lib
 project/windows/bin/
 project/windows/obj/
-project/linux/bin/
-project/linux/obj/
+project/.xmake/
+project/build/
 publish/

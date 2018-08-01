@@ -3,7 +3,7 @@
 #include <stdint.h>
 #include <string>
 
-#if defined WIN32
+#if defined _WIN32
 #	include <winsock2.h>
 #else
 #	include <sys/socket.h>
@@ -56,7 +56,7 @@ namespace net {
 		std::string to_string() const
 		{
 			char result[32] = { 0 };
-#ifdef WIN32
+#if defined(_WIN32)
 			sprintf_s(result, sizeof(result) - 1, "%d.%d.%d.%d:%d"
 				, addr_.sin_addr.S_un.S_un_b.s_b1
 				, addr_.sin_addr.S_un.S_un_b.s_b2
@@ -75,7 +75,7 @@ namespace net {
 		std::string ip_to_string() const
 		{
 			char result[32] = { 0 };
-#ifdef WIN32
+#if defined(_WIN32)
 			sprintf_s(result, sizeof(result) - 1, "%d.%d.%d.%d"
 				, addr_.sin_addr.S_un.S_un_b.s_b1
 				, addr_.sin_addr.S_un.S_un_b.s_b2
