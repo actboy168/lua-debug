@@ -1,5 +1,5 @@
 local src = root .. "third_party/lua53/"
-target("lua53")
+target("lua53-dll")
     set_kind("shared")
     set_basename("lua53")
     if is_plat("windows") then
@@ -27,6 +27,6 @@ target("lua53-exe")
         add_cflags("-std=gnu99", "-Wall", "-Wextra", "-DLUA_USE_LINUX")
         add_links("dl", "readline")
     end
-    add_deps("lua53")
+    add_deps("lua53-dll")
     add_files(src .. "lua.c")
 target_end()

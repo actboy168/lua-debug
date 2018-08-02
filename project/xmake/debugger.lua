@@ -1,7 +1,7 @@
 local src = root .. "src/debugger/"
 target("debugger")
     set_kind("shared")
-    add_deps("lua53")
+    add_deps("lua53-dll")
     set_languages("cxx17")
     add_cxxflags("-DRAPIDJSON_HAS_STDSTRING")
     if is_plat("windows") then
@@ -26,6 +26,8 @@ target("debugger")
         add_cxxflags("-DDEBUGGER_EXPORTS", "-D_WIN32_WINNT=0x0600")
         add_ldflags("-s")
         add_links("ws2_32")
+    else
+        add_links("pthread")
     end
     add_includedirs(root .. "include/")
     add_includedirs(root .. "third_party/")
