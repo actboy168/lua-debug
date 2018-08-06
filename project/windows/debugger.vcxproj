@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\include\debugger\thunk\thunk.cpp" />
     <ClCompile Include="..\..\src\debugger\bridge\delayload.cpp" />
     <ClCompile Include="..\..\src\debugger\bridge\lua.cpp" />
     <ClCompile Include="..\..\src\debugger\bridge\luaopen.cpp" />
@@ -39,7 +40,6 @@
     <ClCompile Include="..\..\src\debugger\request.cpp" />
     <ClCompile Include="..\..\src\debugger\response.cpp" />
     <ClCompile Include="..\..\src\debugger\osthread.cpp" />
-    <ClCompile Include="..\..\src\debugger\thunk.cpp" />
     <ClCompile Include="..\..\src\debugger\debugger.cpp" />
     <ClCompile Include="..\..\src\debugger\io\socket.cpp" />
   </ItemGroup>
@@ -63,14 +63,21 @@
     <ClInclude Include="..\..\include\debugger\protocol.h" />
     <ClInclude Include="..\..\include\debugger\redirect.h" />
     <ClInclude Include="..\..\include\debugger\osthread.h" />
-    <ClInclude Include="..\..\include\debugger\thunk.h" />
     <ClInclude Include="..\..\include\debugger\debugger.h" />
     <ClInclude Include="..\..\include\debugger\io\socket.h" />
+    <ClInclude Include="..\..\include\debugger\thunk\thunk.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="lua53dll.vcxproj">
       <Project>{b84f7231-16ce-41d8-8c08-7b523ff4225b}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\include\debugger\thunk\thunk_linux_amd64.inl" />
+    <None Include="..\..\include\debugger\thunk\thunk_other.inl" />
+    <None Include="..\..\include\debugger\thunk\thunk_windows.inl" />
+    <None Include="..\..\include\debugger\thunk\thunk_windows_amd64.inl" />
+    <None Include="..\..\include\debugger\thunk\thunk_windows_i386.inl" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{9FD838AC-A5A2-4A24-8166-105BA0D8A973}</ProjectGuid>
