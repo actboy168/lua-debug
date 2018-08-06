@@ -55,7 +55,7 @@ namespace base { namespace win {
 		};
 		mutex m;
 
-		process_switch(int pid, const wchar_t* name, bool owner = false) : m(mutex_name(pid, name)) { if (owner) m.lock(); }
+		process_switch(int pid, const wchar_t* name, bool owner = true) : m(mutex_name(pid, name)) { if (owner) m.lock(); }
 		~process_switch() { m.unlock(); }
 		void unlock() {
 			m.unlock();
