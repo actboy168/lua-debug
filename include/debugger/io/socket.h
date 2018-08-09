@@ -9,6 +9,7 @@ namespace net {
 
 namespace vscode { namespace io {
 	class sock_server;
+	class sock_client;
 	class sock_session;
 
 	class DEBUGGER_API sock_stream
@@ -27,13 +28,13 @@ namespace vscode { namespace io {
 		sock_session* s;
 	};
 
-	class DEBUGGER_API socket
+	class DEBUGGER_API socket_s
 		: public sock_stream
 	{
 	public:
-		socket(const char* addr);
-		socket(const char* ip, uint16_t port);
-		virtual   ~socket();
+		socket_s(const char* addr);
+		socket_s(const char* ip, uint16_t port);
+		virtual   ~socket_s();
 		void      update(int ms);
 		void      close();
 		uint16_t  get_port() const;
@@ -41,5 +42,20 @@ namespace vscode { namespace io {
 	private:
 		net::poller_t* poller_;
 		sock_server*   server_;
+	};
+
+	class DEBUGGER_API socket_c
+		: public sock_stream
+	{
+	public:
+		socket_c(const char* addr);
+		socket_c(const char* ip, uint16_t port);
+		virtual   ~socket_c();
+		void      update(int ms);
+		void      close();
+
+	private:
+		net::poller_t* poller_;
+		sock_client*   client_;
 	};
 }}

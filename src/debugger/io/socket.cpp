@@ -17,6 +17,7 @@ namespace vscode { namespace io {
 	class sock_session;
 
 	typedef std::function<bool()> EventIn;
+	typedef std::function<void()> EventClose;
 
 	class sock_session
 		: public net::tcp::stream
@@ -25,7 +26,7 @@ namespace vscode { namespace io {
 		typedef net::tcp::stream base_type;
 
 	public:
-		sock_session(sock_server* server, EventIn event_in, net::poller_t* poll);
+		sock_session(EventClose event_close, EventIn event_in, net::poller_t* poll);
 		bool output(const char* buf, size_t len);
 		bool input(std::string& buf);
 
@@ -34,7 +35,7 @@ namespace vscode { namespace io {
 		bool event_in();
 
 	private:
-		sock_server* server_;
+		EventClose   event_close_;
 		EventIn      event_in_;
 	};
 
@@ -91,16 +92,16 @@ namespace vscode { namespace io {
 		return s == nullptr;
 	}
 
-	sock_session::sock_session(sock_server* server, EventIn event_in, net::poller_t* poll)
+	sock_session::sock_session(EventClose event_close, EventIn event_in, net::poller_t* poll)
 		: net::tcp::stream(poll)
-		, server_(server)
+		, event_close_(event_close)
 		, event_in_(event_in)
 	{ }
 
 	void sock_session::event_close()
 	{
 		base_type::event_close();
-		server_->close_session();
+		event_close_();
 	}
 
 	bool sock_session::event_in()
@@ -155,7 +156,7 @@ namespace vscode { namespace io {
 			net::socket::close(fd);
 			return;
 		}
-		session_.reset(new sock_session(this, std::bind(&sock_server::stream_update, this), get_poller()));
+		session_.reset(new sock_session([this]() { close_session(); }, std::bind(&sock_server::stream_update, this), get_poller()));
 		session_->attach(fd, ep);
 		stream_.open(session_.get());
 	}
@@ -196,7 +197,7 @@ namespace vscode { namespace io {
 		return !stream_.is_closed();
 	}
 
-	socket::socket(const char* addr)
+	socket_s::socket_s(const char* addr)
 		: sock_stream()
 		, poller_(new net::poller_t)
 		, server_(new sock_server(poller_, *this, net::endpoint(addr)))
@@ -204,7 +205,7 @@ namespace vscode { namespace io {
 		server_->listen();
 	}
 
-	socket::socket(const char* ip, uint16_t port)
+	socket_s::socket_s(const char* ip, uint16_t port)
 		: sock_stream()
 		, poller_(new net::poller_t)
 		, server_(new sock_server(poller_, *this, net::endpoint(ip, port)))
@@ -212,29 +213,98 @@ namespace vscode { namespace io {
 		server_->listen();
 	}
 
-	socket::~socket()
+	socket_s::~socket_s()
 	{
 		delete server_;
 		delete poller_;
 	}
 
-	void socket::update(int ms)
+	void socket_s::update(int ms)
 	{
 		server_->update();
 		poller_->wait(1000, ms);
 	}
 
-	void socket::close()
+	void socket_s::close()
 	{
 		sock_stream::close();
 		if (server_)
 			server_->close_session();
 	}
 
-	uint16_t socket::get_port() const
+	uint16_t socket_s::get_port() const
 	{
 		if (server_)
 			return server_->get_port();
 		return 0;
+	}
+
+	class sock_client
+		: public net::tcp::connecter_t<net::poller_t>
+	{
+	public:
+		friend class sock_session;
+		typedef net::tcp::connecter_t<net::poller_t> base_type;
+
+	public:
+		sock_client(net::poller_t* poll, sock_stream& stream, const net::endpoint& ep);
+
+	private:
+		void event_connect(net::socket::fd_t fd, const net::endpoint& ep);
+		bool stream_update();
+
+	private:
+		net::endpoint endpoint_;
+		sock_stream&  stream_;
+	};
+
+	sock_client::sock_client(net::poller_t* poll, sock_stream& stream, const net::endpoint& ep)
+		: base_type(poll)
+		, endpoint_(ep)
+		, stream_(stream)
+	{
+		net::socket::initialize();
+		connect(endpoint_, std::bind(&sock_client::event_connect, this, std::placeholders::_1, std::placeholders::_2));
+	}
+
+	void sock_client::event_connect(net::socket::fd_t fd, const net::endpoint& ep)
+	{
+		stream_.open(new sock_session([this]() { }, std::bind(&sock_client::stream_update, this), get_poller()));
+	}
+
+	bool sock_client::stream_update()
+	{
+		stream_.sock_stream::update(10);
+		return !stream_.is_closed();
+	}
+
+	socket_c::socket_c(const char* addr)
+		: sock_stream()
+		, poller_(new net::poller_t)
+		, client_(new sock_client(poller_, *this, net::endpoint(addr)))
+	{
+	}
+
+	socket_c::socket_c(const char* ip, uint16_t port)
+		: sock_stream()
+		, poller_(new net::poller_t)
+		, client_(new sock_client(poller_, *this, net::endpoint(ip, port)))
+	{
+	}
+
+	socket_c::~socket_c()
+	{
+		delete client_;
+		delete poller_;
+	}
+
+	void socket_c::update(int ms)
+	{
+		poller_->wait(1000, ms);
+	}
+
+	void socket_c::close()
+	{
+		sock_stream::close();
 	}
 }}

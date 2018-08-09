@@ -12,7 +12,8 @@
 
 namespace luaw {
 	struct ud {
-		std::unique_ptr<vscode::io::socket> socket;
+		std::unique_ptr<vscode::io::socket_s> socket_s;
+		std::unique_ptr<vscode::io::socket_c> socket_c;
 		std::unique_ptr<vscode::io::namedpipe> namedpipe;
 		std::unique_ptr<vscode::debugger> dbg;
 		bool guard = false;
@@ -20,8 +21,15 @@ namespace luaw {
 		void listen_tcp(const char* addr)
 		{
 			if (namedpipe || dbg) return;
-			socket.reset(new vscode::io::socket(addr));
-			dbg.reset(new vscode::debugger(socket.get()));
+			socket_s.reset(new vscode::io::socket_s(addr));
+			dbg.reset(new vscode::debugger(socket_s.get()));
+		}
+
+		void connect_tcp(const char* addr)
+		{
+			if (namedpipe || dbg) return;
+			socket_c.reset(new vscode::io::socket_c(addr));
+			dbg.reset(new vscode::debugger(socket_c.get()));
 		}
 
 #if defined(_WIN32)
@@ -58,6 +66,40 @@ dbg.reset(new vscode::debugger(namedpipe.get()));
 		const char* addr = luaL_checkstring(L, 2);
 		if (strncmp(addr, "tcp:", 4) == 0) {
 			self.listen_tcp(addr + 4);
+			if (self.dbg) {
+				self.dbg->attach_lua(L);
+			}
+		}
+#if defined(_WIN32)
+		else if (strncmp(addr, "pipe:", 5) == 0) {
+			self.listen_pipe(addr + 5);
+			if (self.dbg) {
+				self.dbg->attach_lua(L);
+			}
+		}
+#endif
+		else {
+			self.listen_tcp(addr);
+			if (self.dbg) {
+				self.dbg->attach_lua(L);
+			}
+		}
+		lua_pushvalue(L, 1);
+		return 1;
+	}
+
+	static int io(lua_State* L)
+	{
+		ud& self = to(L, 1);
+		const char* addr = luaL_checkstring(L, 2);
+		if (strncmp(addr, "listen:", 7) == 0) {
+			self.listen_tcp(addr + 7);
+			if (self.dbg) {
+				self.dbg->attach_lua(L);
+			}
+		}
+		else if (strncmp(addr, "connect:", 8) == 0) {
+			self.connect_tcp(addr + 8);
 			if (self.dbg) {
 				self.dbg->attach_lua(L);
 			}
@@ -163,7 +205,8 @@ dbg.reset(new vscode::debugger(namedpipe.get()));
 		}
 		if (self.guard) {
 			self.dbg.reset();
-			self.socket.reset();
+			self.socket_s.reset();
+			self.socket_c.reset();
 			self.namedpipe.reset();
 		}
 		return 0;
@@ -172,6 +215,7 @@ dbg.reset(new vscode::debugger(namedpipe.get()));
 	int open(lua_State* L)
 	{
 		luaL_Reg mt[] = {
+			{ "io", io },
 			{ "listen", listen },
 			{ "start", start },
 			{ "config", config },
