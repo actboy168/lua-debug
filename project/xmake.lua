@@ -5,6 +5,7 @@ set_objectdir("$(buildir)/.objs/$(plat)/")
 if is_mode("release") then
     if is_plat("windows") then
         add_cxxflags("-O2")
+        add_cflags("-O2")
     else
         set_optimize("faster")
     end
