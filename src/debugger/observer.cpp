@@ -887,6 +887,7 @@ finish:
 			}
 			lua_pop(L, 1);
 		}
+		lua_pop(L, 1);
 
 		for (auto& var : vars)
 		{
