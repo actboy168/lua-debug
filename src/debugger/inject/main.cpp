@@ -11,6 +11,8 @@
 #include <debugger/io/namedpipe.h>
 #include <lua.hpp>
 
+std::unique_ptr<vscode::debugger> Debugger;
+
 struct DebuggerConfig {
 	static DebuggerConfig& Get() {
 		static DebuggerConfig s_instance;
@@ -21,6 +23,7 @@ struct DebuggerConfig {
 	fs::path binPath;
 	std::wstring pipeName;
 	bool isAttachProcess = false;
+	std::unique_ptr<vscode::io::namedpipe> io;
 
 	DebuggerConfig() {
 		binPath = base::path::self().parent_path();
@@ -32,44 +35,43 @@ struct DebuggerConfig {
 		isAttachProcess = base::win::process_switch::has(pid, L"attachprocess");
 		return true;
 	}
-};
 
-struct DebuggerWatcher {
-	static DebuggerWatcher& Get() {
-		static DebuggerWatcher s_instance;
-		return s_instance;
-	}
-
-	std::unique_ptr<vscode::io::namedpipe> io;
-	std::unique_ptr<vscode::debugger>      dbg;
-
-	DebuggerWatcher() {
-		auto& config = DebuggerConfig::Get();
+	bool createDebugger() {
 		if (!GetModuleHandleW(L"debugger.dll")) {
-			if (!LoadLibraryW((config.binPath / L"debugger.dll").c_str())) {
-				return;
+			if (!LoadLibraryW((binPath / L"debugger.dll").c_str())) {
+				return false;
 			}
 		}
-		debugger_set_luadll(config.luaDll, ::GetProcAddress);
+		debugger_set_luadll(luaDll, ::GetProcAddress);
 		io.reset(new vscode::io::namedpipe());
-		if (!io->open_server(config.pipeName)) {
-			return;
+		if (!io->open_server(pipeName)) {
+			return false;
 		}
-		dbg.reset(new vscode::debugger(io.get()));
+		Debugger.reset(new vscode::debugger(io.get()));
 		if (!DebuggerConfig::Get().isAttachProcess) {
-			dbg->terminate_on_disconnect();
+			Debugger->terminate_on_disconnect();
 		}
-		dbg->wait_client();
-		dbg->open_redirect(vscode::eRedirect::stdoutput);
-		dbg->open_redirect(vscode::eRedirect::stderror);
-	}
-	void attach(lua_State* L) {
-		if (dbg && L) dbg->attach_lua(L);
-	}
-	void detach(lua_State* L) {
-		if (dbg && L) dbg->detach_lua(L, true);
+		Debugger->wait_client();
+		Debugger->open_redirect(vscode::eRedirect::stdoutput);
+		Debugger->open_redirect(vscode::eRedirect::stderror);
+		return true;
 	}
 };
+
+void DebuggerAttach(lua_State* L) {
+	if (!L) return;
+	if (!Debugger) {
+		if (!DebuggerConfig::Get().createDebugger()) {
+			return;
+		}
+	}
+	Debugger->attach_lua(L);
+}
+
+void DebuggerDetach(lua_State* L) {
+	if (!L) return;
+	if (Debugger) Debugger->detach_lua(L, true);
+}
 
 static HMODULE EnumerateModulesInProcess(HANDLE hProcess, HMODULE hModuleLast, PIMAGE_NT_HEADERS32 pNtHeader)
 {
@@ -121,28 +123,28 @@ namespace lua {
 		static lua_State* __cdecl lua_newstate(void* f, void* ud)
 		{
 			lua_State* L = base::c_call<lua_State*>(real::lua_newstate, f, ud);
-			DebuggerWatcher::Get().attach(L);
+			DebuggerAttach(L);
 			return L;
 		}
 		static lua_State* __cdecl luaL_newstate()
 		{
 			lua_State* L = base::c_call<lua_State*>(real::luaL_newstate);
-			DebuggerWatcher::Get().attach(L);
+			DebuggerAttach(L);
 			return L;
 		}
 		static int __cdecl lua_pcallk(lua_State *L, int nargs, int nresults, int errfunc, lua_KContext ctx, lua_KFunction k)
 		{
-			DebuggerWatcher::Get().attach(L);
+			DebuggerAttach(L);
 			return base::c_call<int>(real::lua_pcallk, L, nargs, nresults, errfunc, ctx, k);
 		}
 		static void __cdecl lua_callk(lua_State *L, int nargs, int nresults, lua_KContext ctx, lua_KFunction k)
 		{
-			DebuggerWatcher::Get().attach(L);
+			DebuggerAttach(L);
 			return base::c_call<void>(real::lua_callk, L, nargs, nresults, ctx, k);
 		}
 		static void __cdecl lua_close(lua_State* L)
 		{
-			DebuggerWatcher::Get().detach(L);
+			DebuggerDetach(L);
 			Sleep(1000);
 			return base::c_call<void>(real::lua_close, L);
 		}
