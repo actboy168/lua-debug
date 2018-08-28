@@ -436,7 +436,15 @@ namespace vscode
 		return false;
 	}
 
-	std::string lua_tostr(lua_State* L, int idx);
+	std::string safe_tostr(lua_State* L, int idx)
+	{
+		if (lua_type(L, idx) == LUA_TSTRING) {
+			size_t len = 0;
+			const char* str = lua_tolstring(L, idx, &len);
+			return std::string(str, len);
+		}
+		return std::string(lua_typename(L, lua_type(L, idx)));
+	}
 
 	bool debugger_impl::request_exception_info(rprotocol& req, lua_State *L, lua::Debug *ar)
 	{
@@ -444,9 +452,9 @@ namespace vscode
 		response_success(req, [&](wprotocol& res)
 		{
 			res("breakMode").String("always");
-			std::string exceptionId = lua_tostr(L, -2);
+			std::string exceptionId = safe_tostr(L, -2);
 			luaL_traceback(L, L, 0, (int)lua_tointeger(L, -1));
-			std::string stackTrace = lua_tostring(L, -1);
+			std::string stackTrace = safe_tostr(L, -1);
 			lua_pop(L, 1);
 
 			exceptionId = path_exception(exceptionId);
