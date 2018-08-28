@@ -9,6 +9,7 @@
       <Filter>base\path</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\debugger\io\namedpipe.cpp" />
+    <ClCompile Include="..\..\src\debugger\inject\autoattach.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="base">
@@ -34,5 +35,6 @@
     <ClInclude Include="..\..\include\base\hook\fp_call.h">
       <Filter>base\hook</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\debugger\inject\autoattach.h" />
   </ItemGroup>
 </Project>

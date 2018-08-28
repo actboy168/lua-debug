@@ -29,6 +29,7 @@
   <ItemGroup>
     <ClCompile Include="..\..\include\base\hook\inline.cpp" />
     <ClCompile Include="..\..\include\base\path\get_path.cpp" />
+    <ClCompile Include="..\..\src\debugger\inject\autoattach.cpp" />
     <ClCompile Include="..\..\src\debugger\inject\main.cpp" />
     <ClCompile Include="..\..\src\debugger\io\namedpipe.cpp" />
   </ItemGroup>
@@ -37,6 +38,7 @@
     <ClInclude Include="..\..\include\base\hook\inline.h" />
     <ClInclude Include="..\..\include\base\path\get_path.h" />
     <ClInclude Include="..\..\include\base\path\self.h" />
+    <ClInclude Include="..\..\include\debugger\inject\autoattach.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{20F15A76-D908-475B-A904-6ACD1763D5FB}</ProjectGuid>
