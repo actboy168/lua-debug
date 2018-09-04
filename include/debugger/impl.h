@@ -89,7 +89,8 @@ namespace vscode
 		bool request_continue(rprotocol& req, lua_State *L, lua::Debug *ar);
 		bool request_evaluate(rprotocol& req, lua_State *L, lua::Debug *ar);
 		bool request_exception_info(rprotocol& req, lua_State *L, lua::Debug *ar);
-
+		bool request_loaded_sources(rprotocol& req, lua_State *L, lua::Debug *ar);
+		
 	private:
 		void event_stopped(luathread* thread, const char *msg);
 		void event_terminated();
@@ -99,6 +100,7 @@ namespace vscode
 	public:
 		void event_thread(luathread* thread, bool started);
 		void event_breakpoint(const char* reason, bp_source* src, bp_breakpoint* bp);
+		void event_loadedsource(const char* reason, bp_source* src);
 
 	public:
 		void response_error(rprotocol& req, const char *msg);

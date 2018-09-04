@@ -555,6 +555,8 @@ namespace vscode
 			{ "threads", DBG_REQUEST_HOOK(request_threads) },
 			{ "evaluate", DBG_REQUEST_HOOK(request_evaluate) },
 			{ "exceptionInfo", DBG_REQUEST_HOOK(request_exception_info) },
+			{ "loadedSources", DBG_REQUEST_HOOK(request_loaded_sources) },
+			
 		})
 	{
 		config_.init(2, R"({

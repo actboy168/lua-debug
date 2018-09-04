@@ -181,6 +181,23 @@ namespace vscode
 		io_output(res);
 	}
 
+	void debugger_impl::event_loadedsource(const char* reason, bp_source* src)
+	{
+		wprotocol res;
+		for (auto _ : res.Object())
+		{
+			res("type").String("event");
+			res("seq").Int64(seq++);
+			res("event").String("loadedSource");
+			for (auto _ : res("body").Object())
+			{
+				res("reason").String(reason);
+				src->src.output(res);
+			}
+		}
+		io_output(res);
+	}
+
 	void debugger_impl::response_error(rprotocol& req, const char *msg)
 	{
 		wprotocol res;

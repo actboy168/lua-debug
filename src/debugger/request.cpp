@@ -468,4 +468,13 @@ namespace vscode
 		});
 		return false;
 	}
+
+	bool debugger_impl::request_loaded_sources(rprotocol& req, lua_State *L, lua::Debug *ar)
+	{
+		response_success(req, [&](wprotocol& res)
+		{
+			breakpoints_.loaded_sources(res);
+		});
+		return false;
+	}
 }

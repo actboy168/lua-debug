@@ -56,14 +56,20 @@ namespace vscode
 		std::deque<eLine>               defined;
 		std::vector<bp_breakpoint>      waitverfy;
 		std::map<size_t, bp_breakpoint> verified;
+		debugger_impl&                  dbg;
 
-		bp_source(source& s);
-		void update(lua_State* L, lua::Debug* ar, debugger_impl& dbg);
+		bp_source(debugger_impl& dbg, source& s);
+		bp_source(bp_source&& s);
+		~bp_source();
+		void update(lua_State* L, lua::Debug* ar);
 
 		bp_breakpoint& add(size_t line, rapidjson::Value const& bpinfo, size_t& next_id);
 		bp_breakpoint* get(size_t line);
 		void clear(rapidjson::Value const& args);
 		bool has_breakpoint();
+
+		bp_source(bp_source&) = delete;
+		bp_source& operator=(bp_source&) = delete;
 	};
 
 	struct bp_function {
@@ -78,9 +84,10 @@ namespace vscode
 		void clear();
 		bool has(bp_source* src, size_t line, lua_State* L, lua::Debug* ar) const;
 		bp_function* get_function(lua_State* L, lua::Debug* ar);
-		bp_source&   get_source(source& source);
+		bp_source&   get_source(debugger_impl& dbg, source& source);
 		void set_breakpoint(source& s, rapidjson::Value const& args, wprotocol& res);
-
+		void loaded_sources(wprotocol& res);
+		
 	private:
 		debugger_impl& dbg_;
 		std::map<std::string, bp_source, path::less<std::string>> files_;

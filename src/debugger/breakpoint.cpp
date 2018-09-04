@@ -193,11 +193,29 @@ namespace vscode
 		return true;
 	}
 
-	bp_source::bp_source(source& s)
-		: src(s)
-	{ }
+	bp_source::bp_source(debugger_impl& dbg_, source& s)
+		: dbg(dbg_)
+		, src(s)
+	{
+		dbg.event_loadedsource("new", this);
+	}
 
-	void bp_source::update(lua_State* L, lua::Debug* ar, debugger_impl& dbg)
+	bp_source::bp_source(bp_source&& s)
+		: dbg(s.dbg)
+		, src(std::move(s.src))
+		, defined(std::move(s.defined))
+		, waitverfy(std::move(s.waitverfy))
+		, verified(std::move(s.verified))
+	{
+		s.src.valid = false;
+	}
+
+	bp_source::~bp_source()
+	{
+		dbg.event_loadedsource("removed", this);
+	}
+
+	void bp_source::update(lua_State* L, lua::Debug* ar)
 	{
 		if (ar->what[0] == 'L') {
 			while (defined.size() <= (size_t)ar->lastlinedefined) {
@@ -304,8 +322,8 @@ namespace vscode
 		}
 		source s(ar, dbg);
 		if (s.valid) {
-			src = &breakpoint->get_source(s);
-			src->update(L, ar, dbg);
+			src = &breakpoint->get_source(dbg, s);
+			src->update(L, ar);
 		}
 		lua_pop(L, 1);
 	}
@@ -331,21 +349,21 @@ namespace vscode
 		return bp->run(L, ar, dbg_);
 	}
 
-	bp_source& breakpoint::get_source(source& source)
+	bp_source& breakpoint::get_source(debugger_impl& dbg, source& source)
 	{
 		if (source.ref) {
 			auto it = memorys_.find(source.ref);
 			if (it != memorys_.end()) {
 				return it->second;
 			}
-			return memorys_.insert(std::make_pair(source.ref, bp_source(source))).first->second;
+			return memorys_.insert(std::make_pair(source.ref, bp_source(dbg, source))).first->second;
 		}
 		else {
 			auto it = files_.find(source.path);
 			if (it != files_.end()) {
 				return it->second;
 			}
-			return files_.insert(std::make_pair(source.path, bp_source(source))).first->second;
+			return files_.insert(std::make_pair(source.path, bp_source(dbg, source))).first->second;
 		}
 	}
 
@@ -366,7 +384,7 @@ namespace vscode
 
 	void breakpoint::set_breakpoint(source& s, rapidjson::Value const& args, wprotocol& res)
 	{
-		bp_source& src = get_source(s);
+		bp_source& src = get_source(dbg_, s);
 		src.clear(args);
 		for (auto _ : res("breakpoints").Array())
 		{
@@ -378,6 +396,18 @@ namespace vscode
 				{
 					bp.output(res);
 				}
+			}
+		}
+	}
+
+	void breakpoint::loaded_sources(wprotocol& res)
+	{
+		for (auto _ : res("sources").Array()) {
+			for (auto& fp : files_) {
+				fp.second.src.output(res);
+			}
+			for (auto& mp : memorys_) {
+				mp.second.src.output(res);
 			}
 		}
 	}
