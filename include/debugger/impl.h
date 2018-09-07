@@ -43,7 +43,7 @@ namespace vscode
 		void hook(luathread* thread, lua_State* L, lua::Debug* ar);
 		void exception(lua_State* L, eException exceptionType, int level);
 		void exception_nolock(luathread* thread, lua_State* L, eException exceptionType, int level);
-		void run_stopped(luathread* thread, lua_State* L, lua::Debug* ar, const char* reason);
+		void run_stopped(luathread* thread, lua_State* L, lua::Debug* ar, const char* reason, const char* description = nullptr);
 		void run_idle();
 		void update();
 		void wait_client();
@@ -92,7 +92,7 @@ namespace vscode
 		bool request_loaded_sources(rprotocol& req, lua_State *L, lua::Debug *ar);
 		
 	private:
-		void event_stopped(luathread* thread, const char *msg);
+		void event_stopped(luathread* thread, const char *msg, const char* description);
 		void event_terminated();
 		void event_initialized();
 		void event_capabilities();

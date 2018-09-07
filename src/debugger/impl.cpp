@@ -278,14 +278,19 @@ namespace vscode
 		if (lua_getstack(L, 0, (lua_Debug*)&ar))
 		{
 			lua_pushinteger(L, level);
-			run_stopped(thread, L, &ar, "exception");
+			if (lua_type(L, -2) == LUA_TSTRING) {
+				run_stopped(thread, L, &ar, "exception", lua_tostring(L, -2));
+			}
+			else {
+				run_stopped(thread, L, &ar, "exception");
+			}
 			lua_pop(L, 1);
 		}
 	}
 
-	void debugger_impl::run_stopped(luathread* thread, lua_State *L, lua::Debug *ar, const char* reason)
+	void debugger_impl::run_stopped(luathread* thread, lua_State *L, lua::Debug *ar, const char* reason, const char* description)
 	{
-		event_stopped(thread, reason);
+		event_stopped(thread, reason, description);
 		set_state(eState::stepping);
 		thread->step_in();
 

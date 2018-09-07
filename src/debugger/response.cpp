@@ -76,7 +76,7 @@ namespace vscode
 		io_output(res);
 	}
 
-	void debugger_impl::event_stopped(luathread* thread, const char *msg)
+	void debugger_impl::event_stopped(luathread* thread, const char *msg, const char* description)
 	{
 		wprotocol res;
 		for (auto _ : res.Object())
@@ -88,6 +88,9 @@ namespace vscode
 			{
 				res("reason").String(msg);
 				res("threadId").Int(thread->id);
+				if (description) {
+					res("text").String(description);
+				}
 			}
 		}
 		io_output(res);
