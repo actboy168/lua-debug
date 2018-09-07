@@ -267,6 +267,21 @@ namespace vscode
 		}
 	}
 
+	static bool hasFrame(lua_State* L)
+	{
+		int depth = 0;
+		lua::Debug entry;
+		while (lua_getstack(L, depth, (lua_Debug*)&entry)) {
+			int status = lua_getinfo(L, "S", (lua_Debug*)&entry);
+			assert(status);
+			if (*entry.what != 'C') {
+				return true;
+			}
+			depth++;
+		}
+		return false;
+	}
+
 	void debugger_impl::exception_nolock(luathread* thread, lua_State* L, eException exceptionType, int level)
 	{
 		if (exception_.find(exceptionType) == exception_.end())
@@ -278,7 +293,7 @@ namespace vscode
 		if (lua_getstack(L, 0, (lua_Debug*)&ar))
 		{
 			lua_pushinteger(L, level);
-			if (lua_type(L, -2) == LUA_TSTRING) {
+			if (!hasFrame(L) && lua_type(L, -2) == LUA_TSTRING) {
 				run_stopped(thread, L, &ar, "exception", lua_tostring(L, -2));
 			}
 			else {
