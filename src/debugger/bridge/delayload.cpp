@@ -72,8 +72,8 @@ namespace delayload
 					return (FARPROC)lua::lua54::lua_newuserdata;
 				}
 			}
-			else if (strcmp(pdli->dlp.szProcName, "lua_getproto") == 0) {
-				return (FARPROC)lua::lua_getproto;
+			else if (strcmp(pdli->dlp.szProcName, "lua_getprotohash") == 0) {
+				return (FARPROC)lua::lua_getprotohash;
 			}
 			char str[256];
 			sprintf(str, "Can't find lua c function: `%s`.", pdli->dlp.szProcName);

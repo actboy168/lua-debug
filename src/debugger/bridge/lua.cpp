@@ -17,11 +17,11 @@ namespace lua {
 		}
 	}
 
-	const void* lua_getproto(lua_State *L, int idx) {
+	lua_Integer lua_getprotohash(lua_State *L, int idx) {
 		if (!lua_isfunction(L, idx) || lua_iscfunction(L, idx))
 			return 0;
 		const LClosure *c = (const LClosure *)lua_topointer(L, idx);
-		return c->p;
+		return c->p ? (lua_Integer)c->p ^ (lua_Integer)c->p->code : 0;
 	}
 
 namespace lua54 {

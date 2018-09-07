@@ -372,7 +372,7 @@ namespace vscode
 		if (!lua_getinfo(L, "f", (lua_Debug*)ar)) {
 			return nullptr;
 		}
-		intptr_t f = (intptr_t)lua_getproto(L, -1);
+		intptr_t f = (intptr_t)lua_getprotohash(L, -1);
 		lua_pop(L, 1);
 		auto func = functions_.get(f);
 		if (!func) {
