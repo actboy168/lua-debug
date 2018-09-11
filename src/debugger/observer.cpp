@@ -1295,15 +1295,16 @@ finish:
 		int nresult = 0;
 		if (!vscode::evaluate(L, ar, ("return " + expression).c_str(), nresult, context == "repl"))
 		{
+			std::string errmsg = lua_tostr(L, -1);
 			if (context != "repl")
 			{
-				dbg.response_error(req, lua_tostr(L, -1).c_str());
+				dbg.response_error(req, errmsg.c_str());
 				lua_pop(L, 1);
 				return;
 			}
 			if (!vscode::evaluate(L, ar, expression.c_str(), nresult, true))
 			{
-				dbg.response_error(req, lua_tostr(L, -1).c_str());
+				dbg.response_error(req, errmsg.c_str());
 				lua_pop(L, 1);
 				return;
 			}
