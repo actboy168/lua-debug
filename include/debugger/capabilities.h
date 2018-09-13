@@ -15,6 +15,7 @@ namespace vscode
 		res("supportsLogPoints").Bool(true);
 		res("supportsEvaluateForHovers").Bool(true);
 		res("supportsLoadedSourcesRequest").Bool(true);
+		res("supportsTerminateRequest").Bool(true);
 		for (auto _ : res("exceptionBreakpointFilters").Array())
 		{
 			for (auto _ : res.Object())

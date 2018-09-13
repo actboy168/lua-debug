@@ -556,6 +556,7 @@ namespace vscode
 			{ "launch", DBG_REQUEST_MAIN(request_attach) },
 			{ "attach", DBG_REQUEST_MAIN(request_attach) },
 			{ "configurationDone", DBG_REQUEST_MAIN(request_configuration_done) },
+			{ "terminate", DBG_REQUEST_MAIN(request_terminate) },
 			{ "disconnect", DBG_REQUEST_MAIN(request_disconnect) },
 			{ "setBreakpoints", DBG_REQUEST_MAIN(request_set_breakpoints) },
 			{ "setExceptionBreakpoints", DBG_REQUEST_MAIN(request_set_exception_breakpoints) },
@@ -576,7 +577,6 @@ namespace vscode
 			{ "evaluate", DBG_REQUEST_HOOK(request_evaluate) },
 			{ "exceptionInfo", DBG_REQUEST_HOOK(request_exception_info) },
 			{ "loadedSources", DBG_REQUEST_HOOK(request_loaded_sources) },
-			
 		})
 	{
 		config_.init(2, R"({

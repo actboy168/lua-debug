@@ -7,6 +7,8 @@
 
 namespace vscode
 {
+	void closeprocess();
+
 	void debugger_impl::close()
 	{
 		if (is_state(eState::terminated) || is_state(eState::birth)) {
@@ -319,6 +321,13 @@ namespace vscode
 		}
 		thread->set_variable(L, *this, req, valueId, frameId);
 		return false;
+	}
+
+	bool debugger_impl::request_terminate(rprotocol& req)
+	{
+		response_success(req);
+		closeprocess();
+		return true;
 	}
 
 	bool debugger_impl::request_disconnect(rprotocol& req)

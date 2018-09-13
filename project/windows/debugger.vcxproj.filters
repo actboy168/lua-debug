@@ -93,6 +93,9 @@
     <ClCompile Include="..\..\include\debugger\thunk\thunk.cpp">
       <Filter>inc\thunk</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\debugger\closeprocess.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\debugger\debugger.h">

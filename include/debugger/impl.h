@@ -72,6 +72,7 @@ namespace vscode
 		bool request_attach(rprotocol& req);
 		bool request_attach_done(rprotocol& req);
 		bool request_configuration_done(rprotocol& req);
+		bool request_terminate(rprotocol& req);
 		bool request_disconnect(rprotocol& req);
 		bool request_pause(rprotocol& req);
 		bool request_set_exception_breakpoints(rprotocol& req);

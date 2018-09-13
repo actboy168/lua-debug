@@ -24,6 +24,7 @@
     <ClCompile Include="..\..\src\debugger\bridge\lua.cpp" />
     <ClCompile Include="..\..\src\debugger\bridge\luaopen.cpp" />
     <ClCompile Include="..\..\src\debugger\breakpoint.cpp" />
+    <ClCompile Include="..\..\src\debugger\closeprocess.cpp" />
     <ClCompile Include="..\..\src\debugger\config.cpp" />
     <ClCompile Include="..\..\src\debugger\evaluate.cpp" />
     <ClCompile Include="..\..\src\debugger\i18n.cpp" />
