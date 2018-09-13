@@ -148,7 +148,7 @@ static std::vector<int> get_process_name(const std::string& name)
 		std::wstring pname(info->ImageName.Buffer, info->ImageName.Length / sizeof(wchar_t));
 		std::transform(pname.begin(), pname.end(), pname.begin(), ::tolower);
 		if (pname == wname) {
-			res.push_back((int)info->ProcessId);
+			res.push_back((int)(intptr_t)info->ProcessId);
 		}
 		return false;
 	});
