@@ -245,6 +245,21 @@
                                     "type": "string"
                                 },
                                 "default": []
+                            },
+                            "outputCapture": {
+                                "type": "array",
+                                "items": {
+                                    "enum": [
+                                        "console",
+                                        "stdout",
+                                        "stderr"
+                                    ]
+                                },
+                                "description": "%node.launch.outputCapture.description%",
+                                "default": [
+                                    "console",
+                                    "stdout"
+                                ]
                             }
                         }
                     },

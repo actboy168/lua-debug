@@ -85,7 +85,7 @@ bool create_terminal_with_debugger(stdinput& io, vscode::rprotocol& req, const s
 		for (auto _ : res("args").Array()) {
 			res.String(luaexe);
 
-			std::string script = create_install_script(req, dbgPath, port, true);
+			std::string script = create_install_script(req, dbgPath, port);
 			res.String("-e");
 			res.String(script);
 

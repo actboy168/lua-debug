@@ -33,6 +33,12 @@ class LuaConfigurationProvider {
         if (typeof config.sourceCoding != 'string') {
             config.sourceCoding = 'ansi'
         }
+        if (typeof config.outputCapture != 'object') {
+            config.outputCapture = [
+                "console",
+                "stdout"
+            ]
+        }
         if (config.request == 'launch') {
             if (!config.program && !config.runtimeExecutable) {
                 return vscode.window.showInformationMessage('Cannot find a program to debug').then(_ => {

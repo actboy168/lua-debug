@@ -22,7 +22,7 @@ std::wstring cmd_string(const std::wstring& str) {
 	}
 }
 
-std::string create_install_script(vscode::rprotocol& req, const fs::path& dbg_path, const std::wstring& port, bool redirect)
+std::string create_install_script(vscode::rprotocol& req, const fs::path& dbg_path, const std::wstring& port)
 {
 	auto& args = req["arguments"];
 	bool isUtf8 = false;
@@ -41,10 +41,15 @@ std::string create_install_script(vscode::rprotocol& req, const fs::path& dbg_pa
 		, isUtf8 ? base::w2u((dbg_path / L"debugger.dll").wstring()) : base::w2a((dbg_path / L"debugger.dll").wstring())
 		, base::w2u(port)
 	);
-	if (redirect) {
-		res += ":redirect('print')";
-		res += ":redirect('stdout')";
-		res += ":redirect('stderr')";
+	if (args.HasMember("outputCapture") && args["outputCapture"].IsArray()) {
+		for (auto& v : args["outputCapture"].GetArray()) {
+			if (v.IsString()) {
+				std::string item = v.Get<std::string>();
+				if (item == "print" || item == "stdout" || item == "stderr") {
+					res += ":redirect('" + item + "')";
+				}
+			}
+		}
 	}
 	res += ":start()";
 	return res;
@@ -145,7 +150,7 @@ bool create_luaexe_with_debugger(stdinput& io, vscode::rprotocol& req, const std
 	else {
 		wcwd = fs::path(luaexe).remove_filename();
 	}
-	std::string script = create_install_script(req, dbgPath, port, true);
+	std::string script = create_install_script(req, dbgPath, port);
 
 	wcommand += base::format(LR"( -e "%s")", base::u2w(script));
 	if (args.HasMember("arg0")) {
