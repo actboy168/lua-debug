@@ -21,7 +21,7 @@ local function copy_directory(from, to, filter)
             copy_directory(fromfile, to / fromfile:filename(), filter)
         else
             if (not filter) or filter(fromfile) then
-                print('copy', fromfile)
+                print('copy', fromfile, to / fromfile:filename())
                 fs.copy_file(fromfile, to / fromfile:filename(), true)
             end
         end
