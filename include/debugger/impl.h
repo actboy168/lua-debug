@@ -55,6 +55,7 @@ namespace vscode
 		void terminate_on_disconnect(); 
 		void on_disconnect();
 
+		void set_stepping(const char* reason);
 		void set_state(eState state);
 		bool is_state(eState state) const;
 		void open_redirect(eRedirect type, lua_State* L);
@@ -161,5 +162,6 @@ namespace vscode
 		int                  next_threadid_;
 		std::set<eException> exception_;
 		eState               state_;
+		std::string          stopReason_;
 	};
 }

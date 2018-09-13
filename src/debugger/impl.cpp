@@ -253,7 +253,7 @@ namespace vscode
 			run_stopped(thread, L, ar, "breakpoint");
 		}
 		else if (is_state(eState::stepping) && thread->check_step(L, ar)) {
-			run_stopped(thread, L, ar, "step");
+			run_stopped(thread, L, ar, stopReason_.c_str());
 		}
 	}
 
@@ -306,8 +306,6 @@ namespace vscode
 	void debugger_impl::run_stopped(luathread* thread, lua_State *L, lua::Debug *ar, const char* reason, const char* description)
 	{
 		event_stopped(thread, reason, description);
-		set_state(eState::stepping);
-		thread->step_in();
 
 		bool quit = false;
 		while (!quit)

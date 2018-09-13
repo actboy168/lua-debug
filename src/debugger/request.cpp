@@ -34,6 +34,12 @@ namespace vscode
 		state_ = state;
 	}
 
+	void debugger_impl::set_stepping(const char* reason)
+	{
+		set_state(eState::stepping);
+		stopReason_ = reason;
+	}
+
 	bool debugger_impl::is_state(eState state) const
 	{
 		return state_ == state;
@@ -94,7 +100,7 @@ namespace vscode
 		}
 
 		if (stopOnEntry) {
-			set_state(eState::stepping);
+			set_stepping("entry");
 		}
 		else {
 			set_state(eState::running);
@@ -351,7 +357,7 @@ namespace vscode
 			response_error(req, "Not found thread");
 			return false;
 		}
-		set_state(eState::stepping);
+		set_stepping("step");
 		thread->step_in();
 		response_success(req);
 		return true;
@@ -370,7 +376,7 @@ namespace vscode
 			response_error(req, "Not found thread");
 			return false;
 		}
-		set_state(eState::stepping);
+		set_stepping("step");
 		thread->step_out(L, ar);
 		response_success(req);
 		return true;
@@ -389,7 +395,7 @@ namespace vscode
 			response_error(req, "Not found thread");
 			return false;
 		}
-		set_state(eState::stepping);
+		set_stepping("step");
 		thread->step_over(L, ar);
 		response_success(req);
 		return true;
@@ -415,7 +421,7 @@ namespace vscode
 			response_error(req, "Not found thread");
 			return false;
 		}
-		set_state(eState::stepping);
+		set_stepping("pause");
 		thread->step_in();
 		response_success(req);
 		return true;
