@@ -447,7 +447,6 @@ namespace vscode
 						if (s.valid) {
 							s.output(res);
 							res("line").Int(ar->currentline);
-							res("column").Int(1);
 						}
 					}
 				}

@@ -184,7 +184,6 @@ namespace vscode
 							res("presentationHint").String("label");
 							res("name").String(*entry.what == 'm' ? "[main chunk]" : (entry.name ? entry.name : "?"));
 							res("line").Int(0);
-							res("column").Int(0);
 						}
 					}
 					else {
@@ -199,7 +198,6 @@ namespace vscode
 							res("id").Int(threadId << 16 | depth);
 							res("name").String(*entry.what == 'm' ? "[main chunk]" : (entry.name ? entry.name : "?"));
 							res("line").Int(entry.currentline);
-							res("column").Int(1);
 						}
 					}
 					depth++;
