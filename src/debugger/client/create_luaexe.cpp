@@ -148,7 +148,7 @@ bool create_luaexe_with_debugger(stdinput& io, vscode::rprotocol& req, const std
 		wcwd = base::u2w(args["cwd"].Get<std::string>());
 	}
 	else {
-		wcwd = fs::path(luaexe).remove_filename();
+		wcwd = fs::path(luaexe).parent_path();
 	}
 	std::string script = create_install_script(req, dbgPath, port);
 

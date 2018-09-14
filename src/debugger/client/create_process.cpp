@@ -30,11 +30,11 @@ bool create_process_with_debugger(vscode::rprotocol& req, int& pid)
 		wcwd = base::u2w(args["cwd"].Get<std::string>());
 	}
 	else {
-		wcwd = fs::path(wapplication).remove_filename();
+		wcwd = fs::path(wapplication).parent_path();
 	}
 
 	base::win::process p;
-	auto dir = base::path::self().remove_filename().remove_filename();
+	auto dir = base::path::self().parent_path().parent_path();
 	p.inject_x86(dir / L"x86" / L"debugger-inject.dll");
 	p.inject_x64(dir / L"x64" / L"debugger-inject.dll");
 

@@ -65,7 +65,7 @@ bool create_terminal_with_debugger(stdinput& io, vscode::rprotocol& req, const s
 			res("cwd").String(args["cwd"]);
 		}
 		else {
-			res("cwd").String(base::w2u(fs::path(luaexe).remove_filename().wstring()));
+			res("cwd").String(base::w2u(fs::path(luaexe).parent_path().wstring()));
 		}
 		if (args.HasMember("env") && args["env"].IsObject()) {
 			for (auto _ : res("env").Object()) {
