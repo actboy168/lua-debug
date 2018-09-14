@@ -461,8 +461,10 @@ namespace vscode
 		case eRedirect::print:
 			if (L) {
 				lua_pushlightuserdata(L, this);
-				lua_pushcclosure(L, redirect_print, 1);
+				lua_getglobal(L, "print");
+				lua_pushcclosure(L, redirect_print, 2);
 				lua_setglobal(L, "print");
+				redirectL_ = L;
 			}
 			break;
 #if defined(_WIN32)
@@ -476,6 +478,26 @@ namespace vscode
 			break;
 #endif
 		}
+	}
+
+	void debugger_impl::close_redirect()
+	{
+		if (redirectL_) {
+			lua_State* L = redirectL_;
+			redirectL_ = nullptr;
+			if (LUA_TFUNCTION == lua_getglobal(L, "print")) {
+				if (lua_getupvalue(L, -1, 2)) {
+					lua_setglobal(L, "print");
+				}
+			}
+			lua_pop(L, 1);
+		}
+
+		update_redirect();
+#if defined(_WIN32)
+		stdout_.reset();
+		stderr_.reset();
+#endif
 	}
 
 	bool debugger_impl::set_config(int level, const std::string& cfg, std::string& err)

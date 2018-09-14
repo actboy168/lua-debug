@@ -14,12 +14,7 @@ namespace vscode
 		if (is_state(eState::terminated) || is_state(eState::birth)) {
 			return;
 		}
-
-		update_redirect();
-#if defined(_WIN32)
-		stdout_.reset();
-		stderr_.reset();
-#endif
+		close_redirect();
 		set_state(eState::terminated);
 		event_terminated();
 		detach_all(false);
