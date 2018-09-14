@@ -250,14 +250,14 @@
                                 "type": "array",
                                 "items": {
                                     "enum": [
-                                        "console",
+                                        "print",
                                         "stdout",
                                         "stderr"
                                     ]
                                 },
                                 "description": "%node.launch.outputCapture.description%",
                                 "default": [
-                                    "console",
+                                    "print",
                                     "stdout"
                                 ]
                             }
