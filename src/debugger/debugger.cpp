@@ -74,11 +74,6 @@ namespace vscode
 	{
 		return impl_->set_config(level, cfg, err);
 	}
-
-	void debugger::terminate_on_disconnect()
-	{
-		impl_->terminate_on_disconnect();
-	}
 }
 
 void debugger_set_luadll(void* luadll, void* getluaapi)

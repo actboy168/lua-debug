@@ -32,9 +32,6 @@ static bool createDebugger() {
 		return false;
 	}
 	dbg.reset(new vscode::debugger(io.get()));
-	if (!isAttachProcess) {
-		dbg->terminate_on_disconnect();
-	}
 	dbg->wait_client();
 	dbg->open_redirect(vscode::eRedirect::stdoutput);
 	dbg->open_redirect(vscode::eRedirect::stderror);

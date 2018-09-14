@@ -52,7 +52,6 @@ namespace vscode
 		void set_custom(custom* custom);
 		void output(const char* category, const char* buf, size_t len, lua_State* L = nullptr, lua::Debug* ar = nullptr);
 		bool set_config(int level, const std::string& cfg, std::string& err);
-		void terminate_on_disconnect(); 
 		void on_disconnect();
 
 		void set_stepping(const char* reason);
@@ -71,8 +70,9 @@ namespace vscode
 	private:
 		bool request_initialize(rprotocol& req);
 		bool request_set_breakpoints(rprotocol& req);
+		bool request_launch(rprotocol& req);
 		bool request_attach(rprotocol& req);
-		bool request_attach_done(rprotocol& req);
+		bool request_launch_or_attach(rprotocol& req);
 		bool request_configuration_done(rprotocol& req);
 		bool request_terminate(rprotocol& req);
 		bool request_disconnect(rprotocol& req);
@@ -165,5 +165,6 @@ namespace vscode
 		eState               state_;
 		std::string          stopReason_;
 		lua_State*           redirectL_;
+		bool                 attach_;
 	};
 }

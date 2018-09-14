@@ -56,7 +56,23 @@ namespace vscode
 		return false;
 	}
 
+	bool debugger_impl::request_launch(rprotocol& req)
+	{
+#if defined(DEBUGGER_ENABLE_LAUNCH)
+		attach_ = false;
+		return request_launch_or_attach(req);
+#else
+		return request_attach(req);
+#endif
+	}
+
 	bool debugger_impl::request_attach(rprotocol& req)
+	{
+		attach_ = true;
+		return request_launch_or_attach(req);
+	}
+
+	bool debugger_impl::request_launch_or_attach(rprotocol& req)
 	{
 		initproto_ = rprotocol();
 		if (!is_state(eState::initialized)) {
@@ -86,8 +102,12 @@ namespace vscode
 		return false;
 	}
 
-	bool debugger_impl::request_attach_done(rprotocol& req)
-	{
+	bool debugger_impl::request_configuration_done(rprotocol& req_) {
+		response_success(req_);
+		if (initproto_.IsNull()) {
+			return false;
+		}
+		rprotocol& req = initproto_;
 		bool stopOnEntry = true;
 		auto& args = req["arguments"];
 		if (args.HasMember("stopOnEntry") && args["stopOnEntry"].IsBool()) {
@@ -104,14 +124,6 @@ namespace vscode
 			on_clientattach_();
 		}
 		return !stopOnEntry;
-	}
-
-	bool debugger_impl::request_configuration_done(rprotocol& req) {
-		response_success(req);
-		if (initproto_.IsNull()) {
-			return false;
-		}
-		return request_attach_done(initproto_);
 	}
 
 	bool debugger_impl::request_threads(rprotocol& req, lua_State* L, lua::Debug *ar) {
@@ -334,8 +346,7 @@ namespace vscode
 	bool debugger_impl::request_disconnect(rprotocol& req)
 	{
 		response_success(req);
-		close();
-		io_close();
+		on_disconnect();
 		return true;
 	}
 

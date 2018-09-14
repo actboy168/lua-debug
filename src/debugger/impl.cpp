@@ -533,15 +533,14 @@ namespace vscode
 
 	void debugger_impl::on_disconnect()
 	{
-		thread_.stop();
-		if (thread_.try_lock()) {
-			thread_.unlock();
+		close();
+		io_close();
+		if (!attach_) {
+			thread_.stop();
+			if (thread_.try_lock()) {
+				thread_.unlock();
+			}
 		}
-	}
-
-	void debugger_impl::terminate_on_disconnect()
-	{
-		network_->on_close_event(debugger_on_disconnect, this);
 	}
 
 	debugger_impl::~debugger_impl()
@@ -570,9 +569,12 @@ namespace vscode
 		, thread_(this)
 		, next_threadid_(0)
 		, translator_(nullptr)
+		, stopReason_("step")
+		, redirectL_(nullptr)
+		, attach_(true)
 		, main_dispatch_
 		({
-			{ "launch", DBG_REQUEST_MAIN(request_attach) },
+			{ "launch", DBG_REQUEST_MAIN(request_launch) },
 			{ "attach", DBG_REQUEST_MAIN(request_attach) },
 			{ "configurationDone", DBG_REQUEST_MAIN(request_configuration_done) },
 			{ "terminate", DBG_REQUEST_MAIN(request_terminate) },
@@ -603,6 +605,7 @@ namespace vscode
 			"sourceCoding" : "ansi"
 		})");
 		thread_.start();
+		network_->on_close_event(debugger_on_disconnect, this);
 	}
 
 #undef DBG_REQUEST_MAIN	 
