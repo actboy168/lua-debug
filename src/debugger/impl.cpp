@@ -38,7 +38,7 @@ namespace vscode
 		}
 		out += "\n";
 		debugger_impl* dbg = (debugger_impl*)lua_touserdata(L, lua_upvalueindex(1));
-		dbg->output("stdout", out.data(), out.size(), L);
+		dbg->threadsafe_output("stdout", out.data(), out.size(), L);
 		return 0;
 	}
 
@@ -408,8 +408,17 @@ namespace vscode
 		custom_ = custom;
 	}
 
+	void debugger_impl::threadsafe_output(const char* category, const char* buf, size_t len, lua_State* L, lua::Debug* ar)
+	{
+		std::lock_guard<osthread> lock(thread_);
+		return output(category, buf, len, L, ar);
+	}
+
 	void debugger_impl::output(const char* category, const char* buf, size_t len, lua_State* L, lua::Debug* ar)
 	{
+		if (is_state(eState::terminated) || is_state(eState::birth) || is_state(eState::initialized)) {
+			return;
+		}
 		if (consoleSourceCoding_ == eCoding::none) {
 			return;
 		}
@@ -493,7 +502,6 @@ namespace vscode
 			lua_pop(L, 1);
 		}
 
-		update_redirect();
 #if defined(_WIN32)
 		stdout_.reset();
 		stderr_.reset();

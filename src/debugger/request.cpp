@@ -14,10 +14,16 @@ namespace vscode
 		if (is_state(eState::terminated) || is_state(eState::birth)) {
 			return;
 		}
-		close_redirect();
+		update_redirect();
+		if (!attach_) {
+			close_redirect();
+		}
 		set_state(eState::terminated);
 		event_terminated();
-		detach_all(false);
+
+		if (!attach_) {
+			detach_all(false);
+		}
 
 		breakpoints_.clear();
 		seq = 1;

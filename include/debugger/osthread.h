@@ -51,7 +51,7 @@ namespace vscode {
 		void join();
 
 		debugger_impl*               dbg_;
-		std::mutex                   mtx_;
+		std::recursive_mutex         mtx_;
 		std::atomic<bool>            exit_;
 		std::unique_ptr<std::thread> thd_;
 	};
