@@ -544,7 +544,7 @@ namespace vscode
 		, consoleSourceCoding_(eCoding::none)
 		, consoleTargetCoding_(eCoding::utf8)
 		, sourceCoding_(eCoding::ansi)
-		, workspaceRoot_()
+		, workspaceFolder_()
 		, nodebug_(false)
 		, thread_(this)
 		, next_threadid_(0)

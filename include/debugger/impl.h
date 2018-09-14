@@ -136,7 +136,7 @@ namespace vscode
 		eCoding                     consoleSourceCoding_;
 		eCoding                     consoleTargetCoding_;
 		eCoding                     sourceCoding_;
-		std::string                 workspaceRoot_;
+		std::string                 workspaceFolder_;
 		sourcemap_t                 sourceMap_;
 		skipfiles_t                 skipFiles_;
 		std::function<void()>       on_clientattach_;

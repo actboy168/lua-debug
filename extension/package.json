@@ -67,10 +67,10 @@
                             "type": "lua",
                             "request": "launch",
                             "stopOnEntry": true,
-                            "program": "^\"\\${workspaceRoot}/${2:main.lua}\"",
-                            "cwd": "^\"\\${workspaceRoot}\"",
-                            "path": "^\"\\${workspaceRoot}/?.lua\"",
-                            "cpath": "^\"\\${workspaceRoot}/?.dll\"",
+                            "program": "^\"\\${workspaceFolder}/${2:main.lua}\"",
+                            "cwd": "^\"\\${workspaceFolder}\"",
+                            "path": "^\"\\${workspaceFolder}/?.lua\"",
+                            "cpath": "^\"\\${workspaceFolder}/?.dll\"",
                             "arg": [],
                             "consoleCoding": "utf8"
                         }
@@ -83,8 +83,8 @@
                             "type": "lua",
                             "request": "launch",
                             "stopOnEntry": true,
-                            "runtimeExecutable": "^\"\\${workspaceRoot}/lua.exe\"",
-                            "runtimeArgs": "^\"\\${workspaceRoot}/${2:main.lua}\"",
+                            "runtimeExecutable": "^\"\\${workspaceFolder}/lua.exe\"",
+                            "runtimeArgs": "^\"\\${workspaceFolder}/${2:main.lua}\"",
                             "consoleCoding": "utf8"
                         }
                     },
@@ -107,7 +107,7 @@
                             "program": {
                                 "type": "string",
                                 "description": "Lua program to debug - set this to the path of the script",
-                                "default": "${workspaceRoot}/main.lua"
+                                "default": "${workspaceFolder}/main.lua"
                             },
                             "cwd": {
                                 "type": [
@@ -115,7 +115,7 @@
                                     "null"
                                 ],
                                 "description": "Working directory at program startup",
-                                "default": "${workspaceRoot}"
+                                "default": "${workspaceFolder}"
                             },
                             "env": {
                                 "type": "object",
@@ -147,22 +147,22 @@
                             "luaexe": {
                                 "type": "string",
                                 "description": "Absolute path to the lua exe.",
-                                "default": "${workspaceRoot}/lua.exe"
+                                "default": "${workspaceFolder}/lua.exe"
                             },
                             "luadll": {
                                 "type": "string",
                                 "description": "Absolute path to the lua dll.",
-                                "default": "${workspaceRoot}/lua53.dll"
+                                "default": "${workspaceFolder}/lua53.dll"
                             },
                             "path": {
                                 "type": "string",
                                 "description": "Search path for Lua programs",
-                                "default": "${workspaceRoot}/?.lua"
+                                "default": "${workspaceFolder}/?.lua"
                             },
                             "cpath": {
                                 "type": "string",
                                 "description": "Search path for native libraries",
-                                "default": "${workspaceRoot}/?.dll"
+                                "default": "${workspaceFolder}/?.dll"
                             },
                             "arg0": {
                                 "type": [
@@ -193,7 +193,7 @@
                                 "default": [
                                     [
                                         ".\\",
-                                        "${workspaceRoot}\\"
+                                        "${workspaceFolder}\\"
                                     ]
                                 ]
                             },
@@ -212,7 +212,7 @@
                                     "null"
                                 ],
                                 "description": "Runtime to use. Either an absolute path or the name of a runtime available on the PATH.",
-                                "default": "${workspaceRoot}/lua.exe"
+                                "default": "${workspaceFolder}/lua.exe"
                             },
                             "runtimeArgs": {
                                 "type": [
@@ -315,7 +315,7 @@
                                 "default": [
                                     [
                                         "./",
-                                        "${workspaceRoot}"
+                                        "${workspaceFolder}"
                                     ]
                                 ]
                             },

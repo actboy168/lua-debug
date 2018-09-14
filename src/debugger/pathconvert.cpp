@@ -49,7 +49,7 @@ namespace vscode
 			}
 			skipFiles_.push_back(e.Get<std::string>());
 		}
-		workspaceRoot_ = config.get("workspaceFolder", rapidjson::kStringType).Get<std::string>();
+		workspaceFolder_ = config.get("workspaceFolder", rapidjson::kStringType).Get<std::string>();
 	}
 
 	bool debugger_impl::path_server2client(const std::string& server, std::string& client)
@@ -125,9 +125,9 @@ namespace vscode
 	}
 
 	std::string debugger_impl::path_clientrelative(const std::string& path) {
-		if (workspaceRoot_.empty()) {
+		if (workspaceFolder_.empty()) {
 			return path;
 		}
-		return path::relative(path, workspaceRoot_, '/');
+		return path::relative(path, workspaceFolder_, '/');
 	}
 }

@@ -2,7 +2,7 @@
     // See https://go.microsoft.com/fwlink/?LinkId=733558
     // for the documentation about the tasks.json format
     "version": "0.1.0",
-    "command": "\"${workspaceRoot}/build/luabuild/lua.exe\"",
+    "command": "\"${workspaceFolder}/build/luabuild/lua.exe\"",
     "isShellCommand": true,
     "showOutput": "always",
     "echoCommand": false,
@@ -11,7 +11,7 @@
         {
             "taskName": "Debug",
             "args": [
-                "${workspaceRoot}/build/main.lua",
+                "${workspaceFolder}/build/main.lua",
                 "Debug",
                 "IC"
             ]
@@ -19,7 +19,7 @@
         {
             "taskName": "Release",
             "args": [
-                "${workspaceRoot}/build/main.lua",
+                "${workspaceFolder}/build/main.lua",
                 "Release",
                 "IC"
             ]
@@ -27,14 +27,14 @@
         {
             "taskName": "Rebuild Release",
             "args": [
-                "${workspaceRoot}/build/main.lua",
+                "${workspaceFolder}/build/main.lua",
                 "Release"
             ]
         },
         {
             "taskName": "Copy JS",
             "args": [
-                "${workspaceRoot}/build/js.lua"
+                "${workspaceFolder}/build/js.lua"
             ]
         }
     ]

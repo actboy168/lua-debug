@@ -47,10 +47,10 @@ class LuaConfigurationProvider {
             }
             if (typeof config.luaexe != 'string') {
                 if (typeof config.path != 'string') {
-                    config.path = '${workspaceRoot}/?.lua';
+                    config.path = '${workspaceFolder}/?.lua';
                 }
                 if (typeof config.cpath != 'string') {
-                    config.cpath = '${workspaceRoot}/?.dll';
+                    config.cpath = '${workspaceFolder}/?.dll';
                 }
             }
         }

@@ -71,7 +71,7 @@
             "request": "attach",
             "program": "",
             "stopOnEntry": false,
-            "cwd": "${workspaceRoot}",
+            "cwd": "${workspaceFolder}",
             "debugServer" : 4278
         }
     ]
