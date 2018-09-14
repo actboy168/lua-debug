@@ -11,7 +11,7 @@ local binDir = root / 'project' / 'windows' / 'bin'
 local objDir = root / 'project' / 'windows' / 'obj'
 
 local msvc = require 'msvc'
-if not msvc:initialize(141, 'utf8') then
+if not msvc:initialize(141, 'ansi') then
     error('Cannot found Visual Studio Toolset.')
 end
 

@@ -1,15 +1,20 @@
 {
     // See https://go.microsoft.com/fwlink/?LinkId=733558
     // for the documentation about the tasks.json format
-    "version": "0.1.0",
-    "command": "\"${workspaceFolder}/build/luabuild/lua.exe\"",
-    "isShellCommand": true,
-    "showOutput": "always",
-    "echoCommand": false,
-    "suppressTaskName": true,
+    "version": "2.0.0",
+    "type": "shell",
+    "options": {
+       "shell": {
+           "executable": "c:\\windows\\system32\\cmd.exe",
+           "args" :[
+              "/c" 
+           ]
+       } 
+    },
     "tasks": [
         {
-            "taskName": "Debug",
+            "label": "Debug",
+            "command": "chcp 65001 && \"${workspaceFolder}/build/luabuild/lua.exe\"",
             "args": [
                 "${workspaceFolder}/build/main.lua",
                 "Debug",
@@ -17,7 +22,8 @@
             ]
         },
         {
-            "taskName": "Release",
+            "label": "Release",
+            "command": "\"${workspaceFolder}/build/luabuild/lua.exe\"",
             "args": [
                 "${workspaceFolder}/build/main.lua",
                 "Release",
@@ -25,14 +31,16 @@
             ]
         },
         {
-            "taskName": "Rebuild Release",
+            "label": "Rebuild Release",
+            "command": "chcp 65001 && \"${workspaceFolder}/build/luabuild/lua.exe\"",
             "args": [
                 "${workspaceFolder}/build/main.lua",
                 "Release"
             ]
         },
         {
-            "taskName": "Copy JS",
+            "label": "Copy JS",
+            "command": "chcp 65001 && \"${workspaceFolder}/build/luabuild/lua.exe\"",
             "args": [
                 "${workspaceFolder}/build/js.lua"
             ]
