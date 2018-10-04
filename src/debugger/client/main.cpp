@@ -3,8 +3,8 @@
 #include <io.h>	  
 #include <vector>
 #include <debugger/client/stdinput.h>
-#include <debugger/client/run.h>
 #include <debugger/client/tcp_attach.h>
+#include <debugger/client/run.h>
 #include <debugger/capabilities.h>
 #include <debugger/io/helper.h>
 #include <debugger/io/namedpipe.h>
@@ -49,6 +49,37 @@ static void response_error(stdinput& io, vscode::rprotocol& req, const char *msg
 	exit(-1);
 }
 
+void event_terminated(stdinput& io)
+{
+	vscode::wprotocol res;
+	for (auto _ : res.Object())
+	{
+		res("type").String("event");
+		res("seq").Int64(0xFFFFFFE);
+		res("event").String("terminated");
+		for (auto _ : res("body").Object())
+		{
+		}
+	}
+	vscode::io_output(&io, res);
+}
+
+void event_exited(stdinput& io, uint32_t exitcode)
+{
+	vscode::wprotocol res;
+	for (auto _ : res.Object())
+	{
+		res("type").String("event");
+		res("seq").Int64(0xFFFFFFF);
+		res("event").String("exited");
+		for (auto _ : res("body").Object())
+		{
+			res("exitCode").Uint(exitcode);
+		}
+	}
+	vscode::io_output(&io, res);
+}
+
 static int stoi_nothrow(std::string const& str)
 {
 	try {
@@ -65,13 +96,13 @@ static void sleep() {
 
 static int run_createprocess_then_attach(stdinput& io, vscode::rprotocol& init, vscode::rprotocol& req)
 {
-	int pid = 0;
-	if (!create_process_with_debugger(req, pid)) {
+	base::win::process process;
+	if (!create_process_with_debugger(req, process)) {
 		response_error(io, req, "Create process failed");
 		return -1;
 	}
-	auto port = base::format(L"vscode-lua-debug-%d", pid);
-	if (!run_pipe_attach(io, init, req, port)) {
+	auto port = base::format(L"vscode-lua-debug-%d", process.id());
+	if (!run_pipe_attach(io, init, req, port, process)) {
 		response_error(io, req, "Launch failed");
 		return -1;
 	}
@@ -85,7 +116,8 @@ int run_terminal_then_attach(stdinput& io, vscode::rprotocol& init, vscode::rpro
 		response_error(io, req, "Launch failed");
 		return -1;
 	}
-	if (!run_pipe_attach(io, init, req, port)) {
+	base::win::process process;
+	if (!run_pipe_attach(io, init, req, port, process)) {
 		response_error(io, req, "Launch failed");
 		return -1;
 	}
@@ -95,11 +127,12 @@ int run_terminal_then_attach(stdinput& io, vscode::rprotocol& init, vscode::rpro
 int run_luaexe_then_attach(stdinput& io, vscode::rprotocol& init, vscode::rprotocol& req)
 {
 	auto port = base::format(L"vscode-lua-debug-%d", GetCurrentProcessId());
-	if (!create_luaexe_with_debugger(io, req, port)) {
+	base::win::process process;
+	if (!create_luaexe_with_debugger(io, req, port, process)) {
 		response_error(io, req, "Launch failed");
 		return -1;
 	}
-	if (!run_pipe_attach(io, init, req, port)) {
+	if (!run_pipe_attach(io, init, req, port, process)) {
 		response_error(io, req, "Launch failed");
 		return -1;
 	}
@@ -114,7 +147,8 @@ static int run_attach_process_noinject(stdinput& io, vscode::rprotocol& init, vs
 		return -1;
 	}
 	auto port = base::format(L"vscode-lua-debug-%d", pid);
-	if (!run_pipe_attach(io, init, req, port, &m)) {
+	base::win::process process(pid);
+	if (!run_pipe_attach(io, init, req, port, process, &m)) {
 		response_error(io, req, "Attach failed");
 		return -1;
 	}
@@ -132,7 +166,8 @@ static int run_attach_process(stdinput& io, vscode::rprotocol& init, vscode::rpr
 		return -1;
 	}
 	auto port = base::format(L"vscode-lua-debug-%d", pid);
-	if (!run_pipe_attach(io, init, req, port, &m)) {
+	base::win::process process(pid);
+	if (!run_pipe_attach(io, init, req, port, process, &m)) {
 		response_error(io, req, "Attach failed");
 		return -1;
 	}

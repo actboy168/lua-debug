@@ -38,6 +38,7 @@ namespace base { namespace win {
 		};
 
 		process();
+		process(int pid);
 		~process();
 		bool     inject_x86(const fs::path& dllpath);
 		bool     inject_x64(const fs::path& dllpath);

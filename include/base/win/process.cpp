@@ -263,6 +263,24 @@ namespace base { namespace win {
 		si_.hStdError = INVALID_HANDLE_VALUE;
 	}
 
+	process::process(int pid)
+		: statue_(PROCESS_STATUE_READY)
+		, inherit_handle_(false)
+		, flags_(0)
+	{
+		memset(&pi_, 0, sizeof PROCESS_INFORMATION);
+		if (!hook::openprocess(pid, PROCESS_QUERY_INFORMATION, 0, pi_)) {
+			return;
+		}
+		statue_ = PROCESS_STATUE_RUNNING;
+		memset(&si_, 0, sizeof STARTUPINFOW);
+		si_.cb = sizeof STARTUPINFOW;
+		si_.dwFlags = 0;
+		si_.hStdInput = INVALID_HANDLE_VALUE;
+		si_.hStdOutput = INVALID_HANDLE_VALUE;
+		si_.hStdError = INVALID_HANDLE_VALUE;
+	}
+
 	process::~process()
 	{
 		close();

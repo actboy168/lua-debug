@@ -21,10 +21,10 @@ namespace vscode
 			res("command").String("initialize");
 			res("request_seq").Int64(req["seq"].GetInt64());
 			res("success").Bool(true);
-                        for (auto _ : res("body").Object())
-                        {
-                            capabilities(res);
-                        }
+            for (auto _ : res("body").Object())
+            {
+                capabilities(res);
+            }
 		}
 		io_output(res);
 	}

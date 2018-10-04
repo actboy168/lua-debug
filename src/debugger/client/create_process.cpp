@@ -5,7 +5,7 @@
 #include <debugger/protocol.h>
 #include <debugger/client/run.h>
 
-bool create_process_with_debugger(vscode::rprotocol& req, int& pid)
+bool create_process_with_debugger(vscode::rprotocol& req, base::win::process& p)
 {
 	auto& args = req["arguments"];
 	if (!args.HasMember("runtimeExecutable") || !args["runtimeExecutable"].IsString()) {
@@ -33,7 +33,6 @@ bool create_process_with_debugger(vscode::rprotocol& req, int& pid)
 		wcwd = fs::path(wapplication).parent_path();
 	}
 
-	base::win::process p;
 	auto dir = base::path::self().parent_path().parent_path();
 	p.inject_x86(dir / L"x86" / L"debugger-inject.dll");
 	p.inject_x64(dir / L"x64" / L"debugger-inject.dll");
@@ -53,9 +52,5 @@ bool create_process_with_debugger(vscode::rprotocol& req, int& pid)
 		}
 		req.RemoveMember("env");
 	}
-	bool ok = p.create(wapplication.c_str(), wcommand.c_str(), wcwd.c_str());
-	if (ok) {
-		pid = p.id();
-	}
-	return ok;
+	return p.create(wapplication.c_str(), wcommand.c_str(), wcwd.c_str());
 }

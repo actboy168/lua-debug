@@ -96,10 +96,9 @@ bool is64Exe(const wchar_t* exe)
 	return !(((PIMAGE_NT_HEADERS)data)->FileHeader.Characteristics & IMAGE_FILE_32BIT_MACHINE);
 }
 
-bool create_luaexe_with_debugger(stdinput& io, vscode::rprotocol& req, const std::wstring& port)
+bool create_luaexe_with_debugger(stdinput& io, vscode::rprotocol& req, const std::wstring& port, base::win::process& p)
 {
 	auto& args = req["arguments"];
-	base::win::process p;
 	fs::path dbgPath = base::path::self().parent_path().parent_path();
 	std::wstring luaexe;
 	if (args.HasMember("luaexe") && args["luaexe"].IsString()) {
