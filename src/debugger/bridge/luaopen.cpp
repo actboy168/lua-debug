@@ -60,64 +60,36 @@ dbg.reset(new vscode::debugger(namedpipe.get()));
 		return 1;
 	}
 
-	static int listen(lua_State* L)
-	{
-		ud& self = to(L, 1);
-		const char* addr = luaL_checkstring(L, 2);
-		if (strncmp(addr, "tcp:", 4) == 0) {
-			self.listen_tcp(addr + 4);
-			if (self.dbg) {
-				self.dbg->attach_lua(L);
-			}
-		}
-#if defined(_WIN32)
-		else if (strncmp(addr, "pipe:", 5) == 0) {
-			self.listen_pipe(addr + 5);
-			if (self.dbg) {
-				self.dbg->attach_lua(L);
-			}
-		}
-#endif
-		else {
-			self.listen_tcp(addr);
-			if (self.dbg) {
-				self.dbg->attach_lua(L);
-			}
-		}
-		lua_pushvalue(L, 1);
-		return 1;
-	}
-
 	static int io(lua_State* L)
 	{
 		ud& self = to(L, 1);
 		const char* addr = luaL_checkstring(L, 2);
 		if (strncmp(addr, "listen:", 7) == 0) {
 			self.listen_tcp(addr + 7);
-			if (self.dbg) {
-				self.dbg->attach_lua(L);
-			}
 		}
 		else if (strncmp(addr, "connect:", 8) == 0) {
 			self.connect_tcp(addr + 8);
-			if (self.dbg) {
-				self.dbg->attach_lua(L);
-			}
 		}
 #if defined(_WIN32)
 		else if (strncmp(addr, "pipe:", 5) == 0) {
 			self.listen_pipe(addr + 5);
-			if (self.dbg) {
-				self.dbg->attach_lua(L);
-			}
 		}
 #endif
 		else {
 			self.listen_tcp(addr);
-			if (self.dbg) {
-				self.dbg->attach_lua(L);
-			}
 		}
+		lua_pushvalue(L, 1);
+		return 1;
+	}
+
+	static int wait(lua_State* L)
+	{
+		ud& self = to(L, 1);
+		if (!self.dbg) {
+			lua_pushvalue(L, 1);
+			return 1;
+		}
+		self.dbg->wait_client();
 		lua_pushvalue(L, 1);
 		return 1;
 	}
@@ -129,8 +101,6 @@ dbg.reset(new vscode::debugger(namedpipe.get()));
 			lua_pushvalue(L, 1);
 			return 1;
 		}
-		self.dbg->detach_lua(L);
-		self.dbg->wait_client();
 		self.dbg->attach_lua(L);
 		lua_pushvalue(L, 1);
 		return 1;
@@ -215,7 +185,7 @@ dbg.reset(new vscode::debugger(namedpipe.get()));
 	{
 		luaL_Reg mt[] = {
 			{ "io", io },
-			{ "listen", listen },
+			{ "wait", wait },
 			{ "start", start },
 			{ "config", config },
 			{ "redirect", redirect },
