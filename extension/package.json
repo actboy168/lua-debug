@@ -255,7 +255,7 @@
                                         "stderr"
                                     ]
                                 },
-                                "description": "%node.launch.outputCapture.description%",
+                                "description": "From where to capture output messages: print or stdout/stderr streams.",
                                 "default": [
                                     "print",
                                     "stdout"

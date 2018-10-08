@@ -197,6 +197,7 @@ dbg.reset(new vscode::debugger(namedpipe.get()));
 		luaL_setfuncs(L, mt, 0);
 		lua_pushvalue(L, -1);
 		lua_setfield(L, -2, "__index");
+		lua_pop(L, 1);
 		return constructor(L);
 	}
 }
