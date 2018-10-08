@@ -260,6 +260,11 @@
                                     "print",
                                     "stdout"
                                 ]
+                            },
+                            "internalModule": {
+                                "type": "string",
+                                "description": "Internal module name",
+                                "default": "debugger"
                             }
                         }
                     },
@@ -326,6 +331,11 @@
                                     "type": "string"
                                 },
                                 "default": []
+                            },
+                            "internalModule": {
+                                "type": "string",
+                                "description": "Internal module name",
+                                "default": "debugger"
                             }
                         }
                     }

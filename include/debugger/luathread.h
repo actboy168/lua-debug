@@ -41,7 +41,7 @@ namespace vscode
 		void install_hook(int mask);
 
 		void release_thread();
-		void enable_thread();
+		bool enable_thread();
 		void disable_thread();
 		void set_step(step step);
 		bool is_step(step step);

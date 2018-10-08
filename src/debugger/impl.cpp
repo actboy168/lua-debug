@@ -121,17 +121,17 @@ namespace vscode
 		return nullptr;
 	}
 
-	void debugger_impl::attach_lua(lua_State* L)
+	bool debugger_impl::attach_lua(lua_State* L)
 	{
-		if (nodebug_) return;
+		if (nodebug_) return false;
 		luathread* thread = find_luathread(L);
 		if (thread) {
-			thread->enable_thread();
-			return;
+			return !thread->enable_thread();
 		}
 		int new_threadid = ++next_threadid_;
 		std::unique_ptr<luathread> newthread(new luathread(new_threadid, *this, get_mainthread(L)));
 		luathreads_.insert(std::make_pair<int, std::unique_ptr<luathread>>(std::move(new_threadid), std::move(newthread)));
+		return true;
 	}
 
 	void debugger_impl::detach_lua(lua_State* L, bool remove)
@@ -549,6 +549,18 @@ namespace vscode
 				thread_.unlock();
 			}
 		}
+	}
+
+	void debugger_impl::init_internal_module(lua_State* L)
+	{
+		auto internalModule = config_.get("internalModule", rapidjson::kStringType).Get<std::string>();
+		if (internalModule.empty()) {
+			return;
+		}
+		luaL_getsubtable(L, LUA_REGISTRYINDEX, LUA_LOADED_TABLE);
+		luaopen_debugger(L);
+		lua_setfield(L, -2, internalModule.c_str());
+		lua_pop(L, 1);
 	}
 
 	debugger_impl::~debugger_impl()

@@ -47,13 +47,14 @@ namespace vscode
 		void run_idle();
 		void update();
 		void wait_client();
-		void attach_lua(lua_State* L);
+		bool attach_lua(lua_State* L);
 		void detach_lua(lua_State* L, bool remove);
 		void set_custom(custom* custom);
 		void output(const char* category, const char* buf, size_t len, lua_State* L = nullptr, lua::Debug* ar = nullptr);
 		void threadsafe_output(const char* category, const char* buf, size_t len, lua_State* L = nullptr, lua::Debug* ar = nullptr);
 		bool set_config(int level, const std::string& cfg, std::string& err);
 		void on_disconnect();
+		void init_internal_module(lua_State* L);
 
 		void set_stepping(const char* reason);
 		void set_state(eState state);

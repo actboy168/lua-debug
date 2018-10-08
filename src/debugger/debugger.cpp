@@ -35,9 +35,9 @@ namespace vscode
 		impl_->wait_client();
 	}
 
-	void debugger::attach_lua(lua_State* L)
+	bool debugger::attach_lua(lua_State* L)
 	{
-		impl_->attach_lua(L);
+		return impl_->attach_lua(L);
 	}
 
 	void debugger::detach_lua(lua_State* L, bool remove)
@@ -73,6 +73,11 @@ namespace vscode
 	bool debugger::set_config(int level, const std::string& cfg, std::string& err) 
 	{
 		return impl_->set_config(level, cfg, err);
+	}
+
+	void debugger::init_internal_module(lua_State* L)
+	{
+		return impl_->init_internal_module(L);
 	}
 }
 

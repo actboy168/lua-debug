@@ -92,9 +92,11 @@ namespace vscode
 		release = true;
 	}
 
-	void luathread::enable_thread()
+	bool luathread::enable_thread()
 	{
+		bool old = enable;
 		enable = true;
+		return old;
 	}
 
 	void luathread::disable_thread()

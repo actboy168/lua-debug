@@ -37,8 +37,9 @@ std::string create_install_script(vscode::rprotocol& req, const fs::path& dbg_pa
 	if (args.HasMember("cpath") && args["cpath"].IsString()) {
 		res += base::format("package.cpath=[[%s]];", isUtf8 ? args["cpath"].Get<std::string>() : base::u2a(args["cpath"]));
 	}
-	res += base::format("local dbg=package.loadlib([[%s]], 'luaopen_debugger')();package.loaded['debugger']=dbg;dbg:io([[pipe:%s]])"
+	res += base::format("local dbg=package.loadlib([[%s]], 'luaopen_debugger')();package.loaded[ [[%s]] ]=dbg;dbg:io([[pipe:%s]])"
 		, isUtf8 ? base::w2u((dbg_path / L"debugger.dll").wstring()) : base::w2a((dbg_path / L"debugger.dll").wstring())
+		, args.HasMember("internalModule") && args["internalModule"].IsString() ? args["internalModule"].Get<std::string>() : "debugger"
 		, base::w2u(port)
 	);
 	if (args.HasMember("outputCapture") && args["outputCapture"].IsArray()) {

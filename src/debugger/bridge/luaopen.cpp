@@ -10,6 +10,8 @@
 #include <intrin.h>
 #endif
 
+static int DBG = 0;
+
 namespace luaw {
 	struct ud {
 		std::unique_ptr<vscode::io::socket_s> socket_s;
@@ -218,8 +220,16 @@ static void caller_is_luadll(void* callerAddress)
 
 int luaopen_debugger(lua_State* L)
 {
+	if (lua_rawgetp(L, LUA_REGISTRYINDEX, &DBG) != LUA_TNIL) {
+		return 1;
+	}
+	lua_pop(L, 1);
 #if defined(DEBUGGER_BRIDGE)
 	caller_is_luadll(_ReturnAddress());
 #endif
-	return luaw::open(L);
+
+	luaw::open(L);
+	lua_pushvalue(L, -1);
+	lua_rawsetp(L, LUA_REGISTRYINDEX, &DBG);
+	return 1;
 }
