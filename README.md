@@ -122,3 +122,12 @@ dbg:start()
 
 1. 远程调试。参考上一章的做法，只需要注意使用64位的`debugger.dll`。
 2. 指定`runtimeExecutable`参数。`runtimeExecutable`里提供的为64位进程时，调试器就会在64位下运行。
+
+## TODO
+
+* 实现step back
+* 自动附加子线程
+* 自动附加子进程
+* 更加准确的有效行判断
+* 重写多线程支持
+
