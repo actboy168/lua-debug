@@ -49,6 +49,12 @@
     <ClCompile Include="..\..\include\base\win\query_process.cpp">
       <Filter>base\win</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\debugger\io\socket.cpp">
+      <Filter>cpp\io</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\debugger\io\stream.cpp">
+      <Filter>cpp\io</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\base\win\process.h">
@@ -89,6 +95,12 @@
     </ClInclude>
     <ClInclude Include="..\..\include\base\win\query_process.h">
       <Filter>base\win</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\debugger\io\socket.h">
+      <Filter>inc\io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\debugger\io\stream.h">
+      <Filter>inc\io</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
