@@ -106,7 +106,7 @@
                         "properties": {
                             "program": {
                                 "type": "string",
-                                "description": "Lua program to debug - set this to the path of the script",
+                                "markdownDescription": "Lua program to debug - set this to the path of the script",
                                 "default": "${workspaceFolder}/main.lua"
                             },
                             "cwd": {
@@ -114,7 +114,7 @@
                                     "string",
                                     "null"
                                 ],
-                                "description": "Working directory at program startup",
+                                "markdownDescription": "Working directory at program startup",
                                 "default": "${workspaceFolder}"
                             },
                             "env": {
@@ -125,17 +125,17 @@
                                         "null"
                                     ]
                                 },
-                                "description": "Environment variables passed to the program. The value 'null' removes the variable from the environment.",
+                                "markdownDescription": "Environment variables passed to the program. The value `null` removes the variable from the environment.",
                                 "default": {}
                             },
                             "stopOnEntry": {
                                 "type": "boolean",
-                                "description": "Automatically stop after launch.",
+                                "markdownDescription": "Automatically stop after launch.",
                                 "default": true
                             },
                             "luaRuntime": {
                                 "type": "string",
-                                "description": "Default lua runtime",
+                                "markdownDescription": "Default lua runtime",
                                 "default": "5.3 32bit",
                                 "enum": [
                                     "5.3 32bit",
@@ -146,22 +146,22 @@
                             },
                             "luaexe": {
                                 "type": "string",
-                                "description": "Absolute path to the lua exe.",
+                                "markdownDescription": "Absolute path to the lua exe.",
                                 "default": "${workspaceFolder}/lua.exe"
                             },
                             "luadll": {
                                 "type": "string",
-                                "description": "Absolute path to the lua dll.",
+                                "markdownDescription": "Absolute path to the lua dll.",
                                 "default": "${workspaceFolder}/lua53.dll"
                             },
                             "path": {
                                 "type": "string",
-                                "description": "Search path for Lua programs",
+                                "markdownDescription": "Search path for Lua programs",
                                 "default": "${workspaceFolder}/?.lua"
                             },
                             "cpath": {
                                 "type": "string",
-                                "description": "Search path for native libraries",
+                                "markdownDescription": "Search path for native libraries",
                                 "default": "${workspaceFolder}/?.dll"
                             },
                             "arg0": {
@@ -169,17 +169,17 @@
                                     "string",
                                     "array"
                                 ],
-                                "description": "Command line argument, arg[-n] ... arg[0]",
+                                "markdownDescription": "Command line argument, arg[-n] ... arg[0]",
                                 "default": []
                             },
                             "arg": {
                                 "type": "array",
-                                "description": "Command line argument, arg[1] ... arg[n]",
+                                "markdownDescription": "Command line argument, arg[1] ... arg[n]",
                                 "default": []
                             },
                             "consoleCoding": {
                                 "type": "string",
-                                "description": "Console encoding",
+                                "markdownDescription": "Console encoding",
                                 "default": "utf8",
                                 "enum": [
                                     "utf8",
@@ -189,7 +189,7 @@
                             },
                             "sourceMaps": {
                                 "type": "array",
-                                "description": "The source path of the remote host and the source path of local.",
+                                "markdownDescription": "The source path of the remote host and the source path of local.",
                                 "default": [
                                     [
                                         ".\\",
@@ -199,7 +199,7 @@
                             },
                             "sourceCoding": {
                                 "type": "string",
-                                "description": "Source encoding",
+                                "markdownDescription": "Source encoding",
                                 "default": "ansi",
                                 "enum": [
                                     "utf8",
@@ -211,7 +211,7 @@
                                     "string",
                                     "null"
                                 ],
-                                "description": "Runtime to use. Either an absolute path or the name of a runtime available on the PATH.",
+                                "markdownDescription": "Runtime to use. Either an absolute path or the name of a runtime available on the PATH.",
                                 "default": "${workspaceFolder}/lua.exe"
                             },
                             "runtimeArgs": {
@@ -220,7 +220,7 @@
                                     "array",
                                     "null"
                                 ],
-                                "description": "Arguments passed to the runtime executable.",
+                                "markdownDescription": "Arguments passed to the runtime executable.",
                                 "default": ""
                             },
                             "console": {
@@ -230,17 +230,17 @@
                                     "integratedTerminal",
                                     "externalTerminal"
                                 ],
-                                "enumDescriptions": [
+                                "enummarkdownDescriptions": [
                                     "VS Code Debug Console (which doesn't support to read input from a program)",
                                     "VS Code's integrated terminal",
                                     "external terminal that can be configured via user settings"
                                 ],
-                                "description": "Where to launch the debug target.",
+                                "markdownDescription": "Where to launch the debug target.",
                                 "default": "internalConsole"
                             },
                             "skipFiles": {
                                 "type": "array",
-                                "description": "An array of glob patterns for files to skip when debugging.",
+                                "markdownDescription": "An array of glob patterns for files to skip when debugging.",
                                 "items": {
                                     "type": "string"
                                 },
@@ -255,7 +255,7 @@
                                         "stderr"
                                     ]
                                 },
-                                "description": "From where to capture output messages: print or stdout/stderr streams.",
+                                "markdownDescription": "From where to capture output messages: print or stdout/stderr streams.",
                                 "default": [
                                     "print",
                                     "stdout"
@@ -263,7 +263,7 @@
                             },
                             "internalModule": {
                                 "type": "string",
-                                "description": "Internal module name",
+                                "markdownDescription": "Internal module name",
                                 "default": "debugger"
                             }
                         }
@@ -272,32 +272,32 @@
                         "properties": {
                             "stopOnEntry": {
                                 "type": "boolean",
-                                "description": "Automatically stop after attach.",
+                                "markdownDescription": "Automatically stop after attach.",
                                 "default": true
                             },
                             "ip": {
                                 "type": "string",
-                                "description": "TCP/IP address of debug port. Default is 'localhost'.",
+                                "markdownDescription": "TCP/IP address of debug port. Default is `localhost`.",
                                 "default": "localhost"
                             },
                             "port": {
                                 "type": "integer",
-                                "description": "Debug port to attach to. Default is 4278.",
+                                "markdownDescription": "Debug port to attach to. Default is 4278.",
                                 "default": 4278
                             },
                             "processId": {
                                 "type": "integer",
-                                "description": "Id of process to attach to.",
+                                "markdownDescription": "Id of process to attach to.",
                                 "default": 0
                             },
                             "processName": {
                                 "type": "string",
-                                "description": "Name of process to attach to.",
+                                "markdownDescription": "Name of process to attach to.",
                                 "default": ""
                             },
                             "consoleCoding": {
                                 "type": "string",
-                                "description": "Console encoding",
+                                "markdownDescription": "Console encoding",
                                 "default": "utf8",
                                 "enum": [
                                     "utf8",
@@ -307,7 +307,7 @@
                             },
                             "sourceCoding": {
                                 "type": "string",
-                                "description": "Source encoding",
+                                "markdownDescription": "Source encoding",
                                 "default": "ansi",
                                 "enum": [
                                     "utf8",
@@ -316,7 +316,7 @@
                             },
                             "sourceMaps": {
                                 "type": "array",
-                                "description": "The source path of the remote host and the source path of local.",
+                                "markdownDescription": "The source path of the remote host and the source path of local.",
                                 "default": [
                                     [
                                         "./",
@@ -326,7 +326,7 @@
                             },
                             "skipFiles": {
                                 "type": "array",
-                                "description": "An array of glob patterns for files to skip when debugging.",
+                                "markdownDescription": "An array of glob patterns for files to skip when debugging.",
                                 "items": {
                                     "type": "string"
                                 },
@@ -334,7 +334,7 @@
                             },
                             "internalModule": {
                                 "type": "string",
-                                "description": "Internal module name",
+                                "markdownDescription": "Internal module name",
                                 "default": "debugger"
                             }
                         }
