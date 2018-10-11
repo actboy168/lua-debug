@@ -26,6 +26,15 @@ namespace vscode {
 			, pos(0)
 		{ }
 
+		bool get(uintptr_t key, T*& t) {
+			hashnode<T>* node = get_node(key);
+			if (node) {
+				t = node->value;
+				return true;
+			}
+			return false;
+		}
+
 		T* get(uintptr_t key) {
 			hashnode<T>* node = get_node(key);
 			if (node) {
@@ -105,6 +114,9 @@ namespace vscode {
 	template <class T, size_t BucketSize = 8191, size_t ChunkSize = 64>
 	class hashmap {
 	public:
+		bool get(uintptr_t key, T*& t) {
+			return buckets[key % BucketSize].get(key, t);
+		}
 		T* get(uintptr_t key) {
 			return buckets[key % BucketSize].get(key);
 		}

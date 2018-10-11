@@ -246,12 +246,12 @@ namespace vscode
 		if (debug.event() != LUA_HOOKLINE) {
 			return;
 		}
-		thread->hook_line(debug, breakpoints_);
+		thread->hook_line(debug, breakpointmgr_);
 		if (!thread->cur_function) {
 			return;
 		}
 
-		if (debug.currentline() > 0 && thread->has_breakpoint && breakpoints_.has(thread->cur_function->src, debug.currentline(), debug)) {
+		if (debug.currentline() > 0 && thread->has_breakpoint && breakpointmgr_.has(thread->cur_function, debug.currentline(), debug)) {
 			run_stopped(thread, debug, "breakpoint");
 		}
 		else if (is_state(eState::stepping) && thread->check_step(L)) {
@@ -454,9 +454,9 @@ namespace vscode
 					int status = lua_getinfo(L, "Sln", (lua_Debug*)ar);
 					assert(status);
 					if (*ar->what != 'C') {
-						source s(ar, *this);
-						if (s.valid) {
-							s.output(res);
+						source* s = sourcemgr_.create(ar);
+						if (s && s->valid) {
+							s->output(res);
 							res("line").Int(ar->currentline);
 						}
 					}
@@ -582,6 +582,10 @@ namespace vscode
 		}
 	}
 
+	source* debugger_impl::createSource(lua::Debug* ar) {
+		return sourcemgr_.create(ar);
+	}
+
 	debugger_impl::~debugger_impl()
 	{
 		thread_.stop();
@@ -595,7 +599,8 @@ namespace vscode
 		: seq(1)
 		, network_(io)
 		, state_(eState::birth)
-		, breakpoints_(*this)
+		, breakpointmgr_(*this)
+		, sourcemgr_(*this)
 		, custom_(nullptr)
 		, exception_()
 		, luathreads_()

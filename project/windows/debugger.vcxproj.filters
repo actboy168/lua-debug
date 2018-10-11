@@ -99,6 +99,9 @@
     <ClCompile Include="..\..\src\debugger\debugapi.cpp">
       <Filter>cpp</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\debugger\source.cpp">
+      <Filter>cpp</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\debugger\debugger.h">
@@ -168,6 +171,12 @@
       <Filter>inc\thunk</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\debugger\debugapi.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\debugger\source.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\debugger\crc32.h">
       <Filter>inc</Filter>
     </ClInclude>
   </ItemGroup>

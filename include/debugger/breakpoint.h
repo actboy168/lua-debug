@@ -16,18 +16,8 @@ namespace vscode
 {
 	struct debug;
 	class debugger_impl;
-	class breakpoint;
 	struct bp_source;
-
-	struct source {
-		bool valid = false;
-		std::string path;
-		intptr_t ref = 0;
-		source();
-		source(lua::Debug* ar, debugger_impl& dbg);
-		source(rapidjson::Value const& info);
-		void output(wprotocol& res);
-	};
+	struct source;
 
 	struct bp_breakpoint {
 		size_t id;
@@ -53,13 +43,12 @@ namespace vscode
 	};
 
 	struct bp_source {
-		source src;
 		std::deque<eLine>               defined;
 		std::vector<bp_breakpoint>      waitverfy;
 		std::map<size_t, bp_breakpoint> verified;
 		debugger_impl&                  dbg;
 
-		bp_source(debugger_impl& dbg, source& s);
+		bp_source(debugger_impl& dbg);
 		bp_source(bp_source&& s);
 		~bp_source();
 		void update(lua_State* L, lua::Debug* ar);
@@ -73,27 +62,23 @@ namespace vscode
 		bp_source& operator=(bp_source&) = delete;
 	};
 
-	struct bp_function {
-		bp_source* src;
-		bp_function(lua_State* L, lua::Debug* ar, debugger_impl& dbg, breakpoint* breakpoint);
-	};
-
-	class breakpoint
+	class breakpointMgr
 	{
 	public:
-		breakpoint(debugger_impl& dbg);
+		breakpointMgr(debugger_impl& dbg);
 		void clear();
 		bool has(bp_source* src, size_t line, debug& debug) const;
-		bp_function* get_function(debug& debug);
-		bp_source&   get_source(debugger_impl& dbg, source& source);
-		void set_breakpoint(source& s, rapidjson::Value const& args, wprotocol& res);
-		void loaded_sources(wprotocol& res);
+		bp_source* get_function(debug& debug);
+		void       set_breakpoint(source& s, rapidjson::Value const& args, wprotocol& res);
+
+	private:
+		bp_source& get_source(source& source);
 		
 	private:
 		debugger_impl& dbg_;
 		std::map<std::string, bp_source, path::less<std::string>> files_;
 		std::map<intptr_t, bp_source>    memorys_;
-		hashmap<bp_function>             functions_;
+		hashmap<bp_source>               functions_;
 		size_t                           next_id_;
 	};
 }

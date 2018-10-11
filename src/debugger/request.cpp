@@ -25,7 +25,7 @@ namespace vscode
 			detach_all(false);
 		}
 
-		breakpoints_.clear();
+		breakpointmgr_.clear();
 		seq = 1;
 	}
 
@@ -178,8 +178,8 @@ namespace vscode
 							continue;
 						}
 						else {
-							source s(&entry, *this);
-							if (!s.valid) {
+							source* s = sourcemgr_.create(&entry);
+							if (!s || !s->valid) {
 								depth++;
 								continue;
 							}
@@ -203,9 +203,12 @@ namespace vscode
 					}
 					else {
 						for (auto _ : res.Object()) {
-							source s(&entry, *this);
-							if (s.valid) {
-								s.output(res);
+							source* s = sourcemgr_.create(&entry);
+							if (!s) {
+								// TODO?
+							}
+							else if (s->valid) {
+								s->output(res);
 							}
 							else {
 								res("presentationHint").String("label");
@@ -227,30 +230,21 @@ namespace vscode
 	bool debugger_impl::request_source(rprotocol& req, debug& debug) {
 		lua_State* L = debug.L();
 		auto& args = req["arguments"];
-		lua::Debug entry;
-		int64_t sourceReference = args["sourceReference"].GetInt64();
-		for (int depth = 0;; ++depth) {
-			if (!lua_getstack(L, depth, (lua_Debug*)&entry)) {
-				break;
-			}
-			int status = lua_getinfo(L, "S", (lua_Debug*)&entry);
-			if (status) {
-				const char *src = entry.source;
-				if ((int64_t)src == sourceReference) {
-					response_source(req, src);
-					return false;
-				}
-			}
+		std::string code;
+		if (sourcemgr_.getCode(args["sourceReference"].GetInt64(), code)) {
+			response_source(req, code);
 		}
-		response_source(req, "Source not available");
+		else {
+			response_source(req, "Source not available");
+		}
 		return false;
 	}
 
 	bool debugger_impl::request_set_breakpoints(rprotocol& req)
 	{
 		auto& args = req["arguments"];
-		vscode::source s(args["source"]);
-		if (!s.valid) {
+		vscode::source* s = sourcemgr_.create(args["source"]);
+		if (!s || !s->valid) {
 			response_error(req, "not yet implemented");
 			return false;
 		}
@@ -259,7 +253,7 @@ namespace vscode
 		}
 		response_success(req, [&](wprotocol& res)
 		{
-			breakpoints_.set_breakpoint(s, args, res);
+			breakpointmgr_.set_breakpoint(*s, args, res);
 		});
 		return false;
 	}
@@ -509,7 +503,7 @@ namespace vscode
 	{
 		response_success(req, [&](wprotocol& res)
 		{
-			breakpoints_.loaded_sources(res);
+			sourcemgr_.loadedSources(res);
 		});
 		return false;
 	}

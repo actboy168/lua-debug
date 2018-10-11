@@ -165,14 +165,14 @@ namespace vscode
 		}
 	}
 
-	void luathread::hook_line(debug& debug, breakpoint& breakpoint)
+	void luathread::hook_line(debug& debug, breakpointMgr& breakpointmgr)
 	{
 		if (!has_function) {
 			has_function = true;
 			has_breakpoint = false;
-			cur_function = breakpoint.get_function(debug);
+			cur_function = breakpointmgr.get_function(debug);
 			if (cur_function) {
-				has_breakpoint = cur_function->src->has_breakpoint();
+				has_breakpoint = cur_function->has_breakpoint();
 			}
 		}
 	}

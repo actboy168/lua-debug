@@ -61,50 +61,6 @@ namespace vscode
 		}
 	}
 
-	source::source() {}
-
-	source::source(lua::Debug* ar, debugger_impl& dbg)
-	{
-		if (ar->source[0] == '@' || ar->source[0] == '=') {
-			if (dbg.path_convert(ar->source, path)) {
-				valid = true;
-			}
-		}
-		else {
-			ref = (intptr_t)ar->source;
-			valid = true;
-		}
-	}
-
-	source::source(rapidjson::Value const& info)
-	{
-		if (info.HasMember("path")) {
-			path = info["path"].Get<std::string>();
-			valid = true;
-		}
-		else if (info.HasMember("name") && info.HasMember("sourceReference"))
-		{
-			ref = info["sourceReference"].Get<intptr_t>();
-			valid = true;
-		}
-	}
-
-	void source::output(wprotocol& res)
-	{
-		if (!valid) return;
-		for (auto _ : res("source").Object())
-		{
-			if (ref) {
-				res("name").String("<Memory>");
-				res("sourceReference").Int64(ref);
-			}
-			else {
-				res("name").String(path::filename(path));
-				res("path").String(path);
-			}
-		}
-	}
-
 	bp_breakpoint::bp_breakpoint(size_t id, rapidjson::Value const& info)
 		: id(id)
 		, line(0)
@@ -154,7 +110,7 @@ namespace vscode
 				verified = true;
 				line = i;
 				if (dbg) {
-					dbg->event_breakpoint("changed", &src, this);
+					dbg->event_breakpoint("changed", this);
 				}
 				return true;
 			case eLine::undef:
@@ -198,26 +154,21 @@ namespace vscode
 		return true;
 	}
 
-	bp_source::bp_source(debugger_impl& dbg_, source& s)
+	bp_source::bp_source(debugger_impl& dbg_)
 		: dbg(dbg_)
-		, src(s)
 	{
-		dbg.event_loadedsource("new", this);
 	}
 
 	bp_source::bp_source(bp_source&& s)
 		: dbg(s.dbg)
-		, src(std::move(s.src))
 		, defined(std::move(s.defined))
 		, waitverfy(std::move(s.waitverfy))
 		, verified(std::move(s.verified))
 	{
-		s.src.valid = false;
 	}
 
 	bp_source::~bp_source()
 	{
-		dbg.event_loadedsource("removed", this);
 	}
 
 	void bp_source::update(lua_State* L, lua::Debug* ar)
@@ -318,34 +269,19 @@ namespace vscode
 		return !verified.empty();
 	}
 
-	bp_function::bp_function(lua_State* L, lua::Debug* ar, debugger_impl& dbg, breakpoint* breakpoint)
-		: src(nullptr)
-	{
-		if (!lua_getinfo(L, "SL", (lua_Debug*)ar)) {
-			lua_pop(L, 1);
-			return;
-		}
-		source s(ar, dbg);
-		if (s.valid) {
-			src = &breakpoint->get_source(dbg, s);
-			src->update(L, ar);
-		}
-		lua_pop(L, 1);
-	}
-
-	breakpoint::breakpoint(debugger_impl& dbg)
+	breakpointMgr::breakpointMgr(debugger_impl& dbg)
 		: dbg_(dbg)
 		, files_()
 		, next_id_(0)
 	{ }
 
-	void breakpoint::clear()
+	void breakpointMgr::clear()
 	{
 		files_.clear();
 		memorys_.clear();
 	}
 
-	bool breakpoint::has(bp_source* src, size_t line, debug& debug) const
+	bool breakpointMgr::has(bp_source* src, size_t line, debug& debug) const
 	{
 		bp_breakpoint* bp = src->get(line);
 		if (!bp) {
@@ -354,25 +290,25 @@ namespace vscode
 		return bp->run(debug, dbg_);
 	}
 
-	bp_source& breakpoint::get_source(debugger_impl& dbg, source& source)
+	bp_source& breakpointMgr::get_source(source& source)
 	{
 		if (source.ref) {
 			auto it = memorys_.find(source.ref);
 			if (it != memorys_.end()) {
 				return it->second;
 			}
-			return memorys_.insert(std::make_pair(source.ref, bp_source(dbg, source))).first->second;
+			return memorys_.insert(std::make_pair(source.ref, bp_source(dbg_))).first->second;
 		}
 		else {
 			auto it = files_.find(source.path);
 			if (it != files_.end()) {
 				return it->second;
 			}
-			return files_.insert(std::make_pair(source.path, bp_source(dbg, source))).first->second;
+			return files_.insert(std::make_pair(source.path, bp_source(dbg_))).first->second;
 		}
 	}
 
-	bp_function* breakpoint::get_function(debug& debug)
+	bp_source* breakpointMgr::get_function(debug& debug)
 	{
 		if (debug.is_virtual()) {
 			return nullptr;
@@ -384,17 +320,25 @@ namespace vscode
 		}
 		intptr_t f = (intptr_t)lua_getprotohash(L, -1);
 		lua_pop(L, 1);
-		auto func = functions_.get(f);
-		if (!func) {
-			func = new bp_function(L, ar, dbg_, this);
-			functions_.put(f, func);
+		bp_source* func = nullptr;
+		if (functions_.get(f, func)) {
+			return func;
 		}
-		return func->src ? func : nullptr;
+		if (lua_getinfo(L, "SL", (lua_Debug*)ar)) {
+			source* s = dbg_.createSource(ar);
+			if (s && s->valid) {
+				func = &get_source(*s);
+				func->update(L, ar);
+			}
+		}
+		lua_pop(L, 1);
+		functions_.put(f, func);
+		return func;
 	}
 
-	void breakpoint::set_breakpoint(source& s, rapidjson::Value const& args, wprotocol& res)
+	void breakpointMgr::set_breakpoint(source& s, rapidjson::Value const& args, wprotocol& res)
 	{
-		bp_source& src = get_source(dbg_, s);
+		bp_source& src = get_source(s);
 		src.clear(args);
 		for (auto _ : res("breakpoints").Array())
 		{
@@ -406,18 +350,6 @@ namespace vscode
 				{
 					bp.output(res);
 				}
-			}
-		}
-	}
-
-	void breakpoint::loaded_sources(wprotocol& res)
-	{
-		for (auto _ : res("sources").Array()) {
-			for (auto& fp : files_) {
-				fp.second.src.output(res);
-			}
-			for (auto& mp : memorys_) {
-				mp.second.src.output(res);
 			}
 		}
 	}

@@ -603,17 +603,17 @@ namespace vscode {
 				lua::Debug entry;
 				lua_pushvalue(L, idx);
 				if (lua_getinfo(L, ">S", (lua_Debug*)&entry)) {
-					source s(&entry, dbg);
-					if (s.valid) {
-						if (s.ref) {
-							std::string_view pos = getFunctionCode((const char*)s.ref, entry.linedefined, entry.lastlinedefined);
+					source* s = dbg.createSource(&entry);
+					if (s && s->valid) {
+						if (s->ref) {
+							std::string_view pos = getFunctionCode((const char*)s->ref, entry.linedefined, entry.lastlinedefined);
 							if (!pos.empty()) {
 								return std::string(pos);
 							}
-							return base::format("%s:%d", (const char*)s.ref, entry.linedefined);
+							return base::format("%s:%d", (const char*)s->ref, entry.linedefined);
 						}
 						else {
-							return base::format("%s:%d", dbg.path_clientrelative(s.path), entry.linedefined);
+							return base::format("%s:%d", dbg.path_clientrelative(s->path), entry.linedefined);
 						}
 					}
 				}
