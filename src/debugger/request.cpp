@@ -170,7 +170,7 @@ namespace vscode
 							s->output(res);
 							res("id").Int(threadId << 16 | depth);
 							res("name").String("");  // TODO
-							res("line").Int(1); // TODO
+							res("line").Int(debug.currentline());
 							res("column").Int(1);
 						}
 					}

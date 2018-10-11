@@ -239,7 +239,6 @@ static void caller_is_luadll(void* callerAddress)
 
 int luaopen_debugger(lua_State* L)
 {
-	MessageBox(0, 0, 0, 0);
 	if (lua_rawgetp(L, LUA_REGISTRYINDEX, &DBG) != LUA_TNIL) {
 		return 1;
 	}
