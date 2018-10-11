@@ -15,7 +15,7 @@ namespace lua { struct Debug; }
 namespace vscode
 {
 	class debugger_impl;
-	class breakpoint;
+	class breakpointMgr;
 	struct bp_source;
 	struct source;
 
@@ -62,10 +62,10 @@ namespace vscode
 		bp_source& operator=(bp_source&) = delete;
 	};
 
-	class breakpoint
+	class breakpointMgr
 	{
 	public:
-		breakpoint(debugger_impl& dbg);
+		breakpointMgr(debugger_impl& dbg);
 		void clear();
 		bool has(bp_source* src, size_t line, lua_State* L, lua::Debug* ar) const;
 		bp_source*   get_function(lua_State* L, lua::Debug* ar);

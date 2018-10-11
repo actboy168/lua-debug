@@ -244,12 +244,12 @@ namespace vscode
 		if (ar->event != LUA_HOOKLINE) {
 			return;
 		}
-		thread->hook_line(L, ar, breakpoints_);
+		thread->hook_line(L, ar, breakpointmgr_);
 		if (!thread->cur_function) {
 			return;
 		}
 
-		if (ar->currentline > 0 && thread->has_breakpoint && breakpoints_.has(thread->cur_function, ar->currentline, L, ar)) {
+		if (ar->currentline > 0 && thread->has_breakpoint && breakpointmgr_.has(thread->cur_function, ar->currentline, L, ar)) {
 			run_stopped(thread, L, ar, "breakpoint");
 		}
 		else if (is_state(eState::stepping) && thread->check_step(L, ar)) {
@@ -580,7 +580,7 @@ namespace vscode
 		: seq(1)
 		, network_(io)
 		, state_(eState::birth)
-		, breakpoints_(*this)
+		, breakpointmgr_(*this)
 		, sourcemgr_(*this)
 		, custom_(nullptr)
 		, exception_()

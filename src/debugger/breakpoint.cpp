@@ -264,19 +264,19 @@ namespace vscode
 		return !verified.empty();
 	}
 
-	breakpoint::breakpoint(debugger_impl& dbg)
+	breakpointMgr::breakpointMgr(debugger_impl& dbg)
 		: dbg_(dbg)
 		, files_()
 		, next_id_(0)
 	{ }
 
-	void breakpoint::clear()
+	void breakpointMgr::clear()
 	{
 		files_.clear();
 		memorys_.clear();
 	}
 
-	bool breakpoint::has(bp_source* src, size_t line, lua_State* L, lua::Debug* ar) const
+	bool breakpointMgr::has(bp_source* src, size_t line, lua_State* L, lua::Debug* ar) const
 	{
 		bp_breakpoint* bp = src->get(line);
 		if (!bp) {
@@ -285,7 +285,7 @@ namespace vscode
 		return bp->run(L, ar, dbg_);
 	}
 
-	bp_source& breakpoint::get_source(source& source)
+	bp_source& breakpointMgr::get_source(source& source)
 	{
 		if (source.ref) {
 			auto it = memorys_.find(source.ref);
@@ -303,7 +303,7 @@ namespace vscode
 		}
 	}
 
-	bp_source* breakpoint::get_function(lua_State* L, lua::Debug* ar)
+	bp_source* breakpointMgr::get_function(lua_State* L, lua::Debug* ar)
 	{
 		if (!lua_getinfo(L, "f", (lua_Debug*)ar)) {
 			return nullptr;
@@ -326,7 +326,7 @@ namespace vscode
 		return func;
 	}
 
-	void breakpoint::set_breakpoint(source& s, rapidjson::Value const& args, wprotocol& res)
+	void breakpointMgr::set_breakpoint(source& s, rapidjson::Value const& args, wprotocol& res)
 	{
 		bp_source& src = get_source(s);
 		src.clear(args);

@@ -164,12 +164,12 @@ namespace vscode
 		}
 	}
 
-	void luathread::hook_line(lua_State* L, lua::Debug* ar, breakpoint& breakpoint)
+	void luathread::hook_line(lua_State* L, lua::Debug* ar, breakpointMgr& breakpointmgr)
 	{
 		if (!has_function) {
 			has_function = true;
 			has_breakpoint = false;
-			cur_function = breakpoint.get_function(L, ar);
+			cur_function = breakpointmgr.get_function(L, ar);
 			if (cur_function) {
 				has_breakpoint = cur_function->has_breakpoint();
 			}

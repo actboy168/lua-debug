@@ -25,7 +25,7 @@ namespace vscode
 			detach_all(false);
 		}
 
-		breakpoints_.clear();
+		breakpointmgr_.clear();
 		seq = 1;
 	}
 
@@ -251,7 +251,7 @@ namespace vscode
 		}
 		response_success(req, [&](wprotocol& res)
 		{
-			breakpoints_.set_breakpoint(*s, args, res);
+			breakpointmgr_.set_breakpoint(*s, args, res);
 		});
 		return false;
 	}

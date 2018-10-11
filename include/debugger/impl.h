@@ -159,7 +159,7 @@ namespace vscode
 		osthread             thread_;
 		io::base*            network_;
 		schema               schema_;
-		breakpoint           breakpoints_;
+		breakpointMgr        breakpointmgr_;
 		sourceMgr            sourcemgr_;
 		std::map<int, std::unique_ptr<luathread>> luathreads_;
 		std::map<std::string, std::string> source2client_;
