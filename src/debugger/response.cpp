@@ -160,7 +160,7 @@ namespace vscode
 		io_output(res);
 	}
 
-	void debugger_impl::event_breakpoint(const char* reason, bp_source* src, bp_breakpoint* bp)
+	void debugger_impl::event_breakpoint(const char* reason, bp_breakpoint* bp)
 	{
 		wprotocol res;
 		for (auto _ : res.Object())
@@ -174,9 +174,9 @@ namespace vscode
 				for (auto _ : res("breakpoint").Object())
 				{
 					// new
-					if (reason[0] == 'n') {
-						src->src.output(res);
-					}
+					//if (reason[0] == 'n') {
+					//	src->output(res);
+					//}
 					bp->output(res);
 				}
 			}
@@ -184,7 +184,7 @@ namespace vscode
 		io_output(res);
 	}
 
-	void debugger_impl::event_loadedsource(const char* reason, bp_source* src)
+	void debugger_impl::event_loadedsource(const char* reason, source* src)
 	{
 		wprotocol res;
 		for (auto _ : res.Object())
@@ -195,7 +195,7 @@ namespace vscode
 			for (auto _ : res("body").Object())
 			{
 				res("reason").String(reason);
-				src->src.output(res);
+				src->output(res);
 			}
 		}
 		io_output(res);

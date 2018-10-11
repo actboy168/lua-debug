@@ -43,6 +43,7 @@
     <ClCompile Include="..\..\src\debugger\osthread.cpp" />
     <ClCompile Include="..\..\src\debugger\debugger.cpp" />
     <ClCompile Include="..\..\src\debugger\io\socket.cpp" />
+    <ClCompile Include="..\..\src\debugger\source.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\debugger\bridge\delayload.h" />
@@ -66,6 +67,7 @@
     <ClInclude Include="..\..\include\debugger\osthread.h" />
     <ClInclude Include="..\..\include\debugger\debugger.h" />
     <ClInclude Include="..\..\include\debugger\io\socket.h" />
+    <ClInclude Include="..\..\include\debugger\source.h" />
     <ClInclude Include="..\..\include\debugger\thunk\thunk.h" />
   </ItemGroup>
   <ItemGroup>

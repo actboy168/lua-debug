@@ -17,16 +17,7 @@ namespace vscode
 	class debugger_impl;
 	class breakpoint;
 	struct bp_source;
-
-	struct source {
-		bool valid = false;
-		std::string path;
-		intptr_t ref = 0;
-		source();
-		source(lua::Debug* ar, debugger_impl& dbg);
-		source(rapidjson::Value const& info);
-		void output(wprotocol& res);
-	};
+	struct source;
 
 	struct bp_breakpoint {
 		size_t id;
@@ -52,13 +43,12 @@ namespace vscode
 	};
 
 	struct bp_source {
-		source src;
 		std::deque<eLine>               defined;
 		std::vector<bp_breakpoint>      waitverfy;
 		std::map<size_t, bp_breakpoint> verified;
 		debugger_impl&                  dbg;
 
-		bp_source(debugger_impl& dbg, source& s);
+		bp_source(debugger_impl& dbg);
 		bp_source(bp_source&& s);
 		~bp_source();
 		void update(lua_State* L, lua::Debug* ar);
@@ -86,7 +76,6 @@ namespace vscode
 		bp_function* get_function(lua_State* L, lua::Debug* ar);
 		bp_source&   get_source(debugger_impl& dbg, source& source);
 		void set_breakpoint(source& s, rapidjson::Value const& args, wprotocol& res);
-		void loaded_sources(wprotocol& res);
 		
 	private:
 		debugger_impl& dbg_;

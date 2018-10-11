@@ -452,9 +452,9 @@ namespace vscode
 					int status = lua_getinfo(L, "Sln", (lua_Debug*)ar);
 					assert(status);
 					if (*ar->what != 'C') {
-						source s(ar, *this);
-						if (s.valid) {
-							s.output(res);
+						source* s = sourcemgr_.create(ar);
+						if (s && s->valid) {
+							s->output(res);
 							res("line").Int(ar->currentline);
 						}
 					}
@@ -563,6 +563,10 @@ namespace vscode
 		lua_pop(L, 1);
 	}
 
+	source* debugger_impl::createSource(lua::Debug* ar) {
+		return sourcemgr_.create(ar);
+	}
+
 	debugger_impl::~debugger_impl()
 	{
 		thread_.stop();
@@ -577,6 +581,7 @@ namespace vscode
 		, network_(io)
 		, state_(eState::birth)
 		, breakpoints_(*this)
+		, sourcemgr_(*this)
 		, custom_(nullptr)
 		, exception_()
 		, luathreads_()

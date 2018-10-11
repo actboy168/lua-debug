@@ -11,6 +11,7 @@
 #include <rapidjson/document.h>
 #include <debugger/lua.h>
 #include <debugger/breakpoint.h>
+#include <debugger/source.h>
 #include <debugger/protocol.h>
 #include <debugger/debugger.h>
 #include <debugger/redirect.h>
@@ -55,6 +56,7 @@ namespace vscode
 		bool set_config(int level, const std::string& cfg, std::string& err);
 		void on_disconnect();
 		void init_internal_module(lua_State* L);
+		source* createSource(lua::Debug* ar);
 
 		void set_stepping(const char* reason);
 		void set_state(eState state);
@@ -104,8 +106,8 @@ namespace vscode
 
 	public:
 		void event_thread(luathread* thread, bool started);
-		void event_breakpoint(const char* reason, bp_source* src, bp_breakpoint* bp);
-		void event_loadedsource(const char* reason, bp_source* src);
+		void event_breakpoint(const char* reason, bp_breakpoint* bp);
+		void event_loadedsource(const char* reason, source* src);
 
 	public:
 		void response_error(rprotocol& req, const char *msg);
@@ -158,6 +160,7 @@ namespace vscode
 		io::base*            network_;
 		schema               schema_;
 		breakpoint           breakpoints_;
+		sourceMgr            sourcemgr_;
 		std::map<int, std::unique_ptr<luathread>> luathreads_;
 		std::map<std::string, std::string> source2client_;
 

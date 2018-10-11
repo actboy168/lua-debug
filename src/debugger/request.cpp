@@ -177,8 +177,8 @@ namespace vscode
 							continue;
 						}
 						else {
-							source s(&entry, *this);
-							if (!s.valid) {
+							source* s = sourcemgr_.create(&entry);
+							if (!s || !s->valid) {
 								depth++;
 								continue;
 							}
@@ -202,9 +202,12 @@ namespace vscode
 					}
 					else {
 						for (auto _ : res.Object()) {
-							source s(&entry, *this);
-							if (s.valid) {
-								s.output(res);
+							source* s = sourcemgr_.create(&entry);
+							if (!s) {
+								// TODO?
+							}
+							else if (s->valid) {
+								s->output(res);
 							}
 							else {
 								res("presentationHint").String("label");
@@ -247,8 +250,8 @@ namespace vscode
 	bool debugger_impl::request_set_breakpoints(rprotocol& req)
 	{
 		auto& args = req["arguments"];
-		vscode::source s(args["source"]);
-		if (!s.valid) {
+		vscode::source* s = sourcemgr_.create(args["source"]);
+		if (!s || !s->valid) {
 			response_error(req, "not yet implemented");
 			return false;
 		}
@@ -257,7 +260,7 @@ namespace vscode
 		}
 		response_success(req, [&](wprotocol& res)
 		{
-			breakpoints_.set_breakpoint(s, args, res);
+			breakpoints_.set_breakpoint(*s, args, res);
 		});
 		return false;
 	}
@@ -500,7 +503,7 @@ namespace vscode
 	{
 		response_success(req, [&](wprotocol& res)
 		{
-			breakpoints_.loaded_sources(res);
+			sourcemgr_.loadedSources(res);
 		});
 		return false;
 	}
