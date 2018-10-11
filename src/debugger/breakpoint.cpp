@@ -311,7 +311,9 @@ namespace vscode
 	bp_source* breakpointMgr::get_function(debug& debug)
 	{
 		if (debug.is_virtual()) {
-			return nullptr;
+			source* s = dbg_.openVSource();
+			bp_source* func = &get_source(*s);
+			return func;
 		}
 		lua_State* L = debug.L();
 		lua::Debug* ar = debug.value();

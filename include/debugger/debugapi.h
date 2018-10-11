@@ -3,6 +3,20 @@
 #include <debugger/lua.h>
 
 namespace vscode {
+	struct vdebugMgr {
+		source* s = nullptr;
+		void event_call(source* source) {
+			s = source;
+		}
+		void event_return() {
+			s = nullptr;
+		}
+
+		source* get_source() {
+			return s;
+		}
+	};
+
 	struct debug {
 		lua_State* lua;
 		lua::Debug* ar;
@@ -28,7 +42,7 @@ namespace vscode {
 			delete vr;
 		}
 
-		static debug event_call(lua_State* l, const char* source) {
+		static debug event_call(lua_State* l) {
 			debug d(l);
 			d.vr->event = LUA_HOOKCALL;
 			return d;

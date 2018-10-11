@@ -606,11 +606,15 @@ namespace vscode {
 					source* s = dbg.createSource(&entry);
 					if (s && s->valid) {
 						if (s->ref) {
-							std::string_view pos = getFunctionCode((const char*)s->ref, entry.linedefined, entry.lastlinedefined);
-							if (!pos.empty()) {
-								return std::string(pos);
+							std::string code;
+							if (dbg.getCode(s->ref, code)) {
+								std::string_view pos = getFunctionCode(code.c_str(), entry.linedefined, entry.lastlinedefined);
+								if (!pos.empty()) {
+									return std::string(pos);
+								}
+								return base::format("%s:%d", code.c_str(), entry.linedefined);
 							}
-							return base::format("%s:%d", (const char*)s->ref, entry.linedefined);
+							return base::format("Unk function: %08x", s->ref);
 						}
 						else {
 							return base::format("%s:%d", dbg.path_clientrelative(s->path), entry.linedefined);

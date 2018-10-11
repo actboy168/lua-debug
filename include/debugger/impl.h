@@ -59,6 +59,8 @@ namespace vscode
 		void init_internal_module(lua_State* L);
 		void event(const char* name, lua_State* L, int argf, int argl);
 		source* createSource(lua::Debug* ar);
+		bool    getCode(uint32_t ref, std::string& code);
+		source* openVSource();
 
 		void set_stepping(const char* reason);
 		void set_state(eState state);
@@ -163,6 +165,7 @@ namespace vscode
 		schema               schema_;
 		breakpointMgr        breakpointmgr_;
 		sourceMgr            sourcemgr_;
+		vdebugMgr            vdebugmgr_;
 		std::map<int, std::unique_ptr<luathread>> luathreads_;
 		std::map<std::string, std::string> source2client_;
 

@@ -15,7 +15,7 @@ namespace vscode {
 		{
 			if (ref) {
 				res("name").String("<Memory>");
-				res("sourceReference").Int64(ref);
+				res("sourceReference").Uint(ref);
 			}
 			else {
 				res("name").String(path::filename(path));
@@ -46,7 +46,7 @@ namespace vscode {
 			return createByPath(info["path"].Get<std::string>());
 		}
 		else if (info.HasMember("name") && info.HasMember("sourceReference")) {
-			return openByRef(info["sourceReference"].GetInt64());
+			return openByRef(info["sourceReference"].GetUint());
 		}
 		return nullptr;
 	}
@@ -56,7 +56,7 @@ namespace vscode {
 			return openByPath(info["path"].Get<std::string>());
 		}
 		else if (info.HasMember("name") && info.HasMember("sourceReference")) {
-			return openByRef(info["sourceReference"].GetInt64());
+			return openByRef(info["sourceReference"].GetUint());
 		}
 		return nullptr;
 	}
@@ -98,7 +98,7 @@ namespace vscode {
 		return nullptr;
 	}
 
-	source* sourceMgr::openByRef(int64_t ref) {
+	source* sourceMgr::openByRef(uint32_t ref) {
 		auto it = poolRef_.find(ref);
 		if (it != poolRef_.end()) {
 			return &(it->second);
@@ -118,8 +118,8 @@ namespace vscode {
 		}
 	}
 
-	bool sourceMgr::getCode(int64_t ref, std::string& code) {
-		auto it = poolCode_.find((uint32_t)ref);
+	bool sourceMgr::getCode(uint32_t ref, std::string& code) {
+		auto it = poolCode_.find(ref);
 		if (it != poolCode_.end()) {
 			code = it->second;
 			return true;

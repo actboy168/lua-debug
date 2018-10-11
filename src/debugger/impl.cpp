@@ -572,9 +572,11 @@ namespace vscode
 			return;
 		}
 		if (strcmp(name, "call") == 0) {
-			thread->dbg.hook(thread, debug::event_call(L, luaL_checkstring(L, argf)));
+			vdebugmgr_.event_call(sourcemgr_.createByRef(luaL_checkstring(L, argf)));
+			thread->dbg.hook(thread, debug::event_call(L));
 		}
 		else if (strcmp(name, "return") == 0) {
+			vdebugmgr_.event_return();
 			thread->dbg.hook(thread, debug::event_return(L));
 		}
 		else if (strcmp(name, "line") == 0) {
@@ -584,6 +586,14 @@ namespace vscode
 
 	source* debugger_impl::createSource(lua::Debug* ar) {
 		return sourcemgr_.create(ar);
+	}
+
+	bool debugger_impl::getCode(uint32_t ref, std::string& code) {
+		return sourcemgr_.getCode(ref, code);
+	}
+
+	source* debugger_impl::openVSource() {
+		return vdebugmgr_.get_source();
 	}
 
 	debugger_impl::~debugger_impl()

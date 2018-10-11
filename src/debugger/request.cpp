@@ -163,6 +163,20 @@ namespace vscode
 			lua::Debug entry;
 			for (auto _ : res("stackFrames").Array())
 			{
+				if (debug.is_virtual()) {
+					for (auto _ : res.Object()) {
+						source* s = openVSource();
+						if (s && s->valid) {
+							s->output(res);
+							res("id").Int(threadId << 16 | depth);
+							res("name").String("");  // TODO
+							res("line").Int(1); // TODO
+							res("column").Int(1);
+						}
+					}
+					curFrame++;
+				}
+
 				while (lua_getstack(L, depth, (lua_Debug*)&entry))
 				{
 					if (curFrame != 0 && (curFrame < startFrame || curFrame >= endFrame)) {
@@ -231,7 +245,7 @@ namespace vscode
 		lua_State* L = debug.L();
 		auto& args = req["arguments"];
 		std::string code;
-		if (sourcemgr_.getCode(args["sourceReference"].GetInt64(), code)) {
+		if (sourcemgr_.getCode(args["sourceReference"].GetUint(), code)) {
 			response_source(req, code);
 		}
 		else {
