@@ -35,12 +35,12 @@ namespace luaw {
 		}
 
 #if defined(_WIN32)
-		void listen_pipe(const char* name)
+		void listen_pipe(const wchar_t* name)
 		{
 			if (namedpipe || dbg) return;
 			namedpipe.reset(new vscode::io::namedpipe());
-namedpipe->open_server(base::u2w(name));
-dbg.reset(new vscode::debugger(namedpipe.get()));
+			namedpipe->open_server(name);
+			dbg.reset(new vscode::debugger(namedpipe.get()));
 		}
 #endif
 	};
@@ -74,7 +74,7 @@ dbg.reset(new vscode::debugger(namedpipe.get()));
 		}
 #if defined(_WIN32)
 		else if (strncmp(addr, "pipe:", 5) == 0) {
-			self.listen_pipe(addr + 5);
+			self.listen_pipe(base::u2w(addr + 5).c_str());
 		}
 #endif
 		else {
@@ -203,6 +203,17 @@ dbg.reset(new vscode::debugger(namedpipe.get()));
 		return constructor(L);
 	}
 }
+
+#if defined(_WIN32)
+vscode::debugger* create_debugger_by_listen_pipe(const wchar_t* name)
+{
+	if (!luaw::global) {
+		luaw::global.reset(new luaw::ud);
+	}
+	luaw::global->listen_pipe(name);
+	return luaw::global->dbg.get();
+}
+#endif
 
 #if defined(DEBUGGER_BRIDGE)
 static void caller_is_luadll(void* callerAddress)

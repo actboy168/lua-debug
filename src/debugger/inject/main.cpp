@@ -6,8 +6,7 @@
 #include <debugger/io/namedpipe.h>
 #include <debugger/inject/autoattach.h>
 
-static std::unique_ptr<vscode::io::namedpipe> io;
-static std::unique_ptr<vscode::debugger> dbg;
+static vscode::debugger* dbg = nullptr;
 static fs::path binPath;
 static std::wstring pipeName;
 static bool isAttachProcess = false;
@@ -27,11 +26,7 @@ static bool createDebugger() {
 		}
 	}
 	debugger_set_luadll(autoattach::luadll(), ::GetProcAddress);
-	io.reset(new vscode::io::namedpipe());
-	if (!io->open_server(pipeName)) {
-		return false;
-	}
-	dbg.reset(new vscode::debugger(io.get()));
+	dbg = create_debugger_by_listen_pipe(pipeName.c_str());
 	dbg->wait_client();
 	dbg->open_redirect(vscode::eRedirect::stdoutput);
 	dbg->open_redirect(vscode::eRedirect::stderror);
