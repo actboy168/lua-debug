@@ -32,7 +32,7 @@ namespace vscode
 		lua_State*     stepping_lua_state_;
 		bool           has_function;
 		bool           has_breakpoint;
-		bp_function*   cur_function;
+		bp_source*     cur_function;
 		observer       ob_;
 
 		luathread(int id, debugger_impl& dbg, lua_State* L);

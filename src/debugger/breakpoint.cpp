@@ -264,21 +264,6 @@ namespace vscode
 		return !verified.empty();
 	}
 
-	bp_function::bp_function(lua_State* L, lua::Debug* ar, debugger_impl& dbg, breakpoint* breakpoint)
-		: src(nullptr)
-	{
-		if (!lua_getinfo(L, "SL", (lua_Debug*)ar)) {
-			lua_pop(L, 1);
-			return;
-		}
-		source* s = dbg.createSource(ar);
-		if (s && s->valid) {
-			src = &breakpoint->get_source(dbg, *s);
-			src->update(L, ar);
-		}
-		lua_pop(L, 1);
-	}
-
 	breakpoint::breakpoint(debugger_impl& dbg)
 		: dbg_(dbg)
 		, files_()
@@ -318,19 +303,27 @@ namespace vscode
 		}
 	}
 
-	bp_function* breakpoint::get_function(lua_State* L, lua::Debug* ar)
+	bp_source* breakpoint::get_function(lua_State* L, lua::Debug* ar)
 	{
 		if (!lua_getinfo(L, "f", (lua_Debug*)ar)) {
 			return nullptr;
 		}
 		intptr_t f = (intptr_t)lua_getprotohash(L, -1);
 		lua_pop(L, 1);
-		auto func = functions_.get(f);
-		if (!func) {
-			func = new bp_function(L, ar, dbg_, this);
-			functions_.put(f, func);
+		bp_source* func = nullptr;
+		if (functions_.get(f, func)) {
+			return func;
 		}
-		return func->src ? func : nullptr;
+		if (lua_getinfo(L, "SL", (lua_Debug*)ar)) {
+			source* s = dbg_.createSource(ar);
+			if (s && s->valid) {
+				func = &get_source(dbg_, *s);
+				func->update(L, ar);
+			}
+		}
+		lua_pop(L, 1);
+		functions_.put(f, func);
+		return func;
 	}
 
 	void breakpoint::set_breakpoint(source& s, rapidjson::Value const& args, wprotocol& res)

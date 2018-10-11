@@ -171,7 +171,7 @@ namespace vscode
 			has_breakpoint = false;
 			cur_function = breakpoint.get_function(L, ar);
 			if (cur_function) {
-				has_breakpoint = cur_function->src->has_breakpoint();
+				has_breakpoint = cur_function->has_breakpoint();
 			}
 		}
 	}

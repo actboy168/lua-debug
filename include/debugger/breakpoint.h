@@ -62,18 +62,13 @@ namespace vscode
 		bp_source& operator=(bp_source&) = delete;
 	};
 
-	struct bp_function {
-		bp_source* src;
-		bp_function(lua_State* L, lua::Debug* ar, debugger_impl& dbg, breakpoint* breakpoint);
-	};
-
 	class breakpoint
 	{
 	public:
 		breakpoint(debugger_impl& dbg);
 		void clear();
 		bool has(bp_source* src, size_t line, lua_State* L, lua::Debug* ar) const;
-		bp_function* get_function(lua_State* L, lua::Debug* ar);
+		bp_source*   get_function(lua_State* L, lua::Debug* ar);
 		bp_source&   get_source(debugger_impl& dbg, source& source);
 		void set_breakpoint(source& s, rapidjson::Value const& args, wprotocol& res);
 		
@@ -81,7 +76,7 @@ namespace vscode
 		debugger_impl& dbg_;
 		std::map<std::string, bp_source, path::less<std::string>> files_;
 		std::map<intptr_t, bp_source>    memorys_;
-		hashmap<bp_function>             functions_;
+		hashmap<bp_source>               functions_;
 		size_t                           next_id_;
 	};
 }
