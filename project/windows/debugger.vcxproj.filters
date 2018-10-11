@@ -170,6 +170,9 @@
     <ClInclude Include="..\..\include\debugger\source.h">
       <Filter>inc</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\debugger\crc32.h">
+      <Filter>inc</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\include\debugger\thunk\thunk_linux_amd64.inl">

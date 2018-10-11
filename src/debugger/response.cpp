@@ -57,7 +57,7 @@ namespace vscode
 		io_output(res);
 	}
 
-	void debugger_impl::response_source(rprotocol& req, const char* content)
+	void debugger_impl::response_source(rprotocol& req, const std::string& content)
 	{
 		wprotocol res;
 		for (auto _ : res.Object())

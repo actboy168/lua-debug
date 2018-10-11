@@ -1,6 +1,7 @@
 #include <debugger/impl.h>
 #include <debugger/source.h>
 #include <debugger/breakpoint.h>
+#include <debugger/crc32.h>
 
 namespace vscode {
 
@@ -35,7 +36,7 @@ namespace vscode {
 			}
 		}
 		else {
-			return createByRef((int64_t)ar->source);
+			return createByRef(ar->source);
 		}
 		return nullptr;
 	}
@@ -45,7 +46,7 @@ namespace vscode {
 			return createByPath(info["path"].Get<std::string>());
 		}
 		else if (info.HasMember("name") && info.HasMember("sourceReference")) {
-			return createByRef(info["sourceReference"].GetInt64());
+			return openByRef(info["sourceReference"].GetInt64());
 		}
 		return nullptr;
 	}
@@ -74,16 +75,17 @@ namespace vscode {
 		return s;
 	}
 
-	source* sourceMgr::createByRef(int64_t ref) {
-		auto it = poolRef_.find(ref);
+	source* sourceMgr::createByRef(const std::string& code) {
+		int32_t hash = codeHash(code);
+		auto it = poolRef_.find(hash);
 		if (it != poolRef_.end()) {
 			return &(it->second);
 		}
-		auto res = poolRef_.insert(std::make_pair(ref, source()));
+		auto res = poolRef_.insert(std::make_pair(hash, source()));
 		assert(res.second);
 		source* s = &(res.first->second);
 		s->valid = true;
-		s->ref = ref;
+		s->ref = hash;
 		dbg_.event_loadedsource("new", s);
 		return s;
 	}
@@ -112,6 +114,32 @@ namespace vscode {
 			}
 			for (auto& p : poolRef_) {
 				p.second.output(res);
+			}
+		}
+	}
+
+	bool sourceMgr::getCode(int64_t ref, std::string& code) {
+		auto it = poolCode_.find((uint32_t)ref);
+		if (it != poolCode_.end()) {
+			code = it->second;
+			return true;
+		}
+		return false;
+	}
+
+	uint32_t sourceMgr::codeHash(const std::string& s) {
+		uint32_t hash = crc32((const unsigned char*)s.data(), s.size());
+		for (;;) {
+			auto it = poolCode_.find(hash);
+			if (it != poolCode_.end()) {
+				if (it->second == s) {
+					return hash;
+				}
+				hash++;
+			}
+			else {
+				poolCode_.insert(std::make_pair(hash, s));
+				return hash;
 			}
 		}
 	}

@@ -228,22 +228,13 @@ namespace vscode
 
 	bool debugger_impl::request_source(rprotocol& req, lua_State* L, lua::Debug *ar) {
 		auto& args = req["arguments"];
-		lua::Debug entry;
-		int64_t sourceReference = args["sourceReference"].GetInt64();
-		for (int depth = 0;; ++depth) {
-			if (!lua_getstack(L, depth, (lua_Debug*)&entry)) {
-				break;
-			}
-			int status = lua_getinfo(L, "S", (lua_Debug*)&entry);
-			if (status) {
-				const char *src = entry.source;
-				if ((int64_t)src == sourceReference) {
-					response_source(req, src);
-					return false;
-				}
-			}
+		std::string code;
+		if (sourcemgr_.getCode(args["sourceReference"].GetInt64(), code)) {
+			response_source(req, code);
 		}
-		response_source(req, "Source not available");
+		else {
+			response_source(req, "Source not available");
+		}
 		return false;
 	}
 

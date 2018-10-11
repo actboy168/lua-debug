@@ -117,7 +117,7 @@ namespace vscode
 	private:
 		void response_initialize(rprotocol& req);
 		void response_threads(rprotocol& req);
-		void response_source(rprotocol& req, const char* content);
+		void response_source(rprotocol& req, const std::string& content);
 
 	private:
 		void detach_all(bool release);
