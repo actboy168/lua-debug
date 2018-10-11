@@ -285,21 +285,21 @@ namespace vscode
 		return bp->run(L, ar, dbg_);
 	}
 
-	bp_source& breakpoint::get_source(debugger_impl& dbg, source& source)
+	bp_source& breakpoint::get_source(source& source)
 	{
 		if (source.ref) {
 			auto it = memorys_.find(source.ref);
 			if (it != memorys_.end()) {
 				return it->second;
 			}
-			return memorys_.insert(std::make_pair(source.ref, bp_source(dbg))).first->second;
+			return memorys_.insert(std::make_pair(source.ref, bp_source(dbg_))).first->second;
 		}
 		else {
 			auto it = files_.find(source.path);
 			if (it != files_.end()) {
 				return it->second;
 			}
-			return files_.insert(std::make_pair(source.path, bp_source(dbg))).first->second;
+			return files_.insert(std::make_pair(source.path, bp_source(dbg_))).first->second;
 		}
 	}
 
@@ -317,7 +317,7 @@ namespace vscode
 		if (lua_getinfo(L, "SL", (lua_Debug*)ar)) {
 			source* s = dbg_.createSource(ar);
 			if (s && s->valid) {
-				func = &get_source(dbg_, *s);
+				func = &get_source(*s);
 				func->update(L, ar);
 			}
 		}
@@ -328,7 +328,7 @@ namespace vscode
 
 	void breakpoint::set_breakpoint(source& s, rapidjson::Value const& args, wprotocol& res)
 	{
-		bp_source& src = get_source(dbg_, s);
+		bp_source& src = get_source(s);
 		src.clear(args);
 		for (auto _ : res("breakpoints").Array())
 		{
