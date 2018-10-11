@@ -15,7 +15,6 @@ namespace lua { struct Debug; }
 namespace vscode
 {
 	class debugger_impl;
-	class breakpointMgr;
 	struct bp_source;
 	struct source;
 
@@ -68,9 +67,11 @@ namespace vscode
 		breakpointMgr(debugger_impl& dbg);
 		void clear();
 		bool has(bp_source* src, size_t line, lua_State* L, lua::Debug* ar) const;
-		bp_source*   get_function(lua_State* L, lua::Debug* ar);
-		bp_source&   get_source(source& source);
-		void set_breakpoint(source& s, rapidjson::Value const& args, wprotocol& res);
+		bp_source* get_function(lua_State* L, lua::Debug* ar);
+		void       set_breakpoint(source& s, rapidjson::Value const& args, wprotocol& res);
+
+	private:
+		bp_source& get_source(source& source);
 		
 	private:
 		debugger_impl& dbg_;
