@@ -132,12 +132,13 @@ namespace vscode
 		return !stopOnEntry;
 	}
 
-	bool debugger_impl::request_threads(rprotocol& req, lua_State* L, lua::Debug *ar) {
+	bool debugger_impl::request_threads(rprotocol& req, debug& debug) {
 		response_threads(req);
 		return false;
 	}
 
-	bool debugger_impl::request_stack_trace(rprotocol& req, lua_State* L, lua::Debug *ar) {
+	bool debugger_impl::request_stack_trace(rprotocol& req, debug& debug) {
+		lua_State* L = debug.L();
 		auto& args = req["arguments"];
 		if (!args.HasMember("threadId") || !args["threadId"].IsInt()) {
 			response_error(req, "Not found thread");
@@ -223,7 +224,8 @@ namespace vscode
 		return false;
 	}
 
-	bool debugger_impl::request_source(rprotocol& req, lua_State* L, lua::Debug *ar) {
+	bool debugger_impl::request_source(rprotocol& req, debug& debug) {
+		lua_State* L = debug.L();
 		auto& args = req["arguments"];
 		lua::Debug entry;
 		int64_t sourceReference = args["sourceReference"].GetInt64();
@@ -296,7 +298,8 @@ namespace vscode
 		return false;
 	}
 
-	bool debugger_impl::request_scopes(rprotocol& req, lua_State* L, lua::Debug *ar) {
+	bool debugger_impl::request_scopes(rprotocol& req, debug& debug) {
+		lua_State* L = debug.L();
 		auto& args = req["arguments"];
 		if (!args.HasMember("frameId")) {
 			response_error(req, "Not found frame");
@@ -314,7 +317,8 @@ namespace vscode
 		return false;
 	}
 
-	bool debugger_impl::request_variables(rprotocol& req, lua_State* L, lua::Debug *ar) {
+	bool debugger_impl::request_variables(rprotocol& req, debug& debug) {
+		lua_State* L = debug.L();
 		auto& args = req["arguments"];
 		int64_t valueId = args["variablesReference"].GetInt64();
 		int threadId = valueId >> 32;
@@ -328,7 +332,8 @@ namespace vscode
 		return false;
 	}
 
-	bool debugger_impl::request_set_variable(rprotocol& req, lua_State *L, lua::Debug *ar) {
+	bool debugger_impl::request_set_variable(rprotocol& req, debug& debug) {
+		lua_State* L = debug.L();
 		auto& args = req["arguments"];
 		int64_t valueId = args["variablesReference"].GetInt64();
 		int threadId = valueId >> 32;
@@ -356,7 +361,7 @@ namespace vscode
 		return true;
 	}
 
-	bool debugger_impl::request_stepin(rprotocol& req, lua_State* L, lua::Debug *ar)
+	bool debugger_impl::request_stepin(rprotocol& req, debug& debug)
 	{
 		auto& args = req["arguments"];
 		if (!args.HasMember("threadId") || !args["threadId"].IsInt()) {
@@ -375,8 +380,9 @@ namespace vscode
 		return true;
 	}
 
-	bool debugger_impl::request_stepout(rprotocol& req, lua_State* L, lua::Debug *ar)
+	bool debugger_impl::request_stepout(rprotocol& req, debug& debug)
 	{
+		lua_State* L = debug.L();
 		auto& args = req["arguments"];
 		if (!args.HasMember("threadId") || !args["threadId"].IsInt()) {
 			response_error(req, "Not found thread");
@@ -389,13 +395,14 @@ namespace vscode
 			return false;
 		}
 		set_stepping("step");
-		thread->step_out(L, ar);
+		thread->step_out(L);
 		response_success(req);
 		return true;
 	}
 
-	bool debugger_impl::request_next(rprotocol& req, lua_State* L, lua::Debug *ar)
+	bool debugger_impl::request_next(rprotocol& req, debug& debug)
 	{
+		lua_State* L = debug.L();
 		auto& args = req["arguments"];
 		if (!args.HasMember("threadId") || !args["threadId"].IsInt()) {
 			response_error(req, "Not found thread");
@@ -408,12 +415,12 @@ namespace vscode
 			return false;
 		}
 		set_stepping("step");
-		thread->step_over(L, ar);
+		thread->step_over(L);
 		response_success(req);
 		return true;
 	}
 
-	bool debugger_impl::request_continue(rprotocol& req, lua_State* L, lua::Debug *ar)
+	bool debugger_impl::request_continue(rprotocol& req, debug& debug)
 	{
 		response_success(req);
 		set_state(eState::running);
@@ -439,8 +446,9 @@ namespace vscode
 		return true;
 	}
 
-	bool debugger_impl::request_evaluate(rprotocol& req, lua_State *L, lua::Debug *ar)
+	bool debugger_impl::request_evaluate(rprotocol& req, debug& debug)
 	{
+		lua_State* L = debug.L();
 		auto& args = req["arguments"];
 		if (!args.HasMember("frameId")) {
 			response_error(req, "Not yet implemented.");
@@ -473,8 +481,9 @@ namespace vscode
 		return std::string(lua_typename(L, lua_type(L, idx)));
 	}
 
-	bool debugger_impl::request_exception_info(rprotocol& req, lua_State *L, lua::Debug *ar)
+	bool debugger_impl::request_exception_info(rprotocol& req, debug& debug)
 	{
+		lua_State* L = debug.L();
 		//TODO: threadId
 		response_success(req, [&](wprotocol& res)
 		{
@@ -496,7 +505,7 @@ namespace vscode
 		return false;
 	}
 
-	bool debugger_impl::request_loaded_sources(rprotocol& req, lua_State *L, lua::Debug *ar)
+	bool debugger_impl::request_loaded_sources(rprotocol& req, debug& debug)
 	{
 		response_success(req, [&](wprotocol& res)
 		{

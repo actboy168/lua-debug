@@ -14,6 +14,7 @@ namespace lua { struct Debug; }
 
 namespace vscode
 {
+	struct debug;
 	class debugger_impl;
 	class breakpoint;
 	struct bp_source;
@@ -40,7 +41,7 @@ namespace vscode
 
 		bp_breakpoint(size_t id, rapidjson::Value const& info);
 		bool verify(bp_source& src, debugger_impl* dbg = nullptr);
-		bool run(lua_State* L, lua::Debug* ar, debugger_impl& dbg);
+		bool run(debug& debug, debugger_impl& dbg);
 		void output(wprotocol& res);
 		void update(rapidjson::Value const& info);
 	};
@@ -82,8 +83,8 @@ namespace vscode
 	public:
 		breakpoint(debugger_impl& dbg);
 		void clear();
-		bool has(bp_source* src, size_t line, lua_State* L, lua::Debug* ar) const;
-		bp_function* get_function(lua_State* L, lua::Debug* ar);
+		bool has(bp_source* src, size_t line, debug& debug) const;
+		bp_function* get_function(debug& debug);
 		bp_source&   get_source(debugger_impl& dbg, source& source);
 		void set_breakpoint(source& s, rapidjson::Value const& args, wprotocol& res);
 		void loaded_sources(wprotocol& res);

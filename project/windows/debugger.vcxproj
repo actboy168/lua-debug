@@ -26,6 +26,7 @@
     <ClCompile Include="..\..\src\debugger\breakpoint.cpp" />
     <ClCompile Include="..\..\src\debugger\closeprocess.cpp" />
     <ClCompile Include="..\..\src\debugger\config.cpp" />
+    <ClCompile Include="..\..\src\debugger\debugapi.cpp" />
     <ClCompile Include="..\..\src\debugger\evaluate.cpp" />
     <ClCompile Include="..\..\src\debugger\i18n.cpp" />
     <ClCompile Include="..\..\src\debugger\impl.cpp" />
@@ -50,6 +51,7 @@
     <ClInclude Include="..\..\include\debugger\breakpoint.h" />
     <ClInclude Include="..\..\include\debugger\capabilities.h" />
     <ClInclude Include="..\..\include\debugger\config.h" />
+    <ClInclude Include="..\..\include\debugger\debugapi.h" />
     <ClInclude Include="..\..\include\debugger\evaluate.h" />
     <ClInclude Include="..\..\include\debugger\hashmap.h" />
     <ClInclude Include="..\..\include\debugger\impl.h" />

@@ -45,12 +45,12 @@ namespace vscode
 		void disable_thread();
 		void set_step(step step);
 		bool is_step(step step);
-		bool check_step(lua_State* L, lua::Debug* ar);
+		bool check_step(lua_State* L);
 		void step_in();
-		void step_over(lua_State* L, lua::Debug* ar);
-		void step_out(lua_State* L, lua::Debug* ar);
-		void hook_callret(lua_State* L, lua::Debug* ar);
-		void hook_line(lua_State* L, lua::Debug* ar, breakpoint& breakpoint);
+		void step_over(lua_State* L);
+		void step_out(lua_State* L);
+		void hook_callret(debug& debug);
+		void hook_line(debug& debug, breakpoint& breakpoint);
 		void update_breakpoint();
 
 		void reset_session(lua_State* L);

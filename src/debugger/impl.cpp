@@ -174,12 +174,12 @@ namespace vscode
 		return false;
 	}
 
-	bool debugger_impl::update_hook(rprotocol& req, lua_State *L, lua::Debug *ar, bool& quit)
+	bool debugger_impl::update_hook(rprotocol& req, debug& debug, bool& quit)
 	{
 		auto it = hook_dispatch_.find(req["command"].Get<std::string>());
 		if (it != hook_dispatch_.end())
 		{
-			quit = it->second(req, L, ar);
+			quit = it->second(req, debug);
 			return true;
 		}
 		return false;
@@ -214,19 +214,21 @@ namespace vscode
 		exception_nolock(thread, L, eException::lua_panic, 0);
 	}
 
-	void debugger_impl::hook(luathread* thread, lua_State *L, lua::Debug *ar)
+	void debugger_impl::hook(luathread* thread, debug& debug)
 	{
 		std::lock_guard<osthread> lock(thread_);
 
 		if (is_state(eState::terminated) || is_state(eState::birth) || is_state(eState::initialized)) {
 			return;
 		}
+		
+		lua_State* L = debug.L();
 
-		if (ar->event == LUA_HOOKCALL || ar->event == LUA_HOOKTAILCALL || ar->event == LUA_HOOKRET) {
-			thread->hook_callret(L, ar);
+		if (debug.event() == LUA_HOOKCALL || debug.event() == LUA_HOOKTAILCALL || debug.event() == LUA_HOOKRET) {
+			thread->hook_callret(debug);
 			return;
 		}
-		if (ar->event == LUA_HOOKEXCEPTION) {
+		if (debug.event() == LUA_HOOKEXCEPTION) {
 			switch (traceCall(L, 0)) {
 			case eCall::pcall:
 				exception_nolock(thread, L, eException::pcall, 0);
@@ -241,19 +243,19 @@ namespace vscode
 			}
 			return;
 		}
-		if (ar->event != LUA_HOOKLINE) {
+		if (debug.event() != LUA_HOOKLINE) {
 			return;
 		}
-		thread->hook_line(L, ar, breakpoints_);
+		thread->hook_line(debug, breakpoints_);
 		if (!thread->cur_function) {
 			return;
 		}
 
-		if (ar->currentline > 0 && thread->has_breakpoint && breakpoints_.has(thread->cur_function->src, ar->currentline, L, ar)) {
-			run_stopped(thread, L, ar, "breakpoint");
+		if (debug.currentline() > 0 && thread->has_breakpoint && breakpoints_.has(thread->cur_function->src, debug.currentline(), debug)) {
+			run_stopped(thread, debug, "breakpoint");
 		}
-		else if (is_state(eState::stepping) && thread->check_step(L, ar)) {
-			run_stopped(thread, L, ar, stopReason_.c_str());
+		else if (is_state(eState::stepping) && thread->check_step(L)) {
+			run_stopped(thread, debug, stopReason_.c_str());
 		}
 	}
 
@@ -294,16 +296,16 @@ namespace vscode
 		{
 			lua_pushinteger(L, level);
 			if (!hasFrame(L) && lua_type(L, -2) == LUA_TSTRING) {
-				run_stopped(thread, L, &ar, "exception", lua_tostring(L, -2));
+				run_stopped(thread, debug(L, &ar), "exception", lua_tostring(L, -2));
 			}
 			else {
-				run_stopped(thread, L, &ar, "exception");
+				run_stopped(thread, debug(L, &ar), "exception");
 			}
 			lua_pop(L, 1);
 		}
 	}
 
-	void debugger_impl::run_stopped(luathread* thread, lua_State *L, lua::Debug *ar, const char* reason, const char* description)
+	void debugger_impl::run_stopped(luathread* thread, debug& debug, const char* reason, const char* description)
 	{
 		event_stopped(thread, reason, description);
 
@@ -331,14 +333,14 @@ namespace vscode
 				if (update_main(req, quit)) {
 					continue;
 				}
-				if (update_hook(req, L, ar, quit)) {
+				if (update_hook(req, debug, quit)) {
 					continue;
 				}
 			}
 			response_error(req, base::format("`%s` not yet implemented,(stopped)", req["command"].GetString()).c_str());
 		}
 
-		thread->reset_session(L);
+		thread->reset_session(debug.L());
 	}
 
 	void debugger_impl::run_idle()
@@ -563,6 +565,23 @@ namespace vscode
 		lua_pop(L, 1);
 	}
 
+	void debugger_impl::event(const char* name, lua_State* L, int argf, int argl)
+	{
+		luathread* thread = find_luathread(L);
+		if (!thread) {
+			return;
+		}
+		if (strcmp(name, "call") == 0) {
+			thread->dbg.hook(thread, debug::event_call(L, luaL_checkstring(L, argf)));
+		}
+		else if (strcmp(name, "return") == 0) {
+			thread->dbg.hook(thread, debug::event_return(L));
+		}
+		else if (strcmp(name, "line") == 0) {
+			thread->dbg.hook(thread, debug::event_line(L, (int)luaL_checkinteger(L, argf)));
+		}
+	}
+
 	debugger_impl::~debugger_impl()
 	{
 		thread_.stop();
@@ -570,7 +589,7 @@ namespace vscode
 	}
 
 #define DBG_REQUEST_MAIN(name) std::bind(&debugger_impl::name, this, std::placeholders::_1)
-#define DBG_REQUEST_HOOK(name) std::bind(&debugger_impl::name, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
+#define DBG_REQUEST_HOOK(name) std::bind(&debugger_impl::name, this, std::placeholders::_1, std::placeholders::_2)
 
 	debugger_impl::debugger_impl(io::base* io)
 		: seq(1)

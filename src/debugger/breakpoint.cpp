@@ -176,8 +176,13 @@ namespace vscode
 		//if (log.empty()) { res("logMessage").String(log); }
 	}
 
-	bool bp_breakpoint::run(lua_State* L, lua::Debug* ar, debugger_impl& dbg)
+	bool bp_breakpoint::run(debug& debug, debugger_impl& dbg)
 	{
+		if (debug.is_virtual()) {
+			return true;
+		}
+		lua_State* L = debug.L();
+		lua::Debug* ar = debug.value();
 		if (!cond.empty() && !evaluate_isok(L, ar, cond)) {
 			return false;
 		}
@@ -340,13 +345,13 @@ namespace vscode
 		memorys_.clear();
 	}
 
-	bool breakpoint::has(bp_source* src, size_t line, lua_State* L, lua::Debug* ar) const
+	bool breakpoint::has(bp_source* src, size_t line, debug& debug) const
 	{
 		bp_breakpoint* bp = src->get(line);
 		if (!bp) {
 			return false;
 		}
-		return bp->run(L, ar, dbg_);
+		return bp->run(debug, dbg_);
 	}
 
 	bp_source& breakpoint::get_source(debugger_impl& dbg, source& source)
@@ -367,8 +372,13 @@ namespace vscode
 		}
 	}
 
-	bp_function* breakpoint::get_function(lua_State* L, lua::Debug* ar)
+	bp_function* breakpoint::get_function(debug& debug)
 	{
+		if (debug.is_virtual()) {
+			return nullptr;
+		}
+		lua_State* L = debug.L();
+		lua::Debug* ar = debug.value();
 		if (!lua_getinfo(L, "f", (lua_Debug*)ar)) {
 			return nullptr;
 		}

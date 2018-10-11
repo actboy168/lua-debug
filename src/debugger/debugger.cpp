@@ -79,6 +79,11 @@ namespace vscode
 	{
 		return impl_->init_internal_module(L);
 	}
+
+	void debugger::event(const char* name, lua_State* L, int argf, int argl)
+	{
+		impl_->event(name, L, argf, argl);
+	}
 }
 
 void debugger_set_luadll(void* luadll, void* getluaapi)

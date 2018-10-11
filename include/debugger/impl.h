@@ -18,6 +18,7 @@
 #include <debugger/io/base.h>
 #include <debugger/io/helper.h>
 #include <debugger/osthread.h>
+#include <debugger/debugapi.h>
 #include <base/util/string_view.h>
 
 namespace vscode
@@ -40,10 +41,10 @@ namespace vscode
 		void close();
 		void io_close();
 		void panic(luathread* thread, lua_State* L);
-		void hook(luathread* thread, lua_State* L, lua::Debug* ar);
+		void hook(luathread* thread, debug& debug);
 		void exception(lua_State* L, eException exceptionType, int level);
 		void exception_nolock(luathread* thread, lua_State* L, eException exceptionType, int level);
-		void run_stopped(luathread* thread, lua_State* L, lua::Debug* ar, const char* reason, const char* description = nullptr);
+		void run_stopped(luathread* thread, debug& debug, const char* reason, const char* description = nullptr);
 		void run_idle();
 		void update();
 		void wait_client();
@@ -55,6 +56,7 @@ namespace vscode
 		bool set_config(int level, const std::string& cfg, std::string& err);
 		void on_disconnect();
 		void init_internal_module(lua_State* L);
+		void event(const char* name, lua_State* L, int argf, int argl);
 
 		void set_stepping(const char* reason);
 		void set_state(eState state);
@@ -82,19 +84,19 @@ namespace vscode
 		bool request_set_exception_breakpoints(rprotocol& req);
 
 	private:
-		bool request_threads(rprotocol& req, lua_State *L, lua::Debug *ar);
-		bool request_stack_trace(rprotocol& req, lua_State *L, lua::Debug *ar);
-		bool request_source(rprotocol& req, lua_State *L, lua::Debug *ar);
-		bool request_scopes(rprotocol& req, lua_State *L, lua::Debug *ar);
-		bool request_variables(rprotocol& req, lua_State *L, lua::Debug *ar);
-		bool request_set_variable(rprotocol& req, lua_State *L, lua::Debug *ar);
-		bool request_stepin(rprotocol& req, lua_State *L, lua::Debug *ar);
-		bool request_stepout(rprotocol& req, lua_State *L, lua::Debug *ar);
-		bool request_next(rprotocol& req, lua_State *L, lua::Debug *ar);
-		bool request_continue(rprotocol& req, lua_State *L, lua::Debug *ar);
-		bool request_evaluate(rprotocol& req, lua_State *L, lua::Debug *ar);
-		bool request_exception_info(rprotocol& req, lua_State *L, lua::Debug *ar);
-		bool request_loaded_sources(rprotocol& req, lua_State *L, lua::Debug *ar);
+		bool request_threads(rprotocol& req, debug& debug);
+		bool request_stack_trace(rprotocol& req, debug& debug);
+		bool request_source(rprotocol& req, debug& debug);
+		bool request_scopes(rprotocol& req, debug& debug);
+		bool request_variables(rprotocol& req, debug& debug);
+		bool request_set_variable(rprotocol& req, debug& debug);
+		bool request_stepin(rprotocol& req, debug& debug);
+		bool request_stepout(rprotocol& req, debug& debug);
+		bool request_next(rprotocol& req, debug& debug);
+		bool request_continue(rprotocol& req, debug& debug);
+		bool request_evaluate(rprotocol& req, debug& debug);
+		bool request_exception_info(rprotocol& req, debug& debug);
+		bool request_loaded_sources(rprotocol& req, debug& debug);
 		
 	private:
 		void event_stopped(luathread* thread, const char *msg, const char* description);
@@ -120,7 +122,7 @@ namespace vscode
 	private:
 		void detach_all(bool release);
 		bool update_main(rprotocol& req, bool& quit);
-		bool update_hook(rprotocol& req, lua_State *L, lua::Debug *ar, bool& quit);
+		bool update_hook(rprotocol& req, debug& debug, bool& quit);
 		void update_redirect();
 
 	private:
@@ -151,8 +153,8 @@ namespace vscode
 		config                      config_;
 		bool                        nodebug_;
 		translator_t*               translator_;
-		std::map<std::string, std::function<bool(rprotocol&)>>                             main_dispatch_;
-		std::map<std::string, std::function<bool(rprotocol&, lua_State*, lua::Debug *ar)>> hook_dispatch_;
+		std::map<std::string, std::function<bool(rprotocol&)>>         main_dispatch_;
+		std::map<std::string, std::function<bool(rprotocol&, debug&)>> hook_dispatch_;
 
 		osthread             thread_;
 		io::base*            network_;

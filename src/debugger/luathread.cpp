@@ -32,7 +32,7 @@ namespace vscode
 	static void debugger_hook(luathread* thread, lua_State *L, lua::Debug *ar)
 	{
 		if (!thread->enable) return;
-		thread->dbg.hook(thread, L, ar);
+		thread->dbg.hook(thread, debug(L, ar));
 	}
 
 	static void debugger_panic(luathread* thread, lua_State *L)
@@ -117,7 +117,7 @@ namespace vscode
 		return step_ == step;
 	}
 
-	bool luathread::check_step(lua_State* L, lua::Debug* ar)
+	bool luathread::check_step(lua_State* L)
 	{
 		if (is_step(luathread::step::in)) return true;
 		return stepping_lua_state_ == L && stepping_current_level_ <= stepping_target_level_;
@@ -128,14 +128,14 @@ namespace vscode
 		set_step(step::in);
 	}
 
-	void luathread::step_over(lua_State* L, lua::Debug* ar)
+	void luathread::step_over(lua_State* L)
 	{
 		set_step(step::over);
 		stepping_target_level_ = stepping_current_level_ = get_stacklevel(L);
 		stepping_lua_state_ = L;
 	}
 
-	void luathread::step_out(lua_State* L, lua::Debug* ar)
+	void luathread::step_out(lua_State* L)
 	{
 		set_step(step::out);
 		stepping_target_level_ = stepping_current_level_ = get_stacklevel(L);
@@ -143,12 +143,13 @@ namespace vscode
 		stepping_lua_state_ = L;
 	}
 
-	void luathread::hook_callret(lua_State* L, lua::Debug* ar)
+	void luathread::hook_callret(debug& debug)
 	{
+		lua_State* L = debug.L();
 		has_function = false;
 		has_breakpoint = false;
 		cur_function = nullptr;
-		switch (ar->event) {
+		switch (debug.event()) {
 		case LUA_HOOKTAILCALL:
 			break;
 		case LUA_HOOKCALL:
@@ -164,12 +165,12 @@ namespace vscode
 		}
 	}
 
-	void luathread::hook_line(lua_State* L, lua::Debug* ar, breakpoint& breakpoint)
+	void luathread::hook_line(debug& debug, breakpoint& breakpoint)
 	{
 		if (!has_function) {
 			has_function = true;
 			has_breakpoint = false;
-			cur_function = breakpoint.get_function(L, ar);
+			cur_function = breakpoint.get_function(debug);
 			if (cur_function) {
 				has_breakpoint = cur_function->src->has_breakpoint();
 			}

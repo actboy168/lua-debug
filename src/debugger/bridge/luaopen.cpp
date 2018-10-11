@@ -168,6 +168,13 @@ namespace luaw {
 		return 1;
 	}
 
+	static int event(lua_State* L)
+	{
+		ud& self = to(L, 1);
+		self.dbg->event(luaL_checkstring(L, 2), L, 3, lua_gettop(L));
+		return 0;
+	}
+
 	static int mt_gc(lua_State* L)
 	{
 		ud& self = to(L, 1);
@@ -192,6 +199,7 @@ namespace luaw {
 			{ "config", config },
 			{ "redirect", redirect },
 			{ "guard", guard },
+			{ "event", event },
 			{ "__gc", mt_gc },
 			{ NULL, NULL },
 		};
@@ -231,6 +239,7 @@ static void caller_is_luadll(void* callerAddress)
 
 int luaopen_debugger(lua_State* L)
 {
+	MessageBox(0, 0, 0, 0);
 	if (lua_rawgetp(L, LUA_REGISTRYINDEX, &DBG) != LUA_TNIL) {
 		return 1;
 	}

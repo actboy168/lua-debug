@@ -64,6 +64,7 @@ namespace vscode
 		void open_redirect(eRedirect type, lua_State* L = nullptr);
 		bool set_config(int level, const std::string& cfg, std::string& err);
 		void init_internal_module(lua_State* L);
+		void event(const char* name, lua_State* L, int argf, int argl);
 
 	private:
 		debugger_impl* impl_;
