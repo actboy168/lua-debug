@@ -308,6 +308,23 @@ namespace vscode {
 		return true;
 	}
 
+	static bool get_userdef(debug& debug, int type, int n)
+	{
+		if (!debug.is_virtual()) {
+			return false;
+		}
+		lua_State* L = debug.L();
+		if (LUA_TTABLE == lua_geti(L, debug.get_scope(), type)) {
+			if (LUA_TTABLE == lua_getfield(L, -1, "value")) {
+				lua_remove(L, -2);
+				return true;
+			}
+			lua_pop(L, 1);
+		}
+		lua_pop(L, 1);
+		return false;
+	}
+
 	struct var {
 		int         n;
 		std::string name;
@@ -319,20 +336,20 @@ namespace vscode {
 			return name < that.name;
 		}
 
-		var(lua_State* L, int n, const char* key, int value, debugger_impl& dbg)
+		var(lua_State* L, int n, const char* key, int valueidx, debugger_impl& dbg)
 			: n(n)
 			, name(key)
-			, value(getValue(L, value, dbg))
-			, type(getType(L, value))
-			, extand(canExtand(L, value))
+			, value(getValue(L, valueidx, dbg))
+			, type(getType(L, valueidx))
+			, extand(canExtand(L, valueidx))
 		{ }
 
-		var(lua_State* L, int n, int key, int value, debugger_impl& dbg)
+		var(lua_State* L, int n, int key, int valueidx, debugger_impl& dbg)
 		: n(n)
 		, name(getName(L, key))
-		, value(getValue(L, value, dbg))
-		, type(getType(L, value))
-		, extand(canExtand(L, value))
+		, value(getValue(L, valueidx, dbg))
+		, type(getType(L, valueidx))
+		, extand(canExtand(L, valueidx))
 		{ }
 
 		static int safe_callmeta(lua_State *L, int obj, const char *event) {
@@ -727,14 +744,44 @@ namespace vscode {
 		, frameId(frameId)
 	{ }
 
-	void frame::new_scope(lua_State* L, lua::Debug* ar, wprotocol& res)
+	void frame::new_scope(debug& debug, lua::Debug* ar, wprotocol& res)
 	{
-		for (auto _ : res("scopes").Array()) 
-		{
-			for (auto scope : scopes)
-			{
-				if (has_scopes(L, ar, scope.type))
-				{
+		for (auto _ : res("scopes").Array()) {
+			lua_State* L = debug.L();
+			if (debug.is_virtual()) {
+				for (int n = 1; ; ++n) {
+					if (LUA_TTABLE == lua_geti(L, debug.get_scope(), n)) {
+						if (LUA_TSTRING == lua_getfield(L, -1, "name")) {
+							const char* name = lua_tostring(L, -1);
+							for (auto _ : res.Object()) {
+								res("name").String(name);
+								res("variablesReference").Int64(new_variable(-1, value::Type(int(value::Type::userdef) + n), 0));
+								res("expensive").Bool(true);
+							}
+						}
+						lua_pop(L, 1);
+					}
+					else {
+						break;
+					}
+					lua_pop(L, 1);
+				}
+
+				for (size_t i = 3; i <= 4; ++i) {
+					auto scope = scopes[i];
+					if (has_scopes(L, ar, scope.type)) {
+						for (auto _ : res.Object()) {
+							res("name").String(scope.name);
+							res("variablesReference").Int64(new_variable(-1, scope.type, 0));
+							res("expensive").Bool(scope.expensive);
+						}
+					}
+				}
+				return;
+			}
+
+			for (auto scope : scopes) {
+				if (has_scopes(L, ar, scope.type)) {
 					for (auto _ : res.Object())
 					{
 						res("name").String(scope.name);
@@ -764,8 +811,13 @@ namespace vscode {
 		return (1 + n) | (frameId << 16) | ((int64_t)threadId << 32);
 	}
 
-	bool frame::push_value(lua_State* L, lua::Debug* ar, const value& v)
+	bool frame::push_value(debug& debug, const value& v)
 	{
+		if (v.type > value::Type::userdef) {
+			return get_userdef(debug, int(v.type) - int(value::Type::userdef), v.index);
+		}
+		lua_State* L = debug.L();
+		lua::Debug* ar = debug.value();
 		switch (v.type) {
 		case value::Type::upvalue: return get_upvalue(L, ar, v.index);
 		case value::Type::local: return get_local(L, ar, v.index);
@@ -774,7 +826,7 @@ namespace vscode {
 		}
 
 		if (v.parent != -1) {
-			if (!push_value(L, ar, values[v.parent])) {
+			if (!push_value(debug, values[v.parent])) {
 				return false;
 			}
 		}
@@ -821,10 +873,11 @@ namespace vscode {
 		return false;
 	}
 
-	bool frame::push_value(lua_State* L, lua::Debug* ar, size_t value_idx)
+	bool frame::push_value(debug& debug, size_t value_idx)
 	{
+		lua_State* L = debug.L();
 		int n = lua_gettop(L);
-		if (!push_value(L, ar, values[value_idx])) {
+		if (!push_value(debug, values[value_idx])) {
 			lua_settop(L, n);
 			return false;
 		}
@@ -913,7 +966,7 @@ finish:
 		}
 	}
 
-	void frame::extand_table(lua_State* L, lua::Debug* ar, debugger_impl& dbg, value const& v, wprotocol& res)
+	void frame::extand_table(lua_State* L, debugger_impl& dbg, value const& v, wprotocol& res)
 	{
 		int n = 0;
 		std::set<var> vars;
@@ -950,7 +1003,7 @@ finish:
 		}
 	}
 
-	void frame::extand_metatable(lua_State* L, lua::Debug* ar, debugger_impl& dbg, value const& v, wprotocol& res)
+	void frame::extand_metatable(lua_State* L, debugger_impl& dbg, value const& v, wprotocol& res)
 	{
 		if (lua_getmetatable(L, -1)) {
 			var var(L, 0, "[metatable]", -1, dbg);
@@ -1031,8 +1084,25 @@ finish:
 		}
 	}
 
-	void frame::get_variable(lua_State* L, lua::Debug* ar, debugger_impl& dbg, int64_t valueId, wprotocol& res)
+	void frame::extand_userdef(debug& debug, debugger_impl& dbg, value const& v, wprotocol& res)
 	{
+		if (!debug.is_virtual()) {
+			return;
+		}
+		lua_State* L = debug.L();
+		if (LUA_TTABLE == lua_geti(L, debug.get_scope(), int(v.type) - int(value::Type::userdef))) {
+			if (LUA_TTABLE == lua_getfield(L, -1, "value")) {
+				extand_metatable(L, dbg, v, res);
+				extand_table(L, dbg, v, res);
+			}
+			lua_pop(L, 1);
+		}
+		lua_pop(L, 1);
+	}
+
+	void frame::get_variable(debug& debug, lua::Debug* ar, debugger_impl& dbg, int64_t valueId, wprotocol& res)
+	{
+		lua_State* L = debug.L();
 		size_t value_idx = (valueId & 0xFFFF) - 1;
 		if (value_idx >= values.size()) {
 			return;
@@ -1040,6 +1110,9 @@ finish:
 
 		value v = values[value_idx];
 		if (v.parent == -1) {
+			if (v.type > value::Type::userdef) {
+				return extand_userdef(debug, dbg, v, res);
+			}
 			switch (v.type) {
 			case value::Type::local:
 			case value::Type::vararg:
@@ -1054,19 +1127,19 @@ finish:
 				return;
 			}
 		}
-		if (!push_value(L, ar, value_idx)) {
+		if (!push_value(debug, value_idx)) {
 			return;
 		}
 		switch (lua_type(L, -1)) {
 		case LUA_TTABLE:
-			extand_metatable(L, ar, dbg, v, res);
-			extand_table(L, ar, dbg, v, res);
+			extand_metatable(L, dbg, v, res);
+			extand_table(L, dbg, v, res);
 			break;
 		case LUA_TLIGHTUSERDATA:
-			extand_metatable(L, ar, dbg, v, res);
+			extand_metatable(L, dbg, v, res);
 			break;
 		case LUA_TUSERDATA:
-			extand_metatable(L, ar, dbg, v, res);
+			extand_metatable(L, dbg, v, res);
 			extand_userdata(L, ar, dbg, v, res);
 			break;
 		case LUA_TFUNCTION:
@@ -1196,8 +1269,9 @@ finish:
 		return ok;
 	}
 
-	bool frame::set_variable(lua_State* L, lua::Debug* ar, debugger_impl& dbg, set_value& setvalue, int64_t valueId)
+	bool frame::set_variable(debug& debug, lua::Debug* ar, debugger_impl& dbg, set_value& setvalue, int64_t valueId)
 	{
+		lua_State* L = debug.L();
 		size_t value_idx = (valueId & 0xFFFF) - 1;
 		if (value_idx >= values.size()) {
 			return false;
@@ -1215,7 +1289,7 @@ finish:
 			return false;
 		}
 
-		if (!push_value(L, ar, value_idx)) {
+		if (!push_value(debug, value_idx)) {
 			return false;
 		}
 		bool ok = false;
@@ -1353,8 +1427,9 @@ finish:
 		});
 	}
 
-	void observer::new_frame(lua_State* L, debugger_impl& dbg, rprotocol& req, int frameId)
+	void observer::new_frame(debug& debug, debugger_impl& dbg, rprotocol& req, int frameId)
 	{
+		lua_State* L = debug.L();
 		lua::Debug entry;
 		if (!lua_getstack(L, frameId, (lua_Debug*)&entry)) {
 			dbg.response_error(req, "Error retrieving stack frame");
@@ -1363,12 +1438,13 @@ finish:
 		frame* frame = create_or_get_frame(frameId);
 		dbg.response_success(req, [&](wprotocol& res)
 		{
-			frame->new_scope(L, &entry, res);
+			frame->new_scope(debug, &entry, res);
 		});
 	}
 
-	void observer::get_variable(lua_State* L, debugger_impl& dbg, rprotocol& req, int64_t valueId, int frameId)
+	void observer::get_variable(debug& debug, debugger_impl& dbg, rprotocol& req, int64_t valueId, int frameId)
 	{
+		lua_State* L = debug.L();
 		auto it = frames.find(frameId);
 		if (it == frames.end()) {
 			dbg.response_error(req, "Error retrieving stack frame");
@@ -1382,13 +1458,14 @@ finish:
 		dbg.response_success(req, [&](wprotocol& res)
 		{
 			res("variables").StartArray();
-			it->second.get_variable(L, &entry, dbg, valueId, res);
+			it->second.get_variable(debug, &entry, dbg, valueId, res);
 			res.EndArray();
 		});
 	}
 
-	void observer::set_variable(lua_State* L, debugger_impl& dbg, rprotocol& req, int64_t valueId, int frameId)
+	void observer::set_variable(debug& debug, debugger_impl& dbg, rprotocol& req, int64_t valueId, int frameId)
 	{
+		lua_State* L = debug.L();
 		auto& args = req["arguments"];
 		auto it = frames.find(frameId);
 		if (it == frames.end()) {
@@ -1404,7 +1481,7 @@ finish:
 		set_value setvalue;
 		setvalue.name = args["name"].Get<std::string>();
 		setvalue.value = args["value"].Get<std::string>();
-		if (!it->second.set_variable(L, &entry, dbg, setvalue, valueId)) {
+		if (!it->second.set_variable(debug, &entry, dbg, setvalue, valueId)) {
 			dbg.response_error(req, "Failed set variable");
 			return;
 		}

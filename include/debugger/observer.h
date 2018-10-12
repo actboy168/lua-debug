@@ -25,6 +25,8 @@ namespace vscode {
 			uservalue,
 			func_upvalue,
 			debugger_extand,
+
+			userdef,
 		};
 		size_t     self;
 		size_t     parent;
@@ -45,18 +47,19 @@ namespace vscode {
 		int64_t new_variable(size_t parent, value::Type type, int index);
 
 		frame(int threadId, int frameId);
-		void new_scope(lua_State* L, lua::Debug* ar, wprotocol& res);
+		void new_scope(debug& debug, lua::Debug* ar, wprotocol& res);
 		void clear();
-		bool push_value(lua_State* L, lua::Debug* ar, size_t value_idx);
-		bool push_value(lua_State* L, lua::Debug* ar, const value& v);
+		bool push_value(debug& debug, size_t value_idx);
+		bool push_value(debug& debug, const value& v);
 
 		void extand_local(lua_State* L, lua::Debug* ar, debugger_impl& dbg, value const& v, wprotocol& res);
 		void extand_global(lua_State* L, lua::Debug* ar, debugger_impl& dbg, value const& v, wprotocol& res);
-		void extand_table(lua_State* L, lua::Debug* ar, debugger_impl& dbg, value const& v, wprotocol& res);
-		void extand_metatable(lua_State* L, lua::Debug* ar, debugger_impl& dbg, value const& v, wprotocol& res);
+		void extand_table(lua_State* L, debugger_impl& dbg, value const& v, wprotocol& res);
+		void extand_metatable(lua_State* L, debugger_impl& dbg, value const& v, wprotocol& res);
 		void extand_userdata(lua_State* L, lua::Debug* ar, debugger_impl& dbg, value const& v, wprotocol& res);
 		void extand_function(lua_State* L, lua::Debug* ar, debugger_impl& dbg, value const& v, wprotocol& res);
-		void get_variable(lua_State* L, lua::Debug* ar, debugger_impl& dbg, int64_t valueId, wprotocol& res);
+		void extand_userdef(debug& debug, debugger_impl& dbg, value const& v, wprotocol& res);
+		void get_variable(debug& debug, lua::Debug* ar, debugger_impl& dbg, int64_t valueId, wprotocol& res);
 
 		bool set_table(lua_State* L, lua::Debug* ar, debugger_impl& dbg, set_value& setvalue);
 		bool set_userdata(lua_State* L, lua::Debug* ar, debugger_impl& dbg, set_value& setvalue);
@@ -64,7 +67,7 @@ namespace vscode {
 		bool set_vararg(lua_State* L, lua::Debug* ar, set_value& setvalue);
 		bool set_upvalue(lua_State* L, lua::Debug* ar, set_value& setvalue);
 		bool set_global(lua_State* L, lua::Debug* ar, debugger_impl& dbg, set_value& setvalue);
-		bool set_variable(lua_State* L, lua::Debug* ar, debugger_impl& dbg, set_value& setvalue, int64_t valueId);
+		bool set_variable(debug& debug, lua::Debug* ar, debugger_impl& dbg, set_value& setvalue, int64_t valueId);
 	};
 
 	struct observer {
@@ -76,8 +79,8 @@ namespace vscode {
 		frame*  create_or_get_frame(int frameId);
 		int64_t new_watch(lua_State* L, int idx, frame* frame, const std::string& expression);
 		void    evaluate(lua_State* L, lua::Debug *ar, debugger_impl& dbg, rprotocol& req, int frameId);
-		void    new_frame(lua_State* L, debugger_impl& dbg, rprotocol& req, int frameId);
-		void    get_variable(lua_State* L, debugger_impl& dbg, rprotocol& req, int64_t valueId, int frameId);
-		void    set_variable(lua_State* L, debugger_impl& dbg, rprotocol& req, int64_t valueId, int frameId);
+		void    new_frame(debug& debug, debugger_impl& dbg, rprotocol& req, int frameId);
+		void    get_variable(debug& debug, debugger_impl& dbg, rprotocol& req, int64_t valueId, int frameId);
+		void    set_variable(debug& debug, debugger_impl& dbg, rprotocol& req, int64_t valueId, int frameId);
 	};
 }

@@ -580,7 +580,13 @@ namespace vscode
 			thread->dbg.hook(thread, debug::event_return(L));
 		}
 		else if (strcmp(name, "line") == 0) {
-			thread->dbg.hook(thread, debug::event_line(L, (int)luaL_checkinteger(L, argf)));
+			if (argf == argl) {
+				thread->dbg.hook(thread, debug::event_line(L, (int)luaL_checkinteger(L, argf), -1));
+			}
+			else {
+				luaL_checktype(L, argf + 1, LUA_TTABLE);
+				thread->dbg.hook(thread, debug::event_line(L, (int)luaL_checkinteger(L, argf), lua_absindex(L, argf + 1)));
+			}
 		}
 	}
 

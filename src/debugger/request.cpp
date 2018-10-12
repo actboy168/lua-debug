@@ -307,7 +307,6 @@ namespace vscode
 	}
 
 	bool debugger_impl::request_scopes(rprotocol& req, debug& debug) {
-		lua_State* L = debug.L();
 		auto& args = req["arguments"];
 		if (!args.HasMember("frameId")) {
 			response_error(req, "Not found frame");
@@ -321,12 +320,11 @@ namespace vscode
 			response_error(req, "Not found thread");
 			return false;
 		}
-		thread->new_frame(L, *this, req, frameId);
+		thread->new_frame(debug, *this, req, frameId);
 		return false;
 	}
 
 	bool debugger_impl::request_variables(rprotocol& req, debug& debug) {
-		lua_State* L = debug.L();
 		auto& args = req["arguments"];
 		int64_t valueId = args["variablesReference"].GetInt64();
 		int threadId = valueId >> 32;
@@ -336,12 +334,11 @@ namespace vscode
 			response_error(req, "Not found thread");
 			return false;
 		}
-		thread->get_variable(L, *this, req, valueId, frameId);
+		thread->get_variable(debug, *this, req, valueId, frameId);
 		return false;
 	}
 
 	bool debugger_impl::request_set_variable(rprotocol& req, debug& debug) {
-		lua_State* L = debug.L();
 		auto& args = req["arguments"];
 		int64_t valueId = args["variablesReference"].GetInt64();
 		int threadId = valueId >> 32;
@@ -351,7 +348,7 @@ namespace vscode
 			response_error(req, "Not found thread");
 			return false;
 		}
-		thread->set_variable(L, *this, req, valueId, frameId);
+		thread->set_variable(debug, *this, req, valueId, frameId);
 		return false;
 	}
 

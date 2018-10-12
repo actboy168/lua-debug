@@ -195,18 +195,18 @@ namespace vscode
 		ob_.evaluate(L, ar, dbg, req, frameId);
 	}
 
-	void luathread::new_frame(lua_State* L, debugger_impl& dbg, rprotocol& req, int frameId)
+	void luathread::new_frame(debug& debug, debugger_impl& dbg, rprotocol& req, int frameId)
 	{
-		ob_.new_frame(L, dbg, req, frameId);
+		ob_.new_frame(debug, dbg, req, frameId);
 	}
 
-	void luathread::get_variable(lua_State* L, debugger_impl& dbg, rprotocol& req, int64_t valueId, int frameId)
+	void luathread::get_variable(debug& debug, debugger_impl& dbg, rprotocol& req, int64_t valueId, int frameId)
 	{
-		ob_.get_variable(L, dbg, req, valueId, frameId);
+		ob_.get_variable(debug, dbg, req, valueId, frameId);
 	}
 
-	void luathread::set_variable(lua_State* L, debugger_impl& dbg, rprotocol& req, int64_t valueId, int frameId)
+	void luathread::set_variable(debug& debug, debugger_impl& dbg, rprotocol& req, int64_t valueId, int frameId)
 	{
-		ob_.set_variable(L, dbg, req, valueId, frameId);
+		ob_.set_variable(debug, dbg, req, valueId, frameId);
 	}
 }
