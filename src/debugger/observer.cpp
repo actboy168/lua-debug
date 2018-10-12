@@ -756,7 +756,7 @@ namespace vscode {
 							for (auto _ : res.Object()) {
 								res("name").String(name);
 								res("variablesReference").Int64(new_variable(-1, value::Type(int(value::Type::userdef) + n), 0));
-								res("expensive").Bool(true);
+								res("expensive").Bool(false);
 							}
 						}
 						lua_pop(L, 1);
