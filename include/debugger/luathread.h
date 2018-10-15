@@ -20,6 +20,7 @@ namespace vscode
 		int            id;
 		bool           enable;
 		bool           release;
+		bool           busy;
 		debugger_impl& dbg;
 		lua_State*     L;
 		std::unique_ptr<thunk> thunk_hook;

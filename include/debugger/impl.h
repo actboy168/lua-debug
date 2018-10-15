@@ -43,7 +43,7 @@ namespace vscode
 		void io_close();
 		void panic(luathread* thread, lua_State* L);
 		void hook(luathread* thread, debug& debug);
-		void exception(lua_State* L, eException exceptionType, int level);
+		bool exception(lua_State* L, eException exceptionType, int level);
 		void exception_nolock(luathread* thread, lua_State* L, eException exceptionType, int level);
 		void run_stopped(luathread* thread, debug& debug, const char* reason, const char* description = nullptr);
 		void run_idle();

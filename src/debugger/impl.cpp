@@ -214,9 +214,20 @@ namespace vscode
 		exception_nolock(thread, L, eException::lua_panic, 0);
 	}
 
+	struct busy_guard {
+		busy_guard(luathread* t) : thread(t) {
+			thread->busy = true;
+		}
+		~busy_guard() {
+			thread->busy = false;
+		}
+		luathread* thread = 0;
+	};
+
 	void debugger_impl::hook(luathread* thread, debug& debug)
 	{
 		std::lock_guard<osthread> lock(thread_);
+		busy_guard busy(thread);
 
 		if (is_state(eState::terminated) || is_state(eState::birth) || is_state(eState::initialized)) {
 			return;
@@ -259,14 +270,25 @@ namespace vscode
 		}
 	}
 
-	void debugger_impl::exception(lua_State* L, eException exceptionType, int level)
+	bool debugger_impl::exception(lua_State* L, eException exceptionType, int level)
 	{
+		if (!L) {
+			for (auto& lt : luathreads_) {
+				if (lt.second->busy) {
+					return exception(lt.second->L, exceptionType, level);
+				}
+			}
+			return false;
+		}
+
 		luathread* thread = find_luathread(L);
 		if (thread) {
 			std::lock_guard<osthread> lock(thread_);
 			disable_hook db(L);
 			exception_nolock(thread, L, exceptionType, level);
+			return true;
 		}
+		return false;
 	}
 
 	static bool hasFrame(lua_State* L)

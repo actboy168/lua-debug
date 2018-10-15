@@ -45,6 +45,7 @@ namespace vscode
 		: id(id)
 		, enable(true)
 		, release(false)
+		, busy(false)
 		, dbg(dbg)
 		, L(L)
 		, oldpanic(lua_atpanic(L, 0))

@@ -59,7 +59,7 @@ namespace vscode
 		void detach_lua(lua_State* L, bool remove = false);
 		void set_custom(custom* custom);
 		void output(const char* category, const char* buf, size_t len, lua_State* L = nullptr, lua_Debug* ar = nullptr);
-		void exception(lua_State* L, eException exceptionType, int level);
+		bool exception(lua_State* L, eException exceptionType, int level);
 		bool is_state(eState state) const;
 		void open_redirect(eRedirect type, lua_State* L = nullptr);
 		bool set_config(int level, const std::string& cfg, std::string& err);
