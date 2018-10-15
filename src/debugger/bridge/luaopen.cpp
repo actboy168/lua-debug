@@ -47,16 +47,16 @@ namespace luaw {
 
 	static std::unique_ptr<ud> global;
 
-	static ud& to(lua_State* L, int idx)
+	static ud& get()
 	{
+		if (!global) {
+			global.reset(new ud);
+		}
 		return *global;
 	}
 
 	static int constructor(lua_State* L)
 	{
-		if (!global) {
-			global.reset(new ud);
-		}
 		lua_newuserdata(L, 1);
 		luaL_setmetatable(L, "vscode::debugger");
 		return 1;
@@ -64,7 +64,7 @@ namespace luaw {
 
 	static int io(lua_State* L)
 	{
-		ud& self = to(L, 1);
+		ud& self = get();
 		const char* addr = luaL_checkstring(L, 2);
 		if (strncmp(addr, "listen:", 7) == 0) {
 			self.listen_tcp(addr + 7);
@@ -86,7 +86,7 @@ namespace luaw {
 
 	static int wait(lua_State* L)
 	{
-		ud& self = to(L, 1);
+		ud& self = get();
 		if (!self.dbg) {
 			lua_pushvalue(L, 1);
 			return 1;
@@ -98,7 +98,7 @@ namespace luaw {
 
 	static int start(lua_State* L)
 	{
-		ud& self = to(L, 1);
+		ud& self = get();
 		if (!self.dbg) {
 			lua_pushvalue(L, 1);
 			return 1;
@@ -110,7 +110,7 @@ namespace luaw {
 
 	static int config(lua_State* L)
 	{
-		ud& self = to(L, 1);
+		ud& self = get();
 		if (!self.dbg) {
 			lua_pushvalue(L, 1);
 			return 1;
@@ -139,7 +139,7 @@ namespace luaw {
 
 	static int redirect(lua_State* L)
 	{
-		ud& self = to(L, 1);
+		ud& self = get();
 		if (!self.dbg) {
 			lua_pushvalue(L, 1);
 			return 1;
@@ -162,7 +162,7 @@ namespace luaw {
 
 	static int guard(lua_State* L)
 	{
-		ud& self = to(L, 1);
+		ud& self = get();
 		self.guard = true;
 		lua_pushvalue(L, 1);
 		return 1;
@@ -170,14 +170,14 @@ namespace luaw {
 
 	static int event(lua_State* L)
 	{
-		ud& self = to(L, 1);
+		ud& self = get();
 		self.dbg->event(luaL_checkstring(L, 2), L, 3, lua_gettop(L));
 		return 0;
 	}
 
 	static int mt_gc(lua_State* L)
 	{
-		ud& self = to(L, 1);
+		ud& self = get();
 		if (self.dbg) {
 			self.dbg->detach_lua(L);
 		}
@@ -213,13 +213,13 @@ namespace luaw {
 }
 
 #if defined(_WIN32)
-vscode::debugger* create_debugger_by_listen_pipe(const wchar_t* name)
+void debugger_create(const wchar_t* name)
 {
-	if (!luaw::global) {
-		luaw::global.reset(new luaw::ud);
-	}
-	luaw::global->listen_pipe(name);
-	return luaw::global->dbg.get();
+	luaw::get().listen_pipe(name);
+}
+vscode::debugger* debugger_get()
+{
+	return luaw::get().dbg.get();
 }
 #endif
 

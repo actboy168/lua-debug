@@ -72,7 +72,8 @@ namespace vscode
 }
 
 #if defined(_WIN32)
-DEBUGGER_API vscode::debugger* create_debugger_by_listen_pipe(const wchar_t* name);
+DEBUGGER_API void              debugger_create(const wchar_t* name);
+DEBUGGER_API vscode::debugger* debugger_get();
 #endif
 
 extern "C" {

@@ -26,7 +26,8 @@ static bool createDebugger() {
 		}
 	}
 	debugger_set_luadll(autoattach::luadll(), ::GetProcAddress);
-	dbg = create_debugger_by_listen_pipe(pipeName.c_str());
+	debugger_create(pipeName.c_str());
+	dbg = debugger_get();
 	dbg->wait_client();
 	dbg->open_redirect(vscode::eRedirect::stdoutput);
 	dbg->open_redirect(vscode::eRedirect::stderror);
