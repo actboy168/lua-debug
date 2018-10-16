@@ -1206,6 +1206,7 @@ finish:
 				}
 				return true;
 			}
+			lua_pop(L, 1);
 		}
 		return false;
 	}
@@ -1229,6 +1230,7 @@ finish:
 				}
 				return true;
 			}
+			lua_pop(L, 1);
 		}
 		return false;
 	}
@@ -1257,6 +1259,7 @@ finish:
 				lua_pop(L, 1);
 				return true;
 			}
+			lua_pop(L, 1);
 		}
 		return false;
 	}
