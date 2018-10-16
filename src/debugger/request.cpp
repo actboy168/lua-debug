@@ -163,7 +163,7 @@ namespace vscode
 			lua::Debug entry;
 			for (auto _ : res("stackFrames").Array())
 			{
-				if (debug.is_virtual()) {
+				if (startFrame == 0 && debug.is_virtual()) {
 					for (auto _ : res.Object()) {
 						source* s = openVSource();
 						if (s && s->valid) {
