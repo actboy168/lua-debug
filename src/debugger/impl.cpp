@@ -594,7 +594,11 @@ namespace vscode
 			return;
 		}
 		if (strcmp(name, "call") == 0) {
-			vdebugmgr_.event_call(sourcemgr_.createByRef(luaL_checkstring(L, argf)));
+			source* s = sourcemgr_.createByRef(luaL_checkstring(L, argf));
+			if (argf < argl) {
+				s->name = luaL_checkstring(L, argf + 1);
+			}
+			vdebugmgr_.event_call(s);
 			thread->dbg.hook(thread, debug::event_call(L));
 		}
 		else if (strcmp(name, "return") == 0) {

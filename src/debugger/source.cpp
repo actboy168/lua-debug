@@ -13,12 +13,21 @@ namespace vscode {
 		if (!valid) return;
 		for (auto _ : res("source").Object())
 		{
+			if (!name.empty()) {
+				res("name").String(name);
+			}
+			else {
+				if (ref) {
+					res("name").String("<Memory>");
+				}
+				else {
+					res("name").String(path::filename(path));
+				}
+			}
 			if (ref) {
-				res("name").String("<Memory>");
 				res("sourceReference").Uint(ref);
 			}
 			else {
-				res("name").String(path::filename(path));
 				res("path").String(path);
 			}
 		}

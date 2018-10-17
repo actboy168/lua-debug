@@ -8,6 +8,7 @@ namespace vscode {
 	struct source {
 		bool valid = false;
 		std::string path;
+		std::string name;
 		uint32_t ref = 0;
 		void output(wprotocol& res);
 
