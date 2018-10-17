@@ -157,7 +157,8 @@ namespace vscode
 		int startFrame = args.HasMember("startFrame") ? args["startFrame"].GetInt() : 0;
 		int endFrame = startFrame + levels;
 		int curFrame = 0;
-
+		int virtualFrame = 0;
+		
 		response_success(req, [&](wprotocol& res)
 		{
 			lua::Debug entry;
@@ -174,7 +175,7 @@ namespace vscode
 							res("column").Int(1);
 						}
 					}
-					curFrame++;
+					virtualFrame++;
 				}
 
 				while (lua_getstack(L, depth, (lua_Debug*)&entry))
@@ -236,7 +237,7 @@ namespace vscode
 					depth++;
 				}
 			}
-			res("totalFrames").Int(curFrame);
+			res("totalFrames").Int(curFrame + virtualFrame);
 		});
 		return false;
 	}
