@@ -33,5 +33,6 @@ namespace vscode {
 		int event();
 		int currentline();
 		int get_scope();
+		bool get_stack(int frameId, lua::Debug* ar);
 	};
 }

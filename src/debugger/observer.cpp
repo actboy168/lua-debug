@@ -748,7 +748,7 @@ namespace vscode {
 	{
 		for (auto _ : res("scopes").Array()) {
 			lua_State* L = debug.L();
-			if (debug.is_virtual()) {
+			if (frameId == 0xFFFF && debug.is_virtual()) {
 				for (int n = 1; ; ++n) {
 					if (LUA_TTABLE == lua_geti(L, debug.get_scope(), n)) {
 						if (LUA_TSTRING == lua_getfield(L, -1, "name")) {
@@ -808,7 +808,7 @@ namespace vscode {
 			index,
 		};
 		values.emplace_back(std::move(v));
-		return (1 + n) | (frameId << 16) | ((int64_t)threadId << 32);
+		return (1 + (int64_t)n) | ((int64_t)frameId << 16) | ((int64_t)threadId << 32);
 	}
 
 	bool frame::push_value(debug& debug, const value& v)
@@ -1432,9 +1432,8 @@ finish:
 
 	void observer::new_frame(debug& debug, debugger_impl& dbg, rprotocol& req, int frameId)
 	{
-		lua_State* L = debug.L();
 		lua::Debug entry;
-		if (!lua_getstack(L, frameId, (lua_Debug*)&entry)) {
+		if (!debug.get_stack(frameId, &entry)) {
 			dbg.response_error(req, "Error retrieving stack frame");
 			return;
 		}
@@ -1447,14 +1446,13 @@ finish:
 
 	void observer::get_variable(debug& debug, debugger_impl& dbg, rprotocol& req, int64_t valueId, int frameId)
 	{
-		lua_State* L = debug.L();
 		auto it = frames.find(frameId);
 		if (it == frames.end()) {
 			dbg.response_error(req, "Error retrieving stack frame");
 			return;
 		}
 		lua::Debug entry;
-		if (!lua_getstack(L, frameId, (lua_Debug*)&entry)) {
+		if (!debug.get_stack(frameId, &entry)) {
 			dbg.response_error(req, "Error retrieving variables");
 			return;
 		}
@@ -1468,7 +1466,6 @@ finish:
 
 	void observer::set_variable(debug& debug, debugger_impl& dbg, rprotocol& req, int64_t valueId, int frameId)
 	{
-		lua_State* L = debug.L();
 		auto& args = req["arguments"];
 		auto it = frames.find(frameId);
 		if (it == frames.end()) {
@@ -1476,7 +1473,7 @@ finish:
 			return;
 		}
 		lua::Debug entry;
-		if (!lua_getstack(L, frameId, (lua_Debug*)&entry)) {
+		if (!debug.get_stack(frameId, &entry)) {
 			dbg.response_error(req, "Error retrieving variables");
 			return;
 		}

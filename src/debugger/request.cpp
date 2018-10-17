@@ -168,7 +168,7 @@ namespace vscode
 						source* s = openVSource();
 						if (s && s->valid) {
 							s->output(res);
-							res("id").Int(threadId << 16 | depth);
+							res("id").Int(threadId << 16 | 0xFFFF);
 							res("name").String("");  // TODO
 							res("line").Int(debug.currentline());
 							res("column").Int(1);

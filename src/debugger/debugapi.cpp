@@ -70,4 +70,14 @@ namespace vscode {
 	int debug::get_scope() {
 		return scope;
 	}
+	bool debug::get_stack(int frameId, lua::Debug* ar) {
+		if (frameId == 0xFFFF) {
+			return is_virtual();
+		}
+		if (!lua_getstack(lua, frameId, (lua_Debug*)ar)) {
+			return false;
+		}
+		return true;
+	}
+
 }
