@@ -27,7 +27,7 @@
     * sourceCoding，作用同attach模式
     * env，修改调试进程的环境变量
     * console，lua.exe在哪个环境下执行，可选择internalConsole，integratedTerminal，externalTerminal
-    * skipFiles，让调试器忽略某些脚本，例如, ["std/\*", test/\*/init.lua]。
+    * skipFiles，让调试器忽略某些脚本，例如, ["std/\*", test/\*/init.lua]。
 
 2. launch模式，启动一个进程(比如lua.exe或者其他动态链接了luadll的exe)并调试。如果需要调试的目标和lua.exe的行为不一致，可以采用这个模式。
 
