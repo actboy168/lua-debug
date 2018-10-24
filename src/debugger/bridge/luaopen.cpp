@@ -239,13 +239,13 @@ static void caller_is_luadll(void* callerAddress)
 
 int luaopen_debugger(lua_State* L)
 {
+#if defined(DEBUGGER_BRIDGE)
+	caller_is_luadll(_ReturnAddress());
+#endif
 	if (lua_rawgetp(L, LUA_REGISTRYINDEX, &DBG) != LUA_TNIL) {
 		return 1;
 	}
 	lua_pop(L, 1);
-#if defined(DEBUGGER_BRIDGE)
-	caller_is_luadll(_ReturnAddress());
-#endif
 
 	luaw::open(L);
 	lua_pushvalue(L, -1);
