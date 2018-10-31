@@ -1,9 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="..\..\include\base\win\process.cpp">
-      <Filter>base\win</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\include\base\path\get_path.cpp">
       <Filter>base\path</Filter>
     </ClCompile>
@@ -55,11 +52,11 @@
     <ClCompile Include="..\..\src\debugger\io\stream.cpp">
       <Filter>cpp\io</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\include\base\subprocess\subprocess_win.cpp">
+      <Filter>base\subprocess</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\include\base\win\process.h">
-      <Filter>base\win</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\include\base\path\get_path.h">
       <Filter>base\path</Filter>
     </ClInclude>
@@ -102,6 +99,12 @@
     <ClInclude Include="..\..\include\debugger\io\stream.h">
       <Filter>inc\io</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\base\subprocess\subprocess_win.h">
+      <Filter>base\subprocess</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\base\subprocess.h">
+      <Filter>base</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="base">
@@ -136,6 +139,9 @@
     </Filter>
     <Filter Include="cpp\io">
       <UniqueIdentifier>{a75fae30-c29e-4bc4-b77c-c1d095fbda31}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="base\subprocess">
+      <UniqueIdentifier>{c0d52c9d-5076-43cb-b134-3a00c2d24e7b}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

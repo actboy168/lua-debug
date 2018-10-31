@@ -1,30 +1,18 @@
 
-#include <base/win/process.h>
+#include <base/subprocess.h>
 #include <base/util/unicode.h>
 #include <base/path/self.h>
+#include <base/hook/injectdll.h>
 #include <debugger/protocol.h>
 #include <debugger/client/run.h>
 
-bool create_process_with_debugger(vscode::rprotocol& req, base::win::process& p)
+process_opt create_process_with_debugger(vscode::rprotocol& req)
 {
 	auto& args = req["arguments"];
 	if (!args.HasMember("runtimeExecutable") || !args["runtimeExecutable"].IsString()) {
-		return false;
+		return process_opt();
 	}
 	std::wstring wapplication = base::u2w(args["runtimeExecutable"].Get<std::string>());
-	std::wstring wcommand = cmd_string(wapplication);
-	if (args.HasMember("runtimeArgs")) {
-		if (args["runtimeArgs"].IsString()) {
-			wcommand = wcommand + L" " + base::u2w(args["runtimeArgs"].Get<std::string>());
-		}
-		else if(args["runtimeArgs"].IsArray()) {
-			for (auto& v : args["runtimeArgs"].GetArray()) {
-				if (v.IsString()) {
-					wcommand = wcommand + L" " + cmd_string(base::u2w(v));
-				}
-			}
-		}
-	}
 	std::wstring wcwd;
 	if (args.HasMember("cwd") && args["cwd"].IsString()) {
 		wcwd = base::u2w(args["cwd"].Get<std::string>());
@@ -34,23 +22,52 @@ bool create_process_with_debugger(vscode::rprotocol& req, base::win::process& p)
 	}
 
 	auto dir = base::path::self().parent_path().parent_path();
-	p.inject_x86(dir / L"x86" / L"debugger-inject.dll");
-	p.inject_x64(dir / L"x64" / L"debugger-inject.dll");
+	base::subprocess::spawn spawn;
+	spawn.suspended();
 
 	if (args.HasMember("env")) {
 		if (args["env"].IsObject()) {
 			for (auto& v : args["env"].GetObject()) {
 				if (v.name.IsString()) {
 					if (v.value.IsString()) {
-						p.set_env(base::u2w(v.name.Get<std::string>()), base::u2w(v.value.Get<std::string>()));
+						spawn.env_set(base::u2w(v.name.Get<std::string>()), base::u2w(v.value.Get<std::string>()));
 					}
 					else if (v.value.IsNull()) {
-						p.del_env(base::u2w(v.name.Get<std::string>()));
+						spawn.env_del(base::u2w(v.name.Get<std::string>()));
 					}
 				}
 			}
 		}
 		req.RemoveMember("env");
 	}
-	return p.create(wapplication.c_str(), wcommand.c_str(), wcwd.c_str());
+
+	if (args.HasMember("runtimeArgs")) {
+		if (args["runtimeArgs"].IsString()) {
+			if (!spawn.exec(wapplication, base::u2w(args["runtimeArgs"].Get<std::string>()), wcwd.c_str())) {
+				return process_opt();
+			}
+		}
+		else if (args["runtimeArgs"].IsArray()) {
+			std::vector<std::wstring> wargs;
+			wargs.push_back(wapplication);
+			for (auto& v : args["runtimeArgs"].GetArray()) {
+				if (v.IsString()) {
+					wargs.push_back(base::u2w(v));
+				}
+			}
+			if (!spawn.exec(wargs, wcwd.c_str())) {
+				return process_opt();
+			}
+		}
+	}
+	else {
+		if (!spawn.exec({ wapplication }, wcwd.c_str())) {
+			return process_opt();
+		}
+	}
+
+	auto process = base::subprocess::process(spawn);
+	base::hook::injectdll(process, dir / L"x86" / L"debugger-inject.dll", dir / L"x64" / L"debugger-inject.dll");
+	process.resume();
+	return process;
 }

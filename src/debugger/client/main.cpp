@@ -96,12 +96,12 @@ static void sleep() {
 
 static int run_createprocess_then_attach(stdinput& io, vscode::rprotocol& init, vscode::rprotocol& req)
 {
-	base::win::process process;
-	if (!create_process_with_debugger(req, process)) {
+	process_opt process = create_process_with_debugger(req);
+	if (!process) {
 		response_error(io, req, "Create process failed");
 		return -1;
 	}
-	auto port = base::format(L"vscode-lua-debug-%d", process.id());
+	auto port = base::format(L"vscode-lua-debug-%d", (*process).get_id());
 	if (!run_pipe_attach(io, init, req, port, process)) {
 		response_error(io, req, "Launch failed");
 		return -1;
@@ -116,8 +116,7 @@ int run_terminal_then_attach(stdinput& io, vscode::rprotocol& init, vscode::rpro
 		response_error(io, req, "Launch failed");
 		return -1;
 	}
-	base::win::process process;
-	if (!run_pipe_attach(io, init, req, port, process)) {
+	if (!run_pipe_attach(io, init, req, port, process_opt())) {
 		response_error(io, req, "Launch failed");
 		return -1;
 	}
@@ -127,8 +126,8 @@ int run_terminal_then_attach(stdinput& io, vscode::rprotocol& init, vscode::rpro
 int run_luaexe_then_attach(stdinput& io, vscode::rprotocol& init, vscode::rprotocol& req)
 {
 	auto port = base::format(L"vscode-lua-debug-%d", GetCurrentProcessId());
-	base::win::process process;
-	if (!create_luaexe_with_debugger(io, req, port, process)) {
+	process_opt process = create_luaexe_with_debugger(io, req, port);
+	if (!process) {
 		response_error(io, req, "Launch failed");
 		return -1;
 	}
@@ -147,8 +146,7 @@ static int run_attach_process_noinject(stdinput& io, vscode::rprotocol& init, vs
 		return -1;
 	}
 	auto port = base::format(L"vscode-lua-debug-%d", pid);
-	base::win::process process(pid);
-	if (!run_pipe_attach(io, init, req, port, process, &m)) {
+	if (!run_pipe_attach(io, init, req, port, process_opt(openprocess(pid)), &m)) {
 		response_error(io, req, "Attach failed");
 		return -1;
 	}
@@ -166,8 +164,7 @@ static int run_attach_process(stdinput& io, vscode::rprotocol& init, vscode::rpr
 		return -1;
 	}
 	auto port = base::format(L"vscode-lua-debug-%d", pid);
-	base::win::process process(pid);
-	if (!run_pipe_attach(io, init, req, port, process, &m)) {
+	if (!run_pipe_attach(io, init, req, port, process_opt(openprocess(pid)), &m)) {
 		response_error(io, req, "Attach failed");
 		return -1;
 	}
