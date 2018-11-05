@@ -61,7 +61,7 @@ int getLuaRuntime(const rapidjson::Value& args) {
 bool is64Exe(const wchar_t* exe)
 {
 	HANDLE hExe = CreateFileW(exe, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-	if (hExe == 0) {
+	if (hExe == INVALID_HANDLE_VALUE) {
 		return false;
 	}
 	DWORD read;
