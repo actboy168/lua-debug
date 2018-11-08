@@ -14,11 +14,35 @@ std::string create_install_script(vscode::rprotocol& req, const fs::path& dbg_pa
 		isUtf8 = "utf8" == args["sourceCoding"].Get<std::string>();
 	}
 	std::string res;
-	if (args.HasMember("path") && args["path"].IsString()) {
-		res += base::format("package.path=[[%s]];", isUtf8 ? args["path"].Get<std::string>() : base::u2a(args["path"]));
+	if (args.HasMember("path")) {
+		if (args["path"].IsString()) {
+			res += base::format("package.path=[[%s]];", isUtf8 ? args["path"].Get<std::string>() : base::u2a(args["path"]));
+		}
+		else if (args["path"].IsArray()) {
+			std::string path;
+			for (auto& v : args["path"].GetArray()) {
+				if (v.IsString()) {
+					if (!path.empty()) path += ";";
+					path += isUtf8 ? args["path"].Get<std::string>() : base::u2a(args["path"]);
+				}
+			}
+			res += base::format("package.path=[[%s]];", path);
+		}
 	}
-	if (args.HasMember("cpath") && args["cpath"].IsString()) {
-		res += base::format("package.cpath=[[%s]];", isUtf8 ? args["cpath"].Get<std::string>() : base::u2a(args["cpath"]));
+	if (args.HasMember("cpath")) {
+		if (args["cpath"].IsString()) {
+			res += base::format("package.cpath=[[%s]];", isUtf8 ? args["cpath"].Get<std::string>() : base::u2a(args["cpath"]));
+		}
+		else if (args["cpath"].IsArray()) {
+			std::string path;
+			for (auto& v : args["cpath"].GetArray()) {
+				if (v.IsString()) {
+					if (!path.empty()) path += ";";
+					path += isUtf8 ? args["cpath"].Get<std::string>() : base::u2a(args["cpath"]);
+				}
+			}
+			res += base::format("package.cpath=[[%s]];", path);
+		}
 	}
 	res += base::format("local dbg=package.loadlib([[%s]], 'luaopen_debugger')();package.loaded[ [[%s]] ]=dbg;dbg:io([[pipe:%s]])"
 		, isUtf8 ? base::w2u((dbg_path / L"debugger.dll").wstring()) : base::w2a((dbg_path / L"debugger.dll").wstring())
