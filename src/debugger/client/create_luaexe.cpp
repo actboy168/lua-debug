@@ -23,7 +23,7 @@ std::string create_install_script(vscode::rprotocol& req, const fs::path& dbg_pa
 			for (auto& v : args["path"].GetArray()) {
 				if (v.IsString()) {
 					if (!path.empty()) path += ";";
-					path += isUtf8 ? args["path"].Get<std::string>() : base::u2a(args["path"]);
+					path += isUtf8 ? v.Get<std::string>() : base::u2a(v);
 				}
 			}
 			res += base::format("package.path=[[%s]];", path);
@@ -38,7 +38,7 @@ std::string create_install_script(vscode::rprotocol& req, const fs::path& dbg_pa
 			for (auto& v : args["cpath"].GetArray()) {
 				if (v.IsString()) {
 					if (!path.empty()) path += ";";
-					path += isUtf8 ? args["cpath"].Get<std::string>() : base::u2a(args["cpath"]);
+					path += isUtf8 ? v.Get<std::string>() : base::u2a(v);
 				}
 			}
 			res += base::format("package.cpath=[[%s]];", path);
