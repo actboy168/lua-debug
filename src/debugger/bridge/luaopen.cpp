@@ -5,12 +5,19 @@
 #include <debugger/io/namedpipe.h>
 #include <base/util/unicode.h>
 #include <memory>  
+#include <string_view>
 
 #if defined(DEBUGGER_BRIDGE)
 #include <intrin.h>
 #endif
 
 static int DBG = 0;
+
+static std::string_view luaL_checkstrview(lua_State* L, int idx) {
+	size_t len = 0;
+	const char* str = luaL_checklstring(L, idx, &len);
+	return std::string_view(str, len);
+}
 
 namespace luaw {
 	struct ud {
@@ -168,6 +175,26 @@ namespace luaw {
 		return 1;
 	}
 
+	static int exception(lua_State* L)
+	{
+		ud& self = get();
+		std::string_view type_str = luaL_checkstrview(L, 2);
+		vscode::eException type;
+		if (type_str == "pcall") {
+			type = vscode::eException::pcall;
+		}
+		else if (type_str == "xpcall") {
+			type = vscode::eException::xpcall;
+		}
+		else {
+			return luaL_error(L, "Unknown exception type: %s.", type_str.data());
+		}
+		luaL_checktype(L, 3, LUA_TSTRING);
+		lua_pushvalue(L, 3);
+		self.dbg->exception(L, type, (int)luaL_checkinteger(L, 4));
+		return 0;
+	}
+
 	static int event(lua_State* L)
 	{
 		ud& self = get();
@@ -200,6 +227,7 @@ namespace luaw {
 			{ "redirect", redirect },
 			{ "guard", guard },
 			{ "event", event },
+			{ "exception", exception },
 			{ "__gc", mt_gc },
 			{ NULL, NULL },
 		};
