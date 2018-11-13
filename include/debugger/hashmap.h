@@ -76,6 +76,7 @@ namespace vscode {
                 front_chunk->next = t->next;
                 delete t;
             }
+	    back_chunk = front_chunk;
             pos = 0;
         }
 
