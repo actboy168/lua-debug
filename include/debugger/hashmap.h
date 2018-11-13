@@ -70,6 +70,15 @@ namespace vscode {
 			del_back();
 		}
 
+        void clear() {
+            while (front_chunk->next) {
+                chunk_type* t = front_chunk->next;
+                front_chunk->next = t->next;
+                delete t;
+            }
+            pos = 0;
+        }
+
 	private:
 		hashnode<T>* get_node(uintptr_t key) {
 			for (chunk_type* c = front_chunk; c != back_chunk; c = c->next) {
@@ -126,6 +135,10 @@ namespace vscode {
 		void del(uintptr_t key) {
 			return buckets[key % BucketSize].del(key);
 		}
+        void clear() {
+            for (size_t i = 0; i < BucketSize; ++i)
+                buckets[i].clear();
+        }
 	private:
 		hashbucket<T, ChunkSize> buckets[BucketSize];
 	};
