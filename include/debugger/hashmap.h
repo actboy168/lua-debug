@@ -26,6 +26,11 @@ namespace vscode {
 			, pos(0)
 		{ }
 
+        ~hashbucket() {
+            clear();
+            delete front_chunk;
+        }
+
 		bool get(uintptr_t key, T*& t) {
 			hashnode<T>* node = get_node(key);
 			if (node) {
