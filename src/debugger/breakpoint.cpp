@@ -279,6 +279,7 @@ namespace vscode
 	{
 		files_.clear();
 		memorys_.clear();
+        functions_.clear();
 	}
 
 	bool breakpointMgr::has(bp_source* src, size_t line, debug& debug) const
