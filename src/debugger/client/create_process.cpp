@@ -23,6 +23,7 @@ process_opt create_process_with_debugger(vscode::rprotocol& req)
 
 	auto dir = base::path::self().parent_path().parent_path();
 	base::subprocess::spawn spawn;
+	spawn.set_console(base::subprocess::console::eNew);
 	spawn.suspended();
 
 	if (args.HasMember("env")) {

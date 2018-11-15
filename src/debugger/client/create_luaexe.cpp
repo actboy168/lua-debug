@@ -194,6 +194,7 @@ process_opt create_luaexe_with_debugger(stdinput& io, vscode::rprotocol& req, co
 	}
 
 	base::subprocess::spawn spawn;
+	spawn.set_console(base::subprocess::console::eDisable);
 	if (args.HasMember("env")) {
 		if (args["env"].IsObject()) {
 			for (auto& v : args["env"].GetObject()) {
