@@ -39,6 +39,12 @@ class LuaConfigurationProvider {
                 "stdout"
             ]
         }
+        if (typeof config.ip == 'string' && typeof config.port != 'number') {
+            config.port = 4278
+        }
+        if (typeof config.ip != 'string' && typeof config.port == 'number') {
+            config.ip = '127.0.0.1'
+        }
         if (config.request == 'launch') {
             if (!config.program && !config.runtimeExecutable) {
                 return vscode.window.showInformationMessage('Cannot find a program to debug').then(_ => {
