@@ -94,12 +94,33 @@ static void sleep() {
 	std::this_thread::sleep_for(std::chrono::milliseconds(10));
 }
 
-static int run_createprocess_then_attach(stdinput& io, vscode::rprotocol& init, vscode::rprotocol& req)
+static bool run_tcp_attach(stdinput& io, vscode::rprotocol& init, vscode::rprotocol& req)
 {
-	process_opt process = create_process_with_debugger(req);
+	auto& args = req["arguments"];
+	if (!args.HasMember("ip") && !args.HasMember("port")) {
+		return false;
+	}
+	tcp_attach attach(io);
+	std::string ip = args.HasMember("ip") ? args["ip"].Get<std::string>() : "127.0.0.1";
+	uint16_t port = args.HasMember("port") ? args["port"].GetUint() : 4278;
+	attach.connect(net::endpoint(ip, port));
+	attach.send(init);
+	attach.send(req);
+	for (;; sleep()) {
+		attach.update();
+	}
+	return true;
+}
+
+static int run_createprocess_then_attach(stdinput& io, vscode::rprotocol& init, vscode::rprotocol& req, bool noinject)
+{
+	process_opt process = create_process_with_debugger(req, noinject);
 	if (!process) {
 		response_error(io, req, "Create process failed");
 		return -1;
+	}
+	if (run_tcp_attach(io, init, req)) {
+		return 0;
 	}
 	auto port = base::format(L"vscode-lua-debug-%d", (*process).get_id());
 	if (!run_pipe_attach(io, init, req, port, process)) {
@@ -109,7 +130,7 @@ static int run_createprocess_then_attach(stdinput& io, vscode::rprotocol& init, 
 	return 0;
 }
 
-int run_terminal_then_attach(stdinput& io, vscode::rprotocol& init, vscode::rprotocol& req)
+static int run_terminal_then_attach(stdinput& io, vscode::rprotocol& init, vscode::rprotocol& req)
 {
 	auto port = base::format(L"vscode-lua-debug-%d", GetCurrentProcessId());
 	if (!create_terminal_with_debugger(io, req, port)) {
@@ -123,7 +144,7 @@ int run_terminal_then_attach(stdinput& io, vscode::rprotocol& init, vscode::rpro
 	return 0;
 }
 
-int run_luaexe_then_attach(stdinput& io, vscode::rprotocol& init, vscode::rprotocol& req)
+static int run_luaexe_then_attach(stdinput& io, vscode::rprotocol& init, vscode::rprotocol& req)
 {
 	auto port = base::format(L"vscode-lua-debug-%d", GetCurrentProcessId());
 	process_opt process = create_luaexe_with_debugger(io, req, port);
@@ -187,21 +208,6 @@ static std::vector<int> get_process_name(const std::string& name)
 	return res;
 }
 
-static int run_tcp_attach(stdinput& io, vscode::rprotocol& init, vscode::rprotocol& req)
-{
-	tcp_attach attach(io);
-	auto& args = req["arguments"];
-	std::string ip = args.HasMember("ip") ? args["ip"].Get<std::string>() : "127.0.0.1";
-	uint16_t port = args.HasMember("port") ? args["port"].GetUint() : 4278;
-	attach.connect(net::endpoint(ip, port));
-	attach.send(init);
-	attach.send(req);
-	for (;; sleep()) {
-		attach.update();
-	}
-	return 0;
-}
-
 int main()
 {
 	_setmode(_fileno(stdout), _O_BINARY);
@@ -233,7 +239,8 @@ int main()
 			if (req["command"] == "launch") {
 				auto& args = req["arguments"];
 				if (args.HasMember("runtimeExecutable")) {
-					return run_createprocess_then_attach(io, init, req);
+					bool noInject = args.HasMember("noInject") && args["noInject"].IsBool() && args["noInject"].GetBool();
+					return run_createprocess_then_attach(io, init, req, noInject);
 				}
 				if (args.HasMember("console") 
 					&& args["console"].IsString() 
@@ -245,12 +252,12 @@ int main()
 			}
 			else if (req["command"] == "attach") {
 				auto& args = req["arguments"];
-				bool noInject = args.HasMember("noInject") && args["noInject"].IsBool() && args["noInject"].GetBool();
 				if (args.HasMember("processId")) {
 					if (!args["processId"].IsInt()) {
 						response_error(io, req, "Attach failed");
 						return -1;
 					}
+					bool noInject = args.HasMember("noInject") && args["noInject"].IsBool() && args["noInject"].GetBool();
 					return run_attach_process(io, init, req, args["processId"].GetInt(), noInject);
 				}
 				if (args.HasMember("processName")) {
@@ -268,9 +275,14 @@ int main()
 						response_error(io, req, base::format("There are %d processes `%s`.", pid.size(), processName).c_str());
 						return -1;
 					}
+					bool noInject = args.HasMember("noInject") && args["noInject"].IsBool() && args["noInject"].GetBool();
 					return run_attach_process(io, init, req, pid[0], noInject);
 				}
-				return run_tcp_attach(io, init, req);
+				if (!run_tcp_attach(io, init, req)) {
+					response_error(io, req, "Need `ip` and `port`.");
+					return -1;
+				}
+				return 0;
 			}
 		}
 	}

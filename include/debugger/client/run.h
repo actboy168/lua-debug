@@ -21,6 +21,6 @@ base::subprocess::process openprocess(int pid);
 
 bool run_pipe_attach(stdinput& io, vscode::rprotocol& init, vscode::rprotocol& req, const std::wstring& pipename, process_opt& p, base::win::process_switch* m = nullptr);
 bool open_process_with_debugger(vscode::rprotocol& req, int pid);
-process_opt create_process_with_debugger(vscode::rprotocol& req);
+process_opt create_process_with_debugger(vscode::rprotocol& req, bool noinject);
 bool create_terminal_with_debugger(stdinput& io, vscode::rprotocol& req, const std::wstring& port);
 process_opt create_luaexe_with_debugger(stdinput& io, vscode::rprotocol& req, const std::wstring& port);

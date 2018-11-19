@@ -271,6 +271,21 @@
                                 "type": "string",
                                 "markdownDescription": "Internal module name",
                                 "default": "debugger"
+                            },
+                            "noInject": {
+                                "type": "boolean",
+                                "markdownDescription": "`runtimeExecutable` will not inject debugger.",
+                                "default": "false"
+                            },
+                            "ip": {
+                                "type": "string",
+                                "markdownDescription": "TCP/IP address of debug port. Default is `localhost`.",
+                                "default": "localhost"
+                            },
+                            "port": {
+                                "type": "integer",
+                                "markdownDescription": "Debug port to attach to. Default is 4278.",
+                                "default": 4278
                             }
                         }
                     },
@@ -342,6 +357,11 @@
                                 "type": "string",
                                 "markdownDescription": "Internal module name",
                                 "default": "debugger"
+                            },
+                            "noInject": {
+                                "type": "boolean",
+                                "markdownDescription": "`processId` and `processName` will not inject debugger.",
+                                "default": "false"
                             }
                         }
                     }

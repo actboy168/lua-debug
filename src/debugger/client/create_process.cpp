@@ -6,7 +6,7 @@
 #include <debugger/protocol.h>
 #include <debugger/client/run.h>
 
-process_opt create_process_with_debugger(vscode::rprotocol& req)
+process_opt create_process_with_debugger(vscode::rprotocol& req, bool noinject)
 {
 	auto& args = req["arguments"];
 	if (!args.HasMember("runtimeExecutable") || !args["runtimeExecutable"].IsString()) {
@@ -24,7 +24,6 @@ process_opt create_process_with_debugger(vscode::rprotocol& req)
 	auto dir = base::path::self().parent_path().parent_path();
 	base::subprocess::spawn spawn;
 	spawn.set_console(base::subprocess::console::eNew);
-	spawn.suspended();
 
 	if (args.HasMember("env")) {
 		if (args["env"].IsObject()) {
@@ -66,7 +65,10 @@ process_opt create_process_with_debugger(vscode::rprotocol& req)
 			return process_opt();
 		}
 	}
-
+	if (noinject) {
+		return base::subprocess::process(spawn);
+	}
+	spawn.suspended();
 	auto process = base::subprocess::process(spawn);
 	base::hook::injectdll(process, dir / L"x86" / L"debugger-inject.dll", dir / L"x64" / L"debugger-inject.dll");
 	process.resume();
