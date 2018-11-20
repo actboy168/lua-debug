@@ -69,7 +69,7 @@ namespace vscode
 				return true;
 			}
 		}
-		client = server;
+		client = path::normalize(server, '/');
 		return true;
 	}
 
