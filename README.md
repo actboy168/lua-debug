@@ -118,10 +118,11 @@ dbg:start()
 ```
 ## 64位的支持
 
-调试器默认会在32位模式下运行，指定`program`的launch也只支持32位。这意味着你的lua中加载的c模块(dll)，和`luadll`参数所给的dll都必须是32位的。如果你想调试64位的lua，可以选择以下的方式:
+调试器默认会在32位模式下运行。如果你想调试64位的lua，可以选择以下的方式:
 
 1. 远程调试。参考上一章的做法，只需要注意使用64位的`debugger.dll`。
 2. 指定`runtimeExecutable`参数。`runtimeExecutable`里提供的为64位进程时，调试器就会在64位下运行。
+3. 指定`luaRuntime`参数。
 
 ## TODO
 
