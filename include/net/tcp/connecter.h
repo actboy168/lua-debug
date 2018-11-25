@@ -136,7 +136,7 @@ namespace net { namespace tcp {
 		int start_connect()
 		{
 			assert(event_type::sock == socket::retired_fd);
-			event_type::sock = socket::open(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+			event_type::sock = socket::open(AF_INET, IPPROTO_TCP);
 			NETLOG_INFO() << "socket(" << event_type::sock << ") " << addr_->to_string() << " connecting";
 
 			if (event_type::sock == socket::retired_fd)

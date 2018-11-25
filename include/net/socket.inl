@@ -125,9 +125,16 @@ namespace net { namespace socket {
 #endif
 	}
 
-	NET_INLINE fd_t open(int domain, int type, int protocol)
+	NET_INLINE fd_t open(int family, int protocol)
 	{
-		return ::socket(domain, type, protocol);
+		switch (protocol) {
+		case IPPROTO_TCP:
+			return ::socket(family, SOCK_STREAM, protocol);
+		case IPPROTO_UDP:
+			return ::socket(family, SOCK_DGRAM, protocol);
+		default:
+			return retired_fd;
+		}
 	}
 
 	NET_INLINE void close(fd_t s)

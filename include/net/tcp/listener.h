@@ -44,7 +44,7 @@ namespace net { namespace tcp {
 		{
 			close();
 
-			event_type::sock = socket::open(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+			event_type::sock = socket::open(AF_INET, IPPROTO_TCP);
 
 			if (event_type::sock == socket::retired_fd)
 			{

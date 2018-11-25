@@ -30,7 +30,7 @@ namespace net { namespace socket {
 #endif
 
 	void initialize();
-	fd_t open(int domain, int type, int protocol);
+	fd_t open(int family, int protocol);
 	void close(fd_t s);
 	void shutdown(fd_t s);
 	void shutdown_read(fd_t s);
@@ -45,7 +45,7 @@ namespace net { namespace socket {
 	int  connect(fd_t s, const endpoint& ep);
 	int  bind(fd_t s, const endpoint& ep);
 	int  listen(fd_t s, const endpoint& ep, int backlog);
-	int  accept(fd_t s, fd_t& sock, endpoint& ep);
+	int  accept(fd_t s, fd_t& sock);
 	int  error_no();
 }}
 

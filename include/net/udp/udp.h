@@ -18,7 +18,7 @@ public:
 
 	bool open(bool nonblock = true)
 	{
-		base_type::sock = socket::open(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+		base_type::sock = socket::open(AF_INET, IPPROTO_UDP);
 		if (base_type::sock == socket::retired_fd)
 		{
 			return false;
