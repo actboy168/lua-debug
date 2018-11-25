@@ -40,7 +40,7 @@ namespace net { namespace tcp {
 			event_type::sock = socket::retired_fd;
 		}
 
-		void connect(const endpoint& target, std::function<void(socket::fd_t, const endpoint&)> connected)
+		void connect(const endpoint& target, std::function<void(socket::fd_t)> connected)
 		{
 			assert(!!connected);
 			connected_ = connected;
@@ -77,7 +77,7 @@ namespace net { namespace tcp {
 
 			socket::fd_t s = event_type::sock;
 			event_type::sock = socket::retired_fd;
-			connected_(s, addr_);
+			connected_(s);
 			return true;
 		}
 
@@ -153,7 +153,7 @@ namespace net { namespace tcp {
 		}
 
 	protected:
-		std::function<void(socket::fd_t, const endpoint&)> connected_;
+		std::function<void(socket::fd_t)> connected_;
 		endpoint addr_;
 	};
 
@@ -172,7 +172,7 @@ namespace net { namespace tcp {
 		void connect(const endpoint& ep)
 		{
 			base_type::clear();
-			impl_.connect(ep, std::bind(&base_type::attach, this, std::placeholders::_1, std::placeholders::_2));
+			impl_.connect(ep, std::bind(&base_type::attach, this, std::placeholders::_1));
 		}
 		
 		void reconnect()

@@ -312,16 +312,9 @@ namespace net { namespace socket {
 		return 0;
 	}
 
-	NET_INLINE int accept(fd_t s, fd_t& fd, endpoint& ep)
+	NET_INLINE int accept(fd_t s, fd_t& fd)
 	{
-		struct sockaddr_storage ss;
-		memset(&ss, 0, sizeof (ss));
-#if defined _WIN32
-		int ss_len = sizeof (ss);
-#else
-		socklen_t ss_len = sizeof (ss);
-#endif
-		fd = ::accept(s, (struct sockaddr *) &ss, &ss_len);
+		fd = ::accept(s, NULL, NULL);
 		if (fd == retired_fd)
 		{
 #if defined _WIN32
@@ -338,11 +331,6 @@ namespace net { namespace socket {
 			}
 #endif
 		}
-#if defined _WIN32
-		assert(ss_len > 0);
-#endif
-		assert((size_t)ss_len >= ep.addrlen());
-		memcpy(ep.addr(), &ss, ep.addrlen());
 		return 0;
 	}
 }}

@@ -56,7 +56,7 @@ namespace vscode { namespace io {
 		bool      stream_update();
 
 	private:
-		void event_accept(net::socket::fd_t fd, const net::endpoint& ep);
+		void event_accept(net::socket::fd_t fd);
 		void event_close();
 
 	private:
@@ -149,7 +149,7 @@ namespace vscode { namespace io {
 		return base_type::listen(endpoint_);
 	}
 
-	void sock_server::event_accept(net::socket::fd_t fd, const net::endpoint& ep)
+	void sock_server::event_accept(net::socket::fd_t fd)
 	{
 		if (session_)
 		{
@@ -157,7 +157,7 @@ namespace vscode { namespace io {
 			return;
 		}
 		session_.reset(new sock_session([this]() { close_session(); }, std::bind(&sock_server::stream_update, this), get_poller()));
-		session_->attach(fd, ep);
+		session_->attach(fd);
 		stream_.open(session_.get());
 	}
 
@@ -242,7 +242,7 @@ namespace vscode { namespace io {
 		sock_client(net::poller_t* poll, sock_stream& stream, const net::endpoint& ep);
 
 	private:
-		void event_connect(net::socket::fd_t fd, const net::endpoint& ep);
+		void event_connect(net::socket::fd_t fd);
 		bool stream_update();
 
 	private:
@@ -256,10 +256,10 @@ namespace vscode { namespace io {
 		, stream_(stream)
 	{
 		net::socket::initialize();
-		connect(endpoint_, std::bind(&sock_client::event_connect, this, std::placeholders::_1, std::placeholders::_2));
+		connect(endpoint_, std::bind(&sock_client::event_connect, this, std::placeholders::_1));
 	}
 
-	void sock_client::event_connect(net::socket::fd_t fd, const net::endpoint& ep)
+	void sock_client::event_connect(net::socket::fd_t fd)
 	{
 		stream_.open(new sock_session([this]() { }, std::bind(&sock_client::stream_update, this), get_poller()));
 	}

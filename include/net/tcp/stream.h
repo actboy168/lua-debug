@@ -27,7 +27,6 @@ namespace net { namespace tcp {
 	public:
 		stream_t(Poller* poll)
 			: base_t(poll, this)
-			, remote_()
 			, sndbuf_()
 			, rcvbuf_()
 			, wait_close_(false)
@@ -35,11 +34,10 @@ namespace net { namespace tcp {
 			event_type::sock = socket::retired_fd;
 		}
 
-		void attach(socket::fd_t s, const endpoint& ep)
+		void attach(socket::fd_t s)
 		{
-			NETLOG_INFO() << "socket(" << s << ") " << ep.to_string() << " connected";
+			NETLOG_INFO() << "socket(" << s << ") connected";
 			event_type::sock = s;
-			remote_ = ep;
 			base_t::set_fd(event_type::sock);
 			base_t::set_pollin();
 			if (!write_empty())
@@ -201,13 +199,7 @@ namespace net { namespace tcp {
 		{
 		}
 
-		const endpoint& remote_endpoint() const
-		{
-			return remote_;
-		}
-
 	protected:
-		endpoint  remote_;
 		sndbuffer sndbuf_;
 		rcvbuffer rcvbuf_;
 		bool      wait_close_;

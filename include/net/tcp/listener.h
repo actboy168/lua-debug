@@ -60,7 +60,7 @@ namespace net { namespace tcp {
 			return 0;
 		}
 
-		virtual void event_accept(net::socket::fd_t fd, const net::endpoint& ep) = 0;
+		virtual void event_accept(net::socket::fd_t fd) = 0;
 
 		bool listen(const endpoint& addr)
 		{
@@ -94,11 +94,10 @@ namespace net { namespace tcp {
 		bool event_in()
 		{
 			socket::fd_t fd = socket::retired_fd;
-			endpoint ep;
-			int rc = socket::accept(event_type::sock, fd, ep);
+			int rc = socket::accept(event_type::sock, fd);
 			if (rc == 0)
 			{
-				event_accept(fd, ep);
+				event_accept(fd);
 				return true;
 			}
 			else if (rc == -2)
