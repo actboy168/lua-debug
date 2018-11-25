@@ -17,11 +17,6 @@ namespace net {
 	class endpoint
 	{
 	public:
-		endpoint()
-		{
-			memset(&addr_, 0, sizeof(struct sockaddr_in));
-		}
-
 		endpoint(const std::string& hostname, uint16_t port_num)
 		{
 			memset(&addr_, 0, sizeof(struct sockaddr_in));

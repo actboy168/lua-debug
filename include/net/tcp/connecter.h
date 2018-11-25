@@ -10,6 +10,7 @@
 #include <net/poller/io_object.h>
 #include <net/log/logging.h>
 #include <functional>
+#include <optional>
 
 #if defined _MSC_VER
 #	pragma warning(push)
@@ -136,7 +137,7 @@ namespace net { namespace tcp {
 		{
 			assert(event_type::sock == socket::retired_fd);
 			event_type::sock = socket::open(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-			NETLOG_INFO() << "socket(" << event_type::sock << ") " << addr_.to_string() << " connecting";
+			NETLOG_INFO() << "socket(" << event_type::sock << ") " << addr_->to_string() << " connecting";
 
 			if (event_type::sock == socket::retired_fd)
 			{
@@ -149,12 +150,12 @@ namespace net { namespace tcp {
 			socket::send_buffer(event_type::sock, bufsize);
 			socket::recv_buffer(event_type::sock, bufsize);
 
-			return socket::connect(event_type::sock, addr_);
+			return socket::connect(event_type::sock, *addr_);
 		}
 
 	protected:
 		std::function<void(socket::fd_t)> connected_;
-		endpoint addr_;
+		std::optional<endpoint> addr_;
 	};
 
 	template <class Stream>
