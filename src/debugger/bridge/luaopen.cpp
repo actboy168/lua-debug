@@ -27,17 +27,29 @@ namespace luaw {
 		std::unique_ptr<vscode::debugger> dbg;
 		bool guard = false;
 
+		std::pair<std::string, uint16_t> split_address(const std::string& addr) {
+
+			size_t pos = addr.find(':');
+			if (pos == addr.npos) {
+				return { addr, 0 };
+			}
+			else {
+				return { addr.substr(0, pos), atoi(addr.substr(pos + 1).c_str()) };
+			}
+		}
 		void listen_tcp(const char* addr)
 		{
 			if (namedpipe || dbg) return;
-			socket_s.reset(new vscode::io::socket_s(addr));
+			auto [ip, port] = split_address(addr);
+			socket_s.reset(new vscode::io::socket_s(ip, port));
 			dbg.reset(new vscode::debugger(socket_s.get()));
 		}
 
 		void connect_tcp(const char* addr)
 		{
 			if (namedpipe || dbg) return;
-			socket_c.reset(new vscode::io::socket_c(addr));
+			auto[ip, port] = split_address(addr);
+			socket_c.reset(new vscode::io::socket_c(ip, port));
 			dbg.reset(new vscode::debugger(socket_c.get()));
 		}
 

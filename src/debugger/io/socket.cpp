@@ -197,15 +197,7 @@ namespace vscode { namespace io {
 		return !stream_.is_closed();
 	}
 
-	socket_s::socket_s(const char* addr)
-		: sock_stream()
-		, poller_(new net::poller_t)
-		, server_(new sock_server(poller_, *this, net::endpoint(addr)))
-	{
-		server_->listen();
-	}
-
-	socket_s::socket_s(const char* ip, uint16_t port)
+	socket_s::socket_s(const std::string& ip, uint16_t port)
 		: sock_stream()
 		, poller_(new net::poller_t)
 		, server_(new sock_server(poller_, *this, net::endpoint(ip, port)))
@@ -278,14 +270,7 @@ namespace vscode { namespace io {
 		return !stream_.is_closed();
 	}
 
-	socket_c::socket_c(const char* addr)
-		: sock_stream()
-		, poller_(new net::poller_t)
-		, client_(new sock_client(poller_, *this, net::endpoint(addr)))
-	{
-	}
-
-	socket_c::socket_c(const char* ip, uint16_t port)
+	socket_c::socket_c(const std::string& ip, uint16_t port)
 		: sock_stream()
 		, poller_(new net::poller_t)
 		, client_(new sock_client(poller_, *this, net::endpoint(ip, port)))

@@ -32,8 +32,7 @@ namespace vscode { namespace io {
 		: public sock_stream
 	{
 	public:
-		socket_s(const char* addr);
-		socket_s(const char* ip, uint16_t port);
+		socket_s(const std::string& ip, uint16_t port);
 		virtual   ~socket_s();
 		void      update(int ms);
 		void      close();
@@ -48,8 +47,7 @@ namespace vscode { namespace io {
 		: public sock_stream
 	{
 	public:
-		socket_c(const char* addr);
-		socket_c(const char* ip, uint16_t port);
+		socket_c(const std::string& ip, uint16_t port);
 		virtual   ~socket_c();
 		void      update(int ms);
 		void      close();

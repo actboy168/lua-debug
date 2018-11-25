@@ -22,33 +22,10 @@ namespace net {
 			memset(&addr_, 0, sizeof(struct sockaddr_in));
 		}
 
-		endpoint(const std::string& addr)
-		{
-			memset(&addr_, 0, sizeof(struct sockaddr_in));
-			size_t pos = addr.find(':');
-			if (pos == addr.npos) {
-				address(addr);
-				port(0);
-			}
-			else {
-				address(addr.substr(0, pos));
-				port(atoi(addr.substr(pos + 1).c_str()));
-			}
-			addr_.sin_family = AF_INET;
-		}
-
 		endpoint(const std::string& hostname, uint16_t port_num)
 		{
 			memset(&addr_, 0, sizeof(struct sockaddr_in));
 			address(hostname);
-			port(port_num);
-			addr_.sin_family = AF_INET;
-		}
-
-		endpoint(uint32_t ip, uint16_t port_num)
-		{
-			memset(&addr_, 0, sizeof(struct sockaddr_in));
-			address(ip);
 			port(port_num);
 			addr_.sin_family = AF_INET;
 		}
