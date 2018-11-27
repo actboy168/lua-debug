@@ -44,7 +44,7 @@ namespace net { namespace socket {
 	bool connect_error(fd_t s);
 	int  connect(fd_t s, const endpoint& ep);
 	int  bind(fd_t s, const endpoint& ep);
-	int  listen(fd_t s, const endpoint& ep, int backlog);
+	int  listen(fd_t s, int backlog);
 	int  accept(fd_t s, fd_t& sock);
 	int  error_no();
 }}
