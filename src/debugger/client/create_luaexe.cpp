@@ -193,8 +193,8 @@ process_opt create_luaexe_with_debugger(stdinput& io, vscode::rprotocol& req, co
 		}
 	}
 
-	base::subprocess::spawn spawn;
-	spawn.set_console(base::subprocess::console::eNew);
+	bee::subprocess::spawn spawn;
+	spawn.set_console(bee::subprocess::console::eNew);
 	spawn.hide_window();
 	if (args.HasMember("env")) {
 		if (args["env"].IsObject()) {
@@ -218,9 +218,9 @@ process_opt create_luaexe_with_debugger(stdinput& io, vscode::rprotocol& req, co
 		return process_opt();
 	}
 	if (replacedll.first.empty()) {
-		return base::subprocess::process(spawn);
+		return bee::subprocess::process(spawn);
 	}
-	auto process = base::subprocess::process(spawn);
+	auto process = bee::subprocess::process(spawn);
 	base::hook::replacedll(process, replacedll.first.c_str(), replacedll.second.c_str());
 	process.resume();
 	return process;

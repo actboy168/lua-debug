@@ -46,9 +46,6 @@
     <ClCompile Include="..\..\src\debugger\io\stream.cpp">
       <Filter>cpp\io</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\include\base\subprocess\subprocess_win.cpp">
-      <Filter>base\subprocess</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\third_party\bee.lua\bee\net\endpoint.cpp">
       <Filter>bee\net</Filter>
     </ClCompile>
@@ -66,6 +63,9 @@
     </ClCompile>
     <ClCompile Include="..\..\third_party\bee.lua\bee\net\socket.cpp">
       <Filter>bee\net</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\third_party\bee.lua\bee\subprocess\subprocess_win.cpp">
+      <Filter>bee\subprocess</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -105,12 +105,6 @@
     <ClInclude Include="..\..\include\debugger\io\stream.h">
       <Filter>inc\io</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\base\subprocess\subprocess_win.h">
-      <Filter>base\subprocess</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\base\subprocess.h">
-      <Filter>base</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\third_party\bee.lua\bee\utility\unicode.h">
       <Filter>bee\utility</Filter>
     </ClInclude>
@@ -122,6 +116,12 @@
     </ClInclude>
     <ClInclude Include="..\..\include\debugger\io\socket_impl.h">
       <Filter>inc\io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\third_party\bee.lua\bee\subprocess\subprocess_win.h">
+      <Filter>bee\subprocess</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\third_party\bee.lua\bee\subprocess.h">
+      <Filter>bee</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -155,9 +155,6 @@
     <Filter Include="cpp\io">
       <UniqueIdentifier>{a75fae30-c29e-4bc4-b77c-c1d095fbda31}</UniqueIdentifier>
     </Filter>
-    <Filter Include="base\subprocess">
-      <UniqueIdentifier>{c0d52c9d-5076-43cb-b134-3a00c2d24e7b}</UniqueIdentifier>
-    </Filter>
     <Filter Include="bee">
       <UniqueIdentifier>{d3783a13-2c5a-47ca-95c6-331f3814a1b4}</UniqueIdentifier>
     </Filter>
@@ -169,6 +166,9 @@
     </Filter>
     <Filter Include="bee\exception">
       <UniqueIdentifier>{5d002a15-5d2e-4299-9787-3b1c0162521e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="bee\subprocess">
+      <UniqueIdentifier>{0445f03b-5ac3-4d53-9d6f-1b4303045e45}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

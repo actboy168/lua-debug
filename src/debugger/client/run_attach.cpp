@@ -13,12 +13,12 @@ static void sleep() {
 	std::this_thread::sleep_for(std::chrono::milliseconds(10));
 }
 
-base::subprocess::process openprocess(int pid) {
+bee::subprocess::process openprocess(int pid) {
 	PROCESS_INFORMATION info = { 0 };
 	if (!base::hook::openprocess(pid, PROCESS_QUERY_INFORMATION, 0, info)) {
 		assert(false);
 	}
-	return base::subprocess::process(info);
+	return bee::subprocess::process(info);
 }
 
 

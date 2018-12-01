@@ -27,7 +27,6 @@
     <ClCompile Include="..\..\include\base\hook\injectdll.cpp" />
     <ClCompile Include="..\..\include\base\hook\replacedll.cpp" />
     <ClCompile Include="..\..\include\base\path\get_path.cpp" />
-    <ClCompile Include="..\..\include\base\subprocess\subprocess_win.cpp" />
     <ClCompile Include="..\..\include\base\win\query_process.cpp" />
     <ClCompile Include="..\..\src\debugger\client\create_luaexe.cpp" />
     <ClCompile Include="..\..\src\debugger\client\open_process.cpp" />
@@ -45,6 +44,7 @@
     <ClCompile Include="..\..\third_party\bee.lua\bee\exception\windows_exception.cpp" />
     <ClCompile Include="..\..\third_party\bee.lua\bee\net\endpoint.cpp" />
     <ClCompile Include="..\..\third_party\bee.lua\bee\net\socket.cpp" />
+    <ClCompile Include="..\..\third_party\bee.lua\bee\subprocess\subprocess_win.cpp" />
     <ClCompile Include="..\..\third_party\bee.lua\bee\utility\unicode.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -52,8 +52,6 @@
     <ClInclude Include="..\..\include\base\hook\replacedll.h" />
     <ClInclude Include="..\..\include\base\path\get_path.h" />
     <ClInclude Include="..\..\include\base\path\self.h" />
-    <ClInclude Include="..\..\include\base\subprocess.h" />
-    <ClInclude Include="..\..\include\base\subprocess\subprocess_win.h" />
     <ClInclude Include="..\..\include\base\win\query_process.h" />
     <ClInclude Include="..\..\include\base\win\process_switch.h" />
     <ClInclude Include="..\..\include\debugger\client\tcp_attach.h" />
@@ -65,6 +63,8 @@
     <ClInclude Include="..\..\include\debugger\io\stream.h" />
     <ClInclude Include="..\..\third_party\bee.lua\bee\exception\exception.h" />
     <ClInclude Include="..\..\third_party\bee.lua\bee\exception\windows_exception.h" />
+    <ClInclude Include="..\..\third_party\bee.lua\bee\subprocess.h" />
+    <ClInclude Include="..\..\third_party\bee.lua\bee\subprocess\subprocess_win.h" />
     <ClInclude Include="..\..\third_party\bee.lua\bee\utility\unicode.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

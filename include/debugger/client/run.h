@@ -2,7 +2,7 @@
 
 #include <debugger/protocol.h>
 #include <base/filesystem.h>
-#include <base/subprocess.h>
+#include <bee/subprocess.h>
 #include <optional>
 
 namespace base { namespace win {
@@ -11,13 +11,13 @@ namespace base { namespace win {
 
 class stdinput;
 
-typedef std::optional<base::subprocess::process> process_opt;
+typedef std::optional<bee::subprocess::process> process_opt;
 
 std::string create_install_script(vscode::rprotocol& req, const fs::path& dbg_path, const std::wstring& port);
 int getLuaRuntime(const rapidjson::Value& args);
 bool is64Exe(const wchar_t* exe);
 
-base::subprocess::process openprocess(int pid);
+bee::subprocess::process openprocess(int pid);
 
 bool run_pipe_attach(stdinput& io, vscode::rprotocol& init, vscode::rprotocol& req, const std::wstring& pipename, process_opt& p, base::win::process_switch* m = nullptr);
 bool open_process_with_debugger(vscode::rprotocol& req, int pid);

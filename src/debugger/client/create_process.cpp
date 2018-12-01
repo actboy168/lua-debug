@@ -1,5 +1,5 @@
 
-#include <base/subprocess.h>
+#include <bee/subprocess.h>
 #include <bee/utility/unicode.h>
 #include <base/path/self.h>
 #include <base/hook/injectdll.h>
@@ -22,8 +22,8 @@ process_opt create_process_with_debugger(vscode::rprotocol& req, bool noinject)
 	}
 
 	auto dir = base::path::self().parent_path().parent_path();
-	base::subprocess::spawn spawn;
-	spawn.set_console(base::subprocess::console::eNew);
+	bee::subprocess::spawn spawn;
+	spawn.set_console(bee::subprocess::console::eNew);
 
 	if (args.HasMember("env")) {
 		if (args["env"].IsObject()) {
@@ -66,10 +66,10 @@ process_opt create_process_with_debugger(vscode::rprotocol& req, bool noinject)
 		}
 	}
 	if (noinject) {
-		return base::subprocess::process(spawn);
+		return bee::subprocess::process(spawn);
 	}
 	spawn.suspended();
-	auto process = base::subprocess::process(spawn);
+	auto process = bee::subprocess::process(spawn);
 	base::hook::injectdll(process, dir / L"x86" / L"debugger-inject.dll", dir / L"x64" / L"debugger-inject.dll");
 	process.resume();
 	return process;
