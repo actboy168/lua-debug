@@ -1,7 +1,7 @@
 #include <debugger/impl.h>
 #include <debugger/path.h>
-#include <base/util/unicode.h>
-#include <base/util/dynarray.h>
+#include <bee/utility/unicode.h>
+#include <bee/utility/dynarray.h>
 #include <deque>
 #include <regex>
 
@@ -83,7 +83,7 @@ namespace vscode
 		}
 		server = sourceCoding_ == eCoding::utf8
 			? source.substr(1)
-			: base::a2u(base::strview(source.data() + 1, source.size() - 1))
+			: bee::a2u(std::string_view(source.data() + 1, source.size() - 1))
 			;
 		return true;
 	}
@@ -117,7 +117,7 @@ namespace vscode
 		auto it = str.begin();
 		for (; std::regex_search(it, str.end(), m, re); it = m[0].second) {
 			res += std::string(it, m[0].first);
-			res += base::a2u(std::string(m[1].first, m[1].second));
+			res += bee::a2u(std::string(m[1].first, m[1].second));
 			res += std::string(m[2].first, m[2].second);
 		}
 		res += std::string(it, str.end());

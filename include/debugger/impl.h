@@ -20,7 +20,6 @@
 #include <debugger/io/helper.h>
 #include <debugger/osthread.h>
 #include <debugger/debugapi.h>
-#include <base/util/string_view.h>
 
 namespace vscode
 {

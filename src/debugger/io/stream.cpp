@@ -1,5 +1,5 @@
 #include <debugger/io/stream.h>
-#include <base/util/format.h>
+#include <bee/utility/format.h>
 
 namespace vscode { namespace io {
 	stream::stream()
@@ -50,7 +50,7 @@ namespace vscode { namespace io {
 	}
 
 	bool stream::output(const char* buf, size_t len) {
-		auto l = ::base::format("Content-Length: %d\r\n\r\n", len);
+		auto l = bee::format("Content-Length: %d\r\n\r\n", len);
 		if (!raw_send(l.data(), l.size())) {
 			return false;
 		}

@@ -1,6 +1,6 @@
 #include <debugger/client/tcp_attach.h>
 #include <debugger/client/stdinput.h>
-#include <base/util/format.h>
+#include <bee/utility/format.h>
 
 tcp_attach::tcp_attach(stdinput& io_)
 	: poller()
@@ -24,7 +24,7 @@ bool tcp_attach::event_in()
 
 void tcp_attach::send(const std::string& rp)
 {
-	base_type::send(base::format("Content-Length: %d\r\n\r\n", rp.size()));
+	base_type::send(bee::format("Content-Length: %d\r\n\r\n", rp.size()));
 	base_type::send(rp.data(), rp.size());
 }
 
@@ -33,7 +33,7 @@ void tcp_attach::send(const vscode::rprotocol& rp)
 	rapidjson::StringBuffer buffer;
 	rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
 	rp.Accept(writer);
-	base_type::send(base::format("Content-Length: %d\r\n\r\n", buffer.GetSize()));
+	base_type::send(bee::format("Content-Length: %d\r\n\r\n", buffer.GetSize()));
 	base_type::send(buffer.GetString(), buffer.GetSize());
 }
 

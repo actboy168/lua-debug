@@ -2,7 +2,7 @@
 #include <debugger/io/base.h>
 #include <debugger/capabilities.h>
 #include <debugger/luathread.h>
-#include <base/util/format.h>
+#include <bee/utility/format.h>
 
 namespace vscode
 {
@@ -47,7 +47,7 @@ namespace vscode
 					{
 						for (auto _ : res.Object())
 						{
-							res("name").String(base::format("Thread %d", lt.second->id));
+							res("name").String(bee::format("Thread %d", lt.second->id));
 							res("id").Int(lt.second->id);
 						}
 					}

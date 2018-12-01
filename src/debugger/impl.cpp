@@ -5,7 +5,7 @@
 #include <debugger/path.h>
 #include <debugger/osthread.h>
 #include <debugger/luathread.h>
-#include <base/util/format.h>
+#include <bee/utility/format.h>
 
 namespace vscode
 {
@@ -359,7 +359,7 @@ namespace vscode
 					continue;
 				}
 			}
-			response_error(req, base::format("`%s` not yet implemented,(stopped)", req["command"].GetString()).c_str());
+			response_error(req, bee::format("`%s` not yet implemented,(stopped)", req["command"].GetString()).c_str());
 		}
 
 		thread->reset_session(debug.L());
@@ -382,7 +382,7 @@ namespace vscode
 				request_initialize(req);
 				return;
 			}
-			response_error(req, base::format("`%s` not yet implemented.(birth)", req["command"].GetString()).c_str());
+			response_error(req, bee::format("`%s` not yet implemented.(birth)", req["command"].GetString()).c_str());
 		}
 		else if (is_state(eState::initialized) || is_state(eState::running) || is_state(eState::stepping))
 		{
@@ -395,7 +395,7 @@ namespace vscode
 			}
 			bool quit = false;
 			if (!update_main(req, quit)) {
-				response_error(req, base::format("`%s` not yet implemented.(idle)", req["command"].GetString()).c_str());
+				response_error(req, bee::format("`%s` not yet implemented.(idle)", req["command"].GetString()).c_str());
 				return;
 			}
 		}
@@ -457,13 +457,13 @@ namespace vscode
 				res("category").String(category);
 
 				if (consoleTargetCoding_ == consoleSourceCoding_) {
-					res("output").String(base::strview(buf, len));
+					res("output").String(std::string_view(buf, len));
 				}
 				else if (consoleSourceCoding_ == eCoding::ansi) {
-					res("output").String(base::a2u(base::strview(buf, len)));
+					res("output").String(bee::a2u(std::string_view(buf, len)));
 				}
 				else if (consoleSourceCoding_ == eCoding::utf8) {
-					res("output").String(base::u2a(base::strview(buf, len)));
+					res("output").String(bee::u2a(std::string_view(buf, len)));
 				}
 
 				if (L) {

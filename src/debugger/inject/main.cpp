@@ -1,6 +1,6 @@
 #include <Windows.h>
 #include <base/path/self.h>
-#include <base/util/format.h>
+#include <bee/utility/format.h>
 #include <base/win/process_switch.h>
 #include <debugger/debugger.h>
 #include <debugger/io/namedpipe.h>
@@ -14,7 +14,7 @@ static bool isAttachProcess = false;
 static bool initialize() {
 	binPath = base::path::self().parent_path();
 	int pid = (int)GetCurrentProcessId();
-	pipeName = base::format(L"vscode-lua-debug-%d", pid);
+	pipeName = bee::format(L"vscode-lua-debug-%d", pid);
 	isAttachProcess = base::win::process_switch::has(pid, L"attachprocess");
 	return true;
 }

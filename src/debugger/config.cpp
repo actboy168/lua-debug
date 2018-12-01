@@ -1,6 +1,6 @@
 #include <debugger/config.h>
 #include <rapidjson/error/en.h>
-#include <base/util/format.h>
+#include <bee/utility/format.h>
 
 namespace vscode {
 	bool config::init(int level, const rapidjson::Value& cfg)
@@ -30,7 +30,7 @@ namespace vscode {
 			return false;
 		}
 		if (doc[level].Parse(cfg.data(), cfg.size()).HasParseError()) {
-			err = base::format("Error(offset %u): %s\n", static_cast<unsigned>(doc[level].GetErrorOffset()), rapidjson::GetParseError_En(doc[level].GetParseError()));
+			err = bee::format("Error(offset %u): %s\n", static_cast<unsigned>(doc[level].GetErrorOffset()), rapidjson::GetParseError_En(doc[level].GetParseError()));
 			return false;
 		}
 		val[level] = doc[level].Move();

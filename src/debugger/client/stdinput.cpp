@@ -1,5 +1,5 @@
 #include <debugger/client/stdinput.h>
-#include <base/util/format.h>
+#include <bee/utility/format.h>
 
 stdinput::stdinput()
 	: input_()
@@ -41,7 +41,7 @@ void stdinput::run() {
 }
 
 bool stdinput::output(const char* buf, size_t len) {
-	auto l = ::base::format("Content-Length: %d\r\n\r\n", len);
+	auto l = bee::format("Content-Length: %d\r\n\r\n", len);
 	raw_output(l.data(), l.size());
 	raw_output(buf, len);
 	return true;

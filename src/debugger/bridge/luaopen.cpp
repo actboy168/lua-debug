@@ -3,7 +3,7 @@
 #include <debugger/debugger.h>
 #include <debugger/io/socket_impl.h>
 #include <debugger/io/namedpipe.h>
-#include <base/util/unicode.h>
+#include <bee/utility/unicode.h>
 #include <bee/net/endpoint.h>
 #include <memory>  
 #include <string_view>
@@ -102,7 +102,7 @@ namespace luaw {
 		}
 #if defined(_WIN32)
 		else if (strncmp(addr, "pipe:", 5) == 0) {
-			self.listen_pipe(base::u2w(addr + 5).c_str());
+			self.listen_pipe(bee::u2w(addr + 5).c_str());
 		}
 #endif
 		else {

@@ -1,6 +1,5 @@
 #include <debugger/path.h>
-#include <base/util/unicode.h>
-#include <base/util/string_view.h>
+#include <bee/utility/unicode.h>
 #include <deque>
 #if defined(_WIN32)
 #include <Windows.h>
@@ -38,7 +37,7 @@ namespace vscode { namespace path {
 		std::wstring r;
 		r.resize(len);
 		GetCurrentDirectoryW((DWORD)r.size(), &r.front());
-		return base::w2u(r);
+		return bee::w2u(r);
 #else
 		for (long path_max = 128;; path_max *= 2)
 		{

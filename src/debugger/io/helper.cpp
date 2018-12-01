@@ -9,13 +9,13 @@
 #	define log(...)
 #else
 
-#include <base/util/format.h>
+#include <bee/utility/format.h>
 #include <Windows.h>
 
 template <class... Args>
 static void log(const char* fmt, const Args& ... args)
 {
-	auto s = base::format(fmt, args...);
+	auto s = bee::format(fmt, args...);
 	OutputDebugStringA(s.c_str());
 }
 

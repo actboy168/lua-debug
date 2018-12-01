@@ -1,6 +1,5 @@
 ﻿#include <debugger/impl.h>
 #include <map>
-#include <base/util/string_view.h>
 
 #if defined(_WIN32)
 #pragma execution_character_set("utf-8")

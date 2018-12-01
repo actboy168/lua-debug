@@ -1,10 +1,9 @@
 #include <debugger/observer.h>
 #include <debugger/impl.h>
 #include <debugger/evaluate.h>
-#include <base/util/format.h>
+#include <bee/utility/format.h>
 #include <set>
 #include <array>
-#include <base/util/string_view.h>
 
 namespace vscode {
 
@@ -177,7 +176,7 @@ namespace vscode {
 		}
 		if (name) {
 			static std::string s_name;
-			s_name = base::format("[%d]", n);
+			s_name = bee::format("[%d]", n);
 			*name = s_name.c_str();
 		}
 		return true;
@@ -206,7 +205,7 @@ namespace vscode {
 		long lv = strtol(setvalue.value.c_str(), &end, 10);
 		if (errno != ERANGE && *end == 0)
 		{
-			setvalue.value = base::format("%d", lv);
+			setvalue.value = bee::format("%d", lv);
 			setvalue.type = "integer";
 			lua_pushinteger(L, lv);
 			return true;
@@ -218,7 +217,7 @@ namespace vscode {
 			long lv = strtol(setvalue.value.c_str() + 2, &end, 16);
 			if (errno != ERANGE && *end == 0)
 			{
-				setvalue.value = base::format("0x%x", lv);
+				setvalue.value = bee::format("0x%x", lv);
 				setvalue.type = "integer";
 				lua_pushinteger(L, lv);
 				return true;
@@ -230,7 +229,7 @@ namespace vscode {
 		double dv = strtod(setvalue.value.c_str(), &end);
 		if (errno != ERANGE && *end == 0)
 		{
-			setvalue.value = base::format("%f", dv);
+			setvalue.value = bee::format("%f", dv);
 			setvalue.type = "number";
 			lua_pushnumber(L, dv);
 			return true;
@@ -425,12 +424,12 @@ namespace vscode {
 				if (lua_isinteger(L, idx)) {
 					lua_Integer i = lua_tointeger(L, idx);
 					if (i > 0 && i < 1000) {
-						return base::format("[%03d]", i);
+						return bee::format("[%03d]", i);
 					}
-					return base::format("[%d]", i);
+					return bee::format("[%d]", i);
 				}
 				else
-					return base::format("%f", lua_tonumber(L, idx));
+					return bee::format("%f", lua_tonumber(L, idx));
 			case LUA_TSTRING: {
 				size_t len = 0;
 				const char* buf = lua_tolstring(L, idx, &len);
@@ -443,7 +442,7 @@ namespace vscode {
 			default:
 				break;
 			}
-			return base::format("%s: %p", luaL_typename(L, idx), lua_topointer(L, idx));
+			return bee::format("%s: %p", luaL_typename(L, idx), lua_topointer(L, idx));
 		}
 
 		static std::string getType(lua_State *L, int idx)
@@ -470,16 +469,16 @@ namespace vscode {
 			switch (lua_type(L, idx)) {
 			case LUA_TNUMBER:
 				if (lua_isinteger(L, idx)) {
-					return base::format("%d", lua_tointeger(L, idx));
+					return bee::format("%d", lua_tointeger(L, idx));
 				}
-				return base::format("%f", lua_tonumber(L, idx));
+				return bee::format("%f", lua_tonumber(L, idx));
 			case LUA_TSTRING: {
 				size_t len = 0;
 				const char* str = lua_tolstring(L, idx, &len);
 				if (len < 16) {
-					return base::format("'%s'", str);
+					return bee::format("'%s'", str);
 				}
-				return base::format("'%s...'", std::string(str, 16));
+				return bee::format("'%s...'", std::string(str, 16));
 			}
 			case LUA_TBOOLEAN:
 				return lua_toboolean(L, idx) ? "true" : "false";
@@ -532,10 +531,10 @@ namespace vscode {
 				s += name + "=" + value + ",";
 				lua_pop(L, 2);
 				if (s.size() >= maxlen) {
-					return base::format("{%s...}", s);
+					return bee::format("{%s...}", s);
 				}
 			}
-			return base::format("{%s}", s);
+			return bee::format("{%s}", s);
 		}
 
 		static std::string getTableValue(lua_State *L, int idx, size_t maxlen, debugger_impl& dbg)
@@ -557,7 +556,7 @@ namespace vscode {
 				mark.insert(n);
 				lua_pop(L, 1);
 				if (s.size() >= maxlen) {
-					return base::format("{%s...}", s);
+					return bee::format("{%s...}", s);
 				}
 			}
 
@@ -587,10 +586,10 @@ namespace vscode {
 					s += "," + var.first + "=" + var.second;
 				}
 				if (s.size() >= maxlen) {
-					return base::format("{%s...}", s);
+					return bee::format("{%s...}", s);
 				}
 			}
-			return base::format("{%s}", s);
+			return bee::format("{%s}", s);
 		}
 
 		static std::string rawGetValue(lua_State *L, int idx, int realIdx, size_t maxlen, debugger_impl& dbg)
@@ -598,16 +597,16 @@ namespace vscode {
 			switch (lua_type(L, idx)) {
 			case LUA_TNUMBER:
 				if (lua_isinteger(L, idx)) {
-					return base::format("%d", lua_tointeger(L, idx));
+					return bee::format("%d", lua_tointeger(L, idx));
 				}
-				return base::format("%f", lua_tonumber(L, idx));
+				return bee::format("%f", lua_tonumber(L, idx));
 			case LUA_TSTRING: {
 				size_t len = 0;
 				const char* str = lua_tolstring(L, idx, &len);
 				if (len < 256) {
-					return base::format("'%s'", str);
+					return bee::format("'%s'", str);
 				}
-				return base::format("'%s...'", std::string(str, 256));
+				return bee::format("'%s...'", std::string(str, 256));
 			}
 			case LUA_TBOOLEAN:
 				return lua_toboolean(L, idx) ? "true" : "false";
@@ -629,12 +628,12 @@ namespace vscode {
 								if (!pos.empty()) {
 									return std::string(pos);
 								}
-								return base::format("%s:%d", code.c_str(), entry.linedefined);
+								return bee::format("%s:%d", code.c_str(), entry.linedefined);
 							}
-							return base::format("Unk function: %08x", s->ref);
+							return bee::format("Unk function: %08x", s->ref);
 						}
 						else {
-							return base::format("%s:%d", dbg.path_clientrelative(s->path), entry.linedefined);
+							return bee::format("%s:%d", dbg.path_clientrelative(s->path), entry.linedefined);
 						}
 					}
 				}
@@ -647,7 +646,7 @@ namespace vscode {
 					if (lua_type(L, -1) == LUA_TSTRING) {
 						std::string type = lua_tostr<std::string>(L, -1);
 						lua_pop(L, 1);
-						return base::format("userdata: %s", type);
+						return bee::format("userdata: %s", type);
 					}
 					lua_pop(L, 1);
 				}

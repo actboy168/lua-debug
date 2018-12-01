@@ -9,7 +9,7 @@
 #include <net/tcp/connecter.h>
 #include <net/tcp/listener.h> 
 #include <net/tcp/stream.h>	
-#include <base/util/format.h>
+#include <bee/utility/format.h>
 #include <debugger/io/stream.h>
 
 namespace vscode { namespace io {

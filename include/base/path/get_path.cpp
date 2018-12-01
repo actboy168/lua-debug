@@ -1,5 +1,5 @@
 #include <base/path/get_path.h>
-#include <base/util/dynarray.h>
+#include <bee/utility/dynarray.h>
 
 namespace base { namespace path {
 	fs::path module(HMODULE module_handle)

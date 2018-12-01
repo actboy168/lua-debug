@@ -2,7 +2,7 @@
 
 #if defined(_WIN32)
 
-#include <base/util/format.h>
+#include <bee/utility/format.h>
 #include <net/namedpipe.h>
 
 namespace vscode { namespace io {
