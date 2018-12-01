@@ -181,14 +181,12 @@ namespace vscode { namespace io {
 		if (sock == bee::net::socket::retired_fd) {
 			return 0;
 		}
-		sockaddr_in addr;
-#if defined _WIN32
-		int addrlen = sizeof(sockaddr_in);
-#else
-		socklen_t addrlen = sizeof(sockaddr_in);
-#endif
-		::getsockname(sock, (sockaddr*)&addr, &addrlen);
-		return ntohs(addr.sin_port);
+		bee::net::endpoint ep = bee::net::endpoint::from_empty();
+		if (!bee::net::socket::getsockname(sock, ep)) {
+			return false;
+		}
+		auto[ip, port] = ep.info();
+		return port;
 	}
 
 	bool sock_server::stream_update()
