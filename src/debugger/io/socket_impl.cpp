@@ -27,8 +27,6 @@ namespace vscode { namespace io {
 
 	public:
 		sock_session(EventClose event_close, EventIn event_in, bee::net::poller_t* poll);
-		bool output(const char* buf, size_t len);
-		bool input(std::string& buf);
 
 	private:
 		void event_close();
@@ -259,7 +257,9 @@ namespace vscode { namespace io {
 
 	void sock_client::event_connect(bee::net::socket::fd_t fd)
 	{
-		stream_.open(new sock_session([this]() { }, std::bind(&sock_client::stream_update, this), get_poller()));
+		auto s = new sock_session([this]() {}, std::bind(&sock_client::stream_update, this), get_poller());
+		s->attach(fd);
+		stream_.open(s);
 	}
 
 	bool sock_client::stream_update()
