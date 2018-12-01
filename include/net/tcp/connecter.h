@@ -1,7 +1,7 @@
 #pragma once
 
-#include <net/endpoint.h>
-#include <net/socket.h>
+#include <bee/net/endpoint.h>
+#include <bee/net/socket.h>
 #include <net/tcp/sndbuffer.h>
 #include <net/tcp/rcvbuffer.h>
 #include <net/tcp/stream.h>
@@ -17,7 +17,7 @@
 #	pragma warning(disable:4355)
 #endif
 
-namespace net { namespace tcp {
+namespace bee::net { namespace tcp {
 
 	template <class Poller>
 	class connecter_t
@@ -67,9 +67,9 @@ namespace net { namespace tcp {
 		bool event_out()
 		{
 			base_t::cancel_timer();
-			bool suc = socket::connect_error(event_type::sock);
+			int err = socket::errcode(event_type::sock);
 			base_t::rm_fd();
-			if (!suc)
+			if (err != 0)
 			{
 				event_close();
 				reconnect();
@@ -124,7 +124,7 @@ namespace net { namespace tcp {
 			}
 			else
 			{
-				NETLOG_ERROR() << "socket(" << event_type::sock << ") connect error, ec = " << socket::error_no_();
+				NETLOG_ERROR() << "socket(" << event_type::sock << ") connect error, ec = " << socket::errcode();
 				if (event_type::sock != socket::retired_fd)
 				{
 					event_close();
@@ -137,11 +137,12 @@ namespace net { namespace tcp {
 		{
 			assert(event_type::sock == socket::retired_fd);
 			event_type::sock = socket::open(AF_INET, IPPROTO_TCP);
-			NETLOG_INFO() << "socket(" << event_type::sock << ") " << addr_->to_string() << " connecting";
+			auto [ip, port] = addr_->info();
+			NETLOG_INFO() << "socket(" << event_type::sock << ") [" << ip << ":" << port << "] connecting";
 
 			if (event_type::sock == socket::retired_fd)
 			{
-				NETLOG_ERROR() << "socket("<< event_type::sock << ") socket open error, ec = " << socket::error_no_();
+				NETLOG_ERROR() << "socket("<< event_type::sock << ") socket open error, ec = " << socket::errcode();
 				return -1;
 			}
 

@@ -5,7 +5,7 @@
 #include <limits>
 #include <map>
 
-namespace net { namespace poller {
+namespace bee::net { namespace poller {
 
 	class timer_queue
 	{

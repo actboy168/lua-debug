@@ -1,7 +1,7 @@
 #pragma once
 
-#include <net/endpoint.h>
-#include <net/socket.h>
+#include <bee/net/endpoint.h>
+#include <bee/net/socket.h>
 #include <net/tcp/sndbuffer.h>
 #include <net/tcp/rcvbuffer.h> 
 #include <net/poller.h>
@@ -14,7 +14,7 @@
 #	pragma warning(disable:4355)
 #endif
 
-namespace net { namespace tcp {
+namespace bee::net { namespace tcp {
 
 	template <class Poller>
 	class stream_t
@@ -120,24 +120,20 @@ namespace net { namespace tcp {
 
 		bool event_in()
 		{
-			int rc = ::recv(event_type::sock, rcvbuf_.rcv_data(), (int)rcvbuf_.rcv_size(), 0);
-			if (rc == 0)
+			int rc = socket::recv(event_type::sock, rcvbuf_.rcv_data(), (int)rcvbuf_.rcv_size());
+			if (rc == -3)
 			{
-				NETLOG_ERROR() << "socket(" << event_type::sock << ") recv error, ec = " << socket::error_no_();
+				NETLOG_ERROR() << "socket(" << event_type::sock << ") recv error, ec = " << socket::errcode();
 				return false;
+			}
+			else if (rc == -2)
+			{
+				return true;
 			}
 			else if (rc < 0)
 			{
-				int ec = socket::error_no();
-				if (ec == EAGAIN || ec == EWOULDBLOCK || ec == EINTR)
-				{
-					return true;
-				}
-				else
-				{
-					NETLOG_ERROR() << "socket(" << event_type::sock << ") recv error, ec = " << socket::error_no_();
-					return false;
-				}
+				NETLOG_ERROR() << "socket(" << event_type::sock << ") recv error, ec = " << socket::errcode();
+				return false;
 			}
 
 			rcvbuf_.rcv_push(rc);
@@ -152,19 +148,15 @@ namespace net { namespace tcp {
 				return true;
 			}
 
-			int rc = ::send(event_type::sock, sndbuf_.snd_data(), (int)sndbuf_.snd_size(), 0);
-			if (rc < 0)
+			int rc = socket::send(event_type::sock, sndbuf_.snd_data(), (int)sndbuf_.snd_size());
+			if (rc == -2)
 			{
-				int ec = socket::error_no();
-				if (ec == EAGAIN || ec == EWOULDBLOCK || ec == EINTR)
-				{
-					return true;
-				}
-				else
-				{
-					NETLOG_ERROR() << "socket(" << event_type::sock << ") send error, ec = " << socket::error_no_();
-					return false;
-				}
+				return true;
+			}
+			else if (rc < 0)
+			{
+				NETLOG_ERROR() << "socket(" << event_type::sock << ") send error, ec = " << socket::errcode();
+				return false;
 			}
 
 			sndbuf_.snd_pop(rc);

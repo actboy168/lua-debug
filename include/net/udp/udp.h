@@ -4,7 +4,7 @@
 #include <net/udp/stream.h>
 #include <net/poller.h>
 
-namespace net { namespace udp {
+namespace bee::net { namespace udp {
 
 class udp_con
 	: public stream_t<poller_t>

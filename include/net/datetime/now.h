@@ -9,7 +9,7 @@
 #include <stdint.h>
 #include <time.h>
 
-namespace net { namespace datetime {
+namespace bee::net { namespace datetime {
 #if defined _WIN32
 	using winapi::timeval;
 	inline uint64_t filetime_to_unix_epoch(const winapi::FILETIME *ft)

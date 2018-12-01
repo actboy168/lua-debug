@@ -7,9 +7,9 @@
 class stdinput;
 
 class tcp_attach
-	: public net::tcp::connecter
+	: public bee::net::tcp::connecter
 {
-	typedef net::tcp::connecter base_type;
+	typedef bee::net::tcp::connecter base_type;
 public:
 	tcp_attach(stdinput& io);
 	bool event_in();
@@ -19,6 +19,6 @@ public:
 	void update();
 
 private:
-	net::poller_t poller;
+	bee::net::poller_t poller;
 	stdinput&     io;
 };

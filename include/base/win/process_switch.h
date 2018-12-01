@@ -2,7 +2,7 @@
 
 #include <Windows.h>
 #include <mutex>
-#include <base/util/format.h>
+#include <bee/utility/format.h>
 
 namespace base { namespace win {
 	struct process_switch {
@@ -69,7 +69,7 @@ namespace base { namespace win {
 			return process_switch(pid, name, false).has();
 		}
 		static std::wstring mutex_name(int pid, const wchar_t* name) {
-			return base::format(L"base-process-switch-%s-%d", name, pid);
+			return bee::format(L"base-process-switch-%s-%d", name, pid);
 		}
 	};
 }}

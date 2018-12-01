@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <net/datetime/now.h>
 
-namespace net { namespace datetime {
+namespace bee::net { namespace datetime {
 	struct date
 		: public tm
 	{

@@ -1,9 +1,10 @@
 #include <debugger/bridge/delayload.h>
 #include <debugger/lua.h>
 #include <debugger/debugger.h>
-#include <debugger/io/socket.h>
+#include <debugger/io/socket_impl.h>
 #include <debugger/io/namedpipe.h>
 #include <base/util/unicode.h>
+#include <bee/net/endpoint.h>
 #include <memory>  
 #include <string_view>
 
@@ -41,7 +42,11 @@ namespace luaw {
 		{
 			if (namedpipe || dbg) return;
 			auto [ip, port] = split_address(addr);
-			socket_s.reset(new vscode::io::socket_s(ip, port));
+			auto info = bee::net::endpoint::from_hostname(ip, port);
+			if (!info) {
+				return;
+			}
+			socket_s.reset(new vscode::io::socket_s(info.value()));
 			dbg.reset(new vscode::debugger(socket_s.get()));
 		}
 
@@ -49,7 +54,11 @@ namespace luaw {
 		{
 			if (namedpipe || dbg) return;
 			auto[ip, port] = split_address(addr);
-			socket_c.reset(new vscode::io::socket_c(ip, port));
+			auto info = bee::net::endpoint::from_hostname(ip, port);
+			if (!info) {
+				return;
+			}
+			socket_c.reset(new vscode::io::socket_c(info.value()));
 			dbg.reset(new vscode::debugger(socket_c.get()));
 		}
 

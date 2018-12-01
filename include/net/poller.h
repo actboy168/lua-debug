@@ -6,7 +6,7 @@
 #	include <net/poller/epoll.h>
 #endif
 
-namespace net {
+namespace bee::net {
 #if defined _WIN32
 	struct poller_t : public poller::select_t { };
 #else						  

@@ -5,7 +5,7 @@
 #include <net/log/logging.h>
 #include <array>
 
-namespace net { namespace udp {
+namespace bee::net { namespace udp {
 
 	typedef std::array<char, 1512> recvbuf_t;
 

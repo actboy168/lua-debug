@@ -3,7 +3,7 @@
 #include <Windows.h>
 #include <string>
 
-namespace net {
+namespace bee::net {
 	class namedpipe {
 	public:
 		namedpipe();

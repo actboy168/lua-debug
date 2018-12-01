@@ -1,6 +1,6 @@
 
 #include <base/subprocess.h>
-#include <base/util/unicode.h>
+#include <bee/utility/unicode.h>
 #include <base/path/self.h>
 #include <base/hook/injectdll.h>
 #include <debugger/protocol.h>
@@ -12,10 +12,10 @@ process_opt create_process_with_debugger(vscode::rprotocol& req, bool noinject)
 	if (!args.HasMember("runtimeExecutable") || !args["runtimeExecutable"].IsString()) {
 		return process_opt();
 	}
-	std::wstring wapplication = base::u2w(args["runtimeExecutable"].Get<std::string>());
+	std::wstring wapplication = bee::u2w(args["runtimeExecutable"].Get<std::string>());
 	std::wstring wcwd;
 	if (args.HasMember("cwd") && args["cwd"].IsString()) {
-		wcwd = base::u2w(args["cwd"].Get<std::string>());
+		wcwd = bee::u2w(args["cwd"].Get<std::string>());
 	}
 	else {
 		wcwd = fs::path(wapplication).parent_path();
@@ -30,10 +30,10 @@ process_opt create_process_with_debugger(vscode::rprotocol& req, bool noinject)
 			for (auto& v : args["env"].GetObject()) {
 				if (v.name.IsString()) {
 					if (v.value.IsString()) {
-						spawn.env_set(base::u2w(v.name.Get<std::string>()), base::u2w(v.value.Get<std::string>()));
+						spawn.env_set(bee::u2w(v.name.Get<std::string>()), bee::u2w(v.value.Get<std::string>()));
 					}
 					else if (v.value.IsNull()) {
-						spawn.env_del(base::u2w(v.name.Get<std::string>()));
+						spawn.env_del(bee::u2w(v.name.Get<std::string>()));
 					}
 				}
 			}
@@ -43,7 +43,7 @@ process_opt create_process_with_debugger(vscode::rprotocol& req, bool noinject)
 
 	if (args.HasMember("runtimeArgs")) {
 		if (args["runtimeArgs"].IsString()) {
-			if (!spawn.exec(wapplication, base::u2w(args["runtimeArgs"].Get<std::string>()), wcwd.c_str())) {
+			if (!spawn.exec(wapplication, bee::u2w(args["runtimeArgs"].Get<std::string>()), wcwd.c_str())) {
 				return process_opt();
 			}
 		}
@@ -52,7 +52,7 @@ process_opt create_process_with_debugger(vscode::rprotocol& req, bool noinject)
 			wargs.push_back(wapplication);
 			for (auto& v : args["runtimeArgs"].GetArray()) {
 				if (v.IsString()) {
-					wargs.push_back(base::u2w(v));
+					wargs.push_back(bee::u2w(std::string_view(v.GetString(), v.GetStringLength())));
 				}
 			}
 			if (!spawn.exec(wargs, wcwd.c_str())) {

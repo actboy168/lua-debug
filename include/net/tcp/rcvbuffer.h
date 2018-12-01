@@ -2,7 +2,7 @@
 
 #include <net/tcp/buffer.h>
 
-namespace net { namespace tcp {
+namespace bee::net { namespace tcp {
 
 	class rcvbuffer
 	{

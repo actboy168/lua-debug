@@ -8,8 +8,8 @@
 #include <debugger/capabilities.h>
 #include <debugger/io/helper.h>
 #include <debugger/io/namedpipe.h>
-#include <base/util/unicode.h>
-#include <base/util/format.h>
+#include <bee/utility/unicode.h>
+#include <bee/utility/format.h>
 #include <base/filesystem.h>
 #include <base/win/query_process.h>
 #include <base/win/process_switch.h>
@@ -98,12 +98,18 @@ static bool run_tcp_attach(stdinput& io, vscode::rprotocol& init, vscode::rproto
 {
 	auto& args = req["arguments"];
 	if (!args.HasMember("ip") && !args.HasMember("port")) {
+		response_error(io, req, "Need `ip` and `port`.");
 		return false;
 	}
 	tcp_attach attach(io);
 	std::string ip = args.HasMember("ip") ? args["ip"].Get<std::string>() : "127.0.0.1";
 	uint16_t port = args.HasMember("port") ? args["port"].GetUint() : 4278;
-	attach.connect(net::endpoint(ip, port));
+	auto info = bee::net::endpoint::from_hostname(ip, port);
+	if (!info) {
+		response_error(io, req, info.error().c_str());
+		return false;
+	}
+	attach.connect(info.value());
 	attach.send(init);
 	attach.send(req);
 	for (;; sleep()) {
@@ -122,7 +128,7 @@ static int run_createprocess_then_attach(stdinput& io, vscode::rprotocol& init, 
 	if (run_tcp_attach(io, init, req)) {
 		return 0;
 	}
-	auto port = base::format(L"vscode-lua-debug-%d", (*process).get_id());
+	auto port = bee::format(L"vscode-lua-debug-%d", (*process).get_id());
 	if (!run_pipe_attach(io, init, req, port, process)) {
 		response_error(io, req, "Launch failed");
 		return -1;
@@ -132,7 +138,7 @@ static int run_createprocess_then_attach(stdinput& io, vscode::rprotocol& init, 
 
 static int run_terminal_then_attach(stdinput& io, vscode::rprotocol& init, vscode::rprotocol& req)
 {
-	auto port = base::format(L"vscode-lua-debug-%d", GetCurrentProcessId());
+	auto port = bee::format(L"vscode-lua-debug-%d", GetCurrentProcessId());
 	if (!create_terminal_with_debugger(io, req, port)) {
 		response_error(io, req, "Launch failed");
 		return -1;
@@ -146,7 +152,7 @@ static int run_terminal_then_attach(stdinput& io, vscode::rprotocol& init, vscod
 
 static int run_luaexe_then_attach(stdinput& io, vscode::rprotocol& init, vscode::rprotocol& req)
 {
-	auto port = base::format(L"vscode-lua-debug-%d", GetCurrentProcessId());
+	auto port = bee::format(L"vscode-lua-debug-%d", GetCurrentProcessId());
 	process_opt process = create_luaexe_with_debugger(io, req, port);
 	if (!process) {
 		response_error(io, req, "Launch failed");
@@ -166,7 +172,7 @@ static int run_attach_process_noinject(stdinput& io, vscode::rprotocol& init, vs
 		response_error(io, req, "Target Procees hasn't debugger.");
 		return -1;
 	}
-	auto port = base::format(L"vscode-lua-debug-%d", pid);
+	auto port = bee::format(L"vscode-lua-debug-%d", pid);
 	if (!run_pipe_attach(io, init, req, port, process_opt(openprocess(pid)), &m)) {
 		response_error(io, req, "Attach failed");
 		return -1;
@@ -181,10 +187,10 @@ static int run_attach_process(stdinput& io, vscode::rprotocol& init, vscode::rpr
 	}
 	base::win::process_switch m(pid, L"attachprocess");
 	if (!open_process_with_debugger(req, pid)) {
-		response_error(io, req, base::format("Open process (id=%d) failed.", pid).c_str());
+		response_error(io, req, bee::format("Open process (id=%d) failed.", pid).c_str());
 		return -1;
 	}
-	auto port = base::format(L"vscode-lua-debug-%d", pid);
+	auto port = bee::format(L"vscode-lua-debug-%d", pid);
 	if (!run_pipe_attach(io, init, req, port, process_opt(openprocess(pid)), &m)) {
 		response_error(io, req, "Attach failed");
 		return -1;
@@ -195,7 +201,7 @@ static int run_attach_process(stdinput& io, vscode::rprotocol& init, vscode::rpr
 static std::vector<int> get_process_name(const std::string& name)
 {
 	std::vector<int> res;
-	std::wstring wname = base::u2w(name);
+	std::wstring wname = bee::u2w(name);
 	std::transform(wname.begin(), wname.end(), wname.begin(), ::tolower);
 	base::win::query_process([&](const base::win::SYSTEM_PROCESS_INFORMATION* info)->bool {
 		std::wstring pname(info->ImageName.Buffer, info->ImageName.Length / sizeof(wchar_t));
@@ -268,18 +274,17 @@ int main()
 					auto processName = args["processName"].Get<std::string>();
 					auto& pid = get_process_name(processName);
 					if (pid.size() == 0) {
-						response_error(io, req, base::format("Cannot found process `%s`.", processName).c_str());
+						response_error(io, req, bee::format("Cannot found process `%s`.", processName).c_str());
 						return -1;
 					}
 					if (pid.size() > 1) {
-						response_error(io, req, base::format("There are %d processes `%s`.", pid.size(), processName).c_str());
+						response_error(io, req, bee::format("There are %d processes `%s`.", pid.size(), processName).c_str());
 						return -1;
 					}
 					bool noInject = args.HasMember("noInject") && args["noInject"].IsBool() && args["noInject"].GetBool();
 					return run_attach_process(io, init, req, pid[0], noInject);
 				}
 				if (!run_tcp_attach(io, init, req)) {
-					response_error(io, req, "Need `ip` and `port`.");
 					return -1;
 				}
 				return 0;

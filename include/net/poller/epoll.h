@@ -5,7 +5,7 @@
 #include <net/poller/timer_queue.h>
 #include <sys/epoll.h>
 
-namespace net { namespace poller {
+namespace bee::net { namespace poller {
 
 	class epoll_t
 		: public timer_queue

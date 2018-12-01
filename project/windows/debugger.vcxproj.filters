@@ -22,6 +22,18 @@
     <Filter Include="inc\thunk">
       <UniqueIdentifier>{3deab838-fb83-46df-b348-38f2689f4adf}</UniqueIdentifier>
     </Filter>
+    <Filter Include="bee">
+      <UniqueIdentifier>{9bd45c1f-3380-46a5-80e2-e83739a4ff3b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="bee\net">
+      <UniqueIdentifier>{d4454628-3dcb-4c77-9312-fe4f1ede52b2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="bee\utility">
+      <UniqueIdentifier>{a075743b-aea0-40b9-ac12-7638453dc4df}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="bee\exception">
+      <UniqueIdentifier>{2b8406ad-9c2a-45dc-8f5e-e6b6482ba445}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\debugger\debugger.cpp">
@@ -32,9 +44,6 @@
     </ClCompile>
     <ClCompile Include="..\..\src\debugger\bridge\luaopen.cpp">
       <Filter>cpp\bridge</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\debugger\io\socket.cpp">
-      <Filter>cpp\io</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\debugger\breakpoint.cpp">
       <Filter>cpp</Filter>
@@ -102,6 +111,24 @@
     <ClCompile Include="..\..\src\debugger\source.cpp">
       <Filter>cpp</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\debugger\io\socket_impl.cpp">
+      <Filter>cpp\io</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\third_party\bee.lua\bee\net\endpoint.cpp">
+      <Filter>bee\net</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\third_party\bee.lua\bee\net\socket.cpp">
+      <Filter>bee\net</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\third_party\bee.lua\bee\utility\unicode.cpp">
+      <Filter>bee\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\third_party\bee.lua\bee\exception\exception.cpp">
+      <Filter>bee\exception</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\third_party\bee.lua\bee\exception\windows_exception.cpp">
+      <Filter>bee\exception</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\debugger\debugger.h">
@@ -136,9 +163,6 @@
     </ClInclude>
     <ClInclude Include="..\..\include\debugger\bridge\delayload.h">
       <Filter>inc\bridge</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\debugger\io\socket.h">
-      <Filter>inc\io</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\debugger\io\base.h">
       <Filter>inc\io</Filter>
@@ -178,6 +202,18 @@
     </ClInclude>
     <ClInclude Include="..\..\include\debugger\crc32.h">
       <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\debugger\io\socket_impl.h">
+      <Filter>inc\io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\third_party\bee.lua\bee\utility\unicode.h">
+      <Filter>bee\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\third_party\bee.lua\bee\exception\exception.h">
+      <Filter>bee\exception</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\third_party\bee.lua\bee\exception\windows_exception.h">
+      <Filter>bee\exception</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

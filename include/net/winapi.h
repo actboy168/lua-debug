@@ -9,7 +9,7 @@
 #  define NTAPI __stdcall
 #endif
 
-namespace net { namespace winapi {
+namespace bee::net { namespace winapi {
 extern "C" {
     typedef int BOOL;
     typedef unsigned long DWORD;

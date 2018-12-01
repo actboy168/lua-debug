@@ -10,7 +10,7 @@
 
 #include <stdint.h>
 
-namespace net { namespace datetime {
+namespace bee::net { namespace datetime {
 
 	class clock_t
 	{

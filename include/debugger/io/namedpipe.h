@@ -3,7 +3,7 @@
 #include <string>
 #include <debugger/io/stream.h>
 
-namespace net {
+namespace bee::net {
 	class namedpipe;
 }
 
@@ -26,7 +26,7 @@ namespace vscode { namespace io {
 		bool   raw_send(const char* buf, size_t len);
 
 	private:
-		net::namedpipe* pipe;
+		bee::net::namedpipe* pipe;
 		CloseEvent close_event_fn = nullptr;
 		void*      close_event_ud = nullptr;
 	};

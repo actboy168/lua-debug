@@ -3,8 +3,9 @@
 #include <debugger/io/stream.h>
 #include <stdint.h>
 
-namespace net {
+namespace bee::net {
 	struct poller_t;
+	struct endpoint;
 }
 
 namespace vscode { namespace io {
@@ -32,14 +33,14 @@ namespace vscode { namespace io {
 		: public sock_stream
 	{
 	public:
-		socket_s(const std::string& ip, uint16_t port);
+		socket_s(const bee::net::endpoint& ep);
 		virtual   ~socket_s();
 		void      update(int ms);
 		void      close();
 		uint16_t  get_port() const;
 
 	private:
-		net::poller_t* poller_;
+		bee::net::poller_t* poller_;
 		sock_server*   server_;
 	};
 
@@ -47,13 +48,13 @@ namespace vscode { namespace io {
 		: public sock_stream
 	{
 	public:
-		socket_c(const std::string& ip, uint16_t port);
+		socket_c(const bee::net::endpoint& ep);
 		virtual   ~socket_c();
 		void      update(int ms);
 		void      close();
 
 	private:
-		net::poller_t* poller_;
+		bee::net::poller_t* poller_;
 		sock_client*   client_;
 	};
 }}

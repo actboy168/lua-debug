@@ -7,7 +7,7 @@
 
 namespace vscode { namespace io {
 	namedpipe::namedpipe()
-	: pipe(new net::namedpipe)
+	: pipe(new bee::net::namedpipe)
 	{ }
 
 	namedpipe::~namedpipe()

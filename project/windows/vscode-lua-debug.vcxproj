@@ -28,7 +28,6 @@
     <ClCompile Include="..\..\include\base\hook\replacedll.cpp" />
     <ClCompile Include="..\..\include\base\path\get_path.cpp" />
     <ClCompile Include="..\..\include\base\subprocess\subprocess_win.cpp" />
-    <ClCompile Include="..\..\include\base\util\unicode.cpp" />
     <ClCompile Include="..\..\include\base\win\query_process.cpp" />
     <ClCompile Include="..\..\src\debugger\client\create_luaexe.cpp" />
     <ClCompile Include="..\..\src\debugger\client\open_process.cpp" />
@@ -40,8 +39,13 @@
     <ClCompile Include="..\..\src\debugger\client\stdinput.cpp" />
     <ClCompile Include="..\..\src\debugger\io\helper.cpp" />
     <ClCompile Include="..\..\src\debugger\io\namedpipe.cpp" />
-    <ClCompile Include="..\..\src\debugger\io\socket.cpp" />
+    <ClCompile Include="..\..\src\debugger\io\socket_impl.cpp" />
     <ClCompile Include="..\..\src\debugger\io\stream.cpp" />
+    <ClCompile Include="..\..\third_party\bee.lua\bee\exception\exception.cpp" />
+    <ClCompile Include="..\..\third_party\bee.lua\bee\exception\windows_exception.cpp" />
+    <ClCompile Include="..\..\third_party\bee.lua\bee\net\endpoint.cpp" />
+    <ClCompile Include="..\..\third_party\bee.lua\bee\net\socket.cpp" />
+    <ClCompile Include="..\..\third_party\bee.lua\bee\utility\unicode.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\base\hook\injectdll.h" />
@@ -50,7 +54,6 @@
     <ClInclude Include="..\..\include\base\path\self.h" />
     <ClInclude Include="..\..\include\base\subprocess.h" />
     <ClInclude Include="..\..\include\base\subprocess\subprocess_win.h" />
-    <ClInclude Include="..\..\include\base\util\unicode.h" />
     <ClInclude Include="..\..\include\base\win\query_process.h" />
     <ClInclude Include="..\..\include\base\win\process_switch.h" />
     <ClInclude Include="..\..\include\debugger\client\tcp_attach.h" />
@@ -58,8 +61,11 @@
     <ClInclude Include="..\..\include\debugger\client\stdinput.h" />
     <ClInclude Include="..\..\include\debugger\io\helper.h" />
     <ClInclude Include="..\..\include\debugger\io\namedpipe.h" />
-    <ClInclude Include="..\..\include\debugger\io\socket.h" />
+    <ClInclude Include="..\..\include\debugger\io\socket_impl.h" />
     <ClInclude Include="..\..\include\debugger\io\stream.h" />
+    <ClInclude Include="..\..\third_party\bee.lua\bee\exception\exception.h" />
+    <ClInclude Include="..\..\third_party\bee.lua\bee\exception\windows_exception.h" />
+    <ClInclude Include="..\..\third_party\bee.lua\bee\utility\unicode.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{8AC7695F-C946-4B9A-B814-3E789BFD54E8}</ProjectGuid>
@@ -135,8 +141,8 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>DEBUGGER_INLINE;RAPIDJSON_HAS_STDSTRING;_WINSOCK_DEPRECATED_NO_WARNINGS;_WIN32_WINNT=_WIN32_WINNT_WIN7;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(Root)\include\;$(Root)\third_party\;$(Root)\third_party\lua53\src\;$(Root)\third_party\wow64ext\src\;$(Root)\third_party\readerwriterqueue\</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>BEE_INLINE;DEBUGGER_INLINE;RAPIDJSON_HAS_STDSTRING;_WINSOCK_DEPRECATED_NO_WARNINGS;_WIN32_WINNT=_WIN32_WINNT_WIN7;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(Root)\include\;$(Root)\third_party\;$(Root)\third_party\lua53\src\;$(Root)\third_party\wow64ext\src\;$(Root)\third_party\readerwriterqueue\;$(Root)\third_party\bee.lua\</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
     </ClCompile>
     <Link>
@@ -153,8 +159,8 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>DEBUGGER_INLINE;RAPIDJSON_HAS_STDSTRING;_WINSOCK_DEPRECATED_NO_WARNINGS;_WIN32_WINNT=_WIN32_WINNT_WIN7;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(Root)\include\;$(Root)\third_party\;$(Root)\third_party\lua53\src\;$(Root)\third_party\wow64ext\src\;$(Root)\third_party\readerwriterqueue\</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>BEE_INLINE;DEBUGGER_INLINE;RAPIDJSON_HAS_STDSTRING;_WINSOCK_DEPRECATED_NO_WARNINGS;_WIN32_WINNT=_WIN32_WINNT_WIN7;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(Root)\include\;$(Root)\third_party\;$(Root)\third_party\lua53\src\;$(Root)\third_party\wow64ext\src\;$(Root)\third_party\readerwriterqueue\;$(Root)\third_party\bee.lua\</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
     </ClCompile>
     <Link>
@@ -174,8 +180,8 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>DEBUGGER_INLINE;RAPIDJSON_HAS_STDSTRING;_WINSOCK_DEPRECATED_NO_WARNINGS;_WIN32_WINNT=_WIN32_WINNT_WIN7;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(Root)\include\;$(Root)\third_party\;$(Root)\third_party\lua53\src\;$(Root)\third_party\wow64ext\src\;$(Root)\third_party\readerwriterqueue\</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>BEE_INLINE;DEBUGGER_INLINE;RAPIDJSON_HAS_STDSTRING;_WINSOCK_DEPRECATED_NO_WARNINGS;_WIN32_WINNT=_WIN32_WINNT_WIN7;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(Root)\include\;$(Root)\third_party\;$(Root)\third_party\lua53\src\;$(Root)\third_party\wow64ext\src\;$(Root)\third_party\readerwriterqueue\;$(Root)\third_party\bee.lua\</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
     </ClCompile>
     <Link>
@@ -196,8 +202,8 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>DEBUGGER_INLINE;RAPIDJSON_HAS_STDSTRING;_WINSOCK_DEPRECATED_NO_WARNINGS;_WIN32_WINNT=_WIN32_WINNT_WIN7;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(Root)\include\;$(Root)\third_party\;$(Root)\third_party\lua53\src\;$(Root)\third_party\wow64ext\src\;$(Root)\third_party\readerwriterqueue\</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>BEE_INLINE;DEBUGGER_INLINE;RAPIDJSON_HAS_STDSTRING;_WINSOCK_DEPRECATED_NO_WARNINGS;_WIN32_WINNT=_WIN32_WINNT_WIN7;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(Root)\include\;$(Root)\third_party\;$(Root)\third_party\lua53\src\;$(Root)\third_party\wow64ext\src\;$(Root)\third_party\readerwriterqueue\;$(Root)\third_party\bee.lua\</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
     </ClCompile>
     <Link>

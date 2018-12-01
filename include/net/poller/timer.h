@@ -3,7 +3,7 @@
 #include <map>
 #include <net/poller/event.h>
 
-namespace net { namespace poller {
+namespace bee::net { namespace poller {
 
 	template <class Poller>
 	struct timer_t

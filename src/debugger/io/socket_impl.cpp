@@ -1,4 +1,4 @@
-#include <debugger/io/socket.h>
+#include <debugger/io/socket_impl.h>
 
 #define NETLOG_BACKEND NETLOG_EMPTY_BACKEND	
 #include <iostream>
@@ -20,13 +20,13 @@ namespace vscode { namespace io {
 	typedef std::function<void()> EventClose;
 
 	class sock_session
-		: public net::tcp::stream
+		: public bee::net::tcp::stream
 	{
 	public:
-		typedef net::tcp::stream base_type;
+		typedef bee::net::tcp::stream base_type;
 
 	public:
-		sock_session(EventClose event_close, EventIn event_in, net::poller_t* poll);
+		sock_session(EventClose event_close, EventIn event_in, bee::net::poller_t* poll);
 		bool output(const char* buf, size_t len);
 		bool input(std::string& buf);
 
@@ -40,14 +40,14 @@ namespace vscode { namespace io {
 	};
 
 	class sock_server
-		: public net::tcp::listener
+		: public bee::net::tcp::listener
 	{
 	public:
 		friend class sock_session;
-		typedef net::tcp::listener base_type;
+		typedef bee::net::tcp::listener base_type;
 
 	public:
-		sock_server(net::poller_t* poll, sock_stream& stream, const net::endpoint& ep);
+		sock_server(bee::net::poller_t* poll, sock_stream& stream, const bee::net::endpoint& ep);
 		~sock_server();
 		void      update();
 		bool      listen();
@@ -56,12 +56,12 @@ namespace vscode { namespace io {
 		bool      stream_update();
 
 	private:
-		void event_accept(net::socket::fd_t fd);
+		void event_accept(bee::net::socket::fd_t fd);
 		void event_close();
 
 	private:
 		std::unique_ptr<sock_session> session_;
-		net::endpoint            endpoint_;
+		bee::net::endpoint            endpoint_;
 		std::vector<std::unique_ptr<sock_session>> clearlist_;
 		sock_stream&             stream_;
 	};
@@ -92,8 +92,8 @@ namespace vscode { namespace io {
 		return s == nullptr;
 	}
 
-	sock_session::sock_session(EventClose event_close, EventIn event_in, net::poller_t* poll)
-		: net::tcp::stream(poll)
+	sock_session::sock_session(EventClose event_close, EventIn event_in, bee::net::poller_t* poll)
+		: bee::net::tcp::stream(poll)
 		, event_close_(event_close)
 		, event_in_(event_in)
 	{ }
@@ -111,13 +111,13 @@ namespace vscode { namespace io {
 		return event_in_();
 	}
 
-	sock_server::sock_server(net::poller_t* poll, sock_stream& stream, const net::endpoint& ep)
+	sock_server::sock_server(bee::net::poller_t* poll, sock_stream& stream, const bee::net::endpoint& ep)
 		: base_type(poll)
 		, session_()
 		, endpoint_(ep)
 		, stream_(stream)
 	{
-		net::socket::initialize();
+		bee::net::socket::initialize();
 		base_type::open();
 	}
 
@@ -135,7 +135,7 @@ namespace vscode { namespace io {
 		}
 		for (auto s = clearlist_.begin(); s != clearlist_.end();)
 		{
-			if ((*s)->sock == net::socket::retired_fd) {
+			if ((*s)->sock == bee::net::socket::retired_fd) {
 				s = clearlist_.erase(s);
 			}
 			else {
@@ -149,11 +149,11 @@ namespace vscode { namespace io {
 		return base_type::listen(endpoint_);
 	}
 
-	void sock_server::event_accept(net::socket::fd_t fd)
+	void sock_server::event_accept(bee::net::socket::fd_t fd)
 	{
 		if (session_)
 		{
-			net::socket::close(fd);
+			bee::net::socket::close(fd);
 			return;
 		}
 		session_.reset(new sock_session([this]() { close_session(); }, std::bind(&sock_server::stream_update, this), get_poller()));
@@ -178,7 +178,7 @@ namespace vscode { namespace io {
 
 	uint16_t sock_server::get_port() const
 	{
-		if (sock == net::socket::retired_fd) {
+		if (sock == bee::net::socket::retired_fd) {
 			return 0;
 		}
 		sockaddr_in addr;
@@ -197,10 +197,10 @@ namespace vscode { namespace io {
 		return !stream_.is_closed();
 	}
 
-	socket_s::socket_s(const std::string& ip, uint16_t port)
+	socket_s::socket_s(const bee::net::endpoint& ep)
 		: sock_stream()
-		, poller_(new net::poller_t)
-		, server_(new sock_server(poller_, *this, net::endpoint(ip, port)))
+		, poller_(new bee::net::poller_t)
+		, server_(new sock_server(poller_, *this, ep))
 	{
 		server_->listen();
 	}
@@ -232,34 +232,34 @@ namespace vscode { namespace io {
 	}
 
 	class sock_client
-		: public net::tcp::connecter_t<net::poller_t>
+		: public bee::net::tcp::connecter_t<bee::net::poller_t>
 	{
 	public:
 		friend class sock_session;
-		typedef net::tcp::connecter_t<net::poller_t> base_type;
+		typedef bee::net::tcp::connecter_t<bee::net::poller_t> base_type;
 
 	public:
-		sock_client(net::poller_t* poll, sock_stream& stream, const net::endpoint& ep);
+		sock_client(bee::net::poller_t* poll, sock_stream& stream, const bee::net::endpoint& ep);
 
 	private:
-		void event_connect(net::socket::fd_t fd);
+		void event_connect(bee::net::socket::fd_t fd);
 		bool stream_update();
 
 	private:
-		net::endpoint endpoint_;
+		bee::net::endpoint endpoint_;
 		sock_stream&  stream_;
 	};
 
-	sock_client::sock_client(net::poller_t* poll, sock_stream& stream, const net::endpoint& ep)
+	sock_client::sock_client(bee::net::poller_t* poll, sock_stream& stream, const bee::net::endpoint& ep)
 		: base_type(poll)
 		, endpoint_(ep)
 		, stream_(stream)
 	{
-		net::socket::initialize();
+		bee::net::socket::initialize();
 		connect(endpoint_, std::bind(&sock_client::event_connect, this, std::placeholders::_1));
 	}
 
-	void sock_client::event_connect(net::socket::fd_t fd)
+	void sock_client::event_connect(bee::net::socket::fd_t fd)
 	{
 		stream_.open(new sock_session([this]() { }, std::bind(&sock_client::stream_update, this), get_poller()));
 	}
@@ -270,10 +270,10 @@ namespace vscode { namespace io {
 		return !stream_.is_closed();
 	}
 
-	socket_c::socket_c(const std::string& ip, uint16_t port)
+	socket_c::socket_c(const bee::net::endpoint& ep)
 		: sock_stream()
-		, poller_(new net::poller_t)
-		, client_(new sock_client(poller_, *this, net::endpoint(ip, port)))
+		, poller_(new bee::net::poller_t)
+		, client_(new sock_client(poller_, *this, ep))
 	{
 	}
 

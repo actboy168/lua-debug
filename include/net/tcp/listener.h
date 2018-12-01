@@ -1,8 +1,8 @@
 #pragma once
 
 #include <functional>
-#include <net/endpoint.h>
-#include <net/socket.h>
+#include <bee/net/endpoint.h>
+#include <bee/net/socket.h>
 #include <net/poller.h>
 #include <net/poller/event.h>
 #include <net/poller/io_object.h>
@@ -13,7 +13,7 @@
 #	pragma warning(disable:4355)
 #endif
 
-namespace net { namespace tcp {
+namespace bee::net { namespace tcp {
 	template <class Poller>
 	class listener_t
 		: public poller::io_object_t<Poller>
@@ -48,7 +48,7 @@ namespace net { namespace tcp {
 
 			if (event_type::sock == socket::retired_fd)
 			{
-				NETLOG_ERROR() << "socket("<< event_type::sock << ") socket open error, ec = " << socket::error_no_();
+				NETLOG_ERROR() << "socket("<< event_type::sock << ") socket open error, ec = " << socket::errcode();
 				return -1;
 			}
 
@@ -65,7 +65,8 @@ namespace net { namespace tcp {
 		bool listen(const endpoint& addr)
 		{
 			assert(stat_ == e_idle);
-			NETLOG_INFO() << "socket(" << event_type::sock << ") " << addr.to_string() << " listening";
+			auto[ip, port] = addr.info();
+			NETLOG_INFO() << "socket(" << event_type::sock << ") [" << ip << ":" << port << "] listening";
 			int rc = socket::bind(event_type::sock, addr) 
 				|| socket::listen(event_type::sock, 0x100);
 			if (rc == 0)
@@ -77,7 +78,7 @@ namespace net { namespace tcp {
 			}
 			else
 			{
-				NETLOG_ERROR() << "socket(" << event_type::sock << ") listen error, ec = " << socket::error_no_();
+				NETLOG_ERROR() << "socket(" << event_type::sock << ") listen error, ec = " << socket::errcode();
 				if (event_type::sock != socket::retired_fd)
 				{
 					event_close();

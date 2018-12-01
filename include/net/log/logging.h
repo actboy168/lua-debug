@@ -5,7 +5,7 @@
 #include <sstream>
 #include <net/datetime/now.h>
 
-namespace net { namespace log {
+namespace bee::net { namespace log {
 	enum level {
 		debug = 0,
 		info,
@@ -219,9 +219,9 @@ namespace net { namespace log {
 	;
 }}
 
-#define NETLOG_SYNC_FRONTEND ::net::log::sync_frontend	
-#define NETLOG_STDIO_BACKEND ::net::log::stdio_backend
-#define NETLOG_EMPTY_BACKEND ::net::log::empty_backend
+#define NETLOG_SYNC_FRONTEND ::bee::net::log::sync_frontend	
+#define NETLOG_STDIO_BACKEND ::bee::net::log::stdio_backend
+#define NETLOG_EMPTY_BACKEND ::bee::net::log::empty_backend
 
 #ifndef NETLOG_FRONTEND
 #	define NETLOG_FRONTEND NETLOG_SYNC_FRONTEND
@@ -231,10 +231,10 @@ namespace net { namespace log {
 #	define NETLOG_BACKEND NETLOG_STDIO_BACKEND
 #endif		 
 
-#define NETLOG_STREAM(lg, lvl) for (bool net_f = true; net_f; net_f = false) ::net::log::make_record_pump((lg), __FILE__, __LINE__, (lvl)).stream()
-#define NETLOG_LOGGER ::net::log::global<::net::log::logger<NETLOG_FRONTEND<NETLOG_BACKEND>>>::value 
-#define NETLOG_DEBUG()   NETLOG_STREAM(NETLOG_LOGGER, ::net::log::debug)
-#define NETLOG_INFO()    NETLOG_STREAM(NETLOG_LOGGER, ::net::log::info)
-#define NETLOG_WARNING() NETLOG_STREAM(NETLOG_LOGGER, ::net::log::warning)
-#define NETLOG_ERROR()   NETLOG_STREAM(NETLOG_LOGGER, ::net::log::error)
-#define NETLOG_FATAL()   NETLOG_STREAM(NETLOG_LOGGER, ::net::log::fatal)
+#define NETLOG_STREAM(lg, lvl) for (bool net_f = true; net_f; net_f = false) ::bee::net::log::make_record_pump((lg), __FILE__, __LINE__, (lvl)).stream()
+#define NETLOG_LOGGER ::bee::net::log::global<::bee::net::log::logger<NETLOG_FRONTEND<NETLOG_BACKEND>>>::value 
+#define NETLOG_DEBUG()   NETLOG_STREAM(NETLOG_LOGGER, ::bee::net::log::debug)
+#define NETLOG_INFO()    NETLOG_STREAM(NETLOG_LOGGER, ::bee::net::log::info)
+#define NETLOG_WARNING() NETLOG_STREAM(NETLOG_LOGGER, ::bee::net::log::warning)
+#define NETLOG_ERROR()   NETLOG_STREAM(NETLOG_LOGGER, ::bee::net::log::error)
+#define NETLOG_FATAL()   NETLOG_STREAM(NETLOG_LOGGER, ::bee::net::log::fatal)

@@ -1,8 +1,8 @@
 ﻿#pragma once
 
-#include <net/socket.h>
+#include <bee/net/socket.h>
 
-namespace net { namespace poller {
+namespace bee::net{ namespace poller {
 
 	struct event_t
 	{

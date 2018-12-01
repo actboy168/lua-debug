@@ -7,7 +7,7 @@ tcp_attach::tcp_attach(stdinput& io_)
 	, io(io_)
 	, base_type(&poller)
 {
-	net::socket::initialize();
+	bee::net::socket::initialize();
 }
 
 bool tcp_attach::event_in()

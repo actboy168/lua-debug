@@ -1,7 +1,7 @@
 #include <Windows.h>
 #include <debugger/client/run.h>
 #include <debugger/client/stdinput.h>
-#include <base/util/format.h>
+#include <bee/utility/format.h>
 #include <base/path/self.h>
 #include <base/hook/replacedll.h>
 
@@ -16,38 +16,38 @@ std::string create_install_script(vscode::rprotocol& req, const fs::path& dbg_pa
 	std::string res;
 	if (args.HasMember("path")) {
 		if (args["path"].IsString()) {
-			res += base::format("package.path=[[%s]];", isUtf8 ? args["path"].Get<std::string>() : base::u2a(args["path"]));
+			res += bee::format("package.path=[[%s]];", isUtf8 ? args["path"].Get<std::string>() : bee::u2a(std::string_view(args["path"].GetString(), args["path"].GetStringLength())));
 		}
 		else if (args["path"].IsArray()) {
 			std::string path;
 			for (auto& v : args["path"].GetArray()) {
 				if (v.IsString()) {
 					if (!path.empty()) path += ";";
-					path += isUtf8 ? v.Get<std::string>() : base::u2a(v);
+					path += isUtf8 ? v.Get<std::string>() : bee::u2a(std::string_view(v.GetString(), v.GetStringLength()));
 				}
 			}
-			res += base::format("package.path=[[%s]];", path);
+			res += bee::format("package.path=[[%s]];", path);
 		}
 	}
 	if (args.HasMember("cpath")) {
 		if (args["cpath"].IsString()) {
-			res += base::format("package.cpath=[[%s]];", isUtf8 ? args["cpath"].Get<std::string>() : base::u2a(args["cpath"]));
+			res += bee::format("package.cpath=[[%s]];", isUtf8 ? args["cpath"].Get<std::string>() : bee::u2a(std::string_view(args["cpath"].GetString(), args["cpath"].GetStringLength())));
 		}
 		else if (args["cpath"].IsArray()) {
 			std::string path;
 			for (auto& v : args["cpath"].GetArray()) {
 				if (v.IsString()) {
 					if (!path.empty()) path += ";";
-					path += isUtf8 ? v.Get<std::string>() : base::u2a(v);
+					path += isUtf8 ? v.Get<std::string>() : bee::u2a(std::string_view(v.GetString(), v.GetStringLength()));
 				}
 			}
-			res += base::format("package.cpath=[[%s]];", path);
+			res += bee::format("package.cpath=[[%s]];", path);
 		}
 	}
-	res += base::format("local dbg=package.loadlib([[%s]], 'luaopen_debugger')();package.loaded[ [[%s]] ]=dbg;dbg:io([[pipe:%s]])"
-		, isUtf8 ? base::w2u((dbg_path / L"debugger.dll").wstring()) : base::w2a((dbg_path / L"debugger.dll").wstring())
+	res += bee::format("local dbg=package.loadlib([[%s]], 'luaopen_debugger')();package.loaded[ [[%s]] ]=dbg;dbg:io([[pipe:%s]])"
+		, isUtf8 ? bee::w2u((dbg_path / L"debugger.dll").wstring()) : bee::w2a((dbg_path / L"debugger.dll").wstring())
 		, args.HasMember("internalModule") && args["internalModule"].IsString() ? args["internalModule"].Get<std::string>() : "debugger"
-		, base::w2u(port)
+		, bee::w2u(port)
 	);
 	if (args.HasMember("outputCapture") && args["outputCapture"].IsArray()) {
 		for (auto& v : args["outputCapture"].GetArray()) {
@@ -111,7 +111,7 @@ process_opt create_luaexe_with_debugger(stdinput& io, vscode::rprotocol& req, co
 	std::wstring luaexe;
 	std::pair<std::string, std::string> replacedll;
 	if (args.HasMember("luaexe") && args["luaexe"].IsString()) {
-		luaexe = base::u2w(args["luaexe"].Get<std::string>());
+		luaexe = bee::u2w(args["luaexe"].Get<std::string>());
 		if (is64Exe(luaexe.c_str())) {
 			dbgPath /= "x64";
 		}
@@ -124,28 +124,28 @@ process_opt create_luaexe_with_debugger(stdinput& io, vscode::rprotocol& req, co
 			dbgPath /= "x64";
 			luaexe = dbgPath / "lua54.exe";
 			if (args.HasMember("luadll") && args["luadll"].IsString()) {
-				replacedll = { base::u2a(args["luadll"].Get<std::string>()), "lua54.dll" };
+				replacedll = { bee::u2a(args["luadll"].Get<std::string>()), "lua54.dll" };
 			}
 		}
 		else if (54032 == getLuaRuntime(args)) {
 			dbgPath /= "x86";
 			luaexe = dbgPath / "lua54.exe";
 			if (args.HasMember("luadll") && args["luadll"].IsString()) {
-				replacedll = { base::u2a(args["luadll"].Get<std::string>()), "lua54.dll" };
+				replacedll = { bee::u2a(args["luadll"].Get<std::string>()), "lua54.dll" };
 			}
 		}
 		else if (53064 == getLuaRuntime(args)) {
 			dbgPath /= "x64";
 			luaexe = dbgPath / "lua53.exe";
 			if (args.HasMember("luadll") && args["luadll"].IsString()) {
-				replacedll = { base::u2a(args["luadll"].Get<std::string>()), "lua53.dll" };
+				replacedll = { bee::u2a(args["luadll"].Get<std::string>()), "lua53.dll" };
 			}
 		}
 		else {
 			dbgPath /= "x86";
 			luaexe = dbgPath / "lua53.exe";
 			if (args.HasMember("luadll") && args["luadll"].IsString()) {
-				replacedll = { base::u2a(args["luadll"].Get<std::string>()), "lua53.dll" };
+				replacedll = { bee::u2a(args["luadll"].Get<std::string>()), "lua53.dll" };
 			}
 		}
 	}
@@ -155,7 +155,7 @@ process_opt create_luaexe_with_debugger(stdinput& io, vscode::rprotocol& req, co
 	wargs.push_back(luaexe);
 
 	if (args.HasMember("cwd") && args["cwd"].IsString()) {
-		wcwd = base::u2w(args["cwd"].Get<std::string>());
+		wcwd = bee::u2w(args["cwd"].Get<std::string>());
 	}
 	else {
 		wcwd = fs::path(luaexe).parent_path();
@@ -163,17 +163,17 @@ process_opt create_luaexe_with_debugger(stdinput& io, vscode::rprotocol& req, co
 	std::string script = create_install_script(req, dbgPath, port);
 
 	wargs.push_back(L"-e");
-	wargs.push_back(base::u2w(script));
+	wargs.push_back(bee::u2w(script));
 
 	if (args.HasMember("arg0")) {
 		if (args["arg0"].IsString()) {
 			auto& v = args["arg0"];
-			wargs.push_back(base::u2w(v));
+			wargs.push_back(bee::u2w(std::string_view(v.GetString(), v.GetStringLength())));
 		}
 		else if (args["arg0"].IsArray()) {
 			for (auto& v : args["arg0"].GetArray()) {
 				if (v.IsString()) {
-					wargs.push_back(base::u2w(v));
+					wargs.push_back(bee::u2w(std::string_view(v.GetString(), v.GetStringLength())));
 				}
 			}
 		}
@@ -181,14 +181,14 @@ process_opt create_luaexe_with_debugger(stdinput& io, vscode::rprotocol& req, co
 
 	std::wstring program = L".lua";
 	if (args.HasMember("program") && args["program"].IsString()) {
-		program = base::u2w(args["program"]);
+		program = bee::u2w(std::string_view(args["program"].GetString(), args["program"].GetStringLength()));
 	}
 	wargs.push_back(program);
 
 	if (args.HasMember("arg") && args["arg"].IsArray()) {
 		for (auto& v : args["arg"].GetArray()) {
 			if (v.IsString()) {
-				wargs.push_back(base::u2w(v));
+				wargs.push_back(bee::u2w(std::string_view(v.GetString(), v.GetStringLength())));
 			}
 		}
 	}
@@ -201,10 +201,10 @@ process_opt create_luaexe_with_debugger(stdinput& io, vscode::rprotocol& req, co
 			for (auto& v : args["env"].GetObject()) {
 				if (v.name.IsString()) {
 					if (v.value.IsString()) {
-						spawn.env_set(base::u2w(v.name.Get<std::string>()), base::u2w(v.value.Get<std::string>()));
+						spawn.env_set(bee::u2w(v.name.Get<std::string>()), bee::u2w(v.value.Get<std::string>()));
 					}
 					else if (v.value.IsNull()) {
-						spawn.env_del(base::u2w(v.name.Get<std::string>()));
+						spawn.env_del(bee::u2w(v.name.Get<std::string>()));
 					}
 				}
 			}

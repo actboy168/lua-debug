@@ -2,7 +2,7 @@
 #include <debugger/io/base.h>
 #include <rapidjson/schema.h>
 #include <rapidjson/error/en.h>
-#include <base/util/unicode.h>
+#include <bee/utility/unicode.h>
 #include <fstream>
 
 #if 1
@@ -29,7 +29,7 @@ namespace vscode {
 #if defined(__MINGW32__)
 			file_ = _wfopen(base::u2w(filename).c_str(), L"rb");
 #elif defined(_WIN32)
-			file_.open(base::u2w(filename).c_str(), std::ios_base::binary | std::ios_base::in);
+			file_.open(bee::u2w(filename).c_str(), std::ios_base::binary | std::ios_base::in);
 #else
 			file_.open(filename, std::ios_base::binary | std::ios_base::in);
 #endif

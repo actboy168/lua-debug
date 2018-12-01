@@ -2,7 +2,7 @@
 
 #include <map>
 
-namespace net { namespace poller {
+namespace bee::net { namespace poller {
 
 	template <class Poller>
 	struct io_object_t

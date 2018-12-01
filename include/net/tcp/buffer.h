@@ -3,7 +3,7 @@
 #include <cassert>
 #include <memory>
 
-namespace net { namespace tcp {
+namespace bee::net { namespace tcp {
 
 	template <typename T, ::std::size_t N>
 	struct buffer_chunk

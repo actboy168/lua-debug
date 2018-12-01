@@ -4,7 +4,7 @@
 #include <debugger/io/base.h>
 #include <debugger/io/helper.h>
 #include <debugger/client/stdinput.h>
-#include <base/util/format.h>
+#include <bee/utility/format.h>
 #include <base/path/self.h>
 #include <functional>
 
@@ -33,7 +33,7 @@ bool create_terminal_with_debugger(stdinput& io, vscode::rprotocol& req, const s
 		std::string luaexe;
 		if (args.HasMember("luaexe") && args["luaexe"].IsString()) {
 			luaexe = args["luaexe"].Get<std::string>();
-			if (is64Exe(base::u2w(luaexe).c_str())) {
+			if (is64Exe(bee::u2w(luaexe).c_str())) {
 				dbgPath /= "x64";
 			}
 			else {
@@ -43,19 +43,19 @@ bool create_terminal_with_debugger(stdinput& io, vscode::rprotocol& req, const s
 		else {
 			if (54064 == getLuaRuntime(args)) {
 				dbgPath /= "x64";
-				luaexe = base::w2u((dbgPath / L"lua54.exe").wstring());
+				luaexe = bee::w2u((dbgPath / L"lua54.exe").wstring());
 			}
 			else if (54032 == getLuaRuntime(args)) {
 				dbgPath /= "x86";
-				luaexe = base::w2u((dbgPath / L"lua54.exe").wstring());
+				luaexe = bee::w2u((dbgPath / L"lua54.exe").wstring());
 			}
 			else if (53064 == getLuaRuntime(args)) {
 				dbgPath /= "x64";
-				luaexe = base::w2u((dbgPath / L"lua53.exe").wstring());
+				luaexe = bee::w2u((dbgPath / L"lua53.exe").wstring());
 			}
 			else {
 				dbgPath /= "x86";
-				luaexe = base::w2u((dbgPath / L"lua53.exe").wstring());
+				luaexe = bee::w2u((dbgPath / L"lua53.exe").wstring());
 			}
 		}
 
@@ -65,7 +65,7 @@ bool create_terminal_with_debugger(stdinput& io, vscode::rprotocol& req, const s
 			res("cwd").String(args["cwd"]);
 		}
 		else {
-			res("cwd").String(base::w2u(fs::path(luaexe).parent_path().wstring()));
+			res("cwd").String(bee::w2u(fs::path(luaexe).parent_path().wstring()));
 		}
 		if (args.HasMember("env") && args["env"].IsObject()) {
 			for (auto _ : res("env").Object()) {

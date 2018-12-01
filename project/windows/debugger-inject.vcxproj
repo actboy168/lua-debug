@@ -114,8 +114,8 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>_BASE_EXPORTS;ASMJIT_DISABLE_BUILDER;ASMJIT_DISABLE_COMPILER;ASMJIT_DISABLE_LOGGING;ASMJIT_DISABLE_TEXT;_WINSOCK_DEPRECATED_NO_WARNINGS;_WIN32_WINNT=_WIN32_WINNT_WIN7;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(Root)\include\;$(Root)\third_party\;$(Root)\third_party\detours\src\;$(Root)\third_party\lua53\;$(Root)\third_party\readerwriterqueue\</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>BEE_INLINE;_BASE_EXPORTS;ASMJIT_DISABLE_BUILDER;ASMJIT_DISABLE_COMPILER;ASMJIT_DISABLE_LOGGING;ASMJIT_DISABLE_TEXT;_WINSOCK_DEPRECATED_NO_WARNINGS;_WIN32_WINNT=_WIN32_WINNT_WIN7;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(Root)\include\;$(Root)\third_party\;$(Root)\third_party\detours\src\;$(Root)\third_party\lua53\;$(Root)\third_party\readerwriterqueue\;$(Root)\third_party\bee.lua\</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
@@ -133,8 +133,8 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>_BASE_EXPORTS;ASMJIT_DISABLE_BUILDER;ASMJIT_DISABLE_COMPILER;ASMJIT_DISABLE_LOGGING;ASMJIT_DISABLE_TEXT;_WINSOCK_DEPRECATED_NO_WARNINGS;_WIN32_WINNT=_WIN32_WINNT_WIN7;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(Root)\include\;$(Root)\third_party\;$(Root)\third_party\detours\src\;$(Root)\third_party\lua53\;$(Root)\third_party\readerwriterqueue\</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>BEE_INLINE;_BASE_EXPORTS;ASMJIT_DISABLE_BUILDER;ASMJIT_DISABLE_COMPILER;ASMJIT_DISABLE_LOGGING;ASMJIT_DISABLE_TEXT;_WINSOCK_DEPRECATED_NO_WARNINGS;_WIN32_WINNT=_WIN32_WINNT_WIN7;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(Root)\include\;$(Root)\third_party\;$(Root)\third_party\detours\src\;$(Root)\third_party\lua53\;$(Root)\third_party\readerwriterqueue\;$(Root)\third_party\bee.lua\</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
@@ -154,8 +154,8 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>_BASE_EXPORTS;_WINSOCK_DEPRECATED_NO_WARNINGS;_WIN32_WINNT=_WIN32_WINNT_WIN7;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(Root)\include\;$(Root)\third_party\;$(Root)\third_party\detours\src\;$(Root)\third_party\lua53\;$(Root)\third_party\readerwriterqueue\</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>BEE_INLINE;_BASE_EXPORTS;_WINSOCK_DEPRECATED_NO_WARNINGS;_WIN32_WINNT=_WIN32_WINNT_WIN7;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(Root)\include\;$(Root)\third_party\;$(Root)\third_party\detours\src\;$(Root)\third_party\lua53\;$(Root)\third_party\readerwriterqueue\;$(Root)\third_party\bee.lua\</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
@@ -177,8 +177,8 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>_BASE_EXPORTS;_WINSOCK_DEPRECATED_NO_WARNINGS;_WIN32_WINNT=_WIN32_WINNT_WIN7;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(Root)\include\;$(Root)\third_party\;$(Root)\third_party\detours\src\;$(Root)\third_party\lua53\;$(Root)\third_party\readerwriterqueue\</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>BEE_INLINE;_BASE_EXPORTS;_WINSOCK_DEPRECATED_NO_WARNINGS;_WIN32_WINNT=_WIN32_WINNT_WIN7;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(Root)\include\;$(Root)\third_party\;$(Root)\third_party\detours\src\;$(Root)\third_party\lua53\;$(Root)\third_party\readerwriterqueue\;$(Root)\third_party\bee.lua\</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
