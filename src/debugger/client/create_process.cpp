@@ -1,7 +1,7 @@
 
 #include <bee/subprocess.h>
 #include <bee/utility/unicode.h>
-#include <base/path/self.h>
+#include <bee/utility/path_helper.h>
 #include <base/hook/injectdll.h>
 #include <debugger/protocol.h>
 #include <debugger/client/run.h>
@@ -21,7 +21,7 @@ process_opt create_process_with_debugger(vscode::rprotocol& req, bool noinject)
 		wcwd = fs::path(wapplication).parent_path();
 	}
 
-	auto dir = base::path::self().parent_path().parent_path();
+	auto dir = bee::path::exe_path().value().parent_path().parent_path();
 	bee::subprocess::spawn spawn;
 	spawn.set_console(bee::subprocess::console::eNew);
 

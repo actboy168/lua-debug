@@ -1,9 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="..\..\include\base\path\get_path.cpp">
-      <Filter>base\path</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\include\base\hook\injectdll.cpp">
       <Filter>base\hook</Filter>
     </ClCompile>
@@ -67,14 +64,11 @@
     <ClCompile Include="..\..\third_party\bee.lua\bee\subprocess\subprocess_win.cpp">
       <Filter>bee\subprocess</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\third_party\bee.lua\bee\utility\path_helper.cpp">
+      <Filter>bee\utility</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\include\base\path\get_path.h">
-      <Filter>base\path</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\base\path\self.h">
-      <Filter>base\path</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\include\base\hook\injectdll.h">
       <Filter>base\hook</Filter>
     </ClInclude>
@@ -123,6 +117,9 @@
     <ClInclude Include="..\..\third_party\bee.lua\bee\subprocess.h">
       <Filter>bee</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\third_party\bee.lua\bee\utility\path_helper.h">
+      <Filter>bee\utility</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="base">
@@ -139,9 +136,6 @@
     </Filter>
     <Filter Include="cpp">
       <UniqueIdentifier>{45f68082-2f44-4395-9592-cc7e5768f3e5}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="base\path">
-      <UniqueIdentifier>{4c0f522d-12e5-4c25-9f78-cd98a4a23695}</UniqueIdentifier>
     </Filter>
     <Filter Include="cpp\client">
       <UniqueIdentifier>{044d4037-79dc-4570-8cf9-38863708f434}</UniqueIdentifier>

@@ -28,17 +28,22 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\include\base\hook\inline.cpp" />
-    <ClCompile Include="..\..\include\base\path\get_path.cpp" />
     <ClCompile Include="..\..\src\debugger\inject\autoattach.cpp" />
     <ClCompile Include="..\..\src\debugger\inject\main.cpp" />
     <ClCompile Include="..\..\src\debugger\io\namedpipe.cpp" />
+    <ClCompile Include="..\..\third_party\bee.lua\bee\exception\exception.cpp" />
+    <ClCompile Include="..\..\third_party\bee.lua\bee\exception\windows_exception.cpp" />
+    <ClCompile Include="..\..\third_party\bee.lua\bee\utility\path_helper.cpp" />
+    <ClCompile Include="..\..\third_party\bee.lua\bee\utility\unicode.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\base\hook\fp_call.h" />
     <ClInclude Include="..\..\include\base\hook\inline.h" />
-    <ClInclude Include="..\..\include\base\path\get_path.h" />
-    <ClInclude Include="..\..\include\base\path\self.h" />
     <ClInclude Include="..\..\include\debugger\inject\autoattach.h" />
+    <ClInclude Include="..\..\third_party\bee.lua\bee\exception\exception.h" />
+    <ClInclude Include="..\..\third_party\bee.lua\bee\exception\windows_exception.h" />
+    <ClInclude Include="..\..\third_party\bee.lua\bee\utility\path_helper.h" />
+    <ClInclude Include="..\..\third_party\bee.lua\bee\utility\unicode.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{20F15A76-D908-475B-A904-6ACD1763D5FB}</ProjectGuid>

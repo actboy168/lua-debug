@@ -116,7 +116,7 @@ namespace vscode { namespace io {
 		, stream_(stream)
 	{
 		bee::net::socket::initialize();
-		base_type::open();
+		base_type::open(ep);
 	}
 
 	sock_server::~sock_server()

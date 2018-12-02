@@ -40,12 +40,10 @@ namespace bee::net { namespace tcp {
 			close();
 		}
 
-		int open()
+		int open(const endpoint& addr)
 		{
 			close();
-
-			event_type::sock = socket::open(AF_INET, IPPROTO_TCP);
-
+			event_type::sock = socket::open(addr.addr()->sa_family, socket::protocol::tcp);
 			if (event_type::sock == socket::retired_fd)
 			{
 				NETLOG_ERROR() << "socket("<< event_type::sock << ") socket open error, ec = " << socket::errcode();

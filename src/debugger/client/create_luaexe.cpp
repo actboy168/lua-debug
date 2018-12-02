@@ -2,7 +2,7 @@
 #include <debugger/client/run.h>
 #include <debugger/client/stdinput.h>
 #include <bee/utility/format.h>
-#include <base/path/self.h>
+#include <bee/utility/path_helper.h>
 #include <base/hook/replacedll.h>
 
 std::string create_install_script(vscode::rprotocol& req, const fs::path& dbg_path, const std::wstring& port)
@@ -107,7 +107,7 @@ bool is64Exe(const wchar_t* exe)
 process_opt create_luaexe_with_debugger(stdinput& io, vscode::rprotocol& req, const std::wstring& port)
 {
 	auto& args = req["arguments"];
-	fs::path dbgPath = base::path::self().parent_path().parent_path();
+	fs::path dbgPath = bee::path::exe_path().value().parent_path().parent_path();
 	std::wstring luaexe;
 	std::pair<std::string, std::string> replacedll;
 	if (args.HasMember("luaexe") && args["luaexe"].IsString()) {

@@ -5,7 +5,7 @@
 #include <debugger/io/helper.h>
 #include <debugger/client/stdinput.h>
 #include <bee/utility/format.h>
-#include <base/path/self.h>
+#include <bee/utility/path_helper.h>
 #include <functional>
 
 void request_runInTerminal(vscode::io::base* io, std::function<void(vscode::wprotocol&)> args)
@@ -29,7 +29,7 @@ bool create_terminal_with_debugger(stdinput& io, vscode::rprotocol& req, const s
 	auto& args = req["arguments"];
 
 	request_runInTerminal(&io, [&](vscode::wprotocol& res) {
-		fs::path dbgPath = base::path::self().parent_path().parent_path();
+		fs::path dbgPath = bee::path::exe_path().value().parent_path().parent_path();
 		std::string luaexe;
 		if (args.HasMember("luaexe") && args["luaexe"].IsString()) {
 			luaexe = args["luaexe"].Get<std::string>();

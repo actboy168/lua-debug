@@ -1,5 +1,5 @@
 #include <Windows.h>
-#include <base/path/self.h>
+#include <bee/utility/path_helper.h>
 #include <bee/utility/format.h>
 #include <base/win/process_switch.h>
 #include <debugger/debugger.h>
@@ -7,12 +7,12 @@
 #include <debugger/inject/autoattach.h>
 
 static vscode::debugger* dbg = nullptr;
-static fs::path binPath;
+static std::filesystem::path binPath;
 static std::wstring pipeName;
 static bool isAttachProcess = false;
 
 static bool initialize() {
-	binPath = base::path::self().parent_path();
+	binPath = bee::path::dll_path().value().parent_path();
 	int pid = (int)GetCurrentProcessId();
 	pipeName = bee::format(L"vscode-lua-debug-%d", pid);
 	isAttachProcess = base::win::process_switch::has(pid, L"attachprocess");

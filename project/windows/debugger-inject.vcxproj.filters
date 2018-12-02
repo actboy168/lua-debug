@@ -5,11 +5,20 @@
     <ClCompile Include="..\..\include\base\hook\inline.cpp">
       <Filter>base\hook</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\include\base\path\get_path.cpp">
-      <Filter>base\path</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\debugger\io\namedpipe.cpp" />
     <ClCompile Include="..\..\src\debugger\inject\autoattach.cpp" />
+    <ClCompile Include="..\..\third_party\bee.lua\bee\utility\path_helper.cpp">
+      <Filter>bee\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\third_party\bee.lua\bee\exception\exception.cpp">
+      <Filter>bee\exception</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\third_party\bee.lua\bee\exception\windows_exception.cpp">
+      <Filter>bee\exception</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\third_party\bee.lua\bee\utility\unicode.cpp">
+      <Filter>bee\utility</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="base">
@@ -18,23 +27,35 @@
     <Filter Include="base\hook">
       <UniqueIdentifier>{de1b1dc0-a51f-4b6d-afc7-0e2b593f1817}</UniqueIdentifier>
     </Filter>
-    <Filter Include="base\path">
-      <UniqueIdentifier>{d6d5ae00-2c54-493e-9e8d-2c5d579fe6cb}</UniqueIdentifier>
+    <Filter Include="bee">
+      <UniqueIdentifier>{9f46a184-9a89-4826-8f1c-a15094fe3ff2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="bee\utility">
+      <UniqueIdentifier>{9970a265-d2fb-4269-bc5b-939de14f0599}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="bee\exception">
+      <UniqueIdentifier>{e63430e2-e390-419c-9ead-d5b3415e76fc}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\base\hook\inline.h">
       <Filter>base\hook</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\base\path\get_path.h">
-      <Filter>base\path</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\base\path\self.h">
-      <Filter>base\path</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\include\base\hook\fp_call.h">
       <Filter>base\hook</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\debugger\inject\autoattach.h" />
+    <ClInclude Include="..\..\third_party\bee.lua\bee\utility\path_helper.h">
+      <Filter>bee\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\third_party\bee.lua\bee\exception\exception.h">
+      <Filter>bee\exception</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\third_party\bee.lua\bee\exception\windows_exception.h">
+      <Filter>bee\exception</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\third_party\bee.lua\bee\utility\unicode.h">
+      <Filter>bee\utility</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
