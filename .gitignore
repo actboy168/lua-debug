@@ -17,6 +17,7 @@
 *.ipdb
 *.iobj
 *.lib
+*.o
 project/windows/bin/
 project/windows/obj/
 project/.xmake/
