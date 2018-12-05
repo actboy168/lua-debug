@@ -1,5 +1,6 @@
 #include <debugger/path.h>
 #include <bee/utility/unicode.h>
+#include <bee/utility/dynarray.h>
 #include <deque>
 #if defined(_WIN32)
 #include <Windows.h>
@@ -34,10 +35,9 @@ namespace vscode { namespace path {
 		if (len == 0) {
 			return std::string("c:");
 		}
-		std::wstring r;
-		r.resize(len);
-		GetCurrentDirectoryW((DWORD)r.size(), &r.front());
-		return bee::w2u(r);
+		std::dynarray<wchar_t> r(len);
+		len = GetCurrentDirectoryW(len, r.data());
+		return bee::w2u(std::wstring_view(r.data(), len));
 #else
 		for (long path_max = 128;; path_max *= 2)
 		{
