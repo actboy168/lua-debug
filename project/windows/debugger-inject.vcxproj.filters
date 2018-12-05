@@ -10,14 +10,14 @@
     <ClCompile Include="..\..\third_party\bee.lua\bee\utility\path_helper.cpp">
       <Filter>bee\utility</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\third_party\bee.lua\bee\exception\exception.cpp">
-      <Filter>bee\exception</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\third_party\bee.lua\bee\exception\windows_exception.cpp">
-      <Filter>bee\exception</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\third_party\bee.lua\bee\utility\unicode.cpp">
       <Filter>bee\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\third_party\bee.lua\bee\error.cpp">
+      <Filter>bee</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\third_party\bee.lua\bee\error\windows_category.cpp">
+      <Filter>bee\error</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -33,8 +33,8 @@
     <Filter Include="bee\utility">
       <UniqueIdentifier>{9970a265-d2fb-4269-bc5b-939de14f0599}</UniqueIdentifier>
     </Filter>
-    <Filter Include="bee\exception">
-      <UniqueIdentifier>{e63430e2-e390-419c-9ead-d5b3415e76fc}</UniqueIdentifier>
+    <Filter Include="bee\error">
+      <UniqueIdentifier>{10b06ec4-aca4-4101-b717-d8d873afe1fc}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -48,14 +48,14 @@
     <ClInclude Include="..\..\third_party\bee.lua\bee\utility\path_helper.h">
       <Filter>bee\utility</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\third_party\bee.lua\bee\exception\exception.h">
-      <Filter>bee\exception</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\third_party\bee.lua\bee\exception\windows_exception.h">
-      <Filter>bee\exception</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\third_party\bee.lua\bee\utility\unicode.h">
       <Filter>bee\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\third_party\bee.lua\bee\error.h">
+      <Filter>bee</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\third_party\bee.lua\bee\error\windows_category.h">
+      <Filter>bee\error</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

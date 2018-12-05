@@ -12,7 +12,7 @@ static std::wstring pipeName;
 static bool isAttachProcess = false;
 
 static bool initialize() {
-	binPath = bee::path::dll_path().value().parent_path();
+	binPath = bee::path_helper::dll_path().value().parent_path();
 	int pid = (int)GetCurrentProcessId();
 	pipeName = bee::format(L"vscode-lua-debug-%d", pid);
 	isAttachProcess = base::win::process_switch::has(pid, L"attachprocess");

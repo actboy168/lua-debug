@@ -31,8 +31,11 @@
     <Filter Include="bee\utility">
       <UniqueIdentifier>{a075743b-aea0-40b9-ac12-7638453dc4df}</UniqueIdentifier>
     </Filter>
-    <Filter Include="bee\exception">
-      <UniqueIdentifier>{2b8406ad-9c2a-45dc-8f5e-e6b6482ba445}</UniqueIdentifier>
+    <Filter Include="bee\error">
+      <UniqueIdentifier>{751d001a-0bd8-40ab-800c-e8a08ee270d5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="bee\platform">
+      <UniqueIdentifier>{770db3a5-9965-4511-9103-437ad3756e41}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -120,11 +123,20 @@
     <ClCompile Include="..\..\third_party\bee.lua\bee\utility\unicode.cpp">
       <Filter>bee\utility</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\third_party\bee.lua\bee\exception\exception.cpp">
-      <Filter>bee\exception</Filter>
+    <ClCompile Include="..\..\third_party\bee.lua\bee\net\unixsocket.cpp">
+      <Filter>bee\net</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\third_party\bee.lua\bee\exception\windows_exception.cpp">
-      <Filter>bee\exception</Filter>
+    <ClCompile Include="..\..\third_party\bee.lua\bee\error.cpp">
+      <Filter>bee</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\third_party\bee.lua\bee\error\windows_category.cpp">
+      <Filter>bee\error</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\third_party\bee.lua\bee\platform\version.cpp">
+      <Filter>bee\platform</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\third_party\bee.lua\bee\utility\file_version.cpp">
+      <Filter>bee\utility</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -206,11 +218,26 @@
     <ClInclude Include="..\..\third_party\bee.lua\bee\utility\unicode.h">
       <Filter>bee\utility</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\third_party\bee.lua\bee\exception\exception.h">
-      <Filter>bee\exception</Filter>
+    <ClInclude Include="..\..\third_party\bee.lua\bee\net\endpoint.h">
+      <Filter>bee\net</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\third_party\bee.lua\bee\exception\windows_exception.h">
-      <Filter>bee\exception</Filter>
+    <ClInclude Include="..\..\third_party\bee.lua\bee\net\socket.h">
+      <Filter>bee\net</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\third_party\bee.lua\bee\net\unixsocket.h">
+      <Filter>bee\net</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\third_party\bee.lua\bee\error.h">
+      <Filter>bee</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\third_party\bee.lua\bee\error\windows_category.h">
+      <Filter>bee\error</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\third_party\bee.lua\bee\platform\version.h">
+      <Filter>bee\platform</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\third_party\bee.lua\bee\utility\file_version.h">
+      <Filter>bee\utility</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

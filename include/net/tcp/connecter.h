@@ -124,7 +124,7 @@ namespace bee::net { namespace tcp {
 			}
 			else
 			{
-				NETLOG_ERROR() << "socket(" << event_type::sock << ") connect error, ec = " << socket::errcode();
+				NETLOG_ERROR() << "socket(" << event_type::sock << ") connect error, ec = " << bee::last_neterror();
 				if (event_type::sock != socket::retired_fd)
 				{
 					event_close();
@@ -142,7 +142,7 @@ namespace bee::net { namespace tcp {
 
 			if (event_type::sock == socket::retired_fd)
 			{
-				NETLOG_ERROR() << "socket("<< event_type::sock << ") socket open error, ec = " << socket::errcode();
+				NETLOG_ERROR() << "socket("<< event_type::sock << ") socket open error, ec = " << bee::last_neterror();
 				return -1;
 			}
 

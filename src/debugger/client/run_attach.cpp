@@ -18,7 +18,7 @@ bee::subprocess::process openprocess(int pid) {
 	if (!base::hook::openprocess(pid, PROCESS_QUERY_INFORMATION, 0, info)) {
 		assert(false);
 	}
-	return bee::subprocess::process(info);
+	return bee::subprocess::process(std::move(info));
 }
 
 

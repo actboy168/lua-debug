@@ -29,7 +29,7 @@ bool create_terminal_with_debugger(stdinput& io, vscode::rprotocol& req, const s
 	auto& args = req["arguments"];
 
 	request_runInTerminal(&io, [&](vscode::wprotocol& res) {
-		fs::path dbgPath = bee::path::exe_path().value().parent_path().parent_path();
+		fs::path dbgPath = bee::path_helper::exe_path().value().parent_path().parent_path();
 		std::string luaexe;
 		if (args.HasMember("luaexe") && args["luaexe"].IsString()) {
 			luaexe = args["luaexe"].Get<std::string>();

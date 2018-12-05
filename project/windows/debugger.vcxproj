@@ -44,10 +44,13 @@
     <ClCompile Include="..\..\src\debugger\osthread.cpp" />
     <ClCompile Include="..\..\src\debugger\debugger.cpp" />
     <ClCompile Include="..\..\src\debugger\source.cpp" />
-    <ClCompile Include="..\..\third_party\bee.lua\bee\exception\exception.cpp" />
-    <ClCompile Include="..\..\third_party\bee.lua\bee\exception\windows_exception.cpp" />
+    <ClCompile Include="..\..\third_party\bee.lua\bee\error.cpp" />
+    <ClCompile Include="..\..\third_party\bee.lua\bee\error\windows_category.cpp" />
     <ClCompile Include="..\..\third_party\bee.lua\bee\net\endpoint.cpp" />
     <ClCompile Include="..\..\third_party\bee.lua\bee\net\socket.cpp" />
+    <ClCompile Include="..\..\third_party\bee.lua\bee\net\unixsocket.cpp" />
+    <ClCompile Include="..\..\third_party\bee.lua\bee\platform\version.cpp" />
+    <ClCompile Include="..\..\third_party\bee.lua\bee\utility\file_version.cpp" />
     <ClCompile Include="..\..\third_party\bee.lua\bee\utility\unicode.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -76,8 +79,13 @@
     <ClInclude Include="..\..\include\debugger\debugger.h" />
     <ClInclude Include="..\..\include\debugger\source.h" />
     <ClInclude Include="..\..\include\debugger\thunk\thunk.h" />
-    <ClInclude Include="..\..\third_party\bee.lua\bee\exception\exception.h" />
-    <ClInclude Include="..\..\third_party\bee.lua\bee\exception\windows_exception.h" />
+    <ClInclude Include="..\..\third_party\bee.lua\bee\error.h" />
+    <ClInclude Include="..\..\third_party\bee.lua\bee\error\windows_category.h" />
+    <ClInclude Include="..\..\third_party\bee.lua\bee\net\endpoint.h" />
+    <ClInclude Include="..\..\third_party\bee.lua\bee\net\socket.h" />
+    <ClInclude Include="..\..\third_party\bee.lua\bee\net\unixsocket.h" />
+    <ClInclude Include="..\..\third_party\bee.lua\bee\platform\version.h" />
+    <ClInclude Include="..\..\third_party\bee.lua\bee\utility\file_version.h" />
     <ClInclude Include="..\..\third_party\bee.lua\bee\utility\unicode.h" />
   </ItemGroup>
   <ItemGroup>

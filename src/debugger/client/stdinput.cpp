@@ -1,5 +1,6 @@
 #include <debugger/client/stdinput.h>
 #include <bee/utility/format.h>
+#include <functional>
 
 stdinput::stdinput()
 	: input_()

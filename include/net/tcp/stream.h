@@ -2,6 +2,7 @@
 
 #include <bee/net/endpoint.h>
 #include <bee/net/socket.h>
+#include <bee/error.h>
 #include <net/tcp/sndbuffer.h>
 #include <net/tcp/rcvbuffer.h> 
 #include <net/poller.h>
@@ -123,7 +124,7 @@ namespace bee::net { namespace tcp {
 			int rc = socket::recv(event_type::sock, rcvbuf_.rcv_data(), (int)rcvbuf_.rcv_size());
 			if (rc == -3)
 			{
-				NETLOG_ERROR() << "socket(" << event_type::sock << ") recv error, ec = " << socket::errcode();
+				NETLOG_ERROR() << "socket(" << event_type::sock << ") recv error, ec = " << bee::last_neterror();
 				return false;
 			}
 			else if (rc == -2)
@@ -132,7 +133,7 @@ namespace bee::net { namespace tcp {
 			}
 			else if (rc < 0)
 			{
-				NETLOG_ERROR() << "socket(" << event_type::sock << ") recv error, ec = " << socket::errcode();
+				NETLOG_ERROR() << "socket(" << event_type::sock << ") recv error, ec = " << bee::last_neterror();
 				return false;
 			}
 
@@ -155,7 +156,7 @@ namespace bee::net { namespace tcp {
 			}
 			else if (rc < 0)
 			{
-				NETLOG_ERROR() << "socket(" << event_type::sock << ") send error, ec = " << socket::errcode();
+				NETLOG_ERROR() << "socket(" << event_type::sock << ") send error, ec = " << bee::last_neterror();
 				return false;
 			}
 

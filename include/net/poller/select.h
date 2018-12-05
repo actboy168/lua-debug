@@ -1,5 +1,6 @@
 ﻿#pragma once
 
+#include <WinSock2.h>
 #include <bee/net/socket.h>
 #include <net/poller/event.h>
 #include <net/poller/timer_queue.h>
