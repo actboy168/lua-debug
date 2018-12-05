@@ -136,7 +136,7 @@ namespace bee::net { namespace tcp {
 		int start_connect()
 		{
 			assert(event_type::sock == socket::retired_fd);
-			event_type::sock = socket::open(addr_->addr()->sa_family, socket::protocol::tcp);
+			event_type::sock = socket::open(addr_->addr()->sa_family, addr_->addr()->sa_family == AF_UNIX ? socket::protocol::unix : socket::protocol::tcp);
 			auto [ip, port] = addr_->info();
 			NETLOG_INFO() << "socket(" << event_type::sock << ") [" << ip << ":" << port << "] connecting";
 

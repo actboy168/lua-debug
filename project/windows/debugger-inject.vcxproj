@@ -28,9 +28,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\include\base\hook\inline.cpp" />
+    <ClCompile Include="..\..\src\debugger\client\get_unix_path.cpp" />
     <ClCompile Include="..\..\src\debugger\inject\autoattach.cpp" />
     <ClCompile Include="..\..\src\debugger\inject\main.cpp" />
-    <ClCompile Include="..\..\src\debugger\io\namedpipe.cpp" />
     <ClCompile Include="..\..\third_party\bee.lua\bee\error.cpp" />
     <ClCompile Include="..\..\third_party\bee.lua\bee\error\windows_category.cpp" />
     <ClCompile Include="..\..\third_party\bee.lua\bee\utility\path_helper.cpp" />
@@ -39,6 +39,7 @@
   <ItemGroup>
     <ClInclude Include="..\..\include\base\hook\fp_call.h" />
     <ClInclude Include="..\..\include\base\hook\inline.h" />
+    <ClInclude Include="..\..\include\debugger\client\get_unix_path.h" />
     <ClInclude Include="..\..\include\debugger\inject\autoattach.h" />
     <ClInclude Include="..\..\third_party\bee.lua\bee\error.h" />
     <ClInclude Include="..\..\third_party\bee.lua\bee\error\windows_category.h" />

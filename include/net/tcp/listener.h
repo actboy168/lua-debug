@@ -43,7 +43,7 @@ namespace bee::net { namespace tcp {
 		int open(const endpoint& addr)
 		{
 			close();
-			event_type::sock = socket::open(addr.addr()->sa_family, socket::protocol::tcp);
+			event_type::sock = socket::open(addr.addr()->sa_family, addr.addr()->sa_family == AF_UNIX ? socket::protocol::unix : socket::protocol::tcp);
 			if (event_type::sock == socket::retired_fd)
 			{
 				NETLOG_ERROR() << "socket("<< event_type::sock << ") socket open error, ec = " << bee::last_neterror();
@@ -51,7 +51,9 @@ namespace bee::net { namespace tcp {
 			}
 
 			socket::nonblocking(event_type::sock);
-			socket::reuse(event_type::sock);
+			if (addr.addr()->sa_family != AF_UNIX) {
+				socket::reuse(event_type::sock);
+			}
 			int bufsize = 64 * 1024;
 			socket::send_buffer(event_type::sock, bufsize);
 			socket::recv_buffer(event_type::sock, bufsize);

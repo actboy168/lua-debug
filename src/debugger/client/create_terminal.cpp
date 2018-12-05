@@ -1,4 +1,3 @@
-#include <debugger/io/namedpipe.h>
 #include <Windows.h>
 #include <debugger/client/run.h>
 #include <debugger/io/base.h>
@@ -24,7 +23,7 @@ void request_runInTerminal(vscode::io::base* io, std::function<void(vscode::wpro
 	vscode::io_output(io, res);
 }
 
-bool create_terminal_with_debugger(stdinput& io, vscode::rprotocol& req, const std::wstring& port)
+bool create_terminal_with_debugger(stdinput& io, vscode::rprotocol& req, const std::string& port)
 {
 	auto& args = req["arguments"];
 

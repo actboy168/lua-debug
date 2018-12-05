@@ -5,7 +5,7 @@
 #include <bee/utility/path_helper.h>
 #include <base/hook/replacedll.h>
 
-std::string create_install_script(vscode::rprotocol& req, const fs::path& dbg_path, const std::wstring& port)
+std::string create_install_script(vscode::rprotocol& req, const fs::path& dbg_path, const std::string& port)
 {
 	auto& args = req["arguments"];
 	bool isUtf8 = false;
@@ -47,7 +47,7 @@ std::string create_install_script(vscode::rprotocol& req, const fs::path& dbg_pa
 	res += bee::format("local dbg=package.loadlib([[%s]], 'luaopen_debugger')();package.loaded[ [[%s]] ]=dbg;dbg:io([[pipe:%s]])"
 		, isUtf8 ? bee::w2u((dbg_path / L"debugger.dll").wstring()) : bee::w2a((dbg_path / L"debugger.dll").wstring())
 		, args.HasMember("internalModule") && args["internalModule"].IsString() ? args["internalModule"].Get<std::string>() : "debugger"
-		, bee::w2u(port)
+		, port
 	);
 	if (args.HasMember("outputCapture") && args["outputCapture"].IsArray()) {
 		for (auto& v : args["outputCapture"].GetArray()) {
@@ -104,7 +104,7 @@ bool is64Exe(const wchar_t* exe)
 	return !(((PIMAGE_NT_HEADERS)data)->FileHeader.Characteristics & IMAGE_FILE_32BIT_MACHINE);
 }
 
-process_opt create_luaexe_with_debugger(stdinput& io, vscode::rprotocol& req, const std::wstring& port)
+process_opt create_luaexe_with_debugger(stdinput& io, vscode::rprotocol& req, const std::string& port)
 {
 	auto& args = req["arguments"];
 	fs::path dbgPath = bee::path_helper::exe_path().value().parent_path().parent_path();

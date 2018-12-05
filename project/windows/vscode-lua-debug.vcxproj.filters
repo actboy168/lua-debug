@@ -16,9 +16,6 @@
     <ClCompile Include="..\..\src\debugger\io\helper.cpp">
       <Filter>cpp\io</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\debugger\io\namedpipe.cpp">
-      <Filter>cpp\io</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\debugger\client\tcp_attach.cpp">
       <Filter>cpp\client</Filter>
     </ClCompile>
@@ -76,6 +73,9 @@
     <ClCompile Include="..\..\third_party\bee.lua\bee\error\windows_category.cpp">
       <Filter>bee\error</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\debugger\client\get_unix_path.cpp">
+      <Filter>cpp\client</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\base\hook\injectdll.h">
@@ -95,9 +95,6 @@
     </ClInclude>
     <ClInclude Include="..\..\include\base\hook\replacedll.h">
       <Filter>base\hook</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\debugger\io\namedpipe.h">
-      <Filter>inc\io</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\base\win\process_switch.h">
       <Filter>base\win</Filter>
@@ -143,6 +140,9 @@
     </ClInclude>
     <ClInclude Include="..\..\third_party\bee.lua\bee\error\windows_category.h">
       <Filter>bee\error</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\debugger\client\get_unix_path.h">
+      <Filter>inc\client</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

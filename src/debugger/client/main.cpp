@@ -5,9 +5,9 @@
 #include <debugger/client/stdinput.h>
 #include <debugger/client/tcp_attach.h>
 #include <debugger/client/run.h>
+#include <debugger/client/get_unix_path.h>
 #include <debugger/capabilities.h>
 #include <debugger/io/helper.h>
-#include <debugger/io/namedpipe.h>
 #include <bee/utility/unicode.h>
 #include <bee/utility/format.h>
 #include <base/filesystem.h>
@@ -128,7 +128,7 @@ static int run_createprocess_then_attach(stdinput& io, vscode::rprotocol& init, 
 	if (run_tcp_attach(io, init, req)) {
 		return 0;
 	}
-	auto port = bee::format(L"vscode-lua-debug-%d", (*process).get_id());
+	auto port = get_unix_path((*process).get_id());
 	if (!run_pipe_attach(io, init, req, port, process)) {
 		response_error(io, req, "Launch failed");
 		return -1;
@@ -138,7 +138,7 @@ static int run_createprocess_then_attach(stdinput& io, vscode::rprotocol& init, 
 
 static int run_terminal_then_attach(stdinput& io, vscode::rprotocol& init, vscode::rprotocol& req)
 {
-	auto port = bee::format(L"vscode-lua-debug-%d", GetCurrentProcessId());
+	auto port = get_unix_path(GetCurrentProcessId());
 	if (!create_terminal_with_debugger(io, req, port)) {
 		response_error(io, req, "Launch failed");
 		return -1;
@@ -152,7 +152,7 @@ static int run_terminal_then_attach(stdinput& io, vscode::rprotocol& init, vscod
 
 static int run_luaexe_then_attach(stdinput& io, vscode::rprotocol& init, vscode::rprotocol& req)
 {
-	auto port = bee::format(L"vscode-lua-debug-%d", GetCurrentProcessId());
+	auto port = get_unix_path(GetCurrentProcessId());
 	process_opt process = create_luaexe_with_debugger(io, req, port);
 	if (!process) {
 		response_error(io, req, "Launch failed");
@@ -172,7 +172,7 @@ static int run_attach_process_noinject(stdinput& io, vscode::rprotocol& init, vs
 		response_error(io, req, "Target Procees hasn't debugger.");
 		return -1;
 	}
-	auto port = bee::format(L"vscode-lua-debug-%d", pid);
+	auto port = get_unix_path(pid);
 	if (!run_pipe_attach(io, init, req, port, process_opt(openprocess(pid)), &m)) {
 		response_error(io, req, "Attach failed");
 		return -1;
@@ -190,7 +190,7 @@ static int run_attach_process(stdinput& io, vscode::rprotocol& init, vscode::rpr
 		response_error(io, req, bee::format("Open process (id=%d) failed.", pid).c_str());
 		return -1;
 	}
-	auto port = bee::format(L"vscode-lua-debug-%d", pid);
+	auto port = get_unix_path(pid);
 	if (!run_pipe_attach(io, init, req, port, process_opt(openprocess(pid)), &m)) {
 		response_error(io, req, "Attach failed");
 		return -1;

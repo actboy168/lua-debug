@@ -31,7 +31,6 @@
     <ClCompile Include="..\..\src\debugger\i18n.cpp" />
     <ClCompile Include="..\..\src\debugger\impl.cpp" />
     <ClCompile Include="..\..\src\debugger\io\helper.cpp" />
-    <ClCompile Include="..\..\src\debugger\io\namedpipe.cpp" />
     <ClCompile Include="..\..\src\debugger\io\socket_impl.cpp" />
     <ClCompile Include="..\..\src\debugger\io\stream.cpp" />
     <ClCompile Include="..\..\src\debugger\luathread.cpp" />
@@ -66,7 +65,6 @@
     <ClInclude Include="..\..\include\debugger\impl.h" />
     <ClInclude Include="..\..\include\debugger\io\base.h" />
     <ClInclude Include="..\..\include\debugger\io\helper.h" />
-    <ClInclude Include="..\..\include\debugger\io\namedpipe.h" />
     <ClInclude Include="..\..\include\debugger\io\socket_impl.h" />
     <ClInclude Include="..\..\include\debugger\io\stream.h" />
     <ClInclude Include="..\..\include\debugger\lua.h" />

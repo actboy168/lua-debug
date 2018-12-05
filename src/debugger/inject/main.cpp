@@ -3,18 +3,18 @@
 #include <bee/utility/format.h>
 #include <base/win/process_switch.h>
 #include <debugger/debugger.h>
-#include <debugger/io/namedpipe.h>
 #include <debugger/inject/autoattach.h>
+#include <debugger/client/get_unix_path.h>
 
 static vscode::debugger* dbg = nullptr;
 static std::filesystem::path binPath;
-static std::wstring pipeName;
+static std::string pipeName;
 static bool isAttachProcess = false;
 
 static bool initialize() {
 	binPath = bee::path_helper::dll_path().value().parent_path();
 	int pid = (int)GetCurrentProcessId();
-	pipeName = bee::format(L"vscode-lua-debug-%d", pid);
+	pipeName = get_unix_path(pid);
 	isAttachProcess = base::win::process_switch::has(pid, L"attachprocess");
 	return true;
 }

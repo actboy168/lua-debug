@@ -2,7 +2,6 @@
 #include <debugger/lua.h>
 #include <debugger/debugger.h>
 #include <debugger/io/socket_impl.h>
-#include <debugger/io/namedpipe.h>
 #include <bee/utility/unicode.h>
 #include <bee/net/endpoint.h>
 #include <memory>  
@@ -24,7 +23,6 @@ namespace luaw {
 	struct ud {
 		std::unique_ptr<vscode::io::socket_s> socket_s;
 		std::unique_ptr<vscode::io::socket_c> socket_c;
-		std::unique_ptr<vscode::io::namedpipe> namedpipe;
 		std::unique_ptr<vscode::debugger> dbg;
 		bool guard = false;
 
@@ -40,7 +38,7 @@ namespace luaw {
 		}
 		void listen_tcp(const char* addr)
 		{
-			if (namedpipe || dbg) return;
+			if (dbg) return;
 			auto [ip, port] = split_address(addr);
 			auto info = bee::net::endpoint::from_hostname(ip, port);
 			if (!info) {
@@ -52,7 +50,7 @@ namespace luaw {
 
 		void connect_tcp(const char* addr)
 		{
-			if (namedpipe || dbg) return;
+			if (dbg) return;
 			auto[ip, port] = split_address(addr);
 			auto info = bee::net::endpoint::from_hostname(ip, port);
 			if (!info) {
@@ -61,16 +59,18 @@ namespace luaw {
 			socket_c.reset(new vscode::io::socket_c(info.value()));
 			dbg.reset(new vscode::debugger(socket_c.get()));
 		}
-
-#if defined(_WIN32)
-		void listen_pipe(const wchar_t* name)
+		void listen_pipe(const char* path)
 		{
-			if (namedpipe || dbg) return;
-			namedpipe.reset(new vscode::io::namedpipe());
-			namedpipe->open_server(name);
-			dbg.reset(new vscode::debugger(namedpipe.get()));
+			if (dbg) return;
+			auto info = bee::net::endpoint::from_unixpath(path);
+			if (!info) {
+				return;
+			}
+			auto[upath, uport] = info->info();
+			::DeleteFileW(bee::u2w(upath).c_str());
+			socket_s.reset(new vscode::io::socket_s(info.value()));
+			dbg.reset(new vscode::debugger(socket_s.get()));
 		}
-#endif
 	};
 
 	static std::unique_ptr<ud> global;
@@ -100,11 +100,9 @@ namespace luaw {
 		else if (strncmp(addr, "connect:", 8) == 0) {
 			self.connect_tcp(addr + 8);
 		}
-#if defined(_WIN32)
 		else if (strncmp(addr, "pipe:", 5) == 0) {
-			self.listen_pipe(bee::u2w(addr + 5).c_str());
+			self.listen_pipe(addr + 5);
 		}
-#endif
 		else {
 			self.listen_tcp(addr);
 		}
@@ -233,7 +231,6 @@ namespace luaw {
 			self.dbg.reset();
 			self.socket_s.reset();
 			self.socket_c.reset();
-			self.namedpipe.reset();
 		}
 		return 0;
 	}
@@ -262,9 +259,9 @@ namespace luaw {
 }
 
 #if defined(_WIN32)
-void debugger_create(const wchar_t* name)
+void debugger_create(const char* path)
 {
-	luaw::get().listen_pipe(name);
+	luaw::get().listen_pipe(path);
 }
 vscode::debugger* debugger_get()
 {

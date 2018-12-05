@@ -5,7 +5,6 @@
     <ClCompile Include="..\..\include\base\hook\inline.cpp">
       <Filter>base\hook</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\debugger\io\namedpipe.cpp" />
     <ClCompile Include="..\..\src\debugger\inject\autoattach.cpp" />
     <ClCompile Include="..\..\third_party\bee.lua\bee\utility\path_helper.cpp">
       <Filter>bee\utility</Filter>
@@ -19,6 +18,7 @@
     <ClCompile Include="..\..\third_party\bee.lua\bee\error\windows_category.cpp">
       <Filter>bee\error</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\debugger\client\get_unix_path.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="base">
@@ -57,5 +57,6 @@
     <ClInclude Include="..\..\third_party\bee.lua\bee\error\windows_category.h">
       <Filter>bee\error</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\debugger\client\get_unix_path.h" />
   </ItemGroup>
 </Project>

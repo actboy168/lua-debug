@@ -84,9 +84,6 @@
     <ClCompile Include="..\..\src\debugger\io\stream.cpp">
       <Filter>cpp\io</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\debugger\io\namedpipe.cpp">
-      <Filter>cpp\io</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\debugger\path.cpp">
       <Filter>cpp</Filter>
     </ClCompile>
@@ -183,9 +180,6 @@
       <Filter>inc\bridge</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\debugger\io\stream.h">
-      <Filter>inc\io</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\debugger\io\namedpipe.h">
       <Filter>inc\io</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\debugger\path.h">
