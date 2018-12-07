@@ -22,7 +22,6 @@ static std::string_view luaL_checkstrview(lua_State* L, int idx) {
 namespace luaw {
 	struct ud {
 		std::unique_ptr<vscode::io::socket_s> socket_s;
-		std::unique_ptr<vscode::io::socket_c> socket_c;
 		std::unique_ptr<vscode::debugger> dbg;
 		bool guard = false;
 
@@ -46,18 +45,6 @@ namespace luaw {
 			}
 			socket_s.reset(new vscode::io::socket_s(info.value()));
 			dbg.reset(new vscode::debugger(socket_s.get()));
-		}
-
-		void connect_tcp(const char* addr)
-		{
-			if (dbg) return;
-			auto[ip, port] = split_address(addr);
-			auto info = bee::net::endpoint::from_hostname(ip, port);
-			if (!info) {
-				return;
-			}
-			socket_c.reset(new vscode::io::socket_c(info.value()));
-			dbg.reset(new vscode::debugger(socket_c.get()));
 		}
 		void listen_pipe(const char* path)
 		{
@@ -96,9 +83,6 @@ namespace luaw {
 		const char* addr = luaL_checkstring(L, 2);
 		if (strncmp(addr, "listen:", 7) == 0) {
 			self.listen_tcp(addr + 7);
-		}
-		else if (strncmp(addr, "connect:", 8) == 0) {
-			self.connect_tcp(addr + 8);
 		}
 		else if (strncmp(addr, "pipe:", 5) == 0) {
 			self.listen_pipe(addr + 5);
@@ -230,7 +214,6 @@ namespace luaw {
 		if (self.guard) {
 			self.dbg.reset();
 			self.socket_s.reset();
-			self.socket_c.reset();
 		}
 		return 0;
 	}
