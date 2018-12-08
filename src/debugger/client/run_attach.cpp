@@ -1,6 +1,6 @@
+#include <debugger/io/client.h>
 #include <debugger/client/run.h>
 #include <debugger/io/base.h>
-#include <debugger/io/socket_impl.h>
 #include <debugger/io/helper.h>
 #include <debugger/client/stdinput.h>
 #include <base/win/process_switch.h>
@@ -29,7 +29,7 @@ bool run_pipe_attach(stdinput& io, vscode::rprotocol& init, vscode::rprotocol& r
 	if (!ep) {
 		return false;
 	}
-	vscode::io::socket_c pipe(ep.value());
+	vscode::io::client pipe(ep.value());
 	for (; pipe.is_closed();) {
 		pipe.update(10);
 	}

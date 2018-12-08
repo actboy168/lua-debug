@@ -46,9 +46,6 @@
     <ClCompile Include="..\..\third_party\bee.lua\bee\utility\unicode.cpp">
       <Filter>bee\utility</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\debugger\io\socket_impl.cpp">
-      <Filter>cpp\io</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\third_party\bee.lua\bee\net\socket.cpp">
       <Filter>bee\net</Filter>
     </ClCompile>
@@ -75,6 +72,12 @@
     </ClCompile>
     <ClCompile Include="..\..\src\debugger\client\get_unix_path.cpp">
       <Filter>cpp\client</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\debugger\io\client.cpp">
+      <Filter>cpp\io</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\debugger\io\server.cpp">
+      <Filter>inc\io</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -108,9 +111,6 @@
     <ClInclude Include="..\..\third_party\bee.lua\bee\utility\unicode.h">
       <Filter>bee\utility</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\debugger\io\socket_impl.h">
-      <Filter>inc\io</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\third_party\bee.lua\bee\subprocess\subprocess_win.h">
       <Filter>bee\subprocess</Filter>
     </ClInclude>
@@ -143,6 +143,9 @@
     </ClInclude>
     <ClInclude Include="..\..\include\debugger\client\get_unix_path.h">
       <Filter>inc\client</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\debugger\io\client.h">
+      <Filter>inc\io</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

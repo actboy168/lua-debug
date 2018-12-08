@@ -37,7 +37,8 @@
     <ClCompile Include="..\..\src\debugger\client\create_terminal.cpp" />
     <ClCompile Include="..\..\src\debugger\client\stdinput.cpp" />
     <ClCompile Include="..\..\src\debugger\io\helper.cpp" />
-    <ClCompile Include="..\..\src\debugger\io\socket_impl.cpp" />
+    <ClCompile Include="..\..\src\debugger\io\client.cpp" />
+    <ClCompile Include="..\..\src\debugger\io\server.cpp" />
     <ClCompile Include="..\..\src\debugger\io\stream.cpp" />
     <ClCompile Include="..\..\third_party\bee.lua\bee\error.cpp" />
     <ClCompile Include="..\..\third_party\bee.lua\bee\error\windows_category.cpp" />
@@ -60,7 +61,7 @@
     <ClInclude Include="..\..\include\debugger\client\run.h" />
     <ClInclude Include="..\..\include\debugger\client\stdinput.h" />
     <ClInclude Include="..\..\include\debugger\io\helper.h" />
-    <ClInclude Include="..\..\include\debugger\io\socket_impl.h" />
+    <ClInclude Include="..\..\include\debugger\io\client.h" />
     <ClInclude Include="..\..\include\debugger\io\stream.h" />
     <ClInclude Include="..\..\third_party\bee.lua\bee\error.h" />
     <ClInclude Include="..\..\third_party\bee.lua\bee\error\windows_category.h" />

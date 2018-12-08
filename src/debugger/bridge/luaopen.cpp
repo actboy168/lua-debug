@@ -1,7 +1,7 @@
+#include <debugger/io/server.h>
 #include <debugger/bridge/delayload.h>
 #include <debugger/lua.h>
 #include <debugger/debugger.h>
-#include <debugger/io/socket_impl.h>
 #include <bee/utility/unicode.h>
 #include <bee/net/endpoint.h>
 #include <memory>  
@@ -21,7 +21,7 @@ static std::string_view luaL_checkstrview(lua_State* L, int idx) {
 
 namespace luaw {
 	struct ud {
-		std::unique_ptr<vscode::io::socket_s> socket_s;
+		std::unique_ptr<vscode::io::server> socket_s;
 		std::unique_ptr<vscode::debugger> dbg;
 		bool guard = false;
 
@@ -43,7 +43,7 @@ namespace luaw {
 			if (!info) {
 				return;
 			}
-			socket_s.reset(new vscode::io::socket_s(info.value()));
+			socket_s.reset(new vscode::io::server(info.value()));
 			dbg.reset(new vscode::debugger(socket_s.get()));
 		}
 		void listen_pipe(const char* path)
@@ -55,7 +55,7 @@ namespace luaw {
 			}
 			auto[upath, uport] = info->info();
 			::DeleteFileW(bee::u2w(upath).c_str());
-			socket_s.reset(new vscode::io::socket_s(info.value()));
+			socket_s.reset(new vscode::io::server(info.value()));
 			dbg.reset(new vscode::debugger(socket_s.get()));
 		}
 	};
