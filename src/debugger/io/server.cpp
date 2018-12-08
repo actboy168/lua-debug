@@ -51,6 +51,8 @@ namespace vscode { namespace io {
 	server::~server()
 	{
         close();
+        delete session_;
+        session_ = 0;
 	}
 
 	void server::update(int ms)
@@ -71,8 +73,6 @@ namespace vscode { namespace io {
                 get_poller()->wait(1000, 0);
                 if (session_) session_->update(0);
             }
-            delete session_;
-            session_ = 0;
         }
 	}
 

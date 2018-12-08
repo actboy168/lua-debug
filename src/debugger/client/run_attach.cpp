@@ -22,7 +22,6 @@ bee::subprocess::process openprocess(int pid) {
 	return bee::subprocess::process(std::move(info));
 }
 
-
 bool run_pipe_attach(stdinput& io, vscode::rprotocol& init, vscode::rprotocol& req, const std::string& pipename, process_opt& process, base::win::process_switch* m)
 {
 	auto ep = bee::net::endpoint::from_unixpath(pipename);

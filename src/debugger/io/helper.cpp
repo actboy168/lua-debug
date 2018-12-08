@@ -5,7 +5,7 @@
 #include <bee/utility/unicode.h>
 #include <fstream>
 
-#if 0
+#if 1
 #	define log(...)
 #else
 

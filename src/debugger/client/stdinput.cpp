@@ -3,14 +3,17 @@
 #include <functional>
 
 stdinput::stdinput()
-	: input_()
-	, preinput_()
-	, buffer_()
-	, thread_(std::bind(&stdinput::run, this))
+    : input_()
+    , preinput_()
+    , buffer_()
+    , thread_(std::bind(&stdinput::run, this))
 { }
 
 stdinput::~stdinput() {
-	close();
+    fflush(stdout);
+    fflush(stderr);
+    thread_.detach();
+    close();
 }
 
 void stdinput::run() {
@@ -48,8 +51,20 @@ bool stdinput::output(const char* buf, size_t len) {
 	return true;
 }
 
+
+#include <bee/utility/format.h>
+#include <Windows.h>
+
+template <class... Args>
+static void log(const char* fmt, const Args& ... args)
+{
+    auto s = bee::format(fmt, args...);
+    OutputDebugStringA(s.c_str());
+}
+
 void stdinput::raw_output(const char* buf, size_t len) {
 	for (;;) {
+        log("%s", std::string(buf, len));
 		size_t r = fwrite(buf, len, 1, stdout);
 		if (r == 1)
 			break;
