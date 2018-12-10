@@ -111,6 +111,7 @@ namespace bee::net { namespace poller {
 				
 				int ok = select(0, &rd, &wt, &except, &ti);
                 if (ok <= 0) {
+                    select_n += n;
                     continue;
                 }
                 for (size_t i = 0; i < n; ++i) {
