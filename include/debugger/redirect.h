@@ -19,6 +19,8 @@ namespace vscode
 		redirect_pipe();
 		~redirect_pipe();
 		bool create(const char* name);
+        void close_rd();
+        void close_wr();
 	};
 
 	class redirector

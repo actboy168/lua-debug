@@ -25,11 +25,22 @@ namespace vscode
 		, wr_(INVALID_HANDLE_VALUE)
 	{ }
 	  
-	redirect_pipe::~redirect_pipe()
-	{
-		rd_ = INVALID_HANDLE_VALUE;
-		wr_ = INVALID_HANDLE_VALUE;
+	redirect_pipe::~redirect_pipe() {
+        close_rd();
+        close_wr();
 	}
+    void redirect_pipe::close_rd() {
+        if (rd_ != INVALID_HANDLE_VALUE) {
+            ::CloseHandle(rd_);
+        }
+        rd_ = INVALID_HANDLE_VALUE;
+    }
+    void redirect_pipe::close_wr() {
+        if (wr_ != INVALID_HANDLE_VALUE) {
+            ::CloseHandle(wr_);
+        }
+        wr_ = INVALID_HANDLE_VALUE;
+    }
 
 	bool redirect_pipe::create(const char* name)
 	{
@@ -70,15 +81,23 @@ namespace vscode
 		type_ = type;
 		old_ = GetStdHandle(handles[(int)type]);
 		set_handle(type, type == std_fd::STDIN ? pipe_.rd_: pipe_.wr_);
+        if (type == std_fd::STDIN) {
+            pipe_.rd_ = INVALID_HANDLE_VALUE;
+        }
+        else {
+            pipe_.wr_ = INVALID_HANDLE_VALUE;
+        }
 	}
 
 	void redirector::close()
 	{
 		if (old_ != INVALID_HANDLE_VALUE)
 		{
-			set_handle(type_, old_);
+            SetStdHandle(handles[(int)type_], old_);
 		}
 		old_ = INVALID_HANDLE_VALUE;
+        pipe_.close_rd();
+        pipe_.close_wr();
 	}
 
 	size_t redirector::peek()
