@@ -18,6 +18,7 @@
 *.iobj
 *.lib
 *.o
+extension/windows/
 project/windows/bin/
 project/windows/obj/
 project/.xmake/

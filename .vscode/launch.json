@@ -15,6 +15,16 @@
                 "Debug",
                 "IC"
             ]
+        },
+        {
+            "name": "Extension Tests",
+            "type": "extensionHost",
+            "request": "launch",
+            "runtimeExecutable": "${execPath}",
+            "args": [
+                "--extensionDevelopmentPath=${workspaceFolder}/extension/"
+            ],
+            "sourceMaps": false,
         }
     ]
 }
