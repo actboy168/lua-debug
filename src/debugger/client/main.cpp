@@ -98,7 +98,6 @@ static bool run_tcp_attach(stdinput& io, vscode::rprotocol& init, vscode::rproto
 {
 	auto& args = req["arguments"];
 	if (!args.HasMember("ip") && !args.HasMember("port")) {
-		response_error(io, req, "Need `ip` and `port`.");
 		return false;
 	}
 	tcp_attach attach(io);
@@ -285,6 +284,7 @@ int main()
 					return run_attach_process(io, init, req, pid[0], noInject);
 				}
 				if (!run_tcp_attach(io, init, req)) {
+                    response_error(io, req, "Need `ip` and `port`.");
 					return -1;
 				}
 				return 0;
