@@ -30,6 +30,7 @@ namespace bee::net { namespace tcp {
 			: base_t(poll, this)
 			, sndbuf_()
 			, rcvbuf_()
+            , snd_close_(false)
 			, wait_close_(false)
 		{
 			event_type::sock = socket::retired_fd;
@@ -41,8 +42,7 @@ namespace bee::net { namespace tcp {
 			event_type::sock = s;
 			base_t::set_fd(event_type::sock);
 			base_t::set_pollin();
-			if (!write_empty())
-			{
+			if (!write_empty()) {
 				base_t::set_pollout();
 			}
 			rcvbuf_.clear();
@@ -60,25 +60,21 @@ namespace bee::net { namespace tcp {
 		
 		void close()
 		{
-			if (event_type::sock != socket::retired_fd)
-			{
+			if (event_type::sock != socket::retired_fd) {
 				event_close();
 			}
 		}
 
 		size_t send(const char* buf, size_t buflen)
 		{
-			if (wait_close_)
-			{
+			if (wait_close_ || snd_close_) {
 				return 0;
 			}
 			size_t r = sndbuf_.push(buf, buflen);
-			if (write_empty())
-			{
+			if (write_empty()) {
 				base_t::reset_pollout();
 			}
-			else
-			{
+			else {
 				base_t::set_pollout();
 			}
 			return r;
@@ -124,13 +120,13 @@ namespace bee::net { namespace tcp {
             int rc;
             switch (socket::recv(event_type::sock, rc, rcvbuf_.rcv_data(), (int)rcvbuf_.rcv_size())) {
             case socket::status::close:
+                NETLOG_ERROR() << "socket(" << event_type::sock << ") recv close";
+                return false;
+            case socket::status::failed:
                 NETLOG_ERROR() << "socket(" << event_type::sock << ") recv error, ec = " << bee::last_neterror();
                 return false;
             case socket::status::wait:
                 return true;
-            case socket::status::failed:
-                NETLOG_ERROR() << "socket(" << event_type::sock << ") recv error, ec = " << bee::last_neterror();
-                return false;
             default:
             case socket::status::success:
                 break;
@@ -142,8 +138,7 @@ namespace bee::net { namespace tcp {
 
 		bool event_out()
 		{
-			if (sndbuf_.empty())
-			{
+			if (snd_close_ || write_empty()) {
 				if (wait_close_) force_close();
 				return true;
 			}
@@ -154,15 +149,16 @@ namespace bee::net { namespace tcp {
                 return true;
             case socket::status::failed:
                 NETLOG_ERROR() << "socket(" << event_type::sock << ") send error, ec = " << bee::last_neterror();
-                return false;
+                base_t::reset_pollout();
+                snd_close_ = true;
+                return true;
             default:
             case socket::status::success:
                 break;
             }
 
 			sndbuf_.snd_pop(rc);
-			if (write_empty())
-			{
+			if (snd_close_ || write_empty()) {
 				base_t::reset_pollout();
 				if (wait_close_) force_close();
 			}
@@ -171,9 +167,8 @@ namespace bee::net { namespace tcp {
 
 		void event_close()
 		{
-			wait_close_ = true;
-			if (sndbuf_.empty())
-			{
+            wait_close_ = true;
+			if (snd_close_ || write_empty()) {
 				force_close();
 			}
 		}
@@ -185,16 +180,15 @@ namespace bee::net { namespace tcp {
 			base_t::cancel_timer();
 			socket::close(event_type::sock);
 			event_type::sock = socket::retired_fd;
-			clear();
 		}
 
 		void event_timer(uint64_t id)
-		{
-		}
+		{ }
 
 	protected:
 		sndbuffer sndbuf_;
 		rcvbuffer rcvbuf_;
+        bool      snd_close_;
 		bool      wait_close_;
 	};
 	typedef stream_t<poller_t> stream;
