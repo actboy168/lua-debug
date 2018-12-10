@@ -39,7 +39,6 @@ namespace vscode {
 		}
 
 		dbg_->close();
-		dbg_->io_close();
 	}
 
 	bool osthread::is_current()

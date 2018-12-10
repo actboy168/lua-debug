@@ -12,6 +12,7 @@ namespace vscode
 	void debugger_impl::close()
 	{
 		if (is_state(eState::terminated) || is_state(eState::birth)) {
+            network_->close();
 			return;
 		}
 		update_redirect();
@@ -27,6 +28,7 @@ namespace vscode
 
 		breakpointmgr_.clear();
 		seq = 1;
+        network_->close();
 	}
 
 	void debugger_impl::set_state(eState state)

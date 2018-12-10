@@ -39,7 +39,6 @@ namespace vscode
 		~debugger_impl();
 		bool open_schema(const std::string& path);
 		void close();
-		void io_close();
 		void panic(luathread* thread, lua_State* L);
 		void hook(luathread* thread, debug& debug);
 		bool exception(lua_State* L, eException exceptionType, int level);

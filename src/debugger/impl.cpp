@@ -547,11 +547,6 @@ namespace vscode
 		return vscode::io_input(network_, &schema_);
 	}
 
-	void debugger_impl::io_close() 
-	{
-		network_->close();
-	}
-
 	bool debugger_impl::open_schema(const std::string& path)
 	{
 		return schema_.open(path);
@@ -565,7 +560,6 @@ namespace vscode
 	void debugger_impl::on_disconnect()
 	{
 		close();
-		io_close();
 		if (!attach_) {
 			thread_.stop();
 			if (thread_.try_lock()) {
