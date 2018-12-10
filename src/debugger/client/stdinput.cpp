@@ -2,6 +2,22 @@
 #include <bee/utility/format.h>
 #include <functional>
 
+#if 1
+#	define log(...)
+#else
+
+#include <bee/utility/format.h>
+#include <Windows.h>
+
+template <class... Args>
+static void log(const char* fmt, const Args& ... args)
+{
+    auto s = bee::format(fmt, args...);
+    OutputDebugStringA(s.c_str());
+}
+
+#endif
+
 stdinput::stdinput()
     : input_()
     , preinput_()
@@ -49,17 +65,6 @@ bool stdinput::output(const char* buf, size_t len) {
 	raw_output(l.data(), l.size());
 	raw_output(buf, len);
 	return true;
-}
-
-
-#include <bee/utility/format.h>
-#include <Windows.h>
-
-template <class... Args>
-static void log(const char* fmt, const Args& ... args)
-{
-    auto s = bee::format(fmt, args...);
-    OutputDebugStringA(s.c_str());
 }
 
 void stdinput::raw_output(const char* buf, size_t len) {
