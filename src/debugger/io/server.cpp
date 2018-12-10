@@ -60,7 +60,7 @@ namespace vscode { namespace io {
         if (!bee::net::tcp::listener::is_listening()) {
             bee::net::tcp::listener::listen(endpoint_);
         }
-        get_poller()->wait(1000, ms);
+        get_poller()->wait(ms);
         if (session_) session_->update(0);
 	}
 
@@ -70,7 +70,7 @@ namespace vscode { namespace io {
         if (session_) {
             session_->close();
             while (!session_->is_closed()) {
-                get_poller()->wait(1000, 0);
+                get_poller()->wait(0);
                 if (session_) session_->update(0);
             }
         }

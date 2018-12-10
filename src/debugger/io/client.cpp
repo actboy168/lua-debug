@@ -14,7 +14,7 @@ namespace vscode { namespace io {
 
 	void client::update(int ms)
 	{
-		get_poller()->wait(1000, ms);
+		get_poller()->wait(ms);
 	}
 
     void client::event_connect(bee::net::socket::fd_t fd)

@@ -45,7 +45,7 @@ void tcp_attach::event_close()
 
 void tcp_attach::update()
 {
-	poller.wait(1000, 0);
+	poller.wait(0);
 	std::string buf;
 	while (io.input(buf)) {
 		send(buf);

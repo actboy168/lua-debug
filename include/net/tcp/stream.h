@@ -120,7 +120,7 @@ namespace bee::net { namespace tcp {
             int rc;
             switch (socket::recv(event_type::sock, rc, rcvbuf_.rcv_data(), (int)rcvbuf_.rcv_size())) {
             case socket::status::close:
-                NETLOG_ERROR() << "socket(" << event_type::sock << ") recv close";
+                NETLOG_INFO() << "socket(" << event_type::sock << ") recv close";
                 return false;
             case socket::status::failed:
                 NETLOG_ERROR() << "socket(" << event_type::sock << ") recv error, ec = " << bee::last_neterror();
