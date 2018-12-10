@@ -176,6 +176,7 @@ namespace bee::net { namespace tcp {
 		void force_close()
 		{
 			NETLOG_INFO() << "socket(" << event_type::sock << ") close";
+            Sleep(100);
 			base_t::rm_fd();
 			base_t::cancel_timer();
 			socket::close(event_type::sock);
