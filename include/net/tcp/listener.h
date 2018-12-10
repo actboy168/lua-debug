@@ -67,9 +67,8 @@ namespace bee::net { namespace tcp {
 			assert(stat_ == e_idle);
 			auto[ip, port] = addr.info();
 			NETLOG_INFO() << "socket(" << event_type::sock << ") [" << ip << ":" << port << "] listening";
-			int rc = socket::bind(event_type::sock, addr) 
-				|| socket::listen(event_type::sock, 0x100);
-			if (rc == 0)
+            if (socket::bind(event_type::sock, addr) == socket::status::success
+				&& socket::listen(event_type::sock, 0x100) == socket::status::success)
 			{
 				stat_ = e_listening;
 				base_t::set_fd(event_type::sock);
@@ -95,20 +94,16 @@ namespace bee::net { namespace tcp {
 		bool event_in()
 		{
 			socket::fd_t fd = socket::retired_fd;
-			int rc = socket::accept(event_type::sock, fd);
-			if (rc == 0)
-			{
-				event_accept(fd);
-				return true;
-			}
-			else if (rc == -2)
-			{
-				return true;
-			}
-			else
-			{
-				return false;
-			}
+            switch (socket::accept(event_type::sock, fd)) {
+            case socket::status::success:
+                event_accept(fd);
+                return true;
+            case socket::status::wait:
+                return true;
+            default:
+            case socket::status::failed:
+                return false;
+            }
 		}
 
 		bool event_out()

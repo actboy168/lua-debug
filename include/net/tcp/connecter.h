@@ -108,32 +108,31 @@ namespace bee::net { namespace tcp {
 		}
 
 	protected:
-		void start_connecting()
-		{
-			int rc = start_connect();
-			if (rc == 0) 
-			{
-				base_t::set_fd(event_type::sock);
-				event_out();
-			}
-			else if (rc == -2)
-			{
-				base_t::set_fd(event_type::sock);
-				base_t::set_pollout();
-				base_t::add_timer(12 * 1000, e_connect_tid);
-			}
-			else
-			{
-				NETLOG_ERROR() << "socket(" << event_type::sock << ") connect error, ec = " << bee::last_neterror();
-				if (event_type::sock != socket::retired_fd)
-				{
-					event_close();
-				}
-				reconnect();
-			}
+        void start_connecting()
+        {
+            switch (start_connect()) {
+			case socket::status::success:
+                base_t::set_fd(event_type::sock);
+                event_out();
+                break;
+            case socket::status::wait:
+                base_t::set_fd(event_type::sock);
+                base_t::set_pollout();
+                base_t::add_timer(12 * 1000, e_connect_tid);
+                break;
+            default:
+            case socket::status::failed:
+                NETLOG_ERROR() << "socket(" << event_type::sock << ") connect error, ec = " << bee::last_neterror();
+                if (event_type::sock != socket::retired_fd)
+                {
+                    event_close();
+                }
+                reconnect();
+                break;
+            }
 		}
 		
-		int start_connect()
+		socket::status start_connect()
 		{
 			assert(event_type::sock == socket::retired_fd);
 			event_type::sock = socket::open(addr_->addr()->sa_family, addr_->addr()->sa_family == AF_UNIX ? socket::protocol::unix : socket::protocol::tcp);
@@ -143,7 +142,7 @@ namespace bee::net { namespace tcp {
 			if (event_type::sock == socket::retired_fd)
 			{
 				NETLOG_ERROR() << "socket("<< event_type::sock << ") socket open error, ec = " << bee::last_neterror();
-				return -1;
+				return socket::status::failed;
 			}
 
 			socket::nonblocking(event_type::sock);

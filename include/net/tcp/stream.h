@@ -121,21 +121,20 @@ namespace bee::net { namespace tcp {
 
 		bool event_in()
 		{
-			int rc = socket::recv(event_type::sock, rcvbuf_.rcv_data(), (int)rcvbuf_.rcv_size());
-			if (rc == -3)
-			{
-				NETLOG_ERROR() << "socket(" << event_type::sock << ") recv error, ec = " << bee::last_neterror();
-				return false;
-			}
-			else if (rc == -2)
-			{
-				return true;
-			}
-			else if (rc < 0)
-			{
-				NETLOG_ERROR() << "socket(" << event_type::sock << ") recv error, ec = " << bee::last_neterror();
-				return false;
-			}
+            int rc;
+            switch (socket::recv(event_type::sock, rc, rcvbuf_.rcv_data(), (int)rcvbuf_.rcv_size())) {
+            case socket::status::close:
+                NETLOG_ERROR() << "socket(" << event_type::sock << ") recv error, ec = " << bee::last_neterror();
+                return false;
+            case socket::status::wait:
+                return true;
+            case socket::status::failed:
+                NETLOG_ERROR() << "socket(" << event_type::sock << ") recv error, ec = " << bee::last_neterror();
+                return false;
+            default:
+            case socket::status::success:
+                break;
+            }
 
 			rcvbuf_.rcv_push(rc);
 			return true;
@@ -149,16 +148,17 @@ namespace bee::net { namespace tcp {
 				return true;
 			}
 
-			int rc = socket::send(event_type::sock, sndbuf_.snd_data(), (int)sndbuf_.snd_size());
-			if (rc == -2)
-			{
-				return true;
-			}
-			else if (rc < 0)
-			{
-				NETLOG_ERROR() << "socket(" << event_type::sock << ") send error, ec = " << bee::last_neterror();
-				return false;
-			}
+            int rc;
+            switch (socket::send(event_type::sock, rc, sndbuf_.snd_data(), (int)sndbuf_.snd_size())) {
+            case socket::status::wait:
+                return true;
+            case socket::status::failed:
+                NETLOG_ERROR() << "socket(" << event_type::sock << ") send error, ec = " << bee::last_neterror();
+                return false;
+            default:
+            case socket::status::success:
+                break;
+            }
 
 			sndbuf_.snd_pop(rc);
 			if (write_empty())

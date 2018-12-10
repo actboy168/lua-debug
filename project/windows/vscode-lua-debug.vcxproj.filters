@@ -77,7 +77,7 @@
       <Filter>cpp\io</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\debugger\io\server.cpp">
-      <Filter>inc\io</Filter>
+      <Filter>cpp\io</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
