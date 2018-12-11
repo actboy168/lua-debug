@@ -21,4 +21,13 @@ namespace vscode { namespace io {
     {
         attach(fd);
     }
+
+    void client::close()
+    {
+        session::close();
+        while (!session::is_closed()) {
+            get_poller()->wait(0);
+            session::update(0);
+        }
+    }
 }}

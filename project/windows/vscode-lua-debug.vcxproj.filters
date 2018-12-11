@@ -73,9 +73,6 @@
     <ClCompile Include="..\..\src\debugger\client\get_unix_path.cpp">
       <Filter>cpp\client</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\debugger\io\client.cpp">
-      <Filter>cpp\io</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\debugger\io\server.cpp">
       <Filter>cpp\io</Filter>
     </ClCompile>
@@ -144,7 +141,7 @@
     <ClInclude Include="..\..\include\debugger\client\get_unix_path.h">
       <Filter>inc\client</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\debugger\io\client.h">
+    <ClInclude Include="..\..\include\debugger\io\server.h">
       <Filter>inc\io</Filter>
     </ClInclude>
   </ItemGroup>

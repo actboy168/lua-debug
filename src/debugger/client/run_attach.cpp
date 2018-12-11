@@ -1,4 +1,4 @@
-#include <debugger/io/client.h>
+#include <debugger/io/server.h>
 #include <debugger/client/run.h>
 #include <debugger/io/base.h>
 #include <debugger/io/helper.h>
@@ -28,10 +28,12 @@ bool run_pipe_attach(stdinput& io, vscode::rprotocol& init, vscode::rprotocol& r
 	if (!ep) {
 		return false;
 	}
-	vscode::io::client pipe(ep.value());
-	for (; pipe.is_closed();) {
-		pipe.update(10);
-	}
+    auto[upath, uport] = ep->info();
+    ::DeleteFileW(bee::u2w(upath).c_str());
+	vscode::io::server pipe(ep.value());
+    for (; pipe.is_closed();) {
+        pipe.update(10);
+    }
 	io_output(&pipe, init);
 	io_output(&pipe, req);
 	for (; !pipe.is_closed();) {

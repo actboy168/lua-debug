@@ -135,6 +135,9 @@
     <ClCompile Include="..\..\src\debugger\io\server.cpp">
       <Filter>cpp\io</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\debugger\io\client.cpp">
+      <Filter>cpp\io</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\debugger\debugger.h">
@@ -231,6 +234,9 @@
       <Filter>bee\utility</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\debugger\io\server.h">
+      <Filter>inc\io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\debugger\io\client.h">
       <Filter>inc\io</Filter>
     </ClInclude>
   </ItemGroup>

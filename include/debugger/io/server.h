@@ -49,12 +49,12 @@ namespace vscode { namespace io {
 		void      update(int ms);
 		void      close();
 		uint16_t  get_port() const;
+        bool      is_closed() const;
 
         bool output(const char* buf, size_t len);
         bool input(std::string& buf);
 
     private:
-        bool is_closed() const;
         void event_accept(bee::net::socket::fd_t fd);
 
 	private:

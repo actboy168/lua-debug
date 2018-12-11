@@ -10,6 +10,7 @@ namespace vscode { namespace io {
 		virtual ~client();
         void update(int ms);
         void event_connect(bee::net::socket::fd_t fd);
+        void close();
 
     private:
         bee::net::tcp::connecter_t<bee::net::poller_t> connecter;

@@ -30,6 +30,7 @@
     <ClCompile Include="..\..\src\debugger\evaluate.cpp" />
     <ClCompile Include="..\..\src\debugger\i18n.cpp" />
     <ClCompile Include="..\..\src\debugger\impl.cpp" />
+    <ClCompile Include="..\..\src\debugger\io\client.cpp" />
     <ClCompile Include="..\..\src\debugger\io\helper.cpp" />
     <ClCompile Include="..\..\src\debugger\io\server.cpp" />
     <ClCompile Include="..\..\src\debugger\io\stream.cpp" />
@@ -64,6 +65,7 @@
     <ClInclude Include="..\..\include\debugger\hashmap.h" />
     <ClInclude Include="..\..\include\debugger\impl.h" />
     <ClInclude Include="..\..\include\debugger\io\base.h" />
+    <ClInclude Include="..\..\include\debugger\io\client.h" />
     <ClInclude Include="..\..\include\debugger\io\helper.h" />
     <ClInclude Include="..\..\include\debugger\io\server.h" />
     <ClInclude Include="..\..\include\debugger\io\stream.h" />

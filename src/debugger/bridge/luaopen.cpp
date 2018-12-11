@@ -1,4 +1,5 @@
 #include <debugger/io/server.h>
+#include <debugger/io/client.h>
 #include <debugger/bridge/delayload.h>
 #include <debugger/lua.h>
 #include <debugger/debugger.h>
@@ -22,6 +23,7 @@ static std::string_view luaL_checkstrview(lua_State* L, int idx) {
 namespace luaw {
 	struct ud {
 		std::unique_ptr<vscode::io::server> socket_s;
+        std::unique_ptr<vscode::io::client> socket_c;
 		std::unique_ptr<vscode::debugger> dbg;
 		bool guard = false;
 
@@ -46,18 +48,16 @@ namespace luaw {
 			socket_s.reset(new vscode::io::server(info.value()));
 			dbg.reset(new vscode::debugger(socket_s.get()));
 		}
-		void listen_pipe(const char* path)
-		{
-			if (dbg) return;
-			auto info = bee::net::endpoint::from_unixpath(path);
-			if (!info) {
-				return;
-			}
-			auto[upath, uport] = info->info();
-			::DeleteFileW(bee::u2w(upath).c_str());
-			socket_s.reset(new vscode::io::server(info.value()));
-			dbg.reset(new vscode::debugger(socket_s.get()));
-		}
+        void connect_pipe(const char* path)
+        {
+            if (dbg) return;
+            auto info = bee::net::endpoint::from_unixpath(path);
+            if (!info) {
+                return;
+            }
+            socket_c.reset(new vscode::io::client(info.value()));
+            dbg.reset(new vscode::debugger(socket_c.get()));
+        }
 	};
 
 	static std::unique_ptr<ud> global;
@@ -85,7 +85,7 @@ namespace luaw {
 			self.listen_tcp(addr + 7);
 		}
 		else if (strncmp(addr, "pipe:", 5) == 0) {
-			self.listen_pipe(addr + 5);
+            self.connect_pipe(addr + 5);
 		}
 		else {
 			self.listen_tcp(addr);
@@ -214,6 +214,7 @@ namespace luaw {
 		if (self.guard) {
 			self.dbg.reset();
 			self.socket_s.reset();
+            self.socket_c.reset();
 		}
 		return 0;
 	}
@@ -244,7 +245,7 @@ namespace luaw {
 #if defined(_WIN32)
 void debugger_create(const char* path)
 {
-	luaw::get().listen_pipe(path);
+	luaw::get().connect_pipe(path);
 }
 vscode::debugger* debugger_get()
 {
