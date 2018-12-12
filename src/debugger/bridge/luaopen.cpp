@@ -27,7 +27,7 @@ namespace luaw {
 		std::unique_ptr<vscode::debugger> dbg;
 		bool guard = false;
 
-		std::pair<std::string, uint16_t> split_address(const std::string& addr) {
+		std::pair<std::string, int> split_address(const std::string& addr) {
 
 			size_t pos = addr.find(':');
 			if (pos == addr.npos) {
