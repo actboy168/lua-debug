@@ -264,7 +264,8 @@
                                 "markdownDescription": "From where to capture output messages: print or stdout/stderr streams.",
                                 "default": [
                                     "print",
-                                    "stdout"
+                                    "stdout",
+                                    "stderr"
                                 ]
                             },
                             "internalModule": {

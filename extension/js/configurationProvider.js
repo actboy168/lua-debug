@@ -36,7 +36,8 @@ class LuaConfigurationProvider {
         if (typeof config.outputCapture != 'object') {
             config.outputCapture = [
                 "print",
-                "stdout"
+                "stdout",
+                "stderr"
             ]
         }
         if (typeof config.ip == 'string' && typeof config.port != 'number') {
