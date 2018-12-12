@@ -109,7 +109,12 @@ else
     print 'Failed to write version into package.json.'
 end
 
-copy_directory(root / 'extension', outputDir)
+copy_directory(root / 'extension', outputDir,
+    function (path)
+        local ext = path:extension():string():lower()
+        return (ext ~= '.dll') and (ext ~= '.exe')
+    end
+)
 
 print 'Step 6. copy crt dll'
 if configuration == 'Release' then
