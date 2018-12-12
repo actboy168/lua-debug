@@ -8,7 +8,6 @@
 #include <net/poller.h>
 #include <net/poller/event.h>
 #include <net/poller/io_object.h>
-#include <net/log/logging.h>
 #include <functional>
 #include <optional>
 
@@ -122,7 +121,6 @@ namespace bee::net { namespace tcp {
                 break;
             default:
             case socket::status::failed:
-                NETLOG_ERROR() << "socket(" << event_type::sock << ") connect error, ec = " << bee::last_neterror();
                 if (event_type::sock != socket::retired_fd)
                 {
                     event_close();
@@ -137,11 +135,9 @@ namespace bee::net { namespace tcp {
 			assert(event_type::sock == socket::retired_fd);
 			event_type::sock = socket::open(addr_->addr()->sa_family, addr_->addr()->sa_family == AF_UNIX ? socket::protocol::unix : socket::protocol::tcp);
 			auto [ip, port] = addr_->info();
-			NETLOG_INFO() << "socket(" << event_type::sock << ") [" << ip << ":" << port << "] connecting";
 
 			if (event_type::sock == socket::retired_fd)
 			{
-				NETLOG_ERROR() << "socket("<< event_type::sock << ") socket open error, ec = " << bee::last_neterror();
 				return socket::status::failed;
 			}
 

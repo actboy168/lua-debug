@@ -6,7 +6,6 @@
 #include <net/poller.h>
 #include <net/poller/event.h>
 #include <net/poller/io_object.h>
-#include <net/log/logging.h>
 
 #if defined _MSC_VER
 #	pragma warning(push)
@@ -46,7 +45,6 @@ namespace bee::net { namespace tcp {
 			event_type::sock = socket::open(addr.addr()->sa_family, addr.addr()->sa_family == AF_UNIX ? socket::protocol::unix : socket::protocol::tcp);
 			if (event_type::sock == socket::retired_fd)
 			{
-				NETLOG_ERROR() << "socket("<< event_type::sock << ") socket open error, ec = " << bee::last_neterror();
 				return -1;
 			}
 
@@ -66,7 +64,6 @@ namespace bee::net { namespace tcp {
 		{
 			assert(stat_ == e_idle);
 			auto[ip, port] = addr.info();
-			NETLOG_INFO() << "socket(" << event_type::sock << ") [" << ip << ":" << port << "] listening";
             if (socket::bind(event_type::sock, addr) == socket::status::success
 				&& socket::listen(event_type::sock, 0x100) == socket::status::success)
 			{
@@ -77,7 +74,6 @@ namespace bee::net { namespace tcp {
 			}
 			else
 			{
-				NETLOG_ERROR() << "socket(" << event_type::sock << ") listen error, ec = " << bee::last_neterror();
 				if (event_type::sock != socket::retired_fd)
 				{
 					event_close();

@@ -46,21 +46,12 @@ namespace bee::net { namespace udp {
 				*(uint32_t*)(rbuff->data()+1502) = remote.address();
 				event_recv(rbuff.release());
 			}
-			else
-			{
-				NETLOG_ERROR()<< " recvfrom error. the errno is  " << socket::error_no();
-			}
 			return true;
 		}
 
 		int32_t send(const char* sbuff, int len, const endpoint &ep)
 		{
-			int32_t ret = sendto(event_type::sock, sbuff, len, 0, ep.addr(), (int)ep.addrlen());
-			if(ret < 0)
-			{
-				NETLOG_ERROR()<< "sendto error . errno is  " << socket::error_no();
-			}
-			return ret;
+			return sendto(event_type::sock, sbuff, len, 0, ep.addr(), (int)ep.addrlen());
 		}
 
 		bool event_out(){ return true;}

@@ -8,7 +8,6 @@
 #include <net/poller.h>
 #include <net/poller/event.h>
 #include <net/poller/io_object.h>
-#include <net/log/logging.h>
 
 #if defined _MSC_VER
 #	pragma warning(push)
@@ -38,7 +37,6 @@ namespace bee::net { namespace tcp {
 
 		void attach(socket::fd_t s)
 		{
-			NETLOG_INFO() << "socket(" << s << ") connected";
 			event_type::sock = s;
 			base_t::set_fd(event_type::sock);
 			base_t::set_pollin();
@@ -120,10 +118,8 @@ namespace bee::net { namespace tcp {
             int rc;
             switch (socket::recv(event_type::sock, rc, rcvbuf_.rcv_data(), (int)rcvbuf_.rcv_size())) {
             case socket::status::close:
-                NETLOG_INFO() << "socket(" << event_type::sock << ") recv close";
                 return false;
             case socket::status::failed:
-                NETLOG_ERROR() << "socket(" << event_type::sock << ") recv error, ec = " << bee::last_neterror();
                 return false;
             case socket::status::wait:
                 return true;
@@ -148,7 +144,6 @@ namespace bee::net { namespace tcp {
             case socket::status::wait:
                 return true;
             case socket::status::failed:
-                NETLOG_ERROR() << "socket(" << event_type::sock << ") send error, ec = " << bee::last_neterror();
                 base_t::reset_pollout();
                 snd_close_ = true;
                 return true;
@@ -175,7 +170,6 @@ namespace bee::net { namespace tcp {
 
 		void force_close()
 		{
-			NETLOG_INFO() << "socket(" << event_type::sock << ") close";
             Sleep(100);
 			base_t::rm_fd();
 			base_t::cancel_timer();
