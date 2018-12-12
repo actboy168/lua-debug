@@ -257,6 +257,7 @@
                                 "items": {
                                     "enum": [
                                         "print",
+                                        "io.write",
                                         "stdout",
                                         "stderr"
                                     ]
@@ -264,7 +265,7 @@
                                 "markdownDescription": "From where to capture output messages: print or stdout/stderr streams.",
                                 "default": [
                                     "print",
-                                    "stdout",
+                                    "io.write",
                                     "stderr"
                                 ]
                             },

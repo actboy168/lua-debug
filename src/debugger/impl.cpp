@@ -42,6 +42,74 @@ namespace vscode
 		return 0;
 	}
 
+
+    static void redirect_write(lua_State* L, int start) {
+        debugger_impl* dbg = (debugger_impl*)lua_touserdata(L, lua_upvalueindex(1));
+        std::string out;
+        int n = lua_gettop(L);
+        for (int i = start; i <= n; ++i) {
+            if (lua_type(L, i) == LUA_TNUMBER) {
+                char s[50];
+                if (lua_isinteger(L, i)) {
+                    int l = snprintf(s, sizeof(s), LUA_INTEGER_FMT, (LUAI_UACINT)lua_tointeger(L, i));
+                    out += std::string(s, l);
+                }
+                else {
+                    int l = snprintf(s, sizeof(s), LUA_NUMBER_FMT, (LUAI_UACNUMBER)lua_tonumber(L, i));
+                    out += std::string(s, l);
+                }
+            }
+            else {
+                size_t l;
+                const char *s = luaL_checklstring(L, i, &l);
+                out += std::string(s, l);
+            }
+        }
+        dbg->threadsafe_output("stdout", out.data(), out.size(), L);
+    }
+
+    static int redirect_f_write(lua_State* L) {
+        if (LUA_TUSERDATA != lua_getfield(L, LUA_REGISTRYINDEX, "_IO_output") || !lua_rawequal(L, -1, 1)) {
+            lua_pop(L, 1);
+            lua_pushvalue(L, lua_upvalueindex(2));
+            lua_insert(L, 1);
+            lua_call(L, lua_gettop(L) - 1, LUA_MULTRET);
+            return lua_gettop(L);
+        }
+        lua_pop(L, 1);
+        redirect_write(L, 2);
+        lua_pushvalue(L, 1);
+        return 1;
+    }
+
+    static int redirect_io_write(lua_State* L) {
+        redirect_write(L, 1);
+        lua_getfield(L, LUA_REGISTRYINDEX, "_IO_output");
+        return 1;
+    }
+
+    static void init_redirect_io_write(lua_State* L, void* dbg) {
+        if (LUA_TUSERDATA == lua_getfield(L, LUA_REGISTRYINDEX, "_IO_output")) {
+            if (lua_getmetatable(L, -1)) {
+                lua_pushstring(L, "write");
+                lua_pushlightuserdata(L, dbg);
+                lua_pushvalue(L, -2);
+                lua_rawget(L, -4);
+                lua_pushcclosure(L, redirect_f_write, 2);
+                lua_rawset(L, -3);
+                lua_pop(L, 1);
+            }
+        }
+        lua_pop(L, 1);
+        if (LUA_TTABLE == lua_getglobal(L, "io")) {
+            lua_pushstring(L, "write");
+            lua_pushlightuserdata(L, dbg);
+            lua_pushcclosure(L, redirect_io_write, 1);
+            lua_rawset(L, -3);
+        }
+        lua_pop(L, 1);
+    }
+
 	static lua_State* get_mainthread(lua_State* thread)
 	{
 		lua_rawgeti(thread, LUA_REGISTRYINDEX, LUA_RIDX_MAINTHREAD);
@@ -500,6 +568,9 @@ namespace vscode
 				redirectL_ = L;
 			}
 			break;
+        case eRedirect::iowrite:
+            init_redirect_io_write(L, this);
+            break;
 #if defined(_WIN32)
 		case eRedirect::stdoutput:
 			stdout_.reset(new redirector);

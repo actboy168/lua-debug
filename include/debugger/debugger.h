@@ -32,6 +32,7 @@ namespace vscode
 		stderror = 1,
 		stdoutput = 2,
 		print = 3,
+        iowrite = 4,
 	};
 
 	enum class eException {

@@ -36,7 +36,7 @@ class LuaConfigurationProvider {
         if (typeof config.outputCapture != 'object') {
             config.outputCapture = [
                 "print",
-                "stdout",
+                "io.write",
                 "stderr"
             ]
         }

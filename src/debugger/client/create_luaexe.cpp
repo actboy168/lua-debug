@@ -53,9 +53,7 @@ std::string create_install_script(vscode::rprotocol& req, const fs::path& dbg_pa
 		for (auto& v : args["outputCapture"].GetArray()) {
 			if (v.IsString()) {
 				std::string item = v.Get<std::string>();
-				if (item == "print" || item == "stdout" || item == "stderr") {
-					res += ":redirect('" + item + "')";
-				}
+                res += ":redirect('" + item + "')";
 			}
 		}
 	}

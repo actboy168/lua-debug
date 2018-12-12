@@ -165,6 +165,9 @@ namespace luaw {
 			else if (strcmp(type, "print") == 0) {
 				self.dbg->open_redirect(vscode::eRedirect::print, L);
 			}
+            else if (strcmp(type, "io.write") == 0) {
+                self.dbg->open_redirect(vscode::eRedirect::iowrite, L);
+            }
 		}
 		lua_pushvalue(L, 1);
 		return 1;
