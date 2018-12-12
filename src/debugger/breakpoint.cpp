@@ -148,7 +148,7 @@ namespace vscode
 		}
 		if (!log.empty()) {
 			std::string res = evaluate_log(L, ar, log) + "\n";
-			dbg.output("stdout", res.data(), res.size(), L, ar);
+			dbg.output("console", res.data(), res.size(), L, ar);
 			return false;
 		}
 		return true;
