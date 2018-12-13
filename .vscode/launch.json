@@ -23,8 +23,7 @@
             "runtimeExecutable": "${execPath}",
             "args": [
                 "--extensionDevelopmentPath=${workspaceFolder}/extension/"
-            ],
-            "sourceMaps": false,
+            ]
         }
     ]
 }
