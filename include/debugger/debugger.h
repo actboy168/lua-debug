@@ -73,7 +73,7 @@ namespace vscode
 }
 
 #if defined(_WIN32)
-DEBUGGER_API void              debugger_create(const char* path);
+DEBUGGER_API bool              debugger_create(const char* path);
 DEBUGGER_API vscode::debugger* debugger_get();
 #endif
 

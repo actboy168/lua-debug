@@ -28,7 +28,6 @@ namespace luaw {
 		bool guard = false;
 
 		std::pair<std::string, int> split_address(const std::string& addr) {
-
 			size_t pos = addr.find(':');
 			if (pos == addr.npos) {
 				return { addr, 0 };
@@ -37,26 +36,30 @@ namespace luaw {
 				return { addr.substr(0, pos), atoi(addr.substr(pos + 1).c_str()) };
 			}
 		}
-		void listen_tcp(const char* addr)
+        bool listen_tcp(lua_State* L, const char* addr)
 		{
-			if (dbg) return;
+			if (dbg) return false;
 			auto [ip, port] = split_address(addr);
 			auto info = bee::net::endpoint::from_hostname(ip, port);
 			if (!info) {
-				return;
+                if (L) luaL_error(L, "%s", info.error().c_str());
+                return false;
 			}
 			socket_s.reset(new vscode::io::server(info.value()));
 			dbg.reset(new vscode::debugger(socket_s.get()));
+            return true;
 		}
-        void connect_pipe(const char* path)
+        bool connect_pipe(lua_State* L, const char* path)
         {
-            if (dbg) return;
+            if (dbg) return false;
             auto info = bee::net::endpoint::from_unixpath(path);
             if (!info) {
-                return;
+                if (L) luaL_error(L, "%s", info.error().c_str());
+                return false;
             }
             socket_c.reset(new vscode::io::client(info.value()));
             dbg.reset(new vscode::debugger(socket_c.get()));
+            return true;
         }
 	};
 
@@ -79,16 +82,17 @@ namespace luaw {
 
 	static int io(lua_State* L)
 	{
+        bee::net::socket::initialize();
 		ud& self = get();
 		const char* addr = luaL_checkstring(L, 2);
 		if (strncmp(addr, "listen:", 7) == 0) {
-			self.listen_tcp(addr + 7);
+			self.listen_tcp(L, addr + 7);
 		}
 		else if (strncmp(addr, "pipe:", 5) == 0) {
-            self.connect_pipe(addr + 5);
+            self.connect_pipe(L, addr + 5);
 		}
 		else {
-			self.listen_tcp(addr);
+			self.listen_tcp(L, addr);
 		}
 		lua_pushvalue(L, 1);
 		return 1;
@@ -246,9 +250,9 @@ namespace luaw {
 }
 
 #if defined(_WIN32)
-void debugger_create(const char* path)
+bool debugger_create(const char* path)
 {
-	luaw::get().connect_pipe(path);
+	return luaw::get().connect_pipe(0, path);
 }
 vscode::debugger* debugger_get()
 {
