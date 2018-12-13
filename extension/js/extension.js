@@ -1,10 +1,16 @@
 Object.defineProperty(exports, "__esModule", { value: true });
+
 const vscode = require("vscode");
-const configurationProvider_1 = require("./configurationProvider");
+const configuration = require("./configurationProvider");
+const descriptor = require("./descriptorProvider");
+
 function activate(context) {
-    context.subscriptions.push(vscode.debug.registerDebugConfigurationProvider('lua', new configurationProvider_1.LuaConfigurationProvider()));
+    context.subscriptions.push(vscode.debug.registerDebugConfigurationProvider('lua', new configuration.provider(context)));
+    context.subscriptions.push(vscode.debug.registerDebugAdapterDescriptorFactory('lua', new descriptor.provider(context)));
 }
-exports.activate = activate;
+
 function deactivate() {
 }
+
+exports.activate = activate;
 exports.deactivate = deactivate;

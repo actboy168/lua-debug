@@ -1,26 +1,52 @@
 Object.defineProperty(exports, "__esModule", { value: true });
-const vscode = require("vscode");
-const path_1 = require("path");
 
-class LuaConfigurationProvider {
-    /**
-     * Returns an initial debug configuration based on contextual information, e.g. package.json or folder.
-     */
-    provideDebugConfigurations(folder, token) {
-        return [createLaunchConfig(folder)];
-    }
-    /**
-     * Try to add all missing attributes to the debug configuration being launched.
-     */
-    resolveDebugConfiguration(folder, config, token) {
-        if (!config.type && !config.request && !config.name) {
-            config = createLaunchConfig(folder);
+const vscode = require("vscode");
+const path = require("path");
+
+function createDefaultProgram(folder) {
+    let program;
+    const editor = vscode.window.activeTextEditor;
+    if (editor && editor.document.languageId === 'lua') {
+        const wf = vscode.workspace.getWorkspaceFolder(editor.document.uri);
+        if (wf === folder) {
+            program = vscode.workspace.asRelativePath(editor.document.uri);
+            if (!path.isAbsolute(program)) {
+                program = '${workspaceFolder}/' + program;
+            }
         }
+    }
+    if (program) {
+        return program;
+    }
+    return '${file}';
+}
+
+class provider {
+    constructor(context) {
+        this.context = context;
+    }
+    provideDebugConfigurations(folder, token) {
+        return [
+            {
+                type: 'lua',
+                request: 'launch',
+                name: 'Launch',
+                program: createDefaultProgram(folder)
+            }
+        ];
+    }
+    resolveDebugConfiguration(folder, config, token) {
         config.type = 'lua';
-        config.workspaceFolder = '${workspaceFolder}';
         if (config.request != 'attach') {
             config.request = 'launch';
         }
+        if (typeof config.name != 'string') {
+            config.name = 'Not specified';
+        }
+        if (typeof config.program != 'string') {
+            config.program = createDefaultProgram(folder);
+        }
+        config.workspaceFolder = '${workspaceFolder}';
         if (typeof config.cwd != 'string') {
             config.cwd = '${workspaceFolder}';
         }
@@ -71,30 +97,5 @@ class LuaConfigurationProvider {
         return config
     }
 }
-exports.LuaConfigurationProvider = LuaConfigurationProvider;
 
-function createLaunchConfig(folder) {
-    const config = {
-        type: 'lua',
-        request: 'launch',
-        name: 'Launch'
-    };
-    let program;
-    const editor = vscode.window.activeTextEditor;
-    if (editor && editor.document.languageId === 'lua') {
-        const wf = vscode.workspace.getWorkspaceFolder(editor.document.uri);
-        if (wf === folder) {
-            program = vscode.workspace.asRelativePath(editor.document.uri);
-            if (!path_1.isAbsolute(program)) {
-                program = '${workspaceFolder}/' + program;
-            }
-        }
-    }
-    if (program) {
-        config['program'] = program;
-    }
-    else {
-        config['program'] = '${file}';
-    }
-    return config;
-}
+exports.provider = provider;
