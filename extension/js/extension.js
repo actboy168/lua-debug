@@ -1,5 +1,3 @@
-Object.defineProperty(exports, "__esModule", { value: true });
-
 const vscode = require("vscode");
 const configuration = require("./configurationProvider");
 const descriptor = require("./descriptorProvider");
