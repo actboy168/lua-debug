@@ -15,7 +15,7 @@ namespace vscode {
 
 	void debugger_impl::setlang(const std::string_view& locale) {
 		auto it = translators.find(locale);
-		translator_ = it == translators.end() ? &it->second : nullptr;
+		translator_ = it != translators.end() ? &it->second : nullptr;
 	}
 
 	std::string_view debugger_impl::LANG(const std::string_view& text) {
