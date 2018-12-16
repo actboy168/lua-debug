@@ -6,6 +6,7 @@
 #include <debugger/osthread.h>
 #include <debugger/luathread.h>
 #include <bee/utility/format.h>
+#include <regex>
 
 namespace vscode
 {
@@ -540,6 +541,102 @@ namespace vscode
         io_output(res);
     }
 
+    std::vector<std::string> resplit(const std::string& s, std::string_view pattern) {
+        std::vector<std::string> result;
+        std::regex re(pattern.data(), pattern.size());
+        std::smatch m;
+        for (auto& it = s.cbegin(); std::regex_search(it, s.cend(), m, re); it = m[0].second) {
+            result.push_back(m.str());
+        }
+        return result;
+    }
+
+    void debugger_impl::stdout_vtmode(std::string& text)
+    {
+        std::string vt = "";
+        if (!stdout_vt_.foreground.empty()) {
+            vt += ";";
+            vt += stdout_vt_.foreground;
+        }
+        if (!stdout_vt_.background.empty()) {
+            vt += ";";
+            vt += stdout_vt_.background;
+        }
+        if (stdout_vt_.bright) {
+            vt += ";1";
+        }
+        if (stdout_vt_.underline) {
+            vt += ";4";
+        }
+        if (stdout_vt_.negative) {
+            vt += ";7";
+        }
+        try {
+            for (auto& vtstr : resplit(text, "\x1b\\[[0-9]+(;[0-9]+)*m")) {
+                auto code = resplit(vtstr, "[0-9]+");
+                for (size_t n = 0; n < code.size(); ++n) {
+                    switch (atoi(code[n].c_str())) {
+                    case 0:  // reset
+                        stdout_vt_.clear();
+                        break;
+                    case 1:  // bright
+                        stdout_vt_.bright = true;
+                        break;
+                    case 4:  // underline
+                        stdout_vt_.underline = true;
+                        break;
+                    case 24:  // no underline
+                        stdout_vt_.underline = false;
+                        break;
+                    case 7:  // negative
+                        stdout_vt_.negative = true;
+                        break;
+                    case 27:  // no negative
+                        stdout_vt_.negative = false;
+                        break;
+                    case 30: case 31: case 32: case 33:
+                    case 34: case 35: case 36: case 37: // foreground
+                    case 90: case 91: case 92: case 93:
+                    case 94: case 95: case 96: case 97: // foreground
+                        stdout_vt_.foreground = code[n];
+                        break;
+                    case 40: case 41: case 42: case 43:
+                    case 44: case 45: case 46: case 47: // background
+                    case 100: case 101: case 102: case 103:
+                    case 104: case 105: case 106: case 107: // background
+                        stdout_vt_.background = code[n];
+                        break;
+                    case 39:  // reset foreground
+                        stdout_vt_.foreground.clear();
+                        break;
+                    case 49:  // reset background
+                        stdout_vt_.background.clear();
+                        break;
+                    case 38:  // foreground
+                        if (n + 2 < code.size()) {
+                            stdout_vt_.foreground = code[n] + ";" + code[n + 1] + ";" + code[n + 2];
+                            n += 2;
+                        }
+                        break;
+                    case 48:  // background
+                        if (n + 2 < code.size()) {
+                            stdout_vt_.background = code[n] + ";" + code[n + 1] + ";" + code[n + 2];
+                            n += 2;
+                        }
+                        break;
+                    default:
+                        break;
+                    }
+                }
+            }
+        }
+        catch (...) {
+        }
+        if (!vt.empty()) {
+            text = "\x1b[" + vt.substr(1) +"m" + text;
+        }
+    }
+
     void debugger_impl::output_stdout(std::string_view text, source* src, int line)
     {
         if (text.empty()) {
@@ -580,8 +677,10 @@ namespace vscode
                     pos++;
                 }
             }
-            output_raw("stdout", stdout_buf_.substr(0, pos + 1), src, line);
+            auto result = stdout_buf_.substr(0, pos + 1);
             stdout_buf_ = stdout_buf_.substr(pos + 1);
+            stdout_vtmode(result);
+            output_raw("stdout", result, src, line);
             stdout_src_ = src;
             stdout_line_ = line;
         }

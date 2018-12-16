@@ -16,7 +16,9 @@ namespace vscode
 			return;
 		}
 		update_redirect();
+        stdout_vtmode(stdout_buf_);
         output_raw("stdout", stdout_buf_, stdout_src_, stdout_line_);
+        stdout_vt_.clear();
         stdout_buf_.clear();
         stdout_src_ = 0;
         stdout_line_ = 0;

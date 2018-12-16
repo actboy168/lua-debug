@@ -30,6 +30,22 @@ namespace vscode
 	typedef std::vector<std::pair<std::string, std::string>> sourcemap_t;
 	typedef std::vector<std::string>                         skipfiles_t;
 
+    struct vt_text {
+        std::string foreground;
+        std::string background;
+        bool        bright = false;
+        bool        underline = false;
+        bool        negative = false;
+
+        void clear() {
+            foreground.clear();
+            background.clear();
+            bright = false;
+            underline = false;
+            negative = false;
+        }
+
+    };
 	class debugger_impl
 	{
 		friend class pathconvert;
@@ -54,6 +70,7 @@ namespace vscode
         void output(const char* category, std::string_view text, source* src, int line);
         void output_raw(const char* category, std::string_view text, source* src, int line);
         void output_stdout(std::string_view text, source* src, int line);
+        void stdout_vtmode(std::string& text);
 		void threadsafe_output(const char* category, std::string_view text, lua_State* L = nullptr, lua::Debug* ar = nullptr);
 		bool set_config(int level, const std::string& cfg, std::string& err);
 		void on_disconnect();
@@ -178,6 +195,7 @@ namespace vscode
 		lua_State*           redirectL_;
 		bool                 attach_;
 
+        vt_text              stdout_vt_;
         std::string          stdout_buf_;
         source*              stdout_src_;
         int                  stdout_line_;
