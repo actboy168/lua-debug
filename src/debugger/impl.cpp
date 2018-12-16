@@ -38,7 +38,7 @@ namespace vscode
 		}
 		out += "\n";
 		debugger_impl* dbg = (debugger_impl*)lua_touserdata(L, lua_upvalueindex(1));
-		dbg->threadsafe_output("stdout", out.data(), out.size(), L);
+		dbg->threadsafe_output("stdout", out, L);
 		return 0;
 	}
 
@@ -65,7 +65,7 @@ namespace vscode
                 out += std::string(s, l);
             }
         }
-        dbg->threadsafe_output("stdout", out.data(), out.size(), L);
+        dbg->threadsafe_output("stdout", out, L);
     }
 
     static int redirect_f_write(lua_State* L) {
@@ -261,7 +261,7 @@ namespace vscode
 			if (n > 0) {
 				base::hybrid_array<char, 1024> buf(n);
 				stdout_->read(buf.data(), buf.size());
-				output("stdout", buf.data(), buf.size());
+				output("stdout", std::string_view(buf.data(), buf.size()));
 			}
 		}
 		if (stderr_) {
@@ -269,7 +269,7 @@ namespace vscode
 			if (n > 0) {
 				base::hybrid_array<char, 1024> buf(n);
 				stderr_->read(buf.data(), buf.size());
-				output("stderr", buf.data(), buf.size());
+				output("stderr", std::string_view(buf.data(), buf.size()));
 			}
 		}
 #endif
@@ -500,60 +500,128 @@ namespace vscode
 		custom_ = custom;
 	}
 
-	void debugger_impl::threadsafe_output(const char* category, const char* buf, size_t len, lua_State* L, lua::Debug* ar)
+	void debugger_impl::threadsafe_output(const char* category, std::string_view text, lua_State* L, lua::Debug* ar)
 	{
 		std::lock_guard<osthread> lock(thread_);
-		return output(category, buf, len, L, ar);
+		return output(category, text, L, ar);
 	}
 
-	void debugger_impl::output(const char* category, const char* buf, size_t len, lua_State* L, lua::Debug* ar)
+    void debugger_impl::output_raw(const char* category, std::string_view text, source* src, int line)
+    {
+        if (text.empty()) {
+            return;
+        }
+        wprotocol res;
+        for (auto _ : res.Object())
+        {
+            res("type").String("event");
+            res("seq").Int64(seq++);
+            res("event").String("output");
+            for (auto _ : res("body").Object())
+            {
+                res("category").String(category);
+
+                if (consoleTargetCoding_ == consoleSourceCoding_) {
+                    res("output").String(text);
+                }
+                else if (consoleSourceCoding_ == eCoding::ansi) {
+                    res("output").String(bee::a2u(text));
+                }
+                else if (consoleSourceCoding_ == eCoding::utf8) {
+                    res("output").String(bee::u2a(text));
+                }
+
+                if (src && src->valid) {
+                    src->output(res);
+                    res("line").Int(line);
+                }
+            }
+        }
+        io_output(res);
+    }
+
+    void debugger_impl::output_stdout(std::string_view text, source* src, int line)
+    {
+        if (text.empty()) {
+            return;
+        }
+        if (stdout_ignore_) {
+            assert(stdout_buf_.empty());
+            if (text[0] == stdout_ignore_) {
+                text.remove_prefix(1);
+            }
+            stdout_ignore_ = 0;
+        }
+        stdout_buf_ += text;
+        stdout_src_ = src ? src : stdout_src_;
+        stdout_line_ = src ? line : stdout_line_;
+        for (;;) {
+            auto pos = stdout_buf_.find_first_of("\r\n");
+            if (pos == std::string::npos) {
+                if (src) {
+                    stdout_src_ = src;
+                    stdout_line_ = line;
+                }
+                return;
+            }
+            if (pos + 1 == stdout_buf_.size()) {
+                if (stdout_buf_[pos] == '\n') {
+                    stdout_ignore_ = '\r';
+                }
+                else {
+                    stdout_ignore_ = '\n';
+                }
+            }
+            else {
+                if (stdout_buf_[pos] == '\n' && stdout_buf_[pos + 1] == '\r') {
+                    pos++;
+                }
+                else if (stdout_buf_[pos] == '\r' && stdout_buf_[pos + 1] == '\n') {
+                    pos++;
+                }
+            }
+            output_raw("stdout", stdout_buf_.substr(0, pos + 1), src, line);
+            stdout_buf_ = stdout_buf_.substr(pos + 1);
+            stdout_src_ = src;
+            stdout_line_ = line;
+        }
+    }
+
+    void debugger_impl::output(const char* category, std::string_view text, source* src, int line)
+    {
+        if (strcmp(category, "stdout") == 0) {
+            output_stdout(text, src, line);
+        }
+        else {
+            output_raw(category, text, src, line);
+        }
+    }
+
+	void debugger_impl::output(const char* category, std::string_view text, lua_State* L, lua::Debug* ar)
 	{
-		if (is_state(eState::terminated) || is_state(eState::birth) || is_state(eState::initialized)) {
-			return;
-		}
-		if (consoleSourceCoding_ == eCoding::none) {
-			return;
-		}
-		wprotocol res;
-		for (auto _ : res.Object())
-		{
-			res("type").String("event");
-			res("seq").Int64(seq++);
-			res("event").String("output");
-			for (auto _ : res("body").Object())
-			{
-				res("category").String(category);
-
-				if (consoleTargetCoding_ == consoleSourceCoding_) {
-					res("output").String(std::string_view(buf, len));
-				}
-				else if (consoleSourceCoding_ == eCoding::ansi) {
-					res("output").String(bee::a2u(std::string_view(buf, len)));
-				}
-				else if (consoleSourceCoding_ == eCoding::utf8) {
-					res("output").String(bee::u2a(std::string_view(buf, len)));
-				}
-
-				if (L) {
-					lua::Debug entry;
-					if (!ar && lua_getstack(L, 1, (lua_Debug*)&entry)) {
-						ar = &entry;
-					}
-					if (!ar) continue;
-
-					int status = lua_getinfo(L, "Sln", (lua_Debug*)ar);
-					assert(status);
-					if (*ar->what != 'C') {
-						source* s = sourcemgr_.create(ar);
-						if (s && s->valid) {
-							s->output(res);
-							res("line").Int(ar->currentline);
-						}
-					}
-				}
-			}
-		}
-		io_output(res);
+        if (consoleSourceCoding_ == eCoding::none) {
+            return;
+        }
+        if (is_state(eState::terminated) || is_state(eState::birth) || is_state(eState::initialized)) {
+            return;
+        }
+        if (L) {
+            lua::Debug entry;
+            if (!ar && lua_getstack(L, 1, (lua_Debug*)&entry)) {
+                ar = &entry;
+            }
+            if (ar) {
+                int status = lua_getinfo(L, "Sln", (lua_Debug*)ar);
+                assert(status);
+                if (*ar->what != 'C') {
+                    source* s = sourcemgr_.create(ar);
+                    ar->currentline;
+                    output(category, text, s, ar->currentline);
+                    return;
+                }
+            }
+        }
+        output(category, text, 0, 0);
 	}
 
 	void debugger_impl::open_redirect(eRedirect type, lua_State* L)
@@ -722,6 +790,10 @@ namespace vscode
 		, stopReason_("step")
 		, redirectL_(nullptr)
 		, attach_(true)
+        , stdout_buf_()
+        , stdout_src_(0)
+        , stdout_line_(0)
+        , stdout_ignore_(0)
 		, main_dispatch_
 		({
 			{ "launch", DBG_REQUEST_MAIN(request_launch) },

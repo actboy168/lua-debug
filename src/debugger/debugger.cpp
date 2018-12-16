@@ -52,7 +52,7 @@ namespace vscode
 
 	void debugger::output(const char* category, const char* buf, size_t len, lua_State* L, lua_Debug* ar)
 	{
-		impl_->output(category, buf, len, L, (lua::Debug*)ar);
+		impl_->output(category, std::string_view(buf, len), L, (lua::Debug*)ar);
 	}
 
 	bool debugger::exception(lua_State* L, eException exceptionType, int level)
