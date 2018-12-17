@@ -49,8 +49,6 @@
     <ClCompile Include="..\..\third_party\bee.lua\bee\net\endpoint.cpp" />
     <ClCompile Include="..\..\third_party\bee.lua\bee\net\socket.cpp" />
     <ClCompile Include="..\..\third_party\bee.lua\bee\net\unixsocket.cpp" />
-    <ClCompile Include="..\..\third_party\bee.lua\bee\platform\version.cpp" />
-    <ClCompile Include="..\..\third_party\bee.lua\bee\utility\file_version.cpp" />
     <ClCompile Include="..\..\third_party\bee.lua\bee\utility\unicode.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -84,8 +82,6 @@
     <ClInclude Include="..\..\third_party\bee.lua\bee\net\endpoint.h" />
     <ClInclude Include="..\..\third_party\bee.lua\bee\net\socket.h" />
     <ClInclude Include="..\..\third_party\bee.lua\bee\net\unixsocket.h" />
-    <ClInclude Include="..\..\third_party\bee.lua\bee\platform\version.h" />
-    <ClInclude Include="..\..\third_party\bee.lua\bee\utility\file_version.h" />
     <ClInclude Include="..\..\third_party\bee.lua\bee\utility\unicode.h" />
   </ItemGroup>
   <ItemGroup>
