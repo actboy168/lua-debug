@@ -34,6 +34,9 @@
     <Filter Include="bee\error">
       <UniqueIdentifier>{751d001a-0bd8-40ab-800c-e8a08ee270d5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="bee\platform">
+      <UniqueIdentifier>{c25e6af3-39b0-44c6-8b1f-0ceccb602b7b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\debugger\debugger.cpp">
@@ -129,6 +132,12 @@
     <ClCompile Include="..\..\src\debugger\io\client.cpp">
       <Filter>cpp\io</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\third_party\bee.lua\bee\utility\file_version.cpp">
+      <Filter>bee\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\third_party\bee.lua\bee\platform\version.cpp">
+      <Filter>bee\platform</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\debugger\debugger.h">
@@ -223,6 +232,12 @@
     </ClInclude>
     <ClInclude Include="..\..\include\debugger\io\client.h">
       <Filter>inc\io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\third_party\bee.lua\bee\utility\file_version.h">
+      <Filter>bee\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\third_party\bee.lua\bee\platform\version.h">
+      <Filter>bee\platform</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
