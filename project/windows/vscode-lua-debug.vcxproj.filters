@@ -70,6 +70,12 @@
     <ClCompile Include="..\..\src\debugger\io\server.cpp">
       <Filter>cpp\io</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\third_party\bee.lua\bee\utility\file_version.cpp">
+      <Filter>bee\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\third_party\bee.lua\bee\platform\version.cpp">
+      <Filter>bee\platform</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\base\hook\injectdll.h">
@@ -132,6 +138,12 @@
     <ClInclude Include="..\..\include\debugger\io\server.h">
       <Filter>inc\io</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\third_party\bee.lua\bee\utility\file_version.h">
+      <Filter>bee\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\third_party\bee.lua\bee\platform\version.h">
+      <Filter>bee\platform</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="base">
@@ -175,6 +187,9 @@
     </Filter>
     <Filter Include="bee\error">
       <UniqueIdentifier>{63e488a8-d7f0-40d4-85d4-aaba8d5926b7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="bee\platform">
+      <UniqueIdentifier>{c97a24e3-0fbb-4420-a0c9-017408418819}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
