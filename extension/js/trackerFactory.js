@@ -8,7 +8,7 @@ function onWillReceiveMessage(m) {
     ) {
         for (const doc of vscode.workspace.textDocuments) {
             if (doc.fileName == m.arguments.source.path) {
-                m.arguments.source.content = doc.getText();
+                m.arguments.sourceContent = doc.getText();
                 break;
             }
         }
