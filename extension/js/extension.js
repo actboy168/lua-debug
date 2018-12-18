@@ -1,10 +1,13 @@
 const vscode = require("vscode");
-const configuration = require("./configurationProvider");
-const descriptor = require("./descriptorProvider");
+const configurationProvider = require("./configurationProvider");
+const descriptorFactory = require("./descriptorFactory");
+const trackerFactory = require("./trackerFactory");
 
 function activate(context) {
-    context.subscriptions.push(vscode.debug.registerDebugConfigurationProvider('lua', new configuration.provider(context)));
-    context.subscriptions.push(vscode.debug.registerDebugAdapterDescriptorFactory('lua', new descriptor.provider(context)));
+    exports.context = context;
+    context.subscriptions.push(vscode.debug.registerDebugConfigurationProvider('lua', configurationProvider));
+    context.subscriptions.push(vscode.debug.registerDebugAdapterDescriptorFactory('lua', descriptorFactory));
+    context.subscriptions.push(vscode.debug.registerDebugAdapterTrackerFactory('lua', trackerFactory));
 }
 
 function deactivate() {
