@@ -112,15 +112,9 @@ process_opt create_luaexe_with_debugger(stdinput& io, vscode::rprotocol& req, co
 		luaexe = bee::u2w(args["luaexe"].Get<std::string>());
 		if (is64Exe(luaexe.c_str())) {
 			dbgPath /= "x64";
-            if (args.HasMember("luadll") && args["luadll"].IsString()) {
-                replacedll = { bee::u2a(args["luadll"].Get<std::string>()), "lua54.dll" };
-            }
 		}
 		else {
 			dbgPath /= "x86";
-            if (args.HasMember("luadll") && args["luadll"].IsString()) {
-                replacedll = { bee::u2a(args["luadll"].Get<std::string>()), "lua53.dll" };
-            }
 		}
 	}
 	else {
