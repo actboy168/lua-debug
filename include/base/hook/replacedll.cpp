@@ -100,6 +100,9 @@ namespace base { namespace hook {
 	bool replacedll(const PROCESS_INFORMATION& pi, const char* oldDll, const char* newDll)
 	{
 		PBYTE pbModule = (PBYTE)FindExe(pi.hProcess);
+        if (!pbModule) {
+            return false;
+        }
 		IMAGE_DOS_HEADER idh = { 0 };
 		if (!ReadProcessMemory(pi.hProcess, pbModule, &idh, sizeof(idh), NULL)) {
 			return false;
