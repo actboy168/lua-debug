@@ -40,6 +40,7 @@ bool create_terminal_with_debugger(stdinput& io, vscode::rprotocol& req, const s
 			}
 		}
 		else {
+            getLuaRuntime(args);
 			if (54064 == getLuaRuntime(args)) {
 				dbgPath /= "x64";
 				luaexe = bee::w2u((dbgPath / L"lua54.exe").wstring());

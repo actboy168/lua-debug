@@ -9,7 +9,6 @@ std::string create_install_script(vscode::rprotocol& req, const fs::path& dbg_pa
 {
 	auto& args = req["arguments"];
 	bool isUtf8 = false;
-	std::string sourceCoding = "ansi";
 	if (args.HasMember("sourceCoding") && args["sourceCoding"].IsString()) {
 		isUtf8 = "utf8" == args["sourceCoding"].Get<std::string>();
 	}
