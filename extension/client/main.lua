@@ -1,9 +1,13 @@
-print = nil
+--print = nil
 
 local select = require 'select'
 local proxy = require 'proxy'
-local factory = require 'serverFactory'
-local vscode = factory.tcp_server('127.0.0.1', 26644)
+local serverFactory = require 'serverFactory'
+local vscode = serverFactory {
+    protocol = 'tcp',
+    address = '127.0.0.1',
+    port = 26644
+}
 
 local function update()
     while true do

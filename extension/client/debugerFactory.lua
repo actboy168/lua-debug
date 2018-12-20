@@ -62,8 +62,8 @@ local function getLuaRuntime(args)
     return 53, 32
 end
 
-local function create_terminal(args, port)
-    local dbg = fs.exe_path():parent_path():parent_path():parent_path() / "windows"
+local function create_terminal(args, dbg, port)
+    dbg = dbg / "windows"
 
     local luaexe
     if type(args.luaexe) == "string" then
