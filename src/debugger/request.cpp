@@ -140,7 +140,7 @@ namespace vscode
 		return !stopOnEntry;
 	}
 
-	bool debugger_impl::request_threads(rprotocol& req, debug& debug) {
+	bool debugger_impl::request_threads(rprotocol& req) {
 		response_threads(req);
 		return false;
 	}

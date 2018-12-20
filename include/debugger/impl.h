@@ -106,7 +106,7 @@ namespace vscode
 		bool request_set_exception_breakpoints(rprotocol& req);
 
 	private:
-		bool request_threads(rprotocol& req, debug& debug);
+		bool request_threads(rprotocol& req);
 		bool request_stack_trace(rprotocol& req, debug& debug);
 		bool request_source(rprotocol& req, debug& debug);
 		bool request_scopes(rprotocol& req, debug& debug);

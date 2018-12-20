@@ -903,6 +903,7 @@ namespace vscode
 			{ "setBreakpoints", DBG_REQUEST_MAIN(request_set_breakpoints) },
 			{ "setExceptionBreakpoints", DBG_REQUEST_MAIN(request_set_exception_breakpoints) },
 			{ "pause", DBG_REQUEST_MAIN(request_pause) },
+            { "threads", DBG_REQUEST_MAIN(request_threads) },
 		})
 		, hook_dispatch_
 		({
@@ -915,7 +916,6 @@ namespace vscode
 			{ "variables", DBG_REQUEST_HOOK(request_variables) },
 			{ "setVariable", DBG_REQUEST_HOOK(request_set_variable) },
 			{ "source", DBG_REQUEST_HOOK(request_source) },
-			{ "threads", DBG_REQUEST_HOOK(request_threads) },
 			{ "evaluate", DBG_REQUEST_HOOK(request_evaluate) },
 			{ "exceptionInfo", DBG_REQUEST_HOOK(request_exception_info) },
 			{ "loadedSources", DBG_REQUEST_HOOK(request_loaded_sources) },
