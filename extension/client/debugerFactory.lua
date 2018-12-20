@@ -27,7 +27,7 @@ local function create_install_script(args, dbg, port)
         end
     end
 
-    res[#res+1] = ("local dbg=package.loadlib([[%s]], 'luaopen_debugger')();package.loaded[ [[%s]] ]=dbg;dbg:io([[%s]])"):format(
+    res[#res+1] = ("local dbg=package.loadlib([[%s]], 'luaopen_debugger')();package.loaded[ [[%s]] ]=dbg;dbg:io([[pipe:%s]])"):format(
         utf8 and (dbg / "debugger.dll"):string() or unicode.u2a((dbg / "debugger.dll"):string()),
         (type(args.internalModule) == "string") and args.internalModule or "debugger",
         port
@@ -36,7 +36,7 @@ local function create_install_script(args, dbg, port)
     if type(args.outputCapture) == "table" then
         for _, v in ipairs(args.outputCapture) do
             if type(v) == "string" then
-                res[#res+1] = (":redirect(%q)"):format(v);
+                res[#res+1] = (":redirect('%s')"):format(v);
             end
         end
     end
