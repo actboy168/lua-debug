@@ -1,4 +1,6 @@
 local unicode = require 'bee.unicode'
+local fs = require 'bee.filesystem'
+local sp = require 'bee.subprocess'
 
 local function create_install_script(args, dbg, port)
     local utf8 = args.sourceCoding == "utf8"
@@ -128,6 +130,34 @@ local function create_terminal(args, dbg, port)
 end
 
 
+local function create_process(args)
+    local noinject = args.noInject
+    local application = args.runtimeExecutable
+    local option = {
+        application,
+        env = args.env,
+        console = 'new',
+        cwd = args.cwd or fs.path(application):parent_path(),
+        suspended = not noinject,
+    }
+    local process
+    if type(args.runtimeArgs) == 'string' then
+        --TODO
+    elseif type(args.runtimeArgs) == 'table' then
+        option[2] = args.runtimeArgs
+        process = sp.spawn(option)
+    else
+        process = sp.spawn(option)
+    end
+    if noinject then
+        return process
+    end
+    --TODO
+    process:resume()
+    return process
+end
+
 return {
     create_terminal = create_terminal,
+    create_process = create_process,
 }
