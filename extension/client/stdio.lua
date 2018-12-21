@@ -10,7 +10,8 @@ STDOUT:setvbuf 'no'
 
 local m = {}
 local stat = {}
-function m.debug()
+function m.debug(v)
+    stat.debug = v
 end
 function m.send(pkg)
     STDOUT:write(proto.send(pkg, stat))

@@ -2,9 +2,6 @@ local proto = require 'protocol'
 local select = require 'select'
 
 local function create(t)
-    if t.protocol == 'stdio' then
-        return require 'stdio'
-    end
     local m = {}
     local session
     local srvfd
