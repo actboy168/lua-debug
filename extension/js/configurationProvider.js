@@ -73,12 +73,18 @@ function resolveDebugConfiguration(folder, config, token) {
                 return undefined;
             });
         }
-        if (typeof config.luaexe != 'string') {
-            if (typeof config.path != 'string') {
-                config.path = '${workspaceFolder}/?.lua';
+        if (typeof config.luaexe == 'string') {
+            if (typeof config.path != 'string' && typeof config.path != 'object') {
+                config.path = [
+                    '${workspaceFolder}/?.lua',
+                    path.dirname(config.luaexe) + '/?.lua',
+                ]
             }
-            if (typeof config.cpath != 'string') {
-                config.cpath = '${workspaceFolder}/?.dll';
+            if (typeof config.cpath != 'string' && typeof config.cpath != 'object') {
+                config.cpath = [
+                    '${workspaceFolder}/?.dll',
+                    path.dirname(config.luaexe) + '/?.dll',
+                ]
             }
         }
     }
