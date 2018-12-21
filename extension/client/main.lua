@@ -1,13 +1,23 @@
---print = nil
+local port = ...
+
+local serverFactory = require 'serverFactory'
+local vscode
+
+if port then
+    vscode = serverFactory {
+        protocol = 'tcp',
+        address = '127.0.0.1',
+        port = tostring(port)
+    }
+else
+    print = nil
+    vscode = serverFactory {
+        protocol = 'stdio'
+    }
+end
 
 local select = require 'select'
 local proxy = require 'proxy'
-local serverFactory = require 'serverFactory'
-local vscode = serverFactory {
-    protocol = 'tcp',
-    address = '127.0.0.1',
-    port = 26644
-}
 
 local function update()
     while true do

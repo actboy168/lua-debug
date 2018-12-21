@@ -1,4 +1,5 @@
-local subprocess = require 'subprocess'
+local subprocess = require 'bee.subprocess'
+local proto = require 'protocol'
 local STDIN = io.stdin
 local STDOUT = io.stdout
 local peek = subprocess.peek
@@ -7,31 +8,19 @@ subprocess.filemode(STDOUT, 'b')
 STDIN:setvbuf 'no'
 STDOUT:setvbuf 'no'
 
-local mt = {}
-mt.__index = mt
-
-function mt:event_in(f)
-    self.f = f
+local m = {}
+local stat = {}
+function m.debug()
 end
-
-function mt:event_close()
+function m.send(pkg)
+    STDOUT:write(proto.send(pkg, stat))
 end
-
-function mt:update()
+function m.recv()
     local n = peek(STDIN)
-    if n > 0 then
-        self.f(STDIN:read(n))
+    if n == nil or n == 0 then
+        return proto.recv('', stat)
     end
-    return true
+    return proto.recv(STDIN:read(n), stat)
 end
 
-function mt:send(data)
-    STDOUT:write(data)
-end
-
-function mt:close()
-end
-
-return function()
-    return setmetatable({}, mt)
-end
+return m

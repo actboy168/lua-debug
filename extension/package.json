@@ -288,6 +288,11 @@
                                 "type": "integer",
                                 "markdownDescription": "Debug port to attach to. Default is 4278.",
                                 "default": 4278
+                            },
+                            "experimentalClient": {
+                                "type": "boolean",
+                                "markdownDescription": "Just for test.",
+                                "default": true
                             }
                         }
                     },
