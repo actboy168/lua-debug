@@ -1,5 +1,4 @@
 local unicode = require 'bee.unicode'
-local fs = require 'bee.filesystem'
 
 local function create_install_script(args, dbg, port)
     local utf8 = args.sourceCoding == "utf8"

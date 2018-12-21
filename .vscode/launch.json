@@ -7,19 +7,34 @@
         {
             "type": "lua",
             "request": "launch",
-            "name": "Launch",
+            "name": "Test IC",
             "program": "${workspaceFolder}/build/main.lua",
-            "luaexe": "${workspaceFolder}/build/luabuild/lua.exe",
-            "cwd": "${workspaceFolder}/build/",
+            "path": [
+                "${workspaceFolder}/build/luabuild/?.lua",
+                "${workspaceFolder}/build/?.lua",
+            ],
+            "cpath": "${workspaceFolder}/build/luabuild/?.dll",
+            "env": {
+                "PATH": "${workspaceFolder}/build/luabuild/"
+            },
+            "cwd": "${workspaceFolder}",
             "arg": [
                 "Debug",
                 "IC"
             ]
         },
         {
-            "name": "Extension Tests",
+            "type": "lua",
+            "request": "launch",
+            "name": "Test Client",
+            "luaexe": "${env:USERPROFILE}/.vscode/extensions/actboy168.lua-debug-0.5.1/client/win/bee.exe",
+            "program": "${workspaceFolder}/extension/client/main.lua",
+            "path": "${workspaceFolder}/extension/client/?.lua"
+        },
+        {
             "type": "extensionHost",
             "request": "launch",
+            "name": "Test Extension",
             "runtimeExecutable": "${execPath}",
             "args": [
                 "--extensionDevelopmentPath=${workspaceFolder}/extension/"

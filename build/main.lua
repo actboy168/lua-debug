@@ -19,6 +19,7 @@ local version = (function()
     for line in io.lines((root / 'project' / 'windows' / 'common.props'):string()) do
         local ver = line:match('<Version>(%d+%.%d+%.%d+)</Version>')
         if ver then
+            print('version: ', ver)
             return ver
         end
     end
@@ -67,7 +68,37 @@ if rebuild then
     fs.remove_all(outputDir)
 end
 
-print 'Step 3. compile targetcpu = x86'
+print 'Step 3. update version'
+local function update_version(filename, pattern)
+    local str = io_load(filename)
+    local find_pattern = pattern:gsub('[%^%$%(%)%%%.%[%]%+%-%?]', '%%%0'):gsub('{}', '%%d+%%.%%d+%%.%%d+')
+    local replace_pattern = pattern:gsub('{}', version)
+    local first, last = str:find(find_pattern)
+    if first then
+        str = str:sub(1, first-1) .. replace_pattern .. str:sub(last+1)
+        io_save(filename, str)
+    else
+        print(('Failed to write version into `%s`.'):format(filename:filename()))
+    end
+end
+update_version(root / 'extension' / 'package.json', '"version": "{}"')
+update_version(root / '.vscode' / 'launch.json', 'actboy168.lua-debug-{}')
+
+print 'Step 4. copy extension'
+copy_directory(root / 'extension', outputDir,
+    function (path)
+        local ext = path:extension():string():lower()
+        return (ext ~= '.dll') and (ext ~= '.exe')
+    end
+)
+
+print 'Step 5. copy crt dll'
+if configuration == 'Release' then
+    msvc:copy_crt_dll('x86', outputDir / 'windows' / 'x86')
+    msvc:copy_crt_dll('x64', outputDir / 'windows' / 'x64')
+end
+
+print 'Step 6. compile targetcpu = x86'
 local property = {
     Configuration = configuration,
     Platform = 'Win32',
@@ -83,7 +114,7 @@ if configuration == 'Release' then
     )
 end
 
-print 'Step 4. compile targetcpu = x64'
+print 'Step 7. compile targetcpu = x64'
 local property = {
     Configuration = configuration,
     Platform = 'x64',
@@ -99,27 +130,17 @@ if configuration == 'Release' then
     )
 end
 
-print 'Step 5. copy extension'
-local str = io_load(root / 'extension' / 'package.json')
-local first, last = str:find '"version": "%d+%.%d+%.%d+"'
-if first then
-    str = str:sub(1, first-1) .. ('"version": "%s"'):format(version) .. str:sub(last+1)
-    io_save(root / 'extension' / 'package.json', str)
-else
-    print 'Failed to write version into package.json.'
-end
-
-copy_directory(root / 'extension', outputDir,
-    function (path)
-        local ext = path:extension():string():lower()
-        return (ext ~= '.dll') and (ext ~= '.exe')
-    end
-)
-
-print 'Step 6. copy crt dll'
+print 'Step 8. compile bee'
+local property = {
+    Configuration = configuration,
+    Platform = 'x86'
+}
+msvc:compile(rebuild and 'rebuild' or 'build', root / 'third_party' / 'bee.lua' / 'bee.sln', property)
 if configuration == 'Release' then
-    msvc:copy_crt_dll('x86', outputDir / 'windows' / 'x86')
-    msvc:copy_crt_dll('x64', outputDir / 'windows' / 'x64')
+    fs.create_directories(outputDir / 'client' / 'win')
+    for _, name in ipairs { 'bee.exe', 'bee.dll', 'lua54.dll' } do
+        fs.copy_file(root / 'third_party' / 'bee.lua' / 'bin' / 'msvc_x86_Release' / name, outputDir / 'client' / 'win' / name)
+    end
 end
 
 print 'finish.'
