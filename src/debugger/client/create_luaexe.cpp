@@ -148,7 +148,7 @@ process_opt create_luaexe_with_debugger(stdinput& io, vscode::rprotocol& req, co
 	}
 
 	std::wstring wcwd;
-	std::vector<std::wstring> wargs;
+    bee::subprocess::args_t wargs;
 	wargs.push_back(luaexe);
 
 	if (args.HasMember("cwd") && args["cwd"].IsString()) {
@@ -218,7 +218,7 @@ process_opt create_luaexe_with_debugger(stdinput& io, vscode::rprotocol& req, co
 		return bee::subprocess::process(spawn);
 	}
 	auto process = bee::subprocess::process(spawn);
-	base::hook::replacedll(process, replacedll.first.c_str(), replacedll.second.c_str());
+	base::hook::replacedll(process.info(), replacedll.first.c_str(), replacedll.second.c_str());
 	process.resume();
 	return process;
 }

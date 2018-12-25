@@ -133,7 +133,7 @@ namespace bee::net { namespace tcp {
 		socket::status start_connect()
 		{
 			assert(event_type::sock == socket::retired_fd);
-			event_type::sock = socket::open(addr_->addr()->sa_family, addr_->addr()->sa_family == AF_UNIX ? socket::protocol::unix : socket::protocol::tcp);
+			event_type::sock = socket::open(addr_->family() == AF_UNIX ? socket::protocol::unix : socket::protocol::tcp, *addr_);
 			auto [ip, port] = addr_->info();
 
 			if (event_type::sock == socket::retired_fd)
@@ -141,7 +141,6 @@ namespace bee::net { namespace tcp {
 				return socket::status::failed;
 			}
 
-			socket::nonblocking(event_type::sock);
 			int bufsize = 64 * 1024;
 			socket::send_buffer(event_type::sock, bufsize);
 			socket::recv_buffer(event_type::sock, bufsize);

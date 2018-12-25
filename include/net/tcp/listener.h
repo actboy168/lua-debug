@@ -42,13 +42,12 @@ namespace bee::net { namespace tcp {
 		int open(const endpoint& addr)
 		{
 			close();
-			event_type::sock = socket::open(addr.addr()->sa_family, addr.addr()->sa_family == AF_UNIX ? socket::protocol::unix : socket::protocol::tcp);
+			event_type::sock = socket::open(addr.family() == AF_UNIX ? socket::protocol::unix : socket::protocol::tcp, addr);
 			if (event_type::sock == socket::retired_fd)
 			{
 				return -1;
 			}
 
-			socket::nonblocking(event_type::sock);
 			if (addr.addr()->sa_family != AF_UNIX) {
 				socket::reuse(event_type::sock);
 			}

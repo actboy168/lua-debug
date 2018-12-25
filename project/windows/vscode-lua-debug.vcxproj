@@ -45,6 +45,7 @@
     <ClCompile Include="..\..\third_party\bee.lua\bee\net\socket.cpp" />
     <ClCompile Include="..\..\third_party\bee.lua\bee\net\unixsocket.cpp" />
     <ClCompile Include="..\..\third_party\bee.lua\bee\platform\version.cpp" />
+    <ClCompile Include="..\..\third_party\bee.lua\bee\subprocess\sharedmemory_win.cpp" />
     <ClCompile Include="..\..\third_party\bee.lua\bee\subprocess\subprocess_win.cpp" />
     <ClCompile Include="..\..\third_party\bee.lua\bee\utility\file_version.cpp" />
     <ClCompile Include="..\..\third_party\bee.lua\bee\utility\path_helper.cpp" />
@@ -69,6 +70,7 @@
     <ClInclude Include="..\..\third_party\bee.lua\bee\net\unixsocket.h" />
     <ClInclude Include="..\..\third_party\bee.lua\bee\platform\version.h" />
     <ClInclude Include="..\..\third_party\bee.lua\bee\subprocess.h" />
+    <ClInclude Include="..\..\third_party\bee.lua\bee\subprocess\sharedmemory_win.h" />
     <ClInclude Include="..\..\third_party\bee.lua\bee\subprocess\subprocess_win.h" />
     <ClInclude Include="..\..\third_party\bee.lua\bee\utility\file_version.h" />
     <ClInclude Include="..\..\third_party\bee.lua\bee\utility\path_helper.h" />

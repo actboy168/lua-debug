@@ -43,12 +43,12 @@ process_opt create_process_with_debugger(vscode::rprotocol& req, bool noinject)
 
 	if (args.HasMember("runtimeArgs")) {
 		if (args["runtimeArgs"].IsString()) {
-			if (!spawn.exec(wapplication, bee::u2w(args["runtimeArgs"].Get<std::string>()), wcwd.c_str())) {
+            if (!spawn.exec({ wapplication, bee::u2w(args["runtimeArgs"].Get<std::string>()) }, wcwd.c_str())) {
 				return process_opt();
 			}
 		}
 		else if (args["runtimeArgs"].IsArray()) {
-			std::vector<std::wstring> wargs;
+			bee::subprocess::args_t wargs;
 			wargs.push_back(wapplication);
 			for (auto& v : args["runtimeArgs"].GetArray()) {
 				if (v.IsString()) {
@@ -70,7 +70,7 @@ process_opt create_process_with_debugger(vscode::rprotocol& req, bool noinject)
 	}
 	spawn.suspended();
 	auto process = bee::subprocess::process(spawn);
-	base::hook::injectdll(process, dir / L"x86" / L"debugger-inject.dll", dir / L"x64" / L"debugger-inject.dll");
+	base::hook::injectdll(process.info(), dir / L"x86" / L"debugger-inject.dll", dir / L"x64" / L"debugger-inject.dll");
 	process.resume();
 	return process;
 }

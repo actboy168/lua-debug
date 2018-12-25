@@ -76,6 +76,9 @@
     <ClCompile Include="..\..\third_party\bee.lua\bee\platform\version.cpp">
       <Filter>bee\platform</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\third_party\bee.lua\bee\subprocess\sharedmemory_win.cpp">
+      <Filter>bee\subprocess</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\base\hook\injectdll.h">
@@ -143,6 +146,9 @@
     </ClInclude>
     <ClInclude Include="..\..\third_party\bee.lua\bee\platform\version.h">
       <Filter>bee\platform</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\third_party\bee.lua\bee\subprocess\sharedmemory_win.h">
+      <Filter>bee\subprocess</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
