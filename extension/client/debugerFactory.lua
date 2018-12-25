@@ -142,7 +142,9 @@ local function create_process(args)
     }
     local process
     if type(args.runtimeArgs) == 'string' then
-        --TODO
+        option.argsStyle = 'string'
+        option[2] = args.runtimeArgs
+        process = sp.spawn(option)
     elseif type(args.runtimeArgs) == 'table' then
         option[2] = args.runtimeArgs
         process = sp.spawn(option)
