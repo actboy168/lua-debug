@@ -15,9 +15,8 @@ local function getVersion(dbg)
 end
 
 local function getDbgPath()
-    local dbg = fs.exe_path():parent_path():parent_path():parent_path()
-    if dbg:filename():string() ~= 'extension' then
-        return dbg
+    if WORKDIR:filename():string() ~= 'extension' then
+        return WORKDIR
     end
     return fs.path(os.getenv 'USERPROFILE') / '.vscode' / 'extensions' / ('actboy168.lua-debug-' .. getVersion(dbg))
 end

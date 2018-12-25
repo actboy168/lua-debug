@@ -1,6 +1,7 @@
 local unicode = require 'bee.unicode'
 local fs = require 'bee.filesystem'
 local sp = require 'bee.subprocess'
+local inject = require 'inject'
 
 local function create_install_script(args, dbg, port)
     local utf8 = args.sourceCoding == "utf8"
@@ -53,11 +54,11 @@ end
 local function getLuaRuntime(args)
     if args.luaRuntime == "5.4 64bit" then
         return 54, 64
-    elseif luaRuntime == "5.4 32bit" then
+    elseif args.luaRuntime == "5.4 32bit" then
         return 54, 32
-    elseif luaRuntime == "5.3 64bit" then
+    elseif args.luaRuntime == "5.3 64bit" then
         return 53, 64
-    elseif luaRuntime == "5.3 32bit" then
+    elseif args.luaRuntime == "5.3 32bit" then
         return 53, 32
     end
     return 53, 32
@@ -154,7 +155,10 @@ local function create_process(args)
     if noinject then
         return process
     end
-    --TODO
+    inject.injectdll(process
+        , (WORKDIR / "windows" / "x86" / "debugger.dll"):string()
+        , (WORKDIR / "windows" / "x64" / "debugger.dll"):string()
+    )
     process:resume()
     return process
 end

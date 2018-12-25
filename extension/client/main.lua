@@ -1,5 +1,8 @@
 local port = ...
 
+local fs = require 'bee.filesystem'
+WORKDIR = fs.exe_path():parent_path():parent_path():parent_path()
+
 local function run()
     (require 'mainloop')(port)
 end
@@ -11,7 +14,7 @@ end
 
 local fs = require 'bee.filesystem'
 local log = require 'log'
-log.file = (fs.exe_path():parent_path():parent_path():parent_path() / "client.log"):string()
+log.file = (WORKDIR / "client.log"):string()
 
 print = log.info
 local ok, errmsg = xpcall(run, debug.traceback)
