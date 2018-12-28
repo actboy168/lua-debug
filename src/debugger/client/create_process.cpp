@@ -43,7 +43,11 @@ process_opt create_process_with_debugger(vscode::rprotocol& req, bool noinject)
 
 	if (args.HasMember("runtimeArgs")) {
 		if (args["runtimeArgs"].IsString()) {
-            if (!spawn.exec({ wapplication, bee::u2w(args["runtimeArgs"].Get<std::string>()) }, wcwd.c_str())) {
+            bee::subprocess::args_t wargs;
+            wargs.type = bee::subprocess::args_t::type::string;
+            wargs.push_back(wapplication);
+            wargs.push_back(bee::u2w(args["runtimeArgs"].Get<std::string>()));
+            if (!spawn.exec(wargs, wcwd.c_str())) {
 				return process_opt();
 			}
 		}
@@ -61,7 +65,9 @@ process_opt create_process_with_debugger(vscode::rprotocol& req, bool noinject)
 		}
 	}
 	else {
-		if (!spawn.exec({ wapplication }, wcwd.c_str())) {
+        bee::subprocess::args_t wargs;
+        wargs.push_back(wapplication);
+		if (!spawn.exec(wargs, wcwd.c_str())) {
 			return process_opt();
 		}
 	}
