@@ -3,7 +3,7 @@
 #include <base/hook/injectdll.h>
 #include <base/hook/replacedll.h>
 #include <bee/lua/binding.h>
-#include <bee/utility/unicode.h>
+#include <bee/utility/unicode_win.h>
 #include <bee/subprocess.h>
 
 static int injectdll(lua_State* L) {

@@ -45,13 +45,13 @@
     <ClCompile Include="..\..\src\debugger\debugger.cpp" />
     <ClCompile Include="..\..\src\debugger\source.cpp" />
     <ClCompile Include="..\..\third_party\bee.lua\bee\error.cpp" />
-    <ClCompile Include="..\..\third_party\bee.lua\bee\error\windows_category.cpp" />
+    <ClCompile Include="..\..\third_party\bee.lua\bee\error\category_win.cpp" />
     <ClCompile Include="..\..\third_party\bee.lua\bee\net\endpoint.cpp" />
     <ClCompile Include="..\..\third_party\bee.lua\bee\net\socket.cpp" />
-    <ClCompile Include="..\..\third_party\bee.lua\bee\net\unixsocket.cpp" />
-    <ClCompile Include="..\..\third_party\bee.lua\bee\platform\version.cpp" />
-    <ClCompile Include="..\..\third_party\bee.lua\bee\utility\file_version.cpp" />
-    <ClCompile Include="..\..\third_party\bee.lua\bee\utility\unicode.cpp" />
+    <ClCompile Include="..\..\third_party\bee.lua\bee\net\unixsocket_win.cpp" />
+    <ClCompile Include="..\..\third_party\bee.lua\bee\platform\version_win.cpp" />
+    <ClCompile Include="..\..\third_party\bee.lua\bee\utility\module_version_win.cpp" />
+    <ClCompile Include="..\..\third_party\bee.lua\bee\utility\unicode_win.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\debugger\bridge\delayload.h" />
@@ -80,13 +80,13 @@
     <ClInclude Include="..\..\include\debugger\source.h" />
     <ClInclude Include="..\..\include\debugger\thunk\thunk.h" />
     <ClInclude Include="..\..\third_party\bee.lua\bee\error.h" />
-    <ClInclude Include="..\..\third_party\bee.lua\bee\error\windows_category.h" />
+    <ClInclude Include="..\..\third_party\bee.lua\bee\error\category_win.h" />
     <ClInclude Include="..\..\third_party\bee.lua\bee\net\endpoint.h" />
     <ClInclude Include="..\..\third_party\bee.lua\bee\net\socket.h" />
-    <ClInclude Include="..\..\third_party\bee.lua\bee\net\unixsocket.h" />
+    <ClInclude Include="..\..\third_party\bee.lua\bee\net\unixsocket_win.h" />
     <ClInclude Include="..\..\third_party\bee.lua\bee\platform\version.h" />
-    <ClInclude Include="..\..\third_party\bee.lua\bee\utility\file_version.h" />
-    <ClInclude Include="..\..\third_party\bee.lua\bee\utility\unicode.h" />
+    <ClInclude Include="..\..\third_party\bee.lua\bee\utility\module_version_win.h" />
+    <ClInclude Include="..\..\third_party\bee.lua\bee\utility\unicode_win.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="lua53dll.vcxproj">

@@ -1,6 +1,6 @@
 
 #include <bee/subprocess.h>
-#include <bee/utility/unicode.h>
+#include <bee/utility/unicode_win.h>
 #include <bee/utility/path_helper.h>
 #include <base/hook/injectdll.h>
 #include <debugger/protocol.h>

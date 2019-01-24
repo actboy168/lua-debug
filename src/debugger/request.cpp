@@ -3,7 +3,7 @@
 #include <debugger/path.h>
 #include <debugger/luathread.h>
 #include <debugger/io/base.h>
-#include <bee/utility/unicode.h>
+#include <bee/utility/unicode_win.h>
 
 namespace vscode
 {

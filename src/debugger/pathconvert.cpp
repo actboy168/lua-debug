@@ -1,6 +1,6 @@
 #include <debugger/impl.h>
 #include <debugger/path.h>
-#include <bee/utility/unicode.h>
+#include <bee/utility/unicode_win.h>
 #include <bee/utility/dynarray.h>
 #include <deque>
 #include <regex>

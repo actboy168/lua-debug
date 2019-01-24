@@ -8,7 +8,7 @@
 #include <debugger/client/get_unix_path.h>
 #include <debugger/capabilities.h>
 #include <debugger/io/helper.h>
-#include <bee/utility/unicode.h>
+#include <bee/utility/unicode_win.h>
 #include <bee/utility/format.h>
 #include <base/filesystem.h>
 #include <base/win/query_process.h>

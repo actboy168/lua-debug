@@ -43,9 +43,6 @@
     <ClCompile Include="..\..\third_party\bee.lua\bee\net\endpoint.cpp">
       <Filter>bee\net</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\third_party\bee.lua\bee\utility\unicode.cpp">
-      <Filter>bee\utility</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\third_party\bee.lua\bee\net\socket.cpp">
       <Filter>bee\net</Filter>
     </ClCompile>
@@ -58,26 +55,32 @@
     <ClCompile Include="..\..\third_party\bee.lua\bee\error.cpp">
       <Filter>bee</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\third_party\bee.lua\bee\net\unixsocket.cpp">
-      <Filter>bee\net</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\third_party\bee.lua\bee\error\windows_category.cpp">
-      <Filter>bee\error</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\debugger\client\get_unix_path.cpp">
       <Filter>cpp\client</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\debugger\io\server.cpp">
       <Filter>cpp\io</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\third_party\bee.lua\bee\utility\file_version.cpp">
-      <Filter>bee\utility</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\third_party\bee.lua\bee\platform\version.cpp">
-      <Filter>bee\platform</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\third_party\bee.lua\bee\subprocess\sharedmemory_win.cpp">
       <Filter>bee\subprocess</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\third_party\bee.lua\bee\utility\unicode_win.cpp">
+      <Filter>bee\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\third_party\bee.lua\bee\error\category_win.cpp">
+      <Filter>bee\error</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\third_party\bee.lua\bee\net\unixsocket_win.cpp">
+      <Filter>bee\net</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\third_party\bee.lua\bee\utility\module_version_win.cpp">
+      <Filter>bee\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\third_party\bee.lua\bee\platform\version_win.cpp">
+      <Filter>bee\platform</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\third_party\bee.lua\bee\utility\file_helper.cpp">
+      <Filter>bee\utility</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -108,9 +111,6 @@
     <ClInclude Include="..\..\include\debugger\io\stream.h">
       <Filter>inc\io</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\third_party\bee.lua\bee\utility\unicode.h">
-      <Filter>bee\utility</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\third_party\bee.lua\bee\subprocess\subprocess_win.h">
       <Filter>bee\subprocess</Filter>
     </ClInclude>
@@ -129,26 +129,32 @@
     <ClInclude Include="..\..\third_party\bee.lua\bee\net\socket.h">
       <Filter>bee\net</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\third_party\bee.lua\bee\net\unixsocket.h">
-      <Filter>bee\net</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\third_party\bee.lua\bee\error\windows_category.h">
-      <Filter>bee\error</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\include\debugger\client\get_unix_path.h">
       <Filter>inc\client</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\debugger\io\server.h">
       <Filter>inc\io</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\third_party\bee.lua\bee\utility\file_version.h">
-      <Filter>bee\utility</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\third_party\bee.lua\bee\platform\version.h">
       <Filter>bee\platform</Filter>
     </ClInclude>
     <ClInclude Include="..\..\third_party\bee.lua\bee\subprocess\sharedmemory_win.h">
       <Filter>bee\subprocess</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\third_party\bee.lua\bee\utility\unicode_win.h">
+      <Filter>bee\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\third_party\bee.lua\bee\error\category_win.h">
+      <Filter>bee\error</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\third_party\bee.lua\bee\net\unixsocket_win.h">
+      <Filter>bee\net</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\third_party\bee.lua\bee\utility\module_version_win.h">
+      <Filter>bee\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\third_party\bee.lua\bee\utility\file_helper.h">
+      <Filter>bee\utility</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

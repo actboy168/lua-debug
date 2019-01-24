@@ -3,7 +3,7 @@
 #include <debugger/bridge/delayload.h>
 #include <debugger/lua.h>
 #include <debugger/debugger.h>
-#include <bee/utility/unicode.h>
+#include <bee/utility/unicode_win.h>
 #include <bee/net/endpoint.h>
 #include <memory>  
 #include <string_view>
