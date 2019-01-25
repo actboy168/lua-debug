@@ -72,10 +72,37 @@ local function create_terminal(args, port)
     return true
 end
 
+local function attach_process(pkg, pid)
+    local path = getUnixPath(pid)
+    fs.remove(path)
+    server = serverFactory {
+        protocol = 'unix',
+        address = path:string()
+    }
+    server.send(initReq)
+    server.send(pkg)
+    inject.injectdll(pid
+        , (WORKDIR / "windows" / "x86" / "debugger.dll"):string()
+        , (WORKDIR / "windows" / "x64" / "debugger.dll"):string()
+    )
+end
+
 local function proxy_attach(pkg)
     local args = pkg.arguments
-    if args.processId or args.processName then
-        response_error(pkg, 'not support')
+    if args.processId then
+        attach_process(pkg, args.processId)
+        return
+    end
+    if args.processName then
+        local pids = inject.query_process(args.processName)
+        if #pids == 0 then
+            response_error(pkg, ('Cannot found process `%s`.'):format(args.processName))
+            return
+        elseif #pids > 1 then
+            response_error(pkg, ('There are %d processes `%s`.'):format(#pids, args.processName))
+            return
+        end
+        attach_process(pkg, pids[1])
         return
     end
     local ip = args.ip

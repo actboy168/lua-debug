@@ -199,18 +199,18 @@ static int run_attach_process(stdinput& io, vscode::rprotocol& init, vscode::rpr
 
 static std::vector<int> get_process_name(const std::string& name)
 {
-	std::vector<int> res;
-	std::wstring wname = bee::u2w(name);
-	std::transform(wname.begin(), wname.end(), wname.begin(), ::tolower);
-	base::win::query_process([&](const base::win::SYSTEM_PROCESS_INFORMATION* info)->bool {
-		std::wstring pname(info->ImageName.Buffer, info->ImageName.Length / sizeof(wchar_t));
-		std::transform(pname.begin(), pname.end(), pname.begin(), ::tolower);
-		if (pname == wname) {
-			res.push_back((int)(intptr_t)info->ProcessId);
-		}
-		return false;
-	});
-	return res;
+    std::vector<int> res;
+    std::wstring wname = bee::u2w(name);
+    std::transform(wname.begin(), wname.end(), wname.begin(), ::tolower);
+    base::win::query_process([&](const base::win::SYSTEM_PROCESS_INFORMATION* info)->bool {
+        std::wstring pname(info->ImageName.Buffer, info->ImageName.Length / sizeof(wchar_t));
+        std::transform(pname.begin(), pname.end(), pname.begin(), ::tolower);
+        if (pname == wname) {
+            res.push_back((int)(intptr_t)info->ProcessId);
+        }
+        return false;
+        });
+    return res;
 }
 
 int main()
