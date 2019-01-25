@@ -2,7 +2,7 @@
 #include <debugger/io/base.h>
 #include <rapidjson/schema.h>
 #include <rapidjson/error/en.h>
-#include <bee/utility/unicode.h>
+#include <bee/utility/unicode_win.h>
 #include <fstream>
 
 #if 1
