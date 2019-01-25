@@ -8,9 +8,9 @@ local seq = 0
 local initReq
 local m = {}
 
-local function getVersion(dbg)
+local function getVersion(dir)
     local json = require 'json'
-    local package = json.decode(assert(io.open((dbg / 'package.json'):string()):read 'a'))
+    local package = json.decode(assert(io.open((dir / 'package.json'):string()):read 'a'))
     return package.version
 end
 
@@ -18,7 +18,7 @@ local function getDbgPath()
     if WORKDIR:filename():string() ~= 'extension' then
         return WORKDIR
     end
-    return fs.path(os.getenv 'USERPROFILE') / '.vscode' / 'extensions' / ('actboy168.lua-debug-' .. getVersion(dbg))
+    return fs.path(os.getenv 'USERPROFILE') / '.vscode' / 'extensions' / ('actboy168.lua-debug-' .. getVersion(WORKDIR))
 end
 
 local function getUnixPath(pid)
