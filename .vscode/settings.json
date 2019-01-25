@@ -1,0 +1,6 @@
+{
+    "Lua.workspace.ignoreDir": [
+        "third_party",
+        "publish"
+    ]
+}

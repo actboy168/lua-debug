@@ -42,8 +42,13 @@ for i, name in ipairs(modes) do
             return
         end
         local info = debug.getinfo(2, 'Sl')
-        local msg = packstring(...)
-        local msg = ('[%s][%s:%3d][%-6s] %s\n'):format(os.date('%Y-%m-%d %H:%M:%S'), info.short_src, info.currentline, name:upper(), msg)
+        local msg = ('[%s][%s:%3d][%-6s] %s\n'):format(
+            os.date('%Y-%m-%d %H:%M:%S'),
+            info.short_src,
+            info.currentline,
+            name:upper(),
+            packstring(...)
+        )
         local fp = assert(io.open(log.file, 'a'))
         fp:write(msg)
         fp:close()

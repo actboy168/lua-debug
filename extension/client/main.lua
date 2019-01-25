@@ -12,7 +12,6 @@ if port then
     return
 end
 
-local fs = require 'bee.filesystem'
 local log = require 'log'
 log.file = (WORKDIR / "client.log"):string()
 
