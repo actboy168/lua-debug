@@ -21,6 +21,4 @@
 extension/windows/
 project/windows/bin/
 project/windows/obj/
-project/.xmake/
-project/build/
 publish/
