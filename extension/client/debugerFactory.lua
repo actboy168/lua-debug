@@ -83,7 +83,7 @@ local function getLuaRuntime(args)
     return 53, 32
 end
 
-local function create_terminal(args, dbg, port)
+local function getLuaExe(args, dbg)
     dbg = dbg / "windows"
 
     local luaexe
@@ -107,22 +107,21 @@ local function create_terminal(args, dbg, port)
             luaexe = dbg / "lua54.exe"
         end
     end
-    local res = {
-        kind = (args.console == "integratedTerminal") and "integrated" or "external",
-        title = "Lua Debug",
-        cwd = (type(args.cwd) == "string") and args.cwd or luaexe:parent_path():string(),
-        args = {},
-    }
+    return luaexe, dbg
+end
 
+local function installBootstrap1(option, luaexe, args)
+    option.cwd = (type(args.cwd) == "string") and args.cwd or luaexe:parent_path():string()
     if type(args.env) == "table" then
         -- TODO: json null ?
-        res.env = args.env
+        option.env = args.env
     end
+end
 
-    local c = res.args
+local function installBootstrap2(c, luaexe, args, dbgdir, port)
     c[#c+1] = luaexe:string()
     c[#c+1] = "-e"
-    c[#c+1] = create_install_script(args, dbg, port)
+    c[#c+1] = create_install_script(args, dbgdir, port)
 
     if type(args.arg0) == "string" then
         c[#c+1] = args.arg0
@@ -145,10 +144,27 @@ local function create_terminal(args, dbg, port)
             end
         end
     end
-
-    return res
 end
 
+local function create_terminal(args, dbg, port)
+    local luaexe, dbgdir = getLuaExe(args, dbg)
+    local option = {
+        kind = (args.console == "integratedTerminal") and "integrated" or "external",
+        title = "Lua Debug",
+        args = {},
+    }
+    installBootstrap1(option, luaexe, args)
+    installBootstrap2(option.args, luaexe, args, dbgdir, port)
+    return option
+end
+
+local function create_luaexe(args, dbg, port)
+    local luaexe, dbgdir = getLuaExe(args, dbg)
+    local option = { }
+    installBootstrap1(option, luaexe, args)
+    installBootstrap2(option, luaexe, args, dbgdir, port)
+    return sp.spawn(option)
+end
 
 local function create_process(args)
     local noinject = args.noInject
@@ -185,4 +201,5 @@ end
 return {
     create_terminal = create_terminal,
     create_process = create_process,
+    create_luaexe = create_luaexe,
 }

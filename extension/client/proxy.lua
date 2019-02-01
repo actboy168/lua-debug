@@ -63,15 +63,6 @@ local function request_runinterminal(args)
     }
 end
 
-local function create_terminal(args, port)
-    local arguments = debuggerFactory.create_terminal(args, getDbgPath(), port)
-    if not arguments then
-        return
-    end
-    request_runinterminal(arguments)
-    return true
-end
-
 local function attach_process(pkg, pid)
     if not inject.injectdll(pid
         , (WORKDIR / "windows" / "x86" / "debugger-inject.dll"):string()
@@ -124,22 +115,28 @@ end
 
 local function proxy_launch(pkg)
     local args = pkg.arguments
+
+    local path = getUnixPath(inject.current_pid())
+    fs.remove(path)
+    server = serverFactory {
+        protocol = 'unix',
+        address = path:string()
+    }
     if args.console == 'integratedTerminal' or args.console == 'externalTerminal' then
-        local path = getUnixPath(inject.current_pid())
-        fs.remove(path)
-        server = serverFactory {
-            protocol = 'unix',
-            address = path:string()
-        }
-        if not create_terminal(args, path) then
+        local arguments = debuggerFactory.create_terminal(args, getDbgPath(), path)
+        if not arguments then
             response_error(pkg, 'launch failed')
             return
         end
-        server.send(initReq)
-        server.send(pkg)
-        return
+        request_runinterminal(arguments)
+    else
+        if not debuggerFactory.create_luaexe(args, getDbgPath(), path) then
+            response_error(pkg, 'launch failed')
+            return
+        end
     end
-    response_error(pkg, 'not support')
+    server.send(initReq)
+    server.send(pkg)
 end
 
 function m.send(pkg)
