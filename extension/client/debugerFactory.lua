@@ -47,8 +47,27 @@ local function create_install_script(args, dbg, port)
 end
 
 local function is64Exe(exe)
-    -- TODO
-    return false
+    local f = io.open(exe:string())
+    if not f then
+        return
+    end
+    local MZ = f:read(2)
+    if MZ ~= 'MZ' then
+        f:close()
+        return
+    end
+    f:seek('set', 60)
+    local e_lfanew = ('I4'):unpack(f:read(4))
+    f:seek('set', e_lfanew)
+    local ntheader = ('z'):unpack(f:read(4) .. '\0')
+    if ntheader ~= 'PE' then
+        f:close()
+        return
+    end
+    f:seek('cur', 18)
+    local characteristics = ('I2'):unpack(f:read(2))
+    f:close()
+    return (characteristics & 0x100) == 0
 end
 
 local function getLuaRuntime(args)
@@ -69,7 +88,7 @@ local function create_terminal(args, dbg, port)
 
     local luaexe
     if type(args.luaexe) == "string" then
-        luaexe = args.luaexe
+        luaexe = fs.path(args.luaexe)
         if is64Exe(luaexe) then
             dbg = dbg / "x64"
         else

@@ -31,7 +31,7 @@
             "program": "${workspaceFolder}/extension/client/main.lua",
             "path": "${workspaceFolder}/extension/client/?.lua",
             "arg": [
-                "26644"
+                "4711"
             ]
         },
         {
