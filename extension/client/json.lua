@@ -87,7 +87,14 @@ local function encode_table(val, stack)
 
   stack[val] = true
 
-  if type(next(val)) == 'number' or next(val) == nil then
+  if next(val) == nil then
+    local meta = getmetatable(val)
+    if meta and meta.__name == 'json.object' then
+      return "{}"
+    else
+      return "[]"
+    end
+  elseif type(next(val)) == 'number' then
     -- Treat as array -- check keys are valid and it is not sparse
     local max = 0
     for k in pairs(val) do
@@ -353,6 +360,9 @@ local function parse_object(str, i)
     i = i + 1
     if chr == "}" then break end
     if chr ~= "," then decode_error(str, i, "expected '}' or ','") end
+  end
+  if next(res) == nil then
+    setmetatable(res, {__name = 'json.object'})
   end
   return res, i
 end
