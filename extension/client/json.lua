@@ -22,7 +22,21 @@
 -- SOFTWARE.
 --
 
+local pairs = pairs
+local type = type
+local next = next
+local error = error
+local select = select
+local tonumber = tonumber
+local utf8_char = utf8.char
+local table_concat = table.concat
+local string_char = string.char
+local math_type = math.type
+local Inf = math.huge
+
 local json = { _version = "0.1.1" }
+
+json.null = function() end
 
 -------------------------------------------------------------------------------
 -- Encode
@@ -32,6 +46,7 @@ local encode
 
 local escape_char_map = {
   [ "\\" ] = "\\\\",
+  [ "/" ]  = "\\/",
   [ "\"" ] = "\\\"",
   [ "\b" ] = "\\b",
   [ "\f" ] = "\\f",
@@ -47,14 +62,21 @@ end
 
 
 local function escape_char(c)
-  return escape_char_map[c] or string.format("\\u%04x", c:byte())
+  return escape_char_map[c] or ("\\u%04x"):format(c:byte())
 end
 
 
-local function encode_nil(val)
+local function encode_nil()
   return "null"
 end
 
+
+local function encode_null(val)
+  if val == json.null then
+    return "null"
+  end
+  error "cannot serialise function: type not supported"
+end
 
 local function encode_table(val, stack)
   local res = {}
@@ -65,50 +87,46 @@ local function encode_table(val, stack)
 
   stack[val] = true
 
-  if val[1] ~= nil or next(val) == nil then
+  if type(next(val)) == 'number' then
     -- Treat as array -- check keys are valid and it is not sparse
-    local n = 0
+    local max = 0
     for k in pairs(val) do
-      if type(k) ~= "number" then
+      if math_type(k) ~= "integer" then
         error("invalid table: mixed or invalid key types")
       end
-      n = n + 1
+      max = max > k and max or k
     end
-    if n ~= #val then
-      error("invalid table: sparse array")
+    for i = 1, max do
+      res[#res+1] = encode(val[i], stack)
     end
     -- Encode
-    for i, v in ipairs(val) do
-      table.insert(res, encode(v, stack))
-    end
     stack[val] = nil
-    return "[" .. table.concat(res, ",") .. "]"
-
+    return "[" .. table_concat(res, ",") .. "]"
   else
     -- Treat as an object
     for k, v in pairs(val) do
       if type(k) ~= "string" then
         error("invalid table: mixed or invalid key types")
       end
-      table.insert(res, encode(k, stack) .. ":" .. encode(v, stack))
+      res[#res+1] = encode(k, stack) .. ":" .. encode(v, stack)
     end
     stack[val] = nil
-    return "{" .. table.concat(res, ",") .. "}"
+    return "{" .. table_concat(res, ",") .. "}"
   end
 end
 
 
 local function encode_string(val)
-  return '"' .. val:gsub('[%z\1-\31\\"]', escape_char) .. '"'
+  return '"' .. val:gsub('[%z\1-\31\127\\"/]', escape_char) .. '"'
 end
 
 
 local function encode_number(val)
   -- Check for NaN, -inf and inf
-  if val ~= val or val <= -math.huge or val >= math.huge then
+  if val ~= val or val <= -Inf or val >= Inf then
     error("unexpected number value '" .. tostring(val) .. "'")
   end
-  return string.format("%.14g", val)
+  return ("%.14g"):format(val):gsub(',', '.')
 end
 
 
@@ -118,6 +136,7 @@ local type_func_map = {
   [ "string"  ] = encode_string,
   [ "number"  ] = encode_number,
   [ "boolean" ] = tostring,
+  [ "function" ] = encode_null,
 }
 
 
@@ -158,7 +177,7 @@ local literals      = create_set("true", "false", "null")
 local literal_map = {
   [ "true"  ] = true,
   [ "false" ] = false,
-  [ "null"  ] = nil,
+  [ "null"  ] = json.null,
 }
 
 
@@ -182,24 +201,7 @@ local function decode_error(str, idx, msg)
       col_count = 1
     end
   end
-  error( string.format("%s at line %d col %d", msg, line_count, col_count) )
-end
-
-
-local function codepoint_to_utf8(n)
-  -- http://scripts.sil.org/cms/scripts/page.php?site_id=nrsi&id=iws-appendixa
-  local f = math.floor
-  if n <= 0x7f then
-    return string.char(n)
-  elseif n <= 0x7ff then
-    return string.char(f(n / 64) + 192, n % 64 + 128)
-  elseif n <= 0xffff then
-    return string.char(f(n / 4096) + 224, f(n % 4096 / 64) + 128, n % 64 + 128)
-  elseif n <= 0x10ffff then
-    return string.char(f(n / 262144) + 240, f(n % 262144 / 4096) + 128,
-                       f(n % 4096 / 64) + 128, n % 64 + 128)
-  end
-  error( string.format("invalid unicode codepoint '%x'", n) )
+  error( ("%s at line %d col %d"):format(msg, line_count, col_count) )
 end
 
 
@@ -208,9 +210,9 @@ local function parse_unicode_escape(s)
   local n2 = tonumber( s:sub(9, 12), 16 )
   -- Surrogate pair?
   if n2 then
-    return codepoint_to_utf8((n1 - 0xd800) * 0x400 + (n2 - 0xdc00) + 0x10000)
+    return utf8_char((n1 - 0xd800) * 0x400 + (n2 - 0xdc00) + 0x10000)
   else
-    return codepoint_to_utf8(n1)
+    return utf8_char(n1)
   end
 end
 
@@ -234,12 +236,15 @@ local function parse_string(str, i)
           decode_error(str, j, "invalid unicode escape in string")
         end
         if hex:find("^[dD][89aAbB]") then
+          if not str:sub(j + 5, j + 10):match('\\u%x%x%x%x') then
+            decode_error(str, j, "missing low surrogate")
+          end
           has_surrogate_escape = true
         else
           has_unicode_escape = true
         end
       else
-        local c = string.char(x)
+        local c = string_char(x)
         if not escape_chars[c] then
           decode_error(str, j, "invalid escape char '" .. c .. "' in string")
         end
@@ -272,7 +277,7 @@ local function parse_number(str, i)
   local x = next_char(str, i, delim_chars)
   local s = str:sub(i, x - 1)
   local n = tonumber(s)
-  if not n then
+  if not n or s:find '[^-+.%deE]' or s:match '^0[1-9]' then
     decode_error(str, i, "invalid number '" .. s .. "'")
   end
   return n, x

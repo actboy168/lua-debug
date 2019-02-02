@@ -113,7 +113,6 @@ end
 local function installBootstrap1(option, luaexe, args)
     option.cwd = (type(args.cwd) == "string") and args.cwd or luaexe:parent_path():string()
     if type(args.env) == "table" then
-        -- TODO: json null ?
         option.env = args.env
     end
 end
