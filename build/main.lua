@@ -139,8 +139,9 @@ msvc:compile(rebuild and 'rebuild' or 'build', root / 'third_party' / 'bee.lua' 
 local srcdir =  root / 'third_party' / 'bee.lua' / 'bin' / ('msvc_x86_' .. configuration)
 local dstdir =  outputDir / 'client' / 'win'
 fs.create_directories(dstdir)
-fs.copy_file(srcdir / 'bee.exe', dstdir / 'lua-debug.exe', true)
+fs.copy_file(srcdir / 'lua.exe', dstdir / 'lua-debug.exe', true)
 fs.copy_file(srcdir / 'bee.dll', dstdir / 'bee.dll', true)
 fs.copy_file(srcdir / 'lua54.dll', dstdir / 'lua54.dll', true)
+fs.copy_file(binDir / 'x86' / 'inject.dll', dstdir / 'inject.dll', true)
 
 print 'finish.'
