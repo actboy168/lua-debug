@@ -136,9 +136,11 @@ local property = {
     Platform = 'x86'
 }
 msvc:compile(rebuild and 'rebuild' or 'build', root / 'third_party' / 'bee.lua' / 'bee.sln', property)
-fs.create_directories(outputDir / 'client' / 'win')
-for _, name in ipairs { 'bee.exe', 'bee.dll', 'lua54.dll' } do
-    fs.copy_file(root / 'third_party' / 'bee.lua' / 'bin' / ('msvc_x86_' .. configuration) / name, outputDir / 'client' / 'win' / name, true)
-end
+local srcdir =  root / 'third_party' / 'bee.lua' / 'bin' / ('msvc_x86_' .. configuration)
+local dstdir =  outputDir / 'client' / 'win'
+fs.create_directories(dstdir)
+fs.copy_file(srcdir / 'bee.exe', dstdir / 'lua-debug.exe', true)
+fs.copy_file(srcdir / 'bee.dll', dstdir / 'bee.dll', true)
+fs.copy_file(srcdir / 'lua54.dll', dstdir / 'lua54.dll', true)
 
 print 'finish.'

@@ -21,7 +21,7 @@ function createDebugAdapterDescriptor(session, executable) {
     }
     if (session.configuration.experimentalClient) {
         let dir = getRuntimeDirectory(extension.context)
-        let runtime = path.join(dir, 'client/win/bee.exe')
+        let runtime = path.join(dir, 'client/win/lua-debug.exe')
         let runtimeArgs = [
             "-e",
             "package.path=[["+path.join(dir, 'client/?.lua')+"]]",
