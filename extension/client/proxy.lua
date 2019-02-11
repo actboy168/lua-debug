@@ -116,25 +116,40 @@ end
 local function proxy_launch(pkg)
     local args = pkg.arguments
 
-    local path = getUnixPath(inject.current_pid())
-    fs.remove(path)
-    server = serverFactory {
-        protocol = 'unix',
-        address = path:string()
-    }
-    if args.console == 'integratedTerminal' or args.console == 'externalTerminal' then
-        local arguments = debuggerFactory.create_terminal(args, getDbgPath(), path)
-        if not arguments then
+    if args.runtimeExecutable then
+        local process = debuggerFactory.create_process(args)
+        if not process then
             response_error(pkg, 'launch failed')
             return
         end
-        request_runinterminal(arguments)
+        local path = getUnixPath(process:get_id())
+        fs.remove(path)
+        server = serverFactory {
+            protocol = 'unix',
+            address = path:string()
+        }
     else
-        if not debuggerFactory.create_luaexe(args, getDbgPath(), path) then
-            response_error(pkg, 'launch failed')
-            return
+        local path = getUnixPath(inject.current_pid())
+        fs.remove(path)
+        server = serverFactory {
+            protocol = 'unix',
+            address = path:string()
+        }
+        if args.console == 'integratedTerminal' or args.console == 'externalTerminal' then
+            local arguments = debuggerFactory.create_terminal(args, getDbgPath(), path)
+            if not arguments then
+                response_error(pkg, 'launch failed')
+                return
+            end
+            request_runinterminal(arguments)
+        else
+            if not debuggerFactory.create_luaexe(args, getDbgPath(), path) then
+                response_error(pkg, 'launch failed')
+                return
+            end
         end
     end
+
     server.send(initReq)
     server.send(pkg)
 end
