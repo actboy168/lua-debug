@@ -162,7 +162,20 @@ local function create_luaexe(args, dbg, port)
     local option = { }
     installBootstrap1(option, luaexe, args)
     installBootstrap2(option, luaexe, args, dbgdir, port)
-    return sp.spawn(option)
+    if not args.luadll or type(args.luaexe) == "string" then
+        return sp.spawn(option)
+    end
+    option.suspended = true
+    local process, err = sp.spawn(option)
+    if not process then
+        return process, err
+    end
+    inject.replacedll(process
+        , getLuaRuntime(args) == 53 and "lua53.dll" or "lua54.dll"
+        , args.luadll
+    )
+    process:resume()
+    return process
 end
 
 local function create_process(args)

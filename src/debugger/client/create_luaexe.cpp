@@ -218,7 +218,7 @@ process_opt create_luaexe_with_debugger(stdinput& io, vscode::rprotocol& req, co
 		return bee::subprocess::process(spawn);
 	}
 	auto process = bee::subprocess::process(spawn);
-	base::hook::replacedll(process.info(), replacedll.first.c_str(), replacedll.second.c_str());
+	base::hook::replacedll(process.info(), replacedll.second.c_str(), replacedll.first.c_str());
 	process.resume();
 	return process;
 }

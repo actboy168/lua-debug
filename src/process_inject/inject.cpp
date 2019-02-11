@@ -23,7 +23,7 @@ static int injectdll(lua_State* L) {
 
 static int replacedll(lua_State* L) {
     auto& self = *(bee::subprocess::process*)getObject(L, 1, "subprocess");
-    bool ok = base::hook::replacedll(self.info(), bee::u2a(luaL_checkstring(L, 2)).c_str(), luaL_checkstring(L, 3));
+    bool ok = base::hook::replacedll(self.info(), luaL_checkstring(L, 2), bee::u2a(luaL_checkstring(L, 3)).c_str());
     lua_pushboolean(L, ok);
     return 1;
 }
