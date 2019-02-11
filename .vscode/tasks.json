@@ -14,35 +14,35 @@
     "tasks": [
         {
             "label": "Debug",
-            "command": "chcp 65001 && \"${workspaceFolder}/build/luabuild/lua.exe\"",
+            "command": "chcp 65001 && \"${workspaceFolder}/luabuild/luabuild/lua.exe\"",
             "args": [
-                "${workspaceFolder}/build/main.lua",
+                "${workspaceFolder}/luabuild/main.lua",
                 "Debug",
                 "IC"
             ]
         },
         {
             "label": "Release",
-            "command": "\"${workspaceFolder}/build/luabuild/lua.exe\"",
+            "command": "\"${workspaceFolder}/luabuild/luabuild/lua.exe\"",
             "args": [
-                "${workspaceFolder}/build/main.lua",
+                "${workspaceFolder}/luabuild/main.lua",
                 "Release",
                 "IC"
             ]
         },
         {
             "label": "Rebuild Release",
-            "command": "chcp 65001 && \"${workspaceFolder}/build/luabuild/lua.exe\"",
+            "command": "chcp 65001 && \"${workspaceFolder}/luabuild/luabuild/lua.exe\"",
             "args": [
-                "${workspaceFolder}/build/main.lua",
+                "${workspaceFolder}/luabuild/main.lua",
                 "Release"
             ]
         },
         {
             "label": "Copy JS",
-            "command": "chcp 65001 && \"${workspaceFolder}/build/luabuild/lua.exe\"",
+            "command": "chcp 65001 && \"${workspaceFolder}/luabuild/luabuild/lua.exe\"",
             "args": [
-                "${workspaceFolder}/build/js.lua"
+                "${workspaceFolder}/luabuild/js.lua"
             ]
         }
     ]

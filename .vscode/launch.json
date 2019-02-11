@@ -8,14 +8,14 @@
             "type": "lua",
             "request": "launch",
             "name": "Test IC",
-            "program": "${workspaceFolder}/build/main.lua",
+            "program": "${workspaceFolder}/luabuild/main.lua",
             "path": [
-                "${workspaceFolder}/build/luabuild/?.lua",
-                "${workspaceFolder}/build/?.lua",
+                "${workspaceFolder}/luabuild/luabuild/?.lua",
+                "${workspaceFolder}/luabuild/?.lua",
             ],
-            "cpath": "${workspaceFolder}/build/luabuild/?.dll",
+            "cpath": "${workspaceFolder}/luabuild/luabuild/?.dll",
             "env": {
-                "PATH": "${workspaceFolder}/build/luabuild/"
+                "PATH": "${workspaceFolder}/luabuild/luabuild/"
             },
             "cwd": "${workspaceFolder}",
             "arg": [
