@@ -22,3 +22,4 @@ extension/windows/
 project/windows/bin/
 project/windows/obj/
 publish/
+build/
