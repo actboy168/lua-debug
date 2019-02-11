@@ -103,12 +103,12 @@ local function proxy_attach(pkg)
         end
         return
     end
-    local ip = args.ip
-    local port = args.port
-    if ip == 'localhost' then
-        ip = '127.0.0.1'
-    end
-    server = serverFactory.tcp_client(m, ip, port)
+    server = serverFactory {
+        protocol = 'tcp',
+        address = args.ip == 'localhost' and '127.0.0.1' or args.ip,
+        port = args.port,
+        client = true
+    }
     server.send(initReq)
     server.send(pkg)
 end

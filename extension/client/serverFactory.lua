@@ -13,7 +13,11 @@ local function create(t)
         write = ''
         select.close(srvfd)
     end
-    srvfd = assert(select.listen(t))
+    if t.client then
+        srvfd = assert(select.connect(t))
+    else
+        srvfd = assert(select.listen(t))
+    end
     function m.debug(v)
         stat.debug = v
     end
