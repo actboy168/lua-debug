@@ -19,19 +19,19 @@ function createDebugAdapterDescriptor(session, executable) {
     if (typeof session.configuration.debugServer === 'number') {
         return new DebugAdapterServer(session.configuration.debugServer);
     }
-    if (session.configuration.experimentalClient) {
+    if (session.configuration.deprecatedClient) {
         let dir = getRuntimeDirectory(extension.context)
-        let runtime = path.join(dir, 'client/win/lua-debug.exe')
+        let runtime = path.join(dir, 'windows/x86/vscode-lua-debug.exe')
         let runtimeArgs = [
-            "-e",
-            "package.path=[["+path.join(dir, 'client/?.lua')+"]]",
-            path.join(dir, 'client/main.lua')
         ]
         return new vscode.DebugAdapterExecutable(runtime, runtimeArgs);
     }
     let dir = getRuntimeDirectory(extension.context)
-    let runtime = path.join(dir, 'windows/x86/vscode-lua-debug.exe')
+    let runtime = path.join(dir, 'client/win/lua-debug.exe')
     let runtimeArgs = [
+        "-e",
+        "package.path=[["+path.join(dir, 'client/?.lua')+"]]",
+        path.join(dir, 'client/main.lua')
     ]
     return new vscode.DebugAdapterExecutable(runtime, runtimeArgs);
 }

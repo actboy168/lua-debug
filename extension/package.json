@@ -289,7 +289,7 @@
                                 "markdownDescription": "Debug port to attach to. Default is 4278.",
                                 "default": 4278
                             },
-                            "experimentalClient": {
+                            "deprecatedClient": {
                                 "type": "boolean",
                                 "markdownDescription": "Just for test.",
                                 "default": true
@@ -370,7 +370,7 @@
                                 "markdownDescription": "`processId` and `processName` will not inject debugger.",
                                 "default": "false"
                             },
-                            "experimentalClient": {
+                            "deprecatedClient": {
                                 "type": "boolean",
                                 "markdownDescription": "Just for test.",
                                 "default": true
