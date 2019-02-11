@@ -136,7 +136,7 @@ local property = {
     Platform = 'x86'
 }
 msvc:compile(rebuild and 'rebuild' or 'build', root / 'third_party' / 'bee.lua' / 'bee.sln', property)
-local srcdir =  root / 'third_party' / 'bee.lua' / 'bin' / ('msvc_x86_' .. configuration)
+local srcdir =  root / 'third_party' / 'bee.lua' / 'build' / ('msbuild_x86_' .. configuration) / 'bin'
 local dstdir =  outputDir / 'client' / 'win'
 fs.create_directories(dstdir)
 fs.copy_file(srcdir / 'lua.exe', dstdir / 'lua-debug.exe', true)
