@@ -364,6 +364,7 @@ namespace vscode
 	bool debugger_impl::request_terminate(rprotocol& req)
 	{
 		response_success(req);
+        close();
 		closeprocess();
 		return true;
 	}
