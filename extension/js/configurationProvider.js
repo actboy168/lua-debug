@@ -38,9 +38,6 @@ function resolveDebugConfiguration(folder, config, token) {
     if (typeof config.name != 'string') {
         config.name = 'Not specified';
     }
-    if (typeof config.program != 'string') {
-        config.program = createDefaultProgram(folder);
-    }
     config.workspaceFolder = '${workspaceFolder}';
     if (typeof config.cwd != 'string') {
         config.cwd = '${workspaceFolder}';
@@ -68,10 +65,15 @@ function resolveDebugConfiguration(folder, config, token) {
         config.ip = '127.0.0.1'
     }
     if (config.request == 'launch') {
-        if (!config.program && !config.runtimeExecutable) {
-            return vscode.window.showInformationMessage('Cannot find a program to debug').then(_ => {
-                return undefined;
-            });
+        if (typeof config.runtimeExecutable != 'string') { 
+            if (typeof config.program != 'string') {
+                config.program = createDefaultProgram(folder);
+                if (typeof config.program != 'string') {
+                    return vscode.window.showInformationMessage('Cannot find a program to debug').then(_ => {
+                        return undefined;
+                    });
+                }
+            }
         }
         if (typeof config.luaexe == 'string') {
             if (typeof config.path != 'string' && typeof config.path != 'object') {
