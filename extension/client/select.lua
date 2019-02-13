@@ -164,7 +164,7 @@ local function updateLC()
                 if event[fd] then
                     event[fd]('ok', fd)
                 end
-                m.attach(fd)
+                attach(fd)
             else
                 if event[fd] then
                     event[fd]('failed', fd)

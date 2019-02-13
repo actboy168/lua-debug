@@ -11,7 +11,9 @@ local function create(t)
         session = fd
         select.send(session, write)
         write = ''
-        select.close(srvfd)
+        if not t.client then
+            select.close(srvfd)
+        end
     end
     if t.client then
         srvfd = assert(select.connect(t))
