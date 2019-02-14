@@ -1,13 +1,8 @@
-# vscode-lua-debug
+# lua-debug
 
 ## 安装
 在vscode中按Ctrl+P，输入
 > ext install lua-debug
-
-## 模块功能
-* vscode-lua-debug.exe 代理客户端。在launch模式中，vscode-lua-debug.exe会用debugger.dll创建一个调试器进行调试。在attach模式中，vscode-lua-debug.exe会连接一个远程的调试器(也是由debugger.dll创建的)。无论如何，调试开始后vscode-lua-debug.exe只负责在debugger.dll和vscode之间转发消息。
-* debugger.dll 调试器的核心模块。你可以在你的程序中加载debugger.dll并创建调试器，这样vscode就可以通过attach模式进行调试。
-* lua53.dll lua核心模块。如果你的程序定制了lua，你可以替换掉它。
 
 ## 配置launch.json
 
