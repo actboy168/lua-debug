@@ -159,7 +159,10 @@ end
 
 local function create_luaexe(args, dbg, port)
     local luaexe, dbgdir = getLuaExe(args, dbg)
-    local option = { }
+    local option = {
+        console = 'new',
+        hideWindow = true,
+    }
     installBootstrap1(option, luaexe, args)
     installBootstrap2(option, luaexe, args, dbgdir, port)
     if not args.luadll or type(args.luaexe) == "string" then
