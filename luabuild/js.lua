@@ -1,4 +1,4 @@
-require 'filesystem'
+local fs = require 'bee.filesystem'
 
 local insiders = false
 local vscode = insiders and '.vscode-insiders' or '.vscode'

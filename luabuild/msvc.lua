@@ -1,6 +1,6 @@
-require 'filesystem'
-require 'registry'
-local uni = require 'unicode'
+local fs = require 'bee.filesystem'
+local registry = require 'bee.registry'
+local uni = require 'bee.unicode'
 local ffi = require 'ffi'
 ffi.cdef[[
     int SetEnvironmentVariableA(const char* name, const char* value);
@@ -27,7 +27,7 @@ local function addenv(name, newvalue)
 end
 
 local function msvc_path(version)
-    local reg = registry.local_machine() / [[SOFTWARE\Microsoft\VisualStudio\SxS\VS7]]
+    local reg = registry.open [[HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\VisualStudio\SxS\VS7]]
     local path = reg[("%d.0"):format(math.ceil(version / 10))]
     if path then
         return fs.path(path)

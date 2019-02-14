@@ -1,6 +1,6 @@
 print 'Step 1. init'
 
-require 'filesystem'
+local fs = require 'bee.filesystem'
 
 local configuration = arg[1] or 'Release'
 local rebuild = arg[2] ~= 'IC'

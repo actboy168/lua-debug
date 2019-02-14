@@ -10,12 +10,12 @@
             "name": "Test IC",
             "program": "${workspaceFolder}/luabuild/main.lua",
             "path": [
-                "${workspaceFolder}/luabuild/luabuild/?.lua",
+                "${workspaceFolder}/luabuild/?.lua",
                 "${workspaceFolder}/luabuild/?.lua",
             ],
-            "cpath": "${workspaceFolder}/luabuild/luabuild/?.dll",
+            "cpath": "${workspaceFolder}/luabuild/?.dll",
             "env": {
-                "PATH": "${workspaceFolder}/luabuild/luabuild/"
+                "PATH": "${workspaceFolder}/luabuild/"
             },
             "cwd": "${workspaceFolder}",
             "arg": [
