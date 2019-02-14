@@ -2,7 +2,7 @@
 
 ## 安装
 在vscode中按Ctrl+P，输入
-> ext install lua-debug
+> ext install actboy168.lua-debug
 
 ## 配置launch.json
 
