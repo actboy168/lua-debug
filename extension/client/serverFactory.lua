@@ -7,7 +7,13 @@ local function create(t)
     local srvfd
     local write = ''
     local stat = {}
-    function t.event(_, fd)
+    function t.event(status, fd)
+        if status == 'failed' then
+            assert(t.client)
+            select.close(srvfd)
+            srvfd = assert(select.connect(t))
+            return
+        end
         session = fd
         select.send(session, write)
         write = ''
