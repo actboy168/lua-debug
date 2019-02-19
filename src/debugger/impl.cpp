@@ -386,11 +386,12 @@ namespace vscode
 		if (lua_getstack(L, 0, (lua_Debug*)&ar))
 		{
 			lua_pushinteger(L, level);
+            debug debug(L, &ar);
 			if (!hasFrame(L) && lua_type(L, -2) == LUA_TSTRING) {
-				run_stopped(thread, debug(L, &ar), "exception", lua_tostring(L, -2));
+				run_stopped(thread, debug, "exception", lua_tostring(L, -2));
 			}
 			else {
-				run_stopped(thread, debug(L, &ar), "exception");
+				run_stopped(thread, debug, "exception");
 			}
 			lua_pop(L, 1);
 		}
@@ -545,7 +546,7 @@ namespace vscode
         std::vector<std::string> result;
         std::regex re(pattern.data(), pattern.size());
         std::smatch m;
-        for (auto& it = s.cbegin(); std::regex_search(it, s.cend(), m, re); it = m[0].second) {
+        for (auto it = s.cbegin(); std::regex_search(it, s.cend(), m, re); it = m[0].second) {
             result.push_back(m.str());
         }
         return result;
@@ -830,19 +831,23 @@ namespace vscode
 				s->name = luaL_checkstring(L, argf + 1);
 			}
 			vdebugmgr_.event_call(s);
-			thread->dbg.hook(thread, debug::event_call(L));
+			debug debug = debug::event_call(L);
+			thread->dbg.hook(thread, debug);
 		}
 		else if (strcmp(name, "return") == 0) {
 			vdebugmgr_.event_return();
-			thread->dbg.hook(thread, debug::event_return(L));
+			debug debug = debug::event_return(L);
+			thread->dbg.hook(thread, debug);
 		}
 		else if (strcmp(name, "line") == 0) {
 			if (argf == argl) {
-				thread->dbg.hook(thread, debug::event_line(L, (int)luaL_checkinteger(L, argf), -1));
+				debug debug = debug::event_line(L, (int)luaL_checkinteger(L, argf), -1);
+				thread->dbg.hook(thread, debug);
 			}
 			else {
 				luaL_checktype(L, argf + 1, LUA_TTABLE);
-				thread->dbg.hook(thread, debug::event_line(L, (int)luaL_checkinteger(L, argf), lua_absindex(L, argf + 1)));
+				debug debug = debug::event_line(L, (int)luaL_checkinteger(L, argf), lua_absindex(L, argf + 1));
+				thread->dbg.hook(thread, debug);
 			}
 		}
 	}

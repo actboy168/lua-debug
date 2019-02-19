@@ -32,7 +32,8 @@ namespace vscode
 	static void debugger_hook(luathread* thread, lua_State *L, lua::Debug *ar)
 	{
 		if (!thread->enable) return;
-		thread->dbg.hook(thread, debug(L, ar));
+		debug debug(L, ar);
+		thread->dbg.hook(thread, debug);
 	}
 
 	static void debugger_panic(luathread* thread, lua_State *L)
