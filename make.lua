@@ -3,6 +3,9 @@ local lm = require "luamake"
 lm:import 'third_party/bee.lua/make.lua'
 
 lm:lua_library "inject" {
+    deps = {
+        "bee"
+    },
     includes = {
         "include",
         "third_party/bee.lua",
@@ -15,5 +18,19 @@ lm:lua_library "inject" {
         "src/process_inject/inject.cpp",
         "third_party/wow64ext/src/wow64ext.cpp",
     },
-    deps = "bee",
+    links = "advapi32"
+}
+
+lm:build 'install' {
+    '$luamake', 'lua', 'make/install.lua',
+    deps = {
+        "bee",
+        "lua54",
+        "lua",
+        "inject"
+    }
+}
+
+lm:default {
+    "install",
 }
