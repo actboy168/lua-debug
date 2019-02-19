@@ -264,7 +264,7 @@ vscode::debugger* debugger_get()
 static void caller_is_luadll(void* callerAddress)
 {
 	HMODULE  caller = NULL;
-	if (GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS, (LPCTSTR)callerAddress, &caller) && caller)
+	if (GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS, (LPCWSTR)callerAddress, &caller) && caller)
 	{
 		if (GetProcAddress(caller, "lua_newstate"))
 		{
