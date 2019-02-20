@@ -160,8 +160,7 @@ end
 local function create_luaexe(args, dbg, port)
     local luaexe, dbgdir = getLuaExe(args, dbg)
     local option = {
-        console = 'new',
-        hideWindow = true,
+        console = 'hide'
     }
     installBootstrap1(option, luaexe, args)
     installBootstrap2(option, luaexe, args, dbgdir, port)
