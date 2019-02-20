@@ -108,6 +108,8 @@ namespace vscode
 		std::string codestr = code;
 		if (luaL_loadbuffer(L, codestr.data(), codestr.size(), "=(debug)"))
 		{
+            lua_insert(L, startstack + 1);
+            lua_settop(L, startstack + 1);
 			return false;
 		}
 		// todo: pcall?
@@ -160,7 +162,7 @@ namespace vscode
 		int start = lua_gettop(L) - vararg;
 		if (lua_pcall(L, vararg - 1, LUA_MULTRET, 0))
 		{
-			lua_rotate(L, startstack + 1, 1);
+            lua_insert(L, startstack + 1);
 			lua_settop(L, startstack + 1);
 			return false;
 		}

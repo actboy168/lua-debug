@@ -1373,33 +1373,27 @@ finish:
 		std::string expression = args["expression"].Get<std::string>();
 
 		int nresult = 0;
-		if (!vscode::evaluate(L, ar, ("return " + expression).c_str(), nresult, context == "repl"))
-		{
+		if (!vscode::evaluate(L, ar, ("return " + expression).c_str(), nresult, context == "repl")) {
 			std::string errmsg = lua_tostr(L, -1);
-			if (context != "repl")
-			{
+            lua_pop(L, 1);
+			if (context != "repl") {
 				dbg.response_error(req, errmsg.c_str());
-				lua_pop(L, 1);
 				return;
 			}
-			if (!vscode::evaluate(L, ar, expression.c_str(), nresult, true))
-			{
+			if (!vscode::evaluate(L, ar, expression.c_str(), nresult, true)) {
+                lua_pop(L, 1);
 				dbg.response_error(req, errmsg.c_str());
-				lua_pop(L, 1);
 				return;
 			}
-			dbg.response_success(req, [&](wprotocol& res)
-			{
+			dbg.response_success(req, [&](wprotocol& res) {
 			});
 			lua_pop(L, nresult);
 			return;
 		}
 
-		dbg.response_success(req, [&](wprotocol& res)
-		{
+		dbg.response_success(req, [&](wprotocol& res) {
 			std::vector<var> rets;
-			for (int i = 0; i < nresult; ++i)
-			{
+			for (int i = 0; i < nresult; ++i) {
 				var var(L, i, "", i - nresult, dbg);
 				rets.emplace_back(std::move(var));
 			}
@@ -1409,16 +1403,13 @@ finish:
 				res("variablesReference").Int64(reference);
 			}
 			lua_pop(L, nresult);
-			if (rets.size() == 0)
-			{
+			if (rets.size() == 0) {
 				res("result").String("nil");
 			}
-			else if (rets.size() == 1)
-			{
+			else if (rets.size() == 1) {
 				res("result").String(rets[0].value);
 			}
-			else
-			{
+			else {
 				std::string result = rets[0].value;
 				for (int i = 1; i < (int)rets.size(); ++i)
 				{
