@@ -182,6 +182,10 @@ namespace vscode {
 		return true;
 	}
 
+    static std::string convertreal(lua_Number r) {
+        return bee::format("%.16g", r);
+    }
+
 	static bool push_setvalue(lua_State* L, int oldtype, set_value& setvalue)
 	{
 		if (setvalue.value == "nil") {
@@ -229,7 +233,7 @@ namespace vscode {
 		double dv = strtod(setvalue.value.c_str(), &end);
 		if (errno != ERANGE && *end == 0)
 		{
-			setvalue.value = bee::format("%f", dv);
+			setvalue.value = convertreal(dv);
 			setvalue.type = "number";
 			lua_pushnumber(L, dv);
 			return true;
@@ -429,7 +433,7 @@ namespace vscode {
 					return bee::format("[%d]", i);
 				}
 				else
-					return bee::format("%f", lua_tonumber(L, idx));
+					return convertreal(lua_tonumber(L, idx));
 			case LUA_TSTRING: {
 				size_t len = 0;
 				const char* buf = lua_tolstring(L, idx, &len);
@@ -471,7 +475,7 @@ namespace vscode {
 				if (lua_isinteger(L, idx)) {
 					return bee::format("%d", lua_tointeger(L, idx));
 				}
-				return bee::format("%f", lua_tonumber(L, idx));
+				return convertreal(lua_tonumber(L, idx));
 			case LUA_TSTRING: {
 				size_t len = 0;
 				const char* str = lua_tolstring(L, idx, &len);
@@ -599,7 +603,7 @@ namespace vscode {
 				if (lua_isinteger(L, idx)) {
 					return bee::format("%d", lua_tointeger(L, idx));
 				}
-				return bee::format("%f", lua_tonumber(L, idx));
+				return convertreal(lua_tonumber(L, idx));
 			case LUA_TSTRING: {
 				size_t len = 0;
 				const char* str = lua_tolstring(L, idx, &len);
