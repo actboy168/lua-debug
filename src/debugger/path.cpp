@@ -1,6 +1,6 @@
 #include <debugger/path.h>
 #include <bee/utility/unicode_win.h>
-#include <bee/utility/dynarray.h>
+#include <bee/nonstd/dynarray.h>
 #include <deque>
 #if defined(_WIN32)
 #include <Windows.h>

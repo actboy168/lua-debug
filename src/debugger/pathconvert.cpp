@@ -1,7 +1,7 @@
 #include <debugger/impl.h>
 #include <debugger/path.h>
 #include <bee/utility/unicode_win.h>
-#include <bee/utility/dynarray.h>
+#include <bee/nonstd/dynarray.h>
 #include <deque>
 #include <regex>
 
