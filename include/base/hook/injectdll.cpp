@@ -40,9 +40,9 @@ namespace base { namespace hook {
 			0x48, 0x83, 0xEC, 0x28,                                                 // sub rsp, 0x28
 			0x49, 0xB9, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,             // mov  r9, 0  // DllHandle
 			0x49, 0xB8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,             // mov  r8, 0  // DllPath
+            0x48, 0x31, 0xD2,                                                       // xor  rdx,rdx
+            0x48, 0x31, 0xC9,                                                       // xor  rcx,rcx
 			0x48, 0xB8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,             // mov  rax,0  // LdrLoadDll
-			0x48, 0x31,                                                             // xor  rcx,rcx
-			0xC9, 0x48,                                                             // xor  rdx,rdx
 			0xFF, 0xD0,                                                             // call rax   LdrLoadDll
 			0x48, 0x83, 0xC4, 0x28,                                                 // add rsp, 0x28
 			0x41, 0x5F,                                                             // pop r15
@@ -111,8 +111,8 @@ namespace base { namespace hook {
 		DWORD64 handle = us.Buffer + us.MaximumLength;
 		memcpy(sc + 30, &handle, sizeof(handle));
 		memcpy(sc + 40, &memory, sizeof(memory));
-		memcpy(sc + 50, &pfLoadLibrary, sizeof(pfLoadLibrary));
-		memcpy(sc + 98, &ctx.Rip, sizeof(ctx.Rip));
+		memcpy(sc + 56, &pfLoadLibrary, sizeof(pfLoadLibrary));
+		memcpy(sc + 100, &ctx.Rip, sizeof(ctx.Rip));
 		ok = WriteProcessMemory64(pi.hProcess, shellcode, &sc, sizeof(sc), &written);
 		if (!ok || written != sizeof(sc)) {
 			return false;
