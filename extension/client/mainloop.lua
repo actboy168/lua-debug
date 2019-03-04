@@ -24,6 +24,7 @@ return function(port)
         }
     else
         vscode = require 'stdio'
+        --vscode.debug(true)
     end
     proxy.init(vscode)
 
