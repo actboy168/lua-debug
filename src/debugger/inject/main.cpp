@@ -53,16 +53,11 @@ void debuggerDetach(lua_State* L) {
 	if (dbg) dbg->detach_lua(L, true);
 }
 
-BOOL APIENTRY DllMain(HMODULE module, DWORD reason, LPVOID /*pReserved*/)
-{
-	if (reason == DLL_PROCESS_ATTACH)
-	{
-		::DisableThreadLibraryCalls(module);
-		if (!initialize()) {
-			MessageBoxW(0, L"debuggerInject initialize failed.", L"Error!", 0);
-			return TRUE;
-		}
-		autoattach::initialize(debuggerAttach, debuggerDetach, isAttachProcess);
-	}
-	return TRUE;
+extern "C" __declspec(dllexport)
+void __cdecl entry() {
+    if (!initialize()) {
+        MessageBoxW(0, L"debuggerInject initialize failed.", L"Error!", 0);
+        return;
+    }
+    autoattach::initialize(debuggerAttach, debuggerDetach, isAttachProcess);
 }

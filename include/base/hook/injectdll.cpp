@@ -21,7 +21,7 @@ namespace base { namespace hook {
 
 	bool injectdll_x64(const PROCESS_INFORMATION& pi, const std::wstring& dll) {
 		static unsigned char sc[] = {
-			0x9c,                                                                   // pushfq
+			0x9C,                                                                   // pushfq
 			0x50,                                                                   // push rax
 			0x51,                                                                   // push rcx
 			0x52,                                                                   // push rdx
@@ -42,7 +42,7 @@ namespace base { namespace hook {
 			0x49, 0xB8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,             // mov  r8, 0  // DllPath
             0x48, 0x31, 0xD2,                                                       // xor  rdx,rdx
             0x48, 0x31, 0xC9,                                                       // xor  rcx,rcx
-			0x48, 0xB8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,             // mov  rax,0  // LdrLoadDll
+            0x48, 0xB8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,             // mov  rax,0  // LdrLoadDll
 			0xFF, 0xD0,                                                             // call rax   LdrLoadDll
 			0x48, 0x83, 0xC4, 0x28,                                                 // add rsp, 0x28
 			0x41, 0x5F,                                                             // pop r15
@@ -180,13 +180,239 @@ namespace base { namespace hook {
 		return true;
 	}
 
-	bool injectdll(const PROCESS_INFORMATION& pi, const std::wstring& x86dll, const std::wstring& x64dll) {
-		if (is_process64(pi.hProcess)) {
-			return !x64dll.empty() && injectdll_x64(pi, x64dll);
-		}
-		else {
-			return !x86dll.empty() && injectdll_x86(pi, x86dll);
-		}
+    bool injectdll_x64_hasentry(const PROCESS_INFORMATION& pi, const std::wstring& dll, const std::string& entry) {
+        static unsigned char sc[] = {
+            0x9C,                                                                   // pushfq
+            0x50,                                                                   // push rax
+            0x51,                                                                   // push rcx
+            0x52,                                                                   // push rdx
+            0x53,                                                                   // push rbx
+            0x55,                                                                   // push rbp
+            0x56,                                                                   // push rsi
+            0x57,                                                                   // push rdi
+            0x41, 0x50,                                                             // push r8
+            0x41, 0x51,                                                             // push r9
+            0x41, 0x52,                                                             // push r10
+            0x41, 0x53,                                                             // push r11
+            0x41, 0x54,                                                             // push r12
+            0x41, 0x55,                                                             // push r13
+            0x41, 0x56,                                                             // push r14
+            0x41, 0x57,                                                             // push r15
+            0x48, 0x83, 0xEC, 0x28,                                                 // sub rsp, 0x28
+            0x49, 0xB9, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,             // mov  r9, 0  // DllHandle
+            0x49, 0xB8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,             // mov  r8, 0  // DllPath
+            0x48, 0x31, 0xD2,                                                       // xor  rdx,rdx
+            0x48, 0x31, 0xC9,                                                       // xor  rcx,rcx
+            0x48, 0xB8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,             // mov  rax,0  // LdrLoadDll
+            0xFF, 0xD0,                                                             // call rax
+            0x49, 0xB9, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,             // mov  r9, 0  // EntryFunc
+            0x4D, 0x31, 0xC0,                                                       // xor  r8, r8
+            0x48, 0xBA, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,             // mov  rdx,0  // EntryName
+            0x48, 0xB9, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,             // mov  rcx,0  // DllHandle
+            0x48, 0x8B, 0x09,                                                       // mov  rcx,[rcx]
+            0x48, 0xB8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,             // mov  rax,0  // LdrGetProcedureAddress
+            0xFF, 0xD0,                                                             // call rax
+            0x48, 0xB8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,             // mov  rax,0  // EntryFunc
+            0x48, 0x8B, 0x00,                                                       // mov  rax,[rax]
+            0xFF, 0xD0,                                                             // call rax
+            0x48, 0x83, 0xC4, 0x28,                                                 // add rsp, 0x28
+            0x41, 0x5F,                                                             // pop r15
+            0x41, 0x5E,                                                             // pop r14
+            0x41, 0x5D,                                                             // pop r13
+            0x41, 0x5C,                                                             // pop r12
+            0x41, 0x5B,                                                             // pop r11
+            0x41, 0x5A,                                                             // pop r10
+            0x41, 0x59,                                                             // pop r9
+            0x41, 0x58,                                                             // pop r8
+            0x5F,                                                                   // pop rdi
+            0x5E,                                                                   // pop rsi
+            0x5D,                                                                   // pop rbp
+            0x5B,                                                                   // pop rbx
+            0x5A,                                                                   // pop rdx
+            0x59,                                                                   // pop rcx
+            0x58,                                                                   // pop rax
+            0x9D,                                                                   // popfq
+            0xFF, 0x25, 0x00, 0x00, 0x00, 0x00,                                     // jmp offset
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00                          // rip
+        }; 
+
+        InitWow64ext();
+        DWORD64 pfLoadLibrary = (DWORD64)GetProcAddress64(GetModuleHandle64(L"ntdll.dll"), "LdrLoadDll");
+        if (!pfLoadLibrary) {
+        return false;
+    }
+        DWORD64 pfGetProcAddress = (DWORD64)GetProcAddress64(GetModuleHandle64(L"ntdll.dll"), "LdrGetProcedureAddress");
+        if (!pfGetProcAddress) {
+            return false;
+        }
+
+        struct UNICODE_STRING {
+            USHORT    Length;
+            USHORT    MaximumLength;
+            DWORD64   Buffer;
+        };
+        SIZE_T mem1size = sizeof(DWORD64) + sizeof(UNICODE_STRING) + (dll.size() + 1) * sizeof(wchar_t);
+        DWORD64 mem1 = VirtualAllocEx64(pi.hProcess, NULL, mem1size, MEM_COMMIT, PAGE_READWRITE);
+        if (!mem1) {
+        return false;
+    }
+        SIZE_T mem2size = sizeof(DWORD64) + sizeof(UNICODE_STRING) + (entry.size() + 1) * sizeof(char);
+        DWORD64 mem2 = VirtualAllocEx64(pi.hProcess, NULL, mem2size, MEM_COMMIT, PAGE_READWRITE);
+        if (!mem2) {
+            return false;
+        }
+        DWORD64 shellcode = VirtualAllocEx64(pi.hProcess, NULL, sizeof(sc), MEM_COMMIT, PAGE_EXECUTE_READWRITE);
+        if (!shellcode) {
+            return false;
+        }
+
+        UNICODE_STRING us1;
+        us1.Length = (USHORT)(dll.size() * sizeof(wchar_t));
+        us1.MaximumLength = us1.Length + sizeof(wchar_t);
+        us1.Buffer = mem1 + sizeof(UNICODE_STRING);
+        SIZE_T written = 0;
+        BOOL ok = FALSE;
+        ok = WriteProcessMemory64(pi.hProcess, mem1, &us1, sizeof(UNICODE_STRING), &written);
+        if (!ok || written != sizeof(UNICODE_STRING)) {
+            return false;
+        }
+        ok = WriteProcessMemory64(pi.hProcess, us1.Buffer, (void*)dll.data(), us1.MaximumLength, &written);
+        if (!ok || written != us1.MaximumLength) {
+            return false;
+        }
+
+        UNICODE_STRING us2;
+        us2.Length = (USHORT)(dll.size() * sizeof(wchar_t));
+        us2.MaximumLength = us2.Length + sizeof(wchar_t);
+        us2.Buffer = mem2 + sizeof(UNICODE_STRING);
+        ok = WriteProcessMemory64(pi.hProcess, mem2, &us2, sizeof(UNICODE_STRING), &written);
+        if (!ok || written != sizeof(UNICODE_STRING)) {
+            return false;
+        }
+        ok = WriteProcessMemory64(pi.hProcess, us2.Buffer, (void*)entry.data(), us2.MaximumLength, &written);
+        if (!ok || written != us2.MaximumLength) {
+            return false;
+        }
+
+        _CONTEXT64 ctx = { 0 };
+        ctx.ContextFlags = CONTEXT_CONTROL;
+        if (!GetThreadContext64(pi.hThread, &ctx)) {
+            return false;
+        }
+
+        DWORD64 dllhandle = us1.Buffer + us1.MaximumLength;
+        DWORD64 entryfunc = us2.Buffer + us2.MaximumLength;
+        memcpy(sc + 30, &dllhandle, sizeof(dllhandle));
+        memcpy(sc + 40, &mem1, sizeof(mem1));
+        memcpy(sc + 56, &pfLoadLibrary, sizeof(pfLoadLibrary));
+        memcpy(sc + 68, &entryfunc, sizeof(entryfunc));
+        memcpy(sc + 81, &mem2, sizeof(mem2));
+        memcpy(sc + 91, &dllhandle, sizeof(dllhandle));
+        memcpy(sc + 104, &pfGetProcAddress, sizeof(pfGetProcAddress));
+        memcpy(sc + 116, &entryfunc, sizeof(entryfunc));
+        memcpy(sc + 163, &ctx.Rip, sizeof(ctx.Rip));
+        ok = WriteProcessMemory64(pi.hProcess, shellcode, &sc, sizeof(sc), &written);
+        if (!ok || written != sizeof(sc)) {
+            return false;
+        }
+
+        ctx.ContextFlags = CONTEXT_CONTROL;
+        ctx.Rip = shellcode;
+        if (!SetThreadContext64(pi.hThread, &ctx)) {
+            return false;
+        }
+        return true;
+    }
+
+    bool injectdll_x86_hasentry(const PROCESS_INFORMATION& pi, const std::wstring& dll, const std::string& entry) {
+        static unsigned char sc[] = {
+            0x68, 0x00, 0x00, 0x00, 0x00,	// push eip
+            0x9C,							// pushfd
+            0x60,							// pushad
+            0x68, 0x00, 0x00, 0x00, 0x00,	// push DllPath
+            0xB8, 0x00, 0x00, 0x00, 0x00,	// mov eax, LoadLibraryW
+            0xFF, 0xD0,						// call eax
+            0x68, 0x00, 0x00, 0x00, 0x00,	// push EntryName
+            0x50,                           // push eax
+            0xB8, 0x00, 0x00, 0x00, 0x00,	// mov eax, GetProcAddress
+            0xFF, 0xD0,						// call eax
+            0xFF, 0xD0,						// call eax
+            0x61,							// popad
+            0x9D,							// popfd
+            0xC3							// ret
+        };
+        DWORD pfLoadLibrary = (DWORD)::GetProcAddress(::GetModuleHandleW(L"Kernel32"), "LoadLibraryW");
+        if (!pfLoadLibrary) {
+            return false;
+        }
+        DWORD pfGetProcAddress = (DWORD)::GetProcAddress(::GetModuleHandleW(L"Kernel32"), "GetProcAddress");
+        if (!pfGetProcAddress) {
+            return false;
+        }
+        SIZE_T mem1size = (dll.size() + 1) * sizeof(wchar_t);
+        LPVOID mem1 = VirtualAllocEx(pi.hProcess, NULL, mem1size, MEM_COMMIT, PAGE_READWRITE);
+        if (!mem1) {
+            return false;
+        }
+        SIZE_T mem2size = (entry.size() + 1) * sizeof(char);
+        LPVOID mem2 = VirtualAllocEx(pi.hProcess, NULL, mem2size, MEM_COMMIT, PAGE_READWRITE);
+        if (!mem2) {
+            return false;
+        }
+        LPVOID shellcode = VirtualAllocEx(pi.hProcess, NULL, sizeof(sc), MEM_COMMIT, PAGE_EXECUTE_READWRITE);
+        if (!shellcode) {
+            return false;
+        }
+        SIZE_T written = 0;
+        BOOL ok = FALSE;
+        ok = WriteProcessMemory(pi.hProcess, mem1, dll.data(), mem1size, &written);
+        if (!ok || written != mem1size) {
+            return false;
+        }
+        ok = WriteProcessMemory(pi.hProcess, mem2, entry.data(), mem2size, &written);
+        if (!ok || written != mem2size) {
+            return false;
+        }
+        CONTEXT ctx = { 0 };
+        ctx.ContextFlags = CONTEXT_FULL;
+        if (!::GetThreadContext(pi.hThread, &ctx)) {
+            return false;
+        }
+        memcpy(sc + 1, &ctx.Eip, sizeof(ctx.Eip));
+        memcpy(sc + 8, &mem1, sizeof(mem1));
+        memcpy(sc + 13, &pfLoadLibrary, sizeof(pfLoadLibrary));
+        memcpy(sc + 20, &mem2, sizeof(mem2));
+        memcpy(sc + 26, &pfGetProcAddress, sizeof(pfGetProcAddress));
+
+        ok = WriteProcessMemory(pi.hProcess, shellcode, &sc, sizeof(sc), &written);
+        if (!ok || written != sizeof(sc)) {
+            return false;
+        }
+        ctx.ContextFlags = CONTEXT_CONTROL;
+        ctx.Eip = (DWORD)shellcode;
+        if (!::SetThreadContext(pi.hThread, &ctx)) {
+            return false;
+        }
+        return true;
+    }
+
+	bool injectdll(const PROCESS_INFORMATION& pi, const std::wstring& x86dll, const std::wstring& x64dll, const char* entry) {
+        if (entry) {
+            if (is_process64(pi.hProcess)) {
+                return !x64dll.empty() && injectdll_x64_hasentry(pi, x64dll, entry);
+            }
+            else {
+                return !x86dll.empty() && injectdll_x86_hasentry(pi, x86dll, entry);
+            }
+        }
+        else {
+            if (is_process64(pi.hProcess)) {
+                return !x64dll.empty() && injectdll_x64(pi, x64dll);
+            }
+            else {
+                return !x86dll.empty() && injectdll_x86(pi, x86dll);
+            }
+        }
 	}
 
 	bool setdebugprivilege() {
@@ -258,13 +484,13 @@ namespace base { namespace hook {
 		return true;
 	}
 
-	bool injectdll(DWORD pid, const std::wstring& x86dll, const std::wstring& x64dll) {
+	bool injectdll(DWORD pid, const std::wstring& x86dll, const std::wstring& x64dll, const char* entry) {
 		PROCESS_INFORMATION pi = { 0 };
 		if (!openprocess(pid, PROCESS_ALL_ACCESS, THREAD_GET_CONTEXT | THREAD_SET_CONTEXT | THREAD_SUSPEND_RESUME, pi)) {
 			return false;
 		}
 		SuspendThread(pi.hThread);
-		if (!injectdll(pi, x86dll, x64dll)) {
+		if (!injectdll(pi, x86dll, x64dll, entry)) {
 			ResumeThread(pi.hThread);
 			closeprocess(pi);
 			return false;

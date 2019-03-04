@@ -16,7 +16,11 @@ static int injectdll(lua_State* L) {
         return 1;
     }
     auto& self = *(bee::subprocess::process*)getObject(L, 1, "subprocess");
-    bool ok = base::hook::injectdll(self.info(), bee::lua::to_string(L, 2), bee::lua::to_string(L, 3));
+    const char* entry = 0;
+    if (lua_gettop(L) >= 4) {
+        entry = luaL_checkstring(L, 4);
+    }
+    bool ok = base::hook::injectdll(self.info(), bee::lua::to_string(L, 2), bee::lua::to_string(L, 3), entry);
     lua_pushboolean(L, ok);
     return 1;
 }
