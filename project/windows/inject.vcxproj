@@ -38,7 +38,6 @@
   <ItemGroup>
     <ClInclude Include="..\..\include\base\hook\injectdll.h" />
     <ClInclude Include="..\..\include\base\hook\replacedll.h" />
-    <ClInclude Include="..\..\include\base\win\process_switch.h" />
     <ClInclude Include="..\..\include\base\win\query_process.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

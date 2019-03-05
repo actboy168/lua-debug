@@ -19,9 +19,8 @@ namespace autoattach {
 		namespace real {
 			uintptr_t lua_newstate = 0;
 			uintptr_t luaL_newstate = 0;
-			uintptr_t lua_pcallk = 0;
-			uintptr_t lua_callk = 0;
 			uintptr_t lua_close = 0;
+            uintptr_t lua_settop = 0;
 		}
 		namespace fake {
 			static lua_State* __cdecl lua_newstate(void* f, void* ud)
@@ -36,15 +35,10 @@ namespace autoattach {
 				debuggerAttach(L);
 				return L;
 			}
-			static int __cdecl lua_pcallk(lua_State *L, int nargs, int nresults, int errfunc, lua_KContext ctx, lua_KFunction k)
+			static void __cdecl lua_settop(lua_State *L, int index)
 			{
 				debuggerAttach(L);
-				return base::c_call<int>(real::lua_pcallk, L, nargs, nresults, errfunc, ctx, k);
-			}
-			static void __cdecl lua_callk(lua_State *L, int nargs, int nresults, lua_KContext ctx, lua_KFunction k)
-			{
-				debuggerAttach(L);
-				return base::c_call<void>(real::lua_callk, L, nargs, nresults, ctx, k);
+				return base::c_call<void>(real::lua_settop, L, index);
 			}
 			static void __cdecl lua_close(lua_State* L)
 			{
@@ -72,8 +66,7 @@ namespace autoattach {
 			HOOK(luaL_newstate);
 			HOOK(lua_close);
 			if (attachProcess) {
-				HOOK(lua_pcallk);
-				HOOK(lua_callk);
+				HOOK(lua_settop);
 			}
 
 			std::stack<base::hook::hook_t> rollback;

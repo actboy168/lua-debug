@@ -1,7 +1,6 @@
 #include <Windows.h>
 #include <bee/utility/path_helper.h>
 #include <bee/utility/format.h>
-#include <base/win/process_switch.h>
 #include <debugger/debugger.h>
 #include <debugger/inject/autoattach.h>
 #include <debugger/client/get_unix_path.h>
@@ -9,15 +8,6 @@
 static vscode::debugger* dbg = nullptr;
 static std::filesystem::path binPath;
 static std::string pipeName;
-static bool isAttachProcess = false;
-
-static bool initialize() {
-	binPath = bee::path_helper::dll_path().value().parent_path();
-	int pid = (int)GetCurrentProcessId();
-	pipeName = get_unix_path(pid);
-	isAttachProcess = base::win::process_switch::has(pid, L"attachprocess");
-	return true;
-}
 
 static bool createDebugger() {
 	if (!GetModuleHandleW(L"debugger.dll")) {
@@ -53,11 +43,18 @@ void debuggerDetach(lua_State* L) {
 	if (dbg) dbg->detach_lua(L, true);
 }
 
+static void initialize(bool attachprocess) {
+    binPath = bee::path_helper::dll_path().value().parent_path();
+    pipeName = get_unix_path((int)GetCurrentProcessId());
+    autoattach::initialize(debuggerAttach, debuggerDetach, attachprocess);
+}
+
 extern "C" __declspec(dllexport)
-void __cdecl entry() {
-    if (!initialize()) {
-        MessageBoxW(0, L"debuggerInject initialize failed.", L"Error!", 0);
-        return;
-    }
-    autoattach::initialize(debuggerAttach, debuggerDetach, isAttachProcess);
+void __cdecl launch() {
+    initialize(false);
+}
+
+extern "C" __declspec(dllexport)
+void __cdecl attach() {
+    initialize(true);
 }

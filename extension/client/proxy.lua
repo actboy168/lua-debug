@@ -67,7 +67,7 @@ local function attach_process(pkg, pid)
     if not inject.injectdll(pid
         , (WORKDIR / "windows" / "x86" / "debugger-inject.dll"):string()
         , (WORKDIR / "windows" / "x64" / "debugger-inject.dll"):string()
-        , "entry"
+        , "attach"
     ) then
         return false
     end

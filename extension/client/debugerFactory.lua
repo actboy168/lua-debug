@@ -207,7 +207,7 @@ local function create_process(args)
     inject.injectdll(process
         , (WORKDIR / "windows" / "x86" / "debugger-inject.dll"):string()
         , (WORKDIR / "windows" / "x64" / "debugger-inject.dll"):string()
-        , "entry"
+        , "launch"
     )
     process:resume()
     return process

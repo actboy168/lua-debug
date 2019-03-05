@@ -33,8 +33,5 @@
     <ClInclude Include="..\..\include\base\win\query_process.h">
       <Filter>base\win</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\base\win\process_switch.h">
-      <Filter>base\win</Filter>
-    </ClInclude>
   </ItemGroup>
 </Project>
