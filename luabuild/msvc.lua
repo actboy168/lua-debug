@@ -6,6 +6,8 @@ ffi.cdef[[
     int SetEnvironmentVariableA(const char* name, const char* value);
 ]]
 
+local helper = dofile "third_party/bee.lua/make/msvc_helper.lua"
+
 local function strtrim(str) 
     return str:gsub("^%s*(.-)%s*$", "%1")
 end
@@ -26,20 +28,12 @@ local function addenv(name, newvalue)
     ffi.C.SetEnvironmentVariableA(name, newvalue)
 end
 
-local function msvc_path(version)
-    local reg = registry.open [[HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\VisualStudio\SxS\VS7]]
-    local path = reg[("%d.0"):format(math.ceil(version / 10))]
-    if path then
-        return fs.path(path)
-    end
-end
-
 local mt = {}
 
 local need = { LIB = true, LIBPATH = true, PATH = true, INCLUDE = true }
 
 function mt:initialize(version, coding)
-    self.__path = msvc_path(version)
+    self.__path = helper.get_path()
     if not self.__path then
         return false
     end
