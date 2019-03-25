@@ -108,7 +108,7 @@ lm:shared_library 'debugger-inject' {
 }
 
 lm:build 'install' {
-    '$luamake', 'lua', 'make/install.lua',
+    '$luamake', 'lua', 'make/install-runttime.lua',
     deps = {
         "debugger",
         "debugger-inject",

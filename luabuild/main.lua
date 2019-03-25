@@ -1,6 +1,7 @@
 print 'Step 1. init'
 
 local fs = require 'bee.filesystem'
+local sp = require 'bee.subprocess'
 
 local configuration = arg[1] or 'Release'
 local rebuild = arg[2] ~= 'IC'
@@ -96,7 +97,6 @@ print 'Step 5. copy crt dll'
 if configuration == 'Release' then
     msvc:copy_crt_dll('x86', outputDir / 'runtime' / 'win32')
     msvc:copy_crt_dll('x64', outputDir / 'runtime' / 'win64')
-    msvc:copy_crt_dll('x86', outputDir / 'bin' / 'win')
 end
 
 print 'Step 6. compile targetcpu = x86'
@@ -132,17 +132,11 @@ if configuration == 'Release' then
 end
 
 print 'Step 8. compile bee'
-local property = {
-    Configuration = configuration,
-    Platform = 'x86'
-}
-msvc:compile(rebuild and 'rebuild' or 'build', root / 'third_party' / 'bee.lua' / 'bee.sln', property)
-local srcdir =  root / 'third_party' / 'bee.lua' / 'build' / ('msbuild_x86_' .. configuration) / 'bin'
-local dstdir =  outputDir / 'bin' / 'win'
-fs.create_directories(dstdir)
-fs.copy_file(srcdir / 'lua.exe', dstdir / 'lua-debug.exe', true)
-fs.copy_file(srcdir / 'bee.dll', dstdir / 'bee.dll', true)
-fs.copy_file(srcdir / 'lua54.dll', dstdir / 'lua54.dll', true)
-fs.copy_file(binDir / 'x86' / 'inject.dll', dstdir / 'inject.dll', true)
+
+assert(sp.spawn {
+    'luamake', 'remake',
+    cwd = root,
+    searchPath = true,
+}):wait()
 
 print 'finish.'
