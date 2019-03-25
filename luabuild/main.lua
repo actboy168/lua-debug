@@ -94,8 +94,9 @@ copy_directory(root / 'extension', outputDir,
 
 print 'Step 5. copy crt dll'
 if configuration == 'Release' then
-    msvc:copy_crt_dll('x86', outputDir / 'windows' / 'x86')
-    msvc:copy_crt_dll('x64', outputDir / 'windows' / 'x64')
+    msvc:copy_crt_dll('x86', outputDir / 'runtime' / 'win32')
+    msvc:copy_crt_dll('x64', outputDir / 'runtime' / 'win64')
+    msvc:copy_crt_dll('x86', outputDir / 'bin' / 'win')
 end
 
 print 'Step 6. compile targetcpu = x86'
@@ -106,7 +107,7 @@ local property = {
 }
 msvc:compile(rebuild and 'rebuild' or 'build', root / 'project' / 'vscode-lua-debug.sln', property)
 if configuration == 'Release' then
-    copy_directory(binDir / 'x86', outputDir / 'windows' / 'x86',
+    copy_directory(binDir / 'x86', outputDir / 'runtime' / 'win32',
         function (path)
             local ext = path:extension():string():lower()
             return (ext == '.dll') or (ext == '.exe')
@@ -122,7 +123,7 @@ local property = {
 }
 msvc:compile(rebuild and 'rebuild' or 'build', root / 'project' / 'vscode-lua-debug.sln', property)
 if configuration == 'Release' then
-    copy_directory(binDir / 'x64', outputDir / 'windows' / 'x64',
+    copy_directory(binDir / 'x64', outputDir / 'runtime' / 'win64',
         function (path)
             local ext = path:extension():string():lower()
             return (ext == '.dll') or (ext == '.exe')
@@ -137,7 +138,7 @@ local property = {
 }
 msvc:compile(rebuild and 'rebuild' or 'build', root / 'third_party' / 'bee.lua' / 'bee.sln', property)
 local srcdir =  root / 'third_party' / 'bee.lua' / 'build' / ('msbuild_x86_' .. configuration) / 'bin'
-local dstdir =  outputDir / 'client' / 'win'
+local dstdir =  outputDir / 'bin' / 'win'
 fs.create_directories(dstdir)
 fs.copy_file(srcdir / 'lua.exe', dstdir / 'lua-debug.exe', true)
 fs.copy_file(srcdir / 'bee.dll', dstdir / 'bee.dll', true)

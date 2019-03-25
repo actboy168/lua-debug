@@ -84,22 +84,22 @@ local function getLuaRuntime(args)
 end
 
 local function getLuaExe(args, dbg)
-    dbg = dbg / "windows"
+    dbg = dbg / "runtime"
 
     local luaexe
     if type(args.luaexe) == "string" then
         luaexe = fs.path(args.luaexe)
         if is64Exe(luaexe) then
-            dbg = dbg / "x64"
+            dbg = dbg / "win64"
         else
-            dbg = dbg / "x86"
+            dbg = dbg / "win32"
         end
     else
         local ver, bit = getLuaRuntime(args)
         if bit == 64 then
-            dbg = dbg / "x64"
+            dbg = dbg / "win64"
         else
-            dbg = dbg / "x86"
+            dbg = dbg / "win32"
         end
         if ver == 53 then
             luaexe = dbg / "lua53.exe"
@@ -205,8 +205,8 @@ local function create_process(args)
         return process
     end
     inject.injectdll(process
-        , (WORKDIR / "windows" / "x86" / "debugger-inject.dll"):string()
-        , (WORKDIR / "windows" / "x64" / "debugger-inject.dll"):string()
+        , (WORKDIR / "runtime" / "win32" / "debugger-inject.dll"):string()
+        , (WORKDIR / "runtime" / "win64" / "debugger-inject.dll"):string()
         , "launch"
     )
     process:resume()
