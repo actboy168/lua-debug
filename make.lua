@@ -1,11 +1,12 @@
 local lm = require "luamake"
+local platform = require "bee.platform"
 
 lm:import 'third_party/bee.lua/make.lua'
 
+if platform.OS == "Windows" then
 lm:shared_library 'inject' {
     deps = {
         "bee",
-        "lua54"
     },
     includes = {
         "include",
@@ -21,14 +22,15 @@ lm:shared_library 'inject' {
     },
     links = "advapi32"
 }
+end
 
 lm:build 'install' {
-    '$luamake', 'lua', 'make/install.lua',
+    '$luamake', 'lua', ('make/install-%s.lua'):format(lm.plat),
     deps = {
         "bee",
-        "lua54",
         "lua",
-        "inject",
+        platform.OS == "Windows" and "lua54",
+        platform.OS == "Windows" and "inject",
     }
 }
 
