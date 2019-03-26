@@ -1,36 +1,44 @@
-local unicode = require 'bee.unicode'
 local fs = require 'bee.filesystem'
 local sp = require 'bee.subprocess'
+local platform = require 'bee.platform'
 local inject = require 'inject'
+
+local function u2a(s)
+    if platform.OS == "Windows" then
+        local unicode = require 'bee.unicode'
+        return unicode.u2a(s)
+    end
+    return s
+end
 
 local function create_install_script(args, dbg, port)
     local utf8 = args.sourceCoding == "utf8"
     local res = {}
     if type(args.path) == "string" then
-        res[#res+1] = ("package.path=[[%s]];"):format(utf8 and args.path or unicode.u2a(args.path))
+        res[#res+1] = ("package.path=[[%s]];"):format(utf8 and args.path or u2a(args.path))
     elseif type(args.path) == "table" then
         local path = {}
         for _, v in ipairs(args.path) do
             if type(v) == "string" then
-                path[#path+1] = utf8 and v or unicode.u2a(v)
+                path[#path+1] = utf8 and v or u2a(v)
             end
             res[#res+1] = ("package.path=[[%s]];"):format(table.concat(path, ";"))
         end
     end
     if type(args.cpath) == "string" then
-        res[#res+1] = ("package.cpath=[[%s]];"):format(utf8 and args.cpath or unicode.u2a(args.cpath))
+        res[#res+1] = ("package.cpath=[[%s]];"):format(utf8 and args.cpath or u2a(args.cpath))
     elseif type(args.cpath) == "table" then
         local path = {}
         for _, v in ipairs(args.cpath) do
             if type(v) == "string" then
-                path[#path+1] = utf8 and v or unicode.u2a(v)
+                path[#path+1] = utf8 and v or u2a(v)
             end
             res[#res+1] = ("package.cpath=[[%s]];"):format(table.concat(path, ";"))
         end
     end
 
     res[#res+1] = ("local dbg=package.loadlib([[%s]], 'luaopen_debugger')();package.loaded[ [[%s]] ]=dbg;dbg:io([[pipe:%s]])"):format(
-        utf8 and (dbg / "debugger.dll"):string() or unicode.u2a((dbg / "debugger.dll"):string()),
+        utf8 and (dbg / "debugger.dll"):string() or u2a((dbg / "debugger.dll"):string()),
         (type(args.internalModule) == "string") and args.internalModule or "debugger",
         port
     )

@@ -1,6 +1,7 @@
 local serverFactory = require 'serverFactory'
 local debuggerFactory = require 'debugerFactory'
 local fs = require 'bee.filesystem'
+local platform = require 'bee.platform'
 local inject = require 'inject'
 local server
 local client
@@ -14,11 +15,18 @@ local function getVersion(dir)
     return package.version
 end
 
+local function getHomePath()
+    if platform.OS == "Windows" then
+        return os.getenv 'USERPROFILE'
+    end
+    return os.getenv 'HOME'
+end
+
 local function getDbgPath()
     if WORKDIR:filename():string() ~= 'extension' then
         return WORKDIR
     end
-    return fs.path(os.getenv 'USERPROFILE') / '.vscode' / 'extensions' / ('actboy168.lua-debug-' .. getVersion(WORKDIR))
+    return fs.path(getHomePath()) / '.vscode' / 'extensions' / ('actboy168.lua-debug-' .. getVersion(WORKDIR))
 end
 
 local function getUnixPath(pid)

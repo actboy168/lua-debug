@@ -7,3 +7,4 @@ local bindir = CWD / 'build' / 'macos' / 'bin'
 fs.create_directories(output)
 fs.copy_file(bindir / 'bee.so', output / 'bee.so', true)
 fs.copy_file(bindir / 'lua', output / 'lua-debug', true)
+fs.copy_file(bindir / 'inject.so', output / 'inject.so', true)
