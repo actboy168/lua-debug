@@ -1,8 +1,10 @@
 local fs = require 'bee.filesystem'
+local platform = require 'bee.platform'
 
+local home = fs.path(platform.OS == "Windows" and os.getenv 'USERPROFILE' or os.getenv 'HOME')
 local insiders = false
 local vscode = insiders and '.vscode-insiders' or '.vscode'
-local root = fs.absolute(fs.path '.')
+local root = fs.absolute(fs.path(arg[1]))
 
 local version = (function()
     for line in io.lines((root / 'project' / 'windows' / 'common.props'):string()) do
@@ -28,7 +30,7 @@ local function copy_directory(from, to, filter)
     end
 end
 
-local outputDir = fs.path(os.getenv('USERPROFILE')) / vscode / 'extensions' / ('actboy168.lua-debug-' .. version)
+local outputDir = home / vscode / 'extensions' / ('actboy168.lua-debug-' .. version)
 
 copy_directory(root / 'extension', outputDir)
 

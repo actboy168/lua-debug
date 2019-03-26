@@ -3,18 +3,30 @@
     // for the documentation about the tasks.json format
     "version": "2.0.0",
     "type": "shell",
-    "options": {
-       "shell": {
-           "executable": "c:\\windows\\system32\\cmd.exe",
-           "args" :[
-              "/c" 
-           ]
-       } 
+    "windows": {
+        "options": {
+            "shell": {
+                "executable": "c:\\windows\\system32\\cmd.exe",
+                "args": [
+                    "/c"
+                ]
+            }
+        },
+    },
+    "osx": {
+        "options": {
+            "cwd": "${workspaceFolder}/build/macos/bin/"
+        }
     },
     "tasks": [
         {
             "label": "Debug",
-            "command": "chcp 65001 && \"${workspaceFolder}/luabuild/lua.exe\"",
+            "windows": {
+                "command": "chcp 65001 && \"${workspaceFolder}/luabuild/lua.exe\"",
+            },
+            "osx": {
+                "command": "${workspaceFolder}/build/macos/bin/lua",
+            },
             "args": [
                 "${workspaceFolder}/luabuild/main.lua",
                 "Debug",
@@ -23,7 +35,12 @@
         },
         {
             "label": "Release",
-            "command": "\"${workspaceFolder}/luabuild/lua.exe\"",
+            "windows": {
+                "command": "chcp 65001 && \"${workspaceFolder}/luabuild/lua.exe\"",
+            },
+            "osx": {
+                "command": "${workspaceFolder}/build/macos/bin/lua",
+            },
             "args": [
                 "${workspaceFolder}/luabuild/main.lua",
                 "Release",
@@ -32,7 +49,12 @@
         },
         {
             "label": "Rebuild Release",
-            "command": "chcp 65001 && \"${workspaceFolder}/luabuild/lua.exe\"",
+            "windows": {
+                "command": "chcp 65001 && \"${workspaceFolder}/luabuild/lua.exe\"",
+            },
+            "osx": {
+                "command": "${workspaceFolder}/build/macos/bin/lua",
+            },
             "args": [
                 "${workspaceFolder}/luabuild/main.lua",
                 "Release"
@@ -40,9 +62,15 @@
         },
         {
             "label": "Copy JS",
-            "command": "chcp 65001 && \"${workspaceFolder}/luabuild/lua.exe\"",
+            "windows": {
+                "command": "chcp 65001 && \"${workspaceFolder}/luabuild/lua.exe\"",
+            },
+            "osx": {
+                "command": "${workspaceFolder}/build/macos/bin/lua",
+            },
             "args": [
-                "${workspaceFolder}/luabuild/js.lua"
+                "${workspaceFolder}/luabuild/js.lua",
+                "${workspaceFolder}"
             ]
         }
     ]
