@@ -55,9 +55,6 @@
                         "lua"
                     ]
                 },
-                "windows": {
-                    "program": "./windows/x86/vscode-lua-debug.exe"
-                },
                 "configurationSnippets": [
                     {
                         "label": "Lua Debug: Launch Script",

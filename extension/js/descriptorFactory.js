@@ -1,6 +1,7 @@
 const vscode = require("vscode");
 const path = require("path");
 const fs = require('fs');
+const os = require('os');
 const extension = require("./extension");
 
 function getVersion(context) {
@@ -8,11 +9,18 @@ function getVersion(context) {
     return package.version
 }
 
+function getHomeDirectory() {
+    if (os.platform() != 'win32') {
+        return process.env.HOME
+    }
+    return process.env.USERPROFILE
+}
+
 function getRuntimeDirectory(context) {
     if (path.basename(context.extensionPath) != 'extension') {
         return context.extensionPath
     }
-    return path.join(process.env.USERPROFILE, '.vscode/extensions/actboy168.lua-debug-' + getVersion(context))
+    return path.join(getHomeDirectory(), '.vscode/extensions/actboy168.lua-debug-' + getVersion(context))
 }
 
 function createDebugAdapterDescriptor(session, executable) {
@@ -20,13 +28,30 @@ function createDebugAdapterDescriptor(session, executable) {
         return new DebugAdapterServer(session.configuration.debugServer);
     }
     let dir = getRuntimeDirectory(extension.context)
-    let runtime = path.join(dir, 'bin/win/lua-debug.exe')
-    let runtimeArgs = [
-        "-e",
-        "package.path=[["+path.join(dir, 'client/?.lua')+"]]",
-        path.join(dir, 'client/main.lua')
-    ]
-    return new vscode.DebugAdapterExecutable(runtime, runtimeArgs);
+    let platform = os.platform()
+    if (platform == "win32") {
+        let runtime = path.join(dir, 'bin/win/lua-debug.exe')
+        let runtimeArgs = [
+            "-e",
+            "package.path=[["+path.join(dir, 'client/?.lua')+"]]",
+            path.join(dir, 'client/main.lua')
+        ]
+        return new vscode.DebugAdapterExecutable(runtime, runtimeArgs);
+    }
+    else if (platform == "darwin") {
+        let runtime = path.join(dir, 'bin/macos/lua-debug')
+        let runtimeArgs = [
+            "-e",
+            "package.path=[["+path.join(dir, 'client/?.lua')+"]]",
+            "-e",
+            "package.cpath=[["+path.join(dir, 'bin/macos/?.so')+"]]",
+            path.join(dir, 'client/main.lua')
+        ]
+        return new vscode.DebugAdapterExecutable(runtime, runtimeArgs);
+    }
+    else {
+        
+    }
 }
 
 exports.createDebugAdapterDescriptor = createDebugAdapterDescriptor;
