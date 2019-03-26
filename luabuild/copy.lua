@@ -32,6 +32,6 @@ end
 
 local outputDir = home / vscode / 'extensions' / ('actboy168.lua-debug-' .. version)
 
-copy_directory(root / 'extension', outputDir)
+copy_directory(fs.path(arg[2]), outputDir)
 
 print 'ok'
