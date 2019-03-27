@@ -1,3 +1,5 @@
+local platform, luamake = ...
+
 print 'Step 1. init'
 
 local fs = require 'bee.filesystem'
@@ -69,26 +71,27 @@ copy_directory(root / 'extension', outputDir,
     end
 )
 
-print 'Step 5. compile targetcpu = x86'
+print 'Step 5. compile bee'
 assert(sp.spawn {
-    'luamake', 'remake', '-f', 'make-runtime.lua', '-arch', 'x86',
+    luamake, 'remake', '-f', 'make-bin.lua',
     cwd = root,
     searchPath = true,
 }):wait()
 
-print 'Step 6. compile targetcpu = x64'
-assert(sp.spawn {
-    'luamake', 'remake', '-f', 'make-runtime.lua', '-arch', 'x64',
-    cwd = root,
-    searchPath = true,
-}):wait()
+if platform == 'msvc' then
+    print 'Step 6. compile targetcpu = x86'
+    assert(sp.spawn {
+        luamake, 'remake', '-f', 'make-runtime.lua', '-arch', 'x86',
+        cwd = root,
+        searchPath = true,
+    }):wait()
 
-
-print 'Step 7. compile bee'
-assert(sp.spawn {
-    'luamake', 'remake', '-f', 'make-bin.lua',
-    cwd = root,
-    searchPath = true,
-}):wait()
+    print 'Step 7. compile targetcpu = x64'
+    assert(sp.spawn {
+        luamake, 'remake', '-f', 'make-runtime.lua', '-arch', 'x64',
+        cwd = root,
+        searchPath = true,
+    }):wait()
+end
 
 print 'finish.'
