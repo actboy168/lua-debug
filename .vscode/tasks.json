@@ -40,7 +40,7 @@
                 "command": "${workspaceFolder}/build/macos/bin/lua",
             },
             "args": [
-                "${workspaceFolder}/luabuild/copy.lua",
+                "${workspaceFolder}/make/copy.lua",
                 "${workspaceFolder}",
                 "${workspaceFolder}/extension"
             ]
@@ -54,7 +54,7 @@
                 "command": "${workspaceFolder}/build/macos/bin/lua",
             },
             "args": [
-                "${workspaceFolder}/luabuild/copy.lua",
+                "${workspaceFolder}/make/copy.lua",
                 "${workspaceFolder}",
                 "${workspaceFolder}/publish"
             ]
