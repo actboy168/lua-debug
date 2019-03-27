@@ -22,19 +22,19 @@
         {
             "label": "Rebuild",
             "windows": {
-                "command": "chcp 65001 && \"${workspaceFolder}/luabuild/lua.exe\"",
+                "command": "chcp 65001 && \"${workspaceFolder}/build/msvc/bin/lua.exe\"",
             },
             "osx": {
                 "command": "${workspaceFolder}/build/macos/bin/lua",
             },
             "args": [
-                "${workspaceFolder}/luabuild/main.lua"
+                "${workspaceFolder}/make/install.lua"
             ]
         },
         {
             "label": "Copy Extension",
             "windows": {
-                "command": "chcp 65001 && \"${workspaceFolder}/luabuild/lua.exe\"",
+                "command": "chcp 65001 && \"${workspaceFolder}/build/msvc/bin/lua.exe\"",
             },
             "osx": {
                 "command": "${workspaceFolder}/build/macos/bin/lua",
@@ -48,7 +48,7 @@
         {
             "label": "Copy Publish",
             "windows": {
-                "command": "chcp 65001 && \"${workspaceFolder}/luabuild/lua.exe\"",
+                "command": "chcp 65001 && \"${workspaceFolder}/build/msvc/bin/lua.exe\"",
             },
             "osx": {
                 "command": "${workspaceFolder}/build/macos/bin/lua",
