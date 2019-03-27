@@ -274,7 +274,7 @@
                             "noInject": {
                                 "type": "boolean",
                                 "markdownDescription": "`runtimeExecutable` will not inject debugger.",
-                                "default": "false"
+                                "default": false
                             },
                             "ip": {
                                 "type": "string",
@@ -360,7 +360,7 @@
                             "noInject": {
                                 "type": "boolean",
                                 "markdownDescription": "`processId` and `processName` will not inject debugger.",
-                                "default": "false"
+                                "default": false
                             }
                         }
                     }
