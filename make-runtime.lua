@@ -96,19 +96,29 @@ lm:shared_library 'debugger-inject' {
         "debugger",
         "detours"
     },
+    defines = {
+        "BEE_INLINE",
+    },
     includes = {
         "include",
         "third_party/bee.lua",
     },
     sources = {
         "include/base/hook/inline.cpp",
+        "third_party/bee.lua/bee/error.cpp",
+        "third_party/bee.lua/bee/utility/unicode_win.cpp",
+        "third_party/bee.lua/bee/utility/path_helper.cpp",
+        "third_party/bee.lua/bee/error/category_win.cpp",
         "src/debugger/client/get_unix_path.cpp",
         "src/debugger/inject/*.cpp",
+    },
+    links = {
+        "ws2_32",
     }
 }
 
 lm:build 'install' {
-    '$luamake', 'lua', 'make/install-runttime.lua',
+    '$luamake', 'lua', ('make/%s-install-runtime.lua'):format(lm.plat),
     deps = {
         "debugger",
         "debugger-inject",
