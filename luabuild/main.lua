@@ -2,19 +2,8 @@ print 'Step 1. init'
 
 local fs = require 'bee.filesystem'
 local sp = require 'bee.subprocess'
-
-local configuration = arg[1] or 'Release'
-local rebuild = arg[2] ~= 'IC'
-local insiders = false
-local vscode = insiders and '.vscode-insiders' or '.vscode'
 local root = fs.absolute(fs.path '.')
-local binDir = root / 'project' / 'windows' / 'bin'
-local objDir = root / 'project' / 'windows' / 'obj'
-
-local msvc = require 'msvc'
-if not msvc:initialize(141, 'ansi') then
-    error('Cannot found Visual Studio Toolset.')
-end
+local outputDir = root / 'publish'
 
 local version = (function()
     for line in io.lines((root / 'project' / 'windows' / 'common.props'):string()) do
@@ -26,13 +15,6 @@ local version = (function()
     end
     error 'Cannot found version in common.props.'
 end)()
-
-local outputDir
-if configuration == 'Release' then
-    outputDir = root / 'publish'
-else
-    outputDir = fs.path(os.getenv('USERPROFILE')) / vscode / 'extensions' / ('actboy168.lua-debug-' .. version)
-end
 
 local function copy_directory(from, to, filter)
     fs.create_directories(to)
@@ -61,13 +43,7 @@ function io_save(filepath, buf)
 end
 
 print 'Step 2. remove old file'
-if rebuild then
-    if configuration == 'Release' then
-        fs.remove_all(binDir)
-    end
-    fs.remove_all(objDir / configuration)
-    fs.remove_all(outputDir)
-end
+fs.remove_all(outputDir)
 
 print 'Step 3. update version'
 local function update_version(filename, pattern)
@@ -93,16 +69,14 @@ copy_directory(root / 'extension', outputDir,
     end
 )
 
-print 'Step 5. copy crt dll'
-
-print 'Step 6. compile targetcpu = x86'
+print 'Step 5. compile targetcpu = x86'
 assert(sp.spawn {
     'luamake', 'remake', '-f', 'make-runtime.lua', '-arch', 'x86',
     cwd = root,
     searchPath = true,
 }):wait()
 
-print 'Step 7. compile targetcpu = x64'
+print 'Step 6. compile targetcpu = x64'
 assert(sp.spawn {
     'luamake', 'remake', '-f', 'make-runtime.lua', '-arch', 'x64',
     cwd = root,
@@ -110,8 +84,7 @@ assert(sp.spawn {
 }):wait()
 
 
-print 'Step 8. compile bee'
-
+print 'Step 7. compile bee'
 assert(sp.spawn {
     'luamake', 'remake',
     cwd = root,

@@ -20,7 +20,7 @@
     },
     "tasks": [
         {
-            "label": "Debug",
+            "label": "Rebuild",
             "windows": {
                 "command": "chcp 65001 && \"${workspaceFolder}/luabuild/lua.exe\"",
             },
@@ -28,36 +28,7 @@
                 "command": "${workspaceFolder}/build/macos/bin/lua",
             },
             "args": [
-                "${workspaceFolder}/luabuild/main.lua",
-                "Debug",
-                "IC"
-            ]
-        },
-        {
-            "label": "Release",
-            "windows": {
-                "command": "chcp 65001 && \"${workspaceFolder}/luabuild/lua.exe\"",
-            },
-            "osx": {
-                "command": "${workspaceFolder}/build/macos/bin/lua",
-            },
-            "args": [
-                "${workspaceFolder}/luabuild/main.lua",
-                "Release",
-                "IC"
-            ]
-        },
-        {
-            "label": "Rebuild Release",
-            "windows": {
-                "command": "chcp 65001 && \"${workspaceFolder}/luabuild/lua.exe\"",
-            },
-            "osx": {
-                "command": "${workspaceFolder}/build/macos/bin/lua",
-            },
-            "args": [
-                "${workspaceFolder}/luabuild/main.lua",
-                "Release"
+                "${workspaceFolder}/luabuild/main.lua"
             ]
         },
         {
