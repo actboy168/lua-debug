@@ -1,6 +1,8 @@
 local lm = require "luamake"
 
-lm.bindir = "build/runtime"
+lm.arch = ARGUMENTS.arch or 'x86'
+lm.bindir = "build/"..lm.plat.."/bin/runtime/"..lm.arch
+lm.objdir = "build/"..lm.plat.."/obj/runtime/"..lm.arch
 
 lm.rootdir = 'third_party/lua53'
 lm:shared_library 'lua53' {
@@ -122,6 +124,10 @@ lm:build 'install' {
     deps = {
         "debugger",
         "debugger-inject",
+        "exe-lua54",
+        "exe-lua53",
+        "lua54",
+        "lua53",
     }
 }
 
