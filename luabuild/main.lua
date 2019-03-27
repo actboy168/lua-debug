@@ -94,42 +94,21 @@ copy_directory(root / 'extension', outputDir,
 )
 
 print 'Step 5. copy crt dll'
-if configuration == 'Release' then
-    msvc:copy_crt_dll('x86', outputDir / 'runtime' / 'win32')
-    msvc:copy_crt_dll('x64', outputDir / 'runtime' / 'win64')
-end
 
 print 'Step 6. compile targetcpu = x86'
-local property = {
-    Configuration = configuration,
-    Platform = 'Win32',
-    VSCode = vscode
-}
-msvc:compile(rebuild and 'rebuild' or 'build', root / 'project' / 'vscode-lua-debug.sln', property)
-if configuration == 'Release' then
-    copy_directory(binDir / 'x86', outputDir / 'runtime' / 'win32',
-        function (path)
-            local ext = path:extension():string():lower()
-            return (ext == '.dll') or (ext == '.exe')
-        end
-    )
-end
+assert(sp.spawn {
+    'luamake', 'remake', '-f', 'make-runtime.lua', '-arch', 'x86',
+    cwd = root,
+    searchPath = true,
+}):wait()
 
 print 'Step 7. compile targetcpu = x64'
-local property = {
-    Configuration = configuration,
-    Platform = 'x64',
-    VSCode = vscode
-}
-msvc:compile(rebuild and 'rebuild' or 'build', root / 'project' / 'vscode-lua-debug.sln', property)
-if configuration == 'Release' then
-    copy_directory(binDir / 'x64', outputDir / 'runtime' / 'win64',
-        function (path)
-            local ext = path:extension():string():lower()
-            return (ext == '.dll') or (ext == '.exe')
-        end
-    )
-end
+assert(sp.spawn {
+    'luamake', 'remake', '-f', 'make-runtime.lua', '-arch', 'x64',
+    cwd = root,
+    searchPath = true,
+}):wait()
+
 
 print 'Step 8. compile bee'
 

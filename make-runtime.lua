@@ -120,7 +120,7 @@ lm:shared_library 'debugger-inject' {
 }
 
 lm:build 'install' {
-    '$luamake', 'lua', ('make/%s-install-runtime.lua'):format(lm.plat),
+    '$luamake', 'lua', 'make/install-runtime.lua', lm.plat, lm.arch,
     deps = {
         "debugger",
         "debugger-inject",

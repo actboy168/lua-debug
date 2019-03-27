@@ -39,7 +39,7 @@ else
 end
 
 lm:build 'install' {
-    '$luamake', 'lua', ('make/%s-install.lua'):format(lm.plat),
+    '$luamake', 'lua', 'make/install.lua', lm.plat,
     deps = {
         "bee",
         "lua",
