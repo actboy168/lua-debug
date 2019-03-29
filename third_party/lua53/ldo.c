@@ -661,6 +661,8 @@ LUA_API int lua_resume (lua_State *L, lua_State *from, int nargs) {
   luai_userstateresume(L, nargs);
   L->nny = 0;  /* allow yields */
   api_checknelems(L, (L->status == LUA_OK) ? nargs + 1 : nargs);
+  if (L->hookmask & LUA_MASKTHREAD)
+    luaD_hook(L, LUA_HOOKTHREAD, -1);
   status = luaD_rawrunprotected(L, resume, &nargs);
   if (status == -1)  /* error calling 'lua_resume'? */
     status = LUA_ERRRUN;
