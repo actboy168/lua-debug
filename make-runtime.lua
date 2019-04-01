@@ -80,7 +80,9 @@ lm:shared_library 'debugger' {
         "version",
         "ws2_32",
         "user32",
-    }
+        "delayimp",
+    },
+    ldflags = '/DELAYLOAD:lua53.dll',
 }
 
 lm:source_set 'detours' {
@@ -94,7 +96,6 @@ lm:source_set 'detours' {
 
 lm:shared_library 'debugger-inject' {
     deps = {
-        "lua53",
         "debugger",
         "detours"
     },
@@ -104,6 +105,7 @@ lm:shared_library 'debugger-inject' {
     includes = {
         "include",
         "third_party/bee.lua",
+        "third_party/lua53",
     },
     sources = {
         "include/base/hook/inline.cpp",
@@ -116,7 +118,9 @@ lm:shared_library 'debugger-inject' {
     },
     links = {
         "ws2_32",
-    }
+        "delayimp",
+    },
+    ldflags = '/DELAYLOAD:debugger.dll',
 }
 
 lm:build 'install' {
