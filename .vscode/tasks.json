@@ -13,23 +13,13 @@
             }
         },
     },
-    "osx": {
-        "options": {
-            "cwd": "${workspaceFolder}/build/macos/bin/"
-        }
-    },
     "tasks": [
         {
             "label": "Rebuild",
-            "windows": {
-                "command": "chcp 65001 && \"${workspaceFolder}/build/msvc/bin/lua.exe\"",
-            },
-            "osx": {
-                "command": "${workspaceFolder}/build/macos/bin/lua",
-            },
-            "args": [
-                "${workspaceFolder}/make/install.lua"
-            ]
+            "command": "luamake",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            }
         },
         {
             "label": "Copy Extension",
@@ -38,6 +28,9 @@
             },
             "osx": {
                 "command": "${workspaceFolder}/build/macos/bin/lua",
+                "options": {
+                    "cwd": "${workspaceFolder}/build/macos/bin/"
+                }
             },
             "args": [
                 "${workspaceFolder}/make/copy.lua",
@@ -52,6 +45,9 @@
             },
             "osx": {
                 "command": "${workspaceFolder}/build/macos/bin/lua",
+                "options": {
+                    "cwd": "${workspaceFolder}/build/macos/bin/"
+                }
             },
             "args": [
                 "${workspaceFolder}/make/copy.lua",

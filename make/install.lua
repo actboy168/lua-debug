@@ -1,5 +1,20 @@
 local platform, luamake = ...
 
+if not platform then
+    local OS = require 'bee.platform'.OS
+    if OS == 'Windows' then
+        platform = 'msvc'
+    elseif OS == 'macOS' then
+        platform = 'macos'
+    elseif OS == 'Linux' then
+        platform = 'linux'
+    end
+end
+
+if not luamake then
+    luamake = 'luamake'
+end
+
 print 'Step 1. init'
 
 local fs = require 'bee.filesystem'
