@@ -22,8 +22,8 @@ local function create_install_script(args, dbg, port)
             if type(v) == "string" then
                 path[#path+1] = utf8 and v or u2a(v)
             end
-            res[#res+1] = ("package.path=[[%s]];"):format(table.concat(path, ";"))
         end
+        res[#res+1] = ("package.path=[[%s]];"):format(table.concat(path, ";"))
     end
     if type(args.cpath) == "string" then
         res[#res+1] = ("package.cpath=[[%s]];"):format(utf8 and args.cpath or u2a(args.cpath))
@@ -33,8 +33,8 @@ local function create_install_script(args, dbg, port)
             if type(v) == "string" then
                 path[#path+1] = utf8 and v or u2a(v)
             end
-            res[#res+1] = ("package.cpath=[[%s]];"):format(table.concat(path, ";"))
         end
+        res[#res+1] = ("package.cpath=[[%s]];"):format(table.concat(path, ";"))
     end
 
     res[#res+1] = ("local dbg=package.loadlib([[%s]], 'luaopen_debugger')();package.loaded[ [[%s]] ]=dbg;dbg:io([[pipe:%s]])"):format(
