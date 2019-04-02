@@ -44,7 +44,7 @@ local function create(t)
     end
     function m.is_closed()
         if not session then
-            return true
+            return false
         end
         return select.is_closed(session)
     end
