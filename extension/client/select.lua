@@ -76,6 +76,8 @@ local function close(fd)
     fd:close()
     read[fd] = nil
     write[fd] = nil
+    shutdown[fd] = true
+    willclose[fd] = true
 end
 
 local function attach(fd)
@@ -119,6 +121,13 @@ end
 
 function m.is_closed(fd)
     return shutdown[fd] and willclose[fd]
+end
+
+function m.cleanup(fd)
+    shutdown[fd] = nil
+    willclose[fd] = nil
+    read[fd] = nil
+    write[fd] = nil
 end
 
 function m.listen(t)

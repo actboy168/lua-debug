@@ -42,6 +42,12 @@ local function create(t)
         end
         return proto.recv(select.recv(session), stat)
     end
+    function m.is_closed()
+        if not session then
+            return true
+        end
+        return select.is_closed(session)
+    end
     return m
 end
 

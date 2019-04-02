@@ -209,6 +209,9 @@ function m.update()
                 break
             end
         end
+        if server.is_closed() then
+            os.exit(0, true)
+        end
     end
 end
 
