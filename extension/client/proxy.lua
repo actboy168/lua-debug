@@ -30,7 +30,7 @@ local function getDbgPath()
 end
 
 local function getUnixPath(pid)
-    local path = getDbgPath() / "windows" / "tmp"
+    local path = getDbgPath() / "runtime" / "tmp"
     fs.create_directories(path)
 	return path / ("pid_%d.tmp"):format(pid)
 end
