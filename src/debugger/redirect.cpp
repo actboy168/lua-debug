@@ -6,8 +6,7 @@
 #include <io.h>
 #include <stdio.h>
 
-namespace vscode
-{
+namespace vscode {
 	static DWORD handles[] = {
 		STD_INPUT_HANDLE,
 		STD_OUTPUT_HANDLE,
@@ -20,36 +19,7 @@ namespace vscode
 		stderr,
 	};
 
-	redirect_pipe::redirect_pipe()
-		: rd_(INVALID_HANDLE_VALUE)
-		, wr_(INVALID_HANDLE_VALUE)
-	{ }
-	  
-	redirect_pipe::~redirect_pipe() {
-        close_rd();
-        close_wr();
-	}
-    void redirect_pipe::close_rd() {
-        if (rd_ != INVALID_HANDLE_VALUE) {
-            ::CloseHandle(rd_);
-        }
-        rd_ = INVALID_HANDLE_VALUE;
-    }
-    void redirect_pipe::close_wr() {
-        if (wr_ != INVALID_HANDLE_VALUE) {
-            ::CloseHandle(wr_);
-        }
-        wr_ = INVALID_HANDLE_VALUE;
-    }
-
-	bool redirect_pipe::create(const char* name)
-	{
-		SECURITY_ATTRIBUTES attr = { sizeof(SECURITY_ATTRIBUTES), 0, true };
-		return !!::CreatePipe(&rd_, &wr_, &attr, 0);
-	}
-
-	static void set_handle(std_fd type, HANDLE handle)
-	{
+	static void set_handle(std_fd type, HANDLE handle) {
 		SetStdHandle(handles[(int)type], handle);
 		int fd = _open_osfhandle((intptr_t)handle, type == std_fd::STDIN ? _O_RDONLY : _O_WRONLY);
 		if (fd < 0) {
@@ -62,61 +32,64 @@ namespace vscode
 	}
 
 	redirector::redirector()
-		: pipe_()
-		, old_(INVALID_HANDLE_VALUE)
-		, type_(std_fd::STDOUT)
-	{
-	}
+        : m_rd(INVALID_HANDLE_VALUE)
+        , m_wr(INVALID_HANDLE_VALUE)
+		, m_old(INVALID_HANDLE_VALUE)
+		, m_type(std_fd::STDOUT)
+	{ }
 
-	redirector::~redirector()
-	{
+	redirector::~redirector() {
 		close();
 	}
 
-	void redirector::open(const char* name, std_fd type)
-	{
-		if (!pipe_.create(name)) {
+	void redirector::open(std_fd type) {
+        SECURITY_ATTRIBUTES attr = { sizeof(SECURITY_ATTRIBUTES), 0, true };
+		if (!::CreatePipe(&m_rd, &m_wr, &attr, 0)) {
 			return ;
 		}
-		type_ = type;
-		old_ = GetStdHandle(handles[(int)type]);
-		set_handle(type, type == std_fd::STDIN ? pipe_.rd_: pipe_.wr_);
+		m_type = type;
+		m_old = GetStdHandle(handles[(int)type]);
         if (type == std_fd::STDIN) {
-            pipe_.rd_ = INVALID_HANDLE_VALUE;
+            set_handle(type, m_rd);
+            m_rd = INVALID_HANDLE_VALUE;
         }
         else {
-            pipe_.wr_ = INVALID_HANDLE_VALUE;
+            set_handle(type, m_wr);
+            m_wr = INVALID_HANDLE_VALUE;
         }
 	}
 
-	void redirector::close()
-	{
-		if (old_ != INVALID_HANDLE_VALUE)
-		{
-            SetStdHandle(handles[(int)type_], old_);
+	void redirector::close() {
+		if (m_old != INVALID_HANDLE_VALUE) {
+            SetStdHandle(handles[(int)m_type], m_old);
 		}
-		old_ = INVALID_HANDLE_VALUE;
-        pipe_.close_rd();
-        pipe_.close_wr();
+		m_old = INVALID_HANDLE_VALUE;
+
+        if (m_rd != INVALID_HANDLE_VALUE) {
+            ::CloseHandle(m_rd);
+        }
+        m_rd = INVALID_HANDLE_VALUE;
+
+        if (m_wr != INVALID_HANDLE_VALUE) {
+            ::CloseHandle(m_wr);
+        }
+        m_wr = INVALID_HANDLE_VALUE;
 	}
 
-	size_t redirector::peek()
-	{
+	size_t redirector::peek() {
 		DWORD rlen = 0;
-		if (!PeekNamedPipe(pipe_.rd_, 0, 0, 0, &rlen, 0))
-		{
+		if (!PeekNamedPipe(m_rd, 0, 0, 0, &rlen, 0)) {
 			return 0;
 		}
 		return rlen;
 	}
 
-	size_t redirector::read(char* buf, size_t len)
-	{
-		if (!peek())
-			return 0;
+	size_t redirector::read(char* buf, size_t len) {
+        if (!peek()) {
+            return 0;
+        }
 		DWORD rlen = 0;
-		if (!ReadFile(pipe_.rd_, buf, static_cast<DWORD>(len), &rlen, 0))
-		{
+		if (!ReadFile(m_rd, buf, static_cast<DWORD>(len), &rlen, 0)) {
 			return 0;
 		}
 		return rlen;

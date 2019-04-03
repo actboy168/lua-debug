@@ -742,11 +742,11 @@ namespace vscode
 #if defined(_WIN32)
 		case eRedirect::stdoutput:
 			stdout_.reset(new redirector);
-			stdout_->open("stdout", std_fd::STDOUT);
+			stdout_->open(std_fd::STDOUT);
 			break;
 		case eRedirect::stderror:
 			stderr_.reset(new redirector);
-			stderr_->open("stderr", std_fd::STDERR);
+			stderr_->open(std_fd::STDERR);
 			break;
 #endif
 		}
