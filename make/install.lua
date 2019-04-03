@@ -46,14 +46,14 @@ local function copy_directory(from, to, filter)
     end
 end
 
-function io_load(filepath)
+local function io_load(filepath)
     local f = assert(io.open(filepath:string(), 'rb'))
     local buf = f:read 'a'
     f:close()
     return buf
 end
 
-function io_save(filepath, buf)
+local function io_save(filepath, buf)
     local f = assert(io.open(filepath:string(), 'wb'))
     f:write(buf)
     f:close()
