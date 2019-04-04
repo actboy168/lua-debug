@@ -20,6 +20,7 @@
     * consoleCoding，lua的标准输出的编码，可选择utf8、ansi、none， 等于none时不会重定向标准输出到vscode
     * sourceMaps，一般不需要，作用同attach模式
     * sourceCoding，作用同attach模式
+    * outputCapture，需要捕获哪些输出到调试控制台。可选项有print,io.write,stdout,stderr。
     * env，修改调试进程的环境变量
     * console，lua.exe在哪个环境下执行，可选择internalConsole，integratedTerminal，externalTerminal
     * skipFiles，让调试器忽略某些脚本，例如, ["std/\*", test/\*/init.lua]。
@@ -33,6 +34,7 @@
     * stopOnEntry，开始调试时是否先暂停
     * sourceMaps，作用同attach模式
     * sourceCoding，作用同attach模式
+    * outputCapture，作用同上
     * env，修改调试进程的环境变量
     * skipFiles，让调试器忽略某些脚本，例如, ["std/\*", test/\*/init.lua]。
 
@@ -43,6 +45,7 @@
     * port，远程调试器的端口
     * sourceMaps，远程代码和本地代码的路径映射
     * sourceCoding，远程代码路径的编码，utf8或者ansi。如果你没修过过lua，windows下默认是ansi。
+    * outputCapture，作用同上
     * skipFiles，让调试器忽略某些脚本，例如, ["std/\*", test/\*/init.lua]。
 
 4. attach模式，调试任意加载了lua dll的本地进程。
