@@ -739,7 +739,6 @@ namespace vscode
         case eRedirect::iowrite:
             init_redirect_io_write(L, this);
             break;
-#if defined(_WIN32)
 		case eRedirect::stdoutput:
 			stdout_.reset(new redirector);
 			stdout_->open(std_fd::STDOUT);
@@ -748,7 +747,6 @@ namespace vscode
 			stderr_.reset(new redirector);
 			stderr_->open(std_fd::STDERR);
 			break;
-#endif
 		}
 	}
 
