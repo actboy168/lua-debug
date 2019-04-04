@@ -19,7 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\third_party\lua53\lua.c" />
+    <ClCompile Include="..\..\3rd\lua53\lua.c" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="lua53dll.vcxproj">

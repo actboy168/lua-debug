@@ -25,13 +25,13 @@
     <ClCompile Include="..\..\src\process_inject\inject.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\third_party\bee.lua\project\msvc\bee.vcxproj">
+    <ProjectReference Include="..\..\3rd\bee.lua\project\msvc\bee.vcxproj">
       <Project>{355c2493-0a78-490b-971a-bbdb0e2819ef}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\..\third_party\bee.lua\project\msvc\lua54.vcxproj">
+    <ProjectReference Include="..\..\3rd\bee.lua\project\msvc\lua54.vcxproj">
       <Project>{316b33ed-1056-48b0-abf0-ce3ce55f7a17}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\..\third_party\wow64ext\src\wow64ext.vcxproj">
+    <ProjectReference Include="..\..\3rd\wow64ext\src\wow64ext.vcxproj">
       <Project>{9da7f232-0096-45bc-a452-24c7f3afa0f8}</Project>
     </ProjectReference>
   </ItemGroup>
@@ -116,7 +116,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>BEE_INLINE;DEBUGGER_EXPORTS;DEBUGGER_ENABLE_LAUNCH;DEBUGGER_BRIDGE;RAPIDJSON_HAS_STDSTRING;_WINSOCK_DEPRECATED_NO_WARNINGS;_WIN32_WINNT=_WIN32_WINNT_WIN7;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(Root)\third_party\bee.lua\3rd\lua\src\;$(Root)\include\;$(Root)\third_party\wow64ext\src\;$(Root)\third_party\bee.lua\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(Root)\3rd\bee.lua\3rd\lua\src\;$(Root)\include\;$(Root)\3rd\wow64ext\src\;$(Root)\3rd\bee.lua\</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
@@ -133,7 +133,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>BEE_INLINE;DEBUGGER_EXPORTS;DEBUGGER_ENABLE_LAUNCH;DEBUGGER_BRIDGE;RAPIDJSON_HAS_STDSTRING;_WINSOCK_DEPRECATED_NO_WARNINGS;_WIN32_WINNT=_WIN32_WINNT_WIN7;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(Root)\third_party\bee.lua\3rd\lua\src\;$(Root)\include\;$(Root)\third_party\wow64ext\src\;$(Root)\third_party\bee.lua\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(Root)\3rd\bee.lua\3rd\lua\src\;$(Root)\include\;$(Root)\3rd\wow64ext\src\;$(Root)\3rd\bee.lua\</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
@@ -153,7 +153,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>BEE_INLINE;DEBUGGER_EXPORTS;DEBUGGER_ENABLE_LAUNCH;DEBUGGER_BRIDGE;RAPIDJSON_HAS_STDSTRING;_WINSOCK_DEPRECATED_NO_WARNINGS;_WIN32_WINNT=_WIN32_WINNT_WIN7;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(Root)\third_party\bee.lua\3rd\lua\src\;$(Root)\include\;$(Root)\third_party\wow64ext\src\;$(Root)\third_party\bee.lua\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(Root)\3rd\bee.lua\3rd\lua\src\;$(Root)\include\;$(Root)\3rd\wow64ext\src\;$(Root)\3rd\bee.lua\</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
@@ -175,7 +175,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>BEE_INLINE;DEBUGGER_EXPORTS;DEBUGGER_ENABLE_LAUNCH;DEBUGGER_BRIDGE;RAPIDJSON_HAS_STDSTRING;_WINSOCK_DEPRECATED_NO_WARNINGS;_WIN32_WINNT=_WIN32_WINNT_WIN7;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(Root)\third_party\bee.lua\3rd\lua\src\;$(Root)\include\;$(Root)\third_party\wow64ext\src\;$(Root)\third_party\bee.lua\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(Root)\3rd\bee.lua\3rd\lua\src\;$(Root)\include\;$(Root)\3rd\wow64ext\src\;$(Root)\3rd\bee.lua\</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>

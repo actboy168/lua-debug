@@ -19,7 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\third_party\detours\project\Detours.vcxproj">
+    <ProjectReference Include="..\..\3rd\detours\project\Detours.vcxproj">
       <Project>{198d08d6-92ba-46e3-b430-8351244fb61c}</Project>
     </ProjectReference>
     <ProjectReference Include="debugger.vcxproj">
@@ -31,20 +31,20 @@
     <ClCompile Include="..\..\src\debugger\client\get_unix_path.cpp" />
     <ClCompile Include="..\..\src\debugger\inject\autoattach.cpp" />
     <ClCompile Include="..\..\src\debugger\inject\main.cpp" />
-    <ClCompile Include="..\..\third_party\bee.lua\bee\error.cpp" />
-    <ClCompile Include="..\..\third_party\bee.lua\bee\error\category_win.cpp" />
-    <ClCompile Include="..\..\third_party\bee.lua\bee\utility\path_helper.cpp" />
-    <ClCompile Include="..\..\third_party\bee.lua\bee\utility\unicode_win.cpp" />
+    <ClCompile Include="..\..\3rd\bee.lua\bee\error.cpp" />
+    <ClCompile Include="..\..\3rd\bee.lua\bee\error\category_win.cpp" />
+    <ClCompile Include="..\..\3rd\bee.lua\bee\utility\path_helper.cpp" />
+    <ClCompile Include="..\..\3rd\bee.lua\bee\utility\unicode_win.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\base\hook\fp_call.h" />
     <ClInclude Include="..\..\include\base\hook\inline.h" />
     <ClInclude Include="..\..\include\debugger\client\get_unix_path.h" />
     <ClInclude Include="..\..\include\debugger\inject\autoattach.h" />
-    <ClInclude Include="..\..\third_party\bee.lua\bee\error.h" />
-    <ClInclude Include="..\..\third_party\bee.lua\bee\error\category_win.h" />
-    <ClInclude Include="..\..\third_party\bee.lua\bee\utility\path_helper.h" />
-    <ClInclude Include="..\..\third_party\bee.lua\bee\utility\unicode_win.h" />
+    <ClInclude Include="..\..\3rd\bee.lua\bee\error.h" />
+    <ClInclude Include="..\..\3rd\bee.lua\bee\error\category_win.h" />
+    <ClInclude Include="..\..\3rd\bee.lua\bee\utility\path_helper.h" />
+    <ClInclude Include="..\..\3rd\bee.lua\bee\utility\unicode_win.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{20F15A76-D908-475B-A904-6ACD1763D5FB}</ProjectGuid>
@@ -120,7 +120,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>BEE_INLINE;_BASE_EXPORTS;ASMJIT_DISABLE_BUILDER;ASMJIT_DISABLE_COMPILER;ASMJIT_DISABLE_LOGGING;ASMJIT_DISABLE_TEXT;_WINSOCK_DEPRECATED_NO_WARNINGS;_WIN32_WINNT=_WIN32_WINNT_WIN7;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(Root)\include\;$(Root)\third_party\;$(Root)\third_party\detours\src\;$(Root)\third_party\lua53\;$(Root)\third_party\readerwriterqueue\;$(Root)\third_party\bee.lua\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(Root)\include\;$(Root)\3rd\;$(Root)\3rd\detours\src\;$(Root)\3rd\lua53\;$(Root)\3rd\readerwriterqueue\;$(Root)\3rd\bee.lua\</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
@@ -139,7 +139,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>BEE_INLINE;_BASE_EXPORTS;ASMJIT_DISABLE_BUILDER;ASMJIT_DISABLE_COMPILER;ASMJIT_DISABLE_LOGGING;ASMJIT_DISABLE_TEXT;_WINSOCK_DEPRECATED_NO_WARNINGS;_WIN32_WINNT=_WIN32_WINNT_WIN7;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(Root)\include\;$(Root)\third_party\;$(Root)\third_party\detours\src\;$(Root)\third_party\lua53\;$(Root)\third_party\readerwriterqueue\;$(Root)\third_party\bee.lua\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(Root)\include\;$(Root)\3rd\;$(Root)\3rd\detours\src\;$(Root)\3rd\lua53\;$(Root)\3rd\readerwriterqueue\;$(Root)\3rd\bee.lua\</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
@@ -161,7 +161,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>BEE_INLINE;_BASE_EXPORTS;_WINSOCK_DEPRECATED_NO_WARNINGS;_WIN32_WINNT=_WIN32_WINNT_WIN7;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(Root)\include\;$(Root)\third_party\;$(Root)\third_party\detours\src\;$(Root)\third_party\lua53\;$(Root)\third_party\readerwriterqueue\;$(Root)\third_party\bee.lua\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(Root)\include\;$(Root)\3rd\;$(Root)\3rd\detours\src\;$(Root)\3rd\lua53\;$(Root)\3rd\readerwriterqueue\;$(Root)\3rd\bee.lua\</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
@@ -185,7 +185,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>BEE_INLINE;_BASE_EXPORTS;_WINSOCK_DEPRECATED_NO_WARNINGS;_WIN32_WINNT=_WIN32_WINNT_WIN7;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(Root)\include\;$(Root)\third_party\;$(Root)\third_party\detours\src\;$(Root)\third_party\lua53\;$(Root)\third_party\readerwriterqueue\;$(Root)\third_party\bee.lua\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(Root)\include\;$(Root)\3rd\;$(Root)\3rd\detours\src\;$(Root)\3rd\lua53\;$(Root)\3rd\readerwriterqueue\;$(Root)\3rd\bee.lua\</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>

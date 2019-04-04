@@ -1,7 +1,7 @@
 local lm = require "luamake"
 local platform = require "bee.platform"
 
-lm:import 'third_party/bee.lua/make.lua'
+lm:import '3rd/bee.lua/make.lua'
 
 if platform.OS == "Windows" then
     lm:shared_library 'inject' {
@@ -11,15 +11,15 @@ if platform.OS == "Windows" then
         },
         includes = {
             "include",
-            "third_party/bee.lua",
-            "third_party/wow64ext/src",
+            "3rd/bee.lua",
+            "3rd/wow64ext/src",
         },
         sources = {
             "include/base/hook/injectdll.cpp",
             "include/base/hook/replacedll.cpp",
             "include/base/win/query_process.cpp",
             "src/process_inject/inject.cpp",
-            "third_party/wow64ext/src/wow64ext.cpp",
+            "3rd/wow64ext/src/wow64ext.cpp",
         },
         links = "advapi32"
     }
@@ -30,7 +30,7 @@ else
         },
         includes = {
             "include",
-            "third_party/bee.lua/3rd/lua/src",
+            "3rd/bee.lua/3rd/lua/src",
         },
         sources = {
             "src/process_inject/inject_osx.cpp",

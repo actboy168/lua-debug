@@ -21,180 +21,180 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\third_party\lua53\lzio.c">
+    <ClCompile Include="..\..\3rd\lua53\lzio.c">
       <Filter>core\source</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\third_party\lua53\lvm.c">
+    <ClCompile Include="..\..\3rd\lua53\lvm.c">
       <Filter>core\source</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\third_party\lua53\lundump.c">
+    <ClCompile Include="..\..\3rd\lua53\lundump.c">
       <Filter>core\source</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\third_party\lua53\ltm.c">
+    <ClCompile Include="..\..\3rd\lua53\ltm.c">
       <Filter>core\source</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\third_party\lua53\ltable.c">
+    <ClCompile Include="..\..\3rd\lua53\ltable.c">
       <Filter>core\source</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\third_party\lua53\lstring.c">
+    <ClCompile Include="..\..\3rd\lua53\lstring.c">
       <Filter>core\source</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\third_party\lua53\lstate.c">
+    <ClCompile Include="..\..\3rd\lua53\lstate.c">
       <Filter>core\source</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\third_party\lua53\lparser.c">
+    <ClCompile Include="..\..\3rd\lua53\lparser.c">
       <Filter>core\source</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\third_party\lua53\lopcodes.c">
+    <ClCompile Include="..\..\3rd\lua53\lopcodes.c">
       <Filter>core\source</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\third_party\lua53\lobject.c">
+    <ClCompile Include="..\..\3rd\lua53\lobject.c">
       <Filter>core\source</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\third_party\lua53\lmem.c">
+    <ClCompile Include="..\..\3rd\lua53\lmem.c">
       <Filter>core\source</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\third_party\lua53\lcode.c">
+    <ClCompile Include="..\..\3rd\lua53\lcode.c">
       <Filter>core\source</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\third_party\lua53\lctype.c">
+    <ClCompile Include="..\..\3rd\lua53\lctype.c">
       <Filter>core\source</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\third_party\lua53\ldebug.c">
+    <ClCompile Include="..\..\3rd\lua53\ldebug.c">
       <Filter>core\source</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\third_party\lua53\ldo.c">
+    <ClCompile Include="..\..\3rd\lua53\ldo.c">
       <Filter>core\source</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\third_party\lua53\lgc.c">
+    <ClCompile Include="..\..\3rd\lua53\lgc.c">
       <Filter>core\source</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\third_party\lua53\ldump.c">
+    <ClCompile Include="..\..\3rd\lua53\ldump.c">
       <Filter>core\source</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\third_party\lua53\llex.c">
+    <ClCompile Include="..\..\3rd\lua53\llex.c">
       <Filter>core\source</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\third_party\lua53\lfunc.c">
+    <ClCompile Include="..\..\3rd\lua53\lfunc.c">
       <Filter>core\source</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\third_party\lua53\lcorolib.c">
+    <ClCompile Include="..\..\3rd\lua53\lcorolib.c">
       <Filter>standard-library</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\third_party\lua53\lbaselib.c">
+    <ClCompile Include="..\..\3rd\lua53\lbaselib.c">
       <Filter>standard-library</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\third_party\lua53\lmathlib.c">
+    <ClCompile Include="..\..\3rd\lua53\lmathlib.c">
       <Filter>standard-library</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\third_party\lua53\ltablib.c">
+    <ClCompile Include="..\..\3rd\lua53\ltablib.c">
       <Filter>standard-library</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\third_party\lua53\lstrlib.c">
+    <ClCompile Include="..\..\3rd\lua53\lstrlib.c">
       <Filter>standard-library</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\third_party\lua53\linit.c">
+    <ClCompile Include="..\..\3rd\lua53\linit.c">
       <Filter>standard-library</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\third_party\lua53\liolib.c">
+    <ClCompile Include="..\..\3rd\lua53\liolib.c">
       <Filter>standard-library</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\third_party\lua53\ldblib.c">
+    <ClCompile Include="..\..\3rd\lua53\ldblib.c">
       <Filter>standard-library</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\third_party\lua53\loslib.c">
+    <ClCompile Include="..\..\3rd\lua53\loslib.c">
       <Filter>standard-library</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\third_party\lua53\loadlib.c">
+    <ClCompile Include="..\..\3rd\lua53\loadlib.c">
       <Filter>standard-library</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\third_party\lua53\lauxlib.c">
+    <ClCompile Include="..\..\3rd\lua53\lauxlib.c">
       <Filter>auxiliary-library</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\third_party\lua53\lapi.c">
+    <ClCompile Include="..\..\3rd\lua53\lapi.c">
       <Filter>core\source</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\third_party\lua53\lutf8lib.c">
+    <ClCompile Include="..\..\3rd\lua53\lutf8lib.c">
       <Filter>standard-library</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\third_party\lua53\lapi.h">
+    <ClInclude Include="..\..\3rd\lua53\lapi.h">
       <Filter>core\include</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\third_party\lua53\lcode.h">
+    <ClInclude Include="..\..\3rd\lua53\lcode.h">
       <Filter>core\include</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\third_party\lua53\lctype.h">
+    <ClInclude Include="..\..\3rd\lua53\lctype.h">
       <Filter>core\include</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\third_party\lua53\ldebug.h">
+    <ClInclude Include="..\..\3rd\lua53\ldebug.h">
       <Filter>core\include</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\third_party\lua53\ldo.h">
+    <ClInclude Include="..\..\3rd\lua53\ldo.h">
       <Filter>core\include</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\third_party\lua53\lfunc.h">
+    <ClInclude Include="..\..\3rd\lua53\lfunc.h">
       <Filter>core\include</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\third_party\lua53\lgc.h">
+    <ClInclude Include="..\..\3rd\lua53\lgc.h">
       <Filter>core\include</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\third_party\lua53\llex.h">
+    <ClInclude Include="..\..\3rd\lua53\llex.h">
       <Filter>core\include</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\third_party\lua53\llimits.h">
+    <ClInclude Include="..\..\3rd\lua53\llimits.h">
       <Filter>core\include</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\third_party\lua53\lmem.h">
+    <ClInclude Include="..\..\3rd\lua53\lmem.h">
       <Filter>core\include</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\third_party\lua53\lobject.h">
+    <ClInclude Include="..\..\3rd\lua53\lobject.h">
       <Filter>core\include</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\third_party\lua53\lopcodes.h">
+    <ClInclude Include="..\..\3rd\lua53\lopcodes.h">
       <Filter>core\include</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\third_party\lua53\lparser.h">
+    <ClInclude Include="..\..\3rd\lua53\lparser.h">
       <Filter>core\include</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\third_party\lua53\lstate.h">
+    <ClInclude Include="..\..\3rd\lua53\lstate.h">
       <Filter>core\include</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\third_party\lua53\lstring.h">
+    <ClInclude Include="..\..\3rd\lua53\lstring.h">
       <Filter>core\include</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\third_party\lua53\ltable.h">
+    <ClInclude Include="..\..\3rd\lua53\ltable.h">
       <Filter>core\include</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\third_party\lua53\ltm.h">
+    <ClInclude Include="..\..\3rd\lua53\ltm.h">
       <Filter>core\include</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\third_party\lua53\lundump.h">
+    <ClInclude Include="..\..\3rd\lua53\lundump.h">
       <Filter>core\include</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\third_party\lua53\lvm.h">
+    <ClInclude Include="..\..\3rd\lua53\lvm.h">
       <Filter>core\include</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\third_party\lua53\lzio.h">
+    <ClInclude Include="..\..\3rd\lua53\lzio.h">
       <Filter>core\include</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\third_party\lua53\luaconf.h">
+    <ClInclude Include="..\..\3rd\lua53\luaconf.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\third_party\lua53\lua.h">
+    <ClInclude Include="..\..\3rd\lua53\lua.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\third_party\lua53\lualib.h">
+    <ClInclude Include="..\..\3rd\lua53\lualib.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\third_party\lua53\lauxlib.h">
+    <ClInclude Include="..\..\3rd\lua53\lauxlib.h">
       <Filter>auxiliary-library</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\third_party\lua53\lprefix.h">
+    <ClInclude Include="..\..\3rd\lua53\lprefix.h">
       <Filter>core\include</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\third_party\lua53\lua.hpp">
+    <ClInclude Include="..\..\3rd\lua53\lua.hpp">
       <Filter>include</Filter>
     </ClInclude>
   </ItemGroup>

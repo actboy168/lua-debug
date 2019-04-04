@@ -4,7 +4,7 @@ lm.arch = ARGUMENTS.arch or 'x86'
 lm.bindir = "build/"..lm.plat.."/bin/runtime/"..lm.arch
 lm.objdir = "build/"..lm.plat.."/obj/runtime/"..lm.arch
 
-lm.rootdir = 'third_party/lua53'
+lm.rootdir = '3rd/lua53'
 lm:shared_library 'lua53' {
     sources = {
         "*.c",
@@ -23,7 +23,7 @@ lm:executable 'exe-lua53' {
     }
 }
 
-lm.rootdir = 'third_party/lua54'
+lm.rootdir = '3rd/lua54'
 lm:shared_library 'lua54' {
     sources = {
         "*.c",
@@ -60,17 +60,17 @@ lm:shared_library 'debugger' {
     },
     includes = {
         "include",
-        "third_party/bee.lua",
-        "third_party",
-        "third_party/readerwriterqueue"
+        "3rd/bee.lua",
+        "3rd",
+        "3rd/readerwriterqueue"
     },
     sources = {
-        "third_party/bee.lua/bee/net/*.cpp",
-        "third_party/bee.lua/bee/error.cpp",
-        "third_party/bee.lua/bee/utility/unicode_win.cpp",
-        "third_party/bee.lua/bee/utility/module_version_win.cpp",
-        "third_party/bee.lua/bee/platform/version_win.cpp",
-        "third_party/bee.lua/bee/error/category_win.cpp",
+        "3rd/bee.lua/bee/net/*.cpp",
+        "3rd/bee.lua/bee/error.cpp",
+        "3rd/bee.lua/bee/utility/unicode_win.cpp",
+        "3rd/bee.lua/bee/utility/module_version_win.cpp",
+        "3rd/bee.lua/bee/platform/version_win.cpp",
+        "3rd/bee.lua/bee/error/category_win.cpp",
         "include/debugger/thunk/thunk.cpp",
         "src/debugger/*.cpp",
         "!src/debugger/client/*.cpp",
@@ -86,7 +86,7 @@ lm:shared_library 'debugger' {
 }
 
 lm:source_set 'detours' {
-    rootdir = "third_party/detours/src",
+    rootdir = "3rd/detours/src",
     permissive = true,
     sources = {
         "*.cpp",
@@ -104,15 +104,15 @@ lm:shared_library 'debugger-inject' {
     },
     includes = {
         "include",
-        "third_party/bee.lua",
-        "third_party/lua53",
+        "3rd/bee.lua",
+        "3rd/lua53",
     },
     sources = {
         "include/base/hook/inline.cpp",
-        "third_party/bee.lua/bee/error.cpp",
-        "third_party/bee.lua/bee/utility/unicode_win.cpp",
-        "third_party/bee.lua/bee/utility/path_helper.cpp",
-        "third_party/bee.lua/bee/error/category_win.cpp",
+        "3rd/bee.lua/bee/error.cpp",
+        "3rd/bee.lua/bee/utility/unicode_win.cpp",
+        "3rd/bee.lua/bee/utility/path_helper.cpp",
+        "3rd/bee.lua/bee/error/category_win.cpp",
         "src/debugger/client/get_unix_path.cpp",
         "src/debugger/inject/*.cpp",
     },

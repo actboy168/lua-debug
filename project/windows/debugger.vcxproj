@@ -44,14 +44,14 @@
     <ClCompile Include="..\..\src\debugger\osthread.cpp" />
     <ClCompile Include="..\..\src\debugger\debugger.cpp" />
     <ClCompile Include="..\..\src\debugger\source.cpp" />
-    <ClCompile Include="..\..\third_party\bee.lua\bee\error.cpp" />
-    <ClCompile Include="..\..\third_party\bee.lua\bee\error\category_win.cpp" />
-    <ClCompile Include="..\..\third_party\bee.lua\bee\net\endpoint.cpp" />
-    <ClCompile Include="..\..\third_party\bee.lua\bee\net\socket.cpp" />
-    <ClCompile Include="..\..\third_party\bee.lua\bee\net\unixsocket_win.cpp" />
-    <ClCompile Include="..\..\third_party\bee.lua\bee\platform\version_win.cpp" />
-    <ClCompile Include="..\..\third_party\bee.lua\bee\utility\module_version_win.cpp" />
-    <ClCompile Include="..\..\third_party\bee.lua\bee\utility\unicode_win.cpp" />
+    <ClCompile Include="..\..\3rd\bee.lua\bee\error.cpp" />
+    <ClCompile Include="..\..\3rd\bee.lua\bee\error\category_win.cpp" />
+    <ClCompile Include="..\..\3rd\bee.lua\bee\net\endpoint.cpp" />
+    <ClCompile Include="..\..\3rd\bee.lua\bee\net\socket.cpp" />
+    <ClCompile Include="..\..\3rd\bee.lua\bee\net\unixsocket_win.cpp" />
+    <ClCompile Include="..\..\3rd\bee.lua\bee\platform\version_win.cpp" />
+    <ClCompile Include="..\..\3rd\bee.lua\bee\utility\module_version_win.cpp" />
+    <ClCompile Include="..\..\3rd\bee.lua\bee\utility\unicode_win.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\debugger\bridge\delayload.h" />
@@ -79,14 +79,14 @@
     <ClInclude Include="..\..\include\debugger\debugger.h" />
     <ClInclude Include="..\..\include\debugger\source.h" />
     <ClInclude Include="..\..\include\debugger\thunk\thunk.h" />
-    <ClInclude Include="..\..\third_party\bee.lua\bee\error.h" />
-    <ClInclude Include="..\..\third_party\bee.lua\bee\error\category_win.h" />
-    <ClInclude Include="..\..\third_party\bee.lua\bee\net\endpoint.h" />
-    <ClInclude Include="..\..\third_party\bee.lua\bee\net\socket.h" />
-    <ClInclude Include="..\..\third_party\bee.lua\bee\net\unixsocket_win.h" />
-    <ClInclude Include="..\..\third_party\bee.lua\bee\platform\version.h" />
-    <ClInclude Include="..\..\third_party\bee.lua\bee\utility\module_version_win.h" />
-    <ClInclude Include="..\..\third_party\bee.lua\bee\utility\unicode_win.h" />
+    <ClInclude Include="..\..\3rd\bee.lua\bee\error.h" />
+    <ClInclude Include="..\..\3rd\bee.lua\bee\error\category_win.h" />
+    <ClInclude Include="..\..\3rd\bee.lua\bee\net\endpoint.h" />
+    <ClInclude Include="..\..\3rd\bee.lua\bee\net\socket.h" />
+    <ClInclude Include="..\..\3rd\bee.lua\bee\net\unixsocket_win.h" />
+    <ClInclude Include="..\..\3rd\bee.lua\bee\platform\version.h" />
+    <ClInclude Include="..\..\3rd\bee.lua\bee\utility\module_version_win.h" />
+    <ClInclude Include="..\..\3rd\bee.lua\bee\utility\unicode_win.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="lua53dll.vcxproj">
@@ -174,7 +174,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>BEE_INLINE;DEBUGGER_EXPORTS;DEBUGGER_ENABLE_LAUNCH;DEBUGGER_BRIDGE;RAPIDJSON_HAS_STDSTRING;_WINSOCK_DEPRECATED_NO_WARNINGS;_WIN32_WINNT=_WIN32_WINNT_WIN7;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(Root)\include\;$(Root)\third_party\;$(Root)\third_party\lua53\;$(Root)\third_party\readerwriterqueue\;$(Root)\third_party\bee.lua\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(Root)\include\;$(Root)\3rd\;$(Root)\3rd\lua53\;$(Root)\3rd\readerwriterqueue\;$(Root)\3rd\bee.lua\</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
@@ -193,7 +193,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>BEE_INLINE;DEBUGGER_EXPORTS;DEBUGGER_ENABLE_LAUNCH;DEBUGGER_BRIDGE;RAPIDJSON_HAS_STDSTRING;_WINSOCK_DEPRECATED_NO_WARNINGS;_WIN32_WINNT=_WIN32_WINNT_WIN7;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(Root)\include\;$(Root)\third_party\;$(Root)\third_party\lua53\;$(Root)\third_party\readerwriterqueue\;$(Root)\third_party\bee.lua\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(Root)\include\;$(Root)\3rd\;$(Root)\3rd\lua53\;$(Root)\3rd\readerwriterqueue\;$(Root)\3rd\bee.lua\</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
@@ -215,7 +215,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>BEE_INLINE;DEBUGGER_EXPORTS;DEBUGGER_ENABLE_LAUNCH;DEBUGGER_BRIDGE;RAPIDJSON_HAS_STDSTRING;_WINSOCK_DEPRECATED_NO_WARNINGS;_WIN32_WINNT=_WIN32_WINNT_WIN7;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(Root)\include\;$(Root)\third_party\;$(Root)\third_party\lua53\;$(Root)\third_party\readerwriterqueue\;$(Root)\third_party\bee.lua\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(Root)\include\;$(Root)\3rd\;$(Root)\3rd\lua53\;$(Root)\3rd\readerwriterqueue\;$(Root)\3rd\bee.lua\</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
@@ -239,7 +239,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>BEE_INLINE;DEBUGGER_EXPORTS;DEBUGGER_ENABLE_LAUNCH;DEBUGGER_BRIDGE;RAPIDJSON_HAS_STDSTRING;_WINSOCK_DEPRECATED_NO_WARNINGS;_WIN32_WINNT=_WIN32_WINNT_WIN7;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(Root)\include\;$(Root)\third_party\;$(Root)\third_party\lua53\;$(Root)\third_party\readerwriterqueue\;$(Root)\third_party\bee.lua\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(Root)\include\;$(Root)\3rd\;$(Root)\3rd\lua53\;$(Root)\3rd\readerwriterqueue\;$(Root)\3rd\bee.lua\</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>

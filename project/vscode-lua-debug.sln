@@ -9,9 +9,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "debugger", "windows\debugge
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "debugger-inject", "windows\debugger-inject.vcxproj", "{20F15A76-D908-475B-A904-6ACD1763D5FB}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Detours", "..\third_party\detours\project\Detours.vcxproj", "{198D08D6-92BA-46E3-B430-8351244FB61C}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Detours", "..\3rd\detours\project\Detours.vcxproj", "{198D08D6-92BA-46E3-B430-8351244FB61C}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "wow64ext", "..\third_party\wow64ext\src\wow64ext.vcxproj", "{9DA7F232-0096-45BC-A452-24C7F3AFA0F8}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "wow64ext", "..\3rd\wow64ext\src\wow64ext.vcxproj", "{9DA7F232-0096-45BC-A452-24C7F3AFA0F8}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "windows", "windows", "{3BD7EA86-695D-4AD9-BA45-5F37979DDB58}"
 EndProject
@@ -25,11 +25,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "lua54dll", "windows\lua54dl
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "lua", "lua", "{143B40F1-6A87-4154-AB39-C4FF89E76860}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "lua54", "..\third_party\bee.lua\project\msvc\lua54.vcxproj", "{316B33ED-1056-48B0-ABF0-CE3CE55F7A17}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "lua54", "..\3rd\bee.lua\project\msvc\lua54.vcxproj", "{316B33ED-1056-48B0-ABF0-CE3CE55F7A17}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "inject", "windows\inject.vcxproj", "{37D48C0E-DF1F-4C59-8787-5AAD2AA4AEF0}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bee", "..\third_party\bee.lua\project\msvc\bee.vcxproj", "{355C2493-0A78-490B-971A-BBDB0E2819EF}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bee", "..\3rd\bee.lua\project\msvc\bee.vcxproj", "{355C2493-0A78-490B-971A-BBDB0E2819EF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
