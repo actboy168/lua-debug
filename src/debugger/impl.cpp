@@ -200,6 +200,7 @@ namespace vscode
 		int new_threadid = ++next_threadid_;
 		std::unique_ptr<luathread> newthread(new luathread(new_threadid, *this, get_mainthread(L)));
 		luathreads_.insert(std::make_pair<int, std::unique_ptr<luathread>>(std::move(new_threadid), std::move(newthread)));
+        init_internal_module(L);
 		return true;
 	}
 

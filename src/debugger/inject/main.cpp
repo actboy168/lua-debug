@@ -33,9 +33,7 @@ void debuggerAttach(lua_State* L) {
 			return;
 		}
 	}
-	if (dbg->attach_lua(L)) {
-		dbg->init_internal_module(L);
-	}
+    dbg->attach_lua(L);
 }
 
 void debuggerDetach(lua_State* L) {
