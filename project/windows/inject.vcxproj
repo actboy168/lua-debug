@@ -129,7 +129,7 @@
     <PostBuildEvent>
       <Command>copy  $(projectDir)..\..\3rd\bee.lua\build\msbuild_$(PlatformTarget)_$(Configuration)\bin\bee.dll $(USERPROFILE)\$(VSCode)\extensions\actboy168.lua-debug-$(VERSION)\bin\win\bee.dll
 copy  $(projectDir)..\..\3rd\bee.lua\build\msbuild_$(PlatformTarget)_$(Configuration)\bin\lua54.dll $(USERPROFILE)\$(VSCode)\extensions\actboy168.lua-debug-$(VERSION)\bin\win\lua54.dll
-copy  $(projectDir)..\..\3rd\bee.lua\build\msbuild_$(PlatformTarget)_$(Configuration)\bin\lua.exe $(USERPROFILE)\$(VSCode)\extensions\actboy168.lua-debug-$(VERSION)\bin\win\lua.exe</Command>
+copy  $(projectDir)..\..\3rd\bee.lua\build\msbuild_$(PlatformTarget)_$(Configuration)\bin\lua.exe $(USERPROFILE)\$(VSCode)\extensions\actboy168.lua-debug-$(VERSION)\bin\win\lua-debug.exe</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -151,7 +151,7 @@ copy  $(projectDir)..\..\3rd\bee.lua\build\msbuild_$(PlatformTarget)_$(Configura
     <PostBuildEvent>
       <Command>copy  $(projectDir)..\..\3rd\bee.lua\build\msbuild_$(PlatformTarget)_$(Configuration)\bin\bee.dll $(USERPROFILE)\$(VSCode)\extensions\actboy168.lua-debug-$(VERSION)\bin\win\bee.dll
 copy  $(projectDir)..\..\3rd\bee.lua\build\msbuild_$(PlatformTarget)_$(Configuration)\bin\lua54.dll $(USERPROFILE)\$(VSCode)\extensions\actboy168.lua-debug-$(VERSION)\bin\win\lua54.dll
-copy  $(projectDir)..\..\3rd\bee.lua\build\msbuild_$(PlatformTarget)_$(Configuration)\bin\lua.exe $(USERPROFILE)\$(VSCode)\extensions\actboy168.lua-debug-$(VERSION)\bin\win\lua.exe</Command>
+copy  $(projectDir)..\..\3rd\bee.lua\build\msbuild_$(PlatformTarget)_$(Configuration)\bin\lua.exe $(USERPROFILE)\$(VSCode)\extensions\actboy168.lua-debug-$(VERSION)\bin\win\lua-debug.exe</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
