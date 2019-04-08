@@ -6,6 +6,9 @@
 #include <vector>
 #include <base/hook/fp_call.h>
 #include <base/hook/inline.h>
+#include <intrin.h>
+
+extern void* getDebugger();
 
 namespace autoattach {
 	std::mutex lockLoadDll;
@@ -13,16 +16,37 @@ namespace autoattach {
 	HMODULE luaDll = NULL;
 	fn_attach debuggerAttach;
 	fn_detach debuggerDetach;
-	bool      attachProcess = false;
+	bool	  attachProcess = false;
 
 	namespace lua {
 		namespace real {
 			uintptr_t lua_newstate = 0;
 			uintptr_t luaL_newstate = 0;
 			uintptr_t lua_close = 0;
-            uintptr_t lua_settop = 0;
+			uintptr_t lua_settop = 0;
 		}
 		namespace fake {
+			static HMODULE address2dll(void* address) {
+				HMODULE dll = NULL;
+				if (GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS, (LPCWSTR)address, &dll)) {
+					return dll;
+				}
+				return 0;
+			}
+			static void* dbgAddress() {
+				HMODULE dll = GetModuleHandleW(L"debugger.dll");
+				if (!dll) {
+					return 0;
+				}
+				return GetProcAddress(dll, "luaopen_debugger");
+			}
+			static bool caller_is_dbg(void* callerAddress) {
+				if (!getDebugger()) {
+					return false;
+				}
+				static HMODULE self = address2dll(dbgAddress());
+				return self == address2dll(callerAddress);
+			}
 			static lua_State* __cdecl lua_newstate(void* f, void* ud)
 			{
 				lua_State* L = base::c_call<lua_State*>(real::lua_newstate, f, ud);
@@ -37,7 +61,10 @@ namespace autoattach {
 			}
 			static void __cdecl lua_settop(lua_State *L, int index)
 			{
-				debuggerAttach(L);
+				// TODO
+				if (!caller_is_dbg(_ReturnAddress())) {
+					debuggerAttach(L);
+				}
 				return base::c_call<void>(real::lua_settop, L, index);
 			}
 			static void __cdecl lua_close(lua_State* L)

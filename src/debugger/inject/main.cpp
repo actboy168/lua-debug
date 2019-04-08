@@ -9,6 +9,10 @@ static vscode::debugger* dbg = nullptr;
 static std::filesystem::path binPath;
 static std::string pipeName;
 
+void* getDebugger() {
+    return dbg;
+}
+
 static bool createDebugger() {
 	if (!GetModuleHandleW(L"debugger.dll")) {
 		if (!LoadLibraryW((binPath / L"debugger.dll").c_str())) {
