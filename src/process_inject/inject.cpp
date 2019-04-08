@@ -9,17 +9,17 @@
 #include <algorithm>
 
 static int injectdll(lua_State* L) {
-    if (lua_type(L, 1) == LUA_TNUMBER) {
-        DWORD pid = (DWORD)luaL_checkinteger(L, 1);
-        bool ok = base::hook::injectdll(pid, bee::lua::to_string(L, 2), bee::lua::to_string(L, 3));
-        lua_pushboolean(L, ok);
-        return 1;
-    }
-    auto& self = *(bee::subprocess::process*)getObject(L, 1, "subprocess");
     const char* entry = 0;
     if (lua_gettop(L) >= 4) {
         entry = luaL_checkstring(L, 4);
     }
+    if (lua_type(L, 1) == LUA_TNUMBER) {
+        DWORD pid = (DWORD)luaL_checkinteger(L, 1);
+        bool ok = base::hook::injectdll(pid, bee::lua::to_string(L, 2), bee::lua::to_string(L, 3), entry);
+        lua_pushboolean(L, ok);
+        return 1;
+    }
+    auto& self = *(bee::subprocess::process*)getObject(L, 1, "subprocess");
     bool ok = base::hook::injectdll(self.info(), bee::lua::to_string(L, 2), bee::lua::to_string(L, 3), entry);
     lua_pushboolean(L, ok);
     return 1;
