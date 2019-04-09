@@ -3,7 +3,7 @@
   <ImportGroup Label="PropertySheets" />
   <PropertyGroup Label="UserMacros">
     <Root>$(SolutionDir)..</Root>
-    <Version>0.8.1</Version>
+    <Version>0.8.2</Version>
     <VSCode>.vscode</VSCode>
   </PropertyGroup>
   <PropertyGroup>
