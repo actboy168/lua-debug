@@ -1,5 +1,5 @@
-local serverFactory = require 'serverFactory'
-local debuggerFactory = require 'debugerFactory'
+local serverFactory = require 'frontend.serverFactory'
+local debuggerFactory = require 'frontend.debugerFactory'
 local fs = require 'bee.filesystem'
 local platform = require 'bee.platform'
 local inject = require 'inject'

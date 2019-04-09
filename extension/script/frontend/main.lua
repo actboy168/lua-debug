@@ -4,7 +4,7 @@ local fs = require 'bee.filesystem'
 WORKDIR = fs.exe_path():parent_path():parent_path():parent_path()
 
 local function run()
-    (require 'mainloop')(port)
+    (require 'frontend.mainloop')(port)
 end
 
 if port then

@@ -1,5 +1,5 @@
 local proto = require 'protocol'
-local select = require 'select'
+local select = require 'frontend.select'
 
 local function create(t)
     local m = {}

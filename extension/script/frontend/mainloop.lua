@@ -1,6 +1,6 @@
-local serverFactory = require 'serverFactory'
-local select = require 'select'
-local proxy = require 'proxy'
+local serverFactory = require 'frontend.serverFactory'
+local select = require 'frontend.select'
+local proxy = require 'frontend.proxy'
 local vscode
 
 
@@ -23,7 +23,7 @@ return function(port)
             port = tostring(port)
         }
     else
-        vscode = require 'stdio'
+        vscode = require 'frontend.stdio'
         --vscode.debug(true)
     end
     proxy.init(vscode)
