@@ -14,6 +14,12 @@ local modes = {
 
 local levels = {}
 
+local origin = os.time() - os.clock()
+local function os_date(fmt)
+    local ti, tf = math.modf(origin + os.clock())
+    return os.date(fmt, ti):gsub('{ms}', ('%03d'):format(math.floor(tf*1000)))
+end
+
 local function round(x, increment)
     increment = increment or 1
     x = x / increment
@@ -43,7 +49,7 @@ for i, name in ipairs(modes) do
         end
         local info = debug.getinfo(2, 'Sl')
         local msg = ('[%s][%s:%3d][%-6s] %s\n'):format(
-            os.date('%Y-%m-%d %H:%M:%S'),
+            os_date('%Y-%m-%d %H:%M:%S:{ms}'),
             info.short_src,
             info.currentline,
             name:upper(),
