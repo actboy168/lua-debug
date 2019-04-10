@@ -1,11 +1,12 @@
 local lm = require "luamake"
 
+local luaver = ARGUMENTS.luaver or 'lua53'
 lm.arch = ARGUMENTS.arch or 'x86'
-lm.bindir = "build/"..lm.plat.."/bin/runtime/"..lm.arch
-lm.objdir = "build/"..lm.plat.."/obj/runtime/"..lm.arch
+lm.bindir = ("build/%s/bin/runtime/%s/%s"):format(lm.plat, lm.arch, luaver)
+lm.objdir = ("build/%s/obj/runtime/%s/%s"):format(lm.plat, lm.arch, luaver)
 
-lm.rootdir = '3rd/lua53'
-lm:shared_library 'lua53' {
+lm.rootdir = '3rd/'..luaver
+lm:shared_library (luaver) {
     sources = {
         "*.c",
         "!lua.c",
@@ -16,122 +17,103 @@ lm:shared_library 'lua53' {
         "LUAI_MAXCCALLS=200"
     }
 }
-lm:executable 'exe-lua53' {
-    deps = "lua53",
+lm:executable 'lua' {
+    deps = luaver,
     sources = {
         "lua.c",
     }
 }
 
-lm.rootdir = '3rd/lua54'
-lm:shared_library 'lua54' {
-    sources = {
-        "*.c",
-        "!lua.c",
-        "!luac.c",
-    },
-    defines = {
-        "LUA_BUILD_AS_DLL",
-        "LUAI_MAXCCALLS=200"
+if luaver == "lua53" then
+    lm.rootdir = ''
+
+    lm:shared_library 'debugger' {
+        deps = {
+            luaver,
+        },
+        defines = {
+            "BEE_INLINE",
+            "DEBUGGER_EXPORTS",
+            "DEBUGGER_ENABLE_LAUNCH",
+            "DEBUGGER_BRIDGE",
+            "RAPIDJSON_HAS_STDSTRING",
+            "_WINSOCK_DEPRECATED_NO_WARNINGS",
+            "_WIN32_WINNT=_WIN32_WINNT_WIN7",
+            "_CRT_SECURE_NO_WARNINGS",
+        },
+        includes = {
+            "include",
+            "3rd/bee.lua",
+            "3rd",
+            "3rd/readerwriterqueue"
+        },
+        sources = {
+            "3rd/bee.lua/bee/net/*.cpp",
+            "3rd/bee.lua/bee/error.cpp",
+            "3rd/bee.lua/bee/utility/unicode_win.cpp",
+            "3rd/bee.lua/bee/utility/module_version_win.cpp",
+            "3rd/bee.lua/bee/platform/version_win.cpp",
+            "3rd/bee.lua/bee/error/category_win.cpp",
+            "include/debugger/thunk/thunk.cpp",
+            "src/debugger/*.cpp",
+            "!src/debugger/client/*.cpp",
+            "!src/debugger/inject/*.cpp",
+        },
+        links = {
+            "version",
+            "ws2_32",
+            "user32",
+            "delayimp",
+        },
+        ldflags = '/DELAYLOAD:lua53.dll',
     }
-}
-lm:executable 'exe-lua54' {
-    deps = "lua54",
-    sources = {
-        "lua.c",
+
+    lm:source_set 'detours' {
+        rootdir = "3rd/detours/src",
+        permissive = true,
+        sources = {
+            "*.cpp",
+            "!uimports.cpp"
+        }
     }
-}
 
-lm.rootdir = ''
-
-lm:shared_library 'debugger' {
-    deps = {
-        "lua53",
-    },
-    defines = {
-        "BEE_INLINE",
-        "DEBUGGER_EXPORTS",
-        "DEBUGGER_ENABLE_LAUNCH",
-        "DEBUGGER_BRIDGE",
-        "RAPIDJSON_HAS_STDSTRING",
-        "_WINSOCK_DEPRECATED_NO_WARNINGS",
-        "_WIN32_WINNT=_WIN32_WINNT_WIN7",
-        "_CRT_SECURE_NO_WARNINGS",
-    },
-    includes = {
-        "include",
-        "3rd/bee.lua",
-        "3rd",
-        "3rd/readerwriterqueue"
-    },
-    sources = {
-        "3rd/bee.lua/bee/net/*.cpp",
-        "3rd/bee.lua/bee/error.cpp",
-        "3rd/bee.lua/bee/utility/unicode_win.cpp",
-        "3rd/bee.lua/bee/utility/module_version_win.cpp",
-        "3rd/bee.lua/bee/platform/version_win.cpp",
-        "3rd/bee.lua/bee/error/category_win.cpp",
-        "include/debugger/thunk/thunk.cpp",
-        "src/debugger/*.cpp",
-        "!src/debugger/client/*.cpp",
-        "!src/debugger/inject/*.cpp",
-    },
-    links = {
-        "version",
-        "ws2_32",
-        "user32",
-        "delayimp",
-    },
-    ldflags = '/DELAYLOAD:lua53.dll',
-}
-
-lm:source_set 'detours' {
-    rootdir = "3rd/detours/src",
-    permissive = true,
-    sources = {
-        "*.cpp",
-        "!uimports.cpp"
+    lm:shared_library 'debugger-inject' {
+        deps = {
+            "debugger",
+            "detours"
+        },
+        defines = {
+            "BEE_INLINE",
+        },
+        includes = {
+            "include",
+            "3rd/bee.lua",
+            "3rd/lua53",
+        },
+        sources = {
+            "include/base/hook/inline.cpp",
+            "3rd/bee.lua/bee/error.cpp",
+            "3rd/bee.lua/bee/utility/unicode_win.cpp",
+            "3rd/bee.lua/bee/utility/path_helper.cpp",
+            "3rd/bee.lua/bee/error/category_win.cpp",
+            "src/debugger/client/get_unix_path.cpp",
+            "src/debugger/inject/*.cpp",
+        },
+        links = {
+            "ws2_32",
+            "delayimp",
+        },
+        ldflags = '/DELAYLOAD:debugger.dll',
     }
-}
-
-lm:shared_library 'debugger-inject' {
-    deps = {
-        "debugger",
-        "detours"
-    },
-    defines = {
-        "BEE_INLINE",
-    },
-    includes = {
-        "include",
-        "3rd/bee.lua",
-        "3rd/lua53",
-    },
-    sources = {
-        "include/base/hook/inline.cpp",
-        "3rd/bee.lua/bee/error.cpp",
-        "3rd/bee.lua/bee/utility/unicode_win.cpp",
-        "3rd/bee.lua/bee/utility/path_helper.cpp",
-        "3rd/bee.lua/bee/error/category_win.cpp",
-        "src/debugger/client/get_unix_path.cpp",
-        "src/debugger/inject/*.cpp",
-    },
-    links = {
-        "ws2_32",
-        "delayimp",
-    },
-    ldflags = '/DELAYLOAD:debugger.dll',
-}
+end
 
 lm:build 'install' {
-    '$luamake', 'lua', 'make/install-runtime.lua', lm.plat, lm.arch,
+    '$luamake', 'lua', 'make/install-runtime.lua', lm.plat, lm.arch, luaver,
     deps = {
-        "debugger",
-        "debugger-inject",
-        "exe-lua54",
-        "exe-lua53",
-        "lua54",
-        "lua53",
+        "lua",
+        luaver,
+        (luaver == "lua53") and "debugger" or nil,
+        (luaver == "lua53") and "debugger-inject" or nil,
     }
 }
 

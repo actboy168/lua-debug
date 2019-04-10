@@ -94,16 +94,30 @@ assert(sp.spawn {
 }):wait()
 
 if platform == 'msvc' then
-    print 'Step 6. compile targetcpu = x86'
+    print 'Step 6. compile lua53 x86'
     assert(sp.spawn {
-        luamake, 'remake', '-f', 'make-runtime.lua', '-arch', 'x86',
+        luamake, 'remake', '-f', 'make-runtime.lua', '-arch', 'x86', '-luaver', 'lua53',
         cwd = root,
         searchPath = true,
     }):wait()
 
-    print 'Step 7. compile targetcpu = x64'
+    print 'Step 7. compile lua53 x64'
     assert(sp.spawn {
-        luamake, 'remake', '-f', 'make-runtime.lua', '-arch', 'x64',
+        luamake, 'remake', '-f', 'make-runtime.lua', '-arch', 'x64', '-luaver', 'lua53',
+        cwd = root,
+        searchPath = true,
+    }):wait()
+
+    print 'Step 8. compile lua54 x86'
+    assert(sp.spawn {
+        luamake, 'remake', '-f', 'make-runtime.lua', '-arch', 'x86', '-luaver', 'lua54',
+        cwd = root,
+        searchPath = true,
+    }):wait()
+
+    print 'Step 9. compile lua54 x64'
+    assert(sp.spawn {
+        luamake, 'remake', '-f', 'make-runtime.lua', '-arch', 'x64', '-luaver', 'lua54',
         cwd = root,
         searchPath = true,
     }):wait()

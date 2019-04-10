@@ -11,7 +11,7 @@ local function u2a(s)
     return s
 end
 
-local function create_install_script(args, dbg, port)
+local function create_install_script(args, debugpath, port)
     local utf8 = args.sourceCoding == "utf8"
     local res = {}
     if type(args.path) == "string" then
@@ -38,7 +38,7 @@ local function create_install_script(args, dbg, port)
     end
 
     res[#res+1] = ("local dbg=package.loadlib([[%s]], 'luaopen_debugger')();package.loaded[ [[%s]] ]=dbg;dbg:io([[pipe:%s]])"):format(
-        utf8 and (dbg / "debugger.dll"):string() or u2a((dbg / "debugger.dll"):string()),
+        utf8 and debugpath or u2a(debugpath),
         (type(args.internalModule) == "string") and args.internalModule or "debugger",
         port
     )
@@ -110,12 +110,13 @@ local function getLuaExe(args, dbg)
             dbg = dbg / "win32"
         end
         if ver == 53 then
-            luaexe = dbg / "lua53.exe"
+            luaexe = dbg / "lua53" / "lua.exe"
         else
-            luaexe = dbg / "lua54.exe"
+            luaexe = dbg / "lua54" / "lua.exe"
         end
     end
-    return luaexe, dbg
+    local debugpath = (dbg / "lua53" / "debugger.dll"):string()
+    return luaexe, debugpath
 end
 
 local function installBootstrap1(option, luaexe, args)
@@ -125,10 +126,10 @@ local function installBootstrap1(option, luaexe, args)
     end
 end
 
-local function installBootstrap2(c, luaexe, args, dbgdir, port)
+local function installBootstrap2(c, luaexe, args, debugpath, port)
     c[#c+1] = luaexe:string()
     c[#c+1] = "-e"
-    c[#c+1] = create_install_script(args, dbgdir, port)
+    c[#c+1] = create_install_script(args, debugpath, port)
 
     if type(args.arg0) == "string" then
         c[#c+1] = args.arg0
@@ -154,24 +155,24 @@ local function installBootstrap2(c, luaexe, args, dbgdir, port)
 end
 
 local function create_terminal(args, dbg, port)
-    local luaexe, dbgdir = getLuaExe(args, dbg)
+    local luaexe, debugpath = getLuaExe(args, dbg)
     local option = {
         kind = (args.console == "integratedTerminal") and "integrated" or "external",
         title = "Lua Debug",
         args = {},
     }
     installBootstrap1(option, luaexe, args)
-    installBootstrap2(option.args, luaexe, args, dbgdir, port)
+    installBootstrap2(option.args, luaexe, args, debugpath, port)
     return option
 end
 
 local function create_luaexe(args, dbg, port)
-    local luaexe, dbgdir = getLuaExe(args, dbg)
+    local luaexe, debugpath = getLuaExe(args, dbg)
     local option = {
         console = 'hide'
     }
     installBootstrap1(option, luaexe, args)
-    installBootstrap2(option, luaexe, args, dbgdir, port)
+    installBootstrap2(option, luaexe, args, debugpath, port)
     if not args.luadll or type(args.luaexe) == "string" then
         return sp.spawn(option)
     end
@@ -213,8 +214,8 @@ local function create_process(args)
         return process
     end
     inject.injectdll(process
-        , (WORKDIR / "runtime" / "win32" / "debugger-inject.dll"):string()
-        , (WORKDIR / "runtime" / "win64" / "debugger-inject.dll"):string()
+        , (WORKDIR / "runtime" / "win32" / "lua53" / "debugger-inject.dll"):string()
+        , (WORKDIR / "runtime" / "win64" / "lua53" / "debugger-inject.dll"):string()
         , "launch"
     )
     process:resume()

@@ -1,4 +1,4 @@
-local platform, arch = ...
+local platform, arch, luaver = ...
 local fs = require 'bee.filesystem'
 local CWD = fs.current_path()
 
@@ -8,16 +8,16 @@ if platform == 'macos' then
 end
 
 local msvc = require 'msvc'
-local output = CWD / 'publish' / 'runtime' / (arch == 'x86' and 'win32' or 'win64')
-local bindir = CWD / 'build' / 'msvc' / 'bin' / 'runtime' / arch
+local output = CWD / 'publish' / 'runtime' / (arch == 'x86' and 'win32' or 'win64') / luaver
+local bindir = CWD / 'build' / 'msvc' / 'bin' / 'runtime' / arch / luaver
 
 fs.create_directories(output)
-fs.copy_file(bindir / 'lua53.dll', output / 'lua53.dll', true)
-fs.copy_file(bindir / 'lua54.dll', output / 'lua54.dll', true)
-fs.copy_file(bindir / 'exe-lua53.exe', output / 'lua53.exe', true)
-fs.copy_file(bindir / 'exe-lua54.exe', output / 'lua54.exe', true)
-fs.copy_file(bindir / 'debugger.dll', output / 'debugger.dll', true)
-fs.copy_file(bindir / 'debugger-inject.dll', output / 'debugger-inject.dll', true)
+fs.copy_file(bindir / (luaver..'.dll'), output / (luaver..'.dll'), true)
+fs.copy_file(bindir / 'lua.exe', output / 'lua.exe', true)
+if luaver == "lua53" then
+    fs.copy_file(bindir / 'debugger.dll', output / 'debugger.dll', true)
+    fs.copy_file(bindir / 'debugger-inject.dll', output / 'debugger-inject.dll', true)
+end
 
 local function copy_crtdll(platform, target)
     fs.create_directories(target)
