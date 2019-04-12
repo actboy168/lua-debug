@@ -25,8 +25,8 @@
             "request": "launch",
             "name": "Test Client",
             "luaexe": "${env:USERPROFILE}/.vscode/extensions/actboy168.lua-debug-0.8.3/bin/win/lua-debug.exe",
-            "program": "${workspaceFolder}/extension/client/main.lua",
-            "path": "${workspaceFolder}/extension/client/?.lua",
+            "program": "${workspaceFolder}/extension/script/frontend/main.lua",
+            "path": "${workspaceFolder}/extension/script/?.lua",
             "arg": [
                 "4711"
             ]

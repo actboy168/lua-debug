@@ -4,7 +4,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <!-- <OutDir>$(Root)\extension\windows\$(PlatformTarget)\</OutDir> -->
-    <OutDir>$(USERPROFILE)\$(VSCode)\extensions\actboy168.lua-debug-$(VERSION)\runtime\win$(PlatformArchitecture)\</OutDir>
+    <OutDir>$(USERPROFILE)\$(VSCode)\extensions\actboy168.lua-debug-$(VERSION)\runtime\win$(PlatformArchitecture)\lua53\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup />
   <ItemGroup />
