@@ -34,6 +34,7 @@ lm:shared_library 'remotedebug' {
     defines = {
         "BEE_STATIC",
         "BEE_INLINE",
+        platform.OS == "Windows" and "_CRT_SECURE_NO_WARNINGS",
     },
     includes = {
         "3rd/bee.lua/",
