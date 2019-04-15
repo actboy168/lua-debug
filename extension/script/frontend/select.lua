@@ -155,7 +155,9 @@ local function updateLC()
         return
     end
     local rd, wr = ls.select(listens, connects, 0)
-    if rd then
+    if not rd then
+        return
+    end
         for _, fd in ipairs(rd) do
             local newfd = fd:accept()
             if newfd:status() then
@@ -165,8 +167,6 @@ local function updateLC()
                 attach(newfd)
             end
         end
-    end
-    if wr then
         for _, fd in ipairs(wr) do
             close_connect(fd)
             if fd:status() then
@@ -182,12 +182,13 @@ local function updateLC()
             end
         end
     end
-end
 
 function m.update(timeout)
     updateLC()
     local rd, wr = ls.select(rds, wds, timeout)
-    if rd then
+    if not rd then
+        return
+    end
         for _, fd in ipairs(rd) do
             local data = fd:recv()
             if data == nil then
@@ -197,8 +198,6 @@ function m.update(timeout)
                 read[fd] = read[fd] .. data
             end
         end
-    end
-    if wr then
         for _, fd in ipairs(wr) do
             local n = fd:send(write[fd])
             if n == nil then
@@ -218,6 +217,5 @@ function m.update(timeout)
             end
         end
     end
-end
 
 return m
