@@ -1,5 +1,5 @@
 /*
-** $Id: llimits.h,v 1.151 2018/06/15 14:13:45 roberto Exp $
+** $Id: llimits.h $
 ** Limits, basic types, and some other 'installation-dependent' definitions
 ** See Copyright Notice in lua.h
 */
@@ -63,6 +63,10 @@ typedef signed char ls_byte;
 ** test whether an unsigned value is a power of 2 (or zero)
 */
 #define ispow2(x)	(((x) & ((x) - 1)) == 0)
+
+
+/* number of chars of a literal string without the ending \0 */
+#define LL(x)   (sizeof(x)/sizeof(char) - 1)
 
 
 /*
@@ -168,15 +172,6 @@ typedef LUAI_UACINT l_uacInt;
 #endif
 
 
-/*
-** maximum depth for nested C calls and syntactical nested non-terminals
-** in a program. (Value must fit in an unsigned short int. It must also
-** be compatible with the size of the C stack.)
-*/
-#if !defined(LUAI_MAXCCALLS)
-#define LUAI_MAXCCALLS		2200
-#endif
-
 
 
 /*
@@ -184,10 +179,12 @@ typedef LUAI_UACINT l_uacInt;
 ** must be an unsigned with (at least) 4 bytes (see details in lopcodes.h)
 */
 #if LUAI_BITSINT >= 32
-typedef unsigned int Instruction;
+typedef unsigned int l_uint32;
 #else
-typedef unsigned long Instruction;
+typedef unsigned long l_uint32;
 #endif
+
+typedef l_uint32 Instruction;
 
 
 
@@ -293,15 +290,20 @@ typedef unsigned long Instruction;
 #endif
 
 /*
-** modulo: defined as 'a - floor(a/b)*b'; this definition gives NaN when
-** 'b' is huge, but the result should be 'a'. 'fmod' gives the result of
-** 'a - trunc(a/b)*b', and therefore must be corrected when 'trunc(a/b)
-** ~= floor(a/b)'. That happens when the division has a non-integer
-** negative result, which is equivalent to the test below.
+** modulo: defined as 'a - floor(a/b)*b'; the direct computation
+** using this definition has several problems with rounding errors,
+** so it is better to use 'fmod'. 'fmod' gives the result of
+** 'a - trunc(a/b)*b', and therefore must be corrected when
+** 'trunc(a/b) ~= floor(a/b)'. That happens when the division has a
+** non-integer negative result: non-integer result is equivalent to
+** a non-zero remainder 'm'; negative result is equivalent to 'a' and
+** 'b' with different signs, or 'm' and 'b' with different signs
+** (as the result 'm' of 'fmod' has the same sign of 'a').
 */
 #if !defined(luai_nummod)
 #define luai_nummod(L,a,b,m)  \
-  { (m) = l_mathop(fmod)(a,b); if ((m)*(b) < 0) (m) += (b); }
+  { (void)L; (m) = l_mathop(fmod)(a,b); \
+    if (((m) > 0) ? (b) < 0 : ((m) < 0 && (b) > 0)) (m) += (b); }
 #endif
 
 /* exponentiation */
@@ -318,6 +320,8 @@ typedef unsigned long Instruction;
 #define luai_numeq(a,b)         ((a)==(b))
 #define luai_numlt(a,b)         ((a)<(b))
 #define luai_numle(a,b)         ((a)<=(b))
+#define luai_numgt(a,b)         ((a)>(b))
+#define luai_numge(a,b)         ((a)>=(b))
 #define luai_numisnan(a)        (!luai_numeq((a), (a)))
 #endif
 

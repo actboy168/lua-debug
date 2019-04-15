@@ -1,5 +1,5 @@
 /*
-** $Id: lparser.h,v 1.82 2018/04/04 14:23:41 roberto Exp $
+** $Id: lparser.h $
 ** Lua Parser
 ** See Copyright Notice in lua.h
 */
@@ -78,7 +78,7 @@ typedef struct expdesc {
 
 /* description of active local variable */
 typedef struct Vardesc {
-  short idx;  /* variable index in stack */
+  short idx;  /* index of the variable in the Proto's 'locvars' array */
 } Vardesc;
 
 
@@ -88,6 +88,7 @@ typedef struct Labeldesc {
   int pc;  /* position in code */
   int line;  /* line where it appeared */
   lu_byte nactvar;  /* local level where it appears in current block */
+  lu_byte close;  /* goto that escapes upvalues */
 } Labeldesc;
 
 
@@ -128,11 +129,13 @@ typedef struct FuncState {
   int np;  /* number of elements in 'p' */
   int nabslineinfo;  /* number of elements in 'abslineinfo' */
   int firstlocal;  /* index of first local var (in Dyndata array) */
+  int firstlabel;  /* index of first label (in 'dyd->label->arr') */
   short nlocvars;  /* number of elements in 'f->locvars' */
   lu_byte nactvar;  /* number of active local variables */
   lu_byte nups;  /* number of upvalues */
   lu_byte freereg;  /* first free register */
   lu_byte iwthabs;  /* instructions issued since last absolute line info */
+  lu_byte needclose;  /* function needs to close upvalues when returning */
 } FuncState;
 
 

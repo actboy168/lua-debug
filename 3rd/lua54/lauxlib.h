@@ -1,5 +1,5 @@
 /*
-** $Id: lauxlib.h,v 1.134 2018/02/27 18:47:32 roberto Exp $
+** $Id: lauxlib.h $
 ** Auxiliary functions for building Lua libraries
 ** See Copyright Notice in lua.h
 */
@@ -48,6 +48,7 @@ LUALIB_API int (luaL_getmetafield) (lua_State *L, int obj, const char *e);
 LUALIB_API int (luaL_callmeta) (lua_State *L, int obj, const char *e);
 LUALIB_API const char *(luaL_tolstring) (lua_State *L, int idx, size_t *len);
 LUALIB_API int (luaL_argerror) (lua_State *L, int arg, const char *extramsg);
+LUALIB_API int (luaL_typeerror) (lua_State *L, int arg, const char *tname);
 LUALIB_API const char *(luaL_checklstring) (lua_State *L, int arg,
                                                           size_t *l);
 LUALIB_API const char *(luaL_optlstring) (lua_State *L, int arg,
@@ -76,6 +77,7 @@ LUALIB_API int (luaL_checkoption) (lua_State *L, int arg, const char *def,
 
 LUALIB_API int (luaL_fileresult) (lua_State *L, int stat, const char *fname);
 LUALIB_API int (luaL_execresult) (lua_State *L, int stat);
+
 
 /* predefined references */
 #define LUA_NOREF       (-2)
@@ -125,6 +127,10 @@ LUALIB_API void (luaL_requiref) (lua_State *L, const char *modname,
 
 #define luaL_argcheck(L, cond,arg,extramsg)	\
 		((void)((cond) || luaL_argerror(L, (arg), (extramsg))))
+
+#define luaL_argexpected(L,cond,arg,tname)	\
+		((void)((cond) || luaL_typeerror(L, (arg), (tname))))
+
 #define luaL_checkstring(L,n)	(luaL_checklstring(L, (n), NULL))
 #define luaL_optstring(L,n,d)	(luaL_optlstring(L, (n), (d), NULL))
 
