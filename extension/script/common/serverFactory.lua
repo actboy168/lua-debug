@@ -1,12 +1,13 @@
-local proto = require 'protocol'
-local select = require 'frontend.select'
+local proto = require 'common.protocol'
+local select = require 'common.select'
 
 local function create(t)
     local m = {}
     local session
     local srvfd
     local write = ''
-    local stat = {}
+    local statR = {}
+    local statW = {}
     function t.event(status, fd)
         if status == 'failed' then
             assert(t.client)
@@ -27,20 +28,27 @@ local function create(t)
         srvfd = assert(select.listen(t))
     end
     function m.debug(v)
-        stat.debug = v
+        statR.debug = v
+        statW.debug = v
+    end
+    function m.sendRaw(data)
+        if not session then
+            write = write .. data
+            return
+        end
+        select.send(session, data)
+    end
+    function m.recvRaw()
+        if not session then
+            return
+        end
+        return select.recv(session)
     end
     function m.send(pkg)
-        if not session then
-            write = write .. proto.send(pkg, stat)
-            return
-        end
-        select.send(session, proto.send(pkg, stat))
+        m.sendRaw(proto.send(pkg, statW))
     end
     function m.recv()
-        if not session then
-            return
-        end
-        return proto.recv(select.recv(session), stat)
+        return proto.recv(m.recvRaw(), statR)
     end
     function m.is_closed()
         if not session then

@@ -1,4 +1,4 @@
-local serverFactory = require 'frontend.serverFactory'
+local serverFactory = require 'common.serverFactory'
 local debuggerFactory = require 'frontend.debugerFactory'
 local fs = require 'bee.filesystem'
 local platform = require 'bee.platform'
@@ -10,7 +10,7 @@ local initReq
 local m = {}
 
 local function getVersion(dir)
-    local json = require 'json'
+    local json = require 'common.json'
     local package = json.decode(assert(io.open((dir / 'package.json'):string()):read 'a'))
     return package.version
 end
@@ -47,7 +47,7 @@ local function response_initialize(req)
         command = 'initialize',
         request_seq = req.seq,
         success = true,
-        body = require 'capabilities',
+        body = require 'common.capabilities',
     }
 end
 

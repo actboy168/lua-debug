@@ -1,5 +1,5 @@
 local subprocess = require 'bee.subprocess'
-local proto = require 'protocol'
+local proto = require 'common.protocol'
 local STDIN = io.stdin
 local STDOUT = io.stdout
 local peek = subprocess.peek

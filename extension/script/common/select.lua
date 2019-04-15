@@ -1,4 +1,5 @@
-local ls = require 'bee.socket'
+local ok, ls = pcall(require, 'bee.socket')
+if not ok then ls = require 'remotedebug.socket' end
 
 local listens = {}
 local connects = {}
@@ -158,30 +159,30 @@ local function updateLC()
     if not rd then
         return
     end
-        for _, fd in ipairs(rd) do
-            local newfd = fd:accept()
-            if newfd:status() then
-                if event[fd] then
-                    event[fd]('accept', newfd)
-                end
-                attach(newfd)
+    for _, fd in ipairs(rd) do
+        local newfd = fd:accept()
+        if newfd:status() then
+            if event[fd] then
+                event[fd]('accept', newfd)
             end
-        end
-        for _, fd in ipairs(wr) do
-            close_connect(fd)
-            if fd:status() then
-                if event[fd] then
-                    event[fd]('ok', fd)
-                end
-                attach(fd)
-            else
-                if event[fd] then
-                    event[fd]('failed', fd)
-                end
-                close(fd)
-            end
+            attach(newfd)
         end
     end
+    for _, fd in ipairs(wr) do
+        close_connect(fd)
+        if fd:status() then
+            if event[fd] then
+                event[fd]('ok', fd)
+            end
+            attach(fd)
+        else
+            if event[fd] then
+                event[fd]('failed', fd)
+            end
+            close(fd)
+        end
+    end
+end
 
 function m.update(timeout)
     updateLC()
@@ -189,33 +190,33 @@ function m.update(timeout)
     if not rd then
         return
     end
-        for _, fd in ipairs(rd) do
-            local data = fd:recv()
-            if data == nil then
-                close(fd)
-            elseif data == false then
-            else
-                read[fd] = read[fd] .. data
-            end
+    for _, fd in ipairs(rd) do
+        local data = fd:recv()
+        if data == nil then
+            close(fd)
+        elseif data == false then
+        else
+            read[fd] = read[fd] .. data
         end
-        for _, fd in ipairs(wr) do
-            local n = fd:send(write[fd])
-            if n == nil then
+    end
+    for _, fd in ipairs(wr) do
+        local n = fd:send(write[fd])
+        if n == nil then
+            close_write(fd)
+            shutdown[fd] = true
+            if willclose[fd] then
+                close(fd)
+            end
+        else
+            write[fd] = write[fd]:sub(n + 1)
+            if write[fd] == '' then
                 close_write(fd)
-                shutdown[fd] = true
                 if willclose[fd] then
                     close(fd)
-                end
-            else
-                write[fd] = write[fd]:sub(n + 1)
-                if write[fd] == '' then
-                    close_write(fd)
-                    if willclose[fd] then
-                        close(fd)
-                    end
                 end
             end
         end
     end
+end
 
 return m

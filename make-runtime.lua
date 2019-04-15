@@ -1,4 +1,5 @@
 local lm = require "luamake"
+local platform = require "bee.platform"
 
 local luaver = ARGUMENTS.luaver or 'lua53'
 lm.arch = ARGUMENTS.arch or 'x86'
@@ -24,9 +25,41 @@ lm:executable 'lua' {
     }
 }
 
-if luaver == "lua53" then
-    lm.rootdir = ''
+lm.rootdir = ''
 
+lm:shared_library 'remotedebug' {
+    deps = {
+        luaver,
+    },
+    defines = {
+        "BEE_STATIC",
+        "BEE_INLINE",
+    },
+    includes = {
+        "3rd/bee.lua/",
+        "3rd/bee.lua/3rd/lua-seri",
+    },
+    sources = {
+        "3rd/bee.lua/3rd/lua-seri/*.c",
+        "src/remotedebug/*.c",
+        "src/remotedebug/*.cpp",
+        "3rd/bee.lua/bee/error.cpp",
+        "3rd/bee.lua/bee/net/*.cpp",
+        "3rd/bee.lua/bee/utility/path_helper.cpp",
+        "3rd/bee.lua/bee/utility/file_helper.cpp",
+        platform.OS ~= "Windows" and "!3rd/bee.lua/bee/net/unixsocket_win.cpp",
+        platform.OS == "Windows" and "3rd/bee.lua/bee/error/category_win.cpp",
+        platform.OS == "Windows" and "3rd/bee.lua/bee/platform/version_win.cpp",
+        platform.OS == "Windows" and "3rd/bee.lua/bee/utility/module_version_win.cpp",
+        platform.OS == "Windows" and "3rd/bee.lua/bee/utility/unicode_win.cpp",
+    },
+    links = {
+        platform.OS == "Windows" and "version",
+        platform.OS == "Windows" and "ws2_32",
+    }
+}
+
+if luaver == "lua53" then
     lm:shared_library 'debugger' {
         deps = {
             luaver,
@@ -112,6 +145,7 @@ lm:build 'install' {
     deps = {
         "lua",
         luaver,
+        "remotedebug",
         (luaver == "lua53") and "debugger" or nil,
         (luaver == "lua53") and "debugger-inject" or nil,
     }

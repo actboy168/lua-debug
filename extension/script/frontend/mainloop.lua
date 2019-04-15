@@ -1,5 +1,5 @@
-local serverFactory = require 'frontend.serverFactory'
-local select = require 'frontend.select'
+local serverFactory = require 'common.serverFactory'
+local select = require 'common.select'
 local proxy = require 'frontend.proxy'
 local vscode
 

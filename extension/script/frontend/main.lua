@@ -12,7 +12,7 @@ if port then
     return
 end
 
-local log = require 'log'
+local log = require 'common.log'
 log.file = (WORKDIR / "client.log"):string()
 
 print = log.info
