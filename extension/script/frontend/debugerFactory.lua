@@ -39,9 +39,8 @@ local function create_install_script(args, port, dbg, runtime)
 
     if args.experimentalServer then
         res[#res+1] = ("local path,rt=[[%s]],[[%s]];"):format(utf8 and dbg or u2a(dbg), runtime)
-        res[#res+1] = "package.loaded['remotedebug']=assert(package.loadlib(path..rt..'/remotedebug.dll', 'luaopen_remotedebug'))();"
-        res[#res+1] = "package.loaded['remotedebug.thread']=assert(package.loadlib(path..rt..'/remotedebug.dll', 'luaopen_remotedebug_thread'))();"
-        res[#res+1] = "local dbg=assert(loadfile(path..[[/script/debugger.lua]]))(path, rt);"
+        res[#res+1] = "local rdebug=assert(package.loadlib(path..rt..'/remotedebug.dll','luaopen_remotedebug'))();"
+        res[#res+1] = "local dbg=assert(loadfile(path..[[/script/debugger.lua]]))(rdebug,path,rt);"
     else
         runtime = runtime:sub(1,-2).."3"
         res[#res+1] = ("local path,rt=[[%s]],[[%s]];"):format(utf8 and dbg or u2a(dbg), runtime)
