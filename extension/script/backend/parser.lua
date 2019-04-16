@@ -1,14 +1,25 @@
 local undump = require 'backend.undump'
 
+local version
+
 local function getproto(f)
-    local cl = undump(string.dump(f))
+    local cl, v = undump(string.dump(f))
+    version = v
     return cl.f
 end
 
 local function getinfo(proto)
     local l = {}
-    for _, line in ipairs(proto.lineinfo) do
-        l[line] = true
+    if version >= 504 then
+        local n = proto.linedefined
+        for _, line in ipairs(proto.lineinfo) do
+            n = n + line
+            l[n] = true
+        end
+    else
+        for _, line in ipairs(proto.lineinfo) do
+            l[line] = true
+        end
     end
     return {
         activelines = l,
