@@ -12,9 +12,6 @@ local stdio = require 'remotedebug.stdio'
 local thread = require 'common.thread'
 local err = thread.channel_produce 'errlog'
 
-local log = require "common.log"
-log.file = [[C:\Users\ejoy\.vscode\extensions\actboy168.lua-debug-0.8.4\worker.log]]
-
 local initialized = false
 local info = {}
 local state = 'running'
@@ -294,31 +291,26 @@ function CMD.stop(pkg)
     state = 'stopped'
     stopReason = pkg.reason
     hookmgr.step_in()
-    log.info 'step_in'
 end
 
 function CMD.run()
     state = 'running'
     hookmgr.step_cancel()
-    log.info 'step_cancel'
 end
 
 function CMD.stepOver()
     state = 'stepOver'
     hookmgr.step_over()
-    log.info 'step_over'
 end
 
 function CMD.stepIn()
     state = 'stepIn'
     hookmgr.step_in()
-    log.info 'step_in'
 end
 
 function CMD.stepOut()
     state = 'stepOut'
     hookmgr.step_out()
-    log.info 'step_out'
 end
 
 local function runLoop(reason)
@@ -372,7 +364,6 @@ function hook.step()
         state = 'stopped'
         stopReason = 'step'
         hookmgr.step_cancel()
-        log.info 'step_cancel'
     end
     if state == 'stopped' then
         runLoop(stopReason)
@@ -530,13 +521,11 @@ function event.wait_client()
 end
 
 hookmgr.init(function(name, ...)
-    log.info('event [', name)
     local ok, e = xpcall(function(...)
         if event[name] then
             return event[name](...)
         end
     end, debug.traceback, ...)
-    log.info('event ]', name)
     if not ok then err:push(e) end
     return e
 end)
@@ -561,7 +550,6 @@ end)
 
 ev.on('terminated', function()
     hookmgr.step_cancel()
-    log.info 'step_cancel'
     if outputCapture["print"] then
         stdio.open_print(false)
     end
