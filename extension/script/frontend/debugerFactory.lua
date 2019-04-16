@@ -101,6 +101,7 @@ end
 
 local function getLuaExe(args, dbg)
     local runtime = 'runtime'
+    local ver, bit = getLuaRuntime(args)
     local luaexe
     if type(args.luaexe) == "string" then
         luaexe = fs.path(args.luaexe)
@@ -109,9 +110,12 @@ local function getLuaExe(args, dbg)
         else
             runtime = runtime .. "/win32"
         end
-        runtime = runtime .. "/lua53"
+        if ver == 53 then
+            runtime = runtime .. "/lua53"
+        else
+            runtime = runtime .. "/lua54"
+        end
     else
-        local ver, bit = getLuaRuntime(args)
         if bit == 64 then
             runtime = runtime .. "/win64"
         else
