@@ -1,3 +1,4 @@
+#define LUA_LIB
 #include <lua.h>
 #include <lualib.h>
 #include <lauxlib.h>
@@ -551,10 +552,8 @@ init_visitor(lua_State *L) {
 	return 1;
 }
 
-#if defined(_WIN32)
-__declspec(dllexport)
-#endif
-int luaopen_remotedebug_visitor(lua_State *L) {
+LUAMOD_API int
+luaopen_remotedebug_visitor(lua_State *L) {
 	luaL_checkversion(L);
 	get_host(L);
 	return init_visitor(L);
