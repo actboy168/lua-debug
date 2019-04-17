@@ -209,6 +209,16 @@
                                     "ansi"
                                 ]
                             },
+                            "sourceFormat": {
+                                "type": "string",
+                                "markdownDescription": "Source format",
+                                "default": "path",
+                                "enum": [
+                                    "path",
+                                    "string",
+                                    "linuxpath"
+                                ]
+                            },
                             "runtimeExecutable": {
                                 "type": [
                                     "string",
