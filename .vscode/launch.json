@@ -27,7 +27,7 @@
             "console": "integratedTerminal",
             "experimentalServer": true,
             "luaRuntime": "5.4 32bit",
-            "luaexe": "${env:USERPROFILE}/.vscode/extensions/actboy168.lua-debug-0.9.1/bin/win/lua-debug.exe",
+            "luaexe": "${env:USERPROFILE}/.vscode/extensions/actboy168.lua-debug-0.9.2/bin/win/lua-debug.exe",
             "luadll": "${env:USERPROFILE}/.vscode/extensions/actboy168.lua-debug-0.9.0/bin/win/lua54.dll",
             "program": "${workspaceFolder}/extension/script/frontend/main.lua",
             "path": "${workspaceFolder}/extension/script/?.lua",
