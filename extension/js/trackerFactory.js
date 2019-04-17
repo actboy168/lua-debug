@@ -1,4 +1,5 @@
 const vscode = require("vscode");
+const fs = require('fs');
 
 function onWillReceiveMessage(m) {
     if (m.type == "request" 
@@ -9,9 +10,11 @@ function onWillReceiveMessage(m) {
         for (const doc of vscode.workspace.textDocuments) {
             if (doc.fileName == m.arguments.source.path) {
                 m.arguments.sourceContent = doc.getText();
-                break;
+                return;
             }
         }
+        // TODO: use vscode api?
+        m.arguments.sourceContent = fs.readFileSync(m.arguments.source.path, 'utf8')
     }
 }
 
