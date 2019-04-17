@@ -12,8 +12,16 @@ local function getinfo(proto)
     local l = {}
     if version >= 504 then
         local n = proto.linedefined
-        for _, line in ipairs(proto.lineinfo) do
-            n = n + line
+        local abs = {}
+        for _, line in ipairs(proto.abslineinfo) do
+            abs[line.pc] = line.line
+        end
+        for i, line in ipairs(proto.lineinfo) do
+            if line == -128 then
+                n = assert(abs[i-1])
+            else
+                n = n + line
+            end
             l[n] = true
         end
     else
