@@ -225,11 +225,19 @@ local function create_process(args)
     if noinject then
         return process
     end
-    inject.injectdll(process
-        , (WORKDIR / "runtime" / "win32" / "lua53" / "debugger-inject.dll"):string()
-        , (WORKDIR / "runtime" / "win64" / "lua53" / "debugger-inject.dll"):string()
-        , "launch"
-    )
+    if args.experimentalServer then
+        inject.injectdll(process
+            , (WORKDIR / "bin" / "win" / "launcher.x86.dll"):string()
+            , (WORKDIR / "bin" / "win" / "launcher.x64.dll"):string()
+            , "launch"
+        )
+    else
+        inject.injectdll(process
+            , (WORKDIR / "runtime" / "win32" / "lua53" / "debugger-inject.dll"):string()
+            , (WORKDIR / "runtime" / "win64" / "lua53" / "debugger-inject.dll"):string()
+            , "launch"
+        )
+    end
     process:resume()
     return process
 end

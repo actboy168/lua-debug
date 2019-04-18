@@ -23,6 +23,29 @@ if platform.OS == "Windows" then
         },
         links = "advapi32"
     }
+
+    for _, arch in ipairs {"x86","x64"} do
+        lm:shared_library ('launcher.'..arch) {
+            arch = arch,
+            includes = {
+                "3rd/bee.lua",
+            },
+            sources = {
+                "3rd/bee.lua/bee/error.cpp",
+                "3rd/bee.lua/bee/error/category_win.cpp",
+                "3rd/bee.lua/bee/utility/unicode_win.cpp",
+                "3rd/bee.lua/bee/utility/path_helper.cpp",
+                "3rd/bee.lua/bee/utility/file_helper.cpp",
+                "src/launcher/*.cpp",
+            },
+            defines = {
+                "BEE_INLINE",
+            },
+            links = {
+                "ws2_32",
+            }
+        }
+    end
 else
     lm:shared_library 'inject' {
         deps = {
@@ -44,6 +67,8 @@ lm:build 'install' {
         "bee",
         "lua",
         "inject",
+        platform.OS == "Windows" and "launcher.x86",
+        platform.OS == "Windows" and "launcher.x64",
         platform.OS == "Windows" and "lua54",
     }
 }
