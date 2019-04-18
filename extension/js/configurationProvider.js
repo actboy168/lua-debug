@@ -1,5 +1,6 @@
 const vscode = require("vscode");
 const path = require("path");
+const os = require('os');
 
 function createDefaultProgram(folder) {
     let program;
@@ -57,6 +58,14 @@ function resolveDebugConfiguration(folder, config, token) {
             "io.write",
             "stderr"
         ]
+    }
+    if (typeof config.pathFormat != 'string') {
+        if (os.platform() == "win32" || os.platform() == "darwin") {
+            config.pathFormat = "path"
+        }
+        else {
+            config.pathFormat = "linuxpath"
+        }
     }
     if (typeof config.ip == 'string' && typeof config.port != 'number') {
         config.port = 4278

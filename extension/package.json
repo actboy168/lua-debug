@@ -219,6 +219,15 @@
                                     "linuxpath"
                                 ]
                             },
+                            "pathFormat": {
+                                "type": "string",
+                                "markdownDescription": "Path format",
+                                "default": "path",
+                                "enum": [
+                                    "path",
+                                    "linuxpath"
+                                ]
+                            },
                             "runtimeExecutable": {
                                 "type": [
                                     "string",
@@ -357,6 +366,25 @@
                                         "./",
                                         "${workspaceFolder}"
                                     ]
+                                ]
+                            },
+                            "sourceFormat": {
+                                "type": "string",
+                                "markdownDescription": "Source format",
+                                "default": "path",
+                                "enum": [
+                                    "path",
+                                    "string",
+                                    "linuxpath"
+                                ]
+                            },
+                            "pathFormat": {
+                                "type": "string",
+                                "markdownDescription": "Path format",
+                                "default": "path",
+                                "enum": [
+                                    "path",
+                                    "linuxpath"
                                 ]
                             },
                             "skipFiles": {
