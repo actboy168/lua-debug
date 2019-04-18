@@ -1,4 +1,4 @@
-#include "../../3rd/bee.lua/binding/lua_socket.cpp"
+#include <binding/lua_socket.cpp>
 
 extern "C" 
 #if defined(_WIN32)
