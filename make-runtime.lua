@@ -57,6 +57,11 @@ lm:shared_library 'remotedebug' {
     links = {
         platform.OS == "Windows" and "version",
         platform.OS == "Windows" and "ws2_32",
+        platform.OS == "Windows" and "user32",
+        platform.OS == "Windows" and "delayimp",
+    },
+    ldflags = {
+        platform.OS == "Windows" and ("/DELAYLOAD:%s.dll"):format(luaver),
     }
 }
 
