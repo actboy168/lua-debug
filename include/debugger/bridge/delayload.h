@@ -5,12 +5,10 @@
 #include <string>
 #include <Windows.h>
 
-namespace delayload
-{
+namespace delayload {
 	typedef FARPROC (__stdcall* GetLuaApi)(HMODULE m, const char* name);
-
-	void set_luadll(const std::wstring& path);
 	void set_luadll(HMODULE handle, GetLuaApi fn);
+    void caller_is_luadll(void* callerAddress);
 }
 
 #endif

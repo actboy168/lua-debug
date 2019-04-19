@@ -1,49 +1,35 @@
 #if defined(DEBUGGER_BRIDGE)
 
 #include <debugger/bridge/delayload.h>
-#include <windows.h>
+#include <debugger/bridge/lua.h>
+#include <Windows.h>
 #define DELAYIMP_INSECURE_WRITABLE_HOOKS
 #include <DelayImp.h>
-#include <debugger/bridge/lua.h>
 
-namespace delayload
-{
-	static std::wstring luadll_path;
+namespace delayload {
 	static HMODULE luadll_handle = 0;
 	static GetLuaApi get_lua_api = ::GetProcAddress;
 
-	bool has_luadll()
-	{
-		return !luadll_path.empty() || luadll_handle != 0;
-	}
-
-	void set_luadll(const std::wstring& path)
-	{
-		if (has_luadll()) return;
-		luadll_path = path;
-		get_lua_api = ::GetProcAddress;
-	}
-
-	void set_luadll(HMODULE handle, GetLuaApi fn)
-	{
-		if (has_luadll()) return;
+	void set_luadll(HMODULE handle, GetLuaApi fn) {
+		if (luadll_handle) return;
 		luadll_handle = handle;
 		get_lua_api = fn ? fn : ::GetProcAddress;
 	}
 
-	static FARPROC WINAPI hook(unsigned dliNotify, PDelayLoadInfo pdli)
-	{
+    void caller_is_luadll(void* callerAddress) {
+        HMODULE  caller = NULL;
+        if (GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS, (LPCWSTR)callerAddress, &caller) && caller) {
+            if (GetProcAddress(caller, "lua_newstate")) {
+                set_luadll(caller, ::GetProcAddress);
+            }
+        }
+    }
+
+	static FARPROC WINAPI hook(unsigned dliNotify, PDelayLoadInfo pdli) {
 		switch (dliNotify) {
-		case dliStartProcessing:
-			break;
 		case dliNotePreLoadLibrary:
 			if (strcmp("lua53.dll", pdli->szDll) == 0) {
-				if (!luadll_path.empty()) {
-					HMODULE m = LoadLibraryW(luadll_path.c_str());
-					lua::check_version(m);
-					return (FARPROC)m;
-				}
-				else if (luadll_handle) {
+                if (luadll_handle) {
 					lua::check_version(luadll_handle);
 					return (FARPROC)luadll_handle;
 				}
@@ -81,12 +67,10 @@ namespace delayload
 			return NULL;
 		}
 			break;
+        case dliStartProcessing:
 		case dliFailLoadLib:
-			break;
 		case dliFailGetProc:
-			break;
 		case dliNoteEndProcessing:
-			break;
 		default:
 			return NULL;
 		}

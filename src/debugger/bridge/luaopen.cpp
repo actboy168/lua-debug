@@ -260,24 +260,10 @@ vscode::debugger* debugger_get()
 }
 #endif
 
-#if defined(DEBUGGER_BRIDGE)
-static void caller_is_luadll(void* callerAddress)
-{
-	HMODULE  caller = NULL;
-	if (GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS, (LPCWSTR)callerAddress, &caller) && caller)
-	{
-		if (GetProcAddress(caller, "lua_newstate"))
-		{
-			delayload::set_luadll(caller, ::GetProcAddress);
-		}
-	}
-}
-#endif
-
 int luaopen_debugger(lua_State* L)
 {
 #if defined(DEBUGGER_BRIDGE)
-	caller_is_luadll(_ReturnAddress());
+    delayload::caller_is_luadll(_ReturnAddress());
 #endif
 	if (lua_rawgetp(L, LUA_REGISTRYINDEX, &DBG) != LUA_TNIL) {
 		return 1;
