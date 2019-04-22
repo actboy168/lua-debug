@@ -404,6 +404,11 @@
                                 "type": "boolean",
                                 "markdownDescription": "`processId` and `processName` will not inject debugger.",
                                 "default": false
+                            },
+                            "experimentalServer": {
+                                "type": "boolean",
+                                "markdownDescription": "Just for test.",
+                                "default": true
                             }
                         }
                     }

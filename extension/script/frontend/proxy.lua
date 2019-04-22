@@ -71,13 +71,23 @@ local function request_runinterminal(args)
     }
 end
 
-local function attach_process(pkg, pid)
-    if not inject.injectdll(pid
-        , (WORKDIR / "runtime" / "win32" / "lua53" / "debugger-inject.dll"):string()
-        , (WORKDIR / "runtime" / "win64" / "lua53" / "debugger-inject.dll"):string()
-        , "attach"
-    ) then
-        return false
+local function attach_process(pkg, args, pid)
+    if args.experimentalServer then
+        if not inject.injectdll(pid
+            , (WORKDIR / "bin" / "win" / "launcher.x86.dll"):string()
+            , (WORKDIR / "bin" / "win" / "launcher.x64.dll"):string()
+            , "attach"
+        ) then
+            return false
+        end
+    else
+        if not inject.injectdll(pid
+            , (WORKDIR / "runtime" / "win32" / "lua53" / "debugger-inject.dll"):string()
+            , (WORKDIR / "runtime" / "win64" / "lua53" / "debugger-inject.dll"):string()
+            , "attach"
+        ) then
+            return false
+        end
     end
     local path = getUnixPath(pid)
     fs.remove(path)
@@ -93,7 +103,7 @@ end
 local function proxy_attach(pkg)
     local args = pkg.arguments
     if args.processId then
-        if not attach_process(pkg, args.processId) then
+        if not attach_process(pkg, args, args.processId) then
             response_error(pkg, ('Cannot attach process `%d`.'):format(args.processId))
         end
         return
@@ -107,7 +117,7 @@ local function proxy_attach(pkg)
             response_error(pkg, ('There are %d processes `%s`.'):format(#pids, args.processName))
             return
         end
-        if not attach_process(pkg, pids[1]) then
+        if not attach_process(pkg, args, pids[1]) then
             response_error(pkg, ('Cannot attach process `%s` `%d`.'):format(args.processName, pids[1]))
         end
         return

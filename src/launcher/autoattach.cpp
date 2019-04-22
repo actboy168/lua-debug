@@ -23,31 +23,13 @@ namespace autoattach {
 			uintptr_t lua_settop = 0;
 		}
 		namespace fake {
-			static HMODULE address2dll(void* address) {
-				HMODULE dll = NULL;
-				if (GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS, (LPCWSTR)address, &dll)) {
-					return dll;
-				}
-				return 0;
-			}
-			static void* dbgAddress(HMODULE dll) {
-				return GetProcAddress(dll, "luaopen_remotedebug");
-			}
-			static bool caller_is_dbg(void* callerAddress) {
-				HMODULE dll = GetModuleHandleW(L"remotedebug.dll");
-				if (!dll) {
-					return 0;
-				}
-				static HMODULE self = address2dll(dbgAddress(dll));
-				return self == address2dll(callerAddress);
-			}
 			static lua_State* __cdecl lua_newstate(void* f, void* ud) {
 				lua_State* L = base::c_call<lua_State*>(real::lua_newstate, f, ud);
 				debuggerAttach(L);
 				return L;
 			}
 			static void __cdecl lua_settop(lua_State *L, int index) {
-				// TODO
+				debuggerAttach(L);
 				return base::c_call<void>(real::lua_settop, L, index);
 			}
 			static void __cdecl lua_close(lua_State* L) {
