@@ -170,14 +170,15 @@ local function updateLC()
     end
     for _, fd in ipairs(wr) do
         close_connect(fd)
-        if fd:status() then
+        local ok, err = fd:status()
+        if ok then
             if event[fd] then
                 event[fd]('ok', fd)
             end
             attach(fd)
         else
             if event[fd] then
-                event[fd]('failed', fd)
+                event[fd]('failed', fd, err)
             end
             close(fd)
         end
