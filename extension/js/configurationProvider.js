@@ -31,7 +31,30 @@ function provideDebugConfigurations(folder, token) {
     ];
 }
 
+function mergeConfigurations(config) {
+    let plat
+    if (os.platform() == "win32") {
+        plat = config.windows
+    }
+    else if (os.platform() == "darwin") {
+        plat = config.osx
+    }
+    else {
+        plat = config.linux
+    }
+    config.windows = null
+    config.osx = null
+    config.linux = null
+    if (typeof plat != 'object') {
+        return
+    }
+    for (var k in plat) {
+        config[k] = plat[k]
+    }
+}
+
 function resolveDebugConfiguration(folder, config, token) {
+    mergeConfigurations(config)
     config.type = 'lua';
     if (config.request != 'attach') {
         config.request = 'launch';
