@@ -84,7 +84,7 @@ function resolveDebugConfiguration(folder, config, token) {
                 }
             }
         }
-        if (typeof config.luaexe == 'string') {
+        else {
             if (typeof config.path != 'string' && typeof config.path != 'object') {
                 config.path = [
                     '${workspaceFolder}/?.lua',
@@ -92,10 +92,18 @@ function resolveDebugConfiguration(folder, config, token) {
                 ]
             }
             if (typeof config.cpath != 'string' && typeof config.cpath != 'object') {
-                config.cpath = [
-                    '${workspaceFolder}/?.dll',
-                    path.dirname(config.luaexe) + '/?.dll',
-                ]
+                if (os.platform() == "win32") {
+                    config.cpath = [
+                        '${workspaceFolder}/?.dll',
+                        path.dirname(config.luaexe) + '/?.dll',
+                    ]
+                }
+                else {
+                    config.cpath = [
+                        '${workspaceFolder}/?.so',
+                        path.dirname(config.luaexe) + '/?.so',
+                    ]
+                }
             }
         }
     }
