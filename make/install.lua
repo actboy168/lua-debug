@@ -67,13 +67,19 @@ local function update_version(filename, pattern)
     local str = io_load(filename)
     local find_pattern = pattern:gsub('[%^%$%(%)%%%.%[%]%+%-%?]', '%%%0'):gsub('{}', '%%d+%%.%%d+%%.%%d+')
     local replace_pattern = pattern:gsub('{}', version)
-    local first, last = str:find(find_pattern)
-    if first then
-        str = str:sub(1, first-1) .. replace_pattern .. str:sub(last+1)
-        io_save(filename, str)
-    else
-        print(('Failed to write version into `%s`.'):format(filename:filename()))
+    local t = {}
+    while true do
+        local first, last = str:find(find_pattern)
+        if first then
+            t[#t+1] = str:sub(1, first-1)
+            t[#t+1] = replace_pattern
+            str = str:sub(last+1)
+        else
+            break
+        end
     end
+    t[#t+1] = str
+    io_save(filename, table.concat(t))
 end
 update_version(root / 'extension' / 'package.json', '"version": "{}"')
 update_version(root / '.vscode' / 'launch.json', 'actboy168.lua-debug-{}')
