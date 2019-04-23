@@ -11,7 +11,7 @@ return function (debug, runtime, addr)
         local debug = %q
         local runtime = %q
         package.path = debug..'/script/?.lua'
-        package.cpath = debug..runtime..'/?.dll'
+        package.cpath = debug..runtime
         local thread = require "remotedebug.thread"
         local err = thread.channel "errlog"
         local log = require "common.log"
@@ -26,7 +26,7 @@ return function (debug, runtime, addr)
         local runtime = %q
         local addr = %q
         package.path = debug..'/script/?.lua'
-        package.cpath = debug..runtime..'/?.dll'
+        package.cpath = debug..runtime
 
         local function split(str)
             local r = {}

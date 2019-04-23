@@ -38,9 +38,10 @@ local function create_install_script(args, port, dbg, runtime)
     end
 
     if args.experimentalServer then
+        local ext = platform.OS == "Windows" and "dll" or "so"
         res[#res+1] = ("local path,rt=[[%s]],[[%s]];"):format(utf8 and dbg or u2a(dbg), runtime)
-        res[#res+1] = "local rdebug=assert(package.loadlib(path..rt..'/remotedebug.dll','luaopen_remotedebug'))();"
-        res[#res+1] = "local dbg=assert(loadfile(path..[[/script/debugger.lua]]))(rdebug,path,rt);"
+        res[#res+1] = ("local rdebug=assert(package.loadlib(path..rt..'/remotedebug.%s','luaopen_remotedebug'))();"):format(ext)
+        res[#res+1] = ("local dbg=assert(loadfile(path..[[/script/debugger.lua]]))(rdebug,path,rt..'/?.%s');"):format(ext)
     else
         runtime = runtime:sub(1,-2).."3"
         res[#res+1] = ("local path,rt=[[%s]],[[%s]];"):format(utf8 and dbg or u2a(dbg), runtime)
@@ -105,10 +106,15 @@ local function getLuaExe(args, dbg)
     local luaexe
     if type(args.luaexe) == "string" then
         luaexe = fs.path(args.luaexe)
-        if is64Exe(luaexe) then
-            runtime = runtime .. "/win64"
-        else
-            runtime = runtime .. "/win32"
+
+        if platform.OS == "Windows" then
+            if is64Exe(luaexe) then
+                runtime = runtime .. "/win64"
+            else
+                runtime = runtime .. "/win32"
+            end
+        elseif platform.OS == "macOS" then
+            runtime = runtime .. "/macos"
         end
         if ver == 53 then
             runtime = runtime .. "/lua53"
@@ -116,17 +122,21 @@ local function getLuaExe(args, dbg)
             runtime = runtime .. "/lua54"
         end
     else
-        if bit == 64 then
-            runtime = runtime .. "/win64"
-        else
-            runtime = runtime .. "/win32"
+        if platform.OS == "Windows" then
+            if bit == 64 then
+                runtime = runtime .. "/win64"
+            else
+                runtime = runtime .. "/win32"
+            end
+        elseif platform.OS == "macOS" then
+            runtime = runtime .. "/macos"
         end
         if ver == 53 then
             runtime = runtime .. "/lua53"
         else
             runtime = runtime .. "/lua54"
         end
-        luaexe = dbg / runtime / "lua.exe"
+        luaexe = dbg / runtime / (platform.OS == "Windows" and "lua.exe" or "lua")
     end
     return luaexe, '/'..runtime
 end

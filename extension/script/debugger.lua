@@ -7,7 +7,7 @@ local function start_worker(addr)
         local runtime = %q
         local addr = %q
         package.path = debug..'/script/?.lua'
-        package.cpath = debug..runtime..'/?.dll'
+        package.cpath = debug..runtime
         local m = require 'start_master'
         m(debug, runtime, addr)
         local w = require 'backend.worker'
