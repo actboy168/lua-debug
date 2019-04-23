@@ -4,25 +4,6 @@
         {
             "type": "lua",
             "request": "launch",
-            "name": "Test IC",
-            "program": "${workspaceFolder}/luabuild/main.lua",
-            "path": [
-                "${workspaceFolder}/luabuild/?.lua",
-                "${workspaceFolder}/luabuild/?.lua",
-            ],
-            "cpath": "${workspaceFolder}/luabuild/?.dll",
-            "env": {
-                "PATH": "${workspaceFolder}/luabuild/"
-            },
-            "cwd": "${workspaceFolder}",
-            "arg": [
-                "Debug",
-                "IC"
-            ]
-        },
-        {
-            "type": "lua",
-            "request": "launch",
             "name": "Test Client",
             "console": "integratedTerminal",
             "experimentalServer": true,
