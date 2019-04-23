@@ -121,6 +121,20 @@ if platform == 'msvc' then
         cwd = root,
         searchPath = true,
     }):wait()
+elseif platform == 'macos' then
+    print 'Step 6. compile lua53'
+    assert(sp.spawn {
+        luamake, 'remake', '-f', 'make-runtime.lua', '-luaver', 'lua53',
+        cwd = root,
+        searchPath = true,
+    }):wait()
+
+    print 'Step 7. compile lua54'
+    assert(sp.spawn {
+        luamake, 'remake', '-f', 'make-runtime.lua', '-luaver', 'lua54',
+        cwd = root,
+        searchPath = true,
+    }):wait()
 end
 
 print 'finish.'

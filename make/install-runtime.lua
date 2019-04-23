@@ -3,7 +3,12 @@ local fs = require 'bee.filesystem'
 local CWD = fs.current_path()
 
 if platform == 'macos' then
-    -- TODO
+    local output = CWD / 'publish' / 'runtime' / 'macos' / luaver
+    local bindir = CWD / 'build' / 'macos' / 'bin' / 'runtime' / arch / luaver
+
+    fs.create_directories(output)
+    fs.copy_file(bindir / 'lua', output / 'lua', true)
+    fs.copy_file(bindir / 'remotedebug.so', output / 'remotedebug.so', true)
     return
 end
 

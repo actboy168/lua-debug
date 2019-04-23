@@ -2,34 +2,57 @@ local lm = require "luamake"
 local platform = require "bee.platform"
 
 local luaver = ARGUMENTS.luaver or 'lua53'
-lm.arch = ARGUMENTS.arch or 'x86'
+lm.arch = ARGUMENTS.arch or 'x64'
 lm.bindir = ("build/%s/bin/runtime/%s/%s"):format(lm.plat, lm.arch, luaver)
 lm.objdir = ("build/%s/obj/runtime/%s/%s"):format(lm.plat, lm.arch, luaver)
 
 lm.rootdir = '3rd/'..luaver
-lm:shared_library (luaver) {
-    sources = {
-        "*.c",
-        "!lua.c",
-        "!luac.c",
-    },
-    defines = {
-        "LUA_BUILD_AS_DLL",
-        "LUAI_MAXCCALLS=200"
+
+if platform.OS == "Windows" then
+    lm:shared_library (luaver) {
+        sources = {
+            "*.c",
+            "!lua.c",
+            "!luac.c",
+        },
+        defines = {
+            "LUAI_MAXCCALLS=200",
+            "LUA_BUILD_AS_DLL",
+        }
     }
-}
-lm:executable 'lua' {
-    deps = luaver,
-    sources = {
-        "lua.c",
+    lm:executable 'lua' {
+        deps = luaver,
+        sources = {
+            "lua.c",
+        }
     }
-}
+else
+    lm:executable 'lua' {
+        sources = {
+            "*.c",
+            "!luac.c",
+        },
+        defines = {
+            "LUAI_MAXCCALLS=200",
+            platform.OS == "macOS" and "LUA_USE_MACOSX",
+            platform.OS == "Linux" and "LUA_USE_LINUX",
+        },
+        ldflags = {
+            platform.OS == "Linux" and "-Wl,-E"
+        },
+        links = {
+            "m",
+            "dl",
+            "readline",
+        },
+    }
+end
 
 lm.rootdir = ''
 
 lm:shared_library 'remotedebug' {
     deps = {
-        luaver,
+        platform.OS == "Windows" and luaver,
     },
     defines = {
         "BEE_STATIC",
@@ -39,6 +62,7 @@ lm:shared_library 'remotedebug' {
     includes = {
         "3rd/bee.lua/",
         "3rd/bee.lua/3rd/lua-seri",
+        platform.OS ~= "Windows" and "3rd/"..luaver,
     },
     sources = {
         "3rd/bee.lua/3rd/lua-seri/*.c",
@@ -65,7 +89,7 @@ lm:shared_library 'remotedebug' {
     }
 }
 
-if luaver == "lua53" then
+if platform.OS == "Windows" and luaver == "lua53" then
     lm:shared_library 'debugger' {
         deps = {
             luaver,
@@ -150,10 +174,10 @@ lm:build 'install' {
     '$luamake', 'lua', 'make/install-runtime.lua', lm.plat, lm.arch, luaver,
     deps = {
         "lua",
-        luaver,
+        platform.OS == "Windows" and luaver,
         "remotedebug",
-        (luaver == "lua53") and "debugger" or nil,
-        (luaver == "lua53") and "debugger-inject" or nil,
+        (platform.OS == "Windows" and luaver == "lua53") and "debugger" or nil,
+        (platform.OS == "Windows" and luaver == "lua53") and "debugger-inject" or nil,
     }
 }
 
