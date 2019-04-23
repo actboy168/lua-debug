@@ -76,7 +76,7 @@ local function update_version(filename, pattern)
     end
 end
 update_version(root / 'extension' / 'package.json', '"version": "{}"')
---update_version(root / '.vscode' / 'launch.json', 'actboy168.lua-debug-{}')
+update_version(root / '.vscode' / 'launch.json', 'actboy168.lua-debug-{}')
 
 print 'Step 4. copy extension'
 copy_directory(root / 'extension', outputDir,
