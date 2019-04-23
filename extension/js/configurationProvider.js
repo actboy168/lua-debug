@@ -83,39 +83,39 @@ function resolveDebugConfiguration(folder, config, token) {
                     });
                 }
             }
-        }
-        else if (typeof config.luaexe == 'string') {
-            if (typeof config.path != 'string' && typeof config.path != 'object') {
-                config.path = [
-                    '${workspaceFolder}/?.lua',
-                    path.dirname(config.luaexe) + '/?.lua',
-                ]
-            }
-            if (typeof config.cpath != 'string' && typeof config.cpath != 'object') {
-                if (os.platform() == "win32") {
-                    config.cpath = [
-                        '${workspaceFolder}/?.dll',
-                        path.dirname(config.luaexe) + '/?.dll',
+            if (typeof config.luaexe == 'string') {
+                if (typeof config.path != 'string' && typeof config.path != 'object') {
+                    config.path = [
+                        '${workspaceFolder}/?.lua',
+                        path.dirname(config.luaexe) + '/?.lua',
                     ]
                 }
-                else {
-                    config.cpath = [
-                        '${workspaceFolder}/?.so',
-                        path.dirname(config.luaexe) + '/?.so',
-                    ]
+                if (typeof config.cpath != 'string' && typeof config.cpath != 'object') {
+                    if (os.platform() == "win32") {
+                        config.cpath = [
+                            '${workspaceFolder}/?.dll',
+                            path.dirname(config.luaexe) + '/?.dll',
+                        ]
+                    }
+                    else {
+                        config.cpath = [
+                            '${workspaceFolder}/?.so',
+                            path.dirname(config.luaexe) + '/?.so',
+                        ]
+                    }
                 }
             }
-        }
-        else {
-            if (typeof config.path != 'string' && typeof config.path != 'object') {
-                config.path = '${workspaceFolder}/?.lua'
-            }
-            if (typeof config.cpath != 'string' && typeof config.cpath != 'object') {
-                if (os.platform() == "win32") {
-                    config.cpath = '${workspaceFolder}/?.dll'
+            else {
+                if (typeof config.path != 'string' && typeof config.path != 'object') {
+                    config.path = '${workspaceFolder}/?.lua'
                 }
-                else {
-                    config.cpath = '${workspaceFolder}/?.so'
+                if (typeof config.cpath != 'string' && typeof config.cpath != 'object') {
+                    if (os.platform() == "win32") {
+                        config.cpath = '${workspaceFolder}/?.dll'
+                    }
+                    else {
+                        config.cpath = '${workspaceFolder}/?.so'
+                    }
                 }
             }
         }
