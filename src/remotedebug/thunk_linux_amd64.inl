@@ -43,7 +43,7 @@ thunk* thunk_create_hook(intptr_t dbg, intptr_t hook)
 		0xc3,                                                       // ret
 	};
 	std::unique_ptr<thunk> t(new thunk);
-	if (!shellcode_create(t.get(), sizeof(sc))) {
+	if (!t->create(sizeof(sc))) {
 		return 0;
 	}
 	memcpy(sc + 13, &dbg, sizeof(dbg));
@@ -73,7 +73,7 @@ thunk* thunk_create_panic(intptr_t dbg, intptr_t panic)
 		0xc3,                                                       // ret
 	};
 	std::unique_ptr<thunk> t(new thunk);
-	if (!shellcode_create(t.get(), sizeof(sc))) {
+	if (!t->create(sizeof(sc))) {
 		return 0;
 	}
 	memcpy(sc + 10, &dbg, sizeof(dbg));
@@ -113,7 +113,7 @@ thunk* thunk_create_panic(intptr_t dbg, intptr_t panic, intptr_t old_panic)
 		0xc3,                                                       // ret
 	};
 	std::unique_ptr<thunk> t(new thunk);
-	if (!shellcode_create(t.get(), sizeof(sc))) {
+	if (!t->create(sizeof(sc))) {
 		return 0;
 	}
 	memcpy(sc + 11, &dbg, sizeof(dbg));
