@@ -100,8 +100,23 @@ local function attach_process(pkg, args, pid)
     return true
 end
 
+local function attach_tcp(args, pkg)
+    server = serverFactory {
+        protocol = 'tcp',
+        address = args.ip == 'localhost' and '127.0.0.1' or args.ip,
+        port = args.port,
+        client = true
+    }
+    server.send(initReq)
+    server.send(pkg)
+end
+
 local function proxy_attach(pkg)
     local args = pkg.arguments
+    if platform.OS ~= "Windows" then
+        attach_tcp(args, pkg)
+        return
+    end
     if args.processId then
         if not attach_process(pkg, args, args.processId) then
             response_error(pkg, ('Cannot attach process `%d`.'):format(args.processId))
@@ -122,20 +137,13 @@ local function proxy_attach(pkg)
         end
         return
     end
-    server = serverFactory {
-        protocol = 'tcp',
-        address = args.ip == 'localhost' and '127.0.0.1' or args.ip,
-        port = args.port,
-        client = true
-    }
-    server.send(initReq)
-    server.send(pkg)
+    attach_tcp(args, pkg)
 end
 
 local function proxy_launch(pkg)
     local args = pkg.arguments
 
-    if args.runtimeExecutable then
+    if args.runtimeExecutable and platform.OS == "Windows" then
         local process = debuggerFactory.create_process(args)
         if not process then
             response_error(pkg, 'launch failed')
