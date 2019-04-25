@@ -2,9 +2,9 @@ local platform, arch, luaver = ...
 local fs = require 'bee.filesystem'
 local CWD = fs.current_path()
 
-if platform == 'macos' then
-    local output = CWD / 'publish' / 'runtime' / 'macos' / luaver
-    local bindir = CWD / 'build' / 'macos' / 'bin' / 'runtime' / arch / luaver
+if platform ~= 'msvc' then
+    local output = CWD / 'publish' / 'runtime' / platform / luaver
+    local bindir = CWD / 'build' / platform / 'bin' / 'runtime' / arch / luaver
 
     fs.create_directories(output)
     fs.copy_file(bindir / 'lua', output / 'lua', true)

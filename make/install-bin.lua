@@ -2,9 +2,9 @@ local platform = ...
 local fs = require 'bee.filesystem'
 local CWD = fs.current_path()
 
-if platform == 'macos' then
-    local output = CWD / 'publish' / 'bin' / 'macos'
-    local bindir = CWD / 'build' / 'macos' / 'bin'
+if platform ~= 'msvc' then
+    local output = CWD / 'publish' / 'bin' / platform
+    local bindir = CWD / 'build' / platform / 'bin'
 
     fs.create_directories(output)
     fs.copy_file(bindir / 'bee.so', output / 'bee.so', true)
