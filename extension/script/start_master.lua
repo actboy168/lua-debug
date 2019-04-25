@@ -1,4 +1,4 @@
-return function (debug, runtime, addr)
+return function (path, cpath, errlog, addr)
     local thread = require "remotedebug.thread"
     local ok, err = pcall(thread.newchannel, "DbgMaster")
     if not ok then
@@ -8,25 +8,21 @@ return function (debug, runtime, addr)
         error(err)
     end
     thread.thread (([[
-        local debug = %q
-        local runtime = %q
-        package.path = debug..'/script/?.lua'
-        package.cpath = debug..runtime
+        package.path = %q
+        package.cpath = %q
         local thread = require "remotedebug.thread"
         local err = thread.channel "errlog"
         local log = require "common.log"
-        log.file = debug.."/error.log"
+        log.file = %q
         while true do
             log.error("ERROR:" .. err:bpop())
         end
-    ]]):format(debug, runtime))
+    ]]):format(path, cpath, errlog))
 
     local bootstrap = ([=[
-        local debug = %q
-        local runtime = %q
+        package.path = %q
+        package.cpath = %q
         local addr = %q
-        package.path = debug..'/script/?.lua'
-        package.cpath = debug..runtime
 
         local function split(str)
             local r = {}
@@ -94,6 +90,6 @@ return function (debug, runtime, addr)
             select.update(0.05)
             master.update()
         end
-    ]=]):format(debug, runtime, addr)
+    ]=]):format(path, cpath, addr)
     thread.thread(bootstrap)
 end

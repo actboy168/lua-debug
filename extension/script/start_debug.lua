@@ -1,19 +1,16 @@
-local rdebug, debugpath, runtime = ...
+local rdebug, root, path, cpath = ...
 
 local function start_worker(addr)
     local selfSource = debug.getinfo(1, 'S').source:sub(2)
     local bootstrap = ([=[
-        local debug = %q
-        local runtime = %q
-        local addr = %q
-        package.path = debug..'/script/?.lua'
-        package.cpath = debug..runtime
+        package.path = %q
+        package.cpath = %q
         local m = require 'start_master'
-        m(debug, runtime, addr)
+        m(package.path, package.cpath, %q, %q)
         local w = require 'backend.worker'
         w.skipfiles{%q}
         w.openupdate()
-    ]=]):format(debugpath, runtime, addr, selfSource)
+    ]=]):format(root..path, root..cpath, root..'/error.log', addr, selfSource)
     rdebug.start(bootstrap)
 end
 

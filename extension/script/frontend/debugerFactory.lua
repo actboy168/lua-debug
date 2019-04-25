@@ -39,9 +39,9 @@ local function create_install_script(args, port, dbg, runtime)
 
     if args.experimentalServer then
         local ext = platform.OS == "Windows" and "dll" or "so"
-        res[#res+1] = ("local path,rt=[[%s]],[[%s]];"):format(utf8 and dbg or u2a(dbg), runtime)
-        res[#res+1] = ("local rdebug=assert(package.loadlib(path..rt..'/remotedebug.%s','luaopen_remotedebug'))();"):format(ext)
-        res[#res+1] = ("local dbg=assert(loadfile(path..[[/script/debugger.lua]]))(rdebug,path,rt..'/?.%s');"):format(ext)
+        res[#res+1] = ("local path=[[%s]];"):format(utf8 and dbg or u2a(dbg))
+        res[#res+1] = ("local rdebug=assert(package.loadlib(path..'%s/remotedebug.%s','luaopen_remotedebug'))();"):format(runtime, ext)
+        res[#res+1] = ("local dbg=assert(loadfile(path..[[/script/start_debug.lua]]))(rdebug,path,'/script/?.lua','%s/?.%s');"):format(runtime, ext)
     else
         runtime = runtime:sub(1,-2).."3"
         res[#res+1] = ("local path,rt=[[%s]],[[%s]];"):format(utf8 and dbg or u2a(dbg), runtime)
