@@ -36,8 +36,13 @@ local function workerThreadUpdate()
             break
         end
         local pkg = assert(json.decode(msg))
+        local ok, e = xpcall(function()
         if CMD[pkg.cmd] then
             CMD[pkg.cmd](pkg)
+        end
+        end, debug.traceback)
+        if not ok then
+            err:push(e)
         end
     end
 end
@@ -540,7 +545,10 @@ hookmgr.init(function(name, ...)
             return event[name](...)
         end
     end, debug.traceback, ...)
-    if not ok then err:push(e) end
+    if not ok then
+        err:push(e)
+        return
+    end
     return e
 end)
 
