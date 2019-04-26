@@ -1,3 +1,5 @@
+local theadpool = {}
+
 return function (path, cpath, errlog, addr)
     local thread = require "remotedebug.thread"
     local ok, err = pcall(thread.newchannel, "DbgMaster")
@@ -7,16 +9,24 @@ return function (path, cpath, errlog, addr)
         end
         error(err)
     end
-    thread.thread (([[
+
+    thread.newchannel "errorExit"
+    thread.newchannel "masterExit"
+
+    theadpool["error"] = thread.thread (([[
         package.path = %q
         package.cpath = %q
         local thread = require "remotedebug.thread"
         local err = thread.channel "errlog"
+        local exit = thread.channel "errorExit"
         local log = require "common.log"
         log.file = %q
-        while true do
-            log.error("ERROR:" .. err:bpop())
-        end
+        repeat
+            local ok, msg = err:pop(0.05)
+            if ok then
+                log.error("ERROR:" .. msg)
+            end
+        until exit:pop()
     ]]):format(path, cpath, errlog))
 
     local bootstrap = ([=[
@@ -83,13 +93,24 @@ return function (path, cpath, errlog, addr)
             self.fclose()
         end
 
+        local thread = require "remotedebug.thread"
+        local exit = thread.channel "masterExit"
         local select = require "common.select"
         local master = require 'backend.master'
         master.init(dbg_io)
-        while true do
+        repeat
             select.update(0.05)
             master.update()
-        end
+        until exit:pop()
+        select.closeall()
     ]=]):format(path, cpath, addr)
-    thread.thread(bootstrap)
+    theadpool["master"] = thread.thread(bootstrap)
+
+    setmetatable(theadpool, {__gc=function(self)
+        for _, thd in ipairs {"master","error"} do
+            local chan = thread.channel(thd.."Exit")
+            chan:push "EXIT"
+            self[thd]:wait()
+        end
+    end})
 end

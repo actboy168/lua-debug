@@ -220,4 +220,23 @@ function m.update(timeout)
     end
 end
 
+function m.closeall()
+    for fd in pairs(write) do
+        if not m.is_closed(fd) then
+            m.close(fd)
+        end
+    end
+    local function is_finish()
+        for fd in pairs(write) do
+            if not m.is_closed(fd) then
+                return false
+            end
+        end
+        return true
+    end
+    while not is_finish() do
+        m.update(0)
+    end
+end
+
 return m
