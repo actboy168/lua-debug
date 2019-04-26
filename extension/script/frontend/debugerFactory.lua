@@ -53,7 +53,7 @@ local function create_install_script(args, port, dbg, runtime)
         res[#res+1] = ("package.cpath=[[%s]];"):format(table.concat(path, ";"))
     end
 
-    if args.experimentalServer then
+    if not args.deprecationServer then
         local ext = platformOS() == "Windows" and "dll" or "so"
         res[#res+1] = ("local path=[[%s]];"):format(nativepath(dbg))
         res[#res+1] = ("local rdebug=assert(package.loadlib(path..'%s/remotedebug.%s','luaopen_remotedebug'))();"):format(runtime, ext)
@@ -257,7 +257,7 @@ local function create_process(args)
     if noinject then
         return process
     end
-    if args.experimentalServer then
+    if not args.deprecationServer then
         inject.injectdll(process
             , (WORKDIR / "bin" / "win" / "launcher.x86.dll"):string()
             , (WORKDIR / "bin" / "win" / "launcher.x64.dll"):string()

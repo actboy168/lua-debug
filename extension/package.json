@@ -310,7 +310,7 @@
                                 "description": "Use Windows Subsystem for Linux.",
                                 "default": true
                             },
-                            "experimentalServer": {
+                            "deprecationServer": {
                                 "type": "boolean",
                                 "markdownDescription": "Just for test.",
                                 "default": true
@@ -410,7 +410,7 @@
                                 "markdownDescription": "`processId` and `processName` will not inject debugger.",
                                 "default": false
                             },
-                            "experimentalServer": {
+                            "deprecationServer": {
                                 "type": "boolean",
                                 "markdownDescription": "Just for test.",
                                 "default": true

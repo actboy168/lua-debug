@@ -72,7 +72,7 @@ local function request_runinterminal(args)
 end
 
 local function attach_process(pkg, args, pid)
-    if args.experimentalServer then
+    if not args.deprecationServer then
         if not inject.injectdll(pid
             , (WORKDIR / "bin" / "win" / "launcher.x86.dll"):string()
             , (WORKDIR / "bin" / "win" / "launcher.x64.dll"):string()
