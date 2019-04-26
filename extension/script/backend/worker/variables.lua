@@ -528,6 +528,8 @@ local children = {
     [VAR_STANDARD] = {},
 }
 
+local TEMPORARY = _VERSION == "Lua 5.4" and '(temporary)' or '(*temporary)'
+
 extand[VAR_LOCAL] = function(frameId)
     children[VAR_LOCAL][3] = {}
     local vars = {}
@@ -537,7 +539,7 @@ extand[VAR_LOCAL] = function(frameId)
         if name == nil then
             break
         end
-        if name ~= '(*temporary)' then
+        if name ~= TEMPORARY then
             local fi = i
             varCreate(vars, frameId, children[VAR_LOCAL], name, value
                 , name
