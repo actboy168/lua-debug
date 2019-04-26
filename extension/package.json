@@ -305,6 +305,11 @@
                                 "markdownDescription": "Debug port to attach to. Default is 4278.",
                                 "default": 4278
                             },
+                            "useWSL" : {
+                                "type": "boolean",
+                                "description": "Use Windows Subsystem for Linux.",
+                                "default": true
+                            },
                             "experimentalServer": {
                                 "type": "boolean",
                                 "markdownDescription": "Just for test.",

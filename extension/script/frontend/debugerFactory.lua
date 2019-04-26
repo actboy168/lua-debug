@@ -1,55 +1,71 @@
 local fs = require 'bee.filesystem'
 local sp = require 'bee.subprocess'
-local platform = require 'bee.platform'
+local platformOS = require 'frontend.platformOS'
 local inject = require 'inject'
 
-local function u2a(s)
-    if platform.OS == "Windows" then
+local useWSL = false
+local useUtf8 = false
+
+local function initialize(args)
+    useWSL = args.useWSL
+    useUtf8 = args.sourceCoding == "utf8"
+end
+
+local function towsl(s)
+    if not useWSL or not s:match "^%a:" then
+        return s
+    end
+    return s:gsub("\\", "/"):gsub("^(%a):", function(c)
+        return "/mnt/"..c:lower()
+    end)
+end
+
+local function nativepath(s)
+    if not useWSL and not useUtf8 and platformOS() == "Windows" then
         local unicode = require 'bee.unicode'
         return unicode.u2a(s)
     end
-    return s
+    return towsl(s)
 end
 
 local function create_install_script(args, port, dbg, runtime)
-    local utf8 = args.sourceCoding == "utf8"
     local res = {}
     if type(args.path) == "string" then
-        res[#res+1] = ("package.path=[[%s]];"):format(utf8 and args.path or u2a(args.path))
+        res[#res+1] = ("package.path=[[%s]];"):format(nativepath(args.path))
     elseif type(args.path) == "table" then
         local path = {}
         for _, v in ipairs(args.path) do
             if type(v) == "string" then
-                path[#path+1] = utf8 and v or u2a(v)
+                path[#path+1] = nativepath(v)
             end
         end
         res[#res+1] = ("package.path=[[%s]];"):format(table.concat(path, ";"))
     end
     if type(args.cpath) == "string" then
-        res[#res+1] = ("package.cpath=[[%s]];"):format(utf8 and args.cpath or u2a(args.cpath))
+        res[#res+1] = ("package.cpath=[[%s]];"):format(nativepath(args.cpath))
     elseif type(args.cpath) == "table" then
         local path = {}
         for _, v in ipairs(args.cpath) do
             if type(v) == "string" then
-                path[#path+1] = utf8 and v or u2a(v)
+                path[#path+1] = nativepath(v)
             end
         end
         res[#res+1] = ("package.cpath=[[%s]];"):format(table.concat(path, ";"))
     end
 
     if args.experimentalServer then
-        local ext = platform.OS == "Windows" and "dll" or "so"
-        res[#res+1] = ("local path=[[%s]];"):format(utf8 and dbg or u2a(dbg))
+        local ext = platformOS() == "Windows" and "dll" or "so"
+        res[#res+1] = ("local path=[[%s]];"):format(nativepath(dbg))
         res[#res+1] = ("local rdebug=assert(package.loadlib(path..'%s/remotedebug.%s','luaopen_remotedebug'))();"):format(runtime, ext)
         res[#res+1] = ("local dbg=assert(loadfile(path..[[/script/start_debug.lua]]))(rdebug,path,'/script/?.lua','%s/?.%s');"):format(runtime, ext)
     else
         runtime = runtime:sub(1,-2).."3"
-        res[#res+1] = ("local path,rt=[[%s]],[[%s]];"):format(utf8 and dbg or u2a(dbg), runtime)
+        res[#res+1] = ("local path,rt=[[%s]],[[%s]];"):format(nativepath(dbg), runtime)
         res[#res+1] = "local dbg=assert(package.loadlib(path..rt..'/debugger.dll', 'luaopen_debugger'))();"
     end
     res[#res+1] = ("package.loaded[ [[%s]] ]=dbg;dbg:io([[pipe:%s]])"):format(
         (type(args.internalModule) == "string") and args.internalModule or "debugger",
-        port
+        towsl(port:string())
     )
 
     if type(args.outputCapture) == "table" then
@@ -107,14 +123,14 @@ local function getLuaExe(args, dbg)
     if type(args.luaexe) == "string" then
         luaexe = fs.path(args.luaexe)
 
-        if platform.OS == "Windows" then
+        if platformOS() == "Windows" then
             if is64Exe(luaexe) then
                 runtime = runtime .. "/win64"
             else
                 runtime = runtime .. "/win32"
             end
-        elseif platform.OS == "macOS" then
-            runtime = runtime .. "/macos"
+        else
+            runtime = runtime .. "/" .. platformOS():lower()
         end
         if ver == 53 then
             runtime = runtime .. "/lua53"
@@ -122,21 +138,21 @@ local function getLuaExe(args, dbg)
             runtime = runtime .. "/lua54"
         end
     else
-        if platform.OS == "Windows" then
+        if platformOS() == "Windows" then
             if bit == 64 then
                 runtime = runtime .. "/win64"
             else
                 runtime = runtime .. "/win32"
             end
-        elseif platform.OS == "macOS" then
-            runtime = runtime .. "/macos"
+        else
+            runtime = runtime .. "/" .. platformOS():lower()
         end
         if ver == 53 then
             runtime = runtime .. "/lua53"
         else
             runtime = runtime .. "/lua54"
         end
-        luaexe = dbg / runtime / (platform.OS == "Windows" and "lua.exe" or "lua")
+        luaexe = dbg / runtime / (platformOS() == "Windows" and "lua.exe" or "lua")
     end
     return luaexe, '/'..runtime
 end
@@ -149,7 +165,10 @@ local function installBootstrap1(option, luaexe, args)
 end
 
 local function installBootstrap2(c, luaexe, args, port, dbg, runtime)
-    c[#c+1] = luaexe:string()
+    if args.useWSL then
+        c[#c+1] = "wsl"
+    end
+    c[#c+1] = towsl(luaexe:string())
     c[#c+1] = "-e"
     c[#c+1] = create_install_script(args, port, dbg:string(), runtime)
 
@@ -163,7 +182,7 @@ local function installBootstrap2(c, luaexe, args, port, dbg, runtime)
         end
     end
 
-    c[#c+1] = (type(args.program) == "string") and args.program or ".lua"
+    c[#c+1] = (type(args.program) == "string") and towsl(args.program) or ".lua"
 
     if type(args.arg) == "string" then
         c[#c+1] = args.arg
@@ -177,6 +196,7 @@ local function installBootstrap2(c, luaexe, args, port, dbg, runtime)
 end
 
 local function create_terminal(args, dbg, port)
+    initialize(args)
     local luaexe, runtime = getLuaExe(args, dbg)
     local option = {
         kind = (args.console == "integratedTerminal") and "integrated" or "external",
@@ -189,6 +209,7 @@ local function create_terminal(args, dbg, port)
 end
 
 local function create_luaexe(args, dbg, port)
+    initialize(args)
     local luaexe, runtime = getLuaExe(args, dbg)
     local option = {
         console = 'hide'
@@ -212,6 +233,7 @@ local function create_luaexe(args, dbg, port)
 end
 
 local function create_process(args)
+    initialize(args)
     local noinject = args.noInject
     local application = args.runtimeExecutable
     local option = {

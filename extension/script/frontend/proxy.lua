@@ -1,7 +1,7 @@
 local serverFactory = require 'common.serverFactory'
 local debuggerFactory = require 'frontend.debugerFactory'
 local fs = require 'bee.filesystem'
-local platform = require 'bee.platform'
+local platformOS = require 'frontend.platformOS'
 local inject = require 'inject'
 local server
 local client
@@ -16,7 +16,7 @@ local function getVersion(dir)
 end
 
 local function getHomePath()
-    if platform.OS == "Windows" then
+    if platformOS() == "Windows" then
         return os.getenv 'USERPROFILE'
     end
     return os.getenv 'HOME'
@@ -113,7 +113,8 @@ end
 
 local function proxy_attach(pkg)
     local args = pkg.arguments
-    if platform.OS ~= "Windows" then
+    platformOS.init(args)
+    if platformOS() ~= "Windows" then
         attach_tcp(args, pkg)
         return
     end
@@ -142,8 +143,8 @@ end
 
 local function proxy_launch(pkg)
     local args = pkg.arguments
-
-    if args.runtimeExecutable and platform.OS == "Windows" then
+    platformOS.init(args)
+    if args.runtimeExecutable and platformOS() == "Windows" then
         local process = debuggerFactory.create_process(args)
         if not process then
             response_error(pkg, 'launch failed')
