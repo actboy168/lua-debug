@@ -83,6 +83,8 @@ lm:shared_library 'remotedebug' {
         platform.OS == "Windows" and "ws2_32",
         platform.OS == "Windows" and "user32",
         platform.OS == "Windows" and "delayimp",
+        platform.OS == "Linux" and "stdc++",
+        platform.OS == "Linux" and "pthread",
     },
     ldflags = {
         platform.OS == "Windows" and ("/DELAYLOAD:%s.dll"):format(luaver),
