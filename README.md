@@ -128,5 +128,4 @@ dbg:start()
 * 实现step back
 * 自动附加子线程
 * 自动附加子进程
-* 支持wsl
 
