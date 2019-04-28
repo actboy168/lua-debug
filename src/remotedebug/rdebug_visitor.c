@@ -425,10 +425,10 @@ lclient_eval(lua_State *L) {
 	}
 	lua_pushboolean(L, 1);
 	if (LUA_TNONE == copy_value(hL, L)) {
-		lua_pushboolean(L, 0);
-		lua_pushfstring(L, "invalid value type `%s`", lua_typename(hL, lua_type(hL, -1)));
-		lua_pop(hL, 1);
-		return 2;
+		lua_pushfstring(L, "[%s: %p]", 
+			lua_typename(hL, lua_type(hL, -1)),
+			lua_topointer(hL, -1)
+		);
 	}
 	lua_pop(hL, 1);
 	return 2;
