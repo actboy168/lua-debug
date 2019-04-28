@@ -4,18 +4,7 @@ lm.arch = ARGUMENTS.arch or 'x64'
 lm.bindir = ("build/%s/bin/%s"):format(lm.plat, lm.arch)
 lm.objdir = ("build/%s/obj/%s"):format(lm.plat, lm.arch)
 
-lm:shared_library 'lua54' {
-    sources = {
-        "3rd/bee.lua/3rd/lua/src/*.c",
-        "!3rd/bee.lua/3rd/lua/src/lua.c",
-        "!3rd/bee.lua/3rd/lua/src/luac.c",
-        "3rd/bee.lua/3rd/lua/utf8/utf8_crt.c",
-    },
-    defines = {
-        "LUA_BUILD_AS_DLL",
-        "LUAI_MAXCSTACK=1000"
-    }
-}
+lm:import '3rd/bee.lua/make.lua'
 
 lm:source_set 'detours' {
     rootdir = "3rd/detours/src",
@@ -55,4 +44,8 @@ lm:shared_library 'launcher' {
         "delayimp",
     },
     ldflags = '/DELAYLOAD:lua54.dll',
+}
+
+lm:default {
+    "launcher",
 }
