@@ -12,9 +12,8 @@ else
 end
 local unixpath = ("pipe:%s/runtime/tmp/pid_%s.tmp"):format(path, pid)
 local rdebug = assert(package.loadlib(path..rt.."/remotedebug.dll","luaopen_remotedebug"))()
-local dbg = assert(loadfile(path.."/script/debugger.lua"))(rdebug,path,rt.."/?.dll")
+local dbg = assert(loadfile(path.."/script/start_debug.lua"))(rdebug,path,'/script/?.lua',rt.."/?.dll")
 dbg:io(unixpath)
 dbg:wait()
 dbg:start()
 package.loaded.debugger = dbg
-
