@@ -10,6 +10,8 @@ local VAR_UPVALUE = 0xFFFD
 local VAR_GLOBAL = 0xFFFC
 local VAR_STANDARD = 0xFFFB
 
+local TEMPORARY = _VERSION == "Lua 5.4" and '(temporary)' or '(*temporary)'
+
 local lstandard = {
     "ipairs",
     "error",
@@ -66,7 +68,7 @@ local function hasLocal(frameId)
         if name == nil then
             return false
         end
-        if name ~= '(*temporary)' then
+        if name ~= TEMPORARY then
             return true
         end
         i = i + 1
@@ -527,8 +529,6 @@ local children = {
     [VAR_GLOBAL] = {},
     [VAR_STANDARD] = {},
 }
-
-local TEMPORARY = _VERSION == "Lua 5.4" and '(temporary)' or '(*temporary)'
 
 extand[VAR_LOCAL] = function(frameId)
     children[VAR_LOCAL][3] = {}
