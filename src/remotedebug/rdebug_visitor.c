@@ -164,6 +164,14 @@ lclient_value(lua_State *L) {
 	return 1;
 }
 
+static int
+lclient_tostring(lua_State *L) {
+	lua_State *hL = get_host(L);
+	lua_settop(L, 1);
+	tostring(L, hL);
+	return 1;
+}
+
 // userdata ref
 // any value
 // ref = value
@@ -531,6 +539,7 @@ init_visitor(lua_State *L) {
 		{ "getstackv", lclient_getstackv },
 		{ "copytable", lclient_copytable },
 		{ "value", lclient_value },
+		{ "tostring", lclient_tostring },
 		{ "assign", lclient_assign },
 		{ "type", lclient_type },
 		{ "getinfo", lclient_getinfo },

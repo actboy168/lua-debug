@@ -423,6 +423,33 @@ get_value(lua_State *L, lua_State *cL) {
 	lua_pop(cL,1);
 }
 
+static int
+safetostring(lua_State *L) {
+	luaL_tolstring(L, 1, 0);
+	return 1;
+}
+
+static void
+tostring(lua_State *L, lua_State *cL) {
+	if (eval_value(L, cL) == LUA_TNONE) {
+		lua_pop(L, 1);
+		lua_pushstring(L, "nil");
+		// failed
+		return;
+	}
+	lua_pop(L, 1);
+	lua_pushcfunction(cL, safetostring);
+	lua_insert(cL, -2);
+	lua_pcall(cL, 1, 1, 0);
+	if (copy_value(cL, L) == LUA_TNONE) {
+		lua_pushfstring(L, "[%s: %p]", 
+			lua_typename(cL, lua_type(cL, -1)),
+			lua_topointer(cL, -1)
+			);
+	}
+	lua_pop(cL,1);
+}
+
 static const char *
 get_frame_local(lua_State *L, lua_State *cL, int frame, int index, int getref) {
 	lua_Debug ar;
