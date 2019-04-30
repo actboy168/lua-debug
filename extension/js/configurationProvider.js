@@ -3,21 +3,17 @@ const path = require("path");
 const os = require('os');
 
 function createDefaultProgram(folder) {
-    let program;
     const editor = vscode.window.activeTextEditor;
     if (editor && editor.document.languageId === 'lua') {
         const wf = vscode.workspace.getWorkspaceFolder(editor.document.uri);
         if (wf === folder) {
-            program = vscode.workspace.asRelativePath(editor.document.uri);
+            let program = vscode.workspace.asRelativePath(editor.document.uri);
             if (!path.isAbsolute(program)) {
                 program = '${workspaceFolder}/' + program;
             }
+            return program;
         }
     }
-    if (program) {
-        return program;
-    }
-    return '${file}';
 }
 
 function provideDebugConfigurations(folder, token) {
@@ -97,11 +93,11 @@ function resolveDebugConfiguration(folder, config, token) {
         config.ip = '127.0.0.1'
     }
     if (config.request == 'launch') {
-        if (typeof config.runtimeExecutable != 'string') { 
+        if (typeof config.runtimeExecutable != 'string') {
             if (typeof config.program != 'string') {
                 config.program = createDefaultProgram(folder);
                 if (typeof config.program != 'string') {
-                    return vscode.window.showInformationMessage('Cannot find a program to debug').then(_ => {
+                    return vscode.window.showErrorMessage('Cannot find a program to debug').then(_ => {
                         return undefined;
                     });
                 }
@@ -145,7 +141,7 @@ function resolveDebugConfiguration(folder, config, token) {
     }
     else if (config.request == 'attach') {
         if ((!config.ip || !config.port) && !config.processId && !config.processName) {
-            return vscode.window.showInformationMessage('Cannot missing ip or port to debug').then(_ => {
+            return vscode.window.showErrorMessage('Cannot missing ip or port to debug').then(_ => {
                 return undefined;
             });
         }
