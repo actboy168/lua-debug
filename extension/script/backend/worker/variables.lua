@@ -382,6 +382,9 @@ local function varCreateInsert(vars, frameId, varRef, name, value, evaluateName,
         value = text,
         variablesReference = ref,
         evaluateName = evaluateName,
+        presentationHint = {
+            kind = "virtual"
+    }
     }
     local maps = varRef[3]
     if maps[name] then
