@@ -38,19 +38,17 @@ function createDebugAdapterDescriptor(session, executable) {
         ]
         return new vscode.DebugAdapterExecutable(runtime, runtimeArgs);
     }
-    else if (platform == "darwin") {
-        let runtime = path.join(dir, 'bin/macos/lua-debug')
+    else {
+        let plat = platform == "darwin"? "macos": "linux"
+        let runtime = path.join(dir, 'bin/'+plat+'/lua-debug')
         let runtimeArgs = [
             "-e",
             "package.path=[["+path.join(dir, 'script/?.lua')+"]]",
             "-e",
-            "package.cpath=[["+path.join(dir, 'bin/macos/?.so')+"]]",
+            "package.cpath=[["+path.join(dir, 'bin/'+plat+'/?.so')+"]]",
             path.join(dir, 'script/frontend/main.lua')
         ]
         return new vscode.DebugAdapterExecutable(runtime, runtimeArgs);
-    }
-    else {
-        
     }
 }
 
