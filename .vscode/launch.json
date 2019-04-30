@@ -25,6 +25,7 @@
             "request": "launch",
             "name": "Test Extension",
             "runtimeExecutable": "${execPath}",
+            "sourceMaps": true,
             "args": [
                 "--extensionDevelopmentPath=${workspaceFolder}/extension/"
             ]
