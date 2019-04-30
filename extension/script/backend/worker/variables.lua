@@ -43,7 +43,6 @@ local lstandard = {
     "dofile",
     "pcall",
     "load",
-    "module",
     "rawget",
     "debug",
     "assert",
