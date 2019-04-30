@@ -131,6 +131,7 @@ lclient_getstackv(lua_State *L) {
 static int
 lclient_copytable(lua_State *L) {
 	lua_State *hL = get_host(L);
+	lua_Integer maxn = luaL_optinteger(L, 2, 0xffff);
 	lua_settop(L, 1);
 	if (lua_checkstack(hL, 4) == 0) {
 		return luaL_error(L, "stack overflow");
@@ -146,6 +147,11 @@ lclient_copytable(lua_State *L) {
 	lua_pushnil(hL);
 	// hL : table nil
 	while(next_kv(L, hL)) {
+		if (--maxn < 0) {
+			lua_pop(hL, 2);
+			lua_pop(L, 3);
+			return 1;
+		}
 		// L: result tableref nextkey value
 		lua_pushvalue(L, -2);
 		lua_insert(L, -2);
