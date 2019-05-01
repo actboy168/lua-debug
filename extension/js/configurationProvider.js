@@ -69,7 +69,12 @@ function resolveDebugConfiguration(folder, config, token) {
         config.consoleCoding = 'utf8'
     }
     if (typeof config.sourceCoding != 'string') {
-        config.sourceCoding = 'ansi'
+        if (os.platform() == "win32") {
+            config.sourceCoding = 'ansi'
+        }
+        else {
+            config.sourceCoding = 'utf8'
+        }
     }
     if (typeof config.outputCapture != 'object') {
         config.outputCapture = [
