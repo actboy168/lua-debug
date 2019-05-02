@@ -28,29 +28,33 @@ function provideDebugConfigurations(folder, token) {
 }
 
 function mergeConfigurations(config) {
-    let plat
-    if (os.platform() == "win32") {
-        plat = config.windows
+    let platname
+    let platcfg
+    if (os.platform() == "win32" && !config.useWSL) {
+        platname = "Windows"
+        platcfg = config.windows
     }
     else if (os.platform() == "darwin") {
-        plat = config.osx
+        platname = "macOS"
+        platcfg = config.osx
     }
     else {
-        plat = config.linux
+        platname = "Linux"
+        platcfg = config.linux
     }
     config.windows = null
     config.osx = null
     config.linux = null
-    if (typeof plat != 'object') {
-        return
+    if (typeof platcfg == 'object') {
+        for (var k in platcfg) {
+            config[k] = platcfg[k]
+        }
     }
-    for (var k in plat) {
-        config[k] = plat[k]
-    }
+    return platname
 }
 
 function resolveDebugConfiguration(folder, config, token) {
-    mergeConfigurations(config)
+    let plat = mergeConfigurations(config)
     config.type = 'lua';
     if (config.request != 'attach') {
         config.request = 'launch';
@@ -69,7 +73,7 @@ function resolveDebugConfiguration(folder, config, token) {
         config.consoleCoding = 'utf8'
     }
     if (typeof config.sourceCoding != 'string') {
-        if (os.platform() == "win32") {
+        if (plat == "Windows") {
             config.sourceCoding = 'ansi'
         }
         else {
@@ -84,11 +88,11 @@ function resolveDebugConfiguration(folder, config, token) {
         ]
     }
     if (typeof config.pathFormat != 'string') {
-        if (os.platform() == "win32" || os.platform() == "darwin") {
-            config.pathFormat = "path"
+        if (plat == "Linux") {
+            config.pathFormat = "linuxpath"
         }
         else {
-            config.pathFormat = "linuxpath"
+            config.pathFormat = "path"
         }
     }
     if (typeof config.ip == 'string' && typeof config.port != 'number') {
@@ -115,7 +119,7 @@ function resolveDebugConfiguration(folder, config, token) {
                     ]
                 }
                 if (typeof config.cpath != 'string' && typeof config.cpath != 'object') {
-                    if (os.platform() == "win32") {
+                    if (plat == "Windows") {
                         config.cpath = [
                             '${workspaceFolder}/?.dll',
                             path.dirname(config.luaexe) + '/?.dll',
@@ -134,7 +138,7 @@ function resolveDebugConfiguration(folder, config, token) {
                     config.path = '${workspaceFolder}/?.lua'
                 }
                 if (typeof config.cpath != 'string' && typeof config.cpath != 'object') {
-                    if (os.platform() == "win32") {
+                    if (plat == "Windows") {
                         config.cpath = '${workspaceFolder}/?.dll'
                     }
                     else {
