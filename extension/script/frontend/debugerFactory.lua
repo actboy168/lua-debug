@@ -198,6 +198,9 @@ end
 local function create_terminal(args, dbg, port)
     initialize(args)
     local luaexe, runtime = getLuaExe(args, dbg)
+    if not fs.exists(luaexe) then
+        return nil, "Non-Windows need to compile lua-debug first."
+    end
     local option = {
         kind = (args.console == "integratedTerminal") and "integrated" or "external",
         title = "Lua Debug",
@@ -211,6 +214,9 @@ end
 local function create_luaexe(args, dbg, port)
     initialize(args)
     local luaexe, runtime = getLuaExe(args, dbg)
+    if not fs.exists(luaexe) then
+        return nil, "Non-Windows need to compile lua-debug first."
+    end
     local option = {
         console = 'hide'
     }
@@ -222,7 +228,7 @@ local function create_luaexe(args, dbg, port)
     option.suspended = true
     local process, err = sp.spawn(option)
     if not process then
-        return process, err
+        return nil, err
     end
     inject.replacedll(process
         , getLuaRuntime(args) == 53 and "lua53.dll" or "lua54.dll"

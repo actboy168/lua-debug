@@ -173,15 +173,16 @@ local function proxy_launch(pkg)
             address = path:string()
         }
         if args.console == 'integratedTerminal' or args.console == 'externalTerminal' then
-            local arguments = debuggerFactory.create_terminal(args, getDbgPath(), path)
+            local arguments, err = debuggerFactory.create_terminal(args, getDbgPath(), path)
             if not arguments then
-                response_error(pkg, 'launch failed')
+                response_error(pkg, err)
                 return
             end
             request_runinterminal(arguments)
         else
-            if not debuggerFactory.create_luaexe(args, getDbgPath(), path) then
-                response_error(pkg, 'launch failed')
+            local ok, err = debuggerFactory.create_luaexe(args, getDbgPath(), path)
+            if not ok then
+                response_error(pkg, err)
                 return
             end
         end
