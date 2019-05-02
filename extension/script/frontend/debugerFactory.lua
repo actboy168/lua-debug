@@ -199,6 +199,9 @@ local function create_terminal(args, dbg, port)
     initialize(args)
     local luaexe, runtime = getLuaExe(args, dbg)
     if not fs.exists(luaexe) then
+        if args.luaexe then
+            return nil, ("No file `%s`."):format(args.luaexe)
+        end
         return nil, "Non-Windows need to compile lua-debug first."
     end
     local option = {
@@ -215,6 +218,9 @@ local function create_luaexe(args, dbg, port)
     initialize(args)
     local luaexe, runtime = getLuaExe(args, dbg)
     if not fs.exists(luaexe) then
+        if args.luaexe then
+            return nil, ("No file `%s`."):format(args.luaexe)
+        end
         return nil, "Non-Windows need to compile lua-debug first."
     end
     local option = {

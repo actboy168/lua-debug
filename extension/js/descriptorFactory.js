@@ -16,7 +16,8 @@ function getHomeDirectory() {
     return process.env.USERPROFILE
 }
 
-function getRuntimeDirectory(context) {
+function getRuntimeDirectory() {
+    let context = extension.context
     if (path.basename(context.extensionPath) != 'extension') {
         return context.extensionPath
     }
@@ -27,7 +28,7 @@ function createDebugAdapterDescriptor(session, executable) {
     if (typeof session.configuration.debugServer === 'number') {
         return new DebugAdapterServer(session.configuration.debugServer);
     }
-    let dir = getRuntimeDirectory(extension.context)
+    let dir = getRuntimeDirectory()
     let platform = os.platform()
     if (platform == "win32") {
         let runtime = path.join(dir, 'bin/win/lua-debug.exe')
@@ -53,3 +54,4 @@ function createDebugAdapterDescriptor(session, executable) {
 }
 
 exports.createDebugAdapterDescriptor = createDebugAdapterDescriptor;
+exports.getRuntimeDirectory = getRuntimeDirectory;
