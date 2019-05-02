@@ -50,11 +50,6 @@
                     "lua"
                 ],
                 "label": "Lua Debug",
-                "enableBreakpointsFor": {
-                    "languageIds": [
-                        "lua"
-                    ]
-                },
                 "configurationSnippets": [
                     {
                         "label": "Lua Debug: Launch Script",
@@ -305,7 +300,7 @@
                                 "markdownDescription": "Debug port to attach to. Default is 4278.",
                                 "default": 4278
                             },
-                            "useWSL" : {
+                            "useWSL": {
                                 "type": "boolean",
                                 "description": "Use Windows Subsystem for Linux.",
                                 "default": true
