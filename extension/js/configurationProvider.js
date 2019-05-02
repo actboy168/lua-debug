@@ -19,12 +19,16 @@ function createDefaultProgram(folder) {
 }
 
 function provideDebugConfigurations(folder, token) {
+    let program = createDefaultProgram(folder);
+    if (!program) {
+        program = '${file}';
+    }
     return [
         {
             type: 'lua',
             request: 'launch',
             name: 'Launch',
-            program: createDefaultProgram(folder)
+            program: program
         }
     ];
 }
