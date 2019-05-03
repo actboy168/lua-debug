@@ -26,6 +26,12 @@
             "windows": {
                 "command": "chcp 65001 && \"${workspaceFolder}/build/msvc/bin/lua.exe\"",
             },
+            "linux": {
+                "command": "${workspaceFolder}/build/linux/bin/lua",
+                "options": {
+                    "cwd": "${workspaceFolder}/build/linux/bin/"
+                }
+            },
             "osx": {
                 "command": "${workspaceFolder}/build/macos/bin/lua",
                 "options": {
@@ -41,6 +47,12 @@
             "label": "Copy Publish",
             "windows": {
                 "command": "chcp 65001 && \"${workspaceFolder}/build/msvc/bin/lua.exe\"",
+            },
+            "linux": {
+                "command": "${workspaceFolder}/build/linux/bin/lua",
+                "options": {
+                    "cwd": "${workspaceFolder}/build/linux/bin/"
+                }
             },
             "osx": {
                 "command": "${workspaceFolder}/build/macos/bin/lua",
