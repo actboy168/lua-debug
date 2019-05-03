@@ -9,7 +9,7 @@ local useWSL = false
 ev.on('initializing', function(config)
     sourceFormat = config.sourceFormat or "path"
     pathFormat = config.pathFormat or "path"
-    useWSL = default_sep == '/' and config.useWSL --TODO: remotedebug.platform?
+    useWSL = config.useWSL
 end)
 
 local function split(str)

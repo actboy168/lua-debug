@@ -3,14 +3,16 @@ local sp = require 'bee.subprocess'
 local platformOS = require 'frontend.platformOS'
 local inject = require 'inject'
 
+local useWSL = false
 local useUtf8 = false
 
 local function initialize(args)
+    useWSL = args.useWSL
     useUtf8 = args.sourceCoding == "utf8"
 end
 
 local function towsl(s)
-    if not platformOS.useWSL or not s:match "^%a:" then
+    if not useWSL or not s:match "^%a:" then
         return s
     end
     return s:gsub("\\", "/"):gsub("^(%a):", function(c)
@@ -19,7 +21,7 @@ local function towsl(s)
 end
 
 local function nativepath(s)
-    if not platformOS.useWSL and not useUtf8 and platformOS() == "Windows" then
+    if not useWSL and not useUtf8 and platformOS() == "Windows" then
         local unicode = require 'bee.unicode'
         return unicode.u2a(s)
     end
@@ -163,7 +165,7 @@ local function installBootstrap1(option, luaexe, args)
 end
 
 local function installBootstrap2(c, luaexe, args, port, dbg, runtime)
-    if platformOS.useWSL then
+    if useWSL then
         c[#c+1] = "wsl"
     end
     c[#c+1] = towsl(luaexe:string())
