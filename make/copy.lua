@@ -2,13 +2,13 @@ local fs = require 'bee.filesystem'
 local platform = require 'bee.platform'
 
 local home = fs.path(platform.OS == "Windows" and os.getenv 'USERPROFILE' or os.getenv 'HOME')
-local vscode = '.vscode'
+local vscode = arg[2] and ('.vscode-'..arg[2]) or '.vscode'
+--local vscode = '.vscode'
 --local vscode = '.vscode-insiders'
 --local vscode = '.vscode-remote'
 
 local version = (function()
-    local root = fs.absolute(fs.path(arg[1]))
-    for line in io.lines((root / 'package.json'):string()) do
+    for line in io.lines(arg[1] .. '/package.json') do
         local ver = line:match('"version": "(%d+%.%d+%.%d+)"')
         if ver then
             return ver
