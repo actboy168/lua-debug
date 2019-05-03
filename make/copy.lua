@@ -2,18 +2,19 @@ local fs = require 'bee.filesystem'
 local platform = require 'bee.platform'
 
 local home = fs.path(platform.OS == "Windows" and os.getenv 'USERPROFILE' or os.getenv 'HOME')
-local insiders = false
-local vscode = insiders and '.vscode-insiders' or '.vscode'
-local root = fs.absolute(fs.path(arg[1]))
+local vscode = '.vscode'
+--local vscode = '.vscode-insiders'
+--local vscode = '.vscode-remote'
 
 local version = (function()
-    for line in io.lines((root / 'project' / 'windows' / 'common.props'):string()) do
-        local ver = line:match('<Version>(%d+%.%d+%.%d+)</Version>')
+    local root = fs.absolute(fs.path(arg[1]))
+    for line in io.lines((root / 'package.json'):string()) do
+        local ver = line:match('"version": "(%d+%.%d+%.%d+)"')
         if ver then
             return ver
         end
     end
-    error 'Cannot found version in common.props.'
+    error 'Cannot found version in package.json.'
 end)()
 
 local function copy_directory(from, to, filter)
@@ -32,6 +33,6 @@ end
 
 local outputDir = home / vscode / 'extensions' / ('actboy168.lua-debug-' .. version)
 
-copy_directory(fs.path(arg[2]), outputDir)
+copy_directory(fs.path(arg[1]), outputDir)
 
 print 'ok'

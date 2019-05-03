@@ -34,7 +34,6 @@
             },
             "args": [
                 "${workspaceFolder}/make/copy.lua",
-                "${workspaceFolder}",
                 "${workspaceFolder}/extension"
             ]
         },
@@ -51,7 +50,6 @@
             },
             "args": [
                 "${workspaceFolder}/make/copy.lua",
-                "${workspaceFolder}",
                 "${workspaceFolder}/publish"
             ]
         }
