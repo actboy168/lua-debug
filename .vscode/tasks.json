@@ -3,16 +3,6 @@
     // for the documentation about the tasks.json format
     "version": "2.0.0",
     "type": "shell",
-    "windows": {
-        "options": {
-            "shell": {
-                "executable": "c:\\windows\\system32\\cmd.exe",
-                "args": [
-                    "/c"
-                ]
-            }
-        },
-    },
     "tasks": [
         {
             "label": "Rebuild",
@@ -23,21 +13,7 @@
         },
         {
             "label": "Copy Extension",
-            "windows": {
-                "command": "chcp 65001 && \"${workspaceFolder}/build/msvc/bin/lua.exe\"",
-            },
-            "linux": {
-                "command": "${workspaceFolder}/build/linux/bin/lua",
-                "options": {
-                    "cwd": "${workspaceFolder}/build/linux/bin/"
-                }
-            },
-            "osx": {
-                "command": "${workspaceFolder}/build/macos/bin/lua",
-                "options": {
-                    "cwd": "${workspaceFolder}/build/macos/bin/"
-                }
-            },
+            "command": "${workspaceFolder}/build/lua",
             "args": [
                 "${workspaceFolder}/make/copy.lua",
                 "${workspaceFolder}/extension"
@@ -45,21 +21,7 @@
         },
         {
             "label": "Copy Publish",
-            "windows": {
-                "command": "chcp 65001 && \"${workspaceFolder}/build/msvc/bin/lua.exe\"",
-            },
-            "linux": {
-                "command": "${workspaceFolder}/build/linux/bin/lua",
-                "options": {
-                    "cwd": "${workspaceFolder}/build/linux/bin/"
-                }
-            },
-            "osx": {
-                "command": "${workspaceFolder}/build/macos/bin/lua",
-                "options": {
-                    "cwd": "${workspaceFolder}/build/macos/bin/"
-                }
-            },
+            "command": "${workspaceFolder}/build/lua",
             "args": [
                 "${workspaceFolder}/make/copy.lua",
                 "${workspaceFolder}/publish"

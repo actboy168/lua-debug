@@ -43,6 +43,7 @@ lm:build 'install' {
     deps = {
         "bee",
         "lua",
+        "bootstrap",
         "inject",
         platform.OS == "Windows" and "lua54",
     }
