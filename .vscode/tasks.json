@@ -16,7 +16,8 @@
             "command": "${workspaceFolder}/build/lua",
             "args": [
                 "make/copy.lua",
-                "extension"
+                "extension",
+                "${execPath}"
             ]
         },
         {
@@ -24,7 +25,8 @@
             "command": "${workspaceFolder}/build/lua",
             "args": [
                 "make/copy.lua",
-                "publish"
+                "publish",
+                "${execPath}"
             ]
         }
     ]
