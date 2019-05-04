@@ -3,28 +3,28 @@
     // for the documentation about the tasks.json format
     "version": "2.0.0",
     "type": "shell",
+    "options": {
+        "cwd": "${workspaceFolder}"
+    },
     "tasks": [
         {
             "label": "Rebuild",
             "command": "luamake",
-            "options": {
-                "cwd": "${workspaceFolder}"
-            }
         },
         {
             "label": "Copy Extension",
             "command": "${workspaceFolder}/build/lua",
             "args": [
-                "${workspaceFolder}/make/copy.lua",
-                "${workspaceFolder}/extension"
+                "make/copy.lua",
+                "extension"
             ]
         },
         {
             "label": "Copy Publish",
             "command": "${workspaceFolder}/build/lua",
             "args": [
-                "${workspaceFolder}/make/copy.lua",
-                "${workspaceFolder}/publish"
+                "make/copy.lua",
+                "publish"
             ]
         }
     ]
