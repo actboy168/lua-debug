@@ -1,4 +1,4 @@
-local rdebug = require 'remotedebug'
+local rdebug = require 'remotedebug.visitor'
 local source = require 'backend.worker.source'
 local hookmgr = require 'remotedebug.hookmgr'
 

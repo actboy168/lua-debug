@@ -8,7 +8,6 @@ static int DEBUG_CLIENT = 0;	// client L in host VM for hook
 
 void probe(lua_State* cL, lua_State* hL, const char* name);
 int  event(lua_State* cL, lua_State* hL, const char* name);
-extern "C" int init_visitor(lua_State *L);
 
 static void
 clear_client(lua_State *L) {
@@ -155,29 +154,23 @@ extern "C"
 __declspec(dllexport)
 #endif
 int luaopen_remotedebug(lua_State *L) {
-	luaL_checkversion(L);
-	if (lua_rawgetp(L, LUA_REGISTRYINDEX, &DEBUG_HOST) != LUA_TNIL) {
-		// It's client
-		return init_visitor(L);
-	} else {
 #if defined(_MSC_VER)
 	remotedebug::delayload::caller_is_luadll(_ReturnAddress());
 #endif
-		// It's host
-		luaL_Reg l[] = {
-			{ "start", lhost_start },
-			{ "clear", lhost_clear },
-			{ "probe", lhost_probe },
-			{ "event", lhost_event },
-			{ NULL, NULL },
-		};
-		luaL_newlib(L,l);
+	// It's host
+	luaL_Reg l[] = {
+		{ "start", lhost_start },
+		{ "clear", lhost_clear },
+		{ "probe", lhost_probe },
+		{ "event", lhost_event },
+		{ NULL, NULL },
+	};
+	luaL_newlib(L,l);
 
-		// autoclose debugger VM, __gc in module table
-		lua_createtable(L,0,1);
-		lua_pushcfunction(L, lhost_clear);
-		lua_setfield(L, -2, "__gc");
-		lua_setmetatable(L, -2);
-	}
+	// autoclose debugger VM, __gc in module table
+	lua_createtable(L,0,1);
+	lua_pushcfunction(L, lhost_clear);
+	lua_setfield(L, -2, "__gc");
+	lua_setmetatable(L, -2);
 	return 1;
 }
