@@ -31,43 +31,17 @@ lhost_clear(lua_State *L) {
 	return 0;
 }
 
-static void
-copy_string(lua_State *L, lua_State *cL, const char * key) {
-	if (lua_getfield(L, -1, key) != LUA_TSTRING)
-		luaL_error(L, "Invalid string : package.%s", key);
-	const char * s = lua_tostring(L, -1);
-	lua_pushstring(cL, s);
-	lua_setfield(cL, -2, key);
-	lua_pop(L, 1);
-}
-
-static void
-copy_package_path(lua_State *hL, lua_State *L) {
-	if (lua_getglobal(hL, "package") != LUA_TTABLE)
-		luaL_error(L, "No package");
-	if (lua_getglobal(L, "package") != LUA_TTABLE)
-		luaL_error(L, "No package in debugger VM");
-
-	copy_string(hL, L, "path");
-	copy_string(hL, L, "cpath");
-
-	lua_pop(L, 1);
-	lua_pop(hL, 1);
-}
-
 // 1. lightuserdata string_mainscript
 // 2. lightuserdata host_L
 static int
 client_main(lua_State *L) {
 	lua_State *hL = (lua_State *)lua_touserdata(L, 2);
 	luaL_openlibs(L);
-	copy_package_path(hL, L);
 
 	lua_pushvalue(L, 2);
 	lua_rawsetp(L, LUA_REGISTRYINDEX, &DEBUG_HOST);	// set host L
 
 	const char * mainscript = (const char *)lua_touserdata(L, 1);
-
 
 	if (luaL_loadstring(L, mainscript) != LUA_OK) {
 		return lua_error(L);
