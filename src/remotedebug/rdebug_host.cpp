@@ -26,7 +26,9 @@ set_host(lua_State* L, lua_State* hL) {
 lua_State *
 get_host(lua_State *L) {
 	if (lua_rawgetp(L, LUA_REGISTRYINDEX, &DEBUG_HOST) != LUA_TLIGHTUSERDATA) {
-		luaL_error(L, "Must call in debug client");
+		lua_pushstring(L, "Must call in debug client");
+		lua_error(L);
+		return 0;
 	}
 	lua_State *hL = (lua_State *)lua_touserdata(L, -1);
 	lua_pop(L, 1);
@@ -84,15 +86,19 @@ lhost_start(lua_State *L) {
 	if (lua_type(L, 2) == LUA_TFUNCTION) {
 		preprocessor = lua_tocfunction(L, 2);
 		if (preprocessor == NULL) {
-			return luaL_error(L, "Preprocessor must be a C function");
+			lua_pushstring(L, "Preprocessor must be a C function");
+			return lua_error(L);
 		}
 		if (lua_getupvalue(L, 2, 1)) {
-			return luaL_error(L, "Preprocessor must be a light C function (no upvalue)");
+			lua_pushstring(L, "Preprocessor must be a light C function (no upvalue)");
+			return lua_error(L);
 		}
 	}
 	lua_State *cL = luaL_newstate();
-	if (cL == NULL)
-		return luaL_error(L, "Can't new debug client");
+	if (cL == NULL) {
+		lua_pushstring(L, "Can't new debug client");
+		return lua_error(L);
+	}
 
 	lua_pushlightuserdata(L, cL);
 	lua_rawsetp(L, LUA_REGISTRYINDEX, &DEBUG_CLIENT);
@@ -145,7 +151,9 @@ int luaopen_remotedebug(lua_State *L) {
 		{ "event", lhost_event },
 		{ NULL, NULL },
 	};
-	luaL_newlib(L,l);
+	luaL_newlibtable(L,l);
+	luaL_setfuncs(L,l,0);
+
 	lua_createtable(L,0,1);
 	lua_pushcfunction(L, lhost_clear);
 	lua_setfield(L, -2, "__gc");
