@@ -7,6 +7,7 @@
 #include <array>
 #include "rdebug_eventfree.h"
 #include "rdebug_timer.h"
+#include "thunk/thunk.h"
 
 #if LUA_VERSION_NUM < 504
 #define s2v(o) (o)
@@ -22,8 +23,6 @@ int copyvalue(lua_State *cL, lua_State *hL);
 
 
 #define BPMAP_SIZE (1 << 16)
-
-#include "thunk.h"
 
 #define LOG(...) do { \
     FILE* f = fopen("dbg.log", "a"); \
