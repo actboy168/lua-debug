@@ -1,6 +1,4 @@
 #include <lua.hpp>
-#include <string.h>
-#include <stdio.h>
 #include "rdebug_delayload.h"
 
 static int DEBUG_HOST = 0;	// host L in client VM
@@ -62,7 +60,7 @@ client_main(lua_State *L) {
 	if (luaL_loadstring(L, mainscript) != LUA_OK) {
 		return lua_error(L);
 	}
-	lua_pushvalue(L, 3);	// preprocessor
+	lua_pushvalue(L, 3);
 	lua_call(L, 1, 0);
 	return 0;
 }
@@ -82,9 +80,8 @@ static int
 lhost_start(lua_State *L) {
 	clear_client(L);
 	lua_CFunction preprocessor = NULL;
-	const char * mainscript = luaL_checkstring(L, 1);	// index 1 is source
+	const char * mainscript = luaL_checkstring(L, 1);
 	if (lua_type(L, 2) == LUA_TFUNCTION) {
-		// preprocess c function
 		preprocessor = lua_tocfunction(L, 2);
 		if (preprocessor == NULL) {
 			return luaL_error(L, "Preprocessor must be a C function");
@@ -117,7 +114,6 @@ lhost_start(lua_State *L) {
 	return 0;
 }
 
-// use as hard break point
 static int
 lhost_probe(lua_State *L) {
 	probe(get_client(L), L, luaL_checkstring(L, 1));
@@ -142,7 +138,6 @@ int luaopen_remotedebug(lua_State *L) {
 #if defined(_MSC_VER)
 	remotedebug::delayload::caller_is_luadll(_ReturnAddress());
 #endif
-	// It's host
 	luaL_Reg l[] = {
 		{ "start", lhost_start },
 		{ "clear", lhost_clear },
@@ -151,8 +146,6 @@ int luaopen_remotedebug(lua_State *L) {
 		{ NULL, NULL },
 	};
 	luaL_newlib(L,l);
-
-	// autoclose debugger VM, __gc in module table
 	lua_createtable(L,0,1);
 	lua_pushcfunction(L, lhost_clear);
 	lua_setfield(L, -2, "__gc");
