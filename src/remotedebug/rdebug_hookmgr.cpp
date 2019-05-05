@@ -16,11 +16,10 @@ static int HOOK_MGR = 0;
 static int HOOK_CALLBACK = 0;
 
 void set_host(lua_State* L, lua_State* hL);
-extern "C" {
 lua_State* get_host(lua_State *L);
 lua_State* getthread(lua_State *L);
 int copyvalue(lua_State *cL, lua_State *hL);
-}
+
 
 #define BPMAP_SIZE (1 << 16)
 

@@ -66,7 +66,6 @@ lm:shared_library 'remotedebug' {
     },
     sources = {
         "3rd/bee.lua/3rd/lua-seri/*.c",
-        "src/remotedebug/*.c",
         "src/remotedebug/*.cpp",
         "3rd/bee.lua/bee/error.cpp",
         "3rd/bee.lua/bee/net/*.cpp",

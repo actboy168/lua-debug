@@ -1,6 +1,4 @@
-#include <lua.h>
-#include <lualib.h>
-#include <lauxlib.h>
+#include <lua.hpp>
 #include <string.h>
 #include <stdio.h>
 
@@ -205,7 +203,7 @@ lclient_assign(lua_State *L) {
 		return luaL_error(L, "Invalid value type %s", lua_typename(L, vtype));
 	}
 	luaL_checktype(L, 1, LUA_TUSERDATA);
-	struct value * ref = lua_touserdata(L, 1);
+	struct value * ref = (struct value *)lua_touserdata(L, 1);
 	lua_getuservalue(L, 1);
 	int r = assign_value(L, ref, hL);
 	lua_pushboolean(L, r);
@@ -566,6 +564,7 @@ init_visitor(lua_State *L) {
 	return 1;
 }
 
+extern "C"
 #if defined(_WIN32)
 __declspec(dllexport)
 #endif

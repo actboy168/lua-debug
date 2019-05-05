@@ -25,7 +25,7 @@ set_host(lua_State* L, lua_State* hL) {
     lua_rawsetp(L, LUA_REGISTRYINDEX, &DEBUG_HOST);
 }
 
-extern "C" lua_State *
+lua_State *
 get_host(lua_State *L) {
 	if (lua_rawgetp(L, LUA_REGISTRYINDEX, &DEBUG_HOST) != LUA_TLIGHTUSERDATA) {
 		luaL_error(L, "Must call in debug client");
