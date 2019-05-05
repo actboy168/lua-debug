@@ -9,16 +9,37 @@ static int DEBUG_CLIENT = 0;	// client L in host VM for hook
 void probe(lua_State* cL, lua_State* hL, const char* name);
 int  event(lua_State* cL, lua_State* hL, const char* name);
 
+lua_State *
+get_client(lua_State *L) {
+	if (lua_rawgetp(L, LUA_REGISTRYINDEX, &DEBUG_CLIENT) != LUA_TLIGHTUSERDATA) {
+		return 0;
+	}
+	lua_State *cL = (lua_State *)lua_touserdata(L, -1);
+	lua_pop(L, 1);
+	return cL;
+}
+
+void
+set_host(lua_State* L, lua_State* hL) {
+    lua_pushlightuserdata(L, hL);
+    lua_rawsetp(L, LUA_REGISTRYINDEX, &DEBUG_HOST);
+}
+
+extern "C" lua_State *
+get_host(lua_State *L) {
+	if (lua_rawgetp(L, LUA_REGISTRYINDEX, &DEBUG_HOST) != LUA_TLIGHTUSERDATA) {
+		luaL_error(L, "Must call in debug client");
+	}
+	lua_State *hL = (lua_State *)lua_touserdata(L, -1);
+	lua_pop(L, 1);
+	return hL;
+}
+
 static void
 clear_client(lua_State *L) {
-	lua_State *cL = NULL;
-	if (lua_rawgetp(L, LUA_REGISTRYINDEX, &DEBUG_CLIENT) != LUA_TNIL) {
-		cL = (lua_State *)lua_touserdata(L, -1);
-	}
-	lua_pop(L, 1);
+	lua_State *cL = get_client(L);
 	lua_pushnil(L);
 	lua_rawsetp(L, LUA_REGISTRYINDEX, &DEBUG_CLIENT);
-
 	if (cL) {
 		lua_close(cL);
 	}
@@ -35,13 +56,9 @@ lhost_clear(lua_State *L) {
 static int
 client_main(lua_State *L) {
 	lua_State *hL = (lua_State *)lua_touserdata(L, 2);
+	set_host(L, hL);
 	luaL_openlibs(L);
-
-	lua_pushvalue(L, 2);
-	lua_rawsetp(L, LUA_REGISTRYINDEX, &DEBUG_HOST);	// set host L
-
-	const char * mainscript = (const char *)lua_touserdata(L, 1);
-
+	const char* mainscript = (const char *)lua_touserdata(L, 1);
 	if (luaL_loadstring(L, mainscript) != LUA_OK) {
 		return lua_error(L);
 	}
@@ -97,24 +114,8 @@ lhost_start(lua_State *L) {
 		clear_client(L);
 		return lua_error(L);
 	}
-	// register hook thread into host
-	if (lua_checkstack(cL, 1) == 0) {
-		clear_client(L);
-		return luaL_error(L, "debugger L stack overflow");
-	}
 	return 0;
 }
-
-lua_State *
-get_client(lua_State *L) {
-	if (lua_rawgetp(L, LUA_REGISTRYINDEX, &DEBUG_CLIENT) != LUA_TLIGHTUSERDATA) {
-		return 0;
-	}
-	lua_State *cL = (lua_State *)lua_touserdata(L, -1);
-	lua_pop(L, 1);
-	return cL;
-}
-
 
 // use as hard break point
 static int
@@ -131,22 +132,6 @@ lhost_event(lua_State *L) {
 	}
 	lua_pushboolean(L, ok);
 	return 1;
-}
-
-extern "C" lua_State *
-get_host(lua_State *L) {
-	if (lua_rawgetp(L, LUA_REGISTRYINDEX, &DEBUG_HOST) != LUA_TLIGHTUSERDATA) {
-		luaL_error(L, "Must call in debug client");
-	}
-	lua_State *hL = (lua_State *)lua_touserdata(L, -1);
-	lua_pop(L, 1);
-	return hL;
-}
-
-void
-set_host(lua_State* L, lua_State* hL) {
-    lua_pushlightuserdata(L, hL);
-    lua_rawsetp(L, LUA_REGISTRYINDEX, &DEBUG_HOST);
 }
 
 extern "C" 
