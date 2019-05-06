@@ -6,6 +6,7 @@ local breakpoint = require 'backend.worker.breakpoint'
 local evaluate = require 'backend.worker.evaluate'
 local traceback = require 'backend.worker.traceback'
 local stdout = require 'backend.worker.stdout'
+local emulator = require 'backend.worker.emulator'
 local ev = require 'common.event'
 local hookmgr = require 'remotedebug.hookmgr'
 local stdio = require 'remotedebug.stdio'
@@ -113,9 +114,15 @@ function CMD.stackTrace(pkg)
     local startFrame = pkg.startFrame
     local endFrame = pkg.endFrame
     local curFrame = 0
+    local virtualFrame = 0
     local depth = 0
     local info = {}
     local res = {}
+
+    if startFrame == 0 then
+        res = emulator.stackTrace()
+        virtualFrame = #res
+    end
 
     while rdebug.getinfo(depth, info) do
         if curFrame ~= 0 and ((curFrame < startFrame) or (curFrame >= endFrame)) then
@@ -178,7 +185,7 @@ function CMD.stackTrace(pkg)
         command = pkg.command,
         seq = pkg.seq,
         stackFrames = res,
-        totalFrames = curFrame
+        totalFrames = curFrame + virtualFrame,
     }
 end
 
@@ -187,7 +194,7 @@ function CMD.source(pkg)
         cmd = 'source',
         command = pkg.command,
         seq = pkg.seq,
-        content = source.getCode(pkg.sourceReference),
+        content = emulator.getCode(pkg.sourceReference),
     }
 end
 
@@ -196,7 +203,7 @@ function CMD.scopes(pkg)
         cmd = 'scopes',
         command = pkg.command,
         seq = pkg.seq,
-        scopes = variables.scopes(pkg.frameId),
+        scopes = emulator.scopes(pkg.frameId),
     }
 end
 
@@ -541,6 +548,29 @@ function event.wait_client()
     while not initialized do
         thread.sleep(0.01)
         workerThreadUpdate()
+    end
+end
+
+function event.event_call()
+    local code = rdebug.value(rdebug.getstack(2))
+    local name = rdebug.value(rdebug.getstack(3))
+    if emulator.eventCall(state, code, name) then
+        return true
+    end
+end
+
+function event.event_return()
+    emulator.eventReturn()
+end
+
+function event.event_line()
+    local line = rdebug.value(rdebug.getstack(2))
+    local scope = rdebug.getstack(3)
+    if emulator.eventLine(state, line, scope) then
+        emulator.open()
+        state = 'stopped'
+        runLoop 'step'
+        emulator.close()
     end
 end
 

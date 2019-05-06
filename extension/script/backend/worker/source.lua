@@ -147,14 +147,16 @@ end
 
 local m = {}
 
-function m.create(source)
+function m.create(source, hide)
     local src = sourcePool[source]
     if src then
         return src
     end
     local newSource = create(source)
     sourcePool[source] = newSource
-    ev.emit('loadedSource', 'new', newSource)
+    if not hide then
+        ev.emit('loadedSource', 'new', newSource)
+    end
     return newSource
 end
 
@@ -197,6 +199,12 @@ end
 
 function m.getCode(ref)
     return codePool[ref]
+end
+
+function m.removeCode(ref)
+    local code = codePool[ref]
+    sourcePool[code]  = nil
+    codePool[ref] = nil
 end
 
 function m.clientPath(p)

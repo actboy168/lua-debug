@@ -46,8 +46,8 @@ function m:config()
     return self
 end
 
-function m:event()
-    return self
+function m:event(name, ...)
+    return rdebug.event('event_'..name, ...)
 end
 
 function m:exception()
