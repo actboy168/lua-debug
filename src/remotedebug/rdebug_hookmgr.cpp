@@ -642,7 +642,10 @@ void probe(lua_State* cL, lua_State* hL, const char* name) {
         lua_pop(cL, 1);
         return;
     }
+    lu_byte oldah = hL->allowhook;
+    hL->allowhook = 0;
     ((hookmgr*)lua_touserdata(cL, -1))->probe(hL, name);
+    hL->allowhook = oldah;
     lua_pop(cL, 1);
 }
 
@@ -651,7 +654,10 @@ int event(lua_State* cL, lua_State* hL, const char* name) {
         lua_pop(cL, 1);
         return -1;
     }
+    lu_byte oldah = hL->allowhook;
+    hL->allowhook = 0;
     int ok = ((hookmgr*)lua_touserdata(cL, -1))->event(hL, name);
+    hL->allowhook = oldah;
     lua_pop(cL, 1);
     return ok;
 }
