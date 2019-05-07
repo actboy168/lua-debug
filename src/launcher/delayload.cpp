@@ -30,7 +30,7 @@ namespace delayload {
 			MessageBoxA(0, str, "Fatal Error.", 0);
 			return NULL;
 		}
-        case dliStartProcessing:
+		case dliStartProcessing:
 		case dliFailLoadLib:
 		case dliFailGetProc:
 		case dliNoteEndProcessing:

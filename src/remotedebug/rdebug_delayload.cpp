@@ -15,22 +15,17 @@
 
 namespace remotedebug::delayload {
 	static HMODULE luadll_handle = 0;
-	static GetLuaApi get_lua_api = ::GetProcAddress;
 
-	void set_luadll(HMODULE handle, GetLuaApi fn) {
-		if (luadll_handle) return;
-		luadll_handle = handle;
-		get_lua_api = fn ? fn : ::GetProcAddress;
+	void caller_is_luadll(void* callerAddress) {
+		HMODULE caller = NULL;
+		if (GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS, (LPCWSTR)callerAddress, &caller) && caller) {
+			if (GetProcAddress(caller, "lua_newstate")) {
+				if (!luadll_handle) {
+					luadll_handle = caller;
+				}
+			}
+		}
 	}
-
-    void caller_is_luadll(void* callerAddress) {
-        HMODULE  caller = NULL;
-        if (GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS, (LPCWSTR)callerAddress, &caller) && caller) {
-            if (GetProcAddress(caller, "lua_newstate")) {
-                set_luadll(caller, ::GetProcAddress);
-            }
-        }
-    }
 
 	static FARPROC WINAPI hook(unsigned dliNotify, PDelayLoadInfo pdli) {
 		switch (dliNotify) {
@@ -40,9 +35,9 @@ namespace remotedebug::delayload {
 					return (FARPROC)luadll_handle;
 				}
 			}
-			break;
+			return NULL;
 		case dliNotePreGetProcAddress: {
-			FARPROC ret = get_lua_api(pdli->hmodCur, pdli->dlp.szProcName);
+			FARPROC ret = ::GetProcAddress(pdli->hmodCur, pdli->dlp.szProcName);
 			if (ret) {
 				return ret;
 			}
@@ -51,8 +46,7 @@ namespace remotedebug::delayload {
 			MessageBoxA(0, str, "Fatal Error.", 0);
 			return NULL;
 		}
-			break;
-        case dliStartProcessing:
+		case dliStartProcessing:
 		case dliFailLoadLib:
 		case dliFailGetProc:
 		case dliNoteEndProcessing:
