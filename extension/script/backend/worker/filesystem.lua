@@ -153,4 +153,6 @@ function m.filename(path)
     return paths[#paths]
 end
 
+m.unicode = unicode
+
 return m
