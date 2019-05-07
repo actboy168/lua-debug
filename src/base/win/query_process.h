@@ -15,17 +15,17 @@ namespace base { namespace win {
 
 	typedef struct _VM_COUNTERS
 	{
-		ULONG PeakVirtualSize;                  //ĞéÄâ´æ´¢·åÖµ´óĞ¡£»
-		ULONG VirtualSize;                      //ĞéÄâ´æ´¢´óĞ¡£»
-		ULONG PageFaultCount;                   //Ò³¹ÊÕÏÊıÄ¿£»
-		ULONG PeakWorkingSetSize;               //¹¤×÷¼¯·åÖµ´óĞ¡£»
-		ULONG WorkingSetSize;                   //¹¤×÷¼¯´óĞ¡£»
-		ULONG QuotaPeakPagedPoolUsage;          //·ÖÒ³³ØÊ¹ÓÃÅä¶î·åÖµ£»
-		ULONG QuotaPagedPoolUsage;              //·ÖÒ³³ØÊ¹ÓÃÅä¶î£»
-		ULONG QuotaPeakNonPagedPoolUsage;       //·Ç·ÖÒ³³ØÊ¹ÓÃÅä¶î·åÖµ£»
-		ULONG QuotaNonPagedPoolUsage;           //·Ç·ÖÒ³³ØÊ¹ÓÃÅä¶î£»
-		ULONG PagefileUsage;                    //Ò³ÎÄ¼şÊ¹ÓÃÇé¿ö£»
-		ULONG PeakPagefileUsage;                //Ò³ÎÄ¼şÊ¹ÓÃ·åÖµ£»
+		ULONG PeakVirtualSize;                  //è™šæ‹Ÿå­˜å‚¨å³°å€¼å¤§å°ï¼›
+		ULONG VirtualSize;                      //è™šæ‹Ÿå­˜å‚¨å¤§å°ï¼›
+		ULONG PageFaultCount;                   //é¡µæ•…éšœæ•°ç›®ï¼›
+		ULONG PeakWorkingSetSize;               //å·¥ä½œé›†å³°å€¼å¤§å°ï¼›
+		ULONG WorkingSetSize;                   //å·¥ä½œé›†å¤§å°ï¼›
+		ULONG QuotaPeakPagedPoolUsage;          //åˆ†é¡µæ± ä½¿ç”¨é…é¢å³°å€¼ï¼›
+		ULONG QuotaPagedPoolUsage;              //åˆ†é¡µæ± ä½¿ç”¨é…é¢ï¼›
+		ULONG QuotaPeakNonPagedPoolUsage;       //éåˆ†é¡µæ± ä½¿ç”¨é…é¢å³°å€¼ï¼›
+		ULONG QuotaNonPagedPoolUsage;           //éåˆ†é¡µæ± ä½¿ç”¨é…é¢ï¼›
+		ULONG PagefileUsage;                    //é¡µæ–‡ä»¶ä½¿ç”¨æƒ…å†µï¼›
+		ULONG PeakPagefileUsage;                //é¡µæ–‡ä»¶ä½¿ç”¨å³°å€¼ï¼›
 	}VM_COUNTERS, *PVM_COUNTERS;
 
 	typedef LONG KPRIORITY;
