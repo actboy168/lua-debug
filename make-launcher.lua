@@ -21,7 +21,7 @@ lm:shared_library 'launcher' {
         "detours",
     },
     includes = {
-        "include",
+        "src",
         "3rd/bee.lua",
         "3rd/bee.lua/3rd/lua/src",
     },
@@ -31,7 +31,7 @@ lm:shared_library 'launcher' {
         "3rd/bee.lua/bee/utility/unicode_win.cpp",
         "3rd/bee.lua/bee/utility/path_helper.cpp",
         "3rd/bee.lua/bee/utility/file_helper.cpp",
-        "include/base/hook/inline.cpp",
+        "src/base/hook/inline.cpp",
         "src/launcher/*.cpp",
     },
     defines = {

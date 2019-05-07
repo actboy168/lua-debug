@@ -10,14 +10,14 @@ if platform.OS == "Windows" then
             "lua54"
         },
         includes = {
-            "include",
+            "src",
             "3rd/bee.lua",
             "3rd/wow64ext/src",
         },
         sources = {
-            "include/base/hook/injectdll.cpp",
-            "include/base/hook/replacedll.cpp",
-            "include/base/win/query_process.cpp",
+            "src/base/hook/injectdll.cpp",
+            "src/base/hook/replacedll.cpp",
+            "src/base/win/query_process.cpp",
             "src/process_inject/inject.cpp",
             "3rd/wow64ext/src/wow64ext.cpp",
         },
@@ -29,7 +29,6 @@ else
             "bee",
         },
         includes = {
-            "include",
             "3rd/bee.lua/3rd/lua/src",
         },
         sources = {
