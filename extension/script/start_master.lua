@@ -34,39 +34,24 @@ return function (path, cpath, errlog, addr)
         package.cpath = %q
         local addr = %q
 
-        local function split(str)
-            local r = {}
-            str:gsub('[^:]+', function (w) r[#r+1] = w end)
-            return r
-        end
-        local l = split(addr)
         local t = {}
-        if #l <= 1 then
-            t.protocol = 'tcp'
-            t.address = addr
-            t.port = 4278
+        if addr:sub(1,1) == '@' then
+            t.protocol = 'unix'
+            t.address = addr:sub(2)
+            t.client = true
         else
-            if l[1] == 'pipe' then
-                t.protocol = 'unix'
-                t.address = addr:sub(6)
-                t.client = true
-            elseif l[1] == 'listen' then
-                t.protocol = 'tcp'
-                if #l == 2 then
-                    t.address = l[2]
-                    t.port = 4278
-                else
-                    t.address = l[2]
-                    t.port = tonumber(l[3])
-                end
-            else
-                t.protocol = 'tcp'
-                t.address = l[1]
-                t.port = tonumber(l[2])
+            local function split(str)
+                local r = {}
+                str:gsub('[^:]+', function (w) r[#r+1] = w end)
+                return r
             end
-        end
-        if t.address == "localhost" then
-            t.address = "127.0.0.1"
+            local l = split(addr)
+            t.protocol = 'tcp'
+            t.address = l[1]
+            t.port = tonumber(l[2])
+            if t.address == "localhost" then
+                t.address = "127.0.0.1"
+            end
         end
 
         local serverFactory = require "common.serverFactory"

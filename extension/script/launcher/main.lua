@@ -10,7 +10,7 @@ if _VERSION == "Lua 5.4" then
 else
     rt = rt .. "/lua53"
 end
-local unixpath = ("pipe:%s/runtime/tmp/pid_%s.tmp"):format(path, pid)
+local unixpath = ("@%s/runtime/tmp/pid_%s.tmp"):format(path, pid)
 local rdebug = assert(package.loadlib(path..rt.."/remotedebug.dll","luaopen_remotedebug"))()
 local dbg = assert(loadfile(path.."/script/start_debug.lua"))(rdebug,path,'/script/?.lua',rt.."/?.dll")
 dbg:start(unixpath)
