@@ -16,13 +16,17 @@
 namespace remotedebug::delayload {
 	static HMODULE luadll_handle = 0;
 
+	void set_luadll(HMODULE handle) {
+		if (luadll_handle) return;
+		luadll_handle = handle;
+	}
+
 	void caller_is_luadll(void* callerAddress) {
+		if (luadll_handle) return;
 		HMODULE caller = NULL;
 		if (GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS, (LPCWSTR)callerAddress, &caller) && caller) {
 			if (GetProcAddress(caller, "lua_newstate")) {
-				if (!luadll_handle) {
-					luadll_handle = caller;
-				}
+				set_luadll(caller);
 			}
 		}
 	}
