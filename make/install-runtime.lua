@@ -20,10 +20,6 @@ fs.create_directories(output)
 fs.copy_file(bindir / (luaver..'.dll'), output / (luaver..'.dll'), true)
 fs.copy_file(bindir / 'lua.exe', output / 'lua.exe', true)
 fs.copy_file(bindir / 'remotedebug.dll', output / 'remotedebug.dll', true)
-if luaver == "lua53" then
-    fs.copy_file(bindir / 'debugger.dll', output / 'debugger.dll', true)
-    fs.copy_file(bindir / 'debugger-inject.dll', output / 'debugger-inject.dll', true)
-end
 
 local function copy_crtdll(platform, target)
     fs.create_directories(target)

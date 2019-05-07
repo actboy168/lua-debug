@@ -23,14 +23,13 @@ local root = fs.absolute(fs.path '.')
 local outputDir = root / 'publish'
 
 local version = (function()
-    for line in io.lines((root / 'project' / 'windows' / 'common.props'):string()) do
-        local ver = line:match('<Version>(%d+%.%d+%.%d+)</Version>')
+    for line in io.lines((root / 'extension' / 'package.json'):string()) do
+        local ver = line:match('"version": "(%d+%.%d+%.%d+)"')
         if ver then
-            print('version: ', ver)
             return ver
         end
     end
-    error 'Cannot found version in common.props.'
+    error 'Cannot found version in package.json.'
 end)()
 
 local function copy_directory(from, to, filter)
@@ -81,7 +80,7 @@ local function update_version(filename, pattern)
     t[#t+1] = str
     io_save(filename, table.concat(t))
 end
-update_version(root / 'extension' / 'package.json', '"version": "{}"')
+
 update_version(root / '.vscode' / 'launch.json', 'actboy168.lua-debug-{}')
 
 print 'Step 4. copy extension'
