@@ -53,16 +53,10 @@ local function create_install_script(args, port, dbg, runtime)
         res[#res+1] = ("package.cpath=[[%s]];"):format(table.concat(path, ";"))
     end
 
-    if not args.deprecationServer then
-        local ext = platformOS() == "Windows" and "dll" or "so"
-        res[#res+1] = ("local path=[[%s]];"):format(nativepath(dbg))
-        res[#res+1] = ("local rdebug=assert(package.loadlib(path..'%s/remotedebug.%s','luaopen_remotedebug'))();"):format(runtime, ext)
-        res[#res+1] = ("local dbg=assert(loadfile(path..[[/script/start_debug.lua]]))(rdebug,path,'/script/?.lua','%s/?.%s');"):format(runtime, ext)
-    else
-        runtime = runtime:sub(1,-2).."3"
-        res[#res+1] = ("local path,rt=[[%s]],[[%s]];"):format(nativepath(dbg), runtime)
-        res[#res+1] = "local dbg=assert(package.loadlib(path..rt..'/debugger.dll', 'luaopen_debugger'))();"
-    end
+    local ext = platformOS() == "Windows" and "dll" or "so"
+    res[#res+1] = ("local path=[[%s]];"):format(nativepath(dbg))
+    res[#res+1] = ("local rdebug=assert(package.loadlib(path..'%s/remotedebug.%s','luaopen_remotedebug'))();"):format(runtime, ext)
+    res[#res+1] = ("local dbg=assert(loadfile(path..[[/script/start_debug.lua]]))(rdebug,path,'/script/?.lua','%s/?.%s');"):format(runtime, ext)
     res[#res+1] = ("package.loaded[ [[%s]] ]=dbg;dbg:start([[@%s]])"):format(
         (type(args.internalModule) == "string") and args.internalModule or "debugger",
         towsl(port:string())
@@ -260,19 +254,11 @@ local function create_process(args)
     if noinject then
         return process
     end
-    if not args.deprecationServer then
-        inject.injectdll(process
-            , (WORKDIR / "bin" / "win" / "launcher.x86.dll"):string()
-            , (WORKDIR / "bin" / "win" / "launcher.x64.dll"):string()
-            , "launch"
-        )
-    else
-        inject.injectdll(process
-            , (WORKDIR / "runtime" / "win32" / "lua53" / "debugger-inject.dll"):string()
-            , (WORKDIR / "runtime" / "win64" / "lua53" / "debugger-inject.dll"):string()
-            , "launch"
-        )
-    end
+    inject.injectdll(process
+        , (WORKDIR / "bin" / "win" / "launcher.x86.dll"):string()
+        , (WORKDIR / "bin" / "win" / "launcher.x64.dll"):string()
+        , "launch"
+    )
     process:resume()
     return process
 end

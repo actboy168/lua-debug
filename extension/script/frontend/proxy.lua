@@ -72,22 +72,12 @@ local function request_runinterminal(args)
 end
 
 local function attach_process(pkg, args, pid)
-    if not args.deprecationServer then
-        if not inject.injectdll(pid
-            , (WORKDIR / "bin" / "win" / "launcher.x86.dll"):string()
-            , (WORKDIR / "bin" / "win" / "launcher.x64.dll"):string()
-            , "attach"
-        ) then
-            return false
-        end
-    else
-        if not inject.injectdll(pid
-            , (WORKDIR / "runtime" / "win32" / "lua53" / "debugger-inject.dll"):string()
-            , (WORKDIR / "runtime" / "win64" / "lua53" / "debugger-inject.dll"):string()
-            , "attach"
-        ) then
-            return false
-        end
+    if not inject.injectdll(pid
+        , (WORKDIR / "bin" / "win" / "launcher.x86.dll"):string()
+        , (WORKDIR / "bin" / "win" / "launcher.x64.dll"):string()
+        , "attach"
+    ) then
+        return false
     end
     local path = getUnixPath(pid)
     fs.remove(path)

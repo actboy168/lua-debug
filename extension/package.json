@@ -301,11 +301,6 @@
                                 "type": "boolean",
                                 "description": "Use Windows Subsystem for Linux.",
                                 "default": true
-                            },
-                            "deprecationServer": {
-                                "type": "boolean",
-                                "markdownDescription": "Just for test.",
-                                "default": true
                             }
                         }
                     },
@@ -401,11 +396,6 @@
                                 "type": "boolean",
                                 "markdownDescription": "`processId` and `processName` will not inject debugger.",
                                 "default": false
-                            },
-                            "deprecationServer": {
-                                "type": "boolean",
-                                "markdownDescription": "Just for test.",
-                                "default": true
                             }
                         }
                     }
