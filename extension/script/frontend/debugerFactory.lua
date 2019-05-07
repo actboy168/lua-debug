@@ -30,29 +30,6 @@ end
 
 local function create_install_script(args, pid, dbg)
     local res = {}
-    if type(args.path) == "string" then
-        res[#res+1] = ("package.path=[[%s]];"):format(nativepath(args.path))
-    elseif type(args.path) == "table" then
-        local path = {}
-        for _, v in ipairs(args.path) do
-            if type(v) == "string" then
-                path[#path+1] = nativepath(v)
-            end
-        end
-        res[#res+1] = ("package.path=[[%s]];"):format(table.concat(path, ";"))
-    end
-    if type(args.cpath) == "string" then
-        res[#res+1] = ("package.cpath=[[%s]];"):format(nativepath(args.cpath))
-    elseif type(args.cpath) == "table" then
-        local path = {}
-        for _, v in ipairs(args.cpath) do
-            if type(v) == "string" then
-                path[#path+1] = nativepath(v)
-            end
-        end
-        res[#res+1] = ("package.cpath=[[%s]];"):format(table.concat(path, ";"))
-    end
-
     res[#res+1] = ("local path=[[%s]];"):format(nativepath(dbg))
     res[#res+1] = ("assert(loadfile(path..'/script/debugger.lua'))('%s',path,%d,[[%s]])"):format(
         platformOS():lower(),
