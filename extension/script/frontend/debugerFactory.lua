@@ -63,19 +63,10 @@ local function create_install_script(args, port, dbg, runtime)
         res[#res+1] = ("local path,rt=[[%s]],[[%s]];"):format(nativepath(dbg), runtime)
         res[#res+1] = "local dbg=assert(package.loadlib(path..rt..'/debugger.dll', 'luaopen_debugger'))();"
     end
-    res[#res+1] = ("package.loaded[ [[%s]] ]=dbg;dbg:io([[pipe:%s]])"):format(
+    res[#res+1] = ("package.loaded[ [[%s]] ]=dbg;dbg:start([[pipe:%s]])"):format(
         (type(args.internalModule) == "string") and args.internalModule or "debugger",
         towsl(port:string())
     )
-
-    if type(args.outputCapture) == "table" then
-        for _, v in ipairs(args.outputCapture) do
-            if type(v) == "string" then
-                res[#res+1] = (":redirect('%s')"):format(v);
-            end
-        end
-    end
-    res[#res+1] = ":guard():wait():start()"
     return table.concat(res)
 end
 

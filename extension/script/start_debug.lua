@@ -16,42 +16,15 @@ end
 
 local m = {}
 
-function m:io(addr)
-    self._addr = addr
-    return self
-end
-
-function m:wait()
-    self._wait = true
-    return self
-end
-
-function m:start()
-    start_worker(self._addr)
-    if self._wait then
+function m:start(addr, nowait)
+    start_worker(addr)
+    if not nowait then
         rdebug.probe 'wait_client'
     end
-    return self
-end
-
-function m:guard()
-    return self
-end
-
-function m:redirect()
-    return self
-end
-
-function m:config()
-    return self
 end
 
 function m:event(name, ...)
     return rdebug.event('event_'..name, ...)
-end
-
-function m:exception()
-    return self
 end
 
 return m
