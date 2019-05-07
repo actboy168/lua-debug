@@ -31,11 +31,18 @@ end
 local function create_install_script(args, pid, dbg)
     local res = {}
     res[#res+1] = ("local path=[[%s]];"):format(nativepath(dbg))
-    res[#res+1] = ("assert(loadfile(path..'/script/debugger.lua'))('%s',path,%d,[[%s]])"):format(
-        platformOS():lower(),
-        pid,
-        (type(args.internalModule) == "string") and args.internalModule or "debugger"
-    )
+    if type(args.internalModule) == "string" then
+        res[#res+1] = ("assert(loadfile(path..'/script/debugger.lua'))('%s',path,%d,[[%s]])"):format(
+            platformOS():lower(),
+            pid,
+            args.internalModule
+        )
+    else
+        res[#res+1] = ("assert(loadfile(path..'/script/debugger.lua'))('%s',path,%d)"):format(
+            platformOS():lower(),
+            pid
+        )
+    end
     return table.concat(res)
 end
 
