@@ -16,4 +16,5 @@ local dbg = assert(loadfile(path.."/script/start_debug.lua"))(rdebug,path,'/scri
 dbg:io(unixpath)
 dbg:wait()
 dbg:start()
+--TODO: support internalModule
 package.loaded.debugger = dbg
