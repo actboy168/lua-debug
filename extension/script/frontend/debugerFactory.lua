@@ -188,6 +188,7 @@ local function create_luaexe(args, dbg, pid)
     if not process then
         return nil, err
     end
+    --TODO: Not dependent on luaRuntime
     inject.replacedll(process
         , getLuaRuntime(args) == 53 and "lua53.dll" or "lua54.dll"
         , args.luadll
