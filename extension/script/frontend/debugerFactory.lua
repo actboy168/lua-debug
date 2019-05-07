@@ -28,7 +28,7 @@ local function nativepath(s)
     return towsl(s)
 end
 
-local function create_install_script(args, port, dbg, runtime)
+local function create_install_script(args, pid, dbg)
     local res = {}
     if type(args.path) == "string" then
         res[#res+1] = ("package.path=[[%s]];"):format(nativepath(args.path))
@@ -53,14 +53,12 @@ local function create_install_script(args, port, dbg, runtime)
         res[#res+1] = ("package.cpath=[[%s]];"):format(table.concat(path, ";"))
     end
 
-    local ext = platformOS() == "Windows" and "dll" or "so"
     res[#res+1] = ("local path=[[%s]];"):format(nativepath(dbg))
-    res[#res+1] = ("local rdebug=assert(package.loadlib(path..'%s/remotedebug.%s','luaopen_remotedebug'))();"):format(runtime, ext)
-    res[#res+1] = ("local dbg=assert(loadfile(path..'/script/start_debug.lua'))(rdebug,path,'/script/?.lua','%s/?.%s');"):format(runtime, ext)
-    res[#res+1] = ("package.loaded[ [[%s]] ]=dbg;"):format(
+    res[#res+1] = ("assert(loadfile(path..'/script/debugger.lua'))('%s',path,%d,[[%s]])"):format(
+        platformOS():lower(),
+        pid,
         (type(args.internalModule) == "string") and args.internalModule or "debugger"
     )
-    res[#res+1] = ("dbg:start([[@%s]])"):format(towsl(port:string()))
     return table.concat(res)
 end
 
@@ -102,27 +100,12 @@ local function getLuaRuntime(args)
 end
 
 local function getLuaExe(args, dbg)
-    local runtime = 'runtime'
     local ver, bit = getLuaRuntime(args)
     local luaexe
     if type(args.luaexe) == "string" then
         luaexe = fs.path(args.luaexe)
-
-        if platformOS() == "Windows" then
-            if is64Exe(luaexe) then
-                runtime = runtime .. "/win64"
-            else
-                runtime = runtime .. "/win32"
-            end
-        else
-            runtime = runtime .. "/" .. platformOS():lower()
-        end
-        if ver == 53 then
-            runtime = runtime .. "/lua53"
-        else
-            runtime = runtime .. "/lua54"
-        end
     else
+        local runtime = 'runtime'
         if platformOS() == "Windows" then
             if bit == 64 then
                 runtime = runtime .. "/win64"
@@ -139,7 +122,7 @@ local function getLuaExe(args, dbg)
         end
         luaexe = dbg / runtime / (platformOS() == "Windows" and "lua.exe" or "lua")
     end
-    return luaexe, '/'..runtime
+    return luaexe
 end
 
 local function installBootstrap1(option, luaexe, args)
@@ -149,13 +132,13 @@ local function installBootstrap1(option, luaexe, args)
     end
 end
 
-local function installBootstrap2(c, luaexe, args, port, dbg, runtime)
+local function installBootstrap2(c, luaexe, args, pid, dbg)
     if useWSL then
         c[#c+1] = "wsl"
     end
     c[#c+1] = towsl(luaexe:string())
     c[#c+1] = "-e"
-    c[#c+1] = create_install_script(args, port, dbg:string(), runtime)
+    c[#c+1] = create_install_script(args, pid, dbg:string())
 
     if type(args.arg0) == "string" then
         c[#c+1] = args.arg0
@@ -180,9 +163,9 @@ local function installBootstrap2(c, luaexe, args, port, dbg, runtime)
     end
 end
 
-local function create_terminal(args, dbg, port)
+local function create_terminal(args, dbg, pid)
     initialize(args)
-    local luaexe, runtime = getLuaExe(args, dbg)
+    local luaexe = getLuaExe(args, dbg)
     if not fs.exists(luaexe) then
         if args.luaexe then
             return nil, ("No file `%s`."):format(args.luaexe)
@@ -195,13 +178,13 @@ local function create_terminal(args, dbg, port)
         args = {},
     }
     installBootstrap1(option, luaexe, args)
-    installBootstrap2(option.args, luaexe, args, port, dbg, runtime)
+    installBootstrap2(option.args, luaexe, args, pid, dbg)
     return option
 end
 
-local function create_luaexe(args, dbg, port)
+local function create_luaexe(args, dbg, pid)
     initialize(args)
-    local luaexe, runtime = getLuaExe(args, dbg)
+    local luaexe = getLuaExe(args, dbg)
     if not fs.exists(luaexe) then
         if args.luaexe then
             return nil, ("No file `%s`."):format(args.luaexe)
@@ -212,7 +195,7 @@ local function create_luaexe(args, dbg, port)
         console = 'hide'
     }
     installBootstrap1(option, luaexe, args)
-    installBootstrap2(option, luaexe, args, port, dbg, runtime)
+    installBootstrap2(option, luaexe, args, pid, dbg)
     if not args.luadll or type(args.luaexe) == "string" then
         return sp.spawn(option)
     end

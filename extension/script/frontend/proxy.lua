@@ -156,21 +156,22 @@ local function proxy_launch(pkg)
             }
         end
     else
-        local path = getUnixPath(inject.current_pid())
+        local pid = inject.current_pid()
+        local path = getUnixPath(pid)
         fs.remove(path)
         server = serverFactory {
             protocol = 'unix',
             address = path:string()
         }
         if args.console == 'integratedTerminal' or args.console == 'externalTerminal' then
-            local arguments, err = debuggerFactory.create_terminal(args, getDbgPath(), path)
+            local arguments, err = debuggerFactory.create_terminal(args, getDbgPath(), pid)
             if not arguments then
                 response_error(pkg, err)
                 return
             end
             request_runinterminal(arguments)
         else
-            local ok, err = debuggerFactory.create_luaexe(args, getDbgPath(), path)
+            local ok, err = debuggerFactory.create_luaexe(args, getDbgPath(), pid)
             if not ok then
                 response_error(pkg, err)
                 return
