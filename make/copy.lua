@@ -10,6 +10,10 @@ local vscode = (function()
     if #type < 10 then
         return ".vscode-"..type
     end
+    if platform.OS == "macOS" then
+        -- TODO
+        return ".vscode"
+    end
     local name = type:match("[/\\]([%w%-._ ]+)$")
     local pos = name:find('.', 1, true)
     name = pos and name:sub(1, pos-1) or name
