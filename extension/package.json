@@ -138,11 +138,6 @@
                                 "markdownDescription": "Absolute path to the lua exe.",
                                 "default": "${workspaceFolder}/lua.exe"
                             },
-                            "luadll": {
-                                "type": "string",
-                                "markdownDescription": "Absolute path to the lua dll.",
-                                "default": "${workspaceFolder}/lua53.dll"
-                            },
                             "path": {
                                 "type": [
                                     "string",

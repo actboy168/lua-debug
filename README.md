@@ -12,7 +12,6 @@
     * cwd，lua.exe的当前目录
     * stopOnEntry，开始调试时是否先暂停
     * luaexe，指定lua exe的路径，如果不填则由luaRuntime决定
-    * luadll，指定lua dll的路径，如果不填则会由luaexe自行决定luadll
     * luaRuntime，指定lua运行时的版本
     * path，用于初始化package.path
     * cpath，用于初始化package.cpath

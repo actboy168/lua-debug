@@ -104,7 +104,6 @@ local function getLuaExe(args, dbg)
         runtime = runtime .. "/lua54"
     end
     return dbg / runtime / (platformOS() == "Windows" and "lua.exe" or "lua")
-        , ver
 end
 
 local function installBootstrap1(option, luaexe, args)
@@ -166,7 +165,7 @@ end
 
 local function create_luaexe(args, dbg, pid)
     initialize(args)
-    local luaexe, ver = getLuaExe(args, dbg)
+    local luaexe = getLuaExe(args, dbg)
     if not fs.exists(luaexe) then
         if args.luaexe then
             return nil, ("No file `%s`."):format(args.luaexe)
@@ -178,21 +177,7 @@ local function create_luaexe(args, dbg, pid)
     }
     installBootstrap1(option, luaexe, args)
     installBootstrap2(option, luaexe, args, pid, dbg)
-    if not args.luadll or not ver or platformOS() ~= "Windows" then
-        return sp.spawn(option)
-    end
-    option.suspended = true
-    local process, err = sp.spawn(option)
-    if not process then
-        return nil, err
-    end
-    --TODO: Not dependent on luaRuntime
-    inject.replacedll(process
-        , ver == 53 and "lua53.dll" or "lua54.dll"
-        , args.luadll
-    )
-    process:resume()
-    return process
+    return sp.spawn(option)
 end
 
 local function create_process(args)
