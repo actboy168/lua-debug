@@ -199,14 +199,12 @@ end
 
 local function create_process(args)
     initialize(args)
-    local noinject = args.noInject
     local application = args.runtimeExecutable
     local option = {
         application,
         env = args.env,
         console = 'new',
         cwd = args.cwd or fs.path(application):parent_path(),
-        suspended = not noinject,
     }
     local process, err
     if type(args.runtimeArgs) == 'string' then
@@ -221,9 +219,6 @@ local function create_process(args)
     end
     if not process then
         return nil, err
-    end
-    if noinject then
-        return process
     end
     inject.injectdll(process
         , (WORKDIR / "bin" / "win" / "launcher.x86.dll"):string()

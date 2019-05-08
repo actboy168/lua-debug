@@ -140,21 +140,12 @@ local function proxy_launch(pkg)
             response_error(pkg, err)
             return
         end
-        if args.ip and args.port then 
-            server = serverFactory {
-                protocol = 'tcp',
-                address = args.ip == 'localhost' and '127.0.0.1' or args.ip,
-                port = args.port,
-                client = true
-            }
-        else
-            local path = getUnixPath(process:get_id())
-            fs.remove(path)
-            server = serverFactory {
-                protocol = 'unix',
-                address = path:string()
-            }
-        end
+        local path = getUnixPath(process:get_id())
+        fs.remove(path)
+        server = serverFactory {
+            protocol = 'unix',
+            address = path:string()
+        }
     else
         local pid = inject.current_pid()
         local path = getUnixPath(pid)
