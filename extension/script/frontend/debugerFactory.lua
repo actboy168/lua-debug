@@ -208,16 +208,19 @@ local function create_process(args)
         cwd = args.cwd or fs.path(application):parent_path(),
         suspended = not noinject,
     }
-    local process
+    local process, err
     if type(args.runtimeArgs) == 'string' then
         option.argsStyle = 'string'
         option[2] = args.runtimeArgs
-        process = sp.spawn(option)
+        process, err = sp.spawn(option)
     elseif type(args.runtimeArgs) == 'table' then
         option[2] = args.runtimeArgs
-        process = sp.spawn(option)
+        process, err = sp.spawn(option)
     else
-        process = sp.spawn(option)
+        process, err = sp.spawn(option)
+    end
+    if not process then
+        return nil, err
     end
     if noinject then
         return process
