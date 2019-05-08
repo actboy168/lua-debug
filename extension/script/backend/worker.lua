@@ -344,10 +344,12 @@ function CMD.stepOut()
     hookmgr.step_out()
 end
 
-local function runLoop(reason)
+local function runLoop(reason, description)
+    --TODO: 只在lua栈帧时需要description？
     sendToMaster {
         cmd = 'eventStop',
         reason = reason,
+        text = description,
     }
 
     while true do
@@ -505,7 +507,7 @@ function event.panic(msg)
     end
     exceptionMsg, exceptionTrace = traceback(tostring(msg), 0)
     state = 'stopped'
-    runLoop 'exception'
+    runLoop('exception', exceptionMsg)
 end
 
 if hookmgr.exception_open then
@@ -517,7 +519,7 @@ if hookmgr.exception_open then
         end
         exceptionMsg, exceptionTrace = traceback(tostring(msg), 0)
         state = 'stopped'
-        runLoop 'exception'
+        runLoop('exception', exceptionMsg)
     end
 else
     function event.exception()
@@ -529,7 +531,7 @@ else
         local _, msg = getEventArgs(1)
         exceptionMsg, exceptionTrace = traceback(msg, level - 3)
         state = 'stopped'
-        runLoop 'exception'
+        runLoop('exception', exceptionMsg)
     end
 end
 
