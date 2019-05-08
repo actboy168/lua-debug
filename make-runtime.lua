@@ -71,7 +71,7 @@ lm:shared_library 'remotedebug' {
         "3rd/bee.lua/bee/net/*.cpp",
         "3rd/bee.lua/bee/utility/path_helper.cpp",
         "3rd/bee.lua/bee/utility/file_helper.cpp",
-        platform.OS ~= "Windows" and "!src/remotedebug/rdebug_unicode.cpp",
+        platform.OS ~= "Windows" and "!src/remotedebug/bee/rdebug_unicode.cpp",
         platform.OS ~= "Windows" and "!3rd/bee.lua/bee/net/unixsocket_win.cpp",
         platform.OS == "Windows" and "3rd/bee.lua/bee/error/category_win.cpp",
         platform.OS == "Windows" and "3rd/bee.lua/bee/platform/version_win.cpp",
