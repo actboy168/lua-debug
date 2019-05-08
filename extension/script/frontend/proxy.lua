@@ -1,6 +1,7 @@
 local serverFactory = require 'common.serverFactory'
 local debuggerFactory = require 'frontend.debugerFactory'
 local fs = require 'bee.filesystem'
+local sp = require 'bee.subprocess'
 local platformOS = require 'frontend.platformOS'
 local inject = require 'inject'
 local server
@@ -147,7 +148,7 @@ local function proxy_launch(pkg)
             address = path:string()
         }
     else
-        local pid = inject.current_pid()
+        local pid = sp.get_id()
         local path = getUnixPath(pid)
         fs.remove(path)
         server = serverFactory {

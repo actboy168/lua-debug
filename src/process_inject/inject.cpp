@@ -48,18 +48,12 @@ static int query_process(lua_State* L) {
     return 1;
 }
 
-static int current_pid(lua_State* L) {
-    lua_pushinteger(L, ::GetCurrentProcessId());
-    return 1;
-}
-
 extern "C" __declspec(dllexport)
 int luaopen_inject(lua_State* L) {
     luaL_Reg lib[] = {
         {"injectdll", injectdll},
         {"replacedll", replacedll},
         {"query_process", query_process},
-        {"current_pid", current_pid},
         {NULL, NULL},
     };
     luaL_newlib(L, lib);
