@@ -84,29 +84,27 @@ local function getLuaRuntime(args)
 end
 
 local function getLuaExe(args, dbg)
-    local ver, bit = getLuaRuntime(args)
-    local luaexe
     if type(args.luaexe) == "string" then
-        luaexe = fs.path(args.luaexe)
-    else
-        local runtime = 'runtime'
-        if platformOS() == "Windows" then
-            if bit == 64 then
-                runtime = runtime .. "/win64"
-            else
-                runtime = runtime .. "/win32"
-            end
-        else
-            runtime = runtime .. "/" .. platformOS():lower()
-        end
-        if ver == 53 then
-            runtime = runtime .. "/lua53"
-        else
-            runtime = runtime .. "/lua54"
-        end
-        luaexe = dbg / runtime / (platformOS() == "Windows" and "lua.exe" or "lua")
+        return fs.path(args.luaexe)
     end
-    return luaexe
+    local ver, bit = getLuaRuntime(args)
+    local runtime = 'runtime'
+    if platformOS() == "Windows" then
+        if bit == 64 then
+            runtime = runtime .. "/win64"
+        else
+            runtime = runtime .. "/win32"
+        end
+    else
+        runtime = runtime .. "/" .. platformOS():lower()
+    end
+    if ver == 53 then
+        runtime = runtime .. "/lua53"
+    else
+        runtime = runtime .. "/lua54"
+    end
+    return dbg / runtime / (platformOS() == "Windows" and "lua.exe" or "lua")
+        , ver
 end
 
 local function installBootstrap1(option, luaexe, args)
@@ -168,7 +166,7 @@ end
 
 local function create_luaexe(args, dbg, pid)
     initialize(args)
-    local luaexe = getLuaExe(args, dbg)
+    local luaexe, ver = getLuaExe(args, dbg)
     if not fs.exists(luaexe) then
         if args.luaexe then
             return nil, ("No file `%s`."):format(args.luaexe)
@@ -180,7 +178,7 @@ local function create_luaexe(args, dbg, pid)
     }
     installBootstrap1(option, luaexe, args)
     installBootstrap2(option, luaexe, args, pid, dbg)
-    if not args.luadll or type(args.luaexe) == "string" then
+    if not args.luadll or not ver or platformOS() ~= "Windows" then
         return sp.spawn(option)
     end
     option.suspended = true
@@ -190,7 +188,7 @@ local function create_luaexe(args, dbg, pid)
     end
     --TODO: Not dependent on luaRuntime
     inject.replacedll(process
-        , getLuaRuntime(args) == 53 and "lua53.dll" or "lua54.dll"
+        , ver == 53 and "lua53.dll" or "lua54.dll"
         , args.luadll
     )
     process:resume()
