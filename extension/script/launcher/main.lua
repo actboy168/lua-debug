@@ -1,3 +1,2 @@
 local path, pid = ...
---TODO: support internalModule
-assert(loadfile(path.."/script/debugger.lua"))("windows",path,pid,"debugger")
+assert(loadfile(path.."/script/debugger.lua"))("windows",path,pid)

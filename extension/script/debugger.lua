@@ -1,4 +1,4 @@
-local platform, path, pid, internalModule = ...
+local platform, path, pid = ...
 
 local rt = "/runtime"
 if platform == "windows" then
@@ -19,5 +19,5 @@ end
 local ext = platform == "windows" and "dll" or "so"
 local rdebug = assert(package.loadlib(path..rt..'/remotedebug.'..ext,'luaopen_remotedebug'))()
 local dbg = assert(loadfile(path..'/script/start_debug.lua'))(rdebug,path,'/script/?.lua',rt..'/?.'..ext)
-package.loaded[internalModule or "debugger"] = dbg
+debug.getregistry()["lua-debug"] = dbg
 dbg:start(("@%s/runtime/tmp/pid_%s.tmp"):format(path, pid))
