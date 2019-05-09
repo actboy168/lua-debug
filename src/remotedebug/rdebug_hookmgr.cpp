@@ -1,3 +1,4 @@
+#include "onelua/onelua.h"
 #include <lua.hpp>
 #include <lstate.h>
 #include <assert.h>
@@ -16,10 +17,10 @@
 static int HOOK_MGR = 0;
 static int HOOK_CALLBACK = 0;
 
-void set_host(lua_State* L, lua_State* hL);
-lua_State* get_host(lua_State *L);
-lua_State* getthread(lua_State *L);
-int copyvalue(lua_State *cL, lua_State *hL);
+void set_host(luaX_State* L, lua_State* hL);
+lua_State* get_host(luaX_State *L);
+lua_State* getthread(luaX_State *L);
+int copyvalue(lua_State *hL, luaX_State *cL);
 
 
 #define BPMAP_SIZE (1 << 16)
@@ -31,9 +32,9 @@ int copyvalue(lua_State *cL, lua_State *hL);
 } while(0)
 
 template <class T>
-static T* checklightudata(lua_State* L, int idx) {
-    luaL_checktype(L, idx, LUA_TLIGHTUSERDATA);
-    return (T*)lua_touserdata(L, idx);
+static T* checklightudata(luaX_State* L, int idx) {
+    luaXL_checktype(L, idx, LUA_TLIGHTUSERDATA);
+    return (T*)luaX_touserdata(L, idx);
 }
 
 static Proto* ci2proto(CallInfo* ci) {
@@ -85,7 +86,7 @@ struct hookmgr {
             break_proto[key] = 0;
         }
     }
-    void break_open(lua_State* hL, lua_State* cL) {
+    void break_open(lua_State* hL) {
         break_update(hL, hL->ci, LUA_HOOKCALL);
     }
     void break_close(lua_State* hL) {
@@ -101,19 +102,19 @@ struct hookmgr {
         size_t key = break_hash(p);
         switch (break_map[key]) {
         case BP::None: {
-            if (lua_rawgetp(cL, LUA_REGISTRYINDEX, &HOOK_CALLBACK) != LUA_TFUNCTION) {
-                lua_pop(cL, 1);
+            if (luaX_rawgetp(cL, LUA_REGISTRYINDEX, &HOOK_CALLBACK) != LUA_TFUNCTION) {
+                luaX_pop(cL, 1);
                 return false;
             }
             set_host(cL, hL);
-            lua_pushstring(cL, "newproto");
-            lua_pushlightuserdata(cL, p);
-            lua_pushinteger(cL, event != LUA_HOOKRET? 0: 1);
-            if (lua_pcall(cL, 3, 1, 0) != LUA_OK) {
-                lua_pop(cL, 1);
+            luaX_pushstring(cL, "newproto");
+            luaX_pushlightuserdata(cL, p);
+            luaX_pushinteger(cL, event != LUA_HOOKRET? 0: 1);
+            if (luaX_pcall(cL, 3, 1, 0) != LUA_OK) {
+                luaX_pop(cL, 1);
                 return false;
             }
-            if (!lua_toboolean(cL, -1)) {
+            if (!luaX_toboolean(cL, -1)) {
                 break_del(hL, p);
                 return false;
             }
@@ -240,15 +241,15 @@ struct hookmgr {
         exception_hookmask(hL, enable? LUA_MASKEXCEPTION: 0);
     }
     void exception_hook(lua_State* hL, lua_Debug* ar) {
-        if (lua_rawgetp(cL, LUA_REGISTRYINDEX, &HOOK_CALLBACK) != LUA_TFUNCTION) {
-            lua_pop(cL, 1);
+        if (luaX_rawgetp(cL, LUA_REGISTRYINDEX, &HOOK_CALLBACK) != LUA_TFUNCTION) {
+            luaX_pop(cL, 1);
             return;
         }
         set_host(cL, hL);
-        lua_pushstring(cL, "exception");
+        luaX_pushstring(cL, "exception");
         copyvalue(hL, cL);
-        if (lua_pcall(cL, 2, 0, 0) != LUA_OK) {
-            lua_pop(cL, 1);
+        if (luaX_pcall(cL, 2, 0, 0) != LUA_OK) {
+            luaX_pop(cL, 1);
             return;
         }
     }
@@ -269,15 +270,15 @@ struct hookmgr {
         thread_hookmask(hL, enable? LUA_MASKTHREAD: 0);
     }
     void thread_hook(lua_State* hL, lua_Debug* ar) {
-        if (lua_rawgetp(cL, LUA_REGISTRYINDEX, &HOOK_CALLBACK) != LUA_TFUNCTION) {
-            lua_pop(cL, 1);
+        if (luaX_rawgetp(cL, LUA_REGISTRYINDEX, &HOOK_CALLBACK) != LUA_TFUNCTION) {
+            luaX_pop(cL, 1);
             return;
         }
         set_host(cL, hL);
-        lua_pushstring(cL, "thread");
-        lua_pushlightuserdata(cL, hL);
-        if (lua_pcall(cL, 2, 0, 0) != LUA_OK) {
-            lua_pop(cL, 1);
+        luaX_pushstring(cL, "thread");
+        luaX_pushlightuserdata(cL, hL);
+        if (luaX_pcall(cL, 2, 0, 0) != LUA_OK) {
+            luaX_pop(cL, 1);
             return;
         }
     }
@@ -286,61 +287,61 @@ struct hookmgr {
     //
     // common
     //
-    lua_State* cL = 0;
+    luaX_State* cL = 0;
     lua_CFunction oldpanic;
     std::unique_ptr<thunk> sc_hook;
     std::unique_ptr<thunk> sc_panic;
-    hookmgr(lua_State* L)
+    hookmgr(luaX_State* L)
         : cL(L)
-        , oldpanic(lua_atpanic(L, 0))
+        , oldpanic(0)
     {
         break_map.fill(BP::None);
         break_proto.fill(0);
     }
 
     void probe(lua_State* hL, const char* name) {
-        if (lua_rawgetp(cL, LUA_REGISTRYINDEX, &HOOK_CALLBACK) != LUA_TFUNCTION) {
-            lua_pop(cL, 1);
+        if (luaX_rawgetp(cL, LUA_REGISTRYINDEX, &HOOK_CALLBACK) != LUA_TFUNCTION) {
+            luaX_pop(cL, 1);
             return;
         }
         set_host(cL, hL);
-        lua_pushstring(cL, name);
-        if (lua_pcall(cL, 1, 0, 0) != LUA_OK) {
-            lua_pop(cL, 1);
+        luaX_pushstring(cL, name);
+        if (luaX_pcall(cL, 1, 0, 0) != LUA_OK) {
+            luaX_pop(cL, 1);
             return;
         }
     }
 
     int event(lua_State* hL, const char* name) {
-        if (lua_rawgetp(cL, LUA_REGISTRYINDEX, &HOOK_CALLBACK) != LUA_TFUNCTION) {
-            lua_pop(cL, 1);
+        if (luaX_rawgetp(cL, LUA_REGISTRYINDEX, &HOOK_CALLBACK) != LUA_TFUNCTION) {
+            luaX_pop(cL, 1);
             return -1;
         }
         set_host(cL, hL);
-        lua_pushstring(cL, name);
-        if (lua_pcall(cL, 1, 1, 0) != LUA_OK) {
-            lua_pop(cL, 1);
+        luaX_pushstring(cL, name);
+        if (luaX_pcall(cL, 1, 1, 0) != LUA_OK) {
+            luaX_pop(cL, 1);
             return -1;
         }
-        if (lua_type(cL, -1) == LUA_TBOOLEAN) {
-            int ok = lua_toboolean(cL, -1)? 1 : 0;
-            lua_pop(cL, 1);
+        if (luaX_type(cL, -1) == LUA_TBOOLEAN) {
+            int ok = luaX_toboolean(cL, -1)? 1 : 0;
+            luaX_pop(cL, 1);
             return ok;
         }
-        lua_pop(cL, 1);
+        luaX_pop(cL, 1);
         return -1;
     }
 
     void panic(lua_State* hL) {
-        if (lua_rawgetp(cL, LUA_REGISTRYINDEX, &HOOK_CALLBACK) != LUA_TFUNCTION) {
-            lua_pop(cL, 1);
+        if (luaX_rawgetp(cL, LUA_REGISTRYINDEX, &HOOK_CALLBACK) != LUA_TFUNCTION) {
+            luaX_pop(cL, 1);
             return;
         }
         set_host(cL, hL);
-        lua_pushstring(cL, "panic");
+        luaX_pushstring(cL, "panic");
         copyvalue(hL, cL);
-        if (lua_pcall(cL, 2, 0, 0) != LUA_OK) {
-            lua_pop(cL, 1);
+        if (luaX_pcall(cL, 2, 0, 0) != LUA_OK) {
+            luaX_pop(cL, 1);
             return;
         }
     }
@@ -385,23 +386,23 @@ struct hookmgr {
         default:
             return;
         }
-        if (lua_rawgetp(cL, LUA_REGISTRYINDEX, &HOOK_CALLBACK) != LUA_TFUNCTION) {
-            lua_pop(cL, 1);
+        if (luaX_rawgetp(cL, LUA_REGISTRYINDEX, &HOOK_CALLBACK) != LUA_TFUNCTION) {
+            luaX_pop(cL, 1);
             return;
         }
         set_host(cL, hL);
         if (step_mask & LUA_MASKLINE) {
-            lua_pushstring(cL, "step");
-            if (lua_pcall(cL, 1, 0, 0) != LUA_OK) {
-                lua_pop(cL, 1);
+            luaX_pushstring(cL, "step");
+            if (luaX_pcall(cL, 1, 0, 0) != LUA_OK) {
+                luaX_pop(cL, 1);
                 return;
             }
         }
         else {
-            lua_pushstring(cL, "bp");
-            lua_pushinteger(cL, ar->currentline);
-            if (lua_pcall(cL, 2, 0, 0) != LUA_OK) {
-                lua_pop(cL, 1);
+            luaX_pushstring(cL, "bp");
+            luaX_pushinteger(cL, ar->currentline);
+            if (luaX_pcall(cL, 2, 0, 0) != LUA_OK) {
+                luaX_pop(cL, 1);
                 return;
             }
         }
@@ -429,14 +430,14 @@ struct hookmgr {
         if (!t.update(200)) {
             return;
         }
-        if (lua_rawgetp(cL, LUA_REGISTRYINDEX, &HOOK_CALLBACK) != LUA_TFUNCTION) {
-            lua_pop(cL, 1);
+        if (luaX_rawgetp(cL, LUA_REGISTRYINDEX, &HOOK_CALLBACK) != LUA_TFUNCTION) {
+            luaX_pop(cL, 1);
             return;
         }
         set_host(cL, hL);
-        lua_pushstring(cL, "update");
-        if (lua_pcall(cL, 1, 0, 0) != LUA_OK) {
-            lua_pop(cL, 1);
+        luaX_pushstring(cL, "update");
+        if (luaX_pcall(cL, 1, 0, 0) != LUA_OK) {
+            luaX_pop(cL, 1);
             return;
         }
     }
@@ -444,6 +445,7 @@ struct hookmgr {
     lua_State* hostL = 0;
     void init(lua_State* hL) {
         hostL = hL;
+        oldpanic = lua_atpanic(hostL, 0);
         thunk_bind((intptr_t)hL, (intptr_t)this);
         sc_hook.reset(thunk_create_hook(
             reinterpret_cast<intptr_t>(this),
@@ -454,22 +456,23 @@ struct hookmgr {
             reinterpret_cast<intptr_t>(&panic_callback),
             reinterpret_cast<intptr_t>(oldpanic)
         ));
+        lua_atpanic(hostL, (lua_CFunction)sc_panic->data);
         remotedebug::eventfree::create(hL, lua_freef, this);
     }
     ~hookmgr() {
         if(hostL) {
             remotedebug::eventfree::destroy(hostL);
         }
-        lua_sethook(cL, 0, 0, 0);
-        lua_atpanic(cL, oldpanic);
+        lua_sethook(hostL, 0, 0, 0);
+        lua_atpanic(hostL, oldpanic);
     }
-    static int clear(lua_State* L) {
-        hookmgr* self = (hookmgr*)lua_touserdata(L, 1);
+    static int clear(luaX_State* L) {
+        hookmgr* self = (hookmgr*)luaX_touserdata(L, 1);
         self->~hookmgr();
         return 0;
     }
-    static hookmgr* get_self(lua_State* L) {
-        return (hookmgr*)lua_touserdata(L, lua_upvalueindex(1));
+    static hookmgr* get_self(luaX_State* L) {
+        return (hookmgr*)luaX_touserdata(L, luaX_upvalueindex(1));
     }
     static void hook_callback(hookmgr* mgr, lua_State* hL, lua_Debug* ar) {
         mgr->hook(hL, ar);
@@ -482,22 +485,22 @@ struct hookmgr {
     }
 };
 
-static int init(lua_State* L) {
-    luaL_checktype(L, 1, LUA_TFUNCTION);
-    lua_settop(L, 1);
+static int init(luaX_State* L) {
+    luaXL_checktype(L, 1, LUA_TFUNCTION);
+    luaX_settop(L, 1);
     hookmgr::get_self(L)->init(get_host(L));
-    lua_rawsetp(L, LUA_REGISTRYINDEX, &HOOK_CALLBACK);
+    luaX_rawsetp(L, LUA_REGISTRYINDEX, &HOOK_CALLBACK);
     return 0;
 }
 
-static int setcoroutine(lua_State* L) {
+static int setcoroutine(luaX_State* L) {
     hookmgr::get_self(L)->setcoroutine(getthread(L));
     return 0;
 }
 
-static int activeline(lua_State* L) {
+static int activeline(luaX_State* L) {
     lua_State* hL = get_host(L);
-    int level = (int)luaL_checkinteger(L, 1);
+    int level = (int)luaXL_checkinteger(L, 1);
     lua_Debug ar;
     if (lua_getstack(hL, level, &ar) == 0) {
         return 0;
@@ -506,84 +509,84 @@ static int activeline(lua_State* L) {
         lua_pop(hL, 1);
         return 0;
     }
-    lua_newtable(L);
+    luaX_newtable(L);
     lua_pushnil(hL);
     while (lua_next(hL, -2)) {
         lua_pop(hL, 1);
-        lua_pushinteger(L, lua_tointeger(hL, -1));
-        lua_pushboolean(L, 1);
-        lua_rawset(L, -3);
+        luaX_pushinteger(L, lua_tointeger(hL, -1));
+        luaX_pushboolean(L, 1);
+        luaX_rawset(L, -3);
     }
     lua_pop(hL, 1);
     return 1;
 }
 
-static int stacklevel(lua_State* L) {
+static int stacklevel(luaX_State* L) {
     lua_State* hL = get_host(L);
-    lua_pushinteger(L, hookmgr::stacklevel(hL));
+    luaX_pushinteger(L, hookmgr::stacklevel(hL));
     return 1;
 }
 
-static int break_add(lua_State* L) {
+static int break_add(luaX_State* L) {
     hookmgr::get_self(L)->break_add(get_host(L), checklightudata<Proto>(L, 1));
     return 0;
 }
 
-static int break_del(lua_State* L) {
+static int break_del(luaX_State* L) {
     hookmgr::get_self(L)->break_del(get_host(L), checklightudata<Proto>(L, 1));
     return 0;
 }
 
-static int break_open(lua_State* L) {
-    hookmgr::get_self(L)->break_open(get_host(L), L);
+static int break_open(luaX_State* L) {
+    hookmgr::get_self(L)->break_open(get_host(L));
     return 0;
 }
 
-static int break_close(lua_State* L) {
+static int break_close(luaX_State* L) {
     hookmgr::get_self(L)->break_close(get_host(L));
     return 0;
 }
 
-static int break_closeline(lua_State* L) {
+static int break_closeline(luaX_State* L) {
     hookmgr::get_self(L)->break_closeline(get_host(L));
     return 0;
 }
 
-static int step_in(lua_State* L) {
+static int step_in(luaX_State* L) {
     hookmgr::get_self(L)->step_in(get_host(L));
     return 0;
 }
 
-static int step_out(lua_State* L) {
+static int step_out(luaX_State* L) {
     hookmgr::get_self(L)->step_out(get_host(L));
     return 0;
 }
 
-static int step_over(lua_State* L) {
+static int step_over(luaX_State* L) {
     hookmgr::get_self(L)->step_over(get_host(L));
     return 0;
 }
 
-static int step_cancel(lua_State* L) {
+static int step_cancel(luaX_State* L) {
     hookmgr::get_self(L)->step_cancel(get_host(L));
     return 0;
 }
 
-static int update_open(lua_State* L) {
-    hookmgr::get_self(L)->update_open(get_host(L), lua_toboolean(L, 1));
+static int update_open(luaX_State* L) {
+    hookmgr::get_self(L)->update_open(get_host(L), luaX_toboolean(L, 1));
     return 0;
 }
 
 #if defined(LUA_HOOKEXCEPTION)
-static int exception_open(lua_State* L) {
-    hookmgr::get_self(L)->exception_open(get_host(L), lua_toboolean(L, 1));
+static int exception_open(luaX_State* L) {
+    hookmgr::get_self(L)->exception_open(get_host(L), luaX_toboolean(L, 1));
     return 0;
 }
 #endif
 
 #if defined(LUA_HOOKTHREAD)
-static int thread_open(lua_State* L) {
-    hookmgr::get_self(L)->thread_open(get_host(L), lua_toboolean(L, 1));
+static int thread_open(luaX_State* L) {
+    hookmgr::get_self(L)->thread_open(get_host(L), luaX_toboolean(L, 1));
     return 0;
 }
 #endif
@@ -592,25 +595,25 @@ extern "C"
 #if defined(_WIN32)
 __declspec(dllexport)
 #endif
-int luaopen_remotedebug_hookmgr(lua_State* L) {
+int luaopen_remotedebug_hookmgr(luaX_State* L) {
     get_host(L);
 
-    lua_newtable(L);
-    if (LUA_TUSERDATA != lua_rawgetp(L, LUA_REGISTRYINDEX, &HOOK_MGR)) {
-        lua_pop(L, 1);
-        hookmgr* thd = (hookmgr*)lua_newuserdata(L, sizeof(hookmgr));
+    luaX_newtable(L);
+    if (LUA_TUSERDATA != luaX_rawgetp(L, LUA_REGISTRYINDEX, &HOOK_MGR)) {
+        luaX_pop(L, 1);
+        hookmgr* thd = (hookmgr*)luaX_newuserdata(L, sizeof(hookmgr));
         new (thd) hookmgr(L);
 
-        lua_createtable(L, 0, 1);
-        lua_pushcfunction(L, hookmgr::clear);
-        lua_setfield(L, -2, "__gc");
-        lua_setmetatable(L, -2);
+        luaX_createtable(L, 0, 1);
+        luaX_pushcfunction(L, hookmgr::clear);
+        luaX_setfield(L, -2, "__gc");
+        luaX_setmetatable(L, -2);
 
-        lua_pushvalue(L, -1);
-        lua_rawsetp(L, LUA_REGISTRYINDEX, &HOOK_MGR);
+        luaX_pushvalue(L, -1);
+        luaX_rawsetp(L, LUA_REGISTRYINDEX, &HOOK_MGR);
     }
 
-    static luaL_Reg lib[] = {
+    static luaXL_Reg lib[] = {
         { "init", init },
         { "setcoroutine", setcoroutine },
         { "activeline", activeline },
@@ -633,31 +636,31 @@ int luaopen_remotedebug_hookmgr(lua_State* L) {
 #endif
         { NULL, NULL },
     };
-    luaL_setfuncs(L, lib, 1);
+    luaXL_setfuncs(L, lib, 1);
     return 1;
 }
 
-void probe(lua_State* cL, lua_State* hL, const char* name) {
-    if (LUA_TUSERDATA != lua_rawgetp(cL, LUA_REGISTRYINDEX, &HOOK_MGR)) {
-        lua_pop(cL, 1);
+void probe(luaX_State* cL, lua_State* hL, const char* name) {
+    if (LUA_TUSERDATA != luaX_rawgetp(cL, LUA_REGISTRYINDEX, &HOOK_MGR)) {
+        luaX_pop(cL, 1);
         return;
     }
     lu_byte oldah = hL->allowhook;
     hL->allowhook = 0;
-    ((hookmgr*)lua_touserdata(cL, -1))->probe(hL, name);
+    ((hookmgr*)luaX_touserdata(cL, -1))->probe(hL, name);
     hL->allowhook = oldah;
-    lua_pop(cL, 1);
+    luaX_pop(cL, 1);
 }
 
-int event(lua_State* cL, lua_State* hL, const char* name) {
-    if (LUA_TUSERDATA != lua_rawgetp(cL, LUA_REGISTRYINDEX, &HOOK_MGR)) {
-        lua_pop(cL, 1);
+int event(luaX_State* cL, lua_State* hL, const char* name) {
+    if (LUA_TUSERDATA != luaX_rawgetp(cL, LUA_REGISTRYINDEX, &HOOK_MGR)) {
+        luaX_pop(cL, 1);
         return -1;
     }
     lu_byte oldah = hL->allowhook;
     hL->allowhook = 0;
-    int ok = ((hookmgr*)lua_touserdata(cL, -1))->event(hL, name);
+    int ok = ((hookmgr*)luaX_touserdata(cL, -1))->event(hL, name);
     hL->allowhook = oldah;
-    lua_pop(cL, 1);
+    luaX_pop(cL, 1);
     return ok;
 }

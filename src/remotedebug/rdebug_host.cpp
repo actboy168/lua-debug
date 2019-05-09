@@ -1,47 +1,48 @@
+﻿#include "onelua/onelua.h"
 #include <lua.hpp>
 #include "rdebug_delayload.h"
 
 static int DEBUG_HOST = 0;	// host L in client VM
 static int DEBUG_CLIENT = 0;	// client L in host VM for hook
 
-void probe(lua_State* cL, lua_State* hL, const char* name);
-int  event(lua_State* cL, lua_State* hL, const char* name);
+void probe(luaX_State* cL, lua_State* hL, const char* name);
+int  event(luaX_State* cL, lua_State* hL, const char* name);
 
-lua_State *
+luaX_State *
 get_client(lua_State *L) {
 	if (lua_rawgetp(L, LUA_REGISTRYINDEX, &DEBUG_CLIENT) != LUA_TLIGHTUSERDATA) {
 		return 0;
 	}
-	lua_State *cL = (lua_State *)lua_touserdata(L, -1);
+	luaX_State *cL = (luaX_State *)lua_touserdata(L, -1);
 	lua_pop(L, 1);
 	return cL;
 }
 
 void
-set_host(lua_State* L, lua_State* hL) {
-    lua_pushlightuserdata(L, hL);
-    lua_rawsetp(L, LUA_REGISTRYINDEX, &DEBUG_HOST);
+set_host(luaX_State* L, lua_State* hL) {
+    luaX_pushlightuserdata(L, hL);
+    luaX_rawsetp(L, LUA_REGISTRYINDEX, &DEBUG_HOST);
 }
 
 lua_State *
-get_host(lua_State *L) {
-	if (lua_rawgetp(L, LUA_REGISTRYINDEX, &DEBUG_HOST) != LUA_TLIGHTUSERDATA) {
-		lua_pushstring(L, "Must call in debug client");
-		lua_error(L);
+get_host(luaX_State *L) {
+	if (luaX_rawgetp(L, LUA_REGISTRYINDEX, &DEBUG_HOST) != LUA_TLIGHTUSERDATA) {
+		luaX_pushstring(L, "Must call in debug client");
+		luaX_error(L);
 		return 0;
 	}
-	lua_State *hL = (lua_State *)lua_touserdata(L, -1);
-	lua_pop(L, 1);
+	lua_State *hL = (lua_State *)luaX_touserdata(L, -1);
+	luaX_pop(L, 1);
 	return hL;
 }
 
 static void
 clear_client(lua_State *L) {
-	lua_State *cL = get_client(L);
+	luaX_State *cL = get_client(L);
 	lua_pushnil(L);
 	lua_rawsetp(L, LUA_REGISTRYINDEX, &DEBUG_CLIENT);
 	if (cL) {
-		lua_close(cL);
+		luaX_close(cL);
 	}
 }
 
@@ -54,26 +55,26 @@ lhost_clear(lua_State *L) {
 // 1. lightuserdata string_mainscript
 // 2. lightuserdata host_L
 static int
-client_main(lua_State *L) {
-	lua_State *hL = (lua_State *)lua_touserdata(L, 2);
+client_main(luaX_State *L) {
+	lua_State *hL = (lua_State *)luaX_touserdata(L, 2);
 	set_host(L, hL);
-	luaL_openlibs(L);
-	const char* mainscript = (const char *)lua_touserdata(L, 1);
-	if (luaL_loadstring(L, mainscript) != LUA_OK) {
-		return lua_error(L);
+	luaXL_openlibs(L);
+	const char* mainscript = (const char *)luaX_touserdata(L, 1);
+	if (luaXL_loadstring(L, mainscript) != LUA_OK) {
+		return luaX_error(L);
 	}
-	lua_pushvalue(L, 3);
-	lua_call(L, 1, 0);
+	luaX_pushvalue(L, 3);
+	luaX_call(L, 1, 0);
 	return 0;
 }
 
 static void
-push_errmsg(lua_State *L, lua_State *cL) {
-	if (lua_type(cL, -1) != LUA_TSTRING) {
+push_errmsg(lua_State *L, luaX_State *cL) {
+	if (luaX_type(cL, -1) != LUA_TSTRING) {
 		lua_pushstring(L, "Unknown Error");
 	} else {
 		size_t sz = 0;
-		const char * err = lua_tolstring(cL, -1, &sz);
+		const char * err = luaX_tolstring(cL, -1, &sz);
 		lua_pushlstring(L, err, sz);
 	}
 }
@@ -94,7 +95,7 @@ lhost_start(lua_State *L) {
 			return lua_error(L);
 		}
 	}
-	lua_State *cL = luaL_newstate();
+	luaX_State *cL = luaXL_newstate();
 	if (cL == NULL) {
 		lua_pushstring(L, "Can't new debug client");
 		return lua_error(L);
@@ -103,16 +104,17 @@ lhost_start(lua_State *L) {
 	lua_pushlightuserdata(L, cL);
 	lua_rawsetp(L, LUA_REGISTRYINDEX, &DEBUG_CLIENT);
 
-	lua_pushcfunction(cL, client_main);
-	lua_pushlightuserdata(cL, (void *)mainscript);
-	lua_pushlightuserdata(cL, (void *)L);
+	luaX_pushcfunction(cL, client_main);
+	luaX_pushlightuserdata(cL, (void *)mainscript);
+	luaX_pushlightuserdata(cL, (void *)L);
 	if (preprocessor) {
-		lua_pushcfunction(cL, preprocessor);
+		//TODO: convert C function？
+		luaX_pushcfunction(cL, (luaX_CFunction)preprocessor);
 	} else {
-		lua_pushnil(cL);
+		luaX_pushnil(cL);
 	}
 
-	if (lua_pcall(cL, 3, 0, 0) != LUA_OK) {
+	if (luaX_pcall(cL, 3, 0, 0) != LUA_OK) {
 		push_errmsg(L, cL);
 		clear_client(L);
 		return lua_error(L);

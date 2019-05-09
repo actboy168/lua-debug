@@ -1,3 +1,6 @@
+#include "../onelua/onelua.h"
+#include <lua.hpp>
+#include "../onelua/replace.h"
 #include <binding/lua_unicode.cpp>
 
 extern "C" 
