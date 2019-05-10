@@ -1,5 +1,4 @@
-#include "onelua/onelua.h"
-#include <lua.hpp>
+#include "rlua.h"
 #include <lstate.h>
 #include <assert.h>
 #include <stdint.h>

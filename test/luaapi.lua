@@ -30,6 +30,7 @@ for w in pairs(api) do
 end
 table.sort(t)
 for _, w in ipairs(t) do
-    print(("#define %s rlua%s"):format(w, w:sub(4)))
+    --print(("#define %s rlua%s"):format(w, w:sub(4)))
+    print(("#define rlua%s %s"):format(w:sub(4), w))
 end
 

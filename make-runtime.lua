@@ -55,7 +55,7 @@ lm:source_set 'onelua' {
         "3rd/bee.lua/3rd/lua/src",
     },
     sources = {
-        "src/remotedebug/onelua/rdebug_onelua.c",
+        "src/remotedebug/onelua.c",
     },
     flags = {
         platform.OS ~= "Windows" and "-fPIC"
@@ -78,7 +78,6 @@ lm:shared_library 'remotedebug' {
         platform.OS ~= "Windows" and "3rd/"..luaver,
     },
     sources = {
-        "3rd/bee.lua/3rd/lua-seri/*.c",
         "src/remotedebug/*.cpp",
         "3rd/bee.lua/bee/error.cpp",
         "3rd/bee.lua/bee/net/*.cpp",

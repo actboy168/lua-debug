@@ -1,5 +1,4 @@
-﻿#include "onelua/onelua.h"
-#include <lua.hpp>
+﻿#include "rlua.h"
 #include "rdebug_delayload.h"
 
 static int DEBUG_HOST = 0;	// host L in client VM

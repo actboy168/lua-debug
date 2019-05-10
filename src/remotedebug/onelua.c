@@ -1,4 +1,5 @@
-#include "replace.h"
+#define RLUA_INTERNAL
+#include "rlua.h"
 
 #if defined(__linux__)
 #define LUA_USE_LINUX

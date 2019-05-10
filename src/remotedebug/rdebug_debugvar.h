@@ -1,7 +1,6 @@
 #pragma once
 
-#include "onelua/onelua.h"
-#include <lua.hpp>
+#include "rlua.h"
 #include <stdint.h>
 #include <string.h>
 

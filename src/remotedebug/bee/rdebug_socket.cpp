@@ -1,6 +1,5 @@
-#include "../onelua/onelua.h"
-#include <lua.hpp>
-#include "../onelua/replace.h"
+#define RLUA_REPLACE
+#include "../rlua.h"
 #include <binding/lua_socket.cpp>
 
 extern "C" 
