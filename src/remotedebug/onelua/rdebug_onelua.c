@@ -83,3 +83,5 @@
 #include "ltablib.c"
 #include "lutf8lib.c"
 #include "linit.c"
+
+#include "../../lua-seri/lua-seri.c"

@@ -5,120 +5,120 @@
 
 extern "C" {
 
-struct luaX_State;
-typedef ptrdiff_t luaX_KContext;
-typedef int (*luaX_CFunction) (luaX_State *L);
-typedef int (*luaX_KFunction) (luaX_State *L, int status, luaX_KContext ctx);
+struct rlua_State;
+typedef ptrdiff_t rlua_KContext;
+typedef int (*rlua_CFunction) (rlua_State *L);
+typedef int (*rlua_KFunction) (rlua_State *L, int status, rlua_KContext ctx);
 
-typedef long long luaX_Integer;
-typedef unsigned long long luaX_Unsigned;
-typedef double luaX_Number;
+typedef long long rlua_Integer;
+typedef unsigned long long rlua_Unsigned;
+typedef double rlua_Number;
 
-struct luaXL_Reg {
+struct rluaL_Reg {
   const char *name;
-  luaX_CFunction func;
+  rlua_CFunction func;
 };
 
-struct luaXL_Buffer {
+struct rluaL_Buffer {
     char *b;
     size_t size;
     size_t n;
-    luaX_State *L;
+    rlua_State *L;
     union {
         char b[8192];
     } init;
 };
 
-struct luaXL_Stream {
+struct rluaL_Stream {
     FILE *f;
-    luaX_CFunction closef;
+    rlua_CFunction closef;
 };
 
-luaX_State *(luaXL_newstate) (void);
-void (luaXL_openlibs) (luaX_State *L);
-int  (luaXL_loadstring) (luaX_State *L, const char *s);
-int  (luaXL_loadbufferx) (luaX_State *L, const char *buff, size_t sz, const char *name, const char *mode);
-void (luaXL_setfuncs) (luaX_State *L, const luaXL_Reg *l, int nup);
-void (luaXL_checktype) (luaX_State *L, int arg, int t);
-int  (luaXL_checkoption) (luaX_State *L, int arg, const char *def, const char *const lst[]);
-void *(luaXL_checkudata) (luaX_State *L, int ud, const char *tname);
-int   (luaXL_newmetatable) (luaX_State *L, const char *tname);
-void  (luaXL_setmetatable) (luaX_State *L, const char *tname);
-int (luaXL_callmeta) (luaX_State *L, int obj, const char *e);
-const char *(luaXL_checklstring) (luaX_State *L, int arg, size_t *l);
-luaX_Number  (luaXL_checknumber) (luaX_State *L, int arg);
-luaX_Number  (luaXL_optnumber) (luaX_State *L, int arg, luaX_Number def);
-luaX_Integer (luaXL_checkinteger) (luaX_State *L, int arg);
-luaX_Integer (luaXL_optinteger) (luaX_State *L, int arg, luaX_Integer def);
-luaX_Integer (luaXL_len) (luaX_State *L, int idx);
+rlua_State *(rluaL_newstate) (void);
+void (rluaL_openlibs) (rlua_State *L);
+int  (rluaL_loadstring) (rlua_State *L, const char *s);
+int  (rluaL_loadbufferx) (rlua_State *L, const char *buff, size_t sz, const char *name, const char *mode);
+void (rluaL_setfuncs) (rlua_State *L, const rluaL_Reg *l, int nup);
+void (rluaL_checktype) (rlua_State *L, int arg, int t);
+int  (rluaL_checkoption) (rlua_State *L, int arg, const char *def, const char *const lst[]);
+void *(rluaL_checkudata) (rlua_State *L, int ud, const char *tname);
+int   (rluaL_newmetatable) (rlua_State *L, const char *tname);
+void  (rluaL_setmetatable) (rlua_State *L, const char *tname);
+int (rluaL_callmeta) (rlua_State *L, int obj, const char *e);
+const char *(rluaL_checklstring) (rlua_State *L, int arg, size_t *l);
+rlua_Number  (rluaL_checknumber) (rlua_State *L, int arg);
+rlua_Number  (rluaL_optnumber) (rlua_State *L, int arg, rlua_Number def);
+rlua_Integer (rluaL_checkinteger) (rlua_State *L, int arg);
+rlua_Integer (rluaL_optinteger) (rlua_State *L, int arg, rlua_Integer def);
+rlua_Integer (rluaL_len) (rlua_State *L, int idx);
 
-void (luaX_close) (luaX_State *L);
-int  (luaX_pcallk) (luaX_State *L, int nargs, int nresults, int errfunc, luaX_KContext ctx, luaX_KFunction k);
-void (luaX_callk) (luaX_State *L, int nargs, int nresults, luaX_KContext ctx, luaX_KFunction k);
-int  (luaX_type) (luaX_State *L, int idx);
-const char *(luaX_typename) (luaX_State *L, int tp);
-int  (luaX_error) (luaX_State *L);
-int  (luaXL_error) (luaX_State *L, const char *fmt, ...);
-void (luaXL_traceback) (luaX_State *L, luaX_State *L1, const char *msg, int level);
+void (rlua_close) (rlua_State *L);
+int  (rlua_pcallk) (rlua_State *L, int nargs, int nresults, int errfunc, rlua_KContext ctx, rlua_KFunction k);
+void (rlua_callk) (rlua_State *L, int nargs, int nresults, rlua_KContext ctx, rlua_KFunction k);
+int  (rlua_type) (rlua_State *L, int idx);
+const char *(rlua_typename) (rlua_State *L, int tp);
+int  (rlua_error) (rlua_State *L);
+int  (rluaL_error) (rlua_State *L, const char *fmt, ...);
+void (rluaL_traceback) (rlua_State *L, rlua_State *L1, const char *msg, int level);
 
-void *(luaX_newuserdatauv) (luaX_State *L, size_t sz, int nuvalue);
-const char *(luaX_getupvalue) (luaX_State *L, int funcindex, int n);
+void *(rlua_newuserdatauv) (rlua_State *L, size_t sz, int nuvalue);
+const char *(rlua_getupvalue) (rlua_State *L, int funcindex, int n);
 
-void  (luaX_pushboolean) (luaX_State *L, int b);
-void  (luaX_pushinteger) (luaX_State *L, luaX_Integer n);
-void  (luaX_pushnumber) (luaX_State *L, luaX_Number n);
-void  (luaX_pushlightuserdata) (luaX_State *L, void *p);
-void  (luaX_pushcclosure) (luaX_State *L, luaX_CFunction fn, int n);
-const char *(luaX_pushstring) (luaX_State *L, const char *s);
-const char *(luaX_pushlstring) (luaX_State *L, const char *s, size_t len);
-void  (luaX_pushnil) (luaX_State *L);
-void  (luaX_pushvalue) (luaX_State *L, int idx);
-const char *(luaX_pushfstring) (luaX_State *L, const char *fmt, ...);
+void  (rlua_pushboolean) (rlua_State *L, int b);
+void  (rlua_pushinteger) (rlua_State *L, rlua_Integer n);
+void  (rlua_pushnumber) (rlua_State *L, rlua_Number n);
+void  (rlua_pushlightuserdata) (rlua_State *L, void *p);
+void  (rlua_pushcclosure) (rlua_State *L, rlua_CFunction fn, int n);
+const char *(rlua_pushstring) (rlua_State *L, const char *s);
+const char *(rlua_pushlstring) (rlua_State *L, const char *s, size_t len);
+void  (rlua_pushnil) (rlua_State *L);
+void  (rlua_pushvalue) (rlua_State *L, int idx);
+const char *(rlua_pushfstring) (rlua_State *L, const char *fmt, ...);
 
-int           (luaX_toboolean) (luaX_State *L, int idx);
-const char *  (luaX_tolstring) (luaX_State *L, int idx, size_t *len);
-void *        (luaX_touserdata) (luaX_State *L, int idx);
-luaX_CFunction (luaX_tocfunction) (luaX_State *L, int idx);
-luaX_Unsigned (luaX_rawlen) (luaX_State *L, int idx);
-luaX_Number   (luaX_tonumberx) (luaX_State *L, int idx, int *isnum);
-luaX_Integer  (luaX_tointegerx) (luaX_State *L, int idx, int *isnum);
-int           (luaX_isinteger) (luaX_State *L, int idx);
-int           (luaX_iscfunction) (luaX_State *L, int idx);
+int           (rlua_toboolean) (rlua_State *L, int idx);
+const char *  (rlua_tolstring) (rlua_State *L, int idx, size_t *len);
+void *        (rlua_touserdata) (rlua_State *L, int idx);
+rlua_CFunction (rlua_tocfunction) (rlua_State *L, int idx);
+rlua_Unsigned (rlua_rawlen) (rlua_State *L, int idx);
+rlua_Number   (rlua_tonumberx) (rlua_State *L, int idx, int *isnum);
+rlua_Integer  (rlua_tointegerx) (rlua_State *L, int idx, int *isnum);
+int           (rlua_isinteger) (rlua_State *L, int idx);
+int           (rlua_iscfunction) (rlua_State *L, int idx);
 
-void (luaX_createtable) (luaX_State *L, int narr, int nrec);
-void (luaX_rawsetp) (luaX_State *L, int idx, const void *p);
-int  (luaX_rawgetp) (luaX_State *L, int idx, const void *p);
-void (luaX_rawset) (luaX_State *L, int idx);
-void (luaX_rawseti) (luaX_State *L, int idx, luaX_Integer n);
-int  (luaX_rawgeti) (luaX_State *L, int idx, luaX_Integer n);
-int  (luaX_setmetatable) (luaX_State *L, int objindex);
-void (luaX_setfield) (luaX_State *L, int idx, const char *k);
-int  (luaX_getiuservalue) (luaX_State *L, int idx, int n);
-int  (luaX_setiuservalue) (luaX_State *L, int idx, int n);
+void (rlua_createtable) (rlua_State *L, int narr, int nrec);
+void (rlua_rawsetp) (rlua_State *L, int idx, const void *p);
+int  (rlua_rawgetp) (rlua_State *L, int idx, const void *p);
+void (rlua_rawset) (rlua_State *L, int idx);
+void (rlua_rawseti) (rlua_State *L, int idx, rlua_Integer n);
+int  (rlua_rawgeti) (rlua_State *L, int idx, rlua_Integer n);
+int  (rlua_setmetatable) (rlua_State *L, int objindex);
+void (rlua_setfield) (rlua_State *L, int idx, const char *k);
+int  (rlua_getiuservalue) (rlua_State *L, int idx, int n);
+int  (rlua_setiuservalue) (rlua_State *L, int idx, int n);
 
-int  (luaX_gettop) (luaX_State *L);
-void (luaX_settop) (luaX_State *L, int idx);
-void (luaX_rotate) (luaX_State *L, int idx, int n);
-void (luaX_copy) (luaX_State *L, int fromidx, int toidx);
+int  (rlua_gettop) (rlua_State *L);
+void (rlua_settop) (rlua_State *L, int idx);
+void (rlua_rotate) (rlua_State *L, int idx, int n);
+void (rlua_copy) (rlua_State *L, int fromidx, int toidx);
 
-void  (luaXL_buffinit) (luaX_State *L, luaXL_Buffer *B);
-char *(luaXL_prepbuffsize) (luaXL_Buffer *B, size_t sz);
-void  (luaXL_pushresultsize) (luaXL_Buffer *B, size_t sz);
+void  (rluaL_buffinit) (rlua_State *L, rluaL_Buffer *B);
+char *(rluaL_prepbuffsize) (rluaL_Buffer *B, size_t sz);
+void  (rluaL_pushresultsize) (rluaL_Buffer *B, size_t sz);
 
-#define luaX_pop(L,n) luaX_settop(L, -(n)-1)
-#define luaX_pushcfunction(L,f) luaX_pushcclosure(L, (f), 0)
-#define luaX_call(L,n,r) luaX_callk(L, (n), (r), 0, NULL)
-#define luaX_pcall(L,n,r,f) luaX_pcallk(L, (n), (r), (f), 0, NULL)
-#define luaX_newuserdata(L,s) luaX_newuserdatauv(L,s,1)
-#define luaX_newtable(L) luaX_createtable(L, 0, 0)
-#define luaX_upvalueindex(i) (LUA_REGISTRYINDEX - (i))
-#define luaX_insert(L,idx) luaX_rotate(L, (idx), 1)
-#define luaXL_checkstring(L,n) (luaXL_checklstring(L, (n), NULL))
-#define luaX_setuservalue(L,idx) luaX_setiuservalue(L,idx,1)
-#define luaX_getuservalue(L,idx) luaX_getiuservalue(L,idx,1)
-#define luaX_replace(L,idx) (luaX_copy(L, -1, (idx)), luaX_pop(L, 1))
-#define luaX_remove(L,idx) (luaX_rotate(L, (idx), -1), luaX_pop(L, 1))
-#define luaX_tonumber(L,i) luaX_tonumberx(L,(i),NULL)
-#define luaX_tointeger(L,i) luaX_tointegerx(L,(i),NULL)
+#define rlua_pop(L,n) rlua_settop(L, -(n)-1)
+#define rlua_pushcfunction(L,f) rlua_pushcclosure(L, (f), 0)
+#define rlua_call(L,n,r) rlua_callk(L, (n), (r), 0, NULL)
+#define rlua_pcall(L,n,r,f) rlua_pcallk(L, (n), (r), (f), 0, NULL)
+#define rlua_newuserdata(L,s) rlua_newuserdatauv(L,s,1)
+#define rlua_newtable(L) rlua_createtable(L, 0, 0)
+#define rlua_upvalueindex(i) (LUA_REGISTRYINDEX - (i))
+#define rlua_insert(L,idx) rlua_rotate(L, (idx), 1)
+#define rluaL_checkstring(L,n) (rluaL_checklstring(L, (n), NULL))
+#define rlua_setuservalue(L,idx) rlua_setiuservalue(L,idx,1)
+#define rlua_getuservalue(L,idx) rlua_getiuservalue(L,idx,1)
+#define rlua_replace(L,idx) (rlua_copy(L, -1, (idx)), rlua_pop(L, 1))
+#define rlua_remove(L,idx) (rlua_rotate(L, (idx), -1), rlua_pop(L, 1))
+#define rlua_tonumber(L,i) rlua_tonumberx(L,(i),NULL)
+#define rlua_tointeger(L,i) rlua_tointegerx(L,(i),NULL)
 
 }

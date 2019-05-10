@@ -7,6 +7,6 @@ extern "C"
 #if defined(_WIN32)
 __declspec(dllexport)
 #endif
-int luaopen_remotedebug_thread(luaX_State* L) {
+int luaopen_remotedebug_thread(rlua_State* L) {
     return luaopen_bee_thread(L);
 }
