@@ -1,6 +1,8 @@
 local rdebug, root, path, cpath = ...
 
-local function start_worker(addr)
+local m = {}
+
+function m:start(addr, nowait)
     local bootstrap = ([=[
         package.path = %q
         package.cpath = %q
@@ -10,12 +12,7 @@ local function start_worker(addr)
         w.openupdate()
     ]=]):format(root..path, root..cpath, root..'/error.log', addr)
     rdebug.start(bootstrap)
-end
 
-local m = {}
-
-function m:start(addr, nowait)
-    start_worker(addr)
     if not nowait then
         rdebug.probe 'wait_client'
     end
