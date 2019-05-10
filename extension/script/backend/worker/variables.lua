@@ -10,56 +10,78 @@ local VAR_UPVALUE = 0xFFFD
 local VAR_GLOBAL = 0xFFFC
 local VAR_STANDARD = 0xFFFB
 
-local TEMPORARY = _VERSION == "Lua 5.4" and '(temporary)' or '(*temporary)'
 local MAX_TABLE_FIELD = 300
 
-local lstandard = {
-    "ipairs",
-    "error",
-    "utf8",
-    "rawset",
-    "tostring",
-    "select",
-    "tonumber",
-    "_VERSION",
-    "loadfile",
-    "xpcall",
-    "string",
-    "rawlen",
-    "print",
-    "rawequal",
-    "setmetatable",
-    "require",
-    "getmetatable",
-    "next",
-    "package",
-    "coroutine",
-    "io",
-    "_G",
-    "math",
-    "collectgarbage",
-    "os",
-    "table",
-    "dofile",
-    "pcall",
-    "load",
-    "rawget",
-    "debug",
-    "assert",
-    "type",
-    "pairs",
-}
+local TEMPORARY = "(temporary)"
 
-if _VERSION == "Lua 5.3" then
-    table.insert(lstandard, "bit32")
-elseif _VERSION == "Lua 5.4" then
-    table.insert(lstandard, "warn")
-end
+local LUAVERSION = 54
 
 local standard = {}
-for _, v in ipairs(lstandard) do
-    standard[v] = true
+
+local function init_standard()
+    local lstandard = {
+        "ipairs",
+        "error",
+        "utf8",
+        "rawset",
+        "tostring",
+        "select",
+        "tonumber",
+        "_VERSION",
+        "loadfile",
+        "xpcall",
+        "string",
+        "rawlen",
+        "print",
+        "rawequal",
+        "setmetatable",
+        "require",
+        "getmetatable",
+        "next",
+        "package",
+        "coroutine",
+        "io",
+        "_G",
+        "math",
+        "collectgarbage",
+        "os",
+        "table",
+        "dofile",
+        "pcall",
+        "load",
+        "rawget",
+        "debug",
+        "assert",
+        "type",
+        "pairs",
+    }
+
+    if LUAVERSION == 53 then
+        table.insert(lstandard, "bit32")
+    elseif LUAVERSION == 54 then
+        table.insert(lstandard, "warn")
+    end
+    standard = {}
+    for _, v in ipairs(lstandard) do
+        standard[v] = true
+    end
 end
+
+local function init_luaver()
+    local version = rdebug.indexv(rdebug._G, "_VERSION")
+    local ver = 0
+    for n in version:gmatch "%d" do
+        ver = ver * 10 + math.tointeger(n) or 0
+    end
+    LUAVERSION = ver
+end
+
+ev.on('initializing', function()
+    init_luaver()
+    init_standard()
+    TEMPORARY = LUAVERSION >= 54 and "(temporary)" or "(*temporary)"
+end)
+
 
 local function hasLocal(frameId)
     local i = 1
