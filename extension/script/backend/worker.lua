@@ -353,7 +353,6 @@ local function runLoop(reason, description)
     }
 
     while true do
-        thread.sleep(0.01)
         workerThreadUpdate()
         if state ~= 'stopped' then
             break
@@ -548,7 +547,6 @@ end
 
 function event.wait_client()
     while not initialized do
-        thread.sleep(0.01)
         workerThreadUpdate()
     end
 end
