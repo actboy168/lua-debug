@@ -1,5 +1,4 @@
 ﻿#include "rlua.h"
-#include "rdebug_delayload.h"
 
 static int DEBUG_HOST = 0;	// host L in client VM
 static int DEBUG_CLIENT = 0;	// client L in host VM for hook
@@ -142,9 +141,6 @@ extern "C"
 __declspec(dllexport)
 #endif
 int luaopen_remotedebug(lua_State *L) {
-#if defined(_MSC_VER)
-	remotedebug::delayload::caller_is_luadll(_ReturnAddress());
-#endif
 	luaL_Reg l[] = {
 		{ "start", lhost_start },
 		{ "clear", lhost_clear },

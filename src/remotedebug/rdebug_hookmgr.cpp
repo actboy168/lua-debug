@@ -459,11 +459,13 @@ struct hookmgr {
         remotedebug::eventfree::create(hL, lua_freef, this);
     }
     ~hookmgr() {
-        if(hostL) {
-            remotedebug::eventfree::destroy(hostL);
+        if (!hostL) {
+            return;
         }
+        remotedebug::eventfree::destroy(hostL);
         lua_sethook(hostL, 0, 0, 0);
         lua_atpanic(hostL, oldpanic);
+        hostL = 0;
     }
     static int clear(rlua_State* L) {
         hookmgr* self = (hookmgr*)rlua_touserdata(L, 1);
