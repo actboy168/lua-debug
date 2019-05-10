@@ -636,10 +636,6 @@ sendToMaster {
 
 local w = {}
 
-function w.skipfiles(v)
-    source.skipfiles(v)
-end
-
 function w.openupdate()
     openUpdate = true
     hookmgr.update_open(true)

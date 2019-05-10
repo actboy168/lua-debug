@@ -3,7 +3,6 @@ local parser = require 'backend.parser'
 local ev = require 'common.event'
 local crc32 = require 'backend.crc32'
 
-local globalSkipFiles = {}
 local sourcePool = {}
 local codePool = {}
 local skipFiles = {}
@@ -20,9 +19,6 @@ ev.on('initializing', function(config)
     sourceUtf8 = config.sourceCoding == 'utf8'
     skipFiles = {}
     sourceMaps = {}
-    for _, pattern in ipairs(globalSkipFiles) do
-        makeSkipFile(pattern)
-    end
     if config.skipFiles then
         for _, pattern in ipairs(config.skipFiles) do
             makeSkipFile(pattern)
@@ -208,10 +204,6 @@ function m.all_loaded()
     for _, source in pairs(sourcePool) do
         ev.emit('loadedSource', 'new', source)
     end
-end
-
-function m.skipfiles(v)
-    globalSkipFiles = v
 end
 
 return m

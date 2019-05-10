@@ -22,6 +22,15 @@ if luaapi then
     assert(package.loadlib(remotedebug,'init'))()
 end
 local rdebug = assert(package.loadlib(remotedebug,'luaopen_remotedebug'))()
-local dbg = assert(loadfile(path..'/script/start_debug.lua'))(rdebug,path,'/script/?.lua',rt..'/?.'..ext)
+
+local function dofile(filename, ...)
+    local f = assert(io.open(filename))
+    local str = f:read "a"
+    f:close()
+    local func = assert(load(str, "=(BOOTSTRAP)"))
+    return func(...)
+end
+
+local dbg = dofile(path..'/script/start_debug.lua', rdebug,path,'/script/?.lua',rt..'/?.'..ext)
 debug.getregistry()["lua-debug"] = dbg
 dbg:start(("@%s/runtime/tmp/pid_%s.tmp"):format(path, pid))

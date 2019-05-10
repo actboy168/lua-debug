@@ -1,16 +1,14 @@
 local rdebug, root, path, cpath = ...
 
 local function start_worker(addr)
-    local selfSource = debug.getinfo(1, 'S').source:sub(2)
     local bootstrap = ([=[
         package.path = %q
         package.cpath = %q
         local m = require 'start_master'
         m(package.path, package.cpath, %q, %q)
         local w = require 'backend.worker'
-        w.skipfiles{%q}
         w.openupdate()
-    ]=]):format(root..path, root..cpath, root..'/error.log', addr, selfSource)
+    ]=]):format(root..path, root..cpath, root..'/error.log', addr)
     rdebug.start(bootstrap)
 end
 
