@@ -14,11 +14,18 @@
 #endif
 
 namespace remotedebug::delayload {
-	static HMODULE luadll = 0;
+	typedef FARPROC (*FindLuaApi)(const char* name);
+	static HMODULE    luadll = 0;
+	static FindLuaApi luaapi = 0;
 
 	void set_luadll(HMODULE handle) {
 		if (luadll) return;
 		luadll = handle;
+	}
+
+	void set_luaapi(void* fn) {
+		if (luaapi) return;
+		luaapi = (FindLuaApi)fn;
 	}
 
 	void caller_is_luadll(void* callerAddress) {
@@ -41,6 +48,12 @@ namespace remotedebug::delayload {
 			}
 			return NULL;
 		case dliNotePreGetProcAddress: {
+			if (luaapi) {
+				FARPROC fn = luaapi(pdli->dlp.szProcName);
+				if (fn) {
+					return fn;
+				}
+			}
 			FARPROC ret = ::GetProcAddress(pdli->hmodCur, pdli->dlp.szProcName);
 			if (ret) {
 				return ret;

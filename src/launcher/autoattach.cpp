@@ -70,6 +70,7 @@ namespace autoattach {
 				rollback.push(h);
 			}
 			remotedebug::delayload::set_luadll(m);
+			remotedebug::delayload::set_luaapi(luaapi);
 			return true;
 		}
 	}
@@ -163,5 +164,18 @@ namespace autoattach {
 		if (!findLuaDll()) {
 			waitLuaDll();
 		}
+	}
+
+	
+	FARPROC luaapi(const char* name) {
+#define FIND(api) \
+		if (lua::real::##api && strcmp(name, #api) == 0) { \
+			return (FARPROC)lua::real::##api; \
+		}
+		FIND(lua_newstate)
+		FIND(lua_close)
+		FIND(lua_settop)
+		return 0;
+#undef  FIND
 	}
 }

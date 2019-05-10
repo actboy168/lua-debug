@@ -27,7 +27,7 @@ struct file {
 	FILE* file_;
 };
 
-static void initialize(lua_State* L) {
+static void attach(lua_State* L) {
     luaL_openlibs(L);
     auto root = bee::path_helper::dll_path().value().parent_path().parent_path().parent_path();
     auto buf = file((root / "script" / "launcher" / "main.lua").c_str()).read<std::string>();
@@ -37,17 +37,10 @@ static void initialize(lua_State* L) {
     }
     lua_pushstring(L, root.generic_u8string().c_str());
     lua_pushinteger(L, GetCurrentProcessId());
-    if (lua_pcall(L, 2, 0, 0)) {
+    lua_pushlightuserdata(L, (void*)autoattach::luaapi);
+    if (lua_pcall(L, 3, 0, 0)) {
         fprintf(stderr, "%s\n", lua_tostring(L, -1));
         lua_pop(L, 1);
-    }
-}
-
-static void attach(lua_State* L) {
-    static std::atomic<bool> initialized = false;
-    bool oldvalue = false;
-    if (initialized.compare_exchange_weak(oldvalue, true)) {
-        initialize(L);
     }
 }
 
