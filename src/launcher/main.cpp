@@ -1,5 +1,4 @@
 #include "autoattach.h"
-#include "../remotedebug/rdebug_delayload.h"
 #include <lua.hpp>
 #include <bee/filesystem.h>
 #include <bee/utility/path_helper.h>
@@ -29,7 +28,6 @@ struct file {
 };
 
 static void initialize(lua_State* L) {
-    remotedebug::delayload::set_luadll(autoattach::luadll());
     luaL_openlibs(L);
     auto root = bee::path_helper::dll_path().value().parent_path().parent_path().parent_path();
     auto buf = file((root / "script" / "launcher" / "main.lua").c_str()).read<std::string>();

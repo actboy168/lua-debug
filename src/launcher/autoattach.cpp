@@ -7,11 +7,11 @@
 #include <base/hook/fp_call.h>
 #include <base/hook/inline.h>
 #include <intrin.h>
+#include "../remotedebug/rdebug_delayload.h"
 
 namespace autoattach {
 	std::mutex lockLoadDll;
 	std::set<std::wstring> loadedModules;
-	HMODULE luaDll = NULL;
 	fn_attach debuggerAttach;
 	fn_detach debuggerDetach;
 	bool	  attachProcess = false;
@@ -69,7 +69,7 @@ namespace autoattach {
 				}
 				rollback.push(h);
 			}
-			luaDll = m;
+			remotedebug::delayload::set_luadll(m);
 			return true;
 		}
 	}
@@ -163,9 +163,5 @@ namespace autoattach {
 		if (!findLuaDll()) {
 			waitLuaDll();
 		}
-	}
-
-	HMODULE luadll() {
-		return luaDll;
 	}
 }
