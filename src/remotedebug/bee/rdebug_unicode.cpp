@@ -1,3 +1,5 @@
+#define RLUA_REPLACE
+#include "../rlua.h"
 #include <binding/lua_unicode.cpp>
 
 extern "C" 

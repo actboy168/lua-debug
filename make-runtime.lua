@@ -16,7 +16,7 @@ if platform.OS == "Windows" then
             "!luac.c",
         },
         defines = {
-            "LUAI_MAXCCALLS=200",
+            "LUAI_MAXCCALLS=1000",
             "LUA_BUILD_AS_DLL",
         }
     }
@@ -33,7 +33,7 @@ else
             "!luac.c",
         },
         defines = {
-            "LUAI_MAXCCALLS=200",
+            "LUAI_MAXCCALLS=1000",
             platform.OS == "macOS" and "LUA_USE_MACOSX",
             platform.OS == "Linux" and "LUA_USE_LINUX",
         },
@@ -50,9 +50,22 @@ end
 
 lm.rootdir = ''
 
+lm:source_set 'onelua' {
+    includes = {
+        "3rd/bee.lua/3rd/lua/src",
+    },
+    sources = {
+        "src/remotedebug/onelua.c",
+    },
+    flags = {
+        platform.OS ~= "Windows" and "-fPIC"
+    }
+}
+
 lm:shared_library 'remotedebug' {
     deps = {
         platform.OS == "Windows" and luaver,
+        "onelua",
     },
     defines = {
         "BEE_STATIC",
@@ -65,7 +78,6 @@ lm:shared_library 'remotedebug' {
         platform.OS ~= "Windows" and "3rd/"..luaver,
     },
     sources = {
-        "3rd/bee.lua/3rd/lua-seri/*.c",
         "src/remotedebug/*.cpp",
         "3rd/bee.lua/bee/error.cpp",
         "3rd/bee.lua/bee/net/*.cpp",
