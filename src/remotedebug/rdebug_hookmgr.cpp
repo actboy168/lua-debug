@@ -469,7 +469,7 @@ struct hookmgr {
             reinterpret_cast<intptr_t>(this),
             reinterpret_cast<intptr_t>(&hook_callback)
         ));
-        remotedebug::eventfree::create(hL, lua_freef, this);
+        remotedebug::eventfree::create(hL, freeobj_callback, this);
     }
     ~hookmgr() {
         if (!hostL) {
@@ -493,7 +493,7 @@ struct hookmgr {
     static void hook_callback(hookmgr* mgr, lua_State* hL, lua_Debug* ar) {
         mgr->hook(hL, ar);
     }
-    static void lua_freef(void* mgr, void* ptr) {
+    static void freeobj_callback(void* mgr, void* ptr) {
         ((hookmgr*)mgr)->break_freeobj((Proto*)ptr);
     }
     static void panic_callback(hookmgr* mgr, lua_State* hL) {
