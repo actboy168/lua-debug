@@ -19,6 +19,7 @@ namespace autoattach {
 	namespace lua {
 		namespace real {
 			uintptr_t lua_newstate = 0;
+			uintptr_t luaL_openlibs = 0;
 			uintptr_t lua_close = 0;
 			uintptr_t lua_settop = 0;
 		}
@@ -27,6 +28,10 @@ namespace autoattach {
 				lua_State* L = base::c_call<lua_State*>(real::lua_newstate, f, ud);
 				debuggerAttach(L);
 				return L;
+			}
+			static void __cdecl luaL_openlibs(lua_State* L) {
+				base::c_call<void>(real::luaL_openlibs, L);
+				debuggerAttach(L);
 			}
 			static void __cdecl lua_settop(lua_State *L, int index) {
 				debuggerAttach(L);
@@ -51,7 +56,8 @@ namespace autoattach {
 			tasks.push_back({real::##name, (uintptr_t)fake::##name}); \
 		} while (0)
 
-			HOOK(lua_newstate);
+			//HOOK(lua_newstate);
+			HOOK(luaL_openlibs);
 			HOOK(lua_close);
 			if (attachProcess) {
 				HOOK(lua_settop);
@@ -172,7 +178,8 @@ namespace autoattach {
 		if (lua::real::##api && strcmp(name, #api) == 0) { \
 			return (FARPROC)lua::real::##api; \
 		}
-		FIND(lua_newstate)
+		//FIND(lua_newstate)
+		FIND(luaL_openlibs)
 		FIND(lua_close)
 		FIND(lua_settop)
 		return 0;

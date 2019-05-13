@@ -28,7 +28,6 @@ struct file {
 };
 
 static void attach(lua_State* L) {
-    luaL_openlibs(L);
     auto root = bee::path_helper::dll_path().value().parent_path().parent_path().parent_path();
     auto buf = file((root / "script" / "launcher" / "main.lua").c_str()).read<std::string>();
     if (luaL_loadbuffer(L, buf.data(), buf.size(), "=(BOOTSTRAP)")) {
