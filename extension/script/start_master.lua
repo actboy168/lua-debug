@@ -1,24 +1,69 @@
 local theadpool = {}
 
+local exitMgr = [[
+    package.path = %q
+    package.cpath = %q
+    local thread = require "remotedebug.thread"
+    local exitReq = thread.channel(%q.."ExitReq")
+    local clients = {}
+    local EXITCODE
+    local EXITID
+    local function finishExit()
+        local exitRes = thread.channel("ExitRes"..EXITID)
+        exitRes:push(EXITCODE)
+    end
+    local function isExit()
+        while true do
+            local ok, msg, id = exitReq:pop()
+            if not ok then
+                return
+            end
+            if msg == "INIT" then
+                clients[id] = true
+                goto continue
+            end
+            if msg == "EXIT" then
+                clients[id] = false
+                EXITID = id
+                if next(clients) == nil then
+                    EXITCODE = "OK"
+                    return true
+                end
+                EXITCODE = "BYE"
+                finishExit()
+                goto continue
+            end
+            ::continue::
+        end
+    end
+]]
+
+local function createNamedChannel(name)
+    local thread = require "remotedebug.thread"
+    local ok, err = pcall(thread.newchannel, name)
+    if not ok then
+        if err:sub(1,17) ~= "Duplicate channel" then
+            error(err)
+        end
+    end
+    return not ok
+end
+
+local function createNamedThread(name, path, cpath, script)
+    local thread = require "remotedebug.thread"
+    createNamedChannel(name.."ExitReq")
+    theadpool[name] = thread.named_thread(name, exitMgr:format(path, cpath, name) .. script)
+end
+
 return function (path, cpath, errlog, addr)
     local thread = require "remotedebug.thread"
-    local ok, err = pcall(thread.newchannel, "DbgMaster")
-    if not ok then
-        if err:sub(1,17) == "Duplicate channel" then
-            return
-        end
-        error(err)
+    if createNamedChannel("ExitRes"..thread.id) then
+        return
     end
 
-    thread.newchannel "errorExit"
-    thread.newchannel "masterExit"
-
-    theadpool["error"] = thread.thread (([[
-        package.path = %q
-        package.cpath = %q
-        local thread = require "remotedebug.thread"
+    createNamedChannel("DbgMaster")
+    createNamedThread("error", path, cpath, ([[
         local err = thread.channel "errlog"
-        local exit = thread.channel "errorExit"
         local log = require "common.log"
         log.file = %q
         repeat
@@ -26,12 +71,11 @@ return function (path, cpath, errlog, addr)
             if ok then
                 log.error("ERROR:" .. msg)
             end
-        until exit:pop()
-    ]]):format(path, cpath, errlog))
+        until isExit()
+        finishExit()
+    ]]):format(errlog))
 
-    local bootstrap = ([=[
-        package.path = %q
-        package.cpath = %q
+    createNamedThread("master", path, cpath, ([=[
         local addr = %q
 
         local t = {}
@@ -78,24 +122,38 @@ return function (path, cpath, errlog, addr)
             self.fclose()
         end
 
-        local thread = require "remotedebug.thread"
-        local exit = thread.channel "masterExit"
         local select = require "common.select"
         local master = require 'backend.master'
         master.init(dbg_io)
         repeat
             select.update(0.05)
             master.update()
-        until exit:pop()
+        until isExit()
+        finishExit()
         select.closeall()
-    ]=]):format(path, cpath, addr)
-    theadpool["master"] = thread.thread(bootstrap)
+    ]=]):format(addr))
+
+    local thread = require "remotedebug.thread"
+    local errlog = thread.channel "errlog"
+    local ok, msg = errlog:pop()
+    if ok then
+        print(msg)
+    end
+
+    for _, thd in ipairs {"master","error"} do
+        local chan = thread.channel(thd.."ExitReq")
+        chan:push("INIT", thread.id)
+    end
 
     setmetatable(theadpool, {__gc=function(self)
+        local chanRes = thread.channel("ExitRes"..thread.id)
         for _, thd in ipairs {"master","error"} do
-            local chan = thread.channel(thd.."Exit")
-            chan:push "EXIT"
-            self[thd]:wait()
+            local chanReq = thread.channel(thd.."ExitReq")
+            chanReq:push("EXIT", thread.id)
+            local code = chanRes:bpop()
+            if code == "OK" then
+                self[thd]:wait()
+            end
         end
     end})
 end
