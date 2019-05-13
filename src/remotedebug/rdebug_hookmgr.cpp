@@ -230,8 +230,31 @@ struct hookmgr {
     //
     int exception_mask = 0;
 #if defined(LUA_HOOKEXCEPTION)
+    lua_CFunction oldpanic = 0;
+    std::unique_ptr<thunk> sc_panic;
+
+    void exception_enable(lua_State* hL) {
+        oldpanic = lua_atpanic(hostL, 0);
+        sc_panic.reset(thunk_create_panic(
+            reinterpret_cast<intptr_t>(this),
+            reinterpret_cast<intptr_t>(&panic_callback),
+            reinterpret_cast<intptr_t>(oldpanic)
+        ));
+        lua_atpanic(hostL, (lua_CFunction)sc_panic->data);
+    }
+
+    void exception_disable(lua_State* hL) {
+        lua_atpanic(hL, oldpanic);
+    }
+
     void exception_hookmask(lua_State* hL, int mask) {
         if (exception_mask != mask) {
+            if (!exception_mask) {
+                exception_enable(hL);
+            }
+            else {
+                exception_disable(hL);
+            }
             exception_mask = mask;
             updatehookmask(hL);
         }
@@ -287,12 +310,9 @@ struct hookmgr {
     // common
     //
     rlua_State* cL = 0;
-    lua_CFunction oldpanic;
     std::unique_ptr<thunk> sc_hook;
-    std::unique_ptr<thunk> sc_panic;
     hookmgr(rlua_State* L)
         : cL(L)
-        , oldpanic(0)
     {
         break_map.fill(BP::None);
         break_proto.fill(0);
@@ -444,18 +464,11 @@ struct hookmgr {
     lua_State* hostL = 0;
     void init(lua_State* hL) {
         hostL = hL;
-        oldpanic = lua_atpanic(hostL, 0);
         thunk_bind((intptr_t)hL, (intptr_t)this);
         sc_hook.reset(thunk_create_hook(
             reinterpret_cast<intptr_t>(this),
             reinterpret_cast<intptr_t>(&hook_callback)
         ));
-        sc_panic.reset(thunk_create_panic(
-            reinterpret_cast<intptr_t>(this),
-            reinterpret_cast<intptr_t>(&panic_callback),
-            reinterpret_cast<intptr_t>(oldpanic)
-        ));
-        lua_atpanic(hostL, (lua_CFunction)sc_panic->data);
         remotedebug::eventfree::create(hL, lua_freef, this);
     }
     ~hookmgr() {
@@ -464,7 +477,9 @@ struct hookmgr {
         }
         remotedebug::eventfree::destroy(hostL);
         lua_sethook(hostL, 0, 0, 0);
-        lua_atpanic(hostL, oldpanic);
+#if defined(LUA_HOOKEXCEPTION)
+        exception_open(hostL, 0);
+#endif
         hostL = 0;
     }
     static int clear(rlua_State* L) {
