@@ -11,7 +11,7 @@
 local rdebug = require "remotedebug"
 
 -- 在每次coroutine获得控制权时运行一次，例如你可以重载coroutine.resume/coroutine.wrap等
-rdebug.probe("thread", co)
+rdebug.event("thread", co)
 ```
 
 ## error支持
@@ -23,7 +23,7 @@ rdebug.probe("thread", co)
 local rdebug = require "remotedebug"
 
 -- 在每次lua抛出错误时运行一次，例如你可以重载pcall/xpcall等
-rdebug.probe("exception", errormsg)
+rdebug.event("exception", errormsg)
 ```
 
 ## 使用你的lua重写编译remotedebug
