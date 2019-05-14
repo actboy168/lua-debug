@@ -115,17 +115,19 @@
                                     ]
                                 },
                                 "markdownDescription": "Environment variables passed to the program. The value `null` removes the variable from the environment.",
-                                "default": {}
+                                "default": {
+                                    "PATH": "${workspaceFolder}"
+                                }
                             },
                             "stopOnEntry": {
                                 "type": "boolean",
                                 "markdownDescription": "Automatically stop after launch.",
-                                "default": true
+                                "default": false
                             },
                             "luaRuntime": {
                                 "type": "string",
                                 "markdownDescription": "Default lua runtime",
-                                "default": "5.3 32bit",
+                                "default": "5.3 64bit",
                                 "enum": [
                                     "5.3 32bit",
                                     "5.3 64bit",
@@ -182,15 +184,15 @@
                                 "markdownDescription": "The source path of the remote host and the source path of local.",
                                 "default": [
                                     [
-                                        ".\\",
-                                        "${workspaceFolder}\\"
+                                        "./*",
+                                        "${workspaceFolder}/*"
                                     ]
                                 ]
                             },
                             "sourceCoding": {
                                 "type": "string",
                                 "markdownDescription": "Source encoding",
-                                "default": "ansi",
+                                "default": "utf8",
                                 "enum": [
                                     "utf8",
                                     "ansi"
@@ -230,7 +232,7 @@
                                     "null"
                                 ],
                                 "markdownDescription": "Arguments passed to the runtime executable.",
-                                "default": ""
+                                "default": "${workspaceFolder}/main.lua"
                             },
                             "console": {
                                 "type": "string",
@@ -245,7 +247,7 @@
                                     "external terminal that can be configured via user settings"
                                 ],
                                 "markdownDescription": "Where to launch the debug target.",
-                                "default": "internalConsole"
+                                "default": "integratedTerminal"
                             },
                             "skipFiles": {
                                 "type": "array",
@@ -289,7 +291,7 @@
                             "stopOnEntry": {
                                 "type": "boolean",
                                 "markdownDescription": "Automatically stop after attach.",
-                                "default": true
+                                "default": false
                             },
                             "ip": {
                                 "type": "string",
@@ -309,7 +311,7 @@
                             "processName": {
                                 "type": "string",
                                 "markdownDescription": "Name of process to attach to.",
-                                "default": ""
+                                "default": "lua.exe"
                             },
                             "consoleCoding": {
                                 "type": "string",
@@ -324,7 +326,7 @@
                             "sourceCoding": {
                                 "type": "string",
                                 "markdownDescription": "Source encoding",
-                                "default": "ansi",
+                                "default": "utf8",
                                 "enum": [
                                     "utf8",
                                     "ansi"
@@ -335,8 +337,8 @@
                                 "markdownDescription": "The source path of the remote host and the source path of local.",
                                 "default": [
                                     [
-                                        "./",
-                                        "${workspaceFolder}"
+                                        "./*",
+                                        "${workspaceFolder}/*"
                                     ]
                                 ]
                             },
