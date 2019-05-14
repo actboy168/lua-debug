@@ -148,8 +148,7 @@ return function (path, cpath, errlog, addr)
         for _, thd in ipairs {"master","error"} do
             local chanReq = thread.channel(thd.."ExitReq")
             chanReq:push("EXIT", thread.id)
-            local code = chanRes:bpop()
-            if code == "OK" then
+            if chanRes:bpop() == "OK" then
                 self[thd]:wait()
             end
         end
