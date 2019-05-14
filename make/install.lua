@@ -98,6 +98,7 @@ copy_directory(root / 'extension', outputDir,
         return (ext ~= '.dll') and (ext ~= '.exe')
     end
 )
+fs.copy_file(root / "LICENSE", outputDir / "LICENSE", true)
 
 if platform == 'msvc' then
     print 'Step 5. compile launcher x86'
