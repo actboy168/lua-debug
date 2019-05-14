@@ -16,7 +16,6 @@
     "author": {
         "name": "actboy168"
     },
-    "license": "MIT",
     "private": true,
     "engines": {
         "vscode": "^1.19.0",
@@ -24,7 +23,7 @@
     },
     "repository": {
         "type": "git",
-        "url": "https://github.com/actboy168/lua-debug.git"
+        "url": "https://github.com/actboy168/lua-debug"
     },
     "bugs": {
         "url": "https://github.com/actboy168/lua-debug/issues"

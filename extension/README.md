@@ -29,7 +29,3 @@ Lua Debug Adapter for Visual Studio Code
 ## Source
 
 [GitHub](https://github.com/actboy168/vscode-lua-debug)
-
-## License
-
-[MIT](https://raw.githubusercontent.com/actboy168/vscode-lua-debug/master/LICENSE)
