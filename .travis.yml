@@ -1,0 +1,36 @@
+language: cpp
+matrix:
+  include:
+    - os: linux
+      compiler: clang
+      dist: xenial
+      addons:
+        apt:
+          sources:
+          - ubuntu-toolchain-r-test
+          packages:
+          - gcc-8
+          - g++-8
+          - libreadline-dev
+          - ninja-build
+    - os: osx
+      compiler: clang
+      osx_image: xcode10.2
+      addons:
+        homebrew:
+          packages:
+          - ninja
+    - os: windows
+
+script:
+  - git clone --depth 1 https://github.com/actboy168/luamake
+  - cd luamake
+  - git submodule update --init --recursive
+  - if [ "$TRAVIS_OS_NAME" == "windows" ]; then tools/ninja.exe -f ninja/msvc.ninja; fi
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then ninja -f ninja/linux.ninja; fi
+  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then ninja -f ninja/macos.ninja; fi
+  - cd ..
+  - ./luamake/luamake
+
+notifications:
+  email: false
