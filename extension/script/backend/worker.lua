@@ -509,40 +509,36 @@ function event.panic(msg)
     runLoop('exception', exceptionMsg)
 end
 
-if hookmgr.exception_open then
-    function event.exception(msg)
-        if not initialized then return end
-        local _, type = getExceptionType()
-        if not type or not exceptionFilters[type] then
-            return
-        end
-        exceptionMsg, exceptionTrace = traceback(tostring(msg), 0)
-        state = 'stopped'
-        runLoop('exception', exceptionMsg)
+function event.exception(msg)
+    if not initialized then return end
+    local _, type = getExceptionType()
+    if not type or not exceptionFilters[type] then
+        return
     end
-else
-    function event.exception()
-        if not initialized then return end
-        local level, type = getExceptionType()
-        if not type or not exceptionFilters[type] then
-            return
-        end
-        local _, msg = getEventArgs(1)
-        exceptionMsg, exceptionTrace = traceback(msg, level - 3)
-        state = 'stopped'
-        runLoop('exception', exceptionMsg)
-    end
+    exceptionMsg, exceptionTrace = traceback(tostring(msg), 0)
+    state = 'stopped'
+    runLoop('exception', exceptionMsg)
 end
 
-if hookmgr.thread_open then
-    function event.thread(co)
-        hookmgr.setcoroutine(co)
+function event.r_exception()
+    if not initialized then return end
+    local level, type = getExceptionType()
+    if not type or not exceptionFilters[type] then
+        return
     end
-else
-    function event.thread()
-        local _, co = getEventArgsRaw(1)
-        hookmgr.setcoroutine(co)
-    end
+    local _, msg = getEventArgs(1)
+    exceptionMsg, exceptionTrace = traceback(msg, level - 3)
+    state = 'stopped'
+    runLoop('exception', exceptionMsg)
+end
+
+function event.r_thread(co)
+    hookmgr.setcoroutine(co)
+end
+
+function event.thread()
+    local _, co = getEventArgsRaw(1)
+    hookmgr.setcoroutine(co)
 end
 
 function event.wait_client()

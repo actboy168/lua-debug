@@ -268,7 +268,7 @@ struct hookmgr {
             return;
         }
         set_host(cL, hL);
-        rlua_pushstring(cL, "exception");
+        rlua_pushstring(cL, "r_exception");
         copyvalue(hL, cL);
         if (rlua_pcall(cL, 2, 0, 0) != LUA_OK) {
             rlua_pop(cL, 1);
@@ -297,7 +297,7 @@ struct hookmgr {
             return;
         }
         set_host(cL, hL);
-        rlua_pushstring(cL, "thread");
+        rlua_pushstring(cL, "r_thread");
         rlua_pushlightuserdata(cL, hL);
         if (rlua_pcall(cL, 2, 0, 0) != LUA_OK) {
             rlua_pop(cL, 1);
