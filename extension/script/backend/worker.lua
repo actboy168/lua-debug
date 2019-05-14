@@ -608,6 +608,9 @@ end
 ev.on('initializing', function(config)
     noDebug = config.noDebug
     hookmgr.update_open(not noDebug and openUpdate)
+    if hookmgr.thread_open then
+        hookmgr.thread_open(true)
+    end
     outputCapture = lst2map(config.outputCapture)
     if outputCapture["print"] then
         stdio.open_print(true)
