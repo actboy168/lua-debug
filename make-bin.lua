@@ -1,6 +1,9 @@
 local lm = require "luamake"
 local platform = require "bee.platform"
 
+lm.gcc = 'clang'
+lm.gxx = 'clang++'
+
 lm:import '3rd/bee.lua/make.lua'
 
 if platform.OS == "Windows" then

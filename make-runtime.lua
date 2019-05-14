@@ -1,6 +1,9 @@
 local lm = require "luamake"
 local platform = require "bee.platform"
 
+lm.gcc = 'clang'
+lm.gxx = 'clang++'
+
 local luaver = ARGUMENTS.luaver or 'lua53'
 lm.arch = ARGUMENTS.arch or 'x64'
 lm.bindir = ("build/%s/bin/runtime/%s/%s"):format(lm.plat, lm.arch, luaver)
