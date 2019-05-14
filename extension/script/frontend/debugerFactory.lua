@@ -180,6 +180,7 @@ local function create_process(args)
         env = args.env,
         console = 'new',
         cwd = args.cwd or fs.path(application):parent_path(),
+        suspended = true,
     }
     local process, err
     if type(args.runtimeArgs) == 'string' then
