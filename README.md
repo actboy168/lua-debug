@@ -1,5 +1,7 @@
 # lua-debug
 
+[![Build Status](https://travis-ci.org/actboy168/lua-debug.svg?branch=master)](https://travis-ci.org/actboy168/lua-debug)
+
 ## 安装
 在vscode中按Ctrl+P，输入
 > ext install actboy168.lua-debug
