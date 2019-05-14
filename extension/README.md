@@ -25,7 +25,3 @@ Lua Debug Adapter for Visual Studio Code
 3. Open [repo](https://github.com/actboy168/vscode-lua-debug) in VSCode
 4. Run task：Rebuild
 5. Run task：Copy Publish
-
-## Source
-
-[GitHub](https://github.com/actboy168/vscode-lua-debug)
