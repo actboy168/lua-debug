@@ -58,6 +58,14 @@ local function io_save(filepath, buf)
     f:close()
 end
 
+local function spawn(t)
+    local process = assert(sp.spawn(t))
+    local code = process:wait()
+    if code ~= 0 then
+        os.exit(code, true)
+    end
+end
+
 print 'Step 2. remove old file'
 fs.remove_all(outputDir)
 
@@ -93,42 +101,42 @@ copy_directory(root / 'extension', outputDir,
 
 if platform == 'msvc' then
     print 'Step 5. compile launcher x86'
-    assert(sp.spawn {
+    spawn {
         luamake, 'remake', '-f', 'make-launcher.lua', '-arch', 'x86',
         cwd = root,
         searchPath = true,
-    }):wait()
+    }
     print 'Step 6. compile launcher x64'
-    assert(sp.spawn {
+    spawn {
         luamake, 'remake', '-f', 'make-launcher.lua', '-arch', 'x64',
         cwd = root,
         searchPath = true,
-    }):wait()
+    }
     print 'Step 7. compile bee'
 else
     print 'Step 5. compile bee'
 end
 
-assert(sp.spawn {
+spawn {
     luamake, 'remake', '-f', 'make-bin.lua',
     cwd = root,
     searchPath = true,
-}):wait()
+}
 
 if platform == 'msvc' then
     print 'Step 8. compile lua53 x86'
-    assert(sp.spawn {
+    spawn {
         luamake, 'remake', '-f', 'make-runtime.lua', '-arch', 'x86', '-luaver', 'lua53',
         cwd = root,
         searchPath = true,
-    }):wait()
+    }
 
     print 'Step 9. compile lua53 x64'
-    assert(sp.spawn {
+    spawn {
         luamake, 'remake', '-f', 'make-runtime.lua', '-arch', 'x64', '-luaver', 'lua53',
         cwd = root,
         searchPath = true,
-    }):wait()
+    }
 
     print 'Step 10. compile lua54 x86'
     assert(sp.spawn {
@@ -138,25 +146,25 @@ if platform == 'msvc' then
     }):wait()
 
     print 'Step 11. compile lua54 x64'
-    assert(sp.spawn {
+    spawn {
         luamake, 'remake', '-f', 'make-runtime.lua', '-arch', 'x64', '-luaver', 'lua54',
         cwd = root,
         searchPath = true,
-    }):wait()
+    }
 else
     print 'Step 6. compile lua53'
-    assert(sp.spawn {
+    spawn {
         luamake, 'remake', '-f', 'make-runtime.lua', '-luaver', 'lua53',
         cwd = root,
         searchPath = true,
-    }):wait()
+    }
 
     print 'Step 7. compile lua54'
-    assert(sp.spawn {
+    spawn {
         luamake, 'remake', '-f', 'make-runtime.lua', '-luaver', 'lua54',
         cwd = root,
         searchPath = true,
-    }):wait()
+    }
 end
 
 print 'finish.'
