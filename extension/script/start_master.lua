@@ -1,3 +1,5 @@
+local thread = require "remotedebug.thread"
+
 local theadpool = {}
 
 local exitMgr = [[
@@ -39,7 +41,6 @@ local exitMgr = [[
 ]]
 
 local function createNamedChannel(name)
-    local thread = require "remotedebug.thread"
     local ok, err = pcall(thread.newchannel, name)
     if not ok then
         if err:sub(1,17) ~= "Duplicate channel" then
@@ -50,13 +51,11 @@ local function createNamedChannel(name)
 end
 
 local function createNamedThread(name, path, cpath, script)
-    local thread = require "remotedebug.thread"
     createNamedChannel(name.."ExitReq")
     theadpool[name] = thread.named_thread(name, exitMgr:format(path, cpath, name) .. script)
 end
 
 return function (path, cpath, errlog, addr)
-    local thread = require "remotedebug.thread"
     if createNamedChannel("ExitRes"..thread.id) then
         return
     end
@@ -133,7 +132,6 @@ return function (path, cpath, errlog, addr)
         select.closeall()
     ]=]):format(addr))
 
-    local thread = require "remotedebug.thread"
     local errlog = thread.channel "errlog"
     local ok, msg = errlog:pop()
     if ok then
