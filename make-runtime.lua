@@ -10,8 +10,6 @@ lm.bindir = ("build/%s/bin/%s"):format(lm.plat, lm.arch)
 lm.objdir = ("build/%s/obj/%s"):format(lm.plat, lm.arch)
 
 if platform.OS == "Windows" then
-    lm:import '3rd/bee.lua/make.lua'
-
     lm:source_set 'detours' {
         rootdir = "3rd/detours/src",
         permissive = true,
@@ -21,9 +19,9 @@ if platform.OS == "Windows" then
         }
     }
 
-    lm:shared_library 'launcher' {
+    lm:lua_library 'launcher' {
+        export_luaopen = false,
         deps = {
-            "lua54",
             "detours",
         },
         includes = {
