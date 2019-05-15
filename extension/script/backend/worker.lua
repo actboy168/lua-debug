@@ -509,7 +509,7 @@ function event.panic(msg)
     runLoop('exception', exceptionMsg)
 end
 
-function event.exception(msg)
+function event.r_exception(msg)
     if not initialized then return end
     local _, type = getExceptionType()
     if not type or not exceptionFilters[type] then
@@ -520,7 +520,7 @@ function event.exception(msg)
     runLoop('exception', exceptionMsg)
 end
 
-function event.r_exception()
+function event.exception()
     if not initialized then return end
     local level, type = getExceptionType()
     if not type or not exceptionFilters[type] then
