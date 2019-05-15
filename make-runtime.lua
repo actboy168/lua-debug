@@ -25,7 +25,7 @@ for _, luaver in ipairs {"lua53","lua54"} do
     lm.rootdir = '3rd/'..luaver
 
     if platform.OS == "Windows" then
-        lm:shared_library (luaver) {
+        lm:shared_library (luaver..'/'..luaver) {
             sources = {
                 "*.c",
                 "!lua.c",
@@ -38,7 +38,7 @@ for _, luaver in ipairs {"lua53","lua54"} do
         }
         lm:executable (luaver..'/lua') {
             output = "lua",
-            deps = luaver,
+            deps = (luaver..'/'..luaver),
             sources = {
                 "lua.c",
             }
@@ -69,7 +69,7 @@ for _, luaver in ipairs {"lua53","lua54"} do
 
     lm:shared_library (luaver..'/remotedebug') {
         deps = {
-            platform.OS == "Windows" and luaver,
+            platform.OS == "Windows" and (luaver..'/'..luaver),
             "onelua",
         },
         defines = {
@@ -111,14 +111,14 @@ for _, luaver in ipairs {"lua53","lua54"} do
 end
 
 lm:build 'install' {
-    '$luamake', 'lua', 'make/install-runtime.lua', lm.plat, lm.arch, "lua53",
+    '$luamake', 'lua', 'make/install-runtime.lua', lm.plat, lm.arch,
     deps = {
         "lua53/lua",
         "lua54/lua",
         "lua53/remotedebug",
         "lua54/remotedebug",
-        platform.OS == "Windows" and "lua53",
-        platform.OS == "Windows" and "lua54",
+        platform.OS == "Windows" and "lua53/lua53",
+        platform.OS == "Windows" and "lua54/lua54",
     }
 }
 
