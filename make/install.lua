@@ -125,44 +125,23 @@ spawn {
 }
 
 if platform == 'msvc' then
-    print 'Step 8. compile lua53 x86'
+    print 'Step 8. compile runtime x86'
     spawn {
-        luamake, 'remake', '-f', 'make-runtime.lua', '-arch', 'x86', '-luaver', 'lua53',
+        luamake, 'remake', '-f', 'make-runtime.lua', '-arch', 'x86',
         cwd = root,
         searchPath = true,
     }
 
-    print 'Step 9. compile lua53 x64'
+    print 'Step 9. compile runtime x64'
     spawn {
-        luamake, 'remake', '-f', 'make-runtime.lua', '-arch', 'x64', '-luaver', 'lua53',
-        cwd = root,
-        searchPath = true,
-    }
-
-    print 'Step 10. compile lua54 x86'
-    assert(sp.spawn {
-        luamake, 'remake', '-f', 'make-runtime.lua', '-arch', 'x86', '-luaver', 'lua54',
-        cwd = root,
-        searchPath = true,
-    }):wait()
-
-    print 'Step 11. compile lua54 x64'
-    spawn {
-        luamake, 'remake', '-f', 'make-runtime.lua', '-arch', 'x64', '-luaver', 'lua54',
+        luamake, 'remake', '-f', 'make-runtime.lua', '-arch', 'x64',
         cwd = root,
         searchPath = true,
     }
 else
-    print 'Step 6. compile lua53'
+    print 'Step 6. compile runtime'
     spawn {
-        luamake, 'remake', '-f', 'make-runtime.lua', '-luaver', 'lua53',
-        cwd = root,
-        searchPath = true,
-    }
-
-    print 'Step 7. compile lua54'
-    spawn {
-        luamake, 'remake', '-f', 'make-runtime.lua', '-luaver', 'lua54',
+        luamake, 'remake', '-f', 'make-runtime.lua',
         cwd = root,
         searchPath = true,
     }
