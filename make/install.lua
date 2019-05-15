@@ -100,24 +100,7 @@ copy_directory(root / 'extension', outputDir,
 )
 fs.copy_file(root / "LICENSE", outputDir / "LICENSE", true)
 
-if platform == 'msvc' then
-    print 'Step 5. compile launcher x86'
-    spawn {
-        luamake, 'remake', '-f', 'make-launcher.lua', '-arch', 'x86',
-        cwd = root,
-        searchPath = true,
-    }
-    print 'Step 6. compile launcher x64'
-    spawn {
-        luamake, 'remake', '-f', 'make-launcher.lua', '-arch', 'x64',
-        cwd = root,
-        searchPath = true,
-    }
-    print 'Step 7. compile bee'
-else
-    print 'Step 5. compile bee'
-end
-
+print 'Step 5. compile bee'
 spawn {
     luamake, 'remake', '-f', 'make-bin.lua',
     cwd = root,
@@ -125,14 +108,14 @@ spawn {
 }
 
 if platform == 'msvc' then
-    print 'Step 8. compile runtime x86'
+    print 'Step 6. compile runtime x86'
     spawn {
         luamake, 'remake', '-f', 'make-runtime.lua', '-arch', 'x86',
         cwd = root,
         searchPath = true,
     }
 
-    print 'Step 9. compile runtime x64'
+    print 'Step 7. compile runtime x64'
     spawn {
         luamake, 'remake', '-f', 'make-runtime.lua', '-arch', 'x64',
         cwd = root,

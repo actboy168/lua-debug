@@ -6,10 +6,55 @@ lm.gxx = 'clang++'
 
 lm.arch = ARGUMENTS.arch or 'x64'
 
-lm.bindir = ("build/%s/bin/runtime/%s"):format(lm.plat, lm.arch)
-lm.objdir = ("build/%s/obj/runtime/%s"):format(lm.plat, lm.arch)
+lm.bindir = ("build/%s/bin/%s"):format(lm.plat, lm.arch)
+lm.objdir = ("build/%s/obj/%s"):format(lm.plat, lm.arch)
 
-lm:source_set 'onelua' {
+if platform.OS == "Windows" then
+    lm:import '3rd/bee.lua/make.lua'
+
+    lm:source_set 'detours' {
+        rootdir = "3rd/detours/src",
+        permissive = true,
+        sources = {
+            "*.cpp",
+            "!uimports.cpp"
+        }
+    }
+
+    lm:shared_library 'launcher' {
+        deps = {
+            "lua54",
+            "detours",
+        },
+        includes = {
+            "src",
+            "3rd/bee.lua",
+            "3rd/bee.lua/3rd/lua/src",
+        },
+        sources = {
+            "3rd/bee.lua/bee/error.cpp",
+            "3rd/bee.lua/bee/error/category_win.cpp",
+            "3rd/bee.lua/bee/utility/unicode_win.cpp",
+            "3rd/bee.lua/bee/utility/path_helper.cpp",
+            "3rd/bee.lua/bee/utility/file_helper.cpp",
+            "src/base/hook/inline.cpp",
+            "src/remotedebug/rdebug_delayload.cpp",
+            "src/launcher/*.cpp",
+        },
+        defines = {
+            "BEE_INLINE",
+            "_CRT_SECURE_NO_WARNINGS",
+        },
+        links = {
+            "ws2_32",
+            "user32",
+            "delayimp",
+        },
+        ldflags = '/DELAYLOAD:lua54.dll',
+    }
+end
+
+lm:source_set 'runtime/onelua' {
     includes = {
         "3rd/bee.lua/3rd/lua/src",
     },
@@ -25,7 +70,7 @@ for _, luaver in ipairs {"lua53","lua54"} do
     lm.rootdir = '3rd/'..luaver
 
     if platform.OS == "Windows" then
-        lm:shared_library (luaver..'/'..luaver) {
+        lm:shared_library ('runtime/'..luaver..'/'..luaver) {
             sources = {
                 "*.c",
                 "!lua.c",
@@ -36,15 +81,15 @@ for _, luaver in ipairs {"lua53","lua54"} do
                 "LUA_BUILD_AS_DLL",
             }
         }
-        lm:executable (luaver..'/lua') {
+        lm:executable ('runtime/'..luaver..'/lua') {
             output = "lua",
-            deps = (luaver..'/'..luaver),
+            deps = ('runtime/'..luaver..'/'..luaver),
             sources = {
                 "lua.c",
             }
         }
     else
-        lm:executable (luaver..'/lua') {
+        lm:executable ('runtime/'..luaver..'/lua') {
             sources = {
                 "*.c",
                 "!luac.c",
@@ -67,10 +112,10 @@ for _, luaver in ipairs {"lua53","lua54"} do
 
     lm.rootdir = ''
 
-    lm:shared_library (luaver..'/remotedebug') {
+    lm:shared_library ('runtime/'..luaver..'/remotedebug') {
         deps = {
-            platform.OS == "Windows" and (luaver..'/'..luaver),
-            "onelua",
+            platform.OS == "Windows" and ('runtime/'..luaver..'/'..luaver),
+            "runtime/onelua",
         },
         defines = {
             "BEE_STATIC",
@@ -113,12 +158,13 @@ end
 lm:build 'install' {
     '$luamake', 'lua', 'make/install-runtime.lua', lm.plat, lm.arch,
     deps = {
-        "lua53/lua",
-        "lua54/lua",
-        "lua53/remotedebug",
-        "lua54/remotedebug",
-        platform.OS == "Windows" and "lua53/lua53",
-        platform.OS == "Windows" and "lua54/lua54",
+        "runtime/lua53/lua",
+        "runtime/lua54/lua",
+        "runtime/lua53/remotedebug",
+        "runtime/lua54/remotedebug",
+        platform.OS == "Windows" and "launcher",
+        platform.OS == "Windows" and "runtime/lua53/lua53",
+        platform.OS == "Windows" and "runtime/lua54/lua54",
     }
 }
 

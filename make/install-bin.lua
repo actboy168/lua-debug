@@ -29,8 +29,6 @@ fs.copy_file(bindir / 'bee.dll', output / 'bee.dll', true)
 fs.copy_file(bindir / 'lua54.dll', output / 'lua54.dll', true)
 fs.copy_file(bindir / 'lua.exe', output / 'lua-debug.exe', true)
 fs.copy_file(bindir / 'inject.dll', output / 'inject.dll', true)
-fs.copy_file(bindir / 'x86' / 'launcher.dll', output / 'launcher.x86.dll', true)
-fs.copy_file(bindir / 'x64' / 'launcher.dll', output / 'launcher.x64.dll', true)
 
 local function copy_crtdll(platform, target)
     fs.create_directories(target)

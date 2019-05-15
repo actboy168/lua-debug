@@ -3,9 +3,10 @@ local fs = require 'bee.filesystem'
 local CWD = fs.current_path()
 
 for _, luaver in ipairs {"lua53","lua54"} do
+    local bindir = CWD / 'build' / platform / 'bin' / arch / 'runtime' / luaver
+
     if platform ~= 'msvc' then
         local output = CWD / 'publish' / 'runtime' / platform / luaver
-        local bindir = CWD / 'build' / platform / 'bin' / 'runtime' / arch / luaver
 
         fs.create_directories(output)
         fs.copy_file(bindir / 'lua', output / 'lua', true)
@@ -13,12 +14,12 @@ for _, luaver in ipairs {"lua53","lua54"} do
     else
         local msvc = require 'msvc'
         local output = CWD / 'publish' / 'runtime' / (arch == 'x86' and 'win32' or 'win64') / luaver
-        local bindir = CWD / 'build' / 'msvc' / 'bin' / 'runtime' / arch / luaver
 
         fs.create_directories(output)
         fs.copy_file(bindir / (luaver..'.dll'), output / (luaver..'.dll'), true)
         fs.copy_file(bindir / 'lua.exe', output / 'lua.exe', true)
         fs.copy_file(bindir / 'remotedebug.dll', output / 'remotedebug.dll', true)
+        fs.copy_file(CWD / 'build' / platform / 'bin' / arch / 'launcher.dll', output / ('launcher.'..arch..'.dll'), true)
 
         local function copy_crtdll(platform, target)
             fs.create_directories(target)
