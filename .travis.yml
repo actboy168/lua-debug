@@ -1,7 +1,8 @@
 language: cpp
 matrix:
   include:
-    - os: linux
+    - name: "ubuntu clang7"
+      os: linux
       compiler: clang
       dist: xenial
       addons:
@@ -13,14 +14,16 @@ matrix:
           - g++-8
           - libreadline-dev
           - ninja-build
-    - os: osx
+    - name: "macos xcode10.2"
+      os: osx
       compiler: clang
       osx_image: xcode10.2
       addons:
         homebrew:
           packages:
           - ninja
-    - os: windows
+    - name: "windows msvc15.8"
+      os: windows
 
 script:
   - git clone --depth 1 https://github.com/actboy168/luamake
