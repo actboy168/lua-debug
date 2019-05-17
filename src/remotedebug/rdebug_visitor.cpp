@@ -439,6 +439,37 @@ lclient_eval(rlua_State *L) {
 }
 
 static int
+lclient_evalref(rlua_State *L) {
+	lua_State* hL = get_host(L);
+	int n = rlua_gettop(L);
+	for (int i = 1; i <= n; ++i) {
+		rlua_pushvalue(L, i);
+		int t = eval_value(L, hL);
+		rlua_pop(L, 1);
+		if (i == 1 && t != LUA_TFUNCTION) {
+			lua_pop(hL, 1);
+			return rluaL_error(L, "need function");
+		}
+	}
+
+	if (lua_pcall(hL, n-1, 1, 0)) {
+		rlua_pushboolean(L, 0);
+		rlua_pushstring(L, lua_tostring(hL, -1));
+		lua_pop(hL, 1);
+		return 2;
+	}
+	rlua_pushboolean(L, 1);
+	if (LUA_TNONE == copy_toX(hL, L)) {
+		rlua_pushfstring(L, "[%s: %p]", 
+			lua_typename(hL, lua_type(hL, -1)),
+			lua_topointer(hL, -1)
+		);
+	}
+	lua_pop(hL, 1);
+	return 2;
+}
+
+static int
 addwatch(lua_State *hL, int idx) {
 	lua_pushvalue(hL, idx);
 	if (lua_rawgetp(hL, LUA_REGISTRYINDEX, &DEBUG_WATCH) == LUA_TNIL) {
@@ -548,6 +579,7 @@ init_visitor(rlua_State *L) {
 		{ "getinfo", lclient_getinfo },
 		{ "reffunc", lclient_reffunc },
 		{ "eval", lclient_eval },
+		{ "evalref", lclient_evalref },
 		{ "evalwatch", lclient_evalwatch },
 		{ "unwatch", lclient_unwatch },
 		{ "cleanwatch", lclient_cleanwatch },

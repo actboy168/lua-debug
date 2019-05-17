@@ -354,6 +354,13 @@ local function varGetValue(type, subtype, value)
     elseif type == 'userdata' then
         local meta = rdebug.getmetatablev(value)
         if meta ~= nil then
+            local fn = rdebug.indexv(meta, '__debugger_tostring')
+            if fn ~= nil and rdebug.type(fn) == 'function' then
+                local ok, res = rdebug.evalref(fn, value)
+                if ok then
+                    return res
+                end
+            end
             local name = rdebug.indexv(meta, '__name')
             if name ~= nil then
                 return 'userdata: ' .. tostring(rdebug.value(name))
