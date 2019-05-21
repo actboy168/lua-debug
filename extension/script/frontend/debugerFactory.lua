@@ -106,9 +106,6 @@ local function installBootstrap1(option, luaexe, args)
 end
 
 local function installBootstrap2(c, luaexe, args, pid, dbg)
-    if useWSL then
-        c[#c+1] = "wsl"
-    end
     c[#c+1] = towsl(luaexe:string())
     c[#c+1] = "-e"
     c[#c+1] = create_install_script(args, pid, dbg:string())
@@ -150,6 +147,9 @@ local function create_terminal(args, dbg, pid)
         title = "Lua Debug",
         args = {},
     }
+    if useWSL then
+        option.args[1] = "wsl"
+    end
     installBootstrap1(option, luaexe, args)
     installBootstrap2(option.args, luaexe, args, pid, dbg)
     return option
@@ -167,6 +167,10 @@ local function create_luaexe(args, dbg, pid)
     local option = {
         console = 'hide'
     }
+    if useWSL then
+        local SystemRoot = (os.getenv "SystemRoot") or "C:\\WINDOWS"
+        option[1] = SystemRoot .. "\\sysnative\\wsl.exe"
+    end
     installBootstrap1(option, luaexe, args)
     installBootstrap2(option, luaexe, args, pid, dbg)
     return sp.spawn(option)
