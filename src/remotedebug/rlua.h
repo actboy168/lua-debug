@@ -296,6 +296,16 @@ void  (rluaL_pushresultsize) (rluaL_Buffer *B, size_t sz);
 #define lua_warning rlua_warning
 #define lua_xmove rlua_xmove
 #define lua_yieldk rlua_yieldk
+#define luaopen_base rluaopen_base
+#define luaopen_coroutine rluaopen_coroutine
+#define luaopen_debug rluaopen_debug
+#define luaopen_io rluaopen_io
+#define luaopen_math rluaopen_math
+#define luaopen_os rluaopen_os
+#define luaopen_package rluaopen_package
+#define luaopen_string rluaopen_string
+#define luaopen_table rluaopen_table
+#define luaopen_utf8 rluaopen_utf8
 
 #endif
 
@@ -464,5 +474,15 @@ void  (rluaL_pushresultsize) (rluaL_Buffer *B, size_t sz);
 #define rlua_warning lua_warning
 #define rlua_xmove lua_xmove
 #define rlua_yieldk lua_yieldk
+#define rluaopen_base luaopen_base
+#define rluaopen_coroutine luaopen_coroutine
+#define rluaopen_debug luaopen_debug
+#define rluaopen_io luaopen_io
+#define rluaopen_math luaopen_math
+#define rluaopen_os luaopen_os
+#define rluaopen_package luaopen_package
+#define rluaopen_string luaopen_string
+#define rluaopen_table luaopen_table
+#define rluaopen_utf8 luaopen_utf8
 
 #endif
