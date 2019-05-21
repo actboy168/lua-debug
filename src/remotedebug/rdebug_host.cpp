@@ -57,6 +57,8 @@ static int
 client_main(rlua_State *L) {
 	lua_State *hL = (lua_State *)rlua_touserdata(L, 2);
 	set_host(L, hL);
+	rlua_pushboolean(L, 1);
+	rlua_setfield(L, LUA_REGISTRYINDEX, "LUA_NOENV");
 	rluaL_openlibs(L);
 	const char* mainscript = (const char *)rlua_touserdata(L, 1);
 	if (rluaL_loadstring(L, mainscript) != LUA_OK) {
