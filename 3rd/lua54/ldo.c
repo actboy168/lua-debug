@@ -666,8 +666,10 @@ LUA_API int lua_resume (lua_State *L, lua_State *from, int nargs,
   if (L->status == LUA_OK) {  /* may be starting a coroutine */
     if (L->ci != &L->base_ci)  /* not in base level? */
       return resume_error(L, "cannot resume non-suspended coroutine", nargs);
+    else if (L->top - (L->ci->func + 1) == nargs)  /* no function? */
+      return resume_error(L, "cannot resume dead coroutine", nargs);
   }
-  else if (L->status != LUA_YIELD)
+  else if (L->status != LUA_YIELD)  /* ended with errors? */
     return resume_error(L, "cannot resume dead coroutine", nargs);
   if (from == NULL)
     L->nCcalls = 1;
@@ -688,10 +690,8 @@ LUA_API int lua_resume (lua_State *L, lua_State *from, int nargs,
   if (likely(!errorstatus(status)))
     lua_assert(status == L->status);  /* normal end or yield */
   else {  /* unrecoverable error */
-    status = luaF_close(L, L->stack, status);  /* close all upvalues */
       L->status = cast_byte(status);  /* mark thread as 'dead' */
-    luaD_seterrorobj(L, status, L->stack + 1);  /* push error message */
-    L->ci = &L->base_ci;  /* back to the original C level */
+    luaD_seterrorobj(L, status, L->top);  /* push error message */
       L->ci->top = L->top;
     }
   *nresults = (status == LUA_YIELD) ? L->ci->u2.nyield
