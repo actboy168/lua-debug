@@ -469,19 +469,21 @@ local function extandFunction(frameId, varRef)
     local evaluateName = varRef[2]
     local vars = {}
     local i = 1
+    local _, subtype = rdebug.type(f)
+    local isCFunction = subtype == "c"
     while true do
         local name, value = rdebug.getupvaluev(f, i)
         if name == nil then
             break
         end
+        local displayName = isCFunction and ("[%d]"):format(i) or name
         local fi = i
-        varCreate(vars, frameId, varRef, name, value
+        varCreate(vars, frameId, varRef, displayName, value
             , evaluateName and ('select(2, debug.getupvalue(%s,%d))'):format(evaluateName, i)
             , function() local _, r = rdebug.getupvalue(f, fi) return r end
         )
         i = i + 1
     end
-    table.sort(vars, function(a, b) return a.name < b.name end)
     return vars
 end
 
