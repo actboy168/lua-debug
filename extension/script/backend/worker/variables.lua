@@ -384,7 +384,7 @@ local function varCreateReference(frameId, value, evaluateName)
     return text, type
 end
 
-local function varCreate(vars, frameId, varRef, name, value, evaluateName, calcValue)
+local function varCreateObject(frameId, name, value, evaluateName)
     local text, type, ref = varCreateReference(frameId, value, evaluateName)
     local var = {
         name = name,
@@ -393,6 +393,11 @@ local function varCreate(vars, frameId, varRef, name, value, evaluateName, calcV
         variablesReference = ref,
         evaluateName = evaluateName and evaluateName or nil,
     }
+    return var
+end
+
+local function varCreate(vars, frameId, varRef, name, value, evaluateName, calcValue)
+    local var = varCreateObject(frameId, name, value, evaluateName)
     local maps = varRef[3]
     if maps[name] then
         vars[maps[name][3]] = var
@@ -401,19 +406,13 @@ local function varCreate(vars, frameId, varRef, name, value, evaluateName, calcV
         vars[#vars + 1] = var
         maps[name] = { calcValue, evaluateName, #vars }
     end
+    return var
 end
 
 local function varCreateInsert(vars, frameId, varRef, name, value, evaluateName, calcValue)
-    local text, type, ref = varCreateReference(frameId, value, evaluateName)
-    local var = {
-        name = name,
-        type = type,
-        value = text,
-        variablesReference = ref,
-        evaluateName = evaluateName,
-        presentationHint = {
-            kind = "virtual"
-        }
+    local var = varCreateObject(frameId, name, value, evaluateName)
+    var.presentationHint = {
+        kind = "virtual"
     }
     local maps = varRef[3]
     if maps[name] then
@@ -421,6 +420,7 @@ local function varCreateInsert(vars, frameId, varRef, name, value, evaluateName,
     end
     table.insert(vars, 1, var)
     maps[name] = { calcValue, evaluateName }
+    return var
 end
 
 local function getTabelKey(key)
@@ -478,10 +478,13 @@ local function extandFunction(frameId, varRef)
         end
         local displayName = isCFunction and ("[%d]"):format(i) or name
         local fi = i
-        varCreate(vars, frameId, varRef, displayName, value
+        local var = varCreate(vars, frameId, varRef, displayName, value
             , evaluateName and ('select(2, debug.getupvalue(%s,%d))'):format(evaluateName, i)
             , function() local _, r = rdebug.getupvalue(f, fi) return r end
         )
+        var.presentationHint = {
+            kind = "virtual"
+        }
         i = i + 1
     end
     return vars
