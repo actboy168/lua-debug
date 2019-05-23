@@ -2,17 +2,6 @@ local platform, arch = ...
 local fs = require 'bee.filesystem'
 local CWD = fs.current_path()
 
-local function copy_crtdll(platform, target)
-    local msvc = require 'msvc'
-    fs.create_directories(target)
-    fs.copy_file(msvc.crtpath(platform) / 'msvcp140.dll', target / 'msvcp140.dll', true)
-    fs.copy_file(msvc.crtpath(platform) / 'concrt140.dll', target / 'concrt140.dll', true)
-    fs.copy_file(msvc.crtpath(platform) / 'vcruntime140.dll', target / 'vcruntime140.dll', true)
-    for dll in msvc.ucrtpath(platform):list_directory() do
-        fs.copy_file(dll, target / dll:filename(), true)
-    end
-end
-
 local exe = platform == 'msvc' and ".exe" or ""
 local dll = platform == 'msvc' and ".dll" or ".so"
 
@@ -30,7 +19,7 @@ if platform ~= 'msvc' or arch == 'x86' then
     fs.copy_file(bindir / ('inject'..dll),    output / ('inject'..dll),     true)
     if platform == 'msvc' then
         fs.copy_file(bindir / 'lua54.dll', output / 'lua54.dll', true)
-        copy_crtdll('x86', output)
+        require 'msvc'.copy_crtdll('x86', output)
     end
 end
 
@@ -49,6 +38,6 @@ for _, luaver in ipairs {"lua53","lua54"} do
     fs.copy_file(bindir / ('remotedebug'..dll), output / ('remotedebug'..dll), true)
     if platform == 'msvc' then
         fs.copy_file(bindir / (luaver..'.dll'), output / (luaver..'.dll'), true)
-        copy_crtdll(arch, output)
+        require 'msvc'.copy_crtdll(arch, output)
     end
 end
