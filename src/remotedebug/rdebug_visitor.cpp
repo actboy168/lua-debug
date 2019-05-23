@@ -293,10 +293,12 @@ lclient_getmetatablev(rlua_State *L) {
 
 static int
 client_getuservalue(rlua_State *L, int getref) {
+	int n = (int)rluaL_optinteger(L, 2, 1);
 	rlua_settop(L, 1);
 	lua_State *hL = get_host(L);
-	if (get_uservalue(L, hL, getref)) {
-		return 1;
+	if (get_uservalue(L, hL, n, getref)) {
+		rlua_pushboolean(L, 1);
+		return 2;
 	}
 	return 0;
 }

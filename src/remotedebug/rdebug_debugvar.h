@@ -863,7 +863,7 @@ get_metatable(rlua_State *L, lua_State *cL, int getref) {
 }
 
 static int
-get_uservalue(rlua_State *L, lua_State *cL, int getref) {
+get_uservalue(rlua_State *L, lua_State *cL, int index, int getref) {
 	if (lua_checkstack(cL, 2)==0)
 		return rluaL_error(L, "stack overflow");
 	int t = eval_value(L, cL);
@@ -879,7 +879,19 @@ get_uservalue(rlua_State *L, lua_State *cL, int getref) {
 	}
 
 	if (!getref) {
+#if LUA_VERSION_NUM >= 504
+		if (lua_getiuservalue(cL, -1, index) == LUA_TNONE) {
+			lua_pop(cL, 1);
+			rlua_pop(L, 1);
+			return 0;
+		}
+#else
+		if (index > 1) {
+			rlua_pop(L, 1);
+			return 0;
+		}
 		lua_getuservalue(cL, -1);
+#endif
 		if (copy_toX(cL, L) != LUA_TNONE) {
 			lua_pop(cL, 2);	// pop userdata / uservalue
 			rlua_replace(L, -2);

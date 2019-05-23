@@ -495,14 +495,35 @@ local function extandUserdata(frameId, varRef)
     local u = varRef[1]
     local evaluateName = varRef[2]
     local vars = {}
-    --TODO
-    local uv = rdebug.getuservaluev(u)
-    if uv ~= nil then
-        varCreateInsert(vars, frameId, varRef, '[uservalue]', uv
-            , evaluateName and ('debug.getuservalue(%s)'):format(evaluateName)
-            , function() return rdebug.getuservalue(u) end
-        )
+    if LUAVERSION >= 54 then
+        local i = 1
+        while true do
+            local uv, ok = rdebug.getuservaluev(u, i)
+            if not ok then
+                break
+            end
+            if uv ~= nil then
+                local fi = i
+                local var = varCreate(vars, frameId, varRef, ('[uservalue:%d]'):format(i), uv
+                    , evaluateName and ('debug.getuservalue(%s,%d)'):format(evaluateName,i)
+                    , function() return rdebug.getuservalue(u, fi) end
+                )
+                var.presentationHint = {
+                    kind = "virtual"
+                }
+            end
+            i = i + 1
+        end
+    else
+        local uv = rdebug.getuservaluev(u)
+        if uv ~= nil then
+            varCreateInsert(vars, frameId, varRef, '[uservalue]', uv
+                , evaluateName and ('debug.getuservalue(%s)'):format(evaluateName)
+                , function() return rdebug.getuservalue(u) end
+            )
+        end
     end
+
     local meta = rdebug.getmetatablev(u)
     if meta ~= nil then
         varCreateInsert(vars, frameId, varRef, '[metatable]', meta
