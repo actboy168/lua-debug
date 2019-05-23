@@ -564,7 +564,6 @@ init_visitor(rlua_State *L) {
 		{ "getmetatablev", lclient_getmetatablev },
 		{ "getuservalue", lclient_getuservalue },
 		{ "getuservaluev", lclient_getuservaluev },
-		//{ "detail", show_detail },
 		{ "index", lclient_index },
 		{ "indexv", lclient_indexv },
 		{ "next", lclient_next },
