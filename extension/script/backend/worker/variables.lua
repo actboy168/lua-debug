@@ -373,15 +373,41 @@ local function varGetValue(type, subtype, value)
     return tostring(rdebug.value(value))
 end
 
+local function varGetType(type, subtype)
+    if type == 'string'
+        or type == 'boolean'
+        or type == 'nil'
+        or type == 'table'
+        or type == 'table'
+        or type == 'thread'
+    then
+        return type
+    elseif type == 'number' then
+        return subtype
+    elseif type == 'function' then
+        if subtype == 'c' then
+            return 'C function'
+        end
+        return 'function'
+    elseif type == 'userdata' then
+        if subtype == 'light' then
+            return 'lightuserdata'
+        end
+        return 'userdata'
+    end
+    return type
+end
+
 local function varCreateReference(frameId, value, evaluateName)
     local type, subtype = rdebug.type(value)
-    local text = varGetValue(type, subtype, value)
+    local textType = varGetType(type, subtype)
+    local textValue = varGetValue(type, subtype, value)
     if varCanExtand(type, subtype, value) then
         local pool = varPool[frameId]
         pool[#pool + 1] = { value, evaluateName }
-        return text, type, (frameId << 16) | #pool
+        return textValue, textType, (frameId << 16) | #pool
     end
-    return text, type
+    return textValue, textType
 end
 
 local function varCreateObject(frameId, name, value, evaluateName)
@@ -789,7 +815,8 @@ function m.createRef(frameId, value, evaluateName)
     if not varPool[frameId] then
         varPool[frameId] = {}
     end
-    return varCreateReference(frameId, value, evaluateName)
+    local text, _, ref =  varCreateReference(frameId, value, evaluateName)
+    return text, ref
 end
 
 ev.on('terminated', function()
