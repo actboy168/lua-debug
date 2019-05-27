@@ -366,6 +366,9 @@ local function varGetValue(type, subtype, value)
                 return 'userdata: ' .. tostring(rdebug.value(name))
             end
         end
+        if subtype == 'light' then
+            return 'light' .. tostring(rdebug.value(value))
+        end
         return 'userdata'
     elseif type == 'thread' then
         return 'thread'
