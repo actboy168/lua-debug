@@ -18,7 +18,10 @@
 #include "lua.h"
 #include "lauxlib.h"
 
+#include "ldebug.h"
 #include "lobject.h"
+#include "lopcodes.h"
+#include "lopnames.h"
 #include "lstate.h"
 #include "lundump.h"
 
@@ -209,20 +212,8 @@ int main(int argc, char* argv[])
 ** print bytecodes
 */
 
-#include <ctype.h>
-#include <stdio.h>
-
-#define luac_c
-#define LUA_CORE
-#define LUAI_DEFOPNAMES
-
-#include "ldebug.h"
-#include "lobject.h"
-#include "lopcodes.c"
-
 #define UPVALNAME(x) ((f->upvalues[x].name) ? getstr(f->upvalues[x].name) : "-")
 #define VOID(p) ((const void*)(p))
-#define getfuncline(f,pc) luaG_getfuncline((Proto *)f,pc)
 
 static void PrintString(const TString* ts)
 {
@@ -238,28 +229,28 @@ static void PrintString(const TString* ts)
 	printf("\\\"");
 	break;
    case '\\':
-   	printf("\\\\");
+	printf("\\\\");
 	break;
    case '\a':
-   	printf("\\a");
+	printf("\\a");
 	break;
    case '\b':
-   	printf("\\b");
+	printf("\\b");
 	break;
    case '\f':
-   	printf("\\f");
+	printf("\\f");
 	break;
    case '\n':
-   	printf("\\n");
+	printf("\\n");
 	break;
    case '\r':
-   	printf("\\r");
+	printf("\\r");
 	break;
    case '\t':
-   	printf("\\t");
+	printf("\\t");
 	break;
    case '\v':
-   	printf("\\v");
+	printf("\\v");
 	break;
    default:
 	if (isprint(c)) printf("%c",c); else printf("\\%03d",c);
@@ -267,6 +258,34 @@ static void PrintString(const TString* ts)
   }
  }
  printf("\"");
+}
+
+static void PrintType(const Proto* f, int i)
+{
+ const TValue* o=&f->k[i];
+ switch (ttypetag(o))
+ {
+  case LUA_TNIL:
+  	printf("N");
+	break;
+  case LUA_TBOOLEAN:
+  	printf("B");
+	break;
+  case LUA_TNUMFLT:
+  	printf("F");
+	break;
+  case LUA_TNUMINT:
+  	printf("I");
+	break;
+  case LUA_TSHRSTR:
+  case LUA_TLNGSTR:
+  	printf("S");
+	break;
+  default:				/* cannot happen */
+	printf("?%d",ttypetag(o));
+	break;
+ }
+ printf("\t");
 }
 
 static void PrintConstant(const Proto* f, int i)
@@ -296,7 +315,7 @@ static void PrintConstant(const Proto* f, int i)
 	PrintString(tsvalue(o));
 	break;
   default:				/* cannot happen */
-	printf("? type=%d",ttypetag(o));
+	printf("?%d",ttypetag(o));
 	break;
  }
 }
@@ -318,10 +337,10 @@ static void PrintCode(const Proto* f)
   int sc=GETARG_sC(i);
   int sbx=GETARG_sBx(i);
   int isk=GETARG_k(i);
-  int line=getfuncline(f,pc);
+  int line=luaG_getfuncline(f,pc);
   printf("\t%d\t",pc+1);
   if (line>0) printf("[%d]\t",line); else printf("[-]\t");
-  printf("%-9s\t",luaP_opnames[o]);
+  printf("%-9s\t",opnames[o]);
   switch (o)
   {
    case OP_MOVE:
@@ -418,17 +437,45 @@ static void PrintCode(const Proto* f)
    case OP_IDIVI:
 	printf("%d %d %d",a,b,sc);
 	break;
+   case OP_ADDK:
+	printf("%d %d %d",a,b,c);
+	printf("\t; "); PrintConstant(f,c);
+	break;
+   case OP_SUBK:
+	printf("%d %d %d",a,b,c);
+	printf("\t; "); PrintConstant(f,c);
+	break;
+   case OP_MULK:
+	printf("%d %d %d",a,b,c);
+	printf("\t; "); PrintConstant(f,c);
+	break;
+   case OP_MODK:
+	printf("%d %d %d",a,b,c);
+	printf("\t; "); PrintConstant(f,c);
+	break;
+   case OP_POWK:
+	printf("%d %d %d",a,b,c);
+	printf("\t; "); PrintConstant(f,c);
+	break;
+   case OP_DIVK:
+	printf("%d %d %d",a,b,c);
+	printf("\t; "); PrintConstant(f,c);
+	break;
+   case OP_IDIVK:
+	printf("%d %d %d",a,b,c);
+	printf("\t; "); PrintConstant(f,c);
+	break;
    case OP_BANDK:
 	printf("%d %d %d",a,b,c);
-	printf("\t; "); PrintConstant(f,c); 
+	printf("\t; "); PrintConstant(f,c);
 	break;
    case OP_BORK:
 	printf("%d %d %d",a,b,c);
-	printf("\t; "); PrintConstant(f,c); 
+	printf("\t; "); PrintConstant(f,c);
 	break;
    case OP_BXORK:
 	printf("%d %d %d",a,b,c);
-	printf("\t; "); PrintConstant(f,c); 
+	printf("\t; "); PrintConstant(f,c);
 	break;
    case OP_SHRI:
 	printf("%d %d %d",a,b,c);
@@ -490,6 +537,9 @@ static void PrintCode(const Proto* f)
    case OP_CLOSE:
 	printf("%d",a);
 	break;
+   case OP_TBC:
+	printf("%d",a);
+	break;
    case OP_JMP:
 	printf("%d",GETARG_sJ(i));
 	printf("\t; to %d",GETARG_sJ(i)+pc+2);
@@ -531,8 +581,8 @@ static void PrintCode(const Proto* f)
    case OP_CALL:
 	printf("%d %d %d",a,b,c);
 	printf("\t; ");
-   	if (b==0) printf("all in "); else printf("%d in ",b-1);
-   	if (c==0) printf("all out"); else printf("%d out",c-1);
+	if (b==0) printf("all in "); else printf("%d in ",b-1);
+	if (c==0) printf("all out"); else printf("%d out",c-1);
 	break;
    case OP_TAILCALL:
 	printf("%d %d %d",a,b,c);
@@ -541,26 +591,22 @@ static void PrintCode(const Proto* f)
    case OP_RETURN:
 	printf("%d %d %d",a,b,c);
 	printf("\t; ");
-   	if (b==0) printf("all out"); else printf("%d out",b-1);
+	if (b==0) printf("all out"); else printf("%d out",b-1);
 	break;
    case OP_RETURN0:
 	break;
    case OP_RETURN1:
 	printf("%d",a);
 	break;
-   case OP_FORLOOP1:
-	printf("%d %d",a,bx);
-	printf("\t; to %d",pc-bx+2);
-	break;
-   case OP_FORPREP1:
-	printf("%d %d",a,bx);
-	printf("\t; to %d",pc+bx+2);
-	break;
    case OP_FORLOOP:
 	printf("%d %d",a,bx);
 	printf("\t; to %d",pc-bx+2);
 	break;
    case OP_FORPREP:
+	printf("%d %d",a,bx);
+	printf("\t; to %d",pc+bx+2);
+	break;
+   case OP_TFORPREP:
 	printf("%d %d",a,bx);
 	printf("\t; to %d",pc+bx+2);
 	break;
@@ -581,53 +627,23 @@ static void PrintCode(const Proto* f)
    case OP_VARARG:
 	printf("%d %d",a,c);
 	printf("\t; ");
-   	if (c==0) printf("all out"); else printf("%d out",c-1);
+	if (c==0) printf("all out"); else printf("%d out",c-1);
 	break;
-   case OP_PREPVARARG:
+   case OP_VARARGPREP:
 	printf("%d",a);
 	break;
    case OP_EXTRAARG:
 	printf("%d",ax);
 	printf("\t; "); PrintConstant(f,ax);
 	break;
+   //default: printf("not handled"); break;
+	//printf("%d %d %d",a,b,c);
+	//break;
   }
   printf("\n");
  }
 }
 
-static void riPrintCode(const Proto* p)
-{
- const Instruction* code=p->code;
- int pc,n=p->sizecode;
- for (pc=0; pc<n; pc++)
- {
-  Instruction i = code[pc];
-  OpCode o = GET_OPCODE(i);
-  const char *name = luaP_opnames[o];
-  int line = luaG_getfuncline(p, pc);
-  printf("(%4d) %4d - ", line, pc);
-  switch (getOpMode(o)) {
-    case iABC:
-      printf("%-12s%4d %4d %4d%s", name,
-              GETARG_A(i), GETARG_B(i), GETARG_C(i),
-              GETARG_k(i) ? " (k)" : "");
-      break;
-    case iABx:
-      printf("%-12s%4d %4d", name, GETARG_A(i), GETARG_Bx(i));
-      break;
-    case iAsBx:
-      printf("%-12s%4d %4d", name, GETARG_A(i), GETARG_sBx(i));
-      break;
-    case iAx:
-      printf("%-12s%4d", name, GETARG_Ax(i));
-      break;
-    case isJ:
-      printf("%-12s%4d (%1d)", name, GETARG_sJ(i), !!GETARG_m(i));
-      break;
-  }
- printf("\n");
- }
-}
 
 #define SS(x)	((x==1)?"":"s")
 #define S(x)	(int)(x),SS(x)
@@ -659,7 +675,8 @@ static void PrintDebug(const Proto* f)
  printf("constants (%d) for %p:\n",n,VOID(f));
  for (i=0; i<n; i++)
  {
-  printf("\t%d\t",i+1);
+  printf("\t%d\t",i);
+  PrintType(f,i);
   PrintConstant(f,i);
   printf("\n");
  }
@@ -683,7 +700,6 @@ static void PrintFunction(const Proto* f, int full)
 {
  int i,n=f->sizep;
  PrintHeader(f);
- riPrintCode(f);
  PrintCode(f);
  if (full) PrintDebug(f);
  for (i=0; i<n; i++) PrintFunction(f->p[i],full);
