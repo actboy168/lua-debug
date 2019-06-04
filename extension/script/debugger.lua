@@ -8,12 +8,15 @@ if platform == "windows" then
         rt = rt .. "/win32"
     end
 else
+    assert(string.packsize "T" == 8)
     rt = rt .. "/" .. platform
 end
 if _VERSION == "Lua 5.4" then
     rt = rt .. "/lua54"
-else
+elseif _VERSION == "Lua 5.3" then
     rt = rt .. "/lua53"
+else
+    error(_VERSION .. " is not supported.")
 end
 
 local ext = platform == "windows" and "dll" or "so"
