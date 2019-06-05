@@ -55,7 +55,7 @@ local function createNamedThread(name, path, cpath, script)
     theadpool[name] = thread.named_thread(name, exitMgr:format(path, cpath, name) .. script)
 end
 
-return function (path, cpath, errlog, addr)
+return function (path, cpath, errlog, addr, client)
     if createNamedChannel("ExitRes"..thread.id) then
         return
     end
@@ -74,31 +74,41 @@ return function (path, cpath, errlog, addr)
         finishExit()
     ]]):format(errlog))
 
-    createNamedThread("master", path, cpath, ([=[
+    createNamedThread("master", path, cpath, ([[
         local addr = %q
-
-        local t = {}
-        if addr:sub(1,1) == '@' then
-            t.protocol = 'unix'
-            t.address = addr:sub(2)
-            t.client = true
-        else
-            local function split(str)
-                local r = {}
-                str:gsub('[^:]+', function (w) r[#r+1] = w end)
-                return r
+        local client = %s
+]]):format(addr, client) .. [=[
+        local function parse_address(address)
+            if address:sub(1,1) == '@' then
+                return {
+                    protocol = 'unix',
+                    address = address:sub(2),
+                    client = client,
+                }
             end
-            local l = split(addr)
-            t.protocol = 'tcp'
-            t.address = l[1]
-            t.port = tonumber(l[2])
-            if t.address == "localhost" then
-                t.address = "127.0.0.1"
+            local ipv4, port = addr:match("(%d+%.%d+%.%d+%.%d+):(%d+)")
+            if ipv4 then
+                return {
+                    protocol = 'tcp',
+                    address = ipv4,
+                    port = tonumber(port),
+                    client = client,
+                }
             end
+            local ipv6, port = addr:match("%[([%d:a-fA-F]+)%]:(%d+)")
+            if ipv6 then
+                return {
+                    protocol = 'tcp',
+                    address = ipv6,
+                    port = tonumber(port),
+                    client = client,
+                }
+            end
+            error "Invalid address."
         end
 
         local serverFactory = require "common.serverFactory"
-        local server = serverFactory(t)
+        local server = serverFactory(parse_address(addr))
 
         local dbg_io = {}
         function dbg_io:event_in(f)
@@ -130,7 +140,7 @@ return function (path, cpath, errlog, addr)
         until isExit()
         finishExit()
         select.closeall()
-    ]=]):format(addr))
+    ]=])
 
     local errlog = thread.channel "errlog"
     local ok, msg = errlog:pop()
