@@ -292,15 +292,15 @@
                                 "markdownDescription": "Automatically stop after attach.",
                                 "default": false
                             },
-                            "ip": {
+                            "address": {
                                 "type": "string",
-                                "markdownDescription": "TCP/IP address of debug port. Default is `localhost`.",
-                                "default": "localhost"
+                                "markdownDescription": "1. IPv4 e.g. `127.0.0.1:4278`\n2. IPv6 e.g. `[::1]:4278`\n3. Unix domain socket e.g. `@c:\\unix.sock`",
+                                "default": "127.0.0.1:4278"
                             },
-                            "port": {
-                                "type": "integer",
-                                "markdownDescription": "Debug port to attach to. Default is 4278.",
-                                "default": 4278
+                            "client": {
+                                "type": "boolean",
+                                "markdownDescription": "Choose whether to `connect` or `listen`.",
+                                "default": true
                             },
                             "processId": {
                                 "type": "integer",

@@ -75,41 +75,10 @@ return function (path, cpath, errlog, addr, client)
     ]]):format(errlog))
 
     createNamedThread("master", path, cpath, ([[
-        local addr = %q
-        local client = %s
-]]):format(addr, client) .. [=[
-        local function parse_address(address)
-            if address:sub(1,1) == '@' then
-                return {
-                    protocol = 'unix',
-                    address = address:sub(2),
-                    client = client,
-                }
-            end
-            local ipv4, port = addr:match("(%d+%.%d+%.%d+%.%d+):(%d+)")
-            if ipv4 then
-                return {
-                    protocol = 'tcp',
-                    address = ipv4,
-                    port = tonumber(port),
-                    client = client,
-                }
-            end
-            local ipv6, port = addr:match("%[([%d:a-fA-F]+)%]:(%d+)")
-            if ipv6 then
-                return {
-                    protocol = 'tcp',
-                    address = ipv6,
-                    port = tonumber(port),
-                    client = client,
-                }
-            end
-            error "Invalid address."
-        end
-
+        local parseAddress  = require "common.parseAddress"
         local serverFactory = require "common.serverFactory"
-        local server = serverFactory(parse_address(addr))
-
+        local server = serverFactory(parseAddress(%q, %s))
+]]):format(addr, client) .. [=[
         local dbg_io = {}
         function dbg_io:event_in(f)
             self.fsend = f

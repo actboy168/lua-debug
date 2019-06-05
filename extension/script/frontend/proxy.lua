@@ -92,12 +92,8 @@ local function attach_process(pkg, args, pid)
 end
 
 local function attach_tcp(args, pkg)
-    server = serverFactory {
-        protocol = 'tcp',
-        address = args.ip == 'localhost' and '127.0.0.1' or args.ip,
-        port = args.port,
-        client = true
-    }
+    local parseAddress = require "common.parseAddress"
+    server = serverFactory(parseAddress(args.address, args.client))
     server.send(initReq)
     server.send(pkg)
 end

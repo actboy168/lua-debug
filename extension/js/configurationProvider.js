@@ -117,11 +117,11 @@ function resolveDebugConfiguration(folder, config, token) {
             config.pathFormat = "path"
         }
     }
-    if (typeof config.ip == 'string' && typeof config.port != 'number') {
-        config.port = 4278
+    if (typeof config.address != 'string') {
+        config.address = "127.0.0.1:4278"
     }
-    if (typeof config.ip != 'string' && typeof config.port == 'number') {
-        config.ip = '127.0.0.1'
+    if (typeof config.client != 'boolean') {
+        config.client = true
     }
     if (config.request == 'launch') {
         if (typeof config.runtimeExecutable != 'string') {
@@ -171,8 +171,8 @@ function resolveDebugConfiguration(folder, config, token) {
         }
     }
     else if (config.request == 'attach') {
-        if ((!config.ip || !config.port) && !config.processId && !config.processName) {
-            return vscode.window.showErrorMessage('Cannot missing ip or port to debug').then(_ => {
+        if (!config.address && !config.processId && !config.processName) {
+            return vscode.window.showErrorMessage('Cannot missing `address` to debug').then(_ => {
                 return undefined;
             });
         }
