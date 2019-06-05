@@ -44,8 +44,8 @@
 3. attach模式，调试任意加载了调试器的进程。
 
     * stopOnEntry，开始调试时是否先暂停
-    * ip，远程调试器的ip
-    * port，远程调试器的端口
+    * address，远程调试器的地址
+    * client，用connect还是listen的方式使用address
     * sourceMaps，远程代码和本地代码的路径映射
     * sourceCoding，远程代码路径的编码，utf8或者ansi。如果你没修过过lua，windows下默认是ansi。
     * outputCapture，作用同上
