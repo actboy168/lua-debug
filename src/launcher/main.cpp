@@ -29,7 +29,7 @@ struct file {
 
 static void attach(lua_State* L) {
     auto root = bee::path_helper::dll_path().value().parent_path().parent_path().parent_path();
-    auto buf = file((root / "script" / "launcher" / "main.lua").c_str()).read<std::string>();
+    auto buf = file((root / "script" / "attach.lua").c_str()).read<std::string>();
     if (luaL_loadbuffer(L, buf.data(), buf.size(), "=(BOOTSTRAP)")) {
         fprintf(stderr, "%s\n", lua_tostring(L, -1));
         lua_pop(L, 1);

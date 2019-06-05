@@ -1,4 +1,4 @@
-local path, pid, luaapi = ...
+local platform, path, pid = ...
 
 local function dofile(filename, ...)
     local f = assert(io.open(filename))
@@ -8,4 +8,5 @@ local function dofile(filename, ...)
     return func(...)
 end
 
-dofile(path.."/script/debugger.lua","windows",path,pid,luaapi)
+local dbg = dofile(path.."/script/debugger.lua",platform,path)
+dbg:start(("@%s/runtime/tmp/pid_%s.tmp"):format(path, pid))

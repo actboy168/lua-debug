@@ -28,38 +28,14 @@ local function nativepath(s)
     return towsl(s)
 end
 
-local function create_install_script(args, pid, dbg)
+local function create_install_script(pid, dbg)
     local res = {}
     res[#res+1] = ("local path=[[%s]];"):format(nativepath(dbg))
-    res[#res+1] = ("assert(loadfile(path..'/script/debugger.lua'))('%s',path,%d)"):format(
+    res[#res+1] = ("assert(loadfile(path..'/script/launch.lua'))('%s',path,%d)"):format(
         platformOS():lower(),
         pid
     )
     return table.concat(res)
-end
-
-local function is64Exe(exe)
-    local f = io.open(exe:string())
-    if not f then
-        return
-    end
-    local MZ = f:read(2)
-    if MZ ~= 'MZ' then
-        f:close()
-        return
-    end
-    f:seek('set', 60)
-    local e_lfanew = ('I4'):unpack(f:read(4))
-    f:seek('set', e_lfanew)
-    local ntheader = ('z'):unpack(f:read(4) .. '\0')
-    if ntheader ~= 'PE' then
-        f:close()
-        return
-    end
-    f:seek('cur', 18)
-    local characteristics = ('I2'):unpack(f:read(2))
-    f:close()
-    return (characteristics & 0x100) == 0
 end
 
 local function getLuaRuntime(args)
@@ -108,7 +84,7 @@ end
 local function installBootstrap2(c, luaexe, args, pid, dbg)
     c[#c+1] = towsl(luaexe:string())
     c[#c+1] = "-e"
-    c[#c+1] = create_install_script(args, pid, dbg:string())
+    c[#c+1] = create_install_script(pid, dbg:string())
 
     if type(args.arg0) == "string" then
         c[#c+1] = args.arg0

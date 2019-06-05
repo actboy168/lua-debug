@@ -1,4 +1,4 @@
-local platform, path, pid, luaapi = ...
+local platform, path, luaapi = ...
 
 local rt = "/runtime"
 if platform == "windows" then
@@ -22,7 +22,7 @@ end
 local ext = platform == "windows" and "dll" or "so"
 local remotedebug = path..rt..'/remotedebug.'..ext
 if luaapi then
-    assert(package.loadlib(remotedebug,'init'))()
+    assert(package.loadlib(remotedebug,'init'))(luaapi)
 end
 local rdebug = assert(package.loadlib(remotedebug,'luaopen_remotedebug'))()
 
@@ -36,4 +36,5 @@ end
 
 local dbg = dofile(path..'/script/start_debug.lua', rdebug,path,'/script/?.lua',rt..'/?.'..ext)
 debug.getregistry()["lua-debug"] = dbg
-dbg:start(("@%s/runtime/tmp/pid_%s.tmp"):format(path, pid))
+
+return dbg
