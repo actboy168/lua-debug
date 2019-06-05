@@ -40,7 +40,7 @@ local function create(t)
     end
     function m.recvRaw()
         if not session then
-            return
+            return ''
         end
         return select.recv(session)
     end
