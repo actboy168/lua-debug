@@ -294,7 +294,7 @@
                             },
                             "address": {
                                 "type": "string",
-                                "markdownDescription": "1. IPv4 e.g. `127.0.0.1:4278`\n2. IPv6 e.g. `[::1]:4278`\n3. Unix domain socket e.g. `@c:\\unix.sock`",
+                                "markdownDescription": "Debugger address.\n  1. IPv4 e.g. `127.0.0.1:4278`\n  2. IPv6 e.g. `[::1]:4278`\n  3. Unix domain socket e.g. `@c:\\unix.sock`",
                                 "default": "127.0.0.1:4278"
                             },
                             "client": {
