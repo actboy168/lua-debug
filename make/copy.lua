@@ -2,7 +2,7 @@ local fs = require 'bee.filesystem'
 local platform = require 'bee.platform'
 
 local home = fs.path(platform.OS == "Windows" and os.getenv 'USERPROFILE' or os.getenv 'HOME')
-local vscode = (function()
+local VSCODE = (function()
     local type = arg[2]
     if not type then
         return ".vscode"
@@ -24,9 +24,9 @@ local vscode = (function()
     return lst[name]
 end)()
 
---local vscode = '.vscode'
---local vscode = '.vscode-insiders'
---local vscode = '.vscode-remote'
+--local VSCODE = '.vscode'
+--local VSCODE = '.vscode-insiders'
+--local VSCODE = '.vscode-server'
 
 local version = (function()
     for line in io.lines(arg[1] .. '/package.json') do
@@ -52,7 +52,7 @@ local function copy_directory(from, to, filter)
     end
 end
 
-local outputDir = home / vscode / 'extensions' / ('actboy168.lua-debug-' .. version)
+local outputDir = home / VSCODE / 'extensions' / ('actboy168.lua-debug-' .. version)
 
 copy_directory(fs.path(arg[1]), outputDir)
 

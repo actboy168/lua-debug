@@ -16,25 +16,30 @@ function getHomeDirectory() {
     return process.env.USERPROFILE
 }
 
-function getRuntimeDirectory() {
+function getRuntimeDirectory(VSCODE) {
     let context = extension.context
     if (path.basename(context.extensionPath) != 'extension') {
         return context.extensionPath
     }
-    return path.join(getHomeDirectory(), '.vscode/extensions/actboy168.lua-debug-' + getVersion(context))
+    return path.join(getHomeDirectory(), VSCODE + '/extensions/actboy168.lua-debug-' + getVersion(context))
 }
 
 function createDebugAdapterDescriptor(session, executable) {
     if (typeof session.configuration.debugServer === 'number') {
         return new DebugAdapterServer(session.configuration.debugServer);
     }
-    let dir = getRuntimeDirectory()
+    // TODO: .vscode-insiders
+    let VSCODE = extension.context.executionContext === vscode.ExtensionExecutionContext.Remote
+        ? ".vscode-server"
+        : ".vscode";
+    let dir = getRuntimeDirectory(VSCODE)
     let platform = os.platform()
     if (platform == "win32") {
         let runtime = path.join(dir, 'bin/win/lua-debug.exe')
         let runtimeArgs = [
             "-e",
             "package.path=[["+path.join(dir, 'script/?.lua')+"]]",
+            "-e", "VSCODE='"+VSCODE+"'",
             path.join(dir, 'script/frontend/main.lua')
         ]
         return new vscode.DebugAdapterExecutable(runtime, runtimeArgs);
@@ -47,6 +52,7 @@ function createDebugAdapterDescriptor(session, executable) {
             "package.path=[["+path.join(dir, 'script/?.lua')+"]]",
             "-e",
             "package.cpath=[["+path.join(dir, 'bin/'+plat+'/?.so')+"]]",
+            "-e", "VSCODE='"+VSCODE+"'",
             path.join(dir, 'script/frontend/main.lua')
         ]
         return new vscode.DebugAdapterExecutable(runtime, runtimeArgs);

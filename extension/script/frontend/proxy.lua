@@ -27,7 +27,7 @@ local function getDbgPath()
     if WORKDIR:filename():string() ~= 'extension' then
         return WORKDIR
     end
-    return fs.path(getHomePath()) / '.vscode' / 'extensions' / ('actboy168.lua-debug-' .. getVersion(WORKDIR))
+    return fs.path(getHomePath()) / (VSCODE or '.vscode') / 'extensions' / ('actboy168.lua-debug-' .. getVersion(WORKDIR))
 end
 
 local function getUnixPath(pid)

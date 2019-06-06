@@ -1,5 +1,6 @@
 {
     "Lua.diagnostics.globals": [
-        "ARGUMENTS"
+        "ARGUMENTS",
+        "VSCODE"
     ]
 }
