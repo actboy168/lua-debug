@@ -98,6 +98,7 @@ static int redirect_print(lua_State* L) {
         if (ok > 0) {
             return 0;
         }
+        lua_remove(L, 1);
     }
     return callfunc(L);
 }
@@ -130,6 +131,7 @@ static int redirect_io_write(lua_State* L) {
             lua_getfield(L, LUA_REGISTRYINDEX, "_IO_output");
             return 1;
         }
+        lua_remove(L, 1);
     }
     return callfunc(L);
 }
