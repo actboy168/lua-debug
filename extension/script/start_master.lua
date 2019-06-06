@@ -97,6 +97,7 @@ return function (path, cpath, errlog, addr, client)
             server.sendRaw(data)
         end
         function dbg_io:close()
+            server.close()
             self.fclose()
         end
 

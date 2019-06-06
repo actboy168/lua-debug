@@ -15,12 +15,13 @@ local function create(t)
             srvfd = assert(select.connect(t))
             return
         end
+        if session then
+            fd:close()
+            return
+        end
         session = fd
         select.send(session, write)
         write = ''
-        if not t.client then
-            select.close(srvfd)
-        end
     end
     if t.client then
         srvfd = assert(select.connect(t))
@@ -49,6 +50,10 @@ local function create(t)
     end
     function m.recv()
         return proto.recv(m.recvRaw(), statR)
+    end
+    function m.close()
+        session = nil
+        write = ''
     end
     function m.is_closed()
         if not session then
