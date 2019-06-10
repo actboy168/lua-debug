@@ -1,32 +1,4 @@
 local fs = require 'bee.filesystem'
-local platform = require 'bee.platform'
-
-local home = fs.path(platform.OS == "Windows" and os.getenv 'USERPROFILE' or os.getenv 'HOME')
-local VSCODE = (function()
-    local type = arg[2]
-    if not type then
-        return ".vscode"
-    end
-    if #type < 10 then
-        return ".vscode-"..type
-    end
-    if platform.OS == "macOS" then
-        -- TODO
-        return ".vscode"
-    end
-    local name = type:match("[/\\]([%w%-._ ]+)$")
-    local pos = name:find('.', 1, true)
-    name = pos and name:sub(1, pos-1) or name
-    local lst = {
-        ["Code"] = ".vscode",
-        ["Code - Insiders"] = ".vscode-insiders",
-    }
-    return lst[name]
-end)()
-
---local VSCODE = '.vscode'
---local VSCODE = '.vscode-insiders'
---local VSCODE = '.vscode-server'
 
 local version = (function()
     for line in io.lines(arg[1] .. '/package.json') do
@@ -52,8 +24,6 @@ local function copy_directory(from, to, filter)
     end
 end
 
-local outputDir = home / VSCODE / 'extensions' / ('actboy168.lua-debug-' .. version)
-
-copy_directory(fs.path(arg[1]), outputDir)
+copy_directory(fs.path(arg[1]), fs.path(arg[2]) / ('actboy168.lua-debug-' .. version))
 
 print 'ok'
