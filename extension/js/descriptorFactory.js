@@ -28,10 +28,12 @@ function createDebugAdapterDescriptor(session, executable) {
     if (typeof session.configuration.debugServer === 'number') {
         return new DebugAdapterServer(session.configuration.debugServer);
     }
-    // TODO: .vscode-insiders
+    let INSIDERS = vscode.env.appName == "Visual Studio Code - Insiders"
+        ? "-insiders"
+        : "";
     let VSCODE = (vscode.ExtensionExecutionContext != undefined && extension.context.executionContext === vscode.ExtensionExecutionContext.Remote)
-        ? ".vscode-server"
-        : ".vscode";
+        ? (".vscode-server" + INSIDERS)
+        : (".vscode" + INSIDERS);
     let dir = getRuntimeDirectory(VSCODE)
     let platform = os.platform()
     if (platform == "win32") {
