@@ -29,7 +29,7 @@ function createDebugAdapterDescriptor(session, executable) {
         return new DebugAdapterServer(session.configuration.debugServer);
     }
     // TODO: .vscode-insiders
-    let VSCODE = extension.context.executionContext === vscode.ExtensionExecutionContext.Remote
+    let VSCODE = (vscode.ExtensionExecutionContext != undefined && extension.context.executionContext === vscode.ExtensionExecutionContext.Remote)
         ? ".vscode-server"
         : ".vscode";
     let dir = getRuntimeDirectory(VSCODE)
