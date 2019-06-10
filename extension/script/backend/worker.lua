@@ -30,9 +30,9 @@ thread.newchannel ('DbgWorker' .. thread.id)
 local masterThread = thread.channel_produce 'DbgMaster'
 local workerThread = thread.channel_consume ('DbgWorker' .. thread.id)
 
-local function workerThreadUpdate()
+local function workerThreadUpdate(timeout)
     while true do
-        local ok, msg = workerThread:pop()
+        local ok, msg = workerThread:pop(timeout)
         if not ok then
             break
         end
@@ -353,7 +353,7 @@ local function runLoop(reason, description)
     }
 
     while true do
-        workerThreadUpdate()
+        workerThreadUpdate(0.01)
         if state ~= 'stopped' then
             break
         end
@@ -543,7 +543,7 @@ end
 
 function event.wait_client()
     while not initialized do
-        workerThreadUpdate()
+        workerThreadUpdate(0.01)
     end
 end
 
