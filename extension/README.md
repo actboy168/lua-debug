@@ -20,7 +20,7 @@ Lua Debug Adapter for Visual Studio Code
 
 ## Build for macOS/Linux
 
-1. Install extension
+1. Install extension `actboy168.lua-debug` and `actboy168.extension-path`
 2. Build [luamake](https://github.com/actboy168/luamake)
 3. Open [repo](https://github.com/actboy168/vscode-lua-debug) in VSCode
 4. Run task：Rebuild
