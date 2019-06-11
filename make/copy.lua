@@ -1,14 +1,29 @@
 local fs = require 'bee.filesystem'
 
-local version = (function()
-    for line in io.lines(arg[1] .. '/package.json') do
-        local ver = line:match('"version": "(%d+%.%d+%.%d+)"')
-        if ver then
-            return ver
+local function getExtensionDirName(packageDir)
+    local publisher,name,version
+    for line in io.lines(packageDir .. '/package.json') do
+        if not publisher then
+            publisher = line:match('"publisher": "([^"]+)"')
+        end
+        if not name then
+            name = line:match('"name": "([^"]+)"')
+        end
+        if not version then
+            version = line:match('"version": "(%d+%.%d+%.%d+)"')
         end
     end
-    error 'Cannot found version in package.json.'
-end)()
+    if not publisher then
+        error 'Cannot found `publisher` in package.json.'
+    end
+    if not name then
+        error 'Cannot found `name` in package.json.'
+    end
+    if not version then
+        error 'Cannot found `version` in package.json.'
+    end
+    return ('%s.%s-%s'):format(publisher,name,version)
+end
 
 local function copy_directory(from, to, filter)
     fs.create_directories(to)
@@ -24,6 +39,13 @@ local function copy_directory(from, to, filter)
     end
 end
 
-copy_directory(fs.path(arg[1]), fs.path(arg[2]) / ('actboy168.lua-debug-' .. version))
+local packageDir,sourceDir,extensionPath = ...
+local extensionDirName = getExtensionDirName(packageDir)
+local extensionDir = fs.path(extensionPath) / extensionDirName
+if not fs.exists(extensionDir) then
+    error(extensionDir .. "is not installed.")
+end
+
+copy_directory(fs.path(sourceDir), extensionDir)
 
 print 'ok'
