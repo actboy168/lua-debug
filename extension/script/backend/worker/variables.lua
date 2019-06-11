@@ -429,6 +429,8 @@ local function varCreate(vars, frameId, varRef, name, value, evaluateName, calcV
     local var = varCreateObject(frameId, name, value, evaluateName)
     local maps = varRef[3]
     if maps[name] then
+        local log = require 'common.log'
+        log.warn(false, "same name variables: "..name)
         vars[maps[name][3]] = var
         maps[name][1] = calcValue
     else
@@ -445,6 +447,8 @@ local function varCreateInsert(vars, frameId, varRef, name, value, evaluateName,
     }
     local maps = varRef[3]
     if maps[name] then
+        local log = require 'common.log'
+        log.warn(false, "same name variables: "..name)
         table.remove(vars, maps[name][3])
     end
     table.insert(vars, 1, var)
@@ -619,6 +623,7 @@ local children = {
 
 extand[VAR_LOCAL] = function(frameId)
     children[VAR_LOCAL][3] = {}
+    local tempVar = {}
     local vars = {}
     local i = 1
     while true do
@@ -627,6 +632,10 @@ extand[VAR_LOCAL] = function(frameId)
             break
         end
         if name ~= TEMPORARY then
+            if name:sub(1,1) == "(" then
+                tempVar[name] = tempVar[name] and (tempVar[name] + 1) or 1
+                name = ("(%s #%d)"):format(name:sub(2,-2), tempVar[name])
+            end
             local fi = i
             varCreate(vars, frameId, children[VAR_LOCAL], name, value
                 , name
