@@ -318,16 +318,22 @@ lclient_getinfo(rlua_State *L) {
 	rlua_settop(L, 2);
 	if (rlua_type(L, 2) != LUA_TTABLE) {
 		rlua_pop(L, 1);
-		rlua_createtable(L, 0, 7);
+		rlua_createtable(L, 0, 11);
 	}
 	lua_State *hL = get_host(L);
 	lua_Debug ar;
+
+#if LUA_VERSION_NUM >= 504
+#define GETINFO_OPTION "Slntr"
+#else
+#define GETINFO_OPTION "Slnt"
+#endif
 
 	switch (rlua_type(L, 1)) {
 	case LUA_TNUMBER:
 		if (lua_getstack(hL, (int)rluaL_checkinteger(L, 1), &ar) == 0)
 			return 0;
-		if (lua_getinfo(hL, "Slnt", &ar) == 0)
+		if (lua_getinfo(hL, GETINFO_OPTION, &ar) == 0)
 			return 0;
 		break;
 	case LUA_TUSERDATA: {
@@ -340,7 +346,7 @@ lclient_getinfo(rlua_State *L) {
 			return rluaL_error(L, "Need a function ref, It's %s", rlua_typename(L, t));
 		}
 		rlua_pop(L, 1);
-		if (lua_getinfo(hL, ">Slnt", &ar) == 0)
+		if (lua_getinfo(hL, ">" GETINFO_OPTION, &ar) == 0)
 			return 0;
 		break;
 	}
@@ -370,6 +376,17 @@ lclient_getinfo(rlua_State *L) {
 	rlua_setfield(L, 2, "namewhat");
 	rlua_pushboolean(L, ar.istailcall? 1 : 0);
 	rlua_setfield(L, 2, "istailcall");
+#if LUA_VERSION_NUM >= 504
+	rlua_pushinteger(L, ar.ftransfer);
+	rlua_setfield(L, 2, "ftransfer");
+	rlua_pushinteger(L, ar.ntransfer);
+	rlua_setfield(L, 2, "ntransfer");
+#else
+	rlua_pushinteger(L, 0);
+	rlua_setfield(L, 2, "ftransfer");
+	rlua_pushinteger(L, 0);
+	rlua_setfield(L, 2, "ntransfer");
+#endif
 
 	return 1;
 }

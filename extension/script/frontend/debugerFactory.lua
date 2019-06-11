@@ -31,7 +31,7 @@ end
 local function create_install_script(pid, dbg)
     local res = {}
     res[#res+1] = ("local path=[[%s]];"):format(nativepath(dbg))
-    res[#res+1] = ("assert(loadfile(path..'/script/launch.lua'))('%s',path,%d)"):format(
+    res[#res+1] = ("assert(loadfile(path..'/script/launch.lua'))('%s',path,%d):wait()"):format(
         platformOS():lower(),
         pid
     )

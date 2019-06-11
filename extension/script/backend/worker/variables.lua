@@ -644,6 +644,23 @@ extand[VAR_LOCAL] = function(frameId)
         end
         i = i + 1
     end
+
+    local info = {}
+    rdebug.getinfo(frameId, info)
+    if info.ftransfer > 0 and info.ntransfer > 0 then
+        for i = info.ftransfer, info.ftransfer + info.ntransfer do
+            local name, value = rdebug.getlocalv(frameId, i)
+            if name ~= nil then
+                name = ("(return #%d)"):format(i - info.ftransfer + 1)
+                local fi = i
+                varCreate(vars, frameId, children[VAR_LOCAL], name, value
+                    , name
+                    , function() local _, r = rdebug.getlocal(frameId, fi) return r end
+                )
+            end
+        end
+    end
+
     return vars
 end
 

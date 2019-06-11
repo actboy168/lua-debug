@@ -10,4 +10,4 @@ end
 
 local dbg = dofile(path.."/script/debugger.lua",platform,path)
 dbg:start(("@%s/runtime/tmp/pid_%s.tmp"):format(path, pid), true)
-dbg:wait()
+return dbg
