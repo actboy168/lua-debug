@@ -336,7 +336,7 @@ local function varGetValue(type, subtype, value)
         if subtype == 'c' then
             return 'C function'
         end
-        local info = rdebug.getinfo(value)
+        local info = rdebug.getinfo(value, "S")
         if not info then
             return tostring(rdebug.value(value))
         end
@@ -646,7 +646,7 @@ extand[VAR_LOCAL] = function(frameId)
     end
 
     local info = {}
-    rdebug.getinfo(frameId, info)
+    rdebug.getinfo(frameId, "r", info)
     if info.ftransfer > 0 and info.ntransfer > 0 then
         for i = info.ftransfer, info.ftransfer + info.ntransfer do
             local name, value = rdebug.getlocalv(frameId, i)

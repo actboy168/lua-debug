@@ -125,7 +125,7 @@ function CMD.stackTrace(pkg)
         virtualFrame = #res
     end
 
-    while rdebug.getinfo(depth, info) do
+    while rdebug.getinfo(depth, "Sln", info) do
         if curFrame ~= 0 and ((curFrame < startFrame) or (curFrame >= endFrame)) then
             depth = depth + 1
             curFrame = curFrame + 1
@@ -367,8 +367,8 @@ local hook = {}
 
 function hook.bp(line)
     if not initialized then return end
-    local s = rdebug.getinfo(0, info)
-    local src = source.create(s.source)
+    rdebug.getinfo(0, "S", info)
+    local src = source.create(info.source)
     if not source.valid(src) then
         hookmgr.break_closeline()
         return
@@ -385,8 +385,8 @@ end
 
 function hook.step()
     if not initialized then return end
-    local s = rdebug.getinfo(0, info)
-    local src = source.create(s.source)
+    rdebug.getinfo(0, "S", info)
+    local src = source.create(info.source)
     if not source.valid(src) then
         return
     end
@@ -405,8 +405,8 @@ end
 
 function hook.newproto(proto, level)
     if not initialized then return end
-    local s = rdebug.getinfo(level, info)
-    local src = source.create(s.source)
+    rdebug.getinfo(level, "S", info)
+    local src = source.create(info.source)
     if not source.valid(src) then
         return false
     end
@@ -443,17 +443,18 @@ end
 local function getExceptionType()
     local pcall = rdebug.value(rdebug.index(rdebug._G, 'pcall'))
     local xpcall = rdebug.value(rdebug.index(rdebug._G, 'xpcall'))
-    local info = {}
     local level = 1
-    while rdebug.getinfo(level, info) do
-        local f = rdebug.value(rdebug.getfunc(level))
-        if f ~= nil then
-            if f == pcall then
-                return level, 'pcall'
-            end
-            if f == xpcall then
-                return level, 'xpcall'
-            end
+    while true do
+        local f = rdebug.getfunc(level)
+        if f == nil then
+            break
+        end
+        f = rdebug.value(f)
+        if f == pcall then
+            return level, 'pcall'
+        end
+        if f == xpcall then
+            return level, 'xpcall'
         end
         level = level + 1
     end
@@ -473,10 +474,10 @@ function event.print()
         res[#res + 1] = rdebug.tostring(arg)
     end
     res = table.concat(res, '\t') .. '\n'
-    local s = rdebug.getinfo(1, info)
-    local src = source.create(s.source)
+    rdebug.getinfo(1, "Sl", info)
+    local src = source.create(info.source)
     if source.valid(src) then
-        stdout(res, src, s.currentline)
+        stdout(res, src, info.currentline)
     else
         stdout(res)
     end
@@ -490,10 +491,10 @@ function event.iowrite()
         res[#res + 1] = rdebug.tostring(arg)
     end
     res = table.concat(res, '\t')
-    local s = rdebug.getinfo(1, info)
-    local src = source.create(s.source)
+    rdebug.getinfo(1, "Sl", info)
+    local src = source.create(info.source)
     if source.valid(src) then
-        stdout(res, src, s.currentline)
+        stdout(res, src, info.currentline)
     else
         stdout(res)
     end
