@@ -6,6 +6,8 @@ function m:start(addr, client)
     local bootstrap = ([=[
         package.path = %q
         package.cpath = %q
+        local log = require 'common.log'
+        log.file = %q
         local m = require 'start_master'
         m(package.path, package.cpath, %q, %q, %q)
         local w = require 'backend.worker'
@@ -13,6 +15,7 @@ function m:start(addr, client)
     ]=]):format(
           root..path
         , root..cpath
+        , root..'/worker.log'
         , root..'/error.log'
         , addr
         , client == true and "true" or "false"

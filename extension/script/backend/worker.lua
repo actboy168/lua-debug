@@ -26,10 +26,6 @@ local openUpdate = false
 
 local CMD = {}
 
-local log = require 'common.log'
-local fs = require 'common.filesystem'
-log.file = (fs.dll_path():parent_path():parent_path():parent_path():parent_path() / "worker.log"):string()
-
 thread.newchannel ('DbgWorker' .. thread.id)
 local masterThread = thread.channel_produce 'DbgMaster'
 local workerThread = thread.channel_consume ('DbgWorker' .. thread.id)
@@ -95,6 +91,7 @@ end)
 --    ev.emit('output', 'stderr', table.concat(t, '\t')..'\n')
 --end
 
+--local log = require 'common.log'
 --print = log.info
 
 function CMD.initializing(pkg)

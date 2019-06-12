@@ -55,7 +55,7 @@ local function createNamedThread(name, path, cpath, script)
     theadpool[name] = thread.named_thread(name, exitMgr:format(path, cpath, name) .. script)
 end
 
-return function (path, cpath, errlog, addr, client)
+return function (path, cpath, error_log, addr, client)
     if createNamedChannel("ExitRes"..thread.id) then
         return
     end
@@ -72,7 +72,7 @@ return function (path, cpath, errlog, addr, client)
             end
         until isExit()
         finishExit()
-    ]]):format(errlog))
+    ]]):format(error_log))
 
     createNamedThread("master", path, cpath, ([[
         local parseAddress  = require "common.parseAddress"
