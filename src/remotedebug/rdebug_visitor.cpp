@@ -354,7 +354,11 @@ lclient_getinfo(rlua_State *L) {
 		return rluaL_error(L, "Need stack level (integer) or function ref, It's %s", rlua_typename(L, rlua_type(L, 1)));
 	}
 
+#if LUA_VERSION_NUM >= 504
+	rlua_pushlstring(L, ar.source, ar.srclen);
+#else
 	rlua_pushstring(L, ar.source);
+#endif
 	rlua_setfield(L, 2, "source");
 	rlua_pushstring(L, ar.short_src);
 	rlua_setfield(L, 2, "short_src");
