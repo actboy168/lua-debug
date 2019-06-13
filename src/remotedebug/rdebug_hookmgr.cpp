@@ -101,6 +101,7 @@ struct hookmgr {
         size_t key = break_hash(p);
         switch (break_map[key]) {
         case BP::None: {
+			rlua_checkstack(cL, 4);
             if (rlua_rawgetp(cL, LUA_REGISTRYINDEX, &HOOK_CALLBACK) != LUA_TFUNCTION) {
                 rlua_pop(cL, 1);
                 return false;
