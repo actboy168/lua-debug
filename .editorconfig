@@ -2,3 +2,5 @@ root = true
 
 [*]
 tab_width = 4
+	# tab
+    # 4 space
