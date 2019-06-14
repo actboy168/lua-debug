@@ -120,8 +120,13 @@
                             },
                             "stopOnEntry": {
                                 "type": "boolean",
-                                "markdownDescription": "Automatically stop after launch.",
+                                "markdownDescription": "Automatically stop after entry.",
                                 "default": false
+                            },
+                            "termOnExit": {
+                                "type": "boolean",
+                                "markdownDescription": "Automatically terminate process after exit.",
+                                "default": true
                             },
                             "luaRuntime": {
                                 "type": "string",
@@ -289,7 +294,12 @@
                         "properties": {
                             "stopOnEntry": {
                                 "type": "boolean",
-                                "markdownDescription": "Automatically stop after attach.",
+                                "markdownDescription": "Automatically stop after entry.",
+                                "default": false
+                            },
+                            "termOnExit": {
+                                "type": "boolean",
+                                "markdownDescription": "Automatically terminate process after exit.",
                                 "default": false
                             },
                             "address": {

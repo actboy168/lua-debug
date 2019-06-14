@@ -91,6 +91,9 @@ function resolveDebugConfiguration(folder, config, token) {
     if (typeof config.stopOnEntry != 'boolean') {
         config.stopOnEntry = true;
     }
+    if (typeof config.termOnExit != 'boolean') {
+        config.termOnExit = config.request == 'launch';
+    }
     if (typeof config.consoleCoding != 'string') {
         config.consoleCoding = 'utf8'
     }
