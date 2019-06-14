@@ -64,6 +64,7 @@ const char *(rlua_typename) (rlua_State *L, int tp);
 int  (rlua_error) (rlua_State *L);
 int  (rluaL_error) (rlua_State *L, const char *fmt, ...);
 void (rluaL_traceback) (rlua_State *L, rlua_State *L1, const char *msg, int level);
+int  (rlua_gc) (rlua_State *L, int what, ...);
 
 void *(rlua_newuserdatauv) (rlua_State *L, size_t sz, int nuvalue);
 const char *(rlua_getupvalue) (rlua_State *L, int funcindex, int n);
