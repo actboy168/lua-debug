@@ -2,11 +2,11 @@
 #include <Windows.h>
 #include <base/hook/injectdll.h>
 #include <base/hook/replacedll.h>
-#include <base/win/query_process.h>
 #include <bee/lua/binding.h>
 #include <bee/utility/unicode_win.h>
 #include <bee/subprocess.h>
 #include <algorithm>
+#include "query_process.h"
 
 static int injectdll(lua_State* L) {
     const char* entry = 0;
@@ -36,7 +36,7 @@ static int query_process(lua_State* L) {
 	std::wstring name = bee::lua::to_string(L, 1);
 	std::transform(name.begin(), name.end(), name.begin(), ::tolower);
     lua_newtable(L);
-	base::win::query_process([&](const base::win::SYSTEM_PROCESS_INFORMATION* info)->bool {
+	query_process([&](const SYSTEM_PROCESS_INFORMATION* info)->bool {
 		std::wstring pname(info->ImageName.Buffer, info->ImageName.Length / sizeof(wchar_t));
 		std::transform(pname.begin(), pname.end(), pname.begin(), ::tolower);
 		if (pname == name) {

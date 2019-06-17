@@ -28,7 +28,7 @@ if BUILD_BIN then
             sources = {
                 "src/base/hook/injectdll.cpp",
                 "src/base/hook/replacedll.cpp",
-                "src/base/win/query_process.cpp",
+                "src/process_inject/query_process.cpp",
                 "src/process_inject/inject.cpp",
                 "3rd/wow64ext/src/wow64ext.cpp",
             },
