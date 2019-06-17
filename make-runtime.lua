@@ -65,7 +65,6 @@ if platform.OS == "Windows" then
             "detours",
         },
         includes = {
-            "src",
             "3rd/bee.lua",
             "3rd/bee.lua/3rd/lua/src",
         },

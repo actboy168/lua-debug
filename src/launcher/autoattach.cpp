@@ -4,9 +4,9 @@
 #include <stack>
 #include <set>
 #include <vector>
-#include <base/hook/fp_call.h>
 #include <intrin.h>
 #include <detours.h>
+#include "fp_call.h"
 #include "../remotedebug/rdebug_delayload.h"
 
 namespace autoattach {
