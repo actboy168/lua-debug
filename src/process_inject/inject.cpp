@@ -1,11 +1,11 @@
 #include <lua.hpp>
 #include <Windows.h>
-#include <base/hook/injectdll.h>
-#include <base/hook/replacedll.h>
 #include <bee/lua/binding.h>
 #include <bee/utility/unicode_win.h>
 #include <bee/subprocess.h>
 #include <algorithm>
+#include "injectdll.h"
+#include "replacedll.h"
 #include "query_process.h"
 
 static int injectdll(lua_State* L) {

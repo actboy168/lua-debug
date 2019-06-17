@@ -1,7 +1,7 @@
 
 #if !defined(_M_X64)
 
-#include <base/hook/injectdll.h>
+#include "injectdll.h"
 #include <windows.h>
 #include <stdint.h>
 #include <tlhelp32.h>
