@@ -5,8 +5,8 @@
 #include <set>
 #include <vector>
 #include <base/hook/fp_call.h>
-#include <base/hook/inline.h>
 #include <intrin.h>
+#include <detours.h>
 #include "../remotedebug/rdebug_delayload.h"
 
 namespace autoattach {
@@ -15,6 +15,38 @@ namespace autoattach {
 	fn_attach debuggerAttach;
 	fn_detach debuggerDetach;
 	bool	  attachProcess = false;
+
+	static bool hook_install(uintptr_t* pointer_ptr, uintptr_t detour) {
+		LONG status;
+		if ((status = DetourTransactionBegin()) == NO_ERROR) {
+			if ((status = DetourUpdateThread(::GetCurrentThread())) == NO_ERROR) {
+				if ((status = DetourAttach((PVOID*)pointer_ptr, (PVOID)detour)) == NO_ERROR) {
+					if ((status = DetourTransactionCommit()) == NO_ERROR) {
+						return true;
+					}
+				}
+			}
+			DetourTransactionAbort();
+		}
+		::SetLastError(status);
+		return false;
+	}
+
+	static bool hook_uninstall(uintptr_t* pointer_ptr, uintptr_t detour) {
+		LONG status;
+		if ((status = DetourTransactionBegin()) == NO_ERROR) {
+			if ((status = DetourUpdateThread(::GetCurrentThread())) == NO_ERROR) {
+				if ((status = DetourDetach((PVOID*)pointer_ptr, (PVOID)detour)) == NO_ERROR) {
+					if ((status = DetourTransactionCommit()) == NO_ERROR) {
+						return true;
+					}
+				}
+			}
+			DetourTransactionAbort();
+		}
+		::SetLastError(status);
+		return false;
+	}
 
 	namespace lua {
 		namespace real {
@@ -63,17 +95,13 @@ namespace autoattach {
 				HOOK(lua_settop);
 			}
 
-			std::stack<base::hook::hook_t> rollback;
-			for (auto& task : tasks) {
-				base::hook::hook_t h;
-				if (!base::hook::install(&task.real, task.fake, &h)) {
-					while (!rollback.empty()) {
-						base::hook::uninstall(&rollback.top());
-						rollback.pop();
+			for (size_t i = 0; i < tasks.size(); ++i) {
+				if (!hook_install(&tasks[i].real, tasks[i].fake)) {
+					for (ptrdiff_t j = i - 1; j >= 0; ++j) {
+						hook_uninstall(&tasks[j].real, tasks[j].fake);
 					}
 					return false;
 				}
-				rollback.push(h);
 			}
 			remotedebug::delayload::set_luadll(m);
 			remotedebug::delayload::set_luaapi(luaapi);
@@ -154,11 +182,10 @@ namespace autoattach {
 
 	static void waitLuaDll() {
 		HMODULE hModuleKernel = GetModuleHandleW(L"kernel32.dll");
-		if (hModuleKernel)
-		{
+		if (hModuleKernel) {
 			realLoadLibraryExW = (uintptr_t)GetProcAddress(hModuleKernel, "LoadLibraryExW");
 			if (realLoadLibraryExW) {
-				base::hook::install(&realLoadLibraryExW, (uintptr_t)fakeLoadLibraryExW);
+				hook_install(&realLoadLibraryExW, (uintptr_t)fakeLoadLibraryExW);
 			}
 		}
 	}

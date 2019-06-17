@@ -74,7 +74,6 @@ if platform.OS == "Windows" then
             "3rd/bee.lua/bee/utility/unicode_win.cpp",
             "3rd/bee.lua/bee/utility/path_helper.cpp",
             "3rd/bee.lua/bee/utility/file_helper.cpp",
-            "src/base/hook/inline.cpp",
             "src/remotedebug/rdebug_delayload.cpp",
             "src/launcher/*.cpp",
         },
