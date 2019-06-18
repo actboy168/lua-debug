@@ -8,8 +8,16 @@
 #include <wow64ext.h>
 
 namespace base { namespace hook {
+    static uint64_t wow64_module(const wchar_t* name) {
+        return GetModuleHandle64(name);
+    }
+
+    static uint64_t wow64_import(uint64_t module, const char* name) {
+        return GetProcAddress64(module, name);
+    }
+
     template <class... Args>
-    uint64_t wow64_call(uint64_t func, Args... args) {
+    static uint64_t wow64_call(uint64_t func, Args... args) {
         return X64Call(func, sizeof...(args), (uint64_t)args...);
     }
 
@@ -88,18 +96,18 @@ namespace base { namespace hook {
         };
 
         InitWow64ext();
-        DWORD64 ntdll = GetModuleHandle64(L"ntdll.dll");
+        DWORD64 ntdll = wow64_module(L"ntdll.dll");
         if (!ntdll) {
             return false;
         }
-        DWORD64 pfLdrLoadDll = (DWORD64)GetProcAddress64(ntdll, "LdrLoadDll");
+        DWORD64 pfLdrLoadDll = (DWORD64)wow64_import(ntdll, "LdrLoadDll");
         if (!pfLdrLoadDll) {
             return false;
         }
-        DWORD64 pfNtGetContextThread = (DWORD64)GetProcAddress64(ntdll, "NtGetContextThread");
-        DWORD64 pfNtSetContextThread = (DWORD64)GetProcAddress64(ntdll, "NtSetContextThread");
-        DWORD64 pfNtAllocateVirtualMemory = (DWORD64)GetProcAddress64(ntdll, "NtAllocateVirtualMemory");
-        DWORD64 pfNtWriteVirtualMemory = (DWORD64)GetProcAddress64(ntdll, "NtWriteVirtualMemory");
+        DWORD64 pfNtGetContextThread = (DWORD64)wow64_import(ntdll, "NtGetContextThread");
+        DWORD64 pfNtSetContextThread = (DWORD64)wow64_import(ntdll, "NtSetContextThread");
+        DWORD64 pfNtAllocateVirtualMemory = (DWORD64)wow64_import(ntdll, "NtAllocateVirtualMemory");
+        DWORD64 pfNtWriteVirtualMemory = (DWORD64)wow64_import(ntdll, "NtWriteVirtualMemory");
         if (!pfNtGetContextThread || !pfNtSetContextThread || !pfNtAllocateVirtualMemory || !pfNtWriteVirtualMemory) {
             return false;
         }
@@ -265,19 +273,19 @@ namespace base { namespace hook {
         }; 
 
         InitWow64ext();
-        DWORD64 ntdll = GetModuleHandle64(L"ntdll.dll");
+        DWORD64 ntdll = wow64_module(L"ntdll.dll");
         if (!ntdll) {
             return false;
         }
-        DWORD64 pfLdrLoadDll = (DWORD64)GetProcAddress64(ntdll, "LdrLoadDll");
-        DWORD64 pfLdrGetProcedureAddress = (DWORD64)GetProcAddress64(ntdll, "LdrGetProcedureAddress");
+        DWORD64 pfLdrLoadDll = (DWORD64)wow64_import(ntdll, "LdrLoadDll");
+        DWORD64 pfLdrGetProcedureAddress = (DWORD64)wow64_import(ntdll, "LdrGetProcedureAddress");
         if (!pfLdrLoadDll || !pfLdrGetProcedureAddress) {
             return false;
         }
-        DWORD64 pfNtGetContextThread = (DWORD64)GetProcAddress64(ntdll, "NtGetContextThread");
-        DWORD64 pfNtSetContextThread = (DWORD64)GetProcAddress64(ntdll, "NtSetContextThread");
-        DWORD64 pfNtAllocateVirtualMemory = (DWORD64)GetProcAddress64(ntdll, "NtAllocateVirtualMemory");
-        DWORD64 pfNtWriteVirtualMemory = (DWORD64)GetProcAddress64(ntdll, "NtWriteVirtualMemory");
+        DWORD64 pfNtGetContextThread = (DWORD64)wow64_import(ntdll, "NtGetContextThread");
+        DWORD64 pfNtSetContextThread = (DWORD64)wow64_import(ntdll, "NtSetContextThread");
+        DWORD64 pfNtAllocateVirtualMemory = (DWORD64)wow64_import(ntdll, "NtAllocateVirtualMemory");
+        DWORD64 pfNtWriteVirtualMemory = (DWORD64)wow64_import(ntdll, "NtWriteVirtualMemory");
         if (!pfNtGetContextThread || !pfNtSetContextThread || !pfNtAllocateVirtualMemory || !pfNtWriteVirtualMemory) {
             return false;
         }
