@@ -8,6 +8,14 @@
 #include <wow64ext.h>
 
 namespace base { namespace hook {
+    static bool is_process64(HANDLE hProcess) {
+        BOOL is_x64 = FALSE;
+        if (!IsWow64Process(hProcess, &is_x64)) {
+            return false;
+        }
+        return !is_x64;
+    }
+
     static uint64_t wow64_module(const wchar_t* name) {
         return GetModuleHandle64(name);
     }
@@ -21,15 +29,7 @@ namespace base { namespace hook {
         return X64Call(func, sizeof...(args), (uint64_t)args...);
     }
 
-    static bool is_process64(HANDLE hProcess) {
-        BOOL is_x64 = FALSE;
-        if (!IsWow64Process(hProcess, &is_x64)) {
-            return false;
-        }
-        return !is_x64;
-    }
-
-    static uint64_t allocMemory64(uint64_t navm, HANDLE hProcess, SIZE_T dwSize, DWORD flProtect) {
+    static uint64_t wow64_alloc_memory(uint64_t navm, HANDLE hProcess, SIZE_T dwSize, DWORD flProtect) {
         uint64_t tmpAddr = 0;
         uint64_t tmpSize = dwSize;
         uint64_t ret = wow64_call(navm, hProcess, &tmpAddr, 0, &tmpSize, MEM_COMMIT, flProtect);
@@ -39,7 +39,7 @@ namespace base { namespace hook {
         return tmpAddr;
     }
 
-    static bool writeMemory64(uint64_t nwvm, HANDLE hProcess, DWORD64 lpBaseAddress, LPVOID lpBuffer, SIZE_T nSize) {
+    static bool wow64_write_memory(uint64_t nwvm, HANDLE hProcess, uint64_t lpBaseAddress, LPVOID lpBuffer, SIZE_T nSize) {
         uint64_t written = 0;
         uint64_t res = wow64_call(nwvm, hProcess, lpBaseAddress, lpBuffer, nSize, &written);
         if (0 != res || nSize != written) {
@@ -96,18 +96,18 @@ namespace base { namespace hook {
         };
 
         InitWow64ext();
-        DWORD64 ntdll = wow64_module(L"ntdll.dll");
+        uint64_t ntdll = wow64_module(L"ntdll.dll");
         if (!ntdll) {
             return false;
         }
-        DWORD64 pfLdrLoadDll = (DWORD64)wow64_import(ntdll, "LdrLoadDll");
+        uint64_t pfLdrLoadDll = wow64_import(ntdll, "LdrLoadDll");
         if (!pfLdrLoadDll) {
             return false;
         }
-        DWORD64 pfNtGetContextThread = (DWORD64)wow64_import(ntdll, "NtGetContextThread");
-        DWORD64 pfNtSetContextThread = (DWORD64)wow64_import(ntdll, "NtSetContextThread");
-        DWORD64 pfNtAllocateVirtualMemory = (DWORD64)wow64_import(ntdll, "NtAllocateVirtualMemory");
-        DWORD64 pfNtWriteVirtualMemory = (DWORD64)wow64_import(ntdll, "NtWriteVirtualMemory");
+        uint64_t pfNtGetContextThread = wow64_import(ntdll, "NtGetContextThread");
+        uint64_t pfNtSetContextThread = wow64_import(ntdll, "NtSetContextThread");
+        uint64_t pfNtAllocateVirtualMemory = wow64_import(ntdll, "NtAllocateVirtualMemory");
+        uint64_t pfNtWriteVirtualMemory = wow64_import(ntdll, "NtWriteVirtualMemory");
         if (!pfNtGetContextThread || !pfNtSetContextThread || !pfNtAllocateVirtualMemory || !pfNtWriteVirtualMemory) {
             return false;
         }
@@ -115,14 +115,14 @@ namespace base { namespace hook {
         struct UNICODE_STRING {
             USHORT    Length;
             USHORT    MaximumLength;
-            DWORD64   Buffer;
+            uint64_t   Buffer;
         };
-        SIZE_T memsize = sizeof(DWORD64) + sizeof(UNICODE_STRING) + (dll.size() + 1) * sizeof(wchar_t);
-        DWORD64 memory = allocMemory64(pfNtAllocateVirtualMemory, pi.hProcess, memsize, PAGE_READWRITE);
+        SIZE_T memsize = sizeof(uint64_t) + sizeof(UNICODE_STRING) + (dll.size() + 1) * sizeof(wchar_t);
+        uint64_t memory = wow64_alloc_memory(pfNtAllocateVirtualMemory, pi.hProcess, memsize, PAGE_READWRITE);
         if (!memory) {
             return false;
         }
-        DWORD64 shellcode = allocMemory64(pfNtAllocateVirtualMemory, pi.hProcess, sizeof(sc), PAGE_EXECUTE_READWRITE);
+        uint64_t shellcode = wow64_alloc_memory(pfNtAllocateVirtualMemory, pi.hProcess, sizeof(sc), PAGE_EXECUTE_READWRITE);
         if (!shellcode) {
             return false;
         }
@@ -132,10 +132,10 @@ namespace base { namespace hook {
         us.MaximumLength = us.Length + sizeof(wchar_t);
         us.Buffer = memory + sizeof(UNICODE_STRING);
 
-        if (!writeMemory64(pfNtWriteVirtualMemory, pi.hProcess, memory, &us, sizeof(UNICODE_STRING))) {
+        if (!wow64_write_memory(pfNtWriteVirtualMemory, pi.hProcess, memory, &us, sizeof(UNICODE_STRING))) {
             return false;
         }
-        if (!writeMemory64(pfNtWriteVirtualMemory, pi.hProcess, us.Buffer, (void*)dll.data(), us.MaximumLength)) {
+        if (!wow64_write_memory(pfNtWriteVirtualMemory, pi.hProcess, us.Buffer, (void*)dll.data(), us.MaximumLength)) {
             return false;
         }
 
@@ -145,12 +145,12 @@ namespace base { namespace hook {
             return false;
         }
 
-        DWORD64 handle = us.Buffer + us.MaximumLength;
+        uint64_t handle = us.Buffer + us.MaximumLength;
         memcpy(sc + 30, &handle, sizeof(handle));
         memcpy(sc + 40, &memory, sizeof(memory));
         memcpy(sc + 56, &pfLdrLoadDll, sizeof(pfLdrLoadDll));
         memcpy(sc + 100, &ctx.Rip, sizeof(ctx.Rip));
-        if (!writeMemory64(pfNtWriteVirtualMemory, pi.hProcess, shellcode, &sc, sizeof(sc))) {
+        if (!wow64_write_memory(pfNtWriteVirtualMemory, pi.hProcess, shellcode, &sc, sizeof(sc))) {
             return false;
         }
 
@@ -273,19 +273,19 @@ namespace base { namespace hook {
         }; 
 
         InitWow64ext();
-        DWORD64 ntdll = wow64_module(L"ntdll.dll");
+        uint64_t ntdll = wow64_module(L"ntdll.dll");
         if (!ntdll) {
             return false;
         }
-        DWORD64 pfLdrLoadDll = (DWORD64)wow64_import(ntdll, "LdrLoadDll");
-        DWORD64 pfLdrGetProcedureAddress = (DWORD64)wow64_import(ntdll, "LdrGetProcedureAddress");
+        uint64_t pfLdrLoadDll = wow64_import(ntdll, "LdrLoadDll");
+        uint64_t pfLdrGetProcedureAddress = wow64_import(ntdll, "LdrGetProcedureAddress");
         if (!pfLdrLoadDll || !pfLdrGetProcedureAddress) {
             return false;
         }
-        DWORD64 pfNtGetContextThread = (DWORD64)wow64_import(ntdll, "NtGetContextThread");
-        DWORD64 pfNtSetContextThread = (DWORD64)wow64_import(ntdll, "NtSetContextThread");
-        DWORD64 pfNtAllocateVirtualMemory = (DWORD64)wow64_import(ntdll, "NtAllocateVirtualMemory");
-        DWORD64 pfNtWriteVirtualMemory = (DWORD64)wow64_import(ntdll, "NtWriteVirtualMemory");
+        uint64_t pfNtGetContextThread = wow64_import(ntdll, "NtGetContextThread");
+        uint64_t pfNtSetContextThread = wow64_import(ntdll, "NtSetContextThread");
+        uint64_t pfNtAllocateVirtualMemory = wow64_import(ntdll, "NtAllocateVirtualMemory");
+        uint64_t pfNtWriteVirtualMemory = wow64_import(ntdll, "NtWriteVirtualMemory");
         if (!pfNtGetContextThread || !pfNtSetContextThread || !pfNtAllocateVirtualMemory || !pfNtWriteVirtualMemory) {
             return false;
         }
@@ -293,19 +293,19 @@ namespace base { namespace hook {
         struct UNICODE_STRING {
             USHORT    Length;
             USHORT    MaximumLength;
-            DWORD64   Buffer;
+            uint64_t  Buffer;
         };
-        SIZE_T mem1size = sizeof(DWORD64) + sizeof(UNICODE_STRING) + (dll.size() + 1) * sizeof(wchar_t);
-        DWORD64 mem1 = allocMemory64(pfNtAllocateVirtualMemory, pi.hProcess, mem1size, PAGE_READWRITE);
+        SIZE_T mem1size = sizeof(uint64_t) + sizeof(UNICODE_STRING) + (dll.size() + 1) * sizeof(wchar_t);
+        uint64_t mem1 = wow64_alloc_memory(pfNtAllocateVirtualMemory, pi.hProcess, mem1size, PAGE_READWRITE);
         if (!mem1) {
         return false;
     }
-        SIZE_T mem2size = sizeof(DWORD64) + sizeof(UNICODE_STRING) + (entry.size() + 1) * sizeof(char);
-        DWORD64 mem2 = allocMemory64(pfNtAllocateVirtualMemory, pi.hProcess, mem2size, PAGE_READWRITE);
+        SIZE_T mem2size = sizeof(uint64_t) + sizeof(UNICODE_STRING) + (entry.size() + 1) * sizeof(char);
+        uint64_t mem2 = wow64_alloc_memory(pfNtAllocateVirtualMemory, pi.hProcess, mem2size, PAGE_READWRITE);
         if (!mem2) {
             return false;
         }
-        DWORD64 shellcode = allocMemory64(pfNtAllocateVirtualMemory, pi.hProcess, sizeof(sc), PAGE_EXECUTE_READWRITE);
+        uint64_t shellcode = wow64_alloc_memory(pfNtAllocateVirtualMemory, pi.hProcess, sizeof(sc), PAGE_EXECUTE_READWRITE);
         if (!shellcode) {
             return false;
         }
@@ -314,10 +314,10 @@ namespace base { namespace hook {
         us1.Length = (USHORT)(dll.size() * sizeof(wchar_t));
         us1.MaximumLength = us1.Length + sizeof(wchar_t);
         us1.Buffer = mem1 + sizeof(UNICODE_STRING);
-        if (!writeMemory64(pfNtWriteVirtualMemory, pi.hProcess, mem1, &us1, sizeof(UNICODE_STRING))) {
+        if (!wow64_write_memory(pfNtWriteVirtualMemory, pi.hProcess, mem1, &us1, sizeof(UNICODE_STRING))) {
             return false;
         }
-        if (!writeMemory64(pfNtWriteVirtualMemory, pi.hProcess, us1.Buffer, (void*)dll.data(), us1.MaximumLength)) {
+        if (!wow64_write_memory(pfNtWriteVirtualMemory, pi.hProcess, us1.Buffer, (void*)dll.data(), us1.MaximumLength)) {
             return false;
         }
 
@@ -325,10 +325,10 @@ namespace base { namespace hook {
         us2.Length = (USHORT)(dll.size() * sizeof(wchar_t));
         us2.MaximumLength = us2.Length + sizeof(wchar_t);
         us2.Buffer = mem2 + sizeof(UNICODE_STRING);
-        if (!writeMemory64(pfNtWriteVirtualMemory, pi.hProcess, mem2, &us2, sizeof(UNICODE_STRING))) {
+        if (!wow64_write_memory(pfNtWriteVirtualMemory, pi.hProcess, mem2, &us2, sizeof(UNICODE_STRING))) {
             return false;
         }
-        if (!writeMemory64(pfNtWriteVirtualMemory, pi.hProcess, us2.Buffer, (void*)entry.data(), us2.MaximumLength)) {
+        if (!wow64_write_memory(pfNtWriteVirtualMemory, pi.hProcess, us2.Buffer, (void*)entry.data(), us2.MaximumLength)) {
             return false;
         }
 
@@ -338,8 +338,8 @@ namespace base { namespace hook {
             return false;
         }
 
-        DWORD64 dllhandle = us1.Buffer + us1.MaximumLength;
-        DWORD64 entryfunc = us2.Buffer + us2.MaximumLength;
+        uint64_t dllhandle = us1.Buffer + us1.MaximumLength;
+        uint64_t entryfunc = us2.Buffer + us2.MaximumLength;
         memcpy(sc + 30, &dllhandle, sizeof(dllhandle));
         memcpy(sc + 40, &mem1, sizeof(mem1));
         memcpy(sc + 56, &pfLdrLoadDll, sizeof(pfLdrLoadDll));
@@ -349,7 +349,7 @@ namespace base { namespace hook {
         memcpy(sc + 104, &pfLdrGetProcedureAddress, sizeof(pfLdrGetProcedureAddress));
         memcpy(sc + 116, &entryfunc, sizeof(entryfunc));
         memcpy(sc + 163, &ctx.Rip, sizeof(ctx.Rip));
-        if (!writeMemory64(pfNtWriteVirtualMemory, pi.hProcess, shellcode, &sc, sizeof(sc))) {
+        if (!wow64_write_memory(pfNtWriteVirtualMemory, pi.hProcess, shellcode, &sc, sizeof(sc))) {
             return false;
         }
 
