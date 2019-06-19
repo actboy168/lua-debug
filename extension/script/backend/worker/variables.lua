@@ -773,7 +773,7 @@ function m.scopes(frameId)
     end
     if hasVararg(frameId) then
         scopes[#scopes + 1] = {
-            name = "Var Args",
+            name = "Varargs",
             variablesReference = (frameId << 16) | VAR_VARARG,
             expensive = false,
         }
