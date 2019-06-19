@@ -177,7 +177,7 @@ local function updateOnce()
     return false
 end
 
-function m.update()
+function mgr.update()
     while true do
         if updateOnce() then
             return
