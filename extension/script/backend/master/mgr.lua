@@ -57,6 +57,7 @@ function mgr.init(io)
     masterThread = thread.channel_consume 'DbgMaster'
     network:event_in(event_in)
     network:event_close(event_close)
+    return true
 end
 
 local function lst2map(t)
@@ -112,7 +113,7 @@ function mgr.hasThread(w)
     return rawget(workers, w) ~= nil
 end
 
-function mgr.update()
+local function updateOnce()
     local threads = require 'backend.master.threads'
     while true do
         local ok, w, msg = masterThread:pop()
@@ -139,10 +140,7 @@ function mgr.update()
             event.output('stdout', res)
         end
     end
-end
 
-function mgr.runIdle()
-    mgr.update()
     if mgr.isState 'terminated' then
         mgr.setState 'birth'
         return false
@@ -177,6 +175,14 @@ function mgr.runIdle()
         end
     end
     return false
+end
+
+function m.update()
+    while true do
+        if updateOnce() then
+            return
+        end
+    end
 end
 
 function mgr.isState(s)
