@@ -13,15 +13,16 @@ local stat = {}
 local queue = {}
 local exit = false
 local masterThread
+local workers = {}
 
-local workers_mt = {}
-function workers_mt:__index(id)
-    assert(type(id) == "number")
-    local c = assert(thread.channel_produce("DbgWorker" .. id))
-    self[id] = c
-    return c
-end
-local workers = setmetatable({}, workers_mt)
+ev.on('thread', function(reason, threadId)
+    if reason == "started" then
+        workers[threadId] = assert(thread.channel_produce("DbgWorker" .. threadId))
+        ev.emit('worker-ready', threadId)
+    elseif reason == "exited" then
+        workers[threadId] = nil
+    end
+end)
 
 local function event_in(data)
     local msg = proto.recv(data, stat)

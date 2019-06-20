@@ -47,6 +47,8 @@ clear_client(lua_State *L) {
 
 static int
 lhost_clear(lua_State *L) {
+	rlua_State *cL = get_client(L);
+	probe(cL, L, "exit");
 	clear_client(L);
 	return 0;
 }
