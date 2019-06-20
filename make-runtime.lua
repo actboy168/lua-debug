@@ -96,6 +96,7 @@ lm:source_set 'runtime/onelua' {
         "src/remotedebug/onelua.c",
     },
     flags = {
+        platform.OS == "Linux" and "-fPIC",
         platform.OS ~= "Windows" and "-fvisibility=hidden",
     }
 }
