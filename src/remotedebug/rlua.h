@@ -543,3 +543,10 @@ void  (rluaL_pushresultsize) (rluaL_Buffer *B, size_t sz);
 #define rluaopen_utf8 luaopen_utf8
 
 #endif
+
+
+#if defined(_WIN32)
+#define RLUA_FUNC extern "C" __declspec(dllexport)
+#else
+#define RLUA_FUNC extern "C" __attribute__((visibility("default"))) 
+#endif

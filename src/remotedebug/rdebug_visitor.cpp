@@ -643,10 +643,7 @@ init_visitor(rlua_State *L) {
 	return 1;
 }
 
-extern "C"
-#if defined(_WIN32)
-__declspec(dllexport)
-#endif
+RLUA_FUNC
 int luaopen_remotedebug_visitor(rlua_State *L) {
 	get_host(L);
 	return init_visitor(L);

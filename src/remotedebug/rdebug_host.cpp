@@ -151,10 +151,7 @@ lhost_event(lua_State *L) {
 	return 1;
 }
 
-extern "C" 
-#if defined(_WIN32)
-__declspec(dllexport)
-#endif
+RLUA_FUNC
 int luaopen_remotedebug(lua_State *L) {
 	luaL_Reg l[] = {
 		{ "start", lhost_start },

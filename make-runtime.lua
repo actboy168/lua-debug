@@ -96,7 +96,7 @@ lm:source_set 'runtime/onelua' {
         "src/remotedebug/onelua.c",
     },
     flags = {
-        platform.OS ~= "Windows" and "-fPIC"
+        platform.OS ~= "Windows" and "-fvisibility=hidden",
     }
 }
 
@@ -140,7 +140,7 @@ for _, luaver in ipairs {"lua53","lua54"} do
                 "m",
                 "dl",
                 "readline",
-            },
+            }
         }
     end
 
@@ -182,6 +182,9 @@ for _, luaver in ipairs {"lua53","lua54"} do
         },
         ldflags = {
             platform.OS == "Windows" and ("/DELAYLOAD:%s.dll"):format(luaver),
+        },
+        flags = {
+            platform.OS ~= "Windows" and "-fvisibility=hidden"
         }
     }
 

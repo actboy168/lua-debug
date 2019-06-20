@@ -614,10 +614,7 @@ static int thread_open(rlua_State* L) {
 }
 #endif
 
-extern "C" 
-#if defined(_WIN32)
-__declspec(dllexport)
-#endif
+RLUA_FUNC
 int luaopen_remotedebug_hookmgr(rlua_State* L) {
     get_host(L);
 
