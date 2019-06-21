@@ -9,6 +9,7 @@ return {
     supportsEvaluateForHovers = true,
     supportsLoadedSourcesRequest = true,
     supportsTerminateRequest = true,
+    supportsRestartRequest = true,
     exceptionBreakpointFilters = {
         {
             default = false,

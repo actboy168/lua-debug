@@ -7,6 +7,8 @@ local inject = require 'inject'
 local server
 local client
 local initReq
+local startReq
+local restart = false
 local m = {}
 
 local function getVersion(dir)
@@ -43,6 +45,16 @@ local function response_initialize(req)
         request_seq = req.seq,
         success = true,
         body = require 'common.capabilities',
+    }
+end
+
+local function response_restart(req)
+    client.send {
+        type = 'response',
+        seq = 0,
+        command = 'restart',
+        request_seq = req.seq,
+        success = true,
     }
 end
 
@@ -166,9 +178,30 @@ local function proxy_launch(pkg)
     server.send(pkg)
 end
 
+local function proxy_start(pkg)
+    if pkg.command == 'attach' then
+        proxy_attach(pkg)
+    elseif pkg.command == 'launch' then
+        proxy_launch(pkg)
+    end
+end
+
 function m.send(pkg)
     if server then
         if pkg.type == 'response' and pkg.command == 'runInTerminal' then
+            return
+        end
+        if pkg.type == 'request' and pkg.command == 'restart' then
+            response_restart(pkg)
+            server.send {
+                type = 'request',
+                seq = 0,
+                command = 'terminate',
+                arguments = {
+                    restart = true,
+                }
+            }
+            restart = true
             return
         end
         server.send(pkg)
@@ -182,10 +215,9 @@ function m.send(pkg)
         end
     else
         if pkg.type == 'request' then
-            if pkg.command == 'attach' then
-                proxy_attach(pkg)
-            elseif pkg.command == 'launch' then
-                proxy_launch(pkg)
+            if pkg.command == 'attach' or pkg.command == 'launch' then
+                startReq = pkg
+                proxy_start(pkg)
             else
                 response_error(pkg, 'error request')
             end
@@ -204,6 +236,11 @@ function m.update()
             end
         end
         if server.is_closed() then
+            if restart then
+                restart = false
+                proxy_start(startReq)
+                return
+            end
             os.exit(0, true)
         end
     end
