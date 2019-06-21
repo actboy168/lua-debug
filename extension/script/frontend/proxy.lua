@@ -6,7 +6,6 @@ local platformOS = require 'frontend.platformOS'
 local inject = require 'inject'
 local server
 local client
-local seq = 0
 local initReq
 local m = {}
 
@@ -36,15 +35,10 @@ local function getUnixPath(pid)
 	return path / ("pid_%d.tmp"):format(pid)
 end
 
-local function newSeq()
-    seq = seq + 1
-    return seq
-end
-
 local function response_initialize(req)
     client.send {
         type = 'response',
-        seq = newSeq(),
+        seq = 0,
         command = 'initialize',
         request_seq = req.seq,
         success = true,
@@ -55,7 +49,7 @@ end
 local function response_error(req, msg)
     client.send {
         type = 'response',
-        seq = newSeq(),
+        seq = 0,
         command = req.command,
         request_seq = req.seq,
         success = false,
@@ -66,7 +60,7 @@ end
 local function request_runinterminal(args)
     client.send {
         type = 'request',
-        --seq = newSeq(),
+        seq = 0,
         command = 'runInTerminal',
         arguments = args
     }
