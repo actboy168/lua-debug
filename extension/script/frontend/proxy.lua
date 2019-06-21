@@ -72,7 +72,7 @@ local function request_runinterminal(args)
     }
 end
 
-local function attach_process(pkg, args, pid)
+local function attach_process(pkg, pid)
     if not inject.injectdll(pid
         , (WORKDIR / "bin" / "win" / "launcher.x86.dll"):string()
         , (WORKDIR / "bin" / "win" / "launcher.x64.dll"):string()
@@ -91,7 +91,7 @@ local function attach_process(pkg, args, pid)
     return true
 end
 
-local function attach_tcp(args, pkg)
+local function attach_tcp(pkg, args)
     local parseAddress = require "common.parseAddress"
     server = serverFactory(parseAddress(args.address, args.client))
     server.send(initReq)
@@ -102,11 +102,11 @@ local function proxy_attach(pkg)
     local args = pkg.arguments
     platformOS.init(args)
     if platformOS() ~= "Windows" then
-        attach_tcp(args, pkg)
+        attach_tcp(pkg, args)
         return
     end
     if args.processId then
-        if not attach_process(pkg, args, args.processId) then
+        if not attach_process(pkg, args.processId) then
             response_error(pkg, ('Cannot attach process `%d`.'):format(args.processId))
         end
         return
@@ -120,12 +120,12 @@ local function proxy_attach(pkg)
             response_error(pkg, ('There are %d processes `%s`.'):format(#pids, args.processName))
             return
         end
-        if not attach_process(pkg, args, pids[1]) then
+        if not attach_process(pkg, pids[1]) then
             response_error(pkg, ('Cannot attach process `%s` `%d`.'):format(args.processName, pids[1]))
         end
         return
     end
-    attach_tcp(args, pkg)
+    attach_tcp(pkg, args)
 end
 
 local function proxy_launch(pkg)
