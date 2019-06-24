@@ -5,7 +5,6 @@
 #include <bee/subprocess.h>
 #include <algorithm>
 #include "injectdll.h"
-#include "replacedll.h"
 #include "query_process.h"
 
 static int injectdll(lua_State* L) {
@@ -21,13 +20,6 @@ static int injectdll(lua_State* L) {
     }
     auto& self = *(bee::subprocess::process*)getObject(L, 1, "subprocess");
     bool ok = base::hook::injectdll(self.info(), bee::lua::to_string(L, 2), bee::lua::to_string(L, 3), entry);
-    lua_pushboolean(L, ok);
-    return 1;
-}
-
-static int replacedll(lua_State* L) {
-    auto& self = *(bee::subprocess::process*)getObject(L, 1, "subprocess");
-    bool ok = base::hook::replacedll(self.info(), luaL_checkstring(L, 2), bee::u2a(luaL_checkstring(L, 3)).c_str());
     lua_pushboolean(L, ok);
     return 1;
 }
@@ -52,7 +44,6 @@ extern "C" __declspec(dllexport)
 int luaopen_inject(lua_State* L) {
     luaL_Reg lib[] = {
         {"injectdll", injectdll},
-        {"replacedll", replacedll},
         {"query_process", query_process},
         {NULL, NULL},
     };
