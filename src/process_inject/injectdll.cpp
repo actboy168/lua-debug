@@ -49,7 +49,7 @@ namespace base { namespace hook {
     }
 
 
-    bool injectdll_x64(const PROCESS_INFORMATION& pi, const std::wstring& dll) {
+    static bool injectdll_x64(const PROCESS_INFORMATION& pi, const std::wstring& dll) {
         static unsigned char sc[] = {
             0x9C,                                                                   // pushfq
             0x50,                                                                   // push rax
@@ -162,7 +162,7 @@ namespace base { namespace hook {
         return true;
     }
 
-    bool injectdll_x86(const PROCESS_INFORMATION& pi, const std::wstring& dll) {
+    static bool injectdll_x86(const PROCESS_INFORMATION& pi, const std::wstring& dll) {
         static unsigned char sc[] = {
             0x68, 0x00, 0x00, 0x00, 0x00,    // push eip
             0x9C,                            // pushfd
@@ -216,7 +216,7 @@ namespace base { namespace hook {
         return true;
     }
 
-    bool injectdll_x64_hasentry(const PROCESS_INFORMATION& pi, const std::wstring& dll, const std::string& entry) {
+    static bool injectdll_x64_hasentry(const PROCESS_INFORMATION& pi, const std::wstring& dll, const std::string& entry) {
         static unsigned char sc[] = {
             0x9C,                                                                   // pushfq
             0x50,                                                                   // push rax
@@ -298,8 +298,8 @@ namespace base { namespace hook {
         SIZE_T mem1size = sizeof(uint64_t) + sizeof(UNICODE_STRING) + (dll.size() + 1) * sizeof(wchar_t);
         uint64_t mem1 = wow64_alloc_memory(pfNtAllocateVirtualMemory, pi.hProcess, mem1size, PAGE_READWRITE);
         if (!mem1) {
-        return false;
-    }
+            return false;
+        }
         SIZE_T mem2size = sizeof(uint64_t) + sizeof(UNICODE_STRING) + (entry.size() + 1) * sizeof(char);
         uint64_t mem2 = wow64_alloc_memory(pfNtAllocateVirtualMemory, pi.hProcess, mem2size, PAGE_READWRITE);
         if (!mem2) {
@@ -361,7 +361,7 @@ namespace base { namespace hook {
         return true;
     }
 
-    bool injectdll_x86_hasentry(const PROCESS_INFORMATION& pi, const std::wstring& dll, const std::string& entry) {
+    static bool injectdll_x86_hasentry(const PROCESS_INFORMATION& pi, const std::wstring& dll, const std::string& entry) {
         static unsigned char sc[] = {
             0x68, 0x00, 0x00, 0x00, 0x00,    // push eip
             0x9C,                            // pushfd
@@ -452,7 +452,7 @@ namespace base { namespace hook {
         }
     }
 
-    bool setdebugprivilege() {
+    static bool setdebugprivilege() {
         TOKEN_PRIVILEGES tp = { 0 };
         HANDLE hToken = NULL;
         if (!OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, &hToken)) {
@@ -472,8 +472,7 @@ namespace base { namespace hook {
         return true;
     }
 
-    DWORD getthreadid(DWORD pid)
-    {
+    static DWORD getthreadid(DWORD pid) {
         HANDLE h = CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, 0);
         if (h != INVALID_HANDLE_VALUE) {
             THREADENTRY32 te;
@@ -489,13 +488,13 @@ namespace base { namespace hook {
         return 0;
     }
 
-    void closeprocess(PROCESS_INFORMATION& pi) {
+    static void closeprocess(PROCESS_INFORMATION& pi) {
         if (pi.hProcess) CloseHandle(pi.hProcess);
         if (pi.hThread) CloseHandle(pi.hThread);
         pi = { 0 };
     }
 
-    bool openprocess(DWORD pid, DWORD process_access, DWORD thread_access, PROCESS_INFORMATION& pi) {
+    static bool openprocess(DWORD pid, DWORD process_access, DWORD thread_access, PROCESS_INFORMATION& pi) {
         closeprocess(pi);
 
         static bool ok = setdebugprivilege();
