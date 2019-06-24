@@ -12,6 +12,7 @@
 namespace autoattach {
 	std::mutex lockLoadDll;
 	std::set<std::wstring> loadedModules;
+	std::set<lua_State*> hookLuaStates;
 	fn_attach debuggerAttach;
 	fn_detach debuggerDetach;
 	bool	  attachProcess = false;
@@ -57,14 +58,21 @@ namespace autoattach {
 		namespace fake {
 			static void __cdecl luaL_openlibs(lua_State* L) {
 				base::c_call<void>(real::luaL_openlibs, L);
-				debuggerAttach(L);
+				if (!attachProcess || hookLuaStates.insert(L).second) {
+					debuggerAttach(L);
+				}
 			}
 			static void __cdecl lua_settop(lua_State *L, int index) {
-				debuggerAttach(L);
+				if (!attachProcess || hookLuaStates.insert(L).second) {
+					debuggerAttach(L);
+				}
 				return base::c_call<void>(real::lua_settop, L, index);
 			}
 			static void __cdecl lua_close(lua_State* L) {
 				debuggerDetach(L);
+				if (attachProcess) {
+					hookLuaStates.erase(L);
+				}
 				return base::c_call<void>(real::lua_close, L);
 			}
 		}
