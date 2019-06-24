@@ -2,7 +2,6 @@
 #include <lua.hpp>
 #include <bee/filesystem.h>
 #include <bee/utility/path_helper.h>
-#include <atomic>
 
 struct file {
 	file(const wchar_t* filename) {
@@ -43,12 +42,8 @@ static void attach(lua_State* L) {
     }
 }
 
-static void detach(lua_State* L) {
-    (void)L;
-}
-
 static void initialize(bool ap) {
-	autoattach::initialize(attach, detach, ap);
+	autoattach::initialize(attach, ap);
 }
 
 extern "C" __declspec(dllexport)

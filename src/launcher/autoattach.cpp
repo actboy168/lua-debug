@@ -14,7 +14,6 @@ namespace autoattach {
 	std::set<std::wstring> loadedModules;
 	std::set<lua_State*> hookLuaStates;
 	fn_attach debuggerAttach;
-	fn_detach debuggerDetach;
 	bool	  attachProcess = false;
 
 	static bool hook_install(uintptr_t* pointer_ptr, uintptr_t detour) {
@@ -55,24 +54,27 @@ namespace autoattach {
 			uintptr_t lua_close = 0;
 			uintptr_t lua_settop = 0;
 		}
-		namespace fake {
+		namespace fake_launch {
 			static void __cdecl luaL_openlibs(lua_State* L) {
 				base::c_call<void>(real::luaL_openlibs, L);
-				if (!attachProcess || hookLuaStates.insert(L).second) {
+				debuggerAttach(L);
+			}
+		}
+		namespace fake_attach {
+			static void __cdecl luaL_openlibs(lua_State* L) {
+				base::c_call<void>(real::luaL_openlibs, L);
+				if (hookLuaStates.insert(L).second) {
 					debuggerAttach(L);
 				}
 			}
 			static void __cdecl lua_settop(lua_State *L, int index) {
-				if (!attachProcess || hookLuaStates.insert(L).second) {
+				if (hookLuaStates.insert(L).second) {
 					debuggerAttach(L);
 				}
 				return base::c_call<void>(real::lua_settop, L, index);
 			}
 			static void __cdecl lua_close(lua_State* L) {
-				debuggerDetach(L);
-				if (attachProcess) {
-					hookLuaStates.erase(L);
-				}
+				hookLuaStates.erase(L);
 				return base::c_call<void>(real::lua_close, L);
 			}
 		}
@@ -84,16 +86,19 @@ namespace autoattach {
 			};
 			std::vector<Hook> tasks;
 
-#define HOOK(name) do {\
+#define HOOK(type, name) do {\
 			real::##name = (uintptr_t)GetProcAddress(m, #name); \
 			if (!real::##name) return false; \
-			tasks.push_back({real::##name, (uintptr_t)fake::##name}); \
+			tasks.push_back({real::##name, (uintptr_t)fake_##type##::##name}); \
 		} while (0)
 
-			HOOK(luaL_openlibs);
-			HOOK(lua_close);
 			if (attachProcess) {
-				HOOK(lua_settop);
+				HOOK(attach, luaL_openlibs);
+				HOOK(attach, lua_close);
+				HOOK(attach, lua_settop);
+			}
+			else {
+				HOOK(launch, luaL_openlibs);
 			}
 
 			for (size_t i = 0; i < tasks.size(); ++i) {
@@ -191,9 +196,8 @@ namespace autoattach {
 		}
 	}
 
-	void initialize(fn_attach attach, fn_detach detach, bool ap) {
+	void initialize(fn_attach attach, bool ap) {
 		debuggerAttach = attach;
-		debuggerDetach = detach;
 		attachProcess  = ap;
 		if (!findLuaDll()) {
 			waitLuaDll();
