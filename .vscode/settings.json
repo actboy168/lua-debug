@@ -2,5 +2,6 @@
     "Lua.diagnostics.globals": [
         "ARGUMENTS",
         "VSCODE"
-    ]
+    ],
+    "Lua.runtime.version": "Lua 5.4"
 }

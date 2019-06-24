@@ -23,7 +23,7 @@ function m:start(addr, client)
     rdebug.start(bootstrap)
 end
 
-function m:wait(name, ...)
+function m:wait()
     rdebug.probe 'wait_client'
 end
 
