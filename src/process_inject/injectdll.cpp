@@ -53,6 +53,8 @@ static bool wow64_write_memory(uint64_t nwvm, HANDLE hProcess, uint64_t lpBaseAd
 static bool injectdll_x64(const PROCESS_INFORMATION& pi, const std::wstring& dll) {
     static unsigned char sc[] = {
         0x9C,                                                                   // pushfq
+        0x0F, 0xA8,                                                             // push gs
+        0x0F, 0xA0,                                                             // push fs
         0x50,                                                                   // push rax
         0x51,                                                                   // push rcx
         0x52,                                                                   // push rdx
@@ -92,6 +94,8 @@ static bool injectdll_x64(const PROCESS_INFORMATION& pi, const std::wstring& dll
         0x59,                                                                   // pop rcx
         0x58,                                                                   // pop rax
         0x9D,                                                                   // popfq
+        0x0F, 0xA1,                                                             // pop fs
+        0x0F, 0xA9,                                                             // pop gs
         0xFF, 0x25, 0x00, 0x00, 0x00, 0x00,                                     // jmp offset
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00                          // rip
     };
@@ -141,10 +145,10 @@ static bool injectdll_x64(const PROCESS_INFORMATION& pi, const std::wstring& dll
         return false;
     }
     uint64_t handle = us.Buffer + us.MaximumLength;
-    memcpy(sc + 30, &handle, sizeof(handle));
-    memcpy(sc + 40, &memory, sizeof(memory));
-    memcpy(sc + 56, &pfLdrLoadDll, sizeof(pfLdrLoadDll));
-    memcpy(sc + 100, &ctx.Rip, sizeof(ctx.Rip));
+    memcpy(sc + 34, &handle, sizeof(handle));
+    memcpy(sc + 44, &memory, sizeof(memory));
+    memcpy(sc + 60, &pfLdrLoadDll, sizeof(pfLdrLoadDll));
+    memcpy(sc + 108, &ctx.Rip, sizeof(ctx.Rip));
     if (!wow64_write_memory(pfNtWriteVirtualMemory, pi.hProcess, shellcode, &sc, sizeof(sc))) {
         return false;
     }
@@ -210,6 +214,8 @@ static bool injectdll_x86(const PROCESS_INFORMATION& pi, const std::wstring& dll
 static bool injectdll_x64(const PROCESS_INFORMATION& pi, const std::wstring& dll, const std::string& entry) {
     static unsigned char sc[] = {
         0x9C,                                                                   // pushfq
+        0x0F, 0xA8,                                                             // push gs
+        0x0F, 0xA0,                                                             // push fs
         0x50,                                                                   // push rax
         0x51,                                                                   // push rcx
         0x52,                                                                   // push rdx
@@ -258,6 +264,8 @@ static bool injectdll_x64(const PROCESS_INFORMATION& pi, const std::wstring& dll
         0x5A,                                                                   // pop rdx
         0x59,                                                                   // pop rcx
         0x58,                                                                   // pop rax
+        0x0F, 0xA1,                                                             // pop fs
+        0x0F, 0xA9,                                                             // pop gs
         0x9D,                                                                   // popfq
         0xFF, 0x25, 0x00, 0x00, 0x00, 0x00,                                     // jmp offset
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00                          // rip
@@ -325,15 +333,15 @@ static bool injectdll_x64(const PROCESS_INFORMATION& pi, const std::wstring& dll
     }
     uint64_t dllhandle = us1.Buffer + us1.MaximumLength;
     uint64_t entryfunc = us2.Buffer + us2.MaximumLength;
-    memcpy(sc + 30, &dllhandle, sizeof(dllhandle));
-    memcpy(sc + 40, &mem1, sizeof(mem1));
-    memcpy(sc + 56, &pfLdrLoadDll, sizeof(pfLdrLoadDll));
-    memcpy(sc + 68, &entryfunc, sizeof(entryfunc));
-    memcpy(sc + 81, &mem2, sizeof(mem2));
-    memcpy(sc + 91, &dllhandle, sizeof(dllhandle));
-    memcpy(sc + 104, &pfLdrGetProcedureAddress, sizeof(pfLdrGetProcedureAddress));
-    memcpy(sc + 116, &entryfunc, sizeof(entryfunc));
-    memcpy(sc + 163, &ctx.Rip, sizeof(ctx.Rip));
+    memcpy(sc + 34, &dllhandle, sizeof(dllhandle));
+    memcpy(sc + 44, &mem1, sizeof(mem1));
+    memcpy(sc + 60, &pfLdrLoadDll, sizeof(pfLdrLoadDll));
+    memcpy(sc + 72, &entryfunc, sizeof(entryfunc));
+    memcpy(sc + 85, &mem2, sizeof(mem2));
+    memcpy(sc + 95, &dllhandle, sizeof(dllhandle));
+    memcpy(sc + 108, &pfLdrGetProcedureAddress, sizeof(pfLdrGetProcedureAddress));
+    memcpy(sc + 120, &entryfunc, sizeof(entryfunc));
+    memcpy(sc + 171, &ctx.Rip, sizeof(ctx.Rip));
     if (!wow64_write_memory(pfNtWriteVirtualMemory, pi.hProcess, shellcode, &sc, sizeof(sc))) {
         return false;
     }
