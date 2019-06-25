@@ -197,6 +197,9 @@ namespace autoattach {
 	}
 
 	void initialize(fn_attach attach, bool ap) {
+		if (debuggerAttach) {
+			return;
+		}
 		debuggerAttach = attach;
 		attachProcess  = ap;
 		if (!findLuaDll()) {
@@ -204,7 +207,6 @@ namespace autoattach {
 		}
 	}
 
-	
 	FARPROC luaapi(const char* name) {
 #define FIND(api) \
 		if (lua::real::##api && strcmp(name, #api) == 0) { \
