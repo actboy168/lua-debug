@@ -32,9 +32,9 @@ local function getDbgPath()
 end
 
 local function getUnixPath(pid)
-    local path = getDbgPath() / "runtime" / "tmp"
+    local path = getDbgPath() / "tmp"
     fs.create_directories(path)
-	return path / ("pid_%d.tmp"):format(pid)
+	return path / ("pid_%d"):format(pid)
 end
 
 local function response_initialize(req)
