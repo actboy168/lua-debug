@@ -9,5 +9,5 @@ local function dofile(filename, ...)
 end
 
 local dbg = dofile(path.."/script/debugger.lua",platform,path)
-dbg:start(("@%s/tmp/pid_%s"):format(path, pid), true)
+dbg:start(("@%s/tmp/pid_%s"):format(path, pid))
 return dbg

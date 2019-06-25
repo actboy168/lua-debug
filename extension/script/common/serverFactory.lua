@@ -9,10 +9,15 @@ local function create(t)
     local statR = {}
     local statW = {}
     function t.event(status, fd)
-        if status == 'failed' then
+        if status == 'connect start' then
+            assert(t.client)
+            srvfd = fd
+            return
+        end
+        if status == 'connect failed' then
             assert(t.client)
             select.close(srvfd)
-            srvfd = assert(select.connect(t))
+            select.wantconnect(t)
             return
         end
         if session then
@@ -24,7 +29,7 @@ local function create(t)
         write = ''
     end
     if t.client then
-        srvfd = assert(select.connect(t))
+        select.wantconnect(t)
     else
         srvfd = assert(select.listen(t))
     end

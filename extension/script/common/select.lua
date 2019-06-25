@@ -3,6 +3,7 @@ if not ok then ls = require 'remotedebug.socket' end
 
 local listens = {}
 local connects = {}
+local wantconnects = {}
 local event = {}
 local rds = {}
 local wds = {}
@@ -151,7 +152,32 @@ function m.connect(t)
     return fd
 end
 
+function m.wantconnect(t)
+    local i = 1
+    while true do
+        if not wantconnects[i] then
+            wantconnects[i] = t
+            return i
+        end
+        i = i + 1
+    end
+end
+
+function m.dontwantconnect(idx)
+    wantconnects[idx] = nil
+end
+
 local function updateLC()
+    for idx, wc in pairs(wantconnects) do
+        local fd = m.connect(wc)
+        if fd then
+            m.dontwantconnect(idx)
+            if event[fd] then
+                event[fd]('connect start', fd)
+            end
+            break
+        end
+    end
     if #listens == 0 and #connects == 0 then
         return
     end
@@ -178,7 +204,7 @@ local function updateLC()
             attach(fd)
         else
             if event[fd] then
-                event[fd]('failed', fd, err)
+                event[fd]('connect failed', fd, err)
             end
             close(fd)
         end

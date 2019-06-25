@@ -88,7 +88,8 @@ local function attach_process(pkg, pid)
     end
     server = serverFactory {
         protocol = 'unix',
-        address = getUnixPath(pid)
+        address = getUnixPath(pid),
+        client = true,
     }
     server.send(initReq)
     server.send(pkg)
@@ -144,13 +145,15 @@ local function proxy_launch(pkg)
         end
         server = serverFactory {
             protocol = 'unix',
-            address = getUnixPath(process:get_id())
+            address = getUnixPath(process:get_id()),
+            client = true,
         }
     else
         local pid = sp.get_id()
         server = serverFactory {
             protocol = 'unix',
-            address = getUnixPath(pid)
+            address = getUnixPath(pid),
+            client = true,
         }
         if args.console == 'integratedTerminal' or args.console == 'externalTerminal' then
             local arguments, err = debuggerFactory.create_terminal(args, getDbgPath(), pid)
