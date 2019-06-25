@@ -34,7 +34,7 @@ end
 local function getUnixPath(pid)
     local path = getDbgPath() / "tmp"
     fs.create_directories(path)
-	return path / ("pid_%d"):format(pid)
+	return (path / ("pid_%d"):format(pid)):string()
 end
 
 local function response_initialize(req)
@@ -86,11 +86,9 @@ local function attach_process(pkg, pid)
     ) then
         return false
     end
-    local path = getUnixPath(pid)
-    fs.remove(path)
     server = serverFactory {
         protocol = 'unix',
-        address = path:string()
+        address = getUnixPath(pid)
     }
     server.send(initReq)
     server.send(pkg)
@@ -144,19 +142,15 @@ local function proxy_launch(pkg)
             response_error(pkg, err)
             return
         end
-        local path = getUnixPath(process:get_id())
-        fs.remove(path)
         server = serverFactory {
             protocol = 'unix',
-            address = path:string()
+            address = getUnixPath(process:get_id())
         }
     else
         local pid = sp.get_id()
-        local path = getUnixPath(pid)
-        fs.remove(path)
         server = serverFactory {
             protocol = 'unix',
-            address = path:string()
+            address = getUnixPath(pid)
         }
         if args.console == 'integratedTerminal' or args.console == 'externalTerminal' then
             local arguments, err = debuggerFactory.create_terminal(args, getDbgPath(), pid)
