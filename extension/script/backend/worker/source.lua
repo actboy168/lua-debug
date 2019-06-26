@@ -125,11 +125,7 @@ local function create(source)
             sourceReference = codeReference(source),
             protos = {},
         }
-        local f = load(source)
-        if f then
-            src.si = {}
-            parser(src.si, f)
-        end
+        parser(src, source)
         return src
     end
 end

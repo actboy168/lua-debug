@@ -78,8 +78,8 @@ local function bpKey(src)
     return fs.narive_normalize_clientpath(src.path)
 end
 
-local function verifyBreakpoint(src, si, bps)
-    if not si then
+local function verifyBreakpoint(src, clientsrc, bps)
+    if not clientsrc.si then
         return
     end
     local key = bpKey(src)
@@ -93,7 +93,7 @@ local function verifyBreakpoint(src, si, bps)
 
     local res = {}
     for _, bp in ipairs(bps) do
-        local activeline = nextActiveLine(si, bp.line)
+        local activeline = nextActiveLine(clientsrc.si, bp.line)
         if activeline then
             bp.source = src
             bp.realLine = bp.line
@@ -135,8 +135,8 @@ end
 function m.update(clientsrc, bps)
     local src = source.c2s(clientsrc)
     if src then
-        local si = clientsrc.si or src.si
-        verifyBreakpoint(src, si, bps)
+        clientsrc.si = clientsrc.si or src.si
+        verifyBreakpoint(src, clientsrc, bps)
         return
     end
     waitverify[bpKey(clientsrc)] = { clientsrc, bps }
@@ -186,8 +186,7 @@ local function sourceUpdateBreakpoint(src)
     local wv = waitverify[key]
     if wv then
         waitverify[key] = nil
-        local si, bps = wv[1].si, wv[2]
-        verifyBreakpoint(src, si, bps)
+        verifyBreakpoint(src, wv[1], wv[2])
         return
     end
     local bps = breakpoints[key]
