@@ -1,4 +1,4 @@
-local undump = require 'backend.undump'
+local undump = require 'backend.worker.undump'
 
 local version
 

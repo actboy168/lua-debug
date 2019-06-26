@@ -4,8 +4,8 @@
 -- publish\runtime\win64\lua54\lua.exe test\undump.lua
 
 package.path = "extension/script/?.lua"
-local undump = require "backend.undump"
-local parser = require "backend.parser"
+local undump = require "backend.worker.undump"
+local parser = require "backend.worker.parser"
 
 local function getproto(f)
     local cl = undump(string.dump(f))
