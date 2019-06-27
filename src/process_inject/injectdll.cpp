@@ -510,15 +510,13 @@ bool injectdll(DWORD pid, const std::wstring& x86dll, const std::wstring& x64dll
     if (!openprocess(pid, PROCESS_ALL_ACCESS, THREAD_GET_CONTEXT | THREAD_SET_CONTEXT | THREAD_SUSPEND_RESUME, pi)) {
         return false;
     }
-    SuspendThread(pi.hThread);
-    if (!injectdll(pi, x86dll, x64dll, entry)) {
-        ResumeThread(pi.hThread);
-        closeprocess(pi);
+    if (-1 == SuspendThread(pi.hThread)) {
         return false;
     }
+    bool ok = injectdll(pi, x86dll, x64dll, entry);
     ResumeThread(pi.hThread);
     closeprocess(pi);
-    return true;
+    return ok;
 }
 
 
