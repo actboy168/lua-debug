@@ -9,7 +9,7 @@ lm.arch = ARGUMENTS.arch or 'x64'
 lm.bindir = ("build/%s/bin/%s"):format(lm.plat, lm.arch)
 lm.objdir = ("build/%s/obj/%s"):format(lm.plat, lm.arch)
 
-local BUILD_BIN = platform.OS ~= "Windows" or lm.arch ~= "x64"
+local BUILD_BIN = platform.OS ~= "Windows" or lm.arch == "x86"
 
 if BUILD_BIN then
     lm:import '3rd/bee.lua/make.lua'
@@ -22,15 +22,17 @@ if BUILD_BIN then
             },
             includes = {
                 "3rd/bee.lua",
-                "3rd/wow64ext/src",
+                lm.arch == "x86" and "3rd/wow64ext/src",
             },
             sources = {
                 "src/process_inject/injectdll.cpp",
                 "src/process_inject/query_process.cpp",
                 "src/process_inject/inject.cpp",
-                "3rd/wow64ext/src/wow64ext.cpp",
+                lm.arch == "x86" and "3rd/wow64ext/src/wow64ext.cpp",
             },
-            links = "advapi32"
+            links = {
+                "advapi32",
+            }
         }
     else
         lm:shared_library 'inject' {
