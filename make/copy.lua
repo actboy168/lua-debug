@@ -25,6 +25,25 @@ local function getExtensionDirName(packageDir)
     return ('%s.%s-%s'):format(publisher,name,version)
 end
 
+local function crtdll(path)
+    if path:find("api-ms-win-", 1, true) then
+        return true
+    end
+    if path:sub(1, 5) == "msvcp" then
+        return true
+    end
+    if path:sub(1, 9) == "vcruntime" then
+        return true
+    end
+    if path == "concrt140.dll" then
+        return true
+    end
+    if path == "ucrtbase.dll" then
+        return true
+    end
+    return false
+end
+
 local function copy_directory(from, to, filter)
     fs.create_directories(to)
     for fromfile in from:list_directory() do
@@ -32,8 +51,11 @@ local function copy_directory(from, to, filter)
             copy_directory(fromfile, to / fromfile:filename(), filter)
         else
             if (not filter) or filter(fromfile) then
-                print('copy', fromfile, to / fromfile:filename())
-                fs.copy_file(fromfile, to / fromfile:filename(), true)
+                local filename = fromfile:filename()
+                if not crtdll(filename:string():lower()) then
+                    print('copy', fromfile, to / filename)
+                end
+                fs.copy_file(fromfile, to / filename, true)
             end
         end
     end
