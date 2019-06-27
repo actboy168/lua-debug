@@ -6,9 +6,6 @@
 #include <stdint.h>
 #include <tlhelp32.h>
 #include <wow64ext.h>
-#include <functional>
-#include <stack>
-#include <vector>
 
 static bool is_process64(HANDLE hProcess) {
     BOOL wow64 = FALSE;
@@ -461,76 +458,67 @@ static bool setdebugprivilege() {
     return true;
 }
 
-static void eachthread(DWORD pid, std::function<bool(THREADENTRY32 const&)> fn) {
+static DWORD getthreadid(DWORD pid) {
     HANDLE h = CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, 0);
     if (h != INVALID_HANDLE_VALUE) {
         THREADENTRY32 te;
         te.dwSize = sizeof(te);
         for (BOOL ok = Thread32First(h, &te); ok; ok = Thread32Next(h, &te)) {
-            if (te.th32OwnerProcessID == pid && !fn(te)) {
-                break;
+            if (te.th32OwnerProcessID == pid) {
+                CloseHandle(h);
+                return te.th32ThreadID;
             }
         }
     }
     CloseHandle(h);
+    return 0;
 }
 
 static void closeprocess(PROCESS_INFORMATION& pi) {
     if (pi.hProcess) CloseHandle(pi.hProcess);
     if (pi.hThread) CloseHandle(pi.hThread);
+    pi = { 0 };
 }
 
-bool injectdll(DWORD pid, const std::wstring& x86dll, const std::wstring& x64dll, const char* entry) {
-    static bool debugprivilege = setdebugprivilege();
-    if (!debugprivilege) {
+static bool openprocess(DWORD pid, DWORD process_access, DWORD thread_access, PROCESS_INFORMATION& pi) {
+    closeprocess(pi);
+    static bool ok = setdebugprivilege();
+    if (!ok) {
         return false;
     }
-    PROCESS_INFORMATION pi = { 0 };
     pi.dwProcessId = pid;
-    pi.dwThreadId = 0;
-    pi.hThread = 0;
-    pi.hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pi.dwProcessId);
+    pi.hProcess = OpenProcess(process_access, FALSE, pi.dwProcessId);
     if (!pi.hProcess) {
         closeprocess(pi);
         return false;
     }
-    std::vector<DWORD> thread_id;
-    std::stack<HANDLE> thread_handle;
-    bool ok = false;
-    eachthread(pi.dwProcessId, [&](THREADENTRY32 const& te)->bool{
-        thread_id.push_back(te.th32ThreadID);
-        return true;
-    });
-    if (thread_id.empty()) {
-        goto error;
+    pi.dwThreadId = getthreadid(pi.dwProcessId);
+    if (!pi.dwThreadId) {
+        closeprocess(pi);
+        return false;
     }
-    for (size_t i = 0; i < thread_id.size(); ++i) {
-        DWORD tid = thread_id[i];
-        if (i == 0) {
-            HANDLE thread = OpenThread(THREAD_GET_CONTEXT | THREAD_SET_CONTEXT, FALSE, tid);
-            if (!thread) {
-                goto error;
-            }
-            pi.dwThreadId = tid;
-            pi.hThread = thread;
-        }
-        HANDLE thread = OpenThread(THREAD_SUSPEND_RESUME, FALSE, tid);
-        if (!thread) {
-            goto error;
-        }
-        thread_handle.push(thread);
-        SuspendThread(thread);
+    pi.hThread = OpenThread(thread_access, FALSE, pi.dwThreadId);
+    if (!pi.hThread) {
+        closeprocess(pi);
+        return false;
     }
-    ok = injectdll(pi, x86dll, x64dll, entry);
-error:
-    while (!thread_handle.empty()) {
-        HANDLE h = thread_handle.top();
-        ResumeThread(h);
-        CloseHandle(h);
-        thread_handle.pop();
+    return true;
+}
+
+bool injectdll(DWORD pid, const std::wstring& x86dll, const std::wstring& x64dll, const char* entry) {
+    PROCESS_INFORMATION pi = { 0 };
+    if (!openprocess(pid, PROCESS_ALL_ACCESS, THREAD_GET_CONTEXT | THREAD_SET_CONTEXT | THREAD_SUSPEND_RESUME, pi)) {
+        return false;
     }
+    SuspendThread(pi.hThread);
+    if (!injectdll(pi, x86dll, x64dll, entry)) {
+        ResumeThread(pi.hThread);
+        closeprocess(pi);
+        return false;
+    }
+    ResumeThread(pi.hThread);
     closeprocess(pi);
-    return ok;
+    return true;
 }
 
 
