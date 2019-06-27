@@ -26,67 +26,10 @@
 #include "wow64ext.h"
 #include "CMemPtr.h"
 
-HANDLE g_heap;
-BOOL g_isWow64;
-
-#ifdef WOW64EXT_DLL
-
-void* malloc(size_t size)
-{
-	return HeapAlloc(g_heap, 0, size);
-}
-
-void free(void* ptr)
-{
-	if (nullptr != ptr)
-		HeapFree(g_heap, 0, ptr);
-}
-
-int _wcsicmp(const wchar_t *string1, const wchar_t *string2)
-{
-	wchar_t c1;
-	wchar_t c2;
-	int i = 0;
-	do
-	{
-		c1 = string1[i];
-		if (c1 >= 'A' && c1 <= 'Z')
-			c1 += 0x20;
-
-		c2 = string2[i];
-		if (c2 >= 'A' && c2 <= 'Z')
-			c2 += 0x20;
-
-		i++;
-	} while (c1 && c1 == c2);
-	return c1 - c2;
-}
-#endif
-
-VOID __cdecl InitWow64ext()
-{
-	IsWow64Process(GetCurrentProcess(), &g_isWow64);
-}
-
-#ifdef WOW64EXT_DLL
-BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
-{
-	if (DLL_PROCESS_ATTACH == fdwReason)
-	{
-		IsWow64Process(GetCurrentProcess(), &g_isWow64);
-		g_heap = GetProcessHeap();
-	}
-    return TRUE;
-}
-#endif
-
 #pragma warning(push)
 #pragma warning(disable : 4409)
 DWORD64 __cdecl X64Call(DWORD64 func, int argC, ...)
 {
-	if (!g_isWow64)
-		return 0;
-
     va_list args;
     va_start(args, argC);
     reg64 _rcx = { (argC > 0) ? argC--, va_arg(args, DWORD64) : 0 };
@@ -307,9 +250,6 @@ DWORD64 getTEB64()
 
 DWORD64 __cdecl GetModuleHandle64(const wchar_t* lpModuleName)
 {
-	if (!g_isWow64)
-		return 0;
-
     TEB64 teb64;
     getMem64(&teb64, getTEB64(), sizeof(TEB64));
     

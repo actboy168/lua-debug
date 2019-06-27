@@ -99,7 +99,6 @@ static bool injectdll_x64(const PROCESS_INFORMATION& pi, const std::wstring& dll
         0xFF, 0x25, 0x00, 0x00, 0x00, 0x00,                                     // jmp offset
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00                          // rip
     };
-    InitWow64ext();
     uint64_t ntdll = wow64_module(L"ntdll.dll");
     if (!ntdll) {
         return false;
@@ -270,7 +269,6 @@ static bool injectdll_x64(const PROCESS_INFORMATION& pi, const std::wstring& dll
         0xFF, 0x25, 0x00, 0x00, 0x00, 0x00,                                     // jmp offset
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00                          // rip
     }; 
-    InitWow64ext();
     uint64_t ntdll = wow64_module(L"ntdll.dll");
     if (!ntdll) {
         return false;

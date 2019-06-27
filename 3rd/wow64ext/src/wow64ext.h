@@ -363,9 +363,6 @@ struct _CONTEXT64
 
 extern "C"
 {
-#ifndef WOW64EXT_DLL
-	WOW_EXPORT VOID __cdecl InitWow64ext();
-#endif
 	WOW_EXPORT DWORD64 __cdecl X64Call(DWORD64 func, int argC, ...);
 	WOW_EXPORT DWORD64 __cdecl GetModuleHandle64(const wchar_t* lpModuleName);
 	WOW_EXPORT DWORD64 __cdecl GetProcAddress64(DWORD64 hModule, const char* funcName);
