@@ -11,11 +11,11 @@
 #include <vector>
 
 static bool is_process64(HANDLE hProcess) {
-    BOOL is_x64 = FALSE;
-    if (!IsWow64Process(hProcess, &is_x64)) {
+    BOOL wow64 = FALSE;
+    if (!IsWow64Process(hProcess, &wow64)) {
         return false;
     }
-    return !is_x64;
+    return !wow64;
 }
 
 static uint64_t wow64_module(const wchar_t* name) {
@@ -93,9 +93,9 @@ static bool injectdll_x64(const PROCESS_INFORMATION& pi, const std::wstring& dll
         0x5A,                                                                   // pop rdx
         0x59,                                                                   // pop rcx
         0x58,                                                                   // pop rax
-        0x9D,                                                                   // popfq
         0x0F, 0xA1,                                                             // pop fs
         0x0F, 0xA9,                                                             // pop gs
+        0x9D,                                                                   // popfq
         0xFF, 0x25, 0x00, 0x00, 0x00, 0x00,                                     // jmp offset
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00                          // rip
     };
