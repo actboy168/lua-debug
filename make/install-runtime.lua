@@ -20,13 +20,14 @@ if platform ~= 'msvc' or arch == 'x86' then
     if platform == 'msvc' then
         fs.copy_file(bindir / 'lua54.dll',    CWD / 'build' / 'lua54.dll',  true)
         fs.copy_file(bindir / 'lua54.dll',    output / 'lua54.dll',         true)
-        require 'msvc'.copy_crtdll('x86', output)
+        require 'msvc'.copy_crtdll(arch, output)
     end
 end
 
 if platform == 'msvc' then
     local output = CWD / 'publish' / 'bin' / 'win'
     local bindir = CWD / 'build' / platform / 'bin' / arch
+    fs.create_directories(output)
     fs.copy_file(bindir / 'launcher.dll', output / ('launcher.'..arch..'.dll'), true)
 end
 
