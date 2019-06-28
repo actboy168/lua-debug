@@ -542,7 +542,7 @@ function event.thread()
     hookmgr.setcoroutine(co)
 end
 
-function event.wait_client()
+function event.wait()
     while not initialized do
         workerThreadUpdate(0.01)
     end

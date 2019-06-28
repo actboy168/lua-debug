@@ -24,7 +24,7 @@ function m:start(addr, client)
 end
 
 function m:wait()
-    rdebug.probe 'wait_client'
+    rdebug.probe 'wait'
 end
 
 function m:event(name, ...)
