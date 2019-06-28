@@ -7,17 +7,19 @@ return function (error_log, addr, client)
 
     nt.createChannel "DbgMaster"
 
-    nt.createThread("error", package.path, package.cpath, ([[
-        local err = thread.channel "errlog"
-        local log = require "common.log"
-        log.file = %q
-        repeat
-            local ok, msg = err:pop(0.05)
-            if ok then
-                log.error("ERROR:" .. msg)
-            end
-        until MgrUpdate()
-    ]]):format(error_log))
+    if error_log then
+        nt.createThread("error", package.path, package.cpath, ([[
+            local err = thread.channel "errlog"
+            local log = require "common.log"
+            log.file = %q
+            repeat
+                local ok, msg = err:pop(0.05)
+                if ok then
+                    log.error("ERROR:" .. msg)
+                end
+            until MgrUpdate()
+        ]]):format(error_log))
+    end
 
     nt.createThread("master", package.path, package.cpath, ([[
         local parseAddress  = require "common.parseAddress"
