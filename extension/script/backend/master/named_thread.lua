@@ -85,8 +85,8 @@ local function destoryThread(name)
 end
 
 setmetatable(exitGuard, {__gc=function(self)
-    for _, name in ipairs(self) do
-        destoryThread(name)
+    for i = #self, 1, -1 do
+        destoryThread(self[i])
     end
 end})
 
