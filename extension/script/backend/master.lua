@@ -1,7 +1,5 @@
 local nt = require "backend.master.named_thread"
 
-local exitGuard = {}
-
 return function (error_log, addr, client)
     if not nt.init() then
         return
@@ -57,9 +55,4 @@ return function (error_log, addr, client)
         until MgrUpdate()
         select.closeall()
     ]=])
-
-    setmetatable(exitGuard, {__gc=function()
-        nt.destoryThread "master"
-        nt.destoryThread "error"
-    end})
 end

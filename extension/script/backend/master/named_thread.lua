@@ -1,5 +1,7 @@
 local thread = require "remotedebug.thread"
 
+local exitGuard = {}
+
 local threadMgr = [[
     package.path = %q
     package.cpath = %q
@@ -59,11 +61,17 @@ local function createThread(name, path, cpath, script)
     local reqChan = thread.channel(reqChannelName(name))
     reqChan:push("INIT", thread.id, thd)
 
+    exitGuard[#exitGuard+1] = name
+
     local errlog = thread.channel "errlog"
     local ok, msg = errlog:pop()
     if ok then
         print(msg)
     end
+end
+
+local function init()
+    return not createChannel(resChannelName())
 end
 
 local function destoryThread(name)
@@ -76,14 +84,14 @@ local function destoryThread(name)
     end
 end
 
-
-local function init()
-    return not createChannel(resChannelName())
-end
+setmetatable(exitGuard, {__gc=function(self)
+    for _, name in ipairs(self) do
+        destoryThread(name)
+    end
+end})
 
 return {
     init = init,
     createChannel = createChannel,
     createThread = createThread,
-    destoryThread = destoryThread,
 }
