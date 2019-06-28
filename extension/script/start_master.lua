@@ -49,7 +49,7 @@ return function (path, cpath, error_log, addr, client)
         end
 
         local select = require "common.select"
-        local master = require 'backend.master'
+        local master = require 'backend.master.mgr'
         master.init(dbg_io)
         repeat
             select.update(0.05)
