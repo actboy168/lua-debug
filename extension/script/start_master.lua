@@ -1,67 +1,15 @@
-local thread = require "remotedebug.thread"
+local nt = require "common.named_thread"
 
-local theadpool = {}
-
-local exitMgr = [[
-    package.path = %q
-    package.cpath = %q
-    local thread = require "remotedebug.thread"
-    local exitReq = thread.channel(%q.."ExitReq")
-    local clients = {}
-    local EXITCODE
-    local EXITID
-    local function finishExit()
-        local exitRes = thread.channel("ExitRes"..EXITID)
-        exitRes:push(EXITCODE)
-    end
-    local function isExit()
-        while true do
-            local ok, msg, id = exitReq:pop()
-            if not ok then
-                return
-            end
-            if msg == "INIT" then
-                clients[id] = true
-                goto continue
-            end
-            if msg == "EXIT" then
-                clients[id] = false
-                EXITID = id
-                if next(clients) == nil then
-                    EXITCODE = "OK"
-                    return true
-                end
-                EXITCODE = "BYE"
-                finishExit()
-                goto continue
-            end
-            ::continue::
-        end
-    end
-]]
-
-local function createNamedChannel(name)
-    local ok, err = pcall(thread.newchannel, name)
-    if not ok then
-        if err:sub(1,17) ~= "Duplicate channel" then
-            error(err)
-        end
-    end
-    return not ok
-end
-
-local function createNamedThread(name, path, cpath, script)
-    createNamedChannel(name.."ExitReq")
-    theadpool[name] = thread.named_thread(name, exitMgr:format(path, cpath, name) .. script)
-end
+local exitGuard = {}
 
 return function (path, cpath, error_log, addr, client)
-    if createNamedChannel("ExitRes"..thread.id) then
+    if not nt.init() then
         return
     end
 
-    createNamedChannel("DbgMaster")
-    createNamedThread("error", path, cpath, ([[
+    nt.createChannel "DbgMaster"
+
+    nt.createThread("error", path, cpath, ([[
         local err = thread.channel "errlog"
         local log = require "common.log"
         log.file = %q
@@ -70,11 +18,10 @@ return function (path, cpath, error_log, addr, client)
             if ok then
                 log.error("ERROR:" .. msg)
             end
-        until isExit()
-        finishExit()
+        until MgrUpdate()
     ]]):format(error_log))
 
-    createNamedThread("master", path, cpath, ([[
+    nt.createThread("master", path, cpath, ([[
         local parseAddress  = require "common.parseAddress"
         local serverFactory = require "common.serverFactory"
         local server = serverFactory(parseAddress(%q, %s))
@@ -107,30 +54,12 @@ return function (path, cpath, error_log, addr, client)
         repeat
             select.update(0.05)
             master.update()
-        until isExit()
-        finishExit()
+        until MgrUpdate()
         select.closeall()
     ]=])
 
-    local errlog = thread.channel "errlog"
-    local ok, msg = errlog:pop()
-    if ok then
-        print(msg)
-    end
-
-    for _, thd in ipairs {"master","error"} do
-        local chan = thread.channel(thd.."ExitReq")
-        chan:push("INIT", thread.id)
-    end
-
-    setmetatable(theadpool, {__gc=function(self)
-        local chanRes = thread.channel("ExitRes"..thread.id)
-        for _, thd in ipairs {"master","error"} do
-            local chanReq = thread.channel(thd.."ExitReq")
-            chanReq:push("EXIT", thread.id)
-            if chanRes:bpop() == "OK" then
-                self[thd]:wait()
-            end
-        end
+    setmetatable(exitGuard, {__gc=function()
+        nt.destoryThread "master"
+        nt.destoryThread "error"
     end})
 end
