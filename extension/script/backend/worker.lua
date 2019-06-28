@@ -10,8 +10,8 @@ local emulator = require 'backend.worker.emulator'
 local ev = require 'common.event'
 local hookmgr = require 'remotedebug.hookmgr'
 local stdio = require 'remotedebug.stdio'
-local thread = require 'common.thread'
-local err = thread.channel_produce 'errlog'
+local thread = require 'remotedebug.thread'
+local err = thread.channel 'errlog'
 
 local initialized = false
 local info = {}
@@ -27,8 +27,8 @@ local openUpdate = false
 local CMD = {}
 
 thread.newchannel ('DbgWorker' .. thread.id)
-local masterThread = thread.channel_produce 'DbgMaster'
-local workerThread = thread.channel_consume ('DbgWorker' .. thread.id)
+local masterThread = thread.channel 'DbgMaster'
+local workerThread = thread.channel ('DbgWorker' .. thread.id)
 
 local function workerThreadUpdate(timeout)
     while true do
