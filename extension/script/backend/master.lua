@@ -2,14 +2,14 @@ local nt = require "common.named_thread"
 
 local exitGuard = {}
 
-return function (path, cpath, error_log, addr, client)
+return function (error_log, addr, client)
     if not nt.init() then
         return
     end
 
     nt.createChannel "DbgMaster"
 
-    nt.createThread("error", path, cpath, ([[
+    nt.createThread("error", package.path, package.cpath, ([[
         local err = thread.channel "errlog"
         local log = require "common.log"
         log.file = %q
@@ -21,7 +21,7 @@ return function (path, cpath, error_log, addr, client)
         until MgrUpdate()
     ]]):format(error_log))
 
-    nt.createThread("master", path, cpath, ([[
+    nt.createThread("master", package.path, package.cpath, ([[
         local parseAddress  = require "common.parseAddress"
         local serverFactory = require "common.serverFactory"
         local server = serverFactory(parseAddress(%q, %s))

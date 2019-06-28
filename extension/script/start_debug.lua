@@ -8,8 +8,8 @@ function m:start(addr, client)
         package.cpath = %q
         local log = require 'common.log'
         log.file = %q
-        local m = require 'start_master'
-        m(package.path, package.cpath, %q, %q, %q)
+        local m = require 'backend.master'
+        m(%q, %q, %q)
         local w = require 'backend.worker'
         w.openupdate()
     ]=]):format(
