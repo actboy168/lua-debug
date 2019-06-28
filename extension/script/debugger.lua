@@ -1,4 +1,4 @@
-local platform, path, luaapi = ...
+local platform, root, luaapi = ...
 
 local rt = "/runtime"
 if platform == "windows" then
@@ -20,7 +20,7 @@ else
 end
 
 local ext = platform == "windows" and "dll" or "so"
-local remotedebug = path..rt..'/remotedebug.'..ext
+local remotedebug = root..rt..'/remotedebug.'..ext
 if luaapi then
     assert(package.loadlib(remotedebug,'init'))(luaapi)
 end
@@ -34,7 +34,35 @@ local function dofile(filename, ...)
     return func(...)
 end
 
-local dbg = dofile(path..'/script/start_debug.lua', rdebug,path,'/script/?.lua',rt..'/?.'..ext)
-debug.getregistry()["lua-debug"] = dbg
+local dbg = {}
 
+function dbg:start(addr, client)
+    rdebug.start(([=[
+        package.path = %q
+        package.cpath = %q
+        local log = require 'common.log'
+        log.file = %q
+        local m = require 'backend.master'
+        m(%q, %q, %q)
+        local w = require 'backend.worker'
+        w.openupdate()
+    ]=]):format(
+          root..'/script/?.lua'
+        , root..rt..'/?.'..ext
+        , root..'/worker.log'
+        , root..'/error.log'
+        , addr
+        , client == true and "true" or "false"
+    ))
+end
+
+function dbg:wait()
+    rdebug.probe 'wait'
+end
+
+function dbg:event(name, ...)
+    return rdebug.event('event_'..name, ...)
+end
+
+debug.getregistry()["lua-debug"] = dbg
 return dbg
