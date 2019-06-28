@@ -1,4 +1,4 @@
-local nt = require "common.named_thread"
+local nt = require "backend.master.named_thread"
 
 local exitGuard = {}
 
