@@ -31,10 +31,10 @@ local function getDbgPath()
     return fs.path(getHomePath()) / (VSCODE or '.vscode') / 'extensions' / ('actboy168.lua-debug-' .. getVersion(WORKDIR))
 end
 
-local function getUnixPath(pid)
+local function getUnixAddress(pid)
     local path = getDbgPath() / "tmp"
     fs.create_directories(path)
-	return (path / ("pid_%d"):format(pid)):string()
+    return "@"..(path / ("pid_%d"):format(pid)):string()
 end
 
 local function response_initialize(req)
@@ -86,19 +86,14 @@ local function attach_process(pkg, pid)
     ) then
         return false
     end
-    server = serverFactory {
-        protocol = 'unix',
-        address = getUnixPath(pid),
-        client = true,
-    }
+    server = serverFactory(getUnixAddress(pid), true)
     server.send(initReq)
     server.send(pkg)
     return true
 end
 
 local function attach_tcp(pkg, args)
-    local parseAddress = require "common.parseAddress"
-    server = serverFactory(parseAddress(args.address, args.client))
+    server = serverFactory(args.address, args.client)
     server.send(initReq)
     server.send(pkg)
 end
@@ -143,18 +138,10 @@ local function proxy_launch(pkg)
             response_error(pkg, err)
             return
         end
-        server = serverFactory {
-            protocol = 'unix',
-            address = getUnixPath(process:get_id()),
-            client = true,
-        }
+        server = serverFactory(getUnixAddress(process:get_id()), true)
     else
         local pid = sp.get_id()
-        server = serverFactory {
-            protocol = 'unix',
-            address = getUnixPath(pid),
-            client = true,
-        }
+        server = serverFactory(getUnixAddress(pid), true)
         if args.console == 'integratedTerminal' or args.console == 'externalTerminal' then
             local arguments, err = debuggerFactory.create_terminal(args, getDbgPath(), pid)
             if not arguments then

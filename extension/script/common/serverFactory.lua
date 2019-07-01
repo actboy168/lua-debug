@@ -1,7 +1,37 @@
 local proto = require 'common.protocol'
 local select = require 'common.select'
 
-local function create(t)
+local function parseAddress(address, client)
+    if address:sub(1,1) == '@' then
+        return {
+            protocol = 'unix',
+            address = address:sub(2),
+            client = client,
+        }
+    end
+    local ipv4, port = address:match("(%d+%.%d+%.%d+%.%d+):(%d+)")
+    if ipv4 then
+        return {
+            protocol = 'tcp',
+            address = ipv4,
+            port = tonumber(port),
+            client = client,
+        }
+    end
+    local ipv6, port = address:match("%[([%d:a-fA-F]+)%]:(%d+)")
+    if ipv6 then
+        return {
+            protocol = 'tcp',
+            address = ipv6,
+            port = tonumber(port),
+            client = client,
+        }
+    end
+    error "Invalid address."
+end
+
+local function create(address, client)
+    local t = parseAddress(address, client)
     local m = {}
     local session
     local srvfd

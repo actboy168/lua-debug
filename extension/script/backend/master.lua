@@ -22,9 +22,8 @@ return function (error_log, addr, client)
     end
 
     nt.createThread("master", package.path, package.cpath, ([[
-        local parseAddress  = require "common.parseAddress"
         local serverFactory = require "common.serverFactory"
-        local server = serverFactory(parseAddress(%q, %s))
+        local server = serverFactory(%q, %s)
 ]]):format(addr, client) .. [=[
         local dbg_io = {}
         function dbg_io:event_in(f)

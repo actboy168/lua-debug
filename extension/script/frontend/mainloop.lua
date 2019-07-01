@@ -17,11 +17,7 @@ end
 
 return function(port)
     if port then
-        vscode = serverFactory {
-            protocol = 'tcp',
-            address = '127.0.0.1',
-            port = tostring(port)
-        }
+        vscode = serverFactory('127.0.0.1:'..port)
     else
         vscode = require 'frontend.stdio'
         --vscode.debug(true)
