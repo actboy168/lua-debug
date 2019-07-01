@@ -22,8 +22,8 @@ return function (error_log, addr, client)
     end
 
     nt.createThread("master", package.path, package.cpath, ([[
-        local serverFactory = require "common.serverFactory"
-        local server = serverFactory(%q, %s)
+        local network = require "common.network"
+        local server = network(%q, %s)
 ]]):format(addr, client) .. [=[
         local dbg_io = {}
         function dbg_io:event_in(f)

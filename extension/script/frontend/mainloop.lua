@@ -1,4 +1,4 @@
-local serverFactory = require 'common.serverFactory'
+local network = require 'common.network'
 local select = require 'common.select'
 local proxy = require 'frontend.proxy'
 local vscode
@@ -17,7 +17,7 @@ end
 
 return function(port)
     if port then
-        vscode = serverFactory('127.0.0.1:'..port)
+        vscode = network('127.0.0.1:'..port)
     else
         vscode = require 'frontend.stdio'
         --vscode.debug(true)
