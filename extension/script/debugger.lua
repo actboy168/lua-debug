@@ -37,13 +37,14 @@ end
 local dbg = {}
 
 function dbg:start(addr, client)
+    local address = ("%q, %s"):format(addr, client == true and "true" or "false")
     rdebug.start(([=[
         package.path = %q
         package.cpath = %q
         local log = require 'common.log'
         log.file = %q
         local m = require 'backend.master'
-        m(%q, %q, %q)
+        m(%q, %q)
         local w = require 'backend.worker'
         w.openupdate()
     ]=]):format(
@@ -51,8 +52,7 @@ function dbg:start(addr, client)
         , root..rt..'/?.'..ext
         , root..'/worker.log'
         , root..'/error.log'
-        , addr
-        , client == true and "true" or "false"
+        , address
     ))
 end
 

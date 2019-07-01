@@ -1,6 +1,6 @@
 local nt = require "backend.master.named_thread"
 
-return function (error_log, addr, client)
+return function (error_log, address)
     if not nt.init() then
         return
     end
@@ -22,37 +22,12 @@ return function (error_log, addr, client)
     end
 
     nt.createThread("master", package.path, package.cpath, ([[
-        local network = require "common.network"
-        local server = network.open(%q, %s)
-]]):format(addr, client) .. [=[
-        local dbg_io = {}
-        function dbg_io:event_in(f)
-            self.fsend = f
-        end
-        function dbg_io:event_close(f)
-            self.fclose = f
-        end
-        function dbg_io:update()
-            local data = server.recvRaw()
-            if data ~= '' then
-                self.fsend(data)
-            end
-            return true
-        end
-        function dbg_io:send(data)
-            server.sendRaw(data)
-        end
-        function dbg_io:close()
-            server.close()
-            self.fclose()
-        end
-
-        local master = require 'backend.master.mgr'
+        local dbg_io = require "common.io"(%s)
+        local master = require "backend.master.mgr"
         master.init(dbg_io)
         repeat
-            network.update(0.05)
             master.update()
         until MgrUpdate()
         select.closeall()
-    ]=])
+    ]]):format(address))
 end
