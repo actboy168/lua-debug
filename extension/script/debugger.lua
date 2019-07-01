@@ -26,14 +26,6 @@ if luaapi then
 end
 local rdebug = assert(package.loadlib(remotedebug,'luaopen_remotedebug'))()
 
-local function dofile(filename, ...)
-    local f = assert(io.open(filename))
-    local str = f:read "a"
-    f:close()
-    local func = assert(load(str, "=(BOOTSTRAP)"))
-    return func(...)
-end
-
 local dbg = {}
 
 function dbg:start(addr, client)
