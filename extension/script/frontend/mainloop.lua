@@ -1,8 +1,6 @@
 local network = require 'common.network'
-local select = require 'common.select'
 local proxy = require 'frontend.proxy'
 local vscode
-
 
 local function update()
     while true do
@@ -17,7 +15,7 @@ end
 
 return function(port)
     if port then
-        vscode = network('127.0.0.1:'..port)
+        vscode = network.open('127.0.0.1:'..port)
     else
         vscode = require 'frontend.stdio'
         --vscode.debug(true)
@@ -25,7 +23,7 @@ return function(port)
     proxy.init(vscode)
 
     while true do
-        select.update(0.05)
+        network.update(0.05)
         proxy.update()
         update()
     end

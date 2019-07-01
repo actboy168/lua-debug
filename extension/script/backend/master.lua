@@ -23,7 +23,7 @@ return function (error_log, addr, client)
 
     nt.createThread("master", package.path, package.cpath, ([[
         local network = require "common.network"
-        local server = network(%q, %s)
+        local server = network.open(%q, %s)
 ]]):format(addr, client) .. [=[
         local dbg_io = {}
         function dbg_io:event_in(f)
@@ -47,11 +47,10 @@ return function (error_log, addr, client)
             self.fclose()
         end
 
-        local select = require "common.select"
         local master = require 'backend.master.mgr'
         master.init(dbg_io)
         repeat
-            select.update(0.05)
+            network.update(0.05)
             master.update()
         until MgrUpdate()
         select.closeall()

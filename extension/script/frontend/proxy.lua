@@ -86,14 +86,14 @@ local function attach_process(pkg, pid)
     ) then
         return false
     end
-    server = network(getUnixAddress(pid), true)
+    server = network.open(getUnixAddress(pid), true)
     server.send(initReq)
     server.send(pkg)
     return true
 end
 
 local function attach_tcp(pkg, args)
-    server = network(args.address, args.client)
+    server = network.open(args.address, args.client)
     server.send(initReq)
     server.send(pkg)
 end
@@ -138,10 +138,10 @@ local function proxy_launch(pkg)
             response_error(pkg, err)
             return
         end
-        server = network(getUnixAddress(process:get_id()), true)
+        server = network.open(getUnixAddress(process:get_id()), true)
     else
         local pid = sp.get_id()
-        server = network(getUnixAddress(pid), true)
+        server = network.open(getUnixAddress(pid), true)
         if args.console == 'integratedTerminal' or args.console == 'externalTerminal' then
             local arguments, err = debuggerFactory.create_terminal(args, getDbgPath(), pid)
             if not arguments then

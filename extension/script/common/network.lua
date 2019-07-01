@@ -30,7 +30,7 @@ local function parseAddress(address, client)
     error "Invalid address."
 end
 
-local function create(address, client)
+local function open(address, client)
     local t = parseAddress(address, client)
     local m = {}
     local session
@@ -99,4 +99,7 @@ local function create(address, client)
     return m
 end
 
-return create
+return {
+    open = open,
+    update = select.update,
+}
