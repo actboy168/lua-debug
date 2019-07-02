@@ -62,32 +62,39 @@ ev.on('initializing', function(config)
     init_searchpath(config, 'cpath')
 end)
 
-local function split(str)
-    local r = {}
-    str:gsub('[^/\\]*', function (w) r[#r+1] = w end)
-    return r
-end
-
 local function absolute(p)
     return fs.absolute(fs.path(p)):string()
 end
 
-local function normalize(p)
+local function normalize_posix(p)
     local stack = {}
-    for _, elem in ipairs(split(p)) do
-        if #elem == 0 and #stack ~= 0 then
-        elseif elem == '..' and #stack ~= 0 and stack[#stack] ~= '..' then
+    p:gsub('[^/]*', function (w)
+        if #w == 0 and #stack ~= 0 then
+        elseif w == '..' and #stack ~= 0 and stack[#stack] ~= '..' then
             stack[#stack] = nil
-        elseif elem ~= '.' then
-            stack[#stack + 1] = elem
+        elseif w ~= '.' then
+            stack[#stack + 1] = w
         end
-    end
+    end)
+    return stack
+end
+
+local function normalize_win32(p)
+    local stack = {}
+    p:gsub('[^/\\]*', function (w)
+        if #w == 0 and #stack ~= 0 then
+        elseif w == '..' and #stack ~= 0 and stack[#stack] ~= '..' then
+            stack[#stack] = nil
+        elseif w ~= '.' then
+            stack[#stack + 1] = w
+        end
+    end)
     return stack
 end
 
 local m = {}
 
-local function m.fromwsl(s)
+function m.fromwsl(s)
     if sourceFormat == "string" then
         return s
     end
@@ -97,39 +104,29 @@ local function m.fromwsl(s)
     return s:gsub("^/mnt/(%a)", "%1:")
 end
 
-local function m_normalize(path)
+function m.source_native(s)
+    return sourceFormat == "path" and s:lower() or s
+end
+
+function m.path_native(s)
+    return pathFormat == "path" and s:lower() or s
+end
+
+function m.source_normalize(path)
+    if sourceFormat == "string" then
+        return path
+    end
+    local normalize = sourceFormat == "path" and normalize_win32 or normalize_posix
+    return table.concat(normalize(absolute(path)), '/')
+end
+
+function m.path_normalize(path)
+    local normalize = pathFormat == "path" and normalize_win32 or normalize_posix
     return table.concat(normalize(path), '/')
 end
 
-function m.normalize_serverpath(path)
-    if sourceFormat == "string" then
-        return path
-    end
-    return m_normalize(absolute(path))
-end
-
-function m.narive_normalize_serverpath(path)
-    if sourceFormat == "string" then
-        return path
-    end
-    if sourceFormat == "linuxpath" then
-        return m_normalize(absolute(path))
-    end
-    return m_normalize(absolute(path)):lower()
-end
-
-function m.normalize_clientpath(path)
-    return m_normalize(path)
-end
-
-function m.narive_normalize_clientpath(path)
-    if pathFormat == "linuxpath" then
-        return m_normalize(path)
-    end
-    return m_normalize(path):lower()
-end
-
-function m.relative(path, base)
+function m.path_relative(path, base)
+    local normalize = pathFormat == "path" and normalize_win32 or normalize_posix
     local rpath = normalize(path)
     local rbase = normalize(base)
     while #rpath > 0 and #rbase > 0 and rpath[1] == rbase[1] do
@@ -149,7 +146,8 @@ function m.relative(path, base)
     return table.concat(s, '/')
 end
 
-function m.filename(path)
+function m.path_filename(path)
+    local normalize = pathFormat == "path" and normalize_win32 or normalize_posix
     local paths = normalize(path)
     return paths[#paths]
 end
