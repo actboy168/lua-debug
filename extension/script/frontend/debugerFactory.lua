@@ -109,10 +109,28 @@ local function installBootstrap2(c, luaexe, args, pid, dbg)
     end
 end
 
+local function exists_exe(luaexe, modify)
+    if fs.exists(luaexe) then
+        return true
+    end
+    if platformOS() ~= "Windows" then
+        return false
+    end
+    if not luaexe:equal_extension "" then
+        return false
+    end
+    if modify then
+        luaexe:replace_extension "exe"
+    else
+        luaexe = fs.path(luaexe):replace_extension "exe"
+    end
+    return fs.exists(luaexe)
+end
+
 local function create_terminal(args, dbg, pid)
     initialize(args)
     local luaexe = getLuaExe(args, dbg)
-    if not fs.exists(luaexe) then
+    if not exists_exe(luaexe, false) then
         if args.luaexe then
             return nil, ("No file `%s`."):format(args.luaexe)
         end
@@ -134,7 +152,7 @@ end
 local function create_luaexe(args, dbg, pid)
     initialize(args)
     local luaexe = getLuaExe(args, dbg)
-    if not fs.exists(luaexe) then
+    if not exists_exe(luaexe, true) then
         if args.luaexe then
             return nil, ("No file `%s`."):format(args.luaexe)
         end
