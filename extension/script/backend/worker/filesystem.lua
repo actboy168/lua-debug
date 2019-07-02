@@ -68,13 +68,6 @@ local function split(str)
     return r
 end
 
-local function fromwsl(s)
-    if not useWSL or not s:match "^/mnt/%a" then
-        return s
-    end
-    return s:gsub("^/mnt/(%a)", "%1:")
-end
-
 local function absolute(p)
     return fs.absolute(fs.path(p)):string()
 end
@@ -94,6 +87,16 @@ end
 
 local m = {}
 
+local function m.fromwsl(s)
+    if sourceFormat == "string" then
+        return s
+    end
+    if not useWSL or not s:match "^/mnt/%a" then
+        return s
+    end
+    return s:gsub("^/mnt/(%a)", "%1:")
+end
+
 local function m_normalize(path)
     return table.concat(normalize(path), '/')
 end
@@ -102,7 +105,7 @@ function m.normalize_serverpath(path)
     if sourceFormat == "string" then
         return path
     end
-    return fromwsl(m_normalize(absolute(path)))
+    return m_normalize(absolute(path))
 end
 
 function m.narive_normalize_serverpath(path)

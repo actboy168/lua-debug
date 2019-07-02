@@ -84,11 +84,11 @@ local function serverPathToClientPath(p)
     for _, pattern in ipairs(sourceMaps) do
         local res = glob_replace(pattern, nativePath)
         if res then
-            return skip, res
+            return skip, fs.fromwsl(res)
         end
     end
     -- TODO: 忽略没有映射的source？
-    return skip, fs.normalize_serverpath(p)
+    return skip, fs.fromwsl(fs.normalize_serverpath(p))
 end
 
 local function codeReference(s)
