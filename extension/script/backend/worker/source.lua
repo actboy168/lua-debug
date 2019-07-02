@@ -193,7 +193,7 @@ function m.removeCode(ref)
 end
 
 function m.clientPath(p)
-    return fs.relative(p, workspaceFolder, '/')
+    return fs.relative(p, workspaceFolder)
 end
 
 function m.all_loaded()

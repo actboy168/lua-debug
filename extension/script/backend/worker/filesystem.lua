@@ -10,7 +10,6 @@ local function prequire(name)
 end
 local unicode = prequire 'remotedebug.unicode'
 
-local default_sep = package.config:sub(1, 1)
 local sourceFormat = "path"
 local pathFormat = "path"
 local useWSL = false
@@ -95,8 +94,8 @@ end
 
 local m = {}
 
-local function m_normalize(path, sep)
-    return table.concat(normalize(path), sep or default_sep)
+local function m_normalize(path)
+    return table.concat(normalize(path), '/')
 end
 
 function m.normalize_serverpath(path)
@@ -111,9 +110,9 @@ function m.narive_normalize_serverpath(path)
         return path
     end
     if sourceFormat == "linuxpath" then
-        return m_normalize(absolute(path), '/')
+        return m_normalize(absolute(path))
     end
-    return m_normalize(absolute(path), '/'):lower()
+    return m_normalize(absolute(path)):lower()
 end
 
 function m.normalize_clientpath(path)
@@ -127,8 +126,7 @@ function m.narive_normalize_clientpath(path)
     return m_normalize(path):lower()
 end
 
-function m.relative(path, base, sep)
-    sep = sep or default_sep
+function m.relative(path, base)
     local rpath = normalize(path)
     local rbase = normalize(base)
     while #rpath > 0 and #rbase > 0 and rpath[1] == rbase[1] do
@@ -136,7 +134,7 @@ function m.relative(path, base, sep)
         table.remove(rbase, 1)
     end
     if #rpath == 0 and #rbase== 0 then
-        return "." .. sep
+        return "./"
     end
     local s = {}
     for _ in ipairs(rbase) do
@@ -145,7 +143,7 @@ function m.relative(path, base, sep)
     for _, e in ipairs(rpath) do
         s[#s+1] = e
     end
-    return table.concat(s, sep)
+    return table.concat(s, '/')
 end
 
 function m.filename(path)
