@@ -179,11 +179,10 @@ function resolveConfig(folder, config, token) {
 
 function resolveDebugConfiguration(folder, config, token) {
     try {
-        resolveConfig(folder, config);
+        return resolveConfig(folder, config);
     } catch (err) {
         return vscode.window.showErrorMessage(err.message, { modal: true }).then(_ => undefined);
     }
-    return config
 }
 
 exports.provideDebugConfigurations = provideDebugConfigurations;
