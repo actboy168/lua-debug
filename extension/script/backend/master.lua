@@ -12,12 +12,13 @@ return function (error_log, address)
             local err = thread.channel "errlog"
             local log = require "common.log"
             log.file = %q
-            repeat
+            while true do
                 local ok, msg = err:pop(0.05)
                 if ok then
                     log.error("ERROR:" .. msg)
                 end
-            until MgrUpdate()
+                MgrUpdate()
+            end
         ]]):format(error_log))
     end
 
@@ -25,9 +26,9 @@ return function (error_log, address)
         local dbg_io = require "common.io"(%s)
         local master = require "backend.master.mgr"
         master.init(dbg_io)
-        repeat
+        while true do
             master.update()
-        until MgrUpdate()
-        select.closeall()
+            MgrUpdate()
+        end
     ]]):format(address))
 end
