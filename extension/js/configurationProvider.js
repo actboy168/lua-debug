@@ -72,7 +72,7 @@ function checkRuntime() {
 
 function resolveConfig(folder, config, token) {
     if (!checkRuntime()) {
-        throw new Error('Non-Windows need to compile lua-debug first.');
+        throw new Error('You need to compile `lua-debug`.');
     }
     let plat = mergeConfigurations(config)
     config.type = 'lua';
@@ -129,7 +129,7 @@ function resolveConfig(folder, config, token) {
             if (typeof config.program != 'string') {
                 config.program = createDefaultProgram(folder);
                 if (typeof config.program != 'string') {
-                    throw new Error('Cannot find a program to debug');
+                    throw new Error('Missing `program` to debug');
                 }
             }
             if (typeof config.luaexe == 'string') {
@@ -171,7 +171,7 @@ function resolveConfig(folder, config, token) {
     }
     else if (config.request == 'attach') {
         if (!config.address && !config.processId && !config.processName) {
-            throw new Error('Cannot missing `address` to debug');
+            throw new Error('Missing `address` to debug');
         }
     }
     return config
