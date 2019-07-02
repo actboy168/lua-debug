@@ -70,11 +70,9 @@ function checkRuntime() {
     return fs.existsSync(runtime)
 }
 
-function resolveDebugConfiguration(folder, config, token) {
+function resolveConfig(folder, config, token) {
     if (!checkRuntime()) {
-        return vscode.window.showErrorMessage('Non-Windows need to compile lua-debug first.').then(_ => {
-            return undefined;
-        });
+        throw new Error('Non-Windows need to compile lua-debug first.');
     }
     let plat = mergeConfigurations(config)
     config.type = 'lua';
@@ -131,9 +129,7 @@ function resolveDebugConfiguration(folder, config, token) {
             if (typeof config.program != 'string') {
                 config.program = createDefaultProgram(folder);
                 if (typeof config.program != 'string') {
-                    return vscode.window.showErrorMessage('Cannot find a program to debug').then(_ => {
-                        return undefined;
-                    });
+                    throw new Error('Cannot find a program to debug');
                 }
             }
             if (typeof config.luaexe == 'string') {
@@ -175,10 +171,17 @@ function resolveDebugConfiguration(folder, config, token) {
     }
     else if (config.request == 'attach') {
         if (!config.address && !config.processId && !config.processName) {
-            return vscode.window.showErrorMessage('Cannot missing `address` to debug').then(_ => {
-                return undefined;
-            });
+            throw new Error('Cannot missing `address` to debug');
         }
+    }
+    return config
+}
+
+function resolveDebugConfiguration(folder, config, token) {
+    try {
+        resolveConfig(folder, config);
+    } catch (err) {
+        return vscode.window.showErrorMessage(err.message, { modal: true }).then(_ => undefined);
     }
     return config
 }
