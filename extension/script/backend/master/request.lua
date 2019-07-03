@@ -21,6 +21,18 @@ ev.on('close', function()
     event.terminated()
 end)
 
+local function checkThreadId(req, threadId)
+    if type(threadId) ~= 'number' then
+        response.error(req, "No threadId")
+        return
+    end
+    if not mgr.hasThread(threadId) then
+        response.error(req, "Not found thread [" .. threadId .. "]")
+        return
+    end
+    return true
+end
+
 function request.initialize(req)
     if not mgr.isState 'birth' then
         response.error(req, 'already initialized')
@@ -155,13 +167,8 @@ end
 
 function request.stackTrace(req)
     local args = req.arguments
-    if type(args.threadId) ~= 'number' then
-        response.error(req, "Not found thread")
-        return
-    end
     local threadId = args.threadId
-    if not mgr.hasThread(threadId) then
-        response.error(req, "Not found thread")
+    if not checkThreadId(req, threadId) then
         return
     end
 
@@ -182,15 +189,14 @@ end
 function request.scopes(req)
     local args = req.arguments
     if type(args.frameId) ~= 'number' then
-        response.error(req, "Not found frame")
+        response.error(req, "No frameId")
         return
     end
 
     local threadAndFrameId = args.frameId
     local threadId = threadAndFrameId >> 16
     local frameId = threadAndFrameId & 0xFFFF
-    if not mgr.hasThread(threadId) then
-        response.error(req, "Not found thread")
+    if not checkThreadId(req, threadId) then
         return
     end
 
@@ -207,8 +213,7 @@ function request.variables(req)
     local valueId = args.variablesReference
     local threadId = valueId >> 32
     local frameId = (valueId >> 16) & 0xFFFF
-    if not mgr.hasThread(threadId) then
-        response.error(req, "Not found thread")
+    if not checkThreadId(req, threadId) then
         return
     end
 
@@ -234,8 +239,7 @@ function request.evaluate(req)
     local threadAndFrameId = args.frameId
     local threadId = threadAndFrameId >> 16
     local frameId = threadAndFrameId & 0xFFFF
-    if not mgr.hasThread(threadId) then
-        response.error(req, "Not found thread")
+    if not checkThreadId(req, threadId) then
         return
     end
     mgr.sendToWorker(threadId, {
@@ -266,16 +270,10 @@ end
 
 function request.pause(req)
     local args = req.arguments
-    if type(args.threadId) ~= 'number' then
-        response.error(req, "Not found thread")
-        return
-    end
     local threadId = args.threadId
-    if not mgr.hasThread(threadId) then
-        response.error(req, "Not found thread")
+    if not checkThreadId(req, threadId) then
         return
     end
-
     mgr.sendToWorker(threadId, {
         cmd = 'stop',
         reason = 'pause',
@@ -285,16 +283,10 @@ end
 
 function request.continue(req)
     local args = req.arguments
-    if type(args.threadId) ~= 'number' then
-        response.error(req, "Not found thread")
-        return
-    end
     local threadId = args.threadId
-    if not mgr.hasThread(threadId) then
-        response.error(req, "Not found thread")
+    if not checkThreadId(req, threadId) then
         return
     end
-
     mgr.sendToWorker(threadId, {
         cmd = 'run',
     })
@@ -303,16 +295,10 @@ end
 
 function request.next(req)
     local args = req.arguments
-    if type(args.threadId) ~= 'number' then
-        response.error(req, "Not found thread")
-        return
-    end
     local threadId = args.threadId
-    if not mgr.hasThread(threadId) then
-        response.error(req, "Not found thread")
+    if not checkThreadId(req, threadId) then
         return
     end
-
     mgr.sendToWorker(threadId, {
         cmd = 'stepOver',
     })
@@ -321,16 +307,10 @@ end
 
 function request.stepOut(req)
     local args = req.arguments
-    if type(args.threadId) ~= 'number' then
-        response.error(req, "Not found thread")
-        return
-    end
     local threadId = args.threadId
-    if not mgr.hasThread(threadId) then
-        response.error(req, "Not found thread")
+    if not checkThreadId(req, threadId) then
         return
     end
-
     mgr.sendToWorker(threadId, {
         cmd = 'stepOut',
     })
@@ -339,16 +319,10 @@ end
 
 function request.stepIn(req)
     local args = req.arguments
-    if type(args.threadId) ~= 'number' then
-        response.error(req, "Not found thread")
-        return
-    end
     local threadId = args.threadId
-    if not mgr.hasThread(threadId) then
-        response.error(req, "Not found thread")
+    if not checkThreadId(req, threadId) then
         return
     end
-
     mgr.sendToWorker(threadId, {
         cmd = 'stepIn',
     })
@@ -358,8 +332,7 @@ end
 function request.source(req)
     local args = req.arguments
     local threadId = args.sourceReference >> 32
-    if not mgr.hasThread(threadId) then
-        response.error(req, "Not found thread " .. threadId)
+    if not checkThreadId(req, threadId) then
         return
     end
     local sourceReference = args.sourceReference & 0xFFFFFFFF
@@ -374,8 +347,7 @@ end
 function request.exceptionInfo(req)
     local args = req.arguments
     local threadId = args.threadId
-    if not mgr.hasThread(threadId) then
-        response.error(req, "Not found thread " .. threadId)
+    if not checkThreadId(req, threadId) then
         return
     end
     mgr.sendToWorker(threadId, {
@@ -390,8 +362,7 @@ function request.setVariable(req)
     local valueId = args.variablesReference
     local threadId = valueId >> 32
     local frameId = (valueId >> 16) & 0xFFFF
-    if not mgr.hasThread(threadId) then
-        response.error(req, "Not found thread")
+    if not checkThreadId(req, threadId) then
         return
     end
     mgr.sendToWorker(threadId, {
