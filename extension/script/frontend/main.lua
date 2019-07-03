@@ -13,6 +13,7 @@ if port then
 end
 
 local log = require 'common.log'
+log.root = (WORKDIR / "script"):string()
 log.file = (WORKDIR / "client.log"):string()
 print = log.info
 
