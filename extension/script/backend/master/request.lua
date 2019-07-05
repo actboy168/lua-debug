@@ -290,7 +290,9 @@ function request.continue(req)
     mgr.sendToWorker(threadId, {
         cmd = 'run',
     })
-    response.success(req)
+    response.success(req, {
+        allThreadsContinued = false,
+    })
 end
 
 function request.next(req)
