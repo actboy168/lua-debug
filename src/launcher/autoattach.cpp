@@ -14,7 +14,8 @@ namespace autoattach {
 	std::set<std::wstring> loadedModules;
 	std::set<lua_State*> hookLuaStates;
 	fn_attach debuggerAttach;
-	bool	  attachProcess = false;
+	bool      attachProcess = false;
+	HMODULE   hookDll = NULL;
 
 	static bool hook_install(uintptr_t* pointer_ptr, uintptr_t detour) {
 		LONG status;
@@ -87,9 +88,11 @@ namespace autoattach {
 			std::vector<Hook> tasks;
 
 #define HOOK(type, name) do {\
-			real::##name = (uintptr_t)GetProcAddress(m, #name); \
-			if (!real::##name) return false; \
-			tasks.push_back({real::##name, (uintptr_t)fake_##type##::##name}); \
+			if (!real::##name) { \
+				real::##name = (uintptr_t)GetProcAddress(m, #name); \
+				if (!real::##name) return false; \
+				tasks.push_back({real::##name, (uintptr_t)fake_##type##::##name}); \
+			} \
 		} while (0)
 
 			if (attachProcess) {
@@ -109,8 +112,6 @@ namespace autoattach {
 					return false;
 				}
 			}
-			remotedebug::delayload::set_luadll(m);
-			remotedebug::delayload::set_luaapi(luaapi);
 			return true;
 		}
 	}
@@ -153,13 +154,22 @@ namespace autoattach {
 	}
 
 	static bool tryHookLuaDll(HMODULE hModule) {
+		if (hookDll) {
+			return true;
+		}
 		wchar_t moduleName[MAX_PATH];
 		GetModuleFileNameW(hModule, moduleName, MAX_PATH);
 		if (loadedModules.find(moduleName) != loadedModules.end()) {
 			return false;
 		}
 		loadedModules.insert(moduleName);
-		return lua::hook(hModule);
+		if (!lua::hook(hModule)) {
+			return false;
+		}
+		hookDll = hModule;
+		remotedebug::delayload::set_luadll(hModule);
+		remotedebug::delayload::set_luaapi(luaapi);
+		return true;
 	}
 
 	static bool findLuaDll() {
@@ -198,6 +208,10 @@ namespace autoattach {
 
 	void initialize(fn_attach attach, bool ap) {
 		if (debuggerAttach) {
+			if (!attachProcess && ap && hookDll) {
+				attachProcess = ap;
+				lua::hook(hookDll);
+			}
 			return;
 		}
 		debuggerAttach = attach;
