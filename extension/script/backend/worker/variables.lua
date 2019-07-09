@@ -71,7 +71,7 @@ local function init_luaver()
     local version = rdebug.indexv(rdebug._G, "_VERSION")
     local ver = 0
     for n in version:gmatch "%d" do
-        ver = ver * 10 + math.tointeger(n) or 0
+        ver = ver * 10 + (math.tointeger(n) or 0)
     end
     LUAVERSION = ver
 end
