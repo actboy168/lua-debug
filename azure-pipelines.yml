@@ -4,8 +4,9 @@ jobs:
     vmImage: 'windows-latest'
   steps:
   - bash: |
-     sudo xcode-select -s /Applications/Xcode_10.2.app
-     brew install ninja
+      choco install -y ninja
+      refreshenv
+      git submodule update --init --recursive
     displayName: Init
   - bash: |
       git clone --depth 1 https://github.com/actboy168/luamake
@@ -23,8 +24,9 @@ jobs:
     vmImage: 'macos-latest'
   steps:
   - bash: |
-     sudo xcode-select -s /Applications/Xcode_10.2.app
-     brew install ninja
+      sudo xcode-select -s /Applications/Xcode_10.2.app
+      brew install ninja
+      git submodule update --init --recursive
     displayName: Init
   - bash: |
       git clone --depth 1 https://github.com/actboy168/luamake
@@ -42,8 +44,9 @@ jobs:
     vmImage: 'ubuntu-latest'
   steps:
   - bash: |
-     sudo xcode-select -s /Applications/Xcode_10.2.app
-     brew install ninja
+      sudo apt-get update
+      sudo apt-get install -y libreadline-dev ninja-build
+      git submodule update --init --recursive
     displayName: Init
   - bash: |
       git clone --depth 1 https://github.com/actboy168/luamake
