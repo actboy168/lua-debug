@@ -1,0 +1,57 @@
+jobs:
+- job: windows
+  pool:
+    vmImage: 'windows-latest'
+  steps:
+  - bash: |
+     sudo xcode-select -s /Applications/Xcode_10.2.app
+     brew install ninja
+    displayName: Init
+  - bash: |
+      git clone --depth 1 https://github.com/actboy168/luamake
+      cd luamake
+      git submodule update --init --recursive
+      tools/ninja.exe -f ninja/msvc.ninja
+      cd ..
+    displayName: Compile luamake
+  - bash: |
+      ./luamake/luamake
+    displayName: Compile
+
+- job: macos
+  pool:
+    vmImage: 'macos-latest'
+  steps:
+  - bash: |
+     sudo xcode-select -s /Applications/Xcode_10.2.app
+     brew install ninja
+    displayName: Init
+  - bash: |
+      git clone --depth 1 https://github.com/actboy168/luamake
+      cd luamake
+      git submodule update --init --recursive
+      ninja -f ninja/macos.ninja
+      cd ..
+    displayName: Compile luamake
+  - bash: |
+      ./luamake/luamake
+    displayName: Compile
+
+- job: linux
+  pool:
+    vmImage: 'ubuntu-latest'
+  steps:
+  - bash: |
+     sudo xcode-select -s /Applications/Xcode_10.2.app
+     brew install ninja
+    displayName: Init
+  - bash: |
+      git clone --depth 1 https://github.com/actboy168/luamake
+      cd luamake
+      git submodule update --init --recursive
+      ninja -f ninja/linux.ninja
+      cd ..
+    displayName: Compile luamake
+  - bash: |
+      ./luamake/luamake
+    displayName: Compile
