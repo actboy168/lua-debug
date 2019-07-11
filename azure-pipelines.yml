@@ -3,21 +3,30 @@ jobs:
   pool:
     vmImage: 'windows-latest'
   steps:
-  - bash: |
+  - script: |
       choco install -y ninja
       refreshenv
       git submodule update --init --recursive
     displayName: Init
-  - bash: |
+  - script: |
       git clone --depth 1 https://github.com/actboy168/luamake
       cd luamake
       git submodule update --init --recursive
-      tools/ninja.exe -f ninja/msvc.ninja
+      tools\ninja.exe -f ninja\msvc.ninja
       cd ..
     displayName: Compile luamake
-  - bash: |
-      ./luamake/luamake
+  - script: |
+      .\luamake\luamake
     displayName: Compile
+  - task: CopyFiles@2
+    inputs:
+      Contents: '**'
+      SourceFolder: 'publish'
+      TargetFolder: '$(Build.ArtifactStagingDirectory)'
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathToPublish: $(Build.ArtifactStagingDirectory)
+      artifactName: lua-debug
 
 - job: macos
   pool:
@@ -38,6 +47,15 @@ jobs:
   - bash: |
       ./luamake/luamake
     displayName: Compile
+  - task: CopyFiles@2
+    inputs:
+      Contents: '**'
+      SourceFolder: 'publish'
+      TargetFolder: '$(Build.ArtifactStagingDirectory)'
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathToPublish: $(Build.ArtifactStagingDirectory)
+      artifactName: lua-debug
 
 - job: linux
   pool:
@@ -58,3 +76,12 @@ jobs:
   - bash: |
       ./luamake/luamake
     displayName: Compile
+  - task: CopyFiles@2
+    inputs:
+      Contents: '**'
+      SourceFolder: 'publish'
+      TargetFolder: '$(Build.ArtifactStagingDirectory)'
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathToPublish: $(Build.ArtifactStagingDirectory)
+      artifactName: lua-debug
