@@ -16,10 +16,23 @@ function getHomeDirectory() {
     return process.env.USERPROFILE
 }
 
+function getVSCODE() {
+    let INSIDERS = vscode.env.appName == "Visual Studio Code - Insiders"
+        ? "-insiders"
+        : "";
+    let VSCODE = (vscode.ExtensionExecutionContext != undefined && extension.context.executionContext === vscode.ExtensionExecutionContext.Remote)
+        ? (".vscode-server" + INSIDERS)
+        : (".vscode" + INSIDERS);
+    return VSCODE
+}
+
 function getRuntimeDirectory(VSCODE) {
     let context = extension.context
     if (path.basename(context.extensionPath) != 'extension') {
         return context.extensionPath
+    }
+    if (VSCODE == undefined) {
+        VSCODE = getVSCODE()
     }
     return path.join(getHomeDirectory(), VSCODE + '/extensions/actboy168.lua-debug-' + getVersion(context))
 }
@@ -31,9 +44,7 @@ function createDebugAdapterDescriptor(session, executable) {
     let INSIDERS = vscode.env.appName == "Visual Studio Code - Insiders"
         ? "-insiders"
         : "";
-    let VSCODE = (vscode.ExtensionExecutionContext != undefined && extension.context.executionContext === vscode.ExtensionExecutionContext.Remote)
-        ? (".vscode-server" + INSIDERS)
-        : (".vscode" + INSIDERS);
+    let VSCODE = getVSCODE();
     let dir = getRuntimeDirectory(VSCODE)
     let platform = os.platform()
     if (platform == "win32") {
