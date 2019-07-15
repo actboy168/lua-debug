@@ -4,8 +4,19 @@ const fs = require('fs');
 const os = require('os');
 const extension = require("./extension");
 
+function getDataFolderName() {
+    const product = JSON.parse(fs.readFileSync(path.join(vscode.env.appRoot, 'product.json')));
+    if (vscode.ExtensionExecutionContext == undefined) {
+        return product.dataFolderName;
+    }
+    if (extension.context.executionContext == vscode.ExtensionExecutionContext.Local) {
+        return product.dataFolderName;
+    }
+    return product.serverDataFolderName;
+}
+
 function getVersion(context) {
-    let package = JSON.parse(fs.readFileSync(path.join(context.extensionPath, 'package.json')));
+    const package = JSON.parse(fs.readFileSync(path.join(context.extensionPath, 'package.json')));
     return package.version
 }
 
@@ -16,36 +27,20 @@ function getHomeDirectory() {
     return process.env.USERPROFILE
 }
 
-function getVSCODE() {
-    let INSIDERS = vscode.env.appName == "Visual Studio Code - Insiders"
-        ? "-insiders"
-        : "";
-    let VSCODE = (vscode.ExtensionExecutionContext != undefined && extension.context.executionContext === vscode.ExtensionExecutionContext.Remote)
-        ? (".vscode-server" + INSIDERS)
-        : (".vscode" + INSIDERS);
-    return VSCODE
-}
-
-function getRuntimeDirectory(VSCODE) {
-    let context = extension.context
+function getRuntimeDirectory() {
+    const context = extension.context
     if (path.basename(context.extensionPath) != 'extension') {
         return context.extensionPath
     }
-    if (VSCODE == undefined) {
-        VSCODE = getVSCODE()
-    }
-    return path.join(getHomeDirectory(), VSCODE + '/extensions/actboy168.lua-debug-' + getVersion(context))
+    return path.join(getHomeDirectory(), getDataFolderName() + '/extensions/actboy168.lua-debug-' + getVersion(context))
 }
 
 function createDebugAdapterDescriptor(session, executable) {
     if (typeof session.configuration.debugServer === 'number') {
         return new DebugAdapterServer(session.configuration.debugServer);
     }
-    let INSIDERS = vscode.env.appName == "Visual Studio Code - Insiders"
-        ? "-insiders"
-        : "";
-    let VSCODE = getVSCODE();
-    let dir = getRuntimeDirectory(VSCODE)
+    let VSCODE = getDataFolderName()
+    let dir = getRuntimeDirectory()
     let platform = os.platform()
     if (platform == "win32") {
         let runtime = path.join(dir, 'bin/win/lua-debug.exe')
