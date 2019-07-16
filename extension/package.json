@@ -33,6 +33,9 @@
         "onDebugInitialConfigurations",
         "onDebugResolve:lua"
     ],
+    "scripts": {
+        "install": "chmod +x runtime/* bin/*"
+    },
     "contributes": {
         "breakpoints": [
             {
