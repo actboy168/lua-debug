@@ -34,7 +34,7 @@
         "onDebugResolve:lua"
     ],
     "scripts": {
-        "install": "chmod +x runtime/* bin/*"
+        "postinstall": "chmod +x runtime/* bin/*"
     },
     "contributes": {
         "breakpoints": [
