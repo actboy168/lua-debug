@@ -138,6 +138,9 @@ for _, luaver in ipairs {"lua52","lua53","lua54"} do
             deps = ('runtime/'..luaver..'/'..luaver),
             sources = {
                 "lua.c",
+            },
+            defines = {
+                luaver == "lua52" and "_CRT_SECURE_NO_WARNINGS",
             }
         }
     else
