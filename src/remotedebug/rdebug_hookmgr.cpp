@@ -18,7 +18,6 @@ static int HOOK_CALLBACK = 0;
 
 void set_host(rlua_State* L, lua_State* hL);
 lua_State* get_host(rlua_State *L);
-lua_State* getthread(rlua_State *L);
 int copyvalue(lua_State *hL, rlua_State *cL);
 
 
