@@ -11,6 +11,15 @@ lm.objdir = ("build/%s/obj/%s"):format(lm.plat, lm.arch)
 
 local BUILD_BIN = platform.OS ~= "Windows" or lm.arch == "x86"
 
+local install_deps = {
+    BUILD_BIN and "bee",
+    BUILD_BIN and "lua",
+    BUILD_BIN and "bootstrap",
+    BUILD_BIN and "inject",
+    BUILD_BIN and platform.OS == "Windows" and "lua54",
+    platform.OS == "Windows" and "launcher",
+}
+
 if BUILD_BIN then
     lm:import '3rd/bee.lua/make.lua'
 
@@ -103,6 +112,12 @@ lm:source_set 'runtime/onelua' {
 }
 
 for _, luaver in ipairs {"lua53","lua54"} do
+    install_deps[#install_deps+1] = "runtime/"..luaver.."/lua"
+    install_deps[#install_deps+1] = "runtime/"..luaver.."/remotedebug"
+    if platform.OS == "Windows" then
+        install_deps[#install_deps+1] = "runtime/"..luaver.."/"..luaver
+    end
+
     lm.rootdir = '3rd/'..luaver
 
     if platform.OS == "Windows" then
@@ -194,20 +209,7 @@ end
 
 lm:build 'install' {
     '$luamake', 'lua', 'make/install-runtime.lua', lm.plat, lm.arch,
-    deps = {
-        "runtime/lua53/lua",
-        "runtime/lua54/lua",
-        "runtime/lua53/remotedebug",
-        "runtime/lua54/remotedebug",
-        BUILD_BIN and "bee",
-        BUILD_BIN and "lua",
-        BUILD_BIN and "bootstrap",
-        BUILD_BIN and "inject",
-        BUILD_BIN and platform.OS == "Windows" and "lua54",
-        platform.OS == "Windows" and "launcher",
-        platform.OS == "Windows" and "runtime/lua53/lua53",
-        platform.OS == "Windows" and "runtime/lua54/lua54",
-    }
+    deps = install_deps
 }
 
 lm:default {
