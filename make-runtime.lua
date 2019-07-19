@@ -111,7 +111,7 @@ lm:source_set 'runtime/onelua' {
     }
 }
 
-for _, luaver in ipairs {"lua53","lua54"} do
+for _, luaver in ipairs {"lua52","lua53","lua54"} do
     install_deps[#install_deps+1] = "runtime/"..luaver.."/lua"
     install_deps[#install_deps+1] = "runtime/"..luaver.."/remotedebug"
     if platform.OS == "Windows" then
@@ -130,6 +130,7 @@ for _, luaver in ipairs {"lua53","lua54"} do
             defines = {
                 "LUAI_MAXCCALLS=1000",
                 "LUA_BUILD_AS_DLL",
+                luaver == "lua52" and "_CRT_SECURE_NO_WARNINGS",
             }
         }
         lm:executable ('runtime/'..luaver..'/lua') {

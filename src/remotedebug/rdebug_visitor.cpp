@@ -1,4 +1,5 @@
 #include <lua.hpp>
+#include "lua_compat.h"
 #include <string.h>
 #include <stdio.h>
 
@@ -225,11 +226,15 @@ lclient_type(rlua_State *L) {
 		}
 		break;
 	case LUA_TNUMBER:
+#if LUA_VERSION_NUM >= 503
 		if (lua_isinteger(hL, -1)) {
 			rlua_pushstring(L, "integer");
 		} else {
 			rlua_pushstring(L, "float");
 		}
+#else
+		rlua_pushstring(L, "float");
+#endif
 		break;
 	case LUA_TUSERDATA:
 		rlua_pushstring(L, "full");
@@ -425,7 +430,7 @@ lclient_reffunc(rlua_State *L) {
 	size_t len = 0;
 	const char* func = rluaL_checklstring(L, 1, &len);
 	lua_State* hL = get_host(L);
-	if (lua_rawgetp(hL, LUA_REGISTRYINDEX, &DEBUG_WATCH_FUNC) == LUA_TNIL) {
+	if (lua::rawgetp(hL, LUA_REGISTRYINDEX, &DEBUG_WATCH_FUNC) == LUA_TNIL) {
 		lua_pop(hL, 1);
 		lua_newtable(hL);
 		lua_pushvalue(hL, -1);
@@ -444,11 +449,15 @@ lclient_reffunc(rlua_State *L) {
 
 static int
 getreffunc(lua_State *hL, lua_Integer func) {
-	if (lua_rawgetp(hL, LUA_REGISTRYINDEX, &DEBUG_WATCH_FUNC) != LUA_TTABLE) {
+	if (lua::rawgetp(hL, LUA_REGISTRYINDEX, &DEBUG_WATCH_FUNC) != LUA_TTABLE) {
 		lua_pop(hL, 1);
 		return 0;
 	}
-	if (lua_rawgeti(hL, -1, func) != LUA_TFUNCTION) {
+#if LUA_VERSION_NUM >= 503
+	if (lua::rawgeti(hL, -1, func) != LUA_TFUNCTION) {
+#else
+	if (lua::rawgeti(hL, -1, (int)func) != LUA_TFUNCTION) {
+#endif
 		lua_pop(hL, 2);
 		return 0;
 	}
@@ -520,7 +529,7 @@ lclient_evalref(rlua_State *L) {
 static int
 addwatch(lua_State *hL, int idx) {
 	lua_pushvalue(hL, idx);
-	if (lua_rawgetp(hL, LUA_REGISTRYINDEX, &DEBUG_WATCH) == LUA_TNIL) {
+	if (lua::rawgetp(hL, LUA_REGISTRYINDEX, &DEBUG_WATCH) == LUA_TNIL) {
 		lua_pop(hL, 1);
 		lua_newtable(hL);
 		lua_pushvalue(hL, -1);
@@ -585,7 +594,7 @@ static int
 lclient_unwatch(rlua_State *L) {
 	rlua_Integer ref = rluaL_checkinteger(L, 1);
 	lua_State* hL = get_host(L);
-	if (lua_rawgetp(hL, LUA_REGISTRYINDEX, &DEBUG_WATCH) == LUA_TNIL) {
+	if (lua::rawgetp(hL, LUA_REGISTRYINDEX, &DEBUG_WATCH) == LUA_TNIL) {
 		return 0;
 	}
 	luaL_unref(hL, -1, (int)ref);

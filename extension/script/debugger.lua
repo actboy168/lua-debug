@@ -1,20 +1,43 @@
 local platform, root, luaapi = ...
 
+local arch = (function()
+    if string.packsize then
+        local size = string.packsize "T"
+        if size == 8 then
+            return 64
+        end
+        if size == 4 then
+            return 32
+        end
+    else
+        local size = #tostring(io.stderr)
+        if size == 23 then
+            return 64
+        end
+        if size == 15 then
+            return 32
+        end
+    end
+    assert(false, "unknown arch")
+end)()
+
 local rt = "/runtime"
 if platform == "windows" then
-    if string.packsize "T" == 8 then
+    if arch == 64 then
         rt = rt .. "/win64"
     else
         rt = rt .. "/win32"
     end
 else
-    assert(string.packsize "T" == 8)
+    assert(arch == 64)
     rt = rt .. "/" .. platform
 end
 if _VERSION == "Lua 5.4" then
     rt = rt .. "/lua54"
 elseif _VERSION == "Lua 5.3" then
     rt = rt .. "/lua53"
+elseif _VERSION == "Lua 5.2" then
+    rt = rt .. "/lua52"
 else
     error(_VERSION .. " is not supported.")
 end
