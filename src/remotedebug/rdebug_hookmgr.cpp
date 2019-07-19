@@ -517,7 +517,7 @@ static int init(rlua_State* L) {
 }
 
 static int setcoroutine(rlua_State* L) {
-    hookmgr::get_self(L)->setcoroutine(getthread(L));
+    hookmgr::get_self(L)->setcoroutine((lua_State*)rlua_touserdata(L, 1));
     return 0;
 }
 

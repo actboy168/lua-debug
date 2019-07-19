@@ -649,27 +649,6 @@ int luaopen_remotedebug_visitor(rlua_State *L) {
 	return init_visitor(L);
 }
 
-lua_State *
-getthread(rlua_State *L) {
-	rluaL_checktype(L, 1, LUA_TUSERDATA);
-	lua_State *hL = get_host(L);
-	rlua_pushvalue(L, 1);
-	int ct = eval_value(L, hL);
-	rlua_pop(L, 1);
-	if (ct == LUA_TNONE) {
-		rluaL_error(L, "Invalid thread");
-		return NULL;
-	}
-	if (ct != LUA_TTHREAD) {
-		lua_pop(hL, 1);
-		rluaL_error(L, "Need coroutine, Is %s", lua_typename(hL, ct));
-		return NULL;
-	}
-	lua_State *co = lua_tothread(hL, -1);
-	lua_pop(hL, 1);
-	return co;
-}
-
 int
 copyvalue(lua_State *hL, rlua_State *cL) {
 	return copy_toX(hL, cL);
