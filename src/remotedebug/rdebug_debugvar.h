@@ -113,7 +113,7 @@ copy_fromX(rlua_State *from, lua_State *to) {
 		break;
 	case LUA_TNUMBER:
 		if (rlua_isinteger(from, -1)) {
-			lua_pushinteger(to, rlua_tointeger(from, -1));
+			lua_pushinteger(to, (lua_Integer)rlua_tointeger(from, -1));
 		} else {
 			lua_pushnumber(to, rlua_tonumber(from, -1));
 		}

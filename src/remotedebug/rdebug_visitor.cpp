@@ -129,7 +129,7 @@ lclient_getstackv(rlua_State *L) {
 static int
 lclient_copytable(rlua_State *L) {
 	lua_State *hL = get_host(L);
-	lua_Integer maxn = rluaL_optinteger(L, 2, 0xffff);
+	rlua_Integer maxn = rluaL_optinteger(L, 2, 0xffff);
 	rlua_settop(L, 1);
 	if (lua_checkstack(hL, 4) == 0) {
 		return rluaL_error(L, "stack overflow");
@@ -458,17 +458,17 @@ getreffunc(lua_State *hL, lua_Integer func) {
 
 static int
 lclient_eval(rlua_State *L) {
-	lua_Integer func = rluaL_checkinteger(L, 1);
+	rlua_Integer func = rluaL_checkinteger(L, 1);
 	const char* source = rluaL_checkstring(L, 2);
-	lua_Integer level = rluaL_checkinteger(L, 3);
+	rlua_Integer level = rluaL_checkinteger(L, 3);
 	lua_State* hL = get_host(L);
-	if (!getreffunc(hL, func)) {
+	if (!getreffunc(hL, (lua_Integer)func)) {
 		rlua_pushboolean(L, 0);
 		rlua_pushstring(L, "invalid func");
 		return 2;
 	}
 	lua_pushstring(hL, source);
-	lua_pushinteger(hL, level);
+	lua_pushinteger(hL, (lua_Integer)level);
 	if (lua_pcall(hL, 2, 1, 0)) {
 		rlua_pushboolean(L, 0);
 		rlua_pushstring(L, lua_tostring(hL, -1));
@@ -550,17 +550,17 @@ storewatch(rlua_State *L, lua_State *hL, int idx) {
 
 static int
 lclient_evalwatch(rlua_State *L) {
-	lua_Integer func = rluaL_checkinteger(L, 1);
+	rlua_Integer func = rluaL_checkinteger(L, 1);
 	const char* source = rluaL_checkstring(L, 2);
-	lua_Integer level = rluaL_checkinteger(L, 3);
+	rlua_Integer level = rluaL_checkinteger(L, 3);
 	lua_State* hL = get_host(L);
-	if (!getreffunc(hL, func)) {
+	if (!getreffunc(hL, (lua_Integer)func)) {
 		rlua_pushboolean(L, 0);
 		rlua_pushstring(L, "invalid func");
 		return 2;
 	}
 	lua_pushstring(hL, source);
-	lua_pushinteger(hL, level);
+	lua_pushinteger(hL, (lua_Integer)level);
 	int n = lua_gettop(hL) - 3;
 	if (lua_pcall(hL, 2, LUA_MULTRET, 0)) {
 		rlua_pushboolean(L, 0);
@@ -583,7 +583,7 @@ lclient_evalwatch(rlua_State *L) {
 
 static int
 lclient_unwatch(rlua_State *L) {
-	lua_Integer ref = rluaL_checkinteger(L, 1);
+	rlua_Integer ref = rluaL_checkinteger(L, 1);
 	lua_State* hL = get_host(L);
 	if (lua_rawgetp(hL, LUA_REGISTRYINDEX, &DEBUG_WATCH) == LUA_TNIL) {
 		return 0;

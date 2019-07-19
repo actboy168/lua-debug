@@ -9,7 +9,7 @@ int  event(rlua_State* cL, lua_State* hL, const char* name);
 
 static int redirect_read(rlua_State* L) {
     remotedebug::redirect& self = *(remotedebug::redirect*)rluaL_checkudata(L, 1, "redirect");
-    lua_Integer len = rluaL_optinteger(L, 2, LUAL_BUFFERSIZE);
+    rlua_Integer len = rluaL_optinteger(L, 2, LUAL_BUFFERSIZE);
     if (len > (std::numeric_limits<int>::max)()) {
         return rluaL_error(L, "bad argument #1 to 'read' (invalid number)");
     }
