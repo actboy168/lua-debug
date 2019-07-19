@@ -65,7 +65,7 @@ local packageDir,sourceDir,extensionPath = ...
 local extensionDirName = getExtensionDirName(packageDir)
 local extensionDir = fs.path(extensionPath) / extensionDirName
 if not fs.exists(extensionDir) then
-    error("`" .. extensionDir .. "` is not installed.")
+    error("`" .. extensionDir:string() .. "` is not installed.")
 end
 
 copy_directory(fs.path(sourceDir), extensionDir)
