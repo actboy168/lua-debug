@@ -84,8 +84,7 @@
                             "type": "lua",
                             "request": "attach",
                             "stopOnEntry": true,
-                            "ip": "localhost",
-                            "port": 4278
+                            "address": "127.0.0.1:4278"
                         }
                     }
                 ],
