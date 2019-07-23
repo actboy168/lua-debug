@@ -466,6 +466,7 @@ LUA_API lua_Hook (lua_gethook) (lua_State *L);
 LUA_API int (lua_gethookmask) (lua_State *L);
 LUA_API int (lua_gethookcount) (lua_State *L);
 
+LUA_API int (lua_setCstacklimit) (lua_State *L, unsigned int limit);
 
 struct lua_Debug {
   int event;

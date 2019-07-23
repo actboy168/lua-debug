@@ -214,7 +214,7 @@ OP_SETTABLE,/*	A B C	R(A)[R(B)] := RK(C)				*/
 OP_SETI,/*	A B C	R(A)[B] := RK(C)				*/
 OP_SETFIELD,/*	A B C	R(A)[K(B):string] := RK(C)			*/
 
-OP_NEWTABLE,/*	A B C	R(A) := {} (size = B,C)				*/
+OP_NEWTABLE,/*	A B C	R(A) := {}					*/
 
 OP_SELF,/*	A B C	R(A+1) := R(B); R(A) := R(B)[RK(C):string]	*/
 
@@ -286,9 +286,9 @@ OP_RETURN,/*	A B C	return R(A), ... ,R(A+B-2)	(see note)	*/
 OP_RETURN0,/*	  	return 						*/
 OP_RETURN1,/*	A 	return R(A)					*/
 
-OP_FORLOOP,/*	A Bx	R(A)+=R(A+2);
-			if R(A) <?= R(A+1) then { pc-=Bx; R(A+3)=R(A) }	*/
-OP_FORPREP,/*	A Bx	R(A)-=R(A+2); pc+=Bx				*/
+OP_FORLOOP,/*	A Bx	update counters; if loop continues then pc-=Bx; */
+OP_FORPREP,/*	A Bx	<check values and prepare counters>;
+                        if not to run then pc+=Bx+1;			*/
 
 OP_TFORPREP,/*	A Bx	create upvalue for R(A + 3); pc+=Bx		*/
 OP_TFORCALL,/*	A C	R(A+4), ... ,R(A+3+C) := R(A)(R(A+1), R(A+2));	*/
@@ -321,10 +321,16 @@ OP_EXTRAARG/*	Ax	extra (larger) argument for previous opcode	*/
 
   (*) In OP_RETURN, if (B == 0) then return up to 'top'.
 
-  (*) In OP_SETLIST, if (B == 0) then real B = 'top'; if (C == 0) then
-  next 'instruction' is EXTRAARG(real C).
+  (*) In OP_LOADKX and OP_NEWTABLE, the next instruction is always
+  EXTRAARG.
 
-  (*) In OP_LOADKX, the next 'instruction' is always EXTRAARG.
+  (*) In OP_SETLIST, if (B == 0) then real B = 'top'; if k, then
+  real C = EXTRAARG _ C (the bits of EXTRAARG concatenated with the
+  bits of C).
+
+  (*) In OP_NEWTABLE, B is log2 of the hash size (which is always a
+  power of 2) plus 1, or zero for size zero. If not k, the array size
+  is C. Otherwise, the array size is EXTRAARG _ C.
 
   (*) For comparisons, k specifies what condition the test should accept
   (true or false).
@@ -332,10 +338,9 @@ OP_EXTRAARG/*	Ax	extra (larger) argument for previous opcode	*/
   (*) All 'skips' (pc++) assume that next instruction is a jump.
 
   (*) In instructions OP_RETURN/OP_TAILCALL, 'k' specifies that the
-  function either builds upvalues, which may need to be closed, or is
-  vararg, which must be corrected before returning. When 'k' is true,
-  C > 0 means the function is vararg and (C - 1) is its number of
-  fixed parameters.
+  function builds upvalues, which may need to be closed. C > 0 means
+  the function is vararg, so that its 'func' must be corrected before
+  returning; in this case, (C - 1) is its number of fixed parameters.
 
   (*) In comparisons with an immediate operand, C signals whether the
   original operand was a float.
@@ -373,6 +378,5 @@ LUAI_DDEC(const lu_byte luaP_opmodes[NUM_OPCODES];)
 
 /* number of list items to accumulate before a SETLIST instruction */
 #define LFIELDS_PER_FLUSH	50
-
 
 #endif

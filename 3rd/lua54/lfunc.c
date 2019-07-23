@@ -59,14 +59,15 @@ void luaF_initupvals (lua_State *L, LClosure *cl) {
 
 
 /*
-** Create a new upvalue with the given tag at the given level,
-** and link it to the list of open upvalues of 'L' after entry 'prev'.
+** Create a new upvalue at the given level, and link it to the list of
+** open upvalues of 'L' after entry 'prev'.
 **/
-static UpVal *newupval (lua_State *L, int tag, StkId level, UpVal **prev) {
-  GCObject *o = luaC_newobj(L, tag, sizeof(UpVal));
+static UpVal *newupval (lua_State *L, int tbc, StkId level, UpVal **prev) {
+  GCObject *o = luaC_newobj(L, LUA_TUPVAL, sizeof(UpVal));
   UpVal *uv = gco2upv(o);
   UpVal *next = *prev;
   uv->v = s2v(level);  /* current value lives in the stack */
+  uv->tbc = tbc;
   uv->u.open.next = next;  /* link it to list of open upvalues */
   uv->u.open.previous = prev;
   if (next)
@@ -81,7 +82,7 @@ static UpVal *newupval (lua_State *L, int tag, StkId level, UpVal **prev) {
 
 
 /*
-** Find and reuse, or create if it does not exist, a regular upvalue
+** Find and reuse, or create if it does not exist, an upvalue
 ** at the given level.
 */
 UpVal *luaF_findupval (lua_State *L, StkId level) {
@@ -89,12 +90,13 @@ UpVal *luaF_findupval (lua_State *L, StkId level) {
   UpVal *p;
   lua_assert(isintwups(L) || L->openupval == NULL);
   while ((p = *pp) != NULL && uplevel(p) >= level) {  /* search for it */
-    if (uplevel(p) == level && !isdead(G(L), p))  /* corresponding upvalue? */
+    lua_assert(!isdead(G(L), p));
+    if (uplevel(p) == level)  /* corresponding upvalue? */
       return p;  /* return it */
     pp = &p->u.open.next;
   }
   /* not found: create a new upvalue after 'pp' */
-  return newupval(L, LUA_TUPVAL, level, pp);
+  return newupval(L, 0, level, pp);
 }
 
 
@@ -133,7 +135,8 @@ static int prepclosingmethod (lua_State *L, TValue *obj, TValue *err) {
 ** the 'level' of the upvalue being closed, as everything after
 ** that won't be used again.
 */
-static int callclosemth (lua_State *L, TValue *uv, StkId level, int status) {
+static int callclosemth (lua_State *L, StkId level, int status) {
+  TValue *uv = s2v(level);  /* value being closed */
   if (likely(status == LUA_OK)) {
     if (prepclosingmethod(L, uv, &G(L)->nilvalue))  /* something to call? */
       callclose(L, NULL);  /* call closing method */
@@ -145,9 +148,10 @@ static int callclosemth (lua_State *L, TValue *uv, StkId level, int status) {
     }
   }
   else {  /* must close the object in protected mode */
-    ptrdiff_t oldtop = savestack(L, level + 1);
-    /* save error message and set stack top to 'level + 1' */
-    luaD_seterrorobj(L, status, level);
+    ptrdiff_t oldtop;
+    level++;  /* space for error message */
+    oldtop = savestack(L, level + 1);  /* top will be after that */
+    luaD_seterrorobj(L, status, level);  /* set error message */
     if (prepclosingmethod(L, uv, s2v(level))) {  /* something to call? */
       int newstatus = luaD_pcall(L, callclose, NULL, oldtop, 0);
       if (newstatus != LUA_OK && status == CLOSEPROTECT)  /* first error? */
@@ -168,7 +172,7 @@ static int callclosemth (lua_State *L, TValue *uv, StkId level, int status) {
 static void trynewtbcupval (lua_State *L, void *ud) {
   StkId level = cast(StkId, ud);
   lua_assert(L->openupval == NULL || uplevel(L->openupval) < level);
-  newupval(L, LUA_TUPVALTBC, level, &L->openupval);
+  newupval(L, 1, level, &L->openupval);
 }
 
 
@@ -200,20 +204,20 @@ void luaF_unlinkupval (UpVal *uv) {
 int luaF_close (lua_State *L, StkId level, int status) {
   UpVal *uv;
   while ((uv = L->openupval) != NULL && uplevel(uv) >= level) {
-    StkId upl = uplevel(uv);
     TValue *slot = &uv->u.value;  /* new position for value */
+    lua_assert(uplevel(uv) < L->top);
+    if (uv->tbc && status != NOCLOSINGMETH) {
+      /* must run closing method, which may change the stack */
+      ptrdiff_t levelrel = savestack(L, level);
+      status = callclosemth(L, uplevel(uv), status);
+      level = restorestack(L, levelrel);
+    }
     luaF_unlinkupval(uv);
     setobj(L, slot, uv->v);  /* move value to upvalue slot */
     uv->v = slot;  /* now current value lives here */
     if (!iswhite(uv))
       gray2black(uv);  /* closed upvalues cannot be gray */
     luaC_barrier(L, uv, slot);
-    if (uv->tt == LUA_TUPVALTBC && status != NOCLOSINGMETH) {
-      /* must run closing method */
-      ptrdiff_t levelrel = savestack(L, level);
-      status = callclosemth(L, uv->v, upl, status);  /* may change the stack */
-      level = restorestack(L, levelrel);
-    }
   }
   return status;
 }

@@ -273,8 +273,7 @@ static void reallymarkobject (global_State *g, GCObject *o) {
       gray2black(o);
       break;
     }
-    case LUA_TUPVAL:
-    case LUA_TUPVALTBC: {
+    case LUA_TUPVAL: {
       UpVal *uv = gco2upv(o);
       if (!upisopen(uv))  /* open upvalues are kept gray */
         gray2black(o);
@@ -570,10 +569,8 @@ static int traversethread (global_State *g, lua_State *th) {
              th->openupval == NULL || isintwups(th));
   for (; o < th->top; o++)  /* mark live elements in the stack */
     markvalue(g, s2v(o));
-  for (uv = th->openupval; uv != NULL; uv = uv->u.open.next) {
-    if (uv->tt == LUA_TUPVALTBC)  /* to be closed? */
-      markobject(g, uv);  /* cannot be collected */
-  }
+  for (uv = th->openupval; uv != NULL; uv = uv->u.open.next)
+    markobject(g, uv);  /* open upvalues cannot be collected */
   if (g->gcstate == GCSatomic) {  /* final traversal? */
     StkId lim = th->stack + th->stacksize;  /* real end of stack */
     for (; o < lim; o++)  /* clear not-marked stack slice */
@@ -706,7 +703,6 @@ static void freeobj (lua_State *L, GCObject *o) {
       luaF_freeproto(L, gco2p(o));
       break;
     case LUA_TUPVAL:
-    case LUA_TUPVALTBC:
       freeupval(L, gco2upv(o));
       break;
     case LUA_TLCL:
@@ -794,10 +790,11 @@ static GCObject **sweeptolive (lua_State *L, GCObject **p) {
 */
 static void checkSizes (lua_State *L, global_State *g) {
   if (!g->gcemergency) {
-    l_mem olddebt = g->GCdebt;
-    if (g->strt.nuse < g->strt.size / 4)  /* string table too big? */
+    if (g->strt.nuse < g->strt.size / 4) {  /* string table too big? */
+      l_mem olddebt = g->GCdebt;
       luaS_resize(L, g->strt.size / 2);
-    g->GCestimate += g->GCdebt - olddebt;  /* correct estimate */
+      g->GCestimate += g->GCdebt - olddebt;  /* correct estimate */
+    }
   }
 }
 
@@ -838,21 +835,21 @@ static void GCTM (lua_State *L) {
     int running  = g->gcrunning;
     L->allowhook = 0;  /* stop debug hooks during GC metamethod */
     g->gcrunning = 0;  /* avoid GC steps */
-    setobj2s(L, L->top, tm);  /* push finalizer... */
-    setobj2s(L, L->top + 1, &v);  /* ... and its argument */
-    L->top += 2;  /* and (next line) call the finalizer */
+    setobj2s(L, L->top++, tm);  /* push finalizer... */
+    setobj2s(L, L->top++, &v);  /* ... and its argument */
     L->ci->callstatus |= CIST_FIN;  /* will run a finalizer */
     status = luaD_pcall(L, dothecall, NULL, savestack(L, L->top - 2), 0);
     L->ci->callstatus &= ~CIST_FIN;  /* not running a finalizer anymore */
     L->allowhook = oldah;  /* restore hooks */
     g->gcrunning = running;  /* restore state */
-    if (status != LUA_OK) {  /* error while running __gc? */
+    if (unlikely(status != LUA_OK)) {  /* error while running __gc? */
       const char *msg = (ttisstring(s2v(L->top - 1)))
                         ? svalue(s2v(L->top - 1))
                         : "error object is not a string";
       luaE_warning(L, "error in __gc metamethod (", 1);
       luaE_warning(L, msg, 1);
       luaE_warning(L, ")", 0);
+      L->top--;  /* pops error object */
     }
   }
 }
@@ -1250,7 +1247,7 @@ static void setminordebt (global_State *g) {
 /*
 ** Does a major collection after last collection was a "bad collection".
 **
-** When the program is building a big struture, it allocates lots of
+** When the program is building a big structure, it allocates lots of
 ** memory but generates very little garbage. In those scenarios,
 ** the generational mode just wastes time doing small collections, and
 ** major collections are frequently what we call a "bad collection", a
