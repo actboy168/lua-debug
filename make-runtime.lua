@@ -128,7 +128,6 @@ for _, luaver in ipairs {"lua52","lua53","lua54"} do
                 "!luac.c",
             },
             defines = {
-                "LUAI_MAXCCALLS=1000",
                 "LUA_BUILD_AS_DLL",
                 luaver == "lua52" and "_CRT_SECURE_NO_WARNINGS",
             }
@@ -150,7 +149,6 @@ for _, luaver in ipairs {"lua52","lua53","lua54"} do
                 "!luac.c",
             },
             defines = {
-                "LUAI_MAXCCALLS=1000",
                 platform.OS == "macOS" and "LUA_USE_MACOSX",
                 platform.OS == "Linux" and "LUA_USE_LINUX",
             },
