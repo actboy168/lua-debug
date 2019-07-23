@@ -149,6 +149,7 @@ for _, luaver in ipairs {"lua52","lua53","lua54"} do
                 "!luac.c",
             },
             defines = {
+                luaver == "lua52" and "_XOPEN_SOURCE=600",
                 platform.OS == "macOS" and "LUA_USE_MACOSX",
                 platform.OS == "Linux" and "LUA_USE_LINUX",
             },
