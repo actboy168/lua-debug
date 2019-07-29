@@ -14,6 +14,7 @@ end
 
 local eval_repl  = assert(rdebug.reffunc(readfile 'backend.worker.eval_repl'))
 local eval_watch = assert(rdebug.reffunc(readfile 'backend.worker.eval_watch'))
+local eval_dump = assert(rdebug.reffunc(readfile 'backend.worker.eval_dump'))
 
 local function run_repl(frameId, expression)
     local res = table.pack(rdebug.evalwatch(eval_repl, 'return ' .. expression, frameId))
@@ -94,6 +95,10 @@ end
 
 function m.eval(expression)
     return rdebug.eval(eval_watch, expression, 0)
+end
+
+function m.dump(content)
+    return rdebug.eval(eval_dump, content, 0)
 end
 
 return m
