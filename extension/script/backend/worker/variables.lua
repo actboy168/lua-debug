@@ -42,7 +42,6 @@ local function init_standard()
         "print",
         "rawequal",
         "rawget",
-        "rawlen",
         "rawset",
         "require",
         "select",
@@ -52,13 +51,28 @@ local function init_standard()
         "tonumber",
         "tostring",
         "type",
-        "utf8",
         "xpcall",
     }
 
-    if LUAVERSION == 53 then
+    if LUAVERSION == 51 then
+        table.insert(lstandard, "gcinfo")
+        table.insert(lstandard, "getfenv")
+        table.insert(lstandard, "loadstring")
+        table.insert(lstandard, "module")
+        table.insert(lstandard, "newproxy")
+        table.insert(lstandard, "setfenv")
+        table.insert(lstandard, "unpack")
+    end
+    if LUAVERSION >= 52 then
+        table.insert(lstandard, "rawlen")
+    end
+    if LUAVERSION == 52 or LUAVERSION == 53 then
         table.insert(lstandard, "bit32")
-    elseif LUAVERSION == 54 then
+    end
+    if LUAVERSION >= 53 then
+        table.insert(lstandard, "utf8")
+    end
+    if LUAVERSION >= 54 then
         table.insert(lstandard, "warn")
     end
     standard = {}
@@ -845,6 +859,10 @@ function m.createRef(frameId, value, evaluateName)
     end
     local text, _, ref =  varCreateReference(frameId, value, evaluateName)
     return text, ref
+end
+
+function m.luaver()
+    return LUAVERSION
 end
 
 ev.on('terminated', function()

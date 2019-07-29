@@ -266,7 +266,7 @@ static int db_upvaluejoin (lua_State *L) {
 
 static void hookf (lua_State *L, lua_Debug *ar) {
   static const char *const hooknames[] =
-    {"call", "return", "line", "count", "tail call"};
+    {"call", "return", "line", "count", "tail call", "exception", "thread"};
   gethooktable(L);
   lua_pushthread(L);
   lua_rawget(L, -2);

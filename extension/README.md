@@ -3,7 +3,7 @@ Lua Debug Adapter for Visual Studio Code
 
 ## Requirements
 
-* Lua 5.2, 5.3, 5.4
+* Lua 5.1 - 5.4
 * Platform: Windows, macOS, Linux
 
 ## Feature
