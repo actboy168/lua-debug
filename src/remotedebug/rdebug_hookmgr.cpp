@@ -43,7 +43,7 @@ static Proto* ci2proto(CallInfo* ci) {
     }
     return clLvalue(s2v(func))->p;
 #else
-    if (!clvalue(func)->c.isC) {
+    if (clvalue(func)->c.isC) {
         return 0;
     }
     return clvalue(func)->l.p;
