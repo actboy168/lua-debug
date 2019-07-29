@@ -111,7 +111,7 @@ lm:source_set 'runtime/onelua' {
     }
 }
 
-for _, luaver in ipairs {"lua52","lua53","lua54"} do
+for _, luaver in ipairs {"lua51","lua52","lua53","lua54"} do
     install_deps[#install_deps+1] = "runtime/"..luaver.."/lua"
     install_deps[#install_deps+1] = "runtime/"..luaver.."/remotedebug"
     if platform.OS == "Windows" then
@@ -129,6 +129,7 @@ for _, luaver in ipairs {"lua52","lua53","lua54"} do
             },
             defines = {
                 "LUA_BUILD_AS_DLL",
+                luaver == "lua51" and "_CRT_SECURE_NO_WARNINGS",
                 luaver == "lua52" and "_CRT_SECURE_NO_WARNINGS",
             }
         }
@@ -139,6 +140,7 @@ for _, luaver in ipairs {"lua52","lua53","lua54"} do
                 "lua.c",
             },
             defines = {
+                luaver == "lua51" and "_CRT_SECURE_NO_WARNINGS",
                 luaver == "lua52" and "_CRT_SECURE_NO_WARNINGS",
             }
         }
@@ -149,6 +151,7 @@ for _, luaver in ipairs {"lua52","lua53","lua54"} do
                 "!luac.c",
             },
             defines = {
+                luaver == "lua51" and "_XOPEN_SOURCE=600",
                 luaver == "lua52" and "_XOPEN_SOURCE=600",
                 platform.OS == "macOS" and "LUA_USE_MACOSX",
                 platform.OS == "Linux" and "LUA_USE_LINUX",
@@ -166,6 +169,8 @@ for _, luaver in ipairs {"lua52","lua53","lua54"} do
 
     lm.rootdir = ''
 
+    local lua_version_num = 100 * math.tointeger(luaver:sub(4,4)) + math.tointeger(luaver:sub(5,5))
+
     lm:shared_library ('runtime/'..luaver..'/remotedebug') {
         deps = {
             platform.OS == "Windows" and ('runtime/'..luaver..'/'..luaver),
@@ -174,6 +179,7 @@ for _, luaver in ipairs {"lua52","lua53","lua54"} do
         defines = {
             "BEE_STATIC",
             "BEE_INLINE",
+            ("DBG_LUA_VERSION=%d"):format(lua_version_num),
             platform.OS == "Windows" and "_CRT_SECURE_NO_WARNINGS",
         },
         includes = {

@@ -132,6 +132,8 @@
                                 "markdownDescription": "Default lua runtime",
                                 "default": "5.3 64bit",
                                 "enum": [
+                                    "5.1 32bit",
+                                    "5.1 64bit",
                                     "5.2 32bit",
                                     "5.2 64bit",
                                     "5.3 32bit",

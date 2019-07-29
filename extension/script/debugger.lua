@@ -38,6 +38,8 @@ elseif _VERSION == "Lua 5.3" then
     rt = rt .. "/lua53"
 elseif _VERSION == "Lua 5.2" then
     rt = rt .. "/lua52"
+elseif _VERSION == "Lua 5.1" then
+    rt = rt .. "/lua51"
 else
     error(_VERSION .. " is not supported.")
 end

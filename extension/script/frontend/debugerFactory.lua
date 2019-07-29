@@ -51,6 +51,10 @@ local function getLuaRuntime(args)
         return 52, 64
     elseif args.luaRuntime == "5.2 32bit" then
         return 52, 32
+    elseif args.luaRuntime == "5.1 64bit" then
+        return 51, 64
+    elseif args.luaRuntime == "5.1 32bit" then
+        return 51, 32
     end
     return 53, 32
 end
@@ -70,13 +74,7 @@ local function getLuaExe(args, dbg)
     else
         runtime = runtime .. "/" .. platformOS():lower()
     end
-    if ver == 54 then
-        runtime = runtime .. "/lua54"
-    elseif ver == 52 then
-        runtime = runtime .. "/lua52"
-    else
-        runtime = runtime .. "/lua53"
-    end
+    runtime = runtime .. "/lua" .. ver
     return dbg / runtime / (platformOS() == "Windows" and "lua.exe" or "lua")
 end
 
