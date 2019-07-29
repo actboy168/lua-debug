@@ -15,6 +15,7 @@ end
 local eval_repl  = assert(rdebug.reffunc(readfile 'backend.worker.eval_repl'))
 local eval_watch = assert(rdebug.reffunc(readfile 'backend.worker.eval_watch'))
 local eval_dump = assert(rdebug.reffunc(readfile 'backend.worker.eval_dump'))
+local compat_dump = assert(load(readfile 'backend.worker.eval_dump'))
 
 local function run_repl(frameId, expression)
     local res = table.pack(rdebug.evalwatch(eval_repl, 'return ' .. expression, frameId))
@@ -98,6 +99,13 @@ function m.eval(expression)
 end
 
 function m.dump(content)
+    if variables.luaver() <= 52 then
+        local res, err = compat_dump(content)
+        if res then
+            return true, res
+        end
+        return false, err
+    end
     return rdebug.eval(eval_dump, content, 0)
 end
 
