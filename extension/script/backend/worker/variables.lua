@@ -325,10 +325,14 @@ local function getFunctionCode(str, startLn, endLn)
     return str:sub(startPos, endPos)
 end
 
-local function varGetValue(type, subtype, value)
+-- context: getvalue,setvalue,scopes,hover,watch,repl,copyvalue
+local function varGetValue(context, type, subtype, value)
     if type == 'string' then
-        -- TODO: Cut string by type of eval
-        return ("'%s'"):format(rdebug.value(value))
+        local str = rdebug.value(value)
+        if #str < 1024 or context == "repl" or context == "copyvalue" then
+            return ("'%s'"):format(str)
+        end
+        return ("'%s...'"):format(str:sub(1, 1024))
     elseif type == 'boolean' then
         if rdebug.value(value) then
             return 'true'
@@ -412,10 +416,10 @@ local function varGetType(type, subtype)
     return type
 end
 
-local function varCreateReference(frameId, value, evaluateName)
+local function varCreateReference(frameId, value, evaluateName, context)
     local type, subtype = rdebug.type(value)
     local textType = varGetType(type, subtype)
-    local textValue = varGetValue(type, subtype, value)
+    local textValue = varGetValue(context, type, subtype, value)
     if varCanExtand(type, subtype, value) then
         local pool = varPool[frameId]
         pool[#pool + 1] = { value, evaluateName }
@@ -425,7 +429,7 @@ local function varCreateReference(frameId, value, evaluateName)
 end
 
 local function varCreateObject(frameId, name, value, evaluateName)
-    local text, type, ref = varCreateReference(frameId, value, evaluateName)
+    local text, type, ref = varCreateReference(frameId, value, evaluateName, "getvalue")
     local var = {
         name = name,
         type = type,
@@ -615,7 +619,7 @@ local function setValue(frameId, varRef, name, value)
     if not rdebug.assign(rvalue, newvalue) then
         return nil, 'Failed set variable'
     end
-    local text, type = varCreateReference(frameId, rvalue, maps[name][2])
+    local text, type = varCreateReference(frameId, rvalue, maps[name][2], "setvalue")
     return {
         value = text,
         type = type,
@@ -848,16 +852,16 @@ function m.clean()
     varPool = {}
 end
 
-function m.createText(value)
+function m.createText(value, context)
     local type, subtype = rdebug.type(value)
-    return varGetValue(type, subtype, value)
+    return varGetValue(context, type, subtype, value)
 end
 
-function m.createRef(frameId, value, evaluateName)
+function m.createRef(frameId, value, evaluateName, context)
     if not varPool[frameId] then
         varPool[frameId] = {}
     end
-    local text, _, ref =  varCreateReference(frameId, value, evaluateName)
+    local text, _, ref = varCreateReference(frameId, value, evaluateName, context)
     return text, ref
 end
 
