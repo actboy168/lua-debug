@@ -329,7 +329,16 @@ end
 local function varGetValue(context, type, subtype, value)
     if type == 'string' then
         local str = rdebug.value(value)
-        if #str < 1024 or context == "repl" or context == "copyvalue" then
+        if context == "repl" or context == "copyvalue" then
+            return ("'%s'"):format(str)
+        end
+        if context == "hover" then
+            if #str < 2048 then
+                return ("'%s'"):format(str)
+            end
+            return ("'%s...'"):format(str:sub(1, 2048))
+        end
+        if #str < 1024 then
             return ("'%s'"):format(str)
         end
         return ("'%s...'"):format(str:sub(1, 1024))
