@@ -1,5 +1,6 @@
 local rdebug = require 'remotedebug.visitor'
 local variables = require 'backend.worker.variables'
+local luaver = require 'backend.worker.luaver'
 
 local readfile = package.readfile
 if not readfile then
@@ -99,7 +100,7 @@ function m.eval(expression)
 end
 
 function m.dump(content)
-    if variables.luaver() <= 52 then
+    if luaver.LUAVERSION <= 52 then
         local res, err = compat_dump(content)
         if res then
             return true, res

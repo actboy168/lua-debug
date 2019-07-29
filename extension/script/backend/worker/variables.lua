@@ -1,5 +1,6 @@
 local rdebug = require 'remotedebug.visitor'
 local source = require 'backend.worker.source'
+local luaver = require 'backend.worker.luaver'
 local ev = require 'common.event'
 
 local varPool = {}
@@ -81,17 +82,8 @@ local function init_standard()
     end
 end
 
-local function init_luaver()
-    local version = rdebug.indexv(rdebug._G, "_VERSION")
-    local ver = 0
-    for n in version:gmatch "%d" do
-        ver = ver * 10 + (math.tointeger(n) or 0)
-    end
-    LUAVERSION = ver
-end
-
 ev.on('initializing', function()
-    init_luaver()
+    LUAVERSION = luaver.LUAVERSION
     init_standard()
     TEMPORARY = LUAVERSION >= 54 and "(temporary)" or "(*temporary)"
 end)
@@ -872,10 +864,6 @@ function m.createRef(frameId, value, evaluateName, context)
     end
     local text, _, ref = varCreateReference(frameId, value, evaluateName, context)
     return text, ref
-end
-
-function m.luaver()
-    return LUAVERSION
 end
 
 ev.on('terminated', function()
