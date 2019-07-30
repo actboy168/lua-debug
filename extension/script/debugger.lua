@@ -10,6 +10,9 @@ local arch = (function()
             return 32
         end
     else
+        if platform ~= "windows" then
+            return 64
+        end
         local size = #tostring(io.stderr)
         if size == 23 then
             return 64
