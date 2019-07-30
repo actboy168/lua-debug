@@ -557,6 +557,10 @@ void  (rluaL_pushresultsize) (rluaL_Buffer *B, size_t sz);
 #define rluaopen_table luaopen_table
 #define rluaopen_utf8 luaopen_utf8
 
+#define RLUA_REGISTRYINDEX LUA_REGISTRYINDEX
+
+#include "lua_compat.h"
+
 #endif
 
 
