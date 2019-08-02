@@ -14,12 +14,10 @@ local arch = (function()
             return 64
         end
         local size = #tostring(io.stderr)
-        if size == 23 then
-            return 64
-        end
-        if size == 15 then
+        if size <= 15 then
             return 32
         end
+        return 64
     end
     assert(false, "unknown arch")
 end)()
