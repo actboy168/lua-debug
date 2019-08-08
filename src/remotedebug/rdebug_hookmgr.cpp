@@ -120,7 +120,9 @@ struct hookmgr {
                 rlua_pop(cL, 1);
                 return false;
             }
-            if (!rlua_toboolean(cL, -1)) {
+            bool exist = rlua_toboolean(cL, -1);
+            rlua_pop(cL, 1);
+            if (!exist) {
                 break_del(hL, p);
                 return false;
             }
