@@ -155,7 +155,7 @@ struct hookmgr {
 #if LUA_VERSION_NUM >= 502
         break_update(hL, ar->i_ci->previous, ar->event);
 #else
-        break_update(hL, hL->base_ci + ar->i_ci, ar->event);
+        break_update(hL, hL->base_ci + ar->i_ci - 1, ar->event);
 #endif
     }
     void break_hookmask(lua_State* hL, int mask) {
