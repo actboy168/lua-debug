@@ -1,14 +1,9 @@
-local fs = require 'remotedebug.filesystem'
+local utility = require 'remotedebug.utility'
 local ev = require 'common.event'
 local rdebug = require 'remotedebug.visitor'
-
-local function prequire(name)
-    local ok, res = pcall(require, name)
-    if ok then
-        return res
-    end
-end
-local unicode = prequire 'remotedebug.unicode'
+local absolute = utility.fs_absolute
+local u2a = utility.u2a or function (...) return ... end
+local a2u = utility.a2u or function (...) return ... end
 
 local sourceFormat = "path"
 local pathFormat = "path"
@@ -26,7 +21,7 @@ end
 
 local function nativepath(s)
     if not useWSL and not useUtf8 then
-        return unicode.u2a(s)
+        return u2a(s)
     end
     return towsl(s)
 end
@@ -61,10 +56,6 @@ ev.on('initializing', function(config)
     init_searchpath(config, 'path')
     init_searchpath(config, 'cpath')
 end)
-
-local function absolute(p)
-    return fs.absolute(fs.path(p)):string()
-end
 
 local function normalize_posix(p)
     local stack = {}
@@ -152,6 +143,6 @@ function m.path_filename(path)
     return paths[#paths]
 end
 
-m.unicode = unicode
+m.a2u = a2u
 
 return m
