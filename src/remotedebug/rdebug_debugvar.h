@@ -137,6 +137,16 @@ copy_fromX(rlua_State *from, lua_State *to) {
 	return t;
 }
 
+void
+copyvalue(lua_State *from, rlua_State *to) {
+	if (copy_toX(from, to) == LUA_TNONE) {
+		rlua_pushfstring(to, "[%s: %p]",
+			lua_typename(from, lua_type(from, -1)),
+			lua_topointer(from, -1)
+		);
+	}
+}
+
 // L top : value, uservalue
 static int
 eval_value_(rlua_State *L, lua_State *cL, struct value *v) {
@@ -469,12 +479,7 @@ get_value(rlua_State *L, lua_State *cL) {
 		return;
 	}
 	rlua_pop(L, 1);
-	if (copy_toX(cL, L) == LUA_TNONE) {
-		rlua_pushfstring(L, "[%s: %p]", 
-			lua_typename(cL, lua_type(cL, -1)),
-			lua_topointer(cL, -1)
-			);
-	}
+	copyvalue(cL, L);
 	lua_pop(cL,1);
 }
 
@@ -496,12 +501,7 @@ tostring(rlua_State *L, lua_State *cL) {
 	lua_pushcfunction(cL, safetostring);
 	lua_insert(cL, -2);
 	lua_pcall(cL, 1, 1, 0);
-	if (copy_toX(cL, L) == LUA_TNONE) {
-		rlua_pushfstring(L, "[%s: %p]", 
-			lua_typename(cL, lua_type(cL, -1)),
-			lua_topointer(cL, -1)
-			);
-	}
+	copyvalue(cL, L);
 	lua_pop(cL,1);
 }
 
