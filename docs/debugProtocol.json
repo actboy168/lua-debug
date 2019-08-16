@@ -152,7 +152,7 @@
 							"reason": {
 								"type": "string",
 								"description": "The reason for the event.\nFor backward compatibility this string is shown in the UI if the 'description' attribute is missing (but it must not be translated).",
-								"_enum": [ "step", "breakpoint", "exception", "pause", "entry", "goto", "function breakpoint" ]
+								"_enum": [ "step", "breakpoint", "exception", "pause", "entry", "goto", "function breakpoint", "data breakpoint" ]
 							},
 							"description": {
 								"type": "string",
@@ -457,6 +457,10 @@
 										"Debugger attached to an existing process.",
 										"A project launcher component has launched a new process in a suspended state and then asked the debugger to attach."
 									]
+								},
+								"pointerSize": {
+									"type": "integer",
+									"description": "The size of a pointer or address for this process, in bits. This value may be used by clients when formatting addresses for display."
 								}
 							},
 							"required": [ "name" ]
@@ -627,6 +631,10 @@
 				"supportsRunInTerminalRequest": {
 					"type": "boolean",
 					"description": "Client supports the runInTerminal request."
+				},
+				"supportsMemoryReferences": {
+					"type": "boolean",
+					"description": "Client supports memory references."
 				}
 			},
 			"required": [ "adapterID" ]
@@ -1000,6 +1008,125 @@
 			"allOf": [ { "$ref": "#/definitions/Response" }, {
 				"type": "object",
 				"description": "Response to 'setExceptionBreakpoints' request. This is just an acknowledgement, so no body field is required."
+			}]
+		},
+
+		"DataBreakpointInfoRequest": {
+			"allOf": [ { "$ref": "#/definitions/Request" }, {
+				"type": "object",
+				"description": "Obtains information on a possible data breakpoint that could be set on an expression or variable.",
+				"properties": {
+					"command": {
+						"type": "string",
+						"enum": [ "dataBreakpointInfo" ]
+					},
+					"arguments": {
+						"$ref": "#/definitions/DataBreakpointInfoArguments"
+					}
+				},
+				"required": [ "command", "arguments"  ]
+			}]
+		},
+		"DataBreakpointInfoArguments": {
+			"type": "object",
+			"description": "Arguments for 'dataBreakpointInfo' request.",
+			"properties": {
+				"variablesReference": {
+					"type": "integer",
+					"description": "Reference to the Variable container if the data breakpoint is requested for a child of the container."
+				},
+				"name": {
+					"type": "string",
+					"description": "The name of the Variable's child to obtain data breakpoint information for. If variableReference isn’t provided, this can be an expression."
+				}
+			},
+			"required": [ "name" ]
+		},
+		"DataBreakpointInfoResponse": {
+			"allOf": [ { "$ref": "#/definitions/Response" }, {
+				"type": "object",
+				"description": "Response to 'dataBreakpointInfo' request.",
+				"properties": {
+					"body": {
+						"type": "object",
+						"properties": {
+							"dataId": {
+								"type": [ "string", "null" ],
+								"description": "An identifier for the data on which a data breakpoint can be registered with the setDataBreakpoints request or null if no data breakpoint is available."
+							},
+							"description": {
+								"type": "string",
+								"description": "UI string that describes on what data the breakpoint is set on or why a data breakpoint is not available."
+							},
+							"accessTypes": {
+								"type": "array",
+								"items": {
+									"$ref": "#/definitions/DataBreakpointAccessType"
+								},
+								"description": "Optional attribute listing the available access types for a potential data breakpoint. A UI frontend could surface this information."
+							},
+							"canPersist": {
+								"type": "boolean",
+								"description": "Optional attribute indicating that a potential data breakpoint could be persisted across sessions."
+							}
+						},
+						"required": [ "dataId", "description" ]
+					}
+				},
+				"required": [ "body" ]
+			}]
+		},
+
+		"SetDataBreakpointsRequest": {
+			"allOf": [ { "$ref": "#/definitions/Request" }, {
+				"type": "object",
+				"description": "Replaces all existing data breakpoints with new data breakpoints.\nTo clear all data breakpoints, specify an empty array.\nWhen a data breakpoint is hit, a 'stopped' event (with reason 'data breakpoint') is generated.",
+				"properties": {
+					"command": {
+						"type": "string",
+						"enum": [ "setDataBreakpoints" ]
+					},
+					"arguments": {
+						"$ref": "#/definitions/SetDataBreakpointsArguments"
+					}
+				},
+				"required": [ "command", "arguments"  ]
+			}]
+		},
+		"SetDataBreakpointsArguments": {
+			"type": "object",
+			"description": "Arguments for 'setDataBreakpoints' request.",
+			"properties": {
+				"breakpoints": {
+					"type": "array",
+					"items": {
+						"$ref": "#/definitions/DataBreakpoint"
+					},
+					"description": "The contents of this array replaces all existing data breakpoints. An empty array clears all data breakpoints."
+				}
+			},
+			"required": [ "breakpoints" ]
+		},
+		"SetDataBreakpointsResponse": {
+			"allOf": [ { "$ref": "#/definitions/Response" }, {
+				"type": "object",
+				"description": "Response to 'setDataBreakpoints' request.\nReturned is information about each breakpoint created by this request.",
+				"properties": {
+					"body": {
+						"type": "object",
+						"properties": {
+							"breakpoints": {
+								"type": "array",
+								"items": {
+									"$ref": "#/definitions/Breakpoint"
+								},
+								"description": "Information about the data breakpoints. The array elements correspond to the elements of the input argument 'breakpoints' array."
+							}
+						},
+						"required": [ "breakpoints" ]
+					}
+				},
+				"required": [ "body" ]
 			}]
 		},
 
@@ -1890,6 +2017,10 @@
 							"indexedVariables": {
 								"type": "number",
 								"description": "The number of indexed child variables.\nThe client can use this optional information to present the variables in a paged UI and fetch them in chunks."
+							},
+							"memoryReference": {
+								"type": "string",
+								"description": "Memory reference to a location appropriate for this result. For pointer type eval results, this is generally a reference to the memory address contained in the pointer."
 							}
 						},
 						"required": [ "result", "variablesReference" ]
@@ -2207,6 +2338,133 @@
 			}]
 		},
 
+		"ReadMemoryRequest": {
+			"allOf": [ { "$ref": "#/definitions/Request" }, {
+				"type": "object",
+				"description": "Reads bytes from memory at the provided location.",
+				"properties": {
+					"command": {
+						"type": "string",
+						"enum": [ "readMemory" ]
+					},
+					"arguments": {
+						"$ref": "#/definitions/ReadMemoryArguments"
+					}
+				},
+				"required": [ "command", "arguments" ]
+			}]
+		},
+		"ReadMemoryArguments": {
+			"type": "object",
+			"description": "Arguments for 'readMemory' request.",
+			"properties": {
+				"memoryReference": {
+					"type": "string",
+					"description": "Memory reference to the base location from which data should be read."
+				},
+				"offset": {
+					"type": "integer",
+					"description": "Optional offset (in bytes) to be applied to the reference location before reading data. Can be negative."
+				},
+				"count": {
+					"type": "integer",
+					"description": "Number of bytes to read at the specified location and offset."
+				}
+			},
+			"required": [ "memoryReference", "count" ]
+		},
+		"ReadMemoryResponse": {
+			"allOf": [ { "$ref": "#/definitions/Response" }, {
+				"type": "object",
+				"description": "Response to 'readMemory' request.",
+				"properties": {
+					"body": {
+						"type": "object",
+						"properties": {
+							"address": {
+								"type": "string",
+								"description": "The address of the first byte of data returned. Treated as a hex value if prefixed with '0x', or as a decimal value otherwise."
+							},
+							"unreadableBytes": {
+								"type": "integer",
+								"description": "The number of unreadable bytes encountered after the last successfully read byte. This can be used to determine the number of bytes that must be skipped before a subsequent 'readMemory' request will succeed."
+							},
+							"data": {
+								"type": "string",
+								"description": "The bytes read from memory, encoded using base64."
+							}
+						},
+						"required": [ "address" ]
+					}
+				}
+			}]
+		},
+
+		"DisassembleRequest": {
+			"allOf": [ { "$ref": "#/definitions/Request" }, {
+				"type": "object",
+				"description": "Disassembles code stored at the provided location.",
+				"properties": {
+					"command": {
+						"type": "string",
+						"enum": [ "disassemble" ]
+					},
+					"arguments": {
+						"$ref": "#/definitions/DisassembleArguments"
+					}
+				},
+				"required": [ "command", "arguments" ]
+			}]
+		},
+		"DisassembleArguments": {
+			"type": "object",
+			"description": "Arguments for 'disassemble' request.",
+			"properties": {
+				"memoryReference": {
+					"type": "string",
+					"description": "Memory reference to the base location containing the instructions to disassemble."
+				},
+				"offset": {
+					"type": "integer",
+					"description": "Optional offset (in bytes) to be applied to the reference location before disassembling. Can be negative."
+				},
+				"instructionOffset": {
+					"type": "integer",
+					"description": "Optional offset (in instructions) to be applied after the byte offset (if any) before disassembling. Can be negative."
+				},
+				"instructionCount": {
+					"type": "integer",
+					"description": "Number of instructions to disassemble starting at the specified location and offset. An adapter must return exactly this number of instructions - any unavailable instructions should be replaced with an implementation-defined 'invalid instruction' value."
+				},
+				"resolveSymbols": {
+					"type": "boolean",
+					"description": "If true, the adapter should attempt to resolve memory addresses and other values to symbolic names."
+				}
+			},
+			"required": [ "memoryReference", "instructionCount" ]
+		},
+		"DisassembleResponse": {
+			"allOf": [ { "$ref": "#/definitions/Response" }, {
+				"type": "object",
+				"description": "Response to 'disassemble' request.",
+				"properties": {
+					"body": {
+						"type": "object",
+						"properties": {
+							"instructions": {
+								"type": "array",
+								"items": {
+									"$ref": "#/definitions/DisassembledInstruction"
+								},
+								"description": "The list of disassembled instructions."
+							}
+						},
+						"required": [ "instructions" ]
+					}
+				}
+			}]
+		},
+
 		"Capabilities": {
 			"type": "object",
 			"title": "Types",
@@ -2324,6 +2582,18 @@
 				"supportsTerminateRequest": {
 					"type": "boolean",
 					"description": "The debug adapter supports the 'terminate' request."
+				},
+				"supportsDataBreakpoints": {
+					"type": "boolean",
+					"description": "The debug adapter supports data breakpoints."
+				},
+				"supportsReadMemoryRequest": {
+					"type": "boolean",
+					"description": "The debug adapter supports the 'readMemory' request."
+				},
+				"supportsDisassembleRequest": {
+					"type": "boolean",
+					"description": "The debug adapter supports the 'disassemble' request."
 				}
 			}
 		},
@@ -2573,6 +2843,10 @@
 					"type": "integer",
 					"description": "An optional end column of the range covered by the stack frame."
 				},
+				"instructionPointerReference": {
+					"type": "string",
+					"description": "Optional memory reference for the current instruction pointer in this frame."
+				},
 				"moduleId": {
 					"type": ["integer", "string"],
 					"description": "The module associated with this frame, if any."
@@ -2592,7 +2866,17 @@
 			"properties": {
 				"name": {
 					"type": "string",
-					"description": "Name of the scope such as 'Arguments', 'Locals'."
+					"description": "Name of the scope such as 'Arguments', 'Locals', or 'Registers'. This string is shown in the UI as is and can be translated."
+				},
+				"presentationHint": {
+					"type": "string",
+					"description": "An optional hint for how to present this scope in the UI. If this attribute is missing, the scope is shown with a generic UI.",
+					"_enum": [ "arguments", "locals", "registers" ],
+					"enumDescriptions": [
+						"Scope contains method arguments.",
+						"Scope contains local variables.",
+						"Scope contains registers. Only a single 'registers' scope should be returned from a 'scopes' request."
+					]
 				},
 				"variablesReference": {
 					"type": "integer",
@@ -2669,6 +2953,10 @@
 				"indexedVariables": {
 					"type": "integer",
 					"description": "The number of indexed child variables.\nThe client can use this optional information to present the children in a paged UI and fetch them in chunks."
+				},
+				"memoryReference": {
+					"type": "string",
+					"description": "Optional memory reference for the variable if the variable represents executable code, such as a function pointer."
 				}
 			},
 			"required": [ "name", "value", "variablesReference" ]
@@ -2681,7 +2969,7 @@
 				"kind": {
 					"description": "The kind of variable. Before introducing additional values, try to use the listed values.",
 					"type": "string",
-					"_enum": [ "property", "method", "class", "data", "event", "baseClass", "innerClass", "interface", "mostDerivedClass", "virtual" ],
+					"_enum": [ "property", "method", "class", "data", "event", "baseClass", "innerClass", "interface", "mostDerivedClass", "virtual", "dataBreakpoint" ],
 					"enumDescriptions": [
 						"Indicates that the object is a property.",
 						"Indicates that the object is a method.",
@@ -2692,7 +2980,8 @@
 						"Indicates that the object is an inner class.",
 						"Indicates that the object is an interface.",
 						"Indicates that the object is the most derived class.",
-						"Indicates that the object is virtual, that means it is a synthetic object introduced by the adapter for rendering purposes, e.g. an index range for large arrays."
+						"Indicates that the object is virtual, that means it is a synthetic object introduced by the adapter for rendering purposes, e.g. an index range for large arrays.",
+						"Indicates that a data breakpoint is registered for the object."
 					]
 				},
 				"attributes": {
@@ -2766,6 +3055,36 @@
 				}
 			},
 			"required": [ "name" ]
+		},
+
+		"DataBreakpointAccessType": {
+			"type": "string",
+			"description": "This enumeration defines all possible access types for data breakpoints.",
+			"enum": [ "read", "write", "readWrite" ]
+		},
+
+		"DataBreakpoint": {
+			"type": "object",
+			"description": "Properties of a data breakpoint passed to the setDataBreakpoints request.",
+			"properties": {
+				"dataId": {
+					"type": "string",
+					"description": "An id representing the data. This id is returned from the dataBreakpointInfo request."
+				},
+				"accessType": {
+					"$ref": "#/definitions/DataBreakpointAccessType",
+					"description": "The access type of the data."
+				},
+				"condition": {
+					"type": "string",
+					"description": "An optional expression for conditional breakpoints."
+				},
+				"hitCondition": {
+					"type": "string",
+					"description": "An optional expression that controls how many hits of the breakpoint are ignored. The backend is expected to interpret the expression as needed."
+				}
+			},
+			"required": [ "dataId" ]
 		},
 
 		"Breakpoint": {
@@ -2851,6 +3170,10 @@
 				"endColumn": {
 					"type": "integer",
 					"description": "An optional end column of the range covered by the goto target."
+				},
+				"instructionPointerReference": {
+					"type": "string",
+					"description": "Optional memory reference for the instruction pointer value represented by this target."
 				}
 			},
 			"required": [ "id", "label", "line" ]
@@ -3036,6 +3359,50 @@
 					"description": "Details of the exception contained by this exception, if any."
 				}
 			}
+		},
+
+		"DisassembledInstruction": {
+			"type": "object",
+			"description": "Represents a single disassembled instruction.",
+			"properties": {
+				"address": {
+					"type": "string",
+					"description": "The address of the instruction. Treated as a hex value if prefixed with '0x', or as a decimal value otherwise."
+				},
+				"instructionBytes": {
+					"type": "string",
+					"description": "Optional raw bytes representing the instruction and its operands, in an implementation-defined format."
+				},
+				"instruction": {
+					"type": "string",
+					"description": "Text representing the instruction and its operands, in an implementation-defined format."
+				},
+				"symbol": {
+					"type": "string",
+					"description": "Name of the symbol that correponds with the location of this instruction, if any."
+				},
+				"location": {
+					"$ref": "#/definitions/Source",
+					"description": "Source location that corresponds to this instruction, if any. Should always be set (if available) on the first instruction returned, but can be omitted afterwards if this instruction maps to the same source file as the previous instruction."
+				},
+				"line": {
+					"type": "integer",
+					"description": "The line within the source location that corresponds to this instruction, if any."
+				},
+				"column": {
+					"type": "integer",
+					"description": "The column within the line that corresponds to this instruction, if any."
+				},
+				"endLine": {
+					"type": "integer",
+					"description": "The end line of the range that corresponds to this instruction, if any."
+				},
+				"endColumn": {
+					"type": "integer",
+					"description": "The end column of the range that corresponds to this instruction, if any."
+				}
+			},
+			"required": [ "address", "instruction" ]
 		}
 
 	}
