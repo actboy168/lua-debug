@@ -11,7 +11,7 @@ static int query_process(lua_State* L) {
     return 1;
 }
 
-extern "C"
+extern "C" __attribute__((visibility("default")))
 int luaopen_inject(lua_State* L) {
     luaL_Reg lib[] = {
         {"injectdll", injectdll},

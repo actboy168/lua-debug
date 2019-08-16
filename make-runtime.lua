@@ -159,6 +159,7 @@ for _, luaver in ipairs {"lua51","lua52","lua53","lua54"} do
             ldflags = {
                 platform.OS == "Linux" and "-Wl,-E"
             },
+            visibility = "default",
             links = {
                 "m",
                 "dl",
