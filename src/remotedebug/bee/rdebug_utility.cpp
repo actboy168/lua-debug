@@ -1,6 +1,10 @@
 #define RLUA_REPLACE
 #include "../rlua.h"
+#if defined(_WIN32)
 #include <binding/lua_unicode.cpp>
+#else
+#include <bee/lua/binding.h>
+#endif
 #include <bee/filesystem.h>
 
 namespace bee::lua_filesystem {
