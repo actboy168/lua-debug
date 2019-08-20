@@ -258,14 +258,6 @@ eval_value_(rlua_State *L, lua_State *cL, struct value *v) {
 			case LUA_TLIGHTUSERDATA:
 				lua_pushlightuserdata(cL, NULL);
 				break;
-			case LUA_TTHREAD:
-#if LUA_VERSION_NUM == 501
-				// TODO
-				lua_pushnil(cL);
-#else
-				lua_rawgeti(cL, LUA_REGISTRYINDEX, LUA_RIDX_MAINTHREAD);
-#endif
-				break;
 			default:
 				return LUA_TNONE;
 			}
@@ -415,14 +407,6 @@ assign_value(rlua_State *L, struct value * v, lua_State *cL) {
 				break;
 			case LUA_TLIGHTUSERDATA:
 				lua_pushlightuserdata(cL, NULL);
-				break;
-			case LUA_TTHREAD:
-#if LUA_VERSION_NUM == 501
-				// TODO
-				lua_pushnil(cL);
-#else
-				lua_rawgeti(cL, LUA_REGISTRYINDEX, LUA_RIDX_MAINTHREAD);
-#endif
 				break;
 			default:
 				// Invalid
