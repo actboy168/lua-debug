@@ -641,8 +641,6 @@ init_visitor(rlua_State *L) {
 	rlua_setfield(L, -2, "_G");
 	get_registry(L, VAR_REGISTRY);
 	rlua_setfield(L, -2, "_REGISTRY");
-	get_registry(L, VAR_MAINTHREAD);
-	rlua_setfield(L, -2, "_MAINTHREAD");
 	return 1;
 }
 
