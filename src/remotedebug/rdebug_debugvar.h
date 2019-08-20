@@ -240,12 +240,6 @@ eval_value_(rlua_State *L, lua_State *cL, struct value *v) {
 	case VAR_REGISTRY:
 		lua_pushvalue(cL, LUA_REGISTRYINDEX);
 		return LUA_TTABLE;
-#if LUA_VERSION_NUM == 501
-		// TODO
-		return LUA_TNIL;
-#else
-		return lua::rawgeti(cL, LUA_REGISTRYINDEX, LUA_RIDX_MAINTHREAD);
-#endif
 	case VAR_METATABLE:
 		if (v->frame == 1) {
 			switch(v->index) {
