@@ -182,6 +182,12 @@ local function varGetName(value)
     elseif type == 'nil' then
         return 'nil'
     elseif type == 'number' then
+        if LUAVERSION <= 52 then
+            local rvalue = rdebug.value(value)
+            if rvalue == math.floor(rvalue) then
+                subtype = 'integer'
+            end
+        end
         if subtype == 'integer' then
             local rvalue = rdebug.value(value)
             if rvalue > 0 and rvalue < 1000 then
