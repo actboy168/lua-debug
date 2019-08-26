@@ -89,6 +89,9 @@ function resolveConfig(folder, config, token) {
     if (typeof config.stopOnEntry != 'boolean') {
         config.stopOnEntry = true;
     }
+    if (typeof config.stopOnThreadEntry != 'boolean') {
+        config.stopOnThreadEntry = false;
+    }
     if (typeof config.termOnExit != 'boolean') {
         config.termOnExit = config.request == 'launch';
     }

@@ -122,6 +122,11 @@
                                 "markdownDescription": "Automatically stop after entry.",
                                 "default": false
                             },
+                            "stopOnThreadEntry": {
+                                "type": "boolean",
+                                "markdownDescription": "Automatically stop after thread entry.",
+                                "default": true
+                            },
                             "termOnExit": {
                                 "type": "boolean",
                                 "markdownDescription": "Automatically terminate process after exit.",
@@ -299,6 +304,11 @@
                                 "type": "boolean",
                                 "markdownDescription": "Automatically stop after entry.",
                                 "default": false
+                            },
+                            "stopOnThreadEntry": {
+                                "type": "boolean",
+                                "markdownDescription": "Automatically stop after thread entry.",
+                                "default": true
                             },
                             "termOnExit": {
                                 "type": "boolean",

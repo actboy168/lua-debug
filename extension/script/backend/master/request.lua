@@ -6,6 +6,7 @@ local ev = require 'common.event'
 local request = {}
 
 local readyTrg = nil
+local firstWorker = true
 local initializing = false
 local config = {
     initialize = {},
@@ -37,6 +38,7 @@ function request.initialize(req)
         response.error(req, 'already initialized')
         return
     end
+    firstWorker = true
     response.initialize(req)
     mgr.setState 'initialized'
     event.initialized()
@@ -62,6 +64,25 @@ function request.launch(req)
     return request.attach(req)
 end
 
+local function tryStop(w)
+    if firstWorker then
+        firstWorker = false
+        if not not config.initialize.stopOnEntry then
+            mgr.sendToWorker(w, {
+                cmd = 'stop',
+                reason = 'entry',
+            })
+            return
+        end
+    end
+    if not not config.initialize.stopOnThreadEntry then
+        mgr.sendToWorker(w, {
+            cmd = 'stop',
+            reason = 'entry',
+        })
+    end
+end
+
 local function initializeWorker(w)
     mgr.sendToWorker(w, {
         cmd = 'initializing',
@@ -75,16 +96,7 @@ local function initializeWorker(w)
             content = bp[3],
         })
     end
-    local stopOnEntry = true
-    if type(config.initialize.stopOnEntry) == 'boolean' then
-        stopOnEntry = config.initialize.stopOnEntry
-    end
-    if stopOnEntry then
-        mgr.sendToWorker(w, {
-            cmd = 'stop',
-            reason = 'entry',
-        })
-    end
+    tryStop(w)
     mgr.sendToWorker(w, {
         cmd = 'initialized',
     })
