@@ -1,6 +1,7 @@
 local utility = require 'remotedebug.utility'
 local ev = require 'common.event'
 local rdebug = require 'remotedebug.visitor'
+local OS = utility.platform_os()
 local absolute = utility.fs_absolute
 local u2a = utility.u2a or function (...) return ... end
 local a2u = utility.a2u or function (...) return ... end
@@ -107,8 +108,12 @@ function m.source_normalize(path)
     if sourceFormat == "string" then
         return path
     end
-    local normalize = sourceFormat == "path" and normalize_win32 or normalize_posix
-    return table.concat(normalize(absolute(path)), '/')
+    if sourceFormat == "path" then
+        local absolute_path = OS == 'Windows' and absolute(path) or path
+        return table.concat(normalize_win32(absolute_path), '/')
+    end
+    local absolute_path = OS ~= 'Windows' and absolute(path) or path
+    return table.concat(normalize_posix(absolute_path), '/')
 end
 
 function m.path_normalize(path)
