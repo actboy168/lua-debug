@@ -6,7 +6,7 @@ local absolute = utility.fs_absolute
 local u2a = utility.u2a or function (...) return ... end
 local a2u = utility.a2u or function (...) return ... end
 
-local sourceFormat = "path"
+local sourceFormat = OS == "Windows" and "path" or "linuxpath"
 local pathFormat = "path"
 local useWSL = false
 local useUtf8 = false
@@ -50,7 +50,7 @@ local function init_searchpath(config, name)
 end
 
 ev.on('initializing', function(config)
-    sourceFormat = config.sourceFormat or "path"
+    sourceFormat = config.sourceFormat or (OS == "Windows" and "path" or "linuxpath")
     pathFormat = config.pathFormat or "path"
     useWSL = config.useWSL
     useUtf8 = config.sourceCoding == "utf8"
