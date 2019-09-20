@@ -1,0 +1,6 @@
+{
+    "lua.debug.launch.console.description": "The specified console to launch the program.",
+    "lua.debug.launch.internalConsole.description": "VS Code debug console (input stream not supported).",
+    "lua.debug.launch.integratedTerminal.description": "VS Code integrated terminal.",
+    "lua.debug.launch.externalTerminal.description": "External terminal that can be configured in user settings."
+}

@@ -74,7 +74,8 @@ function resolveConfig(folder, config, token) {
     if (!checkRuntime()) {
         throw new Error('You need to compile `lua-debug`.');
     }
-    let plat = mergeConfigurations(config)
+    const settings = vscode.workspace.getConfiguration("lua.debug.settings");
+    const plat = mergeConfigurations(config)
     config.type = 'lua';
     if (config.request != 'attach') {
         config.request = 'launch';
@@ -94,6 +95,9 @@ function resolveConfig(folder, config, token) {
     }
     if (typeof config.termOnExit != 'boolean') {
         config.termOnExit = config.request == 'launch';
+    }
+    if (typeof config.console != 'string') {
+        config.console = settings.console
     }
     if (typeof config.consoleCoding != 'string') {
         config.consoleCoding = 'utf8'

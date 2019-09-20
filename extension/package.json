@@ -254,11 +254,11 @@
                                     "externalTerminal"
                                 ],
                                 "enummarkdownDescriptions": [
-                                    "VS Code Debug Console (which doesn't support to read input from a program)",
-                                    "VS Code's integrated terminal",
-                                    "external terminal that can be configured via user settings"
+                                    "%lua.debug.launch.internalConsole.description%",
+                                    "%lua.debug.launch.integratedTerminal.description%",
+                                    "%lua.debug.launch.externalTerminal.description%"
                                 ],
-                                "markdownDescription": "Where to launch the debug target.",
+                                "markdownDescription": "%lua.debug.launch.console.description%",
                                 "default": "integratedTerminal"
                             },
                             "skipFiles": {
@@ -417,6 +417,25 @@
                     }
                 }
             }
-        ]
+        ],
+        "configuration": {
+            "properties": {
+                "lua.debug.settings.console": {
+                    "type": "string",
+                    "enum": [
+                        "internalConsole",
+                        "integratedTerminal",
+                        "externalTerminal"
+                    ],
+                    "enumDescriptions": [
+                        "%lua.debug.launch.internalConsole.description%",
+                        "%lua.debug.launch.integratedTerminal.description%",
+                        "%lua.debug.launch.externalTerminal.description%"
+                    ],
+                    "description": "%lua.debug.launch.console.description%",
+                    "default": "integratedTerminal"
+                }
+            }
+        }
     }
 }
