@@ -96,19 +96,17 @@ function resolveConfig(folder, config, token) {
     if (typeof config.termOnExit != 'boolean') {
         config.termOnExit = config.request == 'launch';
     }
+    if (typeof config.luaRuntime != 'string') {
+        config.luaRuntime = settings.luaRuntime
+    }
     if (typeof config.console != 'string') {
         config.console = settings.console
     }
     if (typeof config.consoleCoding != 'string') {
-        config.consoleCoding = 'utf8'
+        config.consoleCoding = settings.consoleCoding
     }
     if (typeof config.sourceCoding != 'string') {
-        if (plat == "Windows") {
-            config.sourceCoding = 'ansi'
-        }
-        else {
-            config.sourceCoding = 'utf8'
-        }
+        config.sourceCoding = settings.sourceCoding
     }
     if (typeof config.outputCapture != 'object') {
         config.outputCapture = [

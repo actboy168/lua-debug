@@ -134,7 +134,7 @@
                             },
                             "luaRuntime": {
                                 "type": "string",
-                                "markdownDescription": "Default lua runtime",
+                                "markdownDescription": "%lua.debug.launch.luaRuntime.description%",
                                 "default": "5.3 64bit",
                                 "enum": [
                                     "5.1 32bit",
@@ -183,7 +183,7 @@
                             },
                             "consoleCoding": {
                                 "type": "string",
-                                "markdownDescription": "Console encoding",
+                                "markdownDescription": "%lua.debug.launch.consoleCoding.description%",
                                 "default": "utf8",
                                 "enum": [
                                     "utf8",
@@ -203,7 +203,7 @@
                             },
                             "sourceCoding": {
                                 "type": "string",
-                                "markdownDescription": "Source encoding",
+                                "markdownDescription": "%lua.debug.launch.sourceCoding.description%",
                                 "default": "utf8",
                                 "enum": [
                                     "utf8",
@@ -254,9 +254,9 @@
                                     "externalTerminal"
                                 ],
                                 "enummarkdownDescriptions": [
-                                    "%lua.debug.launch.internalConsole.description%",
-                                    "%lua.debug.launch.integratedTerminal.description%",
-                                    "%lua.debug.launch.externalTerminal.description%"
+                                    "%lua.debug.launch.console.internalConsole.description%",
+                                    "%lua.debug.launch.console.integratedTerminal.description%",
+                                    "%lua.debug.launch.console.externalTerminal.description%"
                                 ],
                                 "markdownDescription": "%lua.debug.launch.console.description%",
                                 "default": "integratedTerminal"
@@ -337,7 +337,7 @@
                             },
                             "consoleCoding": {
                                 "type": "string",
-                                "markdownDescription": "Console encoding",
+                                "markdownDescription": "%lua.debug.launch.consoleCoding.description%",
                                 "default": "utf8",
                                 "enum": [
                                     "utf8",
@@ -347,7 +347,7 @@
                             },
                             "sourceCoding": {
                                 "type": "string",
-                                "markdownDescription": "Source encoding",
+                                "markdownDescription": "%lua.debug.launch.sourceCoding.description%",
                                 "default": "utf8",
                                 "enum": [
                                     "utf8",
@@ -428,12 +428,46 @@
                         "externalTerminal"
                     ],
                     "enumDescriptions": [
-                        "%lua.debug.launch.internalConsole.description%",
-                        "%lua.debug.launch.integratedTerminal.description%",
-                        "%lua.debug.launch.externalTerminal.description%"
+                        "%lua.debug.launch.console.internalConsole.description%",
+                        "%lua.debug.launch.console.integratedTerminal.description%",
+                        "%lua.debug.launch.console.externalTerminal.description%"
                     ],
                     "description": "%lua.debug.launch.console.description%",
                     "default": "integratedTerminal"
+                },
+                "lua.debug.settings.luaRuntime": {
+                    "type": "string",
+                    "description": "%lua.debug.launch.luaRuntime.description%",
+                    "default": "5.3 64bit",
+                    "enum": [
+                        "5.1 32bit",
+                        "5.1 64bit",
+                        "5.2 32bit",
+                        "5.2 64bit",
+                        "5.3 32bit",
+                        "5.3 64bit",
+                        "5.4 32bit",
+                        "5.4 64bit"
+                    ]
+                },
+                "lua.debug.settings.consoleCoding": {
+                    "type": "string",
+                    "description": "%lua.debug.launch.consoleCoding.description%",
+                    "default": "utf8",
+                    "enum": [
+                        "utf8",
+                        "ansi",
+                        "none"
+                    ]
+                },
+                "lua.debug.settings.sourceCoding": {
+                    "type": "string",
+                    "description": "%lua.debug.launch.sourceCoding.description%",
+                    "default": "utf8",
+                    "enum": [
+                        "utf8",
+                        "ansi"
+                    ]
                 }
             }
         }
