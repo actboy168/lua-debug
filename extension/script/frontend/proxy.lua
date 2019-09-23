@@ -128,17 +128,29 @@ local function proxy_attach(pkg)
     attach_tcp(pkg, args)
 end
 
-local function proxy_launch(pkg)
+local function proxy_launch_terminal(pkg)
     local args = pkg.arguments
-    platformOS.init(args)
+    if args.runtimeExecutable then
+        --TODO: support runtimeExecutable's integratedTerminal/externalTerminal
+        response_error(pkg, "`runtimeExecutable` is not supported.")
+        return
+    end
+    local pid = sp.get_id()
+    server = network.open(getUnixAddress(pid), true)
+    local arguments, err = debuggerFactory.create_terminal(args, getDbgPath(), pid)
+    if not arguments then
+        response_error(pkg, err)
+        return
+    end
+    request_runinterminal(arguments)
+    return true
+end
+
+local function proxy_launch_console(pkg)
+    local args = pkg.arguments
     if args.runtimeExecutable then
         if platformOS() ~= "Windows" then
             response_error(pkg, "`runtimeExecutable` is not supported.")
-            return
-        end
-        --TODO: support integratedTerminal/externalTerminal
-        if args.console == 'integratedTerminal' or args.console == 'externalTerminal' then
-            response_error(pkg, "`integratedTerminal`/`externalTerminal` is not supported.")
             return
         end
         local process, err = debuggerFactory.create_process(args)
@@ -150,22 +162,27 @@ local function proxy_launch(pkg)
     else
         local pid = sp.get_id()
         server = network.open(getUnixAddress(pid), true)
-        if args.console == 'integratedTerminal' or args.console == 'externalTerminal' then
-            local arguments, err = debuggerFactory.create_terminal(args, getDbgPath(), pid)
-            if not arguments then
-                response_error(pkg, err)
-                return
-            end
-            request_runinterminal(arguments)
-        else
-            local ok, err = debuggerFactory.create_luaexe(args, getDbgPath(), pid)
-            if not ok then
-                response_error(pkg, err)
-                return
-            end
+        local ok, err = debuggerFactory.create_luaexe(args, getDbgPath(), pid)
+        if not ok then
+            response_error(pkg, err)
+            return
         end
     end
+    return true
+end
 
+local function proxy_launch(pkg)
+    local args = pkg.arguments
+    platformOS.init(args)
+    if args.console == 'integratedTerminal' or args.console == 'externalTerminal' then
+        if not proxy_launch_terminal(pkg) then
+            return
+        end
+    else
+        if not proxy_launch_console(pkg) then
+            return
+        end
+    end
     server.send(initReq)
     server.send(pkg)
 end
