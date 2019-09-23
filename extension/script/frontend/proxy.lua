@@ -131,8 +131,16 @@ end
 local function proxy_launch(pkg)
     local args = pkg.arguments
     platformOS.init(args)
-    if args.runtimeExecutable and platformOS() == "Windows" then
+    if args.runtimeExecutable then
+        if platformOS() ~= "Windows" then
+            response_error(pkg, "`runtimeExecutable` is not supported.")
+            return
+        end
         --TODO: support integratedTerminal/externalTerminal
+        if args.console == 'integratedTerminal' or args.console == 'externalTerminal' then
+            response_error(pkg, "`integratedTerminal`/`externalTerminal` is not supported.")
+            return
+        end
         local process, err = debuggerFactory.create_process(args)
         if not process then
             response_error(pkg, err)
