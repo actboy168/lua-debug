@@ -187,9 +187,10 @@ static int registerlocalvar (LexState *ls, FuncState *fs, TString *varname) {
 
 
 /*
-** Create a new local variable with the given 'name'.
+** Create a new local variable with the given 'name'. Return its index
+** in the function.
 */
-static Vardesc *new_localvar (LexState *ls, TString *name) {
+static int new_localvar (LexState *ls, TString *name) {
   lua_State *L = ls->L;
   FuncState *fs = ls->fs;
   Dyndata *dyd = ls->dyd;
@@ -199,13 +200,14 @@ static Vardesc *new_localvar (LexState *ls, TString *name) {
   luaM_growvector(L, dyd->actvar.arr, dyd->actvar.n + 1,
                   dyd->actvar.size, Vardesc, USHRT_MAX, "local variables");
   var = &dyd->actvar.arr[dyd->actvar.n++];
-  var->vd.kind = VDKREG;  /* default is a regular variable */
+  var->vd.kind = VDKREG;  /* default */
   var->vd.name = name;
-  return var;
+  return dyd->actvar.n - 1 - fs->firstlocal;
 }
 
 #define new_localvarliteral(ls,v) \
-    new_localvar(ls, luaX_newstring(ls, "" v, (sizeof(v)/sizeof(char)) - 1));
+    new_localvar(ls,  \
+      luaX_newstring(ls, "" v, (sizeof(v)/sizeof(char)) - 1));
 
 
 
@@ -694,9 +696,10 @@ static Proto *addprototype (LexState *ls) {
 
 /*
 ** codes instruction to create new closure in parent function.
-** The OP_CLOSURE instruction must use the last available register,
+** The OP_CLOSURE instruction uses the last available register,
 ** so that, if it invokes the GC, the GC knows which registers
 ** are in use at that time.
+
 */
 static void codeclosure (LexState *ls, expdesc *v) {
   FuncState *fs = ls->fs->prev;
@@ -1720,7 +1723,7 @@ static int getlocalattribute (LexState *ls) {
     checknext(ls, '>');
     if (strcmp(attr, "const") == 0)
       return RDKCONST;  /* read-only variable */
-    else if (strcmp(attr, "toclose") == 0)
+    else if (strcmp(attr, "close") == 0)
       return RDKTOCLOSE;  /* to-be-closed variable */
     else
       luaK_semerror(ls,
@@ -1745,13 +1748,14 @@ static void localstat (LexState *ls) {
   FuncState *fs = ls->fs;
   int toclose = -1;  /* index of to-be-closed variable (if any) */
   Vardesc *var;  /* last variable */
+  int ivar, kind;  /* index and kind of last variable */
   int nvars = 0;
   int nexps;
   expdesc e;
   do {
-    int kind = getlocalattribute(ls);
-    var = new_localvar(ls, str_checkname(ls));
-    var->vd.kind = kind;
+    ivar = new_localvar(ls, str_checkname(ls));
+    kind = getlocalattribute(ls);
+    getlocalvardesc(fs, ivar)->vd.kind = kind;
     if (kind == RDKTOCLOSE) {  /* to-be-closed? */
       if (toclose != -1)  /* one already present? */
         luaK_semerror(ls, "multiple to-be-closed variables in local list");
@@ -1765,6 +1769,7 @@ static void localstat (LexState *ls) {
     e.k = VVOID;
     nexps = 0;
   }
+  var = getlocalvardesc(fs, ivar);  /* get last variable */
   if (nvars == nexps &&  /* no adjustments? */
       var->vd.kind == RDKCONST &&  /* last variable is const? */
       luaK_exp2const(fs, &e, &var->k)) {  /* compile-time constant? */
@@ -1835,10 +1840,10 @@ static void retstat (LexState *ls) {
     nret = explist(ls, &e);  /* optional return values */
     if (hasmultret(e.k)) {
       luaK_setmultret(fs, &e);
-      //if (e.k == VCALL && nret == 1 && !fs->bl->insidetbc) {  /* tail call? */
-      //  SET_OPCODE(getinstruction(fs,&e), OP_TAILCALL);
-      //  lua_assert(GETARG_A(getinstruction(fs,&e)) == luaY_nvarstack(fs));
-      //}
+      if (e.k == VCALL && nret == 1 && !fs->bl->insidetbc) {  /* tail call? */
+        SET_OPCODE(getinstruction(fs,&e), OP_TAILCALL);
+        lua_assert(GETARG_A(getinstruction(fs,&e)) == luaY_nvarstack(fs));
+      }
       nret = LUA_MULTRET;  /* return all values */
     }
     else {
