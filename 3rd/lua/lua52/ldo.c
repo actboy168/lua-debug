@@ -31,6 +31,7 @@
 #include "lvm.h"
 #include "lzio.h"
 
+#include "../luai_userstate.h"
 
 
 
@@ -540,8 +541,6 @@ LUA_API int lua_resume (lua_State *L, lua_State *from, int nargs) {
   L->nCcalls = (from) ? from->nCcalls + 1 : 1;
   L->nny = 0;  /* allow yields */
   api_checknelems(L, (L->status == LUA_OK) ? nargs + 1 : nargs);
-  if (L->hookmask & LUA_MASKTHREAD)
-    luaD_hook(L, LUA_HOOKTHREAD, -1);
   status = luaD_rawrunprotected(L, resume, L->top - nargs);
   if (status == -1)  /* error calling 'lua_resume'? */
     status = LUA_ERRRUN;
