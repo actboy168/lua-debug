@@ -118,7 +118,7 @@ for _, luaver in ipairs {"lua51","lua52","lua53","lua54"} do
         install_deps[#install_deps+1] = "runtime/"..luaver.."/"..luaver
     end
 
-    lm.rootdir = '3rd/'..luaver
+    lm.rootdir = '3rd/lua/'..luaver
 
     if platform.OS == "Windows" then
         lm:shared_library ('runtime/'..luaver..'/'..luaver) {
