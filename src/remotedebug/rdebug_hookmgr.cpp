@@ -440,7 +440,7 @@ struct hookmgr {
             return;
         }
         set_host(cL, hL);
-        if (step_mask & LUA_MASKLINE) {
+        if ((step_mask & LUA_MASKLINE) && (!stepL || stepL == hL)) {
             rlua_pushstring(cL, "step");
             if (rlua_pcall(cL, 1, 0, 0) != LUA_OK) {
                 rlua_pop(cL, 1);
@@ -457,7 +457,10 @@ struct hookmgr {
         }
     }
     void updatehookmask(lua_State* hL) {
-        int mask = update_mask | break_mask | step_mask | exception_mask | thread_mask;
+        int mask = update_mask | break_mask | exception_mask | thread_mask;
+        if (!stepL || stepL == hL) {
+            mask |= step_mask;
+        }
         if (mask) {
             lua_sethook(hL, (lua_Hook)sc_hook->data, mask, update_mask? 0xfffff: 0);
         }

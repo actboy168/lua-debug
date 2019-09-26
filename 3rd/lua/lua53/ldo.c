@@ -679,6 +679,7 @@ LUA_API int lua_resume (lua_State *L, lua_State *from, int nargs) {
   L->nny = oldnny;  /* restore 'nny' */
   L->nCcalls--;
   lua_assert(L->nCcalls == ((from) ? from->nCcalls : 0));
+  luai_userstateresumefin(from);
   lua_unlock(L);
   return status;
 }

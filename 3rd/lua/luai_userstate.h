@@ -14,11 +14,7 @@
 #undef luai_userstateresume
 #endif
 
-#if defined(luai_userstateyield)
-#undef luai_userstateyield
-#endif
-
 #define luai_userstateresume(L,n) \
     if (L->hookmask & LUA_MASKTHREAD) LUA_CALLHOOK(L, LUA_HOOKTHREAD);
-#define luai_userstateyield(L,n) \
+#define luai_userstateresumefin(L) \
     if (L->hookmask & LUA_MASKTHREAD) LUA_CALLHOOK(L, LUA_HOOKTHREAD);

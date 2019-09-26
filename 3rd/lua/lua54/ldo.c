@@ -694,6 +694,7 @@ LUA_API int lua_resume (lua_State *L, lua_State *from, int nargs,
   }
   *nresults = (status == LUA_YIELD) ? L->ci->u2.nyield
                                     : cast_int(L->top - (L->ci->func + 1));
+  luai_userstateresumefin(from);
   lua_unlock(L);
   return status;
 }
