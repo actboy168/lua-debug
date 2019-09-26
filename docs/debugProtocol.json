@@ -14,7 +14,7 @@
 			"properties": {
 				"seq": {
 					"type": "integer",
-					"description": "Sequence number."
+					"description": "Sequence number (also known as message ID). For protocol messages of type 'request' this ID can be used to cancel the request."
 				},
 				"type": {
 					"type": "string",
@@ -84,7 +84,7 @@
 					},
 					"success": {
 						"type": "boolean",
-						"description": "Outcome of the request."
+						"description": "Outcome of the request.\nIf true, the request was successful and the 'body' attribute may contain the result of the request.\nIf the value is false, the attribute 'message' contains the error in short form and the 'body' may contain additional information (see 'ErrorResponse.body.error')."
 					},
 					"command": {
 						"type": "string",
@@ -92,7 +92,11 @@
 					},
 					"message": {
 						"type": "string",
-						"description": "Contains error message if success == false."
+						"description": "Contains the raw error in short form if 'success' is false.\nThis raw error might be interpreted by the frontend and is not shown in the UI.\nSome predefined values exist.",
+						"_enum": [ "cancelled" ],
+						"enumDescriptions": [
+							"request was cancelled."
+						]
 					},
 					"body": {
 						"type": [ "array", "boolean", "integer", "null", "number" , "object", "string" ],
@@ -119,6 +123,40 @@
 					}
 				},
 				"required": [ "body" ]
+			}]
+		},
+
+		"CancelRequest": {
+			"allOf": [ { "$ref": "#/definitions/Request" }, {
+				"type": "object",
+				"description": "The 'cancel' request is used by the frontend to indicate that it is no longer interested in the result produced by a specific request issued earlier.\nThis request has a hint characteristic: a debug adapter can only be expected to make a 'best effort' in honouring this request but there are no guarantees.\nThe 'cancel' request may return an error if it could not cancel an operation but a frontend should refrain from presenting this error to end users.\nA frontend client should only call this request if the capability 'supportsCancelRequest' is true.\nThe request that got canceled still needs to send a response back.\nThis can either be a normal result ('success' attribute true) or an error response ('success' attribute false and the 'message' set to 'cancelled').\nReturning partial results from a cancelled request is possible but please note that a frontend client has no generic way for detecting that a response is partial or not.",
+				"properties": {
+					"command": {
+						"type": "string",
+						"enum": [ "cancel" ]
+					},
+					"arguments": {
+						"$ref": "#/definitions/CancelArguments"
+					}
+				},
+				"required": [ "command" ]
+			}]
+		},
+		"CancelArguments": {
+			"type": "object",
+			"description": "Arguments for 'cancel' request.",
+			"properties": {
+				"requestId": {
+					"type": "integer",
+					"description": "The ID (attribute 'seq') of the request to cancel."
+				}
+			},
+			"required": [ "id" ]
+		},
+		"CancelResponse": {
+			"allOf": [ { "$ref": "#/definitions/Response" }, {
+				"type": "object",
+				"description": "Response to 'cancel' request. This is just an acknowledgement, so no body field is required."
 			}]
 		},
 
@@ -308,8 +346,8 @@
 								"description": "The output to report."
 							},
 							"variablesReference": {
-								"type": "number",
-								"description": "If an attribute 'variablesReference' exists and its value is > 0, the output contains objects which can be retrieved by passing 'variablesReference' to the 'variables' request."
+								"type": "integer",
+								"description": "If an attribute 'variablesReference' exists and its value is > 0, the output contains objects which can be retrieved by passing 'variablesReference' to the 'variables' request. The value should be less than or equal to 2147483647 (2^31 - 1)."
 							},
 							"source": {
 								"$ref": "#/definitions/Source",
@@ -556,12 +594,12 @@
 						"type": "object",
 						"properties": {
 							"processId": {
-								"type": "number",
-								"description": "The process ID."
+								"type": "integer",
+								"description": "The process ID. The value should be less than or equal to 2147483647 (2^31 - 1)."
 							},
 							"shellProcessId": {
-								"type": "number",
-								"description": "The process ID of the terminal shell."
+								"type": "integer",
+								"description": "The process ID of the terminal shell. The value should be less than or equal to 2147483647 (2^31 - 1)."
 							}
 						}
 					}
@@ -843,6 +881,73 @@
 			"allOf": [ { "$ref": "#/definitions/Response" }, {
 				"type": "object",
 				"description": "Response to 'terminate' request. This is just an acknowledgement, so no body field is required."
+			}]
+		},
+
+		"BreakpointLocationsRequest": {
+			"allOf": [ { "$ref": "#/definitions/Request" }, {
+				"type": "object",
+				"description": "The 'breakpointLocations' request returns all possible locations for source breakpoints in a given range.",
+				"properties": {
+					"command": {
+						"type": "string",
+						"enum": [ "breakpointLocations" ]
+					},
+					"arguments": {
+						"$ref": "#/definitions/BreakpointLocationsArguments"
+					}
+				},
+				"required": [ "command" ]
+			}]
+
+		},
+		"BreakpointLocationsArguments": {
+			"type": "object",
+			"description": "Arguments for 'breakpointLocations' request.",
+			"properties": {
+				"source": {
+					"$ref": "#/definitions/Source",
+					"description": "The source location of the breakpoints; either 'source.path' or 'source.reference' must be specified."
+				},
+				"line": {
+					"type": "integer",
+					"description": "Start line of range to search possible breakpoint locations in. If only the line is specified, the request returns all possible locations in that line."
+				},
+				"column": {
+					"type": "integer",
+					"description": "Optional start column of range to search possible breakpoint locations in. If no start column is given, the first column in the start line is assumed."
+				},
+				"endLine": {
+					"type": "integer",
+					"description": "Optional end line of range to search possible breakpoint locations in. If no end line is given, then the end line is assumed to be the start line."
+				},
+				"endColumn": {
+					"type": "integer",
+					"description": "Optional end column of range to search possible breakpoint locations in. If no end column is given, then it is assumed to be in the last column of the end line."
+				}
+			},
+			"required": [ "source", "line" ]
+		},
+		"BreakpointLocationsResponse": {
+			"allOf": [ { "$ref": "#/definitions/Response" }, {
+				"type": "object",
+				"description": "Response to 'breakpointLocations' request.\nContains possible locations for source breakpoints.",
+				"properties": {
+					"body": {
+						"type": "object",
+						"properties": {
+							"breakpoints": {
+								"type": "array",
+								"items": {
+									"$ref": "#/definitions/BreakpointLocation"
+								},
+								"description": "Sorted set of possible breakpoint locations."
+							}
+						},
+						"required": [ "breakpoints" ]
+					}
+				},
+				"required": [ "body" ]
 			}]
 		},
 
@@ -1425,7 +1530,7 @@
 		"PauseRequest": {
 			"allOf": [ { "$ref": "#/definitions/Request" }, {
 				"type": "object",
-				"description": "The request suspenses the debuggee.\nThe debug adapter first sends the response and then a 'stopped' event (with reason 'pause') after the thread has been paused successfully.",
+				"description": "The request suspends the debuggee.\nThe debug adapter first sends the response and then a 'stopped' event (with reason 'pause') after the thread has been paused successfully.",
 				"properties": {
 					"command": {
 						"type": "string",
@@ -1599,7 +1704,7 @@
 				"filter": {
 					"type": "string",
 					"enum": [ "indexed", "named" ],
-					"description": "Optional filter to limit the child variables to either named or indexed. If ommited, both types are fetched."
+					"description": "Optional filter to limit the child variables to either named or indexed. If omitted, both types are fetched."
 				},
 				"start": {
 					"type": "integer",
@@ -1695,16 +1800,16 @@
 								"description": "The type of the new value. Typically shown in the UI when hovering over the value."
 							},
 							"variablesReference": {
-								"type": "number",
-								"description": "If variablesReference is > 0, the new value is structured and its children can be retrieved by passing variablesReference to the VariablesRequest."
+								"type": "integer",
+								"description": "If variablesReference is > 0, the new value is structured and its children can be retrieved by passing variablesReference to the VariablesRequest. The value should be less than or equal to 2147483647 (2^31 - 1)."
 							},
 							"namedVariables": {
-								"type": "number",
-								"description": "The number of named child variables.\nThe client can use this optional information to present the variables in a paged UI and fetch them in chunks."
+								"type": "integer",
+								"description": "The number of named child variables.\nThe client can use this optional information to present the variables in a paged UI and fetch them in chunks. The value should be less than or equal to 2147483647 (2^31 - 1)."
 							},
 							"indexedVariables": {
-								"type": "number",
-								"description": "The number of indexed child variables.\nThe client can use this optional information to present the variables in a paged UI and fetch them in chunks."
+								"type": "integer",
+								"description": "The number of indexed child variables.\nThe client can use this optional information to present the variables in a paged UI and fetch them in chunks. The value should be less than or equal to 2147483647 (2^31 - 1)."
 							}
 						},
 						"required": [ "value" ]
@@ -2007,16 +2112,16 @@
 								"description": "Properties of a evaluate result that can be used to determine how to render the result in the UI."
 							},
 							"variablesReference": {
-								"type": "number",
-								"description": "If variablesReference is > 0, the evaluate result is structured and its children can be retrieved by passing variablesReference to the VariablesRequest."
+								"type": "integer",
+								"description": "If variablesReference is > 0, the evaluate result is structured and its children can be retrieved by passing variablesReference to the VariablesRequest. The value should be less than or equal to 2147483647 (2^31 - 1)."
 							},
 							"namedVariables": {
-								"type": "number",
-								"description": "The number of named child variables.\nThe client can use this optional information to present the variables in a paged UI and fetch them in chunks."
+								"type": "integer",
+								"description": "The number of named child variables.\nThe client can use this optional information to present the variables in a paged UI and fetch them in chunks. The value should be less than or equal to 2147483647 (2^31 - 1)."
 							},
 							"indexedVariables": {
-								"type": "number",
-								"description": "The number of indexed child variables.\nThe client can use this optional information to present the variables in a paged UI and fetch them in chunks."
+								"type": "integer",
+								"description": "The number of indexed child variables.\nThe client can use this optional information to present the variables in a paged UI and fetch them in chunks. The value should be less than or equal to 2147483647 (2^31 - 1)."
 							},
 							"memoryReference": {
 								"type": "string",
@@ -2090,16 +2195,16 @@
 								"description": "Properties of a value that can be used to determine how to render the result in the UI."
 							},
 							"variablesReference": {
-								"type": "number",
-								"description": "If variablesReference is > 0, the value is structured and its children can be retrieved by passing variablesReference to the VariablesRequest."
+								"type": "integer",
+								"description": "If variablesReference is > 0, the value is structured and its children can be retrieved by passing variablesReference to the VariablesRequest. The value should be less than or equal to 2147483647 (2^31 - 1)."
 							},
 							"namedVariables": {
-								"type": "number",
-								"description": "The number of named child variables.\nThe client can use this optional information to present the variables in a paged UI and fetch them in chunks."
+								"type": "integer",
+								"description": "The number of named child variables.\nThe client can use this optional information to present the variables in a paged UI and fetch them in chunks. The value should be less than or equal to 2147483647 (2^31 - 1)."
 							},
 							"indexedVariables": {
-								"type": "number",
-								"description": "The number of indexed child variables.\nThe client can use this optional information to present the variables in a paged UI and fetch them in chunks."
+								"type": "integer",
+								"description": "The number of indexed child variables.\nThe client can use this optional information to present the variables in a paged UI and fetch them in chunks. The value should be less than or equal to 2147483647 (2^31 - 1)."
 							}
 						},
 						"required": [ "value" ]
@@ -2521,6 +2626,13 @@
 					"type": "boolean",
 					"description": "The debug adapter supports the 'completions' request."
 				},
+				"completionTriggerCharacters": {
+					"type": "array",
+					"items": {
+						"type": "string"
+					},
+					"description": "The set of characters that should trigger completion in a REPL. If not specified, the UI should assume the '.' character."
+				},
 				"supportsModulesRequest": {
 					"type": "boolean",
 					"description": "The debug adapter supports the 'modules' request."
@@ -2594,6 +2706,14 @@
 				"supportsDisassembleRequest": {
 					"type": "boolean",
 					"description": "The debug adapter supports the 'disassemble' request."
+				},
+				"supportsCancelRequest": {
+					"type": "boolean",
+					"description": "The debug adapter supports the 'cancel' request."
+				},
+				"supportsBreakpointLocationsRequest": {
+					"type": "boolean",
+					"description": "The debug adapter supports the 'breakpointLocations' request."
 				}
 			}
 		},
@@ -2778,8 +2898,8 @@
 					"description": "The path of the source to be shown in the UI. It is only used to locate and load the content of the source if no sourceReference is specified (or its value is 0)."
 				},
 				"sourceReference": {
-					"type": "number",
-					"description": "If sourceReference > 0 the contents of the source must be retrieved through the SourceRequest (even if a path is specified). A sourceReference is only valid for a session, so it must not be used to persist a source."
+					"type": "integer",
+					"description": "If sourceReference > 0 the contents of the source must be retrieved through the SourceRequest (even if a path is specified). A sourceReference is only valid for a session, so it must not be used to persist a source. The value should be less than or equal to 2147483647 (2^31 - 1)."
 				},
 				"presentationHint": {
 					"type": "string",
@@ -3009,6 +3129,30 @@
 			}
 		},
 
+		"BreakpointLocation": {
+			"type": "object",
+			"description": "Properties of a breakpoint location returned from the 'breakpointLocations' request.",
+			"properties": {
+				"line": {
+					"type": "integer",
+					"description": "Start line of breakpoint location."
+				},
+				"column": {
+					"type": "integer",
+					"description": "Optional start column of breakpoint location."
+				},
+				"endLine": {
+					"type": "integer",
+					"description": "Optional end line of breakpoint location if the location covers a range."
+				},
+				"endColumn": {
+					"type": "integer",
+					"description": "Optional end column of breakpoint location if the location covers a range."
+				}
+			},
+			"required": [ "line" ]
+		},
+
 		"SourceBreakpoint": {
 			"type": "object",
 			"description": "Properties of a breakpoint or logpoint passed to the setBreakpoints request.",
@@ -3191,6 +3335,10 @@
 					"type": "string",
 					"description": "If text is not falsy then it is inserted instead of the label."
 				},
+				"sortText": {
+					"type": "string",
+					"description": "A string that should be used when comparing this item with other items. When `falsy` the label is used."
+				},
 				"type": {
 					"$ref": "#/definitions/CompletionItemType",
 					"description": "The item's type. Typically the client uses this information to render the item in the UI with an icon."
@@ -3304,7 +3452,7 @@
 
 		"ExceptionBreakMode": {
 			"type": "string",
-			"description": "This enumeration defines all possible conditions when a thrown exception should result in a break.\nnever: never breaks,\nalways: always breaks,\nunhandled: breaks when excpetion unhandled,\nuserUnhandled: breaks if the exception is not handled by user code.",
+			"description": "This enumeration defines all possible conditions when a thrown exception should result in a break.\nnever: never breaks,\nalways: always breaks,\nunhandled: breaks when exception unhandled,\nuserUnhandled: breaks if the exception is not handled by user code.",
 			"enum": [ "never", "always", "unhandled", "userUnhandled" ]
 		},
 
@@ -3379,7 +3527,7 @@
 				},
 				"symbol": {
 					"type": "string",
-					"description": "Name of the symbol that correponds with the location of this instruction, if any."
+					"description": "Name of the symbol that corresponds with the location of this instruction, if any."
 				},
 				"location": {
 					"$ref": "#/definitions/Source",
