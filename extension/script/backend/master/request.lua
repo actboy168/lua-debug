@@ -227,7 +227,6 @@ function request.variables(req)
     local args = req.arguments
     local valueId = args.variablesReference
     local threadId = valueId >> 32
-    local frameId = (valueId >> 16) & 0xFFFF
     if not checkThreadId(req, threadId) then
         return
     end
@@ -236,8 +235,7 @@ function request.variables(req)
         cmd = 'variables',
         command = req.command,
         seq = req.seq,
-        frameId = frameId,
-        valueId = valueId & 0xFFFF,
+        valueId = valueId & 0xFFFFFFFF,
     })
 end
 
@@ -378,7 +376,6 @@ function request.setVariable(req)
     local args = req.arguments
     local valueId = args.variablesReference
     local threadId = valueId >> 32
-    local frameId = (valueId >> 16) & 0xFFFF
     if not checkThreadId(req, threadId) then
         return
     end
@@ -386,8 +383,7 @@ function request.setVariable(req)
         cmd = 'setVariable',
         command = req.command,
         seq = req.seq,
-        frameId = frameId,
-        valueId = valueId & 0xFFFF,
+        valueId = valueId & 0xFFFFFFFF,
         name = args.name,
         value = args.value,
     })
