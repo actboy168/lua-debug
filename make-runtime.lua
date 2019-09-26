@@ -122,6 +122,9 @@ for _, luaver in ipairs {"lua51","lua52","lua53","lua54"} do
 
     if platform.OS == "Windows" then
         lm:shared_library ('runtime/'..luaver..'/'..luaver) {
+            includes = {
+                '..',
+            },
             sources = {
                 "*.c",
                 "!lua.c",
@@ -136,6 +139,9 @@ for _, luaver in ipairs {"lua51","lua52","lua53","lua54"} do
         lm:executable ('runtime/'..luaver..'/lua') {
             output = "lua",
             deps = ('runtime/'..luaver..'/'..luaver),
+            includes = {
+                '..',
+            },
             sources = {
                 "lua.c",
             },
@@ -146,6 +152,10 @@ for _, luaver in ipairs {"lua51","lua52","lua53","lua54"} do
         }
     else
         lm:executable ('runtime/'..luaver..'/lua') {
+            includes = {
+                '.',
+                '..',
+            },
             sources = {
                 "*.c",
                 "!luac.c",
@@ -188,7 +198,7 @@ for _, luaver in ipairs {"lua51","lua52","lua53","lua54"} do
         includes = {
             "3rd/bee.lua/",
             "3rd/bee.lua/3rd/lua-seri",
-            platform.OS ~= "Windows" and "3rd/"..luaver,
+            platform.OS ~= "Windows" and "3rd/lua/"..luaver,
         },
         sources = {
             "src/remotedebug/*.cpp",
