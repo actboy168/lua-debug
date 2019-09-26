@@ -208,9 +208,8 @@ function request.scopes(req)
         return
     end
 
-    local threadAndFrameId = args.frameId
-    local threadId = threadAndFrameId >> 16
-    local frameId = threadAndFrameId & 0xFFFF
+    local threadId = args.frameId >> 24
+    local frameId = args.frameId & 0x00FFFFFF
     if not checkThreadId(req, threadId) then
         return
     end
@@ -225,8 +224,8 @@ end
 
 function request.variables(req)
     local args = req.arguments
-    local valueId = args.variablesReference
-    local threadId = valueId >> 32
+    local threadId = args.variablesReference >> 24
+    local valueId = args.variablesReference & 0x00FFFFFF
     if not checkThreadId(req, threadId) then
         return
     end
@@ -235,7 +234,7 @@ function request.variables(req)
         cmd = 'variables',
         command = req.command,
         seq = req.seq,
-        valueId = valueId & 0xFFFFFFFF,
+        valueId = valueId,
     })
 end
 
@@ -249,9 +248,8 @@ function request.evaluate(req)
         response.error(req, "Error expression")
         return
     end
-    local threadAndFrameId = args.frameId
-    local threadId = threadAndFrameId >> 16
-    local frameId = threadAndFrameId & 0xFFFF
+    local threadId = args.frameId >> 24
+    local frameId = args.frameId & 0x00FFFFFF
     if not checkThreadId(req, threadId) then
         return
     end
@@ -346,11 +344,11 @@ end
 
 function request.source(req)
     local args = req.arguments
-    local threadId = args.sourceReference >> 32
+    local threadId = args.sourceReference >> 24
+    local sourceReference = args.sourceReference & 0x00FFFFFF
     if not checkThreadId(req, threadId) then
         return
     end
-    local sourceReference = args.sourceReference & 0xFFFFFFFF
     mgr.sendToWorker(threadId, {
         cmd = 'source',
         command = req.command,
@@ -374,8 +372,8 @@ end
 
 function request.setVariable(req)
     local args = req.arguments
-    local valueId = args.variablesReference
-    local threadId = valueId >> 32
+    local threadId = args.variablesReference >> 24
+    local valueId = args.variablesReference & 0x00FFFFFF
     if not checkThreadId(req, threadId) then
         return
     end
@@ -383,7 +381,7 @@ function request.setVariable(req)
         cmd = 'setVariable',
         command = req.command,
         seq = req.seq,
-        valueId = valueId & 0xFFFFFFFF,
+        valueId = valueId,
         name = args.name,
         value = args.value,
     })
