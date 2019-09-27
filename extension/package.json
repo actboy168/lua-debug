@@ -433,7 +433,7 @@
                         "%lua.debug.launch.console.externalTerminal.description%"
                     ],
                     "description": "%lua.debug.launch.console.description%",
-                    "default": "integratedTerminal"
+                    "default": "internalConsole"
                 },
                 "lua.debug.settings.luaRuntime": {
                     "type": "string",
