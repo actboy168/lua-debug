@@ -174,7 +174,7 @@ for _, luaver in ipairs {"lua51","lua52","lua53","lua54"} do
             links = {
                 "m",
                 "dl",
-                "readline",
+                luaver ~= "lua54" and "readline"
             }
         }
     end
@@ -215,6 +215,7 @@ for _, luaver in ipairs {"lua51","lua52","lua53","lua54"} do
             platform.OS == "Windows" and "delayimp",
             platform.OS == "Linux" and "stdc++",
             platform.OS == "Linux" and "pthread",
+            platform.OS == "Linux" and "stdc++fs",
         },
         ldflags = {
             platform.OS == "Windows" and ("/DELAYLOAD:%s.dll"):format(luaver),
