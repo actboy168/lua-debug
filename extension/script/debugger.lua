@@ -59,7 +59,7 @@ function dbg:start(addr, client)
     rdebug.start(([=[
         package.path = %q
         package.cpath = %q
-        debug.setCstacklimit(1000)
+        debug.setcstacklimit(1000)
         local log = require 'common.log'
         log.file = %q
         local m = require 'backend.master'

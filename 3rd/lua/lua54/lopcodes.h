@@ -97,6 +97,9 @@ enum OpMode {iABC, iABx, iAsBx, iAx, isJ};  /* basic instruction formats */
 #define MAXARG_C	((1<<SIZE_C)-1)
 #define OFFSET_sC	(MAXARG_C >> 1)
 
+#define int2sC(i)	((i) + OFFSET_sC)
+#define sC2int(i)	((i) - OFFSET_sC)
+
 
 /* creates a mask with 'n' 1 bits at position 'p' */
 #define MASK1(n,p)	((~((~(Instruction)0)<<(n)))<<(p))
@@ -123,11 +126,11 @@ enum OpMode {iABC, iABx, iAsBx, iAx, isJ};  /* basic instruction formats */
 #define SETARG_A(i,v)	setarg(i, v, POS_A, SIZE_A)
 
 #define GETARG_B(i)	check_exp(checkopm(i, iABC), getarg(i, POS_B, SIZE_B))
-#define GETARG_sB(i)	(GETARG_B(i) - OFFSET_sC)
+#define GETARG_sB(i)	sC2int(GETARG_B(i))
 #define SETARG_B(i,v)	setarg(i, v, POS_B, SIZE_B)
 
 #define GETARG_C(i)	check_exp(checkopm(i, iABC), getarg(i, POS_C, SIZE_C))
-#define GETARG_sC(i)	(GETARG_C(i) - OFFSET_sC)
+#define GETARG_sC(i)	sC2int(GETARG_C(i))
 #define SETARG_C(i,v)	setarg(i, v, POS_C, SIZE_C)
 
 #define TESTARG_k(i)	(cast_int(((i) & (1u << POS_k))))
@@ -218,13 +221,7 @@ OP_NEWTABLE,/*	A B C	R(A) := {}					*/
 
 OP_SELF,/*	A B C	R(A+1) := R(B); R(A) := R(B)[RK(C):string]	*/
 
-OP_ADDI,/*	A B sC	R(A) := R(B) + C				*/
-OP_SUBI,/*	A B sC	R(A) := R(B) - C				*/
-OP_MULI,/*	A B sC	R(A) := R(B) * C				*/
-OP_MODI,/*	A B sC	R(A) := R(B) % C				*/
-OP_POWI,/*	A B sC	R(A) := R(B) ^ C				*/
-OP_DIVI,/*	A B sC	R(A) := R(B) / C				*/
-OP_IDIVI,/*	A B sC	R(A) := R(B) // C				*/
+OP_ADDI,/*	A B sC	R(A) := R(B) + sC				*/
 
 OP_ADDK,/*	A B C	R(A) := R(B) + K(C)				*/
 OP_SUBK,/*	A B C	R(A) := R(B) - K(C)				*/
@@ -238,8 +235,8 @@ OP_BANDK,/*	A B C	R(A) := R(B) & K(C):integer			*/
 OP_BORK,/*	A B C	R(A) := R(B) | K(C):integer			*/
 OP_BXORK,/*	A B C	R(A) := R(B) ~ K(C):integer			*/
 
-OP_SHRI,/*	A B sC	R(A) := R(B) >> C				*/
-OP_SHLI,/*	A B sC	R(A) := C << R(B)				*/
+OP_SHRI,/*	A B sC	R(A) := R(B) >> sC				*/
+OP_SHLI,/*	A B sC	R(A) := sC << R(B)				*/
 
 OP_ADD,/*	A B C	R(A) := R(B) + R(C)				*/
 OP_SUB,/*	A B C	R(A) := R(B) - R(C)				*/
@@ -255,9 +252,9 @@ OP_BXOR,/*	A B C	R(A) := R(B) ~ R(C)				*/
 OP_SHL,/*	A B C	R(A) := R(B) << R(C)				*/
 OP_SHR,/*	A B C	R(A) := R(B) >> R(C)				*/
 
-OP_MMBIN,/*	A B C	call B metamethod for previous bin. operation	*/
-OP_MMBINI,/*	A B C	call B metamethod for previous binI. operation	*/
-OP_MMBINK,/*	A B C	call B metamethod for previous binK. operation	*/
+OP_MMBIN,/*	A B C	call C metamethod over R(A) and R(B)		*/
+OP_MMBINI,/*	A sB C	call C metamethod over R(A) and sB		*/
+OP_MMBINK,/*	A B C	call C metamethod over R(A) and K(B)		*/
 
 OP_UNM,/*	A B	R(A) := -R(B)					*/
 OP_BNOT,/*	A B	R(A) := ~R(B)					*/

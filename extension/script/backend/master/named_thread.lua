@@ -5,7 +5,7 @@ local exitGuard = {}
 local threadMgr = [[
     package.path = %q
     package.cpath = %q
-    debug.setCstacklimit(1000)
+    debug.setcstacklimit(1000)
     local thread = require "remotedebug.thread"
     local MgrChanReq = thread.channel "NamedThread-Req:%s"
     local function MgrUpdate()
