@@ -112,18 +112,16 @@ static int redirect_print(lua_State* L) {
 }
 
 static int redirect_f_write(lua_State* L) {
-	rlua_State *cL = get_client(L);
-    if (cL) {
-        if (LUA_TUSERDATA == getIoOutput(L) && lua_rawequal(L, -1, 1)) {
-            lua_pop(L, 1);
+    bool ok = LUA_TUSERDATA == getIoOutput(L) && lua_rawequal(L, -1, 1);
+    lua_pop(L, 1);
+    if (ok) {
+        rlua_State *cL = get_client(L);
+        if (cL) {
             int ok = event(cL, L, "iowrite");
             if (ok > 0) {
                 lua_settop(L, 1);
                 return 1;
             }
-        }
-        else {
-            lua_pop(L, 1);
         }
     }
     return callfunc(L);
