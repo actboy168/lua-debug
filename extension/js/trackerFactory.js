@@ -14,7 +14,10 @@ function onWillReceiveMessage(m) {
             }
         }
         // TODO: use vscode api?
-        m.arguments.sourceContent = fs.readFileSync(m.arguments.source.path, 'utf8')
+        try {
+            m.arguments.sourceContent = fs.readFileSync(m.arguments.source.path, 'utf8')
+        } catch (error) {
+        }
     }
 }
 
