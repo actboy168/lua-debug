@@ -143,6 +143,10 @@ end
 function request.setBreakpoints(req)
     local args = req.arguments
     local content = skipBOM(args.sourceContent)
+    if args.source.path and args.source.path:sub(1,4) == "git:" then
+        response.error(req, "Does not support git path.")
+        return
+    end
     for _, bp in ipairs(args.breakpoints) do
         bp.id = genBreakpointID()
         bp.verified = false
