@@ -3,14 +3,12 @@ local source = require 'backend.worker.source'
 local luaver = require 'backend.worker.luaver'
 local ev = require 'common.event'
 
-local varPool = {}
-
 local MAX_TABLE_FIELD = 300
-
 local TEMPORARY = "(temporary)"
-
 local LUAVERSION = 54
 
+local info = {}
+local varPool = {}
 local standard = {}
 
 local function init_standard()
@@ -85,8 +83,17 @@ end)
 
 local special_has = {}
 
+function special_has.Parameters(frameId)
+    rdebug.getinfo(frameId, "r", info)
+    return info.nparameters > 0
+end
+
 function special_has.Locals(frameId)
     local i = 1
+    --已经在Parameters里调用过getinfo 'r'
+    if LUAVERSION >= 54 and info.nparameters > 0 then
+        i = i + info.nparameters
+    end
     while true do
         local name = rdebug.getlocalv(frameId, i)
         if name == nil then
@@ -108,9 +115,8 @@ function special_has.Upvalues(frameId)
     return rdebug.getupvaluev(f, 1) ~= nil
 end
 
-function special_has.Returns(frameId)
-    local info = {}
-    rdebug.getinfo(frameId, "r", info)
+function special_has.Returns(_)
+    --已经在Parameters里调用过getinfo 'r'
     return info.ftransfer > 0 and info.ntransfer > 0
 end
 
@@ -360,10 +366,7 @@ local function varGetValue(context, type, subtype, value)
         if subtype == 'c' then
             return 'C function'
         end
-        local info = rdebug.getinfo(value, "S")
-        if not info then
-            return tostring(rdebug.value(value))
-        end
+        rdebug.getinfo(value, "S", info)
         local src = source.create(info.source)
         if not source.valid(src) then
             return tostring(rdebug.value(value))
@@ -667,6 +670,12 @@ function special_extand.Locals(varRef)
     local tempVar = {}
     local vars = {}
     local i = 1
+    if LUAVERSION >= 54 then
+        rdebug.getinfo(frameId, "r", info)
+        if info.nparameters > 0 then
+            i = i + info.nparameters
+        end
+    end
     while true do
         local name, value = rdebug.getlocalv(frameId, i)
         if name == nil then
@@ -729,23 +738,40 @@ function special_extand.Upvalues(varRef)
     return vars
 end
 
+function special_extand.Parameters(varRef)
+    varRef[3] = {}
+    local frameId = varRef.frameId
+    local vars = {}
+    rdebug.getinfo(frameId, "r", info)
+    if info.nparameters > 0 then
+        for i = 1, info.nparameters do
+            local name, value = rdebug.getlocalv(frameId, i)
+            if name ~= nil then
+                local fi = i
+                varCreate(vars, frameId, varRef, name, value
+                    , name
+                    , function() local _, r = rdebug.getlocal(frameId, fi) return r end
+                )
+            end
+        end
+    end
+    return vars
+end
+
 function special_extand.Returns(varRef)
     varRef[3] = {}
     local frameId = varRef.frameId
     local vars = {}
-    if LUAVERSION >= 54 then
-        local info = {}
-        rdebug.getinfo(frameId, "r", info)
-        if info.ftransfer > 0 and info.ntransfer > 0 then
-            for i = info.ftransfer, info.ftransfer + info.ntransfer - 1 do
-                local name, value = rdebug.getlocalv(frameId, i)
-                if name ~= nil then
-                    local fi = i
-                    varCreate(vars, frameId, varRef, ('[%d]'):format(i - info.ftransfer + 1), value
-                        , name
-                        , function() local _, r = rdebug.getlocal(frameId, fi) return r end
-                    )
-                end
+    rdebug.getinfo(frameId, "r", info)
+    if info.ftransfer > 0 and info.ntransfer > 0 then
+        for i = info.ftransfer, info.ftransfer + info.ntransfer - 1 do
+            local name, value = rdebug.getlocalv(frameId, i)
+            if name ~= nil then
+                local fi = i
+                varCreate(vars, frameId, varRef, ('[%d]'):format(i - info.ftransfer + 1), value
+                    , name
+                    , function() local _, r = rdebug.getlocal(frameId, fi) return r end
+                )
             end
         end
     end
@@ -792,6 +818,9 @@ local m = {}
 
 function m.scopes(frameId)
     local scopes = {}
+    if LUAVERSION >= 54 then
+        varCreateScopes(frameId, scopes, "Parameters", false)
+    end
     varCreateScopes(frameId, scopes, "Locals", false)
     varCreateScopes(frameId, scopes, "Varargs", false)
     varCreateScopes(frameId, scopes, "Upvalues", false)
