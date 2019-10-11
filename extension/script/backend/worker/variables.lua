@@ -108,6 +108,12 @@ function special_has.Upvalues(frameId)
     return rdebug.getupvaluev(f, 1) ~= nil
 end
 
+function special_has.Returns(frameId)
+    local info = {}
+    rdebug.getinfo(frameId, "r", info)
+    return info.ftransfer > 0 and info.ntransfer > 0
+end
+
 function special_has.Globals()
     local gt = rdebug._G
     local key
@@ -679,25 +685,6 @@ function special_extand.Locals(varRef)
         end
         i = i + 1
     end
-
-    if LUAVERSION >= 54 then
-        local info = {}
-        rdebug.getinfo(frameId, "r", info)
-        if info.ftransfer > 0 and info.ntransfer > 0 then
-            for i = info.ftransfer, info.ftransfer + info.ntransfer - 1 do
-                local name, value = rdebug.getlocalv(frameId, i)
-                if name ~= nil then
-                    name = ("(return #%d)"):format(i - info.ftransfer + 1)
-                    local fi = i
-                    varCreate(vars, frameId, varRef, name, value
-                        , name
-                        , function() local _, r = rdebug.getlocal(frameId, fi) return r end
-                    )
-                end
-            end
-        end
-    end
-
     return vars
 end
 
@@ -738,6 +725,29 @@ function special_extand.Upvalues(varRef)
             , function() local _, r = rdebug.getupvalue(f, fi) return r end
         )
         i = i + 1
+    end
+    return vars
+end
+
+function special_extand.Returns(varRef)
+    varRef[3] = {}
+    local frameId = varRef.frameId
+    local vars = {}
+    if LUAVERSION >= 54 then
+        local info = {}
+        rdebug.getinfo(frameId, "r", info)
+        if info.ftransfer > 0 and info.ntransfer > 0 then
+            for i = info.ftransfer, info.ftransfer + info.ntransfer - 1 do
+                local name, value = rdebug.getlocalv(frameId, i)
+                if name ~= nil then
+                    local fi = i
+                    varCreate(vars, frameId, varRef, ('[%d]'):format(i - info.ftransfer + 1), value
+                        , name
+                        , function() local _, r = rdebug.getlocal(frameId, fi) return r end
+                    )
+                end
+            end
+        end
     end
     return vars
 end
@@ -785,6 +795,9 @@ function m.scopes(frameId)
     varCreateScopes(frameId, scopes, "Locals", false)
     varCreateScopes(frameId, scopes, "Varargs", false)
     varCreateScopes(frameId, scopes, "Upvalues", false)
+    if LUAVERSION >= 54 then
+        varCreateScopes(frameId, scopes, "Returns", false)
+    end
     varCreateScopes(frameId, scopes, "Globals", true)
     varCreateScopes(frameId, scopes, "Standard", true)
     return scopes
