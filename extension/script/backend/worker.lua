@@ -155,7 +155,7 @@ function CMD.stackTrace(pkg)
                 id = depth,
                 name = info.what == 'main' and '[main chunk]' or info.name,
                 line = 0,
-                column = 1,
+                column = 0,
                 presentationHint = 'label',
             }
         else
@@ -173,7 +173,7 @@ function CMD.stackTrace(pkg)
                     id = depth,
                     name = info.what == 'main' and '[main chunk]' or info.name,
                     line = info.currentline,
-                    column = 0,
+                    column = 1,
                     presentationHint = 'label',
                 }
             end
