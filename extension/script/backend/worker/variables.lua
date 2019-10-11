@@ -680,7 +680,7 @@ extand[VAR_LOCAL] = function(varRef)
         local info = {}
         rdebug.getinfo(frameId, "r", info)
         if info.ftransfer > 0 and info.ntransfer > 0 then
-            for i = info.ftransfer, info.ftransfer + info.ntransfer do
+            for i = info.ftransfer, info.ftransfer + info.ntransfer - 1 do
                 local name, value = rdebug.getlocalv(frameId, i)
                 if name ~= nil then
                     name = ("(return #%d)"):format(i - info.ftransfer + 1)
