@@ -200,7 +200,11 @@ struct hookmgr {
         step_current_level = 0;
         step_target_level = 0;
         stepL = 0;
+#if LUA_VERSION_NUM >= 504
+        step_hookmask(hL, LUA_MASKCALL | LUA_MASKRET | LUA_MASKLINE);
+#else
         step_hookmask(hL, LUA_MASKLINE);
+#endif
     }
     void step_out(lua_State* hL) {
         step_current_level = stacklevel(hL);
@@ -401,8 +405,10 @@ struct hookmgr {
             if (break_mask & LUA_MASKCALL) {
                 break_hook_call(hL, ar);
             }
-            if (step_mask & LUA_MASKCALL) {
-                step_hook_call(hL, ar);
+            if (stepL == hL) {
+                if (step_mask & LUA_MASKCALL) {
+                    step_hook_call(hL, ar);
+                }
             }
 #if LUA_VERSION_NUM >= 504
             if ((break_mask | step_mask) & LUA_MASKLINE) {
@@ -424,11 +430,13 @@ struct hookmgr {
             if (break_mask & LUA_MASKRET) {
                 break_hook_return(hL, ar);
             }
-            if (step_mask & LUA_MASKRET) {
-                step_hook_return(hL, ar);
+            if (stepL == hL) {
+                if (step_mask & LUA_MASKRET) {
+                    step_hook_return(hL, ar);
+                }
             }
 #if LUA_VERSION_NUM >= 504
-            if (step_mask == LUA_MASKLINE) {
+            else if (step_mask & LUA_MASKLINE) {
                 // step in
                 break;
             }
