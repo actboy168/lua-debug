@@ -472,12 +472,18 @@ struct hookmgr {
         }
     }
     void updatehookmask(lua_State* hL) {
-        int mask = update_mask | break_mask | exception_mask | thread_mask;
+        int mask = break_mask;
         if (!stepL || stepL == hL) {
             mask |= step_mask;
         }
         if (mask) {
-            lua_sethook(hL, (lua_Hook)sc_hook->data, mask, update_mask? 0xfffff: 0);
+            lua_sethook(hL, (lua_Hook)sc_hook->data, mask | exception_mask | thread_mask, 0);
+        }
+        else if (update_mask) {
+            lua_sethook(hL, (lua_Hook)sc_hook->data, update_mask | exception_mask | thread_mask, 0xfffff);
+        }
+        else if (exception_mask | thread_mask) {
+            lua_sethook(hL, (lua_Hook)sc_hook->data, exception_mask | thread_mask, 0);
         }
         else {
             lua_sethook(hL, 0, 0, 0);
