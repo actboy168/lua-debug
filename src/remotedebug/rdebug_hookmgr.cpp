@@ -336,8 +336,6 @@ struct hookmgr {
     rlua_State* cL = 0;
     std::unique_ptr<thunk> sc_full_hook;
     std::unique_ptr<thunk> sc_idle_hook;
-    int fparameters = 0;
-    int nparameters = 0;
 
     hookmgr(rlua_State* L)
         : cL(L)
@@ -414,18 +412,6 @@ struct hookmgr {
                     step_hook_call(hL, ar);
                 }
             }
-#if LUA_VERSION_NUM >= 504
-            if ((break_mask | step_mask) & LUA_MASKLINE) {
-                if (lua_getinfo(hL, "r", ar)) {
-                    fparameters = ar->ftransfer;
-                    nparameters = ar->ntransfer;
-                }
-                else {
-                    fparameters = 0;
-                    nparameters = 0;
-                }
-            }
-#endif
             return;
         case LUA_HOOKRET:
             if (update_mask) {
@@ -525,9 +511,6 @@ struct hookmgr {
     }
     void setcoroutine(lua_State* hL) {
         updatehookmask(hL);
-    }
-    int get_nparameters() {
-        return nparameters;
     }
     
     int update_mask = 0;
@@ -795,14 +778,4 @@ int event(rlua_State* cL, lua_State* hL, const char* name) {
     hL->allowhook = oldah;
     rlua_pop(cL, 1);
     return ok;
-}
-
-int get_nparameters(rlua_State* cL) {
-    if (LUA_TUSERDATA != rlua_rawgetp(cL, RLUA_REGISTRYINDEX, &HOOK_MGR)) {
-        rlua_pop(cL, 1);
-        return 0;
-    }
-    int res = ((hookmgr*)rlua_touserdata(cL, -1))->get_nparameters();
-    rlua_pop(cL, 1);
-    return res;
 }

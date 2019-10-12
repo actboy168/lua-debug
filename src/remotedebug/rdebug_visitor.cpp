@@ -9,7 +9,6 @@ static int DEBUG_WATCH = 0;
 static int DEBUG_WATCH_FUNC = 0;
 
 lua_State* get_host(rlua_State *L);
-int get_nparameters(rlua_State* cL);
 
 // frame, index
 // return value, name
@@ -418,7 +417,7 @@ lclient_getinfo(rlua_State *L) {
 #endif
 #if LUA_VERSION_NUM >= 504
 		case 'r':
-			rlua_pushinteger(L, get_nparameters(L));
+			rlua_pushinteger(L, 0);
 			rlua_setfield(L, 3, "nparameters");
 			rlua_pushinteger(L, ar.ftransfer);
 			rlua_setfield(L, 3, "ftransfer");
