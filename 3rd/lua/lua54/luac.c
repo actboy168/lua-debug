@@ -508,15 +508,15 @@ static void PrintCode(const Proto* f)
 	break;
    case OP_MMBIN:
 	printf("%d %d %d",a,b,c);
+	printf(COMMENT "%s",eventname(c));
 	break;
-	printf(COMMENT); printf("%s ",eventname(c));
    case OP_MMBINI:
 	printf("%d %d %d",a,sb,c);
-	printf(COMMENT); printf("%s ",eventname(c));
+	printf(COMMENT "%s",eventname(c));
 	break;
    case OP_MMBINK:
 	printf("%d %d %d",a,b,c);
-	printf(COMMENT); printf("%s ",eventname(c)); PrintConstant(f,b);
+	printf(COMMENT "%s ",eventname(c)); PrintConstant(f,b);
 	break;
    case OP_UNM:
 	printf("%d %d",a,b);
@@ -635,9 +635,12 @@ static void PrintCode(const Proto* f)
 	printf("%d",ax);
 	printf(COMMENT); PrintConstant(f,ax);
 	break;
-   //default: printf("not handled"); break;
-	//printf("%d %d %d",a,b,c);
-	//break;
+#if 0
+   default:
+	printf("%d %d %d",a,b,c);
+	printf(COMMENT "not handled");
+	break;
+#endif
   }
   printf("\n");
  }

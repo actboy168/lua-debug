@@ -141,8 +141,6 @@ lparser.o:
 lcode.o:
 	$(CC) $(CFLAGS) -Os -c lcode.c
 
-	
-
 # DO NOT DELETE
 
 lapi.o: lapi.c lprefix.h lua.h luaconf.h lapi.h llimits.h lstate.h \
