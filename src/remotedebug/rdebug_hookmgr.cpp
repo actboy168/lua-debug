@@ -334,7 +334,8 @@ struct hookmgr {
     // common
     //
     rlua_State* cL = 0;
-    std::unique_ptr<thunk> sc_hook;
+    std::unique_ptr<thunk> sc_full_hook;
+    std::unique_ptr<thunk> sc_idle_hook;
     int fparameters = 0;
     int nparameters = 0;
 
@@ -392,7 +393,7 @@ struct hookmgr {
         }
     }
 
-    void hook(lua_State* hL, lua_Debug* ar) {
+    void full_hook(lua_State* hL, lua_Debug* ar) {
         switch (ar->event) {
         case LUA_HOOKLINE:
             break;
@@ -479,19 +480,41 @@ struct hookmgr {
             }
         }
     }
+
+    void idle_hook(lua_State* hL, lua_Debug* ar) {
+        switch (ar->event) {
+        case LUA_HOOKRET:
+        case LUA_HOOKCOUNT:
+            update_hook(hL);
+            return;
+#if defined(LUA_HOOKEXCEPTION)
+        case LUA_HOOKEXCEPTION:
+            exception_hook(hL, ar);
+            return;
+#endif
+#if defined(LUA_HOOKTHREAD)
+        case LUA_HOOKTHREAD:
+            thread_hook(hL, ar);
+            return;
+#endif
+        default:
+            return;
+        }
+    }
+
     void updatehookmask(lua_State* hL) {
         int mask = break_mask;
         if (!stepL || stepL == hL) {
             mask |= step_mask;
         }
         if (mask) {
-            lua_sethook(hL, (lua_Hook)sc_hook->data, mask | exception_mask | thread_mask, 0);
+            lua_sethook(hL, (lua_Hook)sc_full_hook->data, mask | exception_mask | thread_mask, 0);
         }
         else if (update_mask) {
-            lua_sethook(hL, (lua_Hook)sc_hook->data, update_mask | exception_mask | thread_mask, 0xfffff);
+            lua_sethook(hL, (lua_Hook)sc_idle_hook->data, update_mask | exception_mask | thread_mask, 0xfffff);
         }
         else if (exception_mask | thread_mask) {
-            lua_sethook(hL, (lua_Hook)sc_hook->data, exception_mask | thread_mask, 0);
+            lua_sethook(hL, (lua_Hook)sc_idle_hook->data, exception_mask | thread_mask, 0);
         }
         else {
             lua_sethook(hL, 0, 0, 0);
@@ -530,9 +553,13 @@ struct hookmgr {
     void init(lua_State* hL) {
         hostL = hL;
         thunk_bind((intptr_t)hL, (intptr_t)this);
-        sc_hook.reset(thunk_create_hook(
+        sc_full_hook.reset(thunk_create_hook(
             reinterpret_cast<intptr_t>(this),
-            reinterpret_cast<intptr_t>(&hook_callback)
+            reinterpret_cast<intptr_t>(&full_hook_callback)
+        ));
+        sc_idle_hook.reset(thunk_create_hook(
+            reinterpret_cast<intptr_t>(this),
+            reinterpret_cast<intptr_t>(&idle_hook_callback)
         ));
         remotedebug::eventfree::create(hL, freeobj_callback, this);
     }
@@ -555,8 +582,11 @@ struct hookmgr {
     static hookmgr* get_self(rlua_State* L) {
         return (hookmgr*)rlua_touserdata(L, rlua_upvalueindex(1));
     }
-    static void hook_callback(hookmgr* mgr, lua_State* hL, lua_Debug* ar) {
-        mgr->hook(hL, ar);
+    static void full_hook_callback(hookmgr* mgr, lua_State* hL, lua_Debug* ar) {
+        mgr->full_hook(hL, ar);
+    }
+    static void idle_hook_callback(hookmgr* mgr, lua_State* hL, lua_Debug* ar) {
+        mgr->idle_hook(hL, ar);
     }
     static void freeobj_callback(void* mgr, void* ptr) {
         ((hookmgr*)mgr)->break_freeobj((Proto*)ptr);
