@@ -15,6 +15,7 @@
 
 static int HOOK_MGR = 0;
 static int HOOK_CALLBACK = 0;
+static int THUNK_MGR = 0;
 
 void set_host(rlua_State* L, lua_State* hL);
 lua_State* get_host(rlua_State *L);
@@ -261,8 +262,7 @@ struct hookmgr {
         oldpanic = lua_atpanic(hostL, 0);
         sc_panic.reset(thunk_create_panic(
             reinterpret_cast<intptr_t>(this),
-            reinterpret_cast<intptr_t>(&panic_callback),
-            reinterpret_cast<intptr_t>(oldpanic)
+            reinterpret_cast<intptr_t>(&panic_callback)
         ));
         lua_atpanic(hostL, (lua_CFunction)sc_panic->data);
     }
@@ -380,16 +380,19 @@ struct hookmgr {
     }
 
     void panic(lua_State* hL) {
-        if (rlua_rawgetp(cL, RLUA_REGISTRYINDEX, &HOOK_CALLBACK) != LUA_TFUNCTION) {
-            rlua_pop(cL, 1);
-            return;
+        if (rlua_rawgetp(cL, RLUA_REGISTRYINDEX, &HOOK_CALLBACK) == LUA_TFUNCTION) {
+            set_host(cL, hL);
+            rlua_pushstring(cL, "panic");
+            copyvalue(hL, cL);
+            if (rlua_pcall(cL, 2, 0, 0) != LUA_OK) {
+                rlua_pop(cL, 1);
+            }
         }
-        set_host(cL, hL);
-        rlua_pushstring(cL, "panic");
-        copyvalue(hL, cL);
-        if (rlua_pcall(cL, 2, 0, 0) != LUA_OK) {
+        else {
             rlua_pop(cL, 1);
-            return;
+        }
+        if (oldpanic) {
+            oldpanic(hL);
         }
     }
 
@@ -552,7 +555,9 @@ struct hookmgr {
     lua_State* hostL = 0;
     void init(lua_State* hL) {
         hostL = hL;
-        thunk_bind((intptr_t)hL, (intptr_t)this);
+#if defined(RDEBUG_DISABLE_THUNK)
+        thunk_set(hL, &THUNK_MGR, (intptr_t)this);
+#endif
         sc_full_hook.reset(thunk_create_hook(
             reinterpret_cast<intptr_t>(this),
             reinterpret_cast<intptr_t>(&full_hook_callback)
@@ -582,18 +587,36 @@ struct hookmgr {
     static hookmgr* get_self(rlua_State* L) {
         return (hookmgr*)rlua_touserdata(L, rlua_upvalueindex(1));
     }
+    static void freeobj_callback(void* mgr, void* ptr) {
+        ((hookmgr*)mgr)->break_freeobj((Proto*)ptr);
+    }
+#if !defined(RDEBUG_DISABLE_THUNK)
     static void full_hook_callback(hookmgr* mgr, lua_State* hL, lua_Debug* ar) {
         mgr->full_hook(hL, ar);
     }
     static void idle_hook_callback(hookmgr* mgr, lua_State* hL, lua_Debug* ar) {
         mgr->idle_hook(hL, ar);
     }
-    static void freeobj_callback(void* mgr, void* ptr) {
-        ((hookmgr*)mgr)->break_freeobj((Proto*)ptr);
-    }
     static void panic_callback(hookmgr* mgr, lua_State* hL) {
         mgr->panic(hL);
     }
+#else
+    static int full_hook_callback(lua_State* hL, lua_Debug* ar) {
+        hookmgr* mgr = (hookmgr*)thunk_get(hL, &THUNK_MGR);
+        mgr->full_hook(hL, ar);
+        return 0;
+    }
+    static int idle_hook_callback(lua_State* hL, lua_Debug* ar) {
+        hookmgr* mgr = (hookmgr*)thunk_get(hL, &THUNK_MGR);
+        mgr->idle_hook(hL, ar);
+        return 0;
+    }
+    static int panic_callback(lua_State* hL) {
+        hookmgr* mgr = (hookmgr*)thunk_get(hL, &THUNK_MGR);
+        mgr->panic(hL);
+        return 0;
+    }
+#endif
 };
 
 static int init(rlua_State* L) {
