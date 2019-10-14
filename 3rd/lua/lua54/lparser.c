@@ -1840,10 +1840,10 @@ static void retstat (LexState *ls) {
     nret = explist(ls, &e);  /* optional return values */
     if (hasmultret(e.k)) {
       luaK_setmultret(fs, &e);
-      if (e.k == VCALL && nret == 1 && !fs->bl->insidetbc) {  /* tail call? */
-        SET_OPCODE(getinstruction(fs,&e), OP_TAILCALL);
-        lua_assert(GETARG_A(getinstruction(fs,&e)) == luaY_nvarstack(fs));
-      }
+      //if (e.k == VCALL && nret == 1 && !fs->bl->insidetbc) {  /* tail call? */
+      //  SET_OPCODE(getinstruction(fs,&e), OP_TAILCALL);
+      //  lua_assert(GETARG_A(getinstruction(fs,&e)) == luaY_nvarstack(fs));
+      //}
       nret = LUA_MULTRET;  /* return all values */
     }
     else {
