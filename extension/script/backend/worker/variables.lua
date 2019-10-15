@@ -463,14 +463,13 @@ end
 
 local function varCreateObject(frameId, name, value, evaluateName)
     local text, type, ref = varCreateReference(frameId, value, evaluateName, "getvalue")
-    local var = {
+    return {
         name = name,
         type = type,
         value = text,
         variablesReference = ref,
         evaluateName = evaluateName and evaluateName or nil,
     }
-    return var
 end
 
 local function varCreate(vars, frameId, varRef, name, value, evaluateName, calcValue)
