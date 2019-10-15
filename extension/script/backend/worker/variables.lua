@@ -84,8 +84,13 @@ end)
 local special_has = {}
 
 function special_has.Parameter(frameId)
-    rdebug.getinfo(frameId, "u", info)
-    return info.nparams > 0
+    if LUAVERSION >= 52 then
+        rdebug.getinfo(frameId, "u", info)
+        if info.nparams > 0 then
+            return true
+        end
+    end
+    return rdebug.getlocalv(frameId, -1) ~= nil
 end
 
 function special_has.Local(frameId)
@@ -104,10 +109,6 @@ function special_has.Local(frameId)
         end
         i = i + 1
     end
-end
-
-function special_has.Vararg(frameId)
-    return rdebug.getlocalv(frameId, -1) ~= nil
 end
 
 function special_has.Upvalue(frameId)
@@ -697,26 +698,6 @@ function special_extand.Local(varRef)
     return vars
 end
 
-function special_extand.Vararg(varRef)
-    varRef[3] = {}
-    local frameId = varRef.frameId
-    local vars = {}
-    local i = -1
-    while true do
-        local name, value = rdebug.getlocalv(frameId, i)
-        if name == nil then
-            break
-        end
-        local fi = i
-        varCreate(vars, frameId, varRef, ('[%d]'):format(-i), value
-            , ('select(%d,...)'):format(i)
-            , function() local _, r = rdebug.getlocal(frameId, fi) return r end
-        )
-        i = i - 1
-    end
-    return vars
-end
-
 function special_extand.Upvalue(varRef)
     varRef[3] = {}
     local frameId = varRef.frameId
@@ -742,19 +723,37 @@ function special_extand.Parameter(varRef)
     varRef[3] = {}
     local frameId = varRef.frameId
     local vars = {}
-    rdebug.getinfo(frameId, "u", info)
-    if info.nparams > 0 then
-        for i = 1, info.nparams do
-            local name, value = rdebug.getlocalv(frameId, i)
-            if name ~= nil then
-                local fi = i
-                varCreate(vars, frameId, varRef, name, value
-                    , name
-                    , function() local _, r = rdebug.getlocal(frameId, fi) return r end
-                )
+
+    if LUAVERSION >= 52 then
+        rdebug.getinfo(frameId, "u", info)
+        if info.nparams > 0 then
+            for i = 1, info.nparams do
+                local name, value = rdebug.getlocalv(frameId, i)
+                if name ~= nil then
+                    local fi = i
+                    varCreate(vars, frameId, varRef, name, value
+                        , name
+                        , function() local _, r = rdebug.getlocal(frameId, fi) return r end
+                    )
+                end
             end
         end
     end
+
+    local i = -1
+    while true do
+        local name, value = rdebug.getlocalv(frameId, i)
+        if name == nil then
+            break
+        end
+        local fi = i
+        varCreate(vars, frameId, varRef, ('vararg #%d'):format(-i), value
+            , ('select(%d,...)'):format(-i)
+            , function() local _, r = rdebug.getlocal(frameId, fi) return r end
+        )
+        i = i - 1
+    end
+
     return vars
 end
 
@@ -818,11 +817,8 @@ local m = {}
 
 function m.scopes(frameId)
     local scopes = {}
-    if LUAVERSION >= 52 then
-        varCreateScopes(frameId, scopes, "Parameter", false)
-    end
+    varCreateScopes(frameId, scopes, "Parameter", false)
     varCreateScopes(frameId, scopes, "Local", false)
-    varCreateScopes(frameId, scopes, "Vararg", false)
     varCreateScopes(frameId, scopes, "Upvalue", false)
     if LUAVERSION >= 54 then
         varCreateScopes(frameId, scopes, "Return", false)
