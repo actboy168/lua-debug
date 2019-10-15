@@ -83,14 +83,14 @@ end)
 
 local special_has = {}
 
-function special_has.Parameters(frameId)
+function special_has.Parameter(frameId)
     rdebug.getinfo(frameId, "u", info)
     return info.nparams > 0
 end
 
-function special_has.Locals(frameId)
+function special_has.Local(frameId)
     local i = 1
-    --已经在Parameters里调用过getinfo 'u'
+    --已经在Parameter里调用过getinfo 'u'
     if LUAVERSION >= 52 and info.nparams > 0 then
         i = i + info.nparams
     end
@@ -106,21 +106,21 @@ function special_has.Locals(frameId)
     end
 end
 
-function special_has.Varargs(frameId)
+function special_has.Vararg(frameId)
     return rdebug.getlocalv(frameId, -1) ~= nil
 end
 
-function special_has.Upvalues(frameId)
+function special_has.Upvalue(frameId)
     local f = rdebug.getfunc(frameId)
     return rdebug.getupvaluev(f, 1) ~= nil
 end
 
-function special_has.Returns(frameId)
+function special_has.Return(frameId)
     rdebug.getinfo(frameId, "r", info)
     return info.ftransfer > 0 and info.ntransfer > 0
 end
 
-function special_has.Globals()
+function special_has.Global()
     local gt = rdebug._G
     local key
     while true do
@@ -664,7 +664,7 @@ end
 
 local special_extand = {}
 
-function special_extand.Locals(varRef)
+function special_extand.Local(varRef)
     varRef[3] = {}
     local frameId = varRef.frameId
     local tempVar = {}
@@ -697,7 +697,7 @@ function special_extand.Locals(varRef)
     return vars
 end
 
-function special_extand.Varargs(varRef)
+function special_extand.Vararg(varRef)
     varRef[3] = {}
     local frameId = varRef.frameId
     local vars = {}
@@ -717,7 +717,7 @@ function special_extand.Varargs(varRef)
     return vars
 end
 
-function special_extand.Upvalues(varRef)
+function special_extand.Upvalue(varRef)
     varRef[3] = {}
     local frameId = varRef.frameId
     local vars = {}
@@ -738,7 +738,7 @@ function special_extand.Upvalues(varRef)
     return vars
 end
 
-function special_extand.Parameters(varRef)
+function special_extand.Parameter(varRef)
     varRef[3] = {}
     local frameId = varRef.frameId
     local vars = {}
@@ -758,7 +758,7 @@ function special_extand.Parameters(varRef)
     return vars
 end
 
-function special_extand.Returns(varRef)
+function special_extand.Return(varRef)
     varRef[3] = {}
     local frameId = varRef.frameId
     local vars = {}
@@ -778,7 +778,7 @@ function special_extand.Returns(varRef)
     return vars
 end
 
-function special_extand.Globals(varRef)
+function special_extand.Global(varRef)
     varRef[3] = {}
     local frameId = varRef.frameId
     local vars = {}
@@ -819,15 +819,15 @@ local m = {}
 function m.scopes(frameId)
     local scopes = {}
     if LUAVERSION >= 52 then
-        varCreateScopes(frameId, scopes, "Parameters", false)
+        varCreateScopes(frameId, scopes, "Parameter", false)
     end
-    varCreateScopes(frameId, scopes, "Locals", false)
-    varCreateScopes(frameId, scopes, "Varargs", false)
-    varCreateScopes(frameId, scopes, "Upvalues", false)
+    varCreateScopes(frameId, scopes, "Local", false)
+    varCreateScopes(frameId, scopes, "Vararg", false)
+    varCreateScopes(frameId, scopes, "Upvalue", false)
     if LUAVERSION >= 54 then
-        varCreateScopes(frameId, scopes, "Returns", false)
+        varCreateScopes(frameId, scopes, "Return", false)
     end
-    varCreateScopes(frameId, scopes, "Globals", true)
+    varCreateScopes(frameId, scopes, "Global", true)
     varCreateScopes(frameId, scopes, "Standard", true)
     return scopes
 end
