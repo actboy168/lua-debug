@@ -80,7 +80,7 @@ while true do
 		debug.upvaluejoin(func, i, f, upvalue_id)
 	end
 	local local_value = local_id[name]
-	if local_value then
+	if local_value ~= nil then
 		debug.setupvalue(func, i, local_value)
 	end
 	i = i + 1
