@@ -431,17 +431,19 @@ end
 
 local function varCreateReference(frameId, value, evaluateName, context)
     local type, subtype = rdebug.type(value)
-    local textType = varGetType(type, subtype)
-    local textValue = varGetValue(context, type, subtype, value)
+    local result = {
+        type = varGetType(type, subtype),
+        value = varGetValue(context, type, subtype, value),
+    }
     if varCanExtand(type, subtype, value) then
         varPool[#varPool + 1] = {
             v = value,
-            eval  = evaluateName,
+            eval = evaluateName,
             frameId = frameId,
         }
-        return textValue, textType, #varPool
+        result.variablesReference = #varPool
     end
-    return textValue, textType
+    return result
 end
 
 local function varCreateScopes(frameId, scopes, name, expensive)
@@ -486,15 +488,14 @@ local function varCreate(vars, frameId, varRef, kind, name, nameidx, value, eval
         extand[newname][2] = nil
         extand[name] = nil
     end
-    local text, type, ref = varCreateReference(frameId, value, evaluateName, "getvalue")
-    vars[#vars + 1] = {
-        name = name,
-        type = type,
-        value = text,
-        variablesReference = ref,
-        evaluateName = evaluateName and evaluateName or nil,
-        presentationHint = kind and { kind = kind } or nil
-    }
+    if type(evaluateName) ~= "string" then
+        evaluateName = nil
+    end
+    local var = varCreateReference(frameId, value, evaluateName, "getvalue")
+    var.name = name
+    var.evaluateName = evaluateName
+    var.presentationHint = kind and { kind = kind } or nil
+    vars[#vars + 1] = var
     extand[name] = { calcValue, evaluateName, #vars, nameidx }
 end
 
@@ -653,11 +654,7 @@ local function setValue(varRef, name, value)
     if not rdebug.assign(rvalue, newvalue) then
         return nil, 'Failed set variable'
     end
-    local text, type = varCreateReference(frameId, rvalue, evaluateName, "setvalue")
-    return {
-        value = text,
-        type = type,
-    }
+    return varCreateReference(frameId, rvalue, evaluateName, "setvalue")
 end
 
 local special_extand = {}
@@ -861,8 +858,8 @@ function m.createText(value, context)
 end
 
 function m.createRef(frameId, value, evaluateName, context)
-    local text, _, ref = varCreateReference(frameId, value, evaluateName, context)
-    return text, ref
+    local var = varCreateReference(frameId, value, evaluateName, context)
+    return var.value, var.variablesReference
 end
 
 ev.on('terminated', function()
