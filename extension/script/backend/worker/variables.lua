@@ -3,7 +3,8 @@ local source = require 'backend.worker.source'
 local luaver = require 'backend.worker.luaver'
 local ev = require 'common.event'
 
-local MAX_TABLE_FIELD = 300
+local SHORT_TABLE_FIELD = 100
+local MAX_TABLE_FIELD = 1000
 local TEMPORARY = "(temporary)"
 local LUAVERSION = 54
 
@@ -249,10 +250,11 @@ end
 
 local TABLE_VALUE_MAXLEN = 32
 local function varGetTableValue(t)
-    local loct = rdebug.copytable(t,MAX_TABLE_FIELD)
+    local asize = rdebug.tablesize(t)
     local str = ''
     local mark = {}
-    for i, v in ipairs(loct) do
+    for i = 1, asize do
+        local v = rdebug.indexv(t, i)
         if str == '' then
             str = varGetShortValue(v)
         else
@@ -264,17 +266,11 @@ local function varGetTableValue(t)
         end
     end
 
+    local loct = rdebug.copytable(t,SHORT_TABLE_FIELD)
     local kvs = {}
     for key, value in pairs(loct) do
-        if mark[key] then
-            goto continue
-        end
         local kn = varGetName(key)
         kvs[#kvs + 1] = { kn, value }
-        if #kvs >= 300 then
-            break
-        end
-        ::continue::
     end
     table.sort(kvs, function(a, b) return a[1] < b[1] end)
 
@@ -442,6 +438,11 @@ local function varCreateReference(frameId, value, evaluateName, context)
             frameId = frameId,
         }
         result.variablesReference = #varPool
+        if type == "table" then
+            local asize, hsize = rdebug.tablesize(value)
+            result.indexedVariables = asize + 1
+            result.namedVariables = hsize
+        end
     end
     return result
 end
@@ -460,6 +461,16 @@ local function varCreateScopes(frameId, scopes, name, expensive)
         variablesReference = #varPool,
         expensive = expensive,
     }
+    if name == "Global" then
+        local scope = scopes[#scopes]
+        local asize, hsize = rdebug.tablesize(rdebug._G)
+        scope.indexedVariables = asize + 1
+        scope.namedVariables = hsize
+
+        local var = varPool[#varPool]
+        var.v = rdebug._G
+        var.eval = "_G"
+    end
 end
 
 local function varCreate(vars, frameId, varRef, kind, name, nameidx, value, evaluateName, calcValue)
@@ -514,8 +525,30 @@ local function getTabelKey(key)
     end
 end
 
-local function extandTable(varRef)
-    varRef.extand = {}
+local function extandTableIndexed(varRef, start, count)
+    varRef.extand = varRef.extand or {}
+    local frameId = varRef.frameId
+    local t = varRef.v
+    local evaluateName = varRef.eval
+    local vars = {}
+    if start <= 0 then
+        start = 1
+    end
+    for key = start, start + count do
+        local value = rdebug.indexv(t, key)
+        if value ~= nil then
+            varCreate(vars, frameId, varRef, nil
+                , ('%d'):format(key), nil
+                , value, evaluateName and ('%s[%d]'):format(evaluateName, key)
+                , function() return rdebug.index(t, key) end
+            )
+        end
+    end
+    return vars
+end
+
+local function extandTableNamed(varRef)
+    varRef.extand = varRef.extand or {}
     local frameId = varRef.frameId
     local t = varRef.v
     local evaluateName = varRef.eval
@@ -530,7 +563,6 @@ local function extandTable(varRef)
         )
     end
     table.sort(vars, function(a, b) return a.name < b.name end)
-
     local meta = rdebug.getmetatablev(t)
     if meta ~= nil then
         varCreate(vars, frameId, varRef, "virtual"
@@ -544,8 +576,17 @@ local function extandTable(varRef)
     return vars
 end
 
+local function extandTable(varRef, filter, start, count)
+    if filter == 'indexed' then
+        return extandTableIndexed(varRef, start, count)
+    elseif filter == 'named' then
+        return extandTableNamed(varRef)
+    end
+    return {}
+end
+
 local function extandFunction(varRef)
-    varRef.extand = {}
+    varRef.extand = varRef.extand or {}
     local frameId = varRef.frameId
     local f = varRef.v
     local evaluateName = varRef.eval
@@ -571,7 +612,7 @@ local function extandFunction(varRef)
 end
 
 local function extandUserdata(varRef)
-    varRef.extand = {}
+    varRef.extand = varRef.extand or {}
     local frameId = varRef.frameId
     local u = varRef.v
     local evaluateName = varRef.eval
@@ -616,10 +657,10 @@ local function extandUserdata(varRef)
     return vars
 end
 
-local function extandValue(varRef)
+local function extandValue(varRef, filter, start, count)
     local type = rdebug.type(varRef.v)
     if type == 'table' then
-        return extandTable(varRef)
+        return extandTable(varRef, filter, start, count)
     elseif type == 'function' then
         return extandFunction(varRef)
     elseif type == 'userdata' then
@@ -660,7 +701,7 @@ end
 local special_extand = {}
 
 function special_extand.Local(varRef)
-    varRef.extand = {}
+    varRef.extand = varRef.extand or {}
     local frameId = varRef.frameId
     local tempVar = {}
     local vars = {}
@@ -694,7 +735,7 @@ function special_extand.Local(varRef)
 end
 
 function special_extand.Upvalue(varRef)
-    varRef.extand = {}
+    varRef.extand = varRef.extand or {}
     local frameId = varRef.frameId
     local vars = {}
     local i = 1
@@ -716,7 +757,7 @@ function special_extand.Upvalue(varRef)
 end
 
 function special_extand.Parameter(varRef)
-    varRef.extand = {}
+    varRef.extand = varRef.extand or {}
     local frameId = varRef.frameId
     local vars = {}
 
@@ -756,7 +797,7 @@ function special_extand.Parameter(varRef)
 end
 
 function special_extand.Return(varRef)
-    varRef.extand = {}
+    varRef.extand = varRef.extand or {}
     local frameId = varRef.frameId
     local vars = {}
     rdebug.getinfo(frameId, "r", info)
@@ -776,16 +817,23 @@ function special_extand.Return(varRef)
     return vars
 end
 
-function special_extand.Global(varRef)
-    varRef.extand = {}
+function special_extand.GlobalIndexed(varRef, start, count)
+    return extandTableIndexed(varRef, start, count)
+end
+
+local function isStandardName(v)
+    return rdebug.type(v) == 'string' and standard[rdebug.value(v)]
+end
+
+function special_extand.GlobalNamed(varRef)
+    varRef.extand = varRef.extand or {}
     local frameId = varRef.frameId
     local vars = {}
     local loct = rdebug.copytable(rdebug._G,MAX_TABLE_FIELD)
     for key, value in pairs(loct) do
-        local name = varGetName(key)
-        if not standard[name] then
+        if not isStandardName(key) then
             varCreate(vars, frameId, varRef, nil
-                , name, nil
+                , varGetName(key), nil
                 , value, ('_G%s'):format(getTabelKey(key))
                 , function() return rdebug.index(rdebug._G, key) end
             )
@@ -795,20 +843,26 @@ function special_extand.Global(varRef)
     return vars
 end
 
+function special_extand.Global(varRef, filter, start, count)
+    if filter == 'indexed' then
+        return special_extand.GlobalIndexed(varRef, start, count)
+    elseif filter == 'named' then
+        return special_extand.GlobalNamed(varRef)
+    end
+    return {}
+end
+
 function special_extand.Standard(varRef)
-    varRef.extand = {}
+    varRef.extand = varRef.extand or {}
     local frameId = varRef.frameId
     local vars = {}
-    local loct = rdebug.copytable(rdebug._G,MAX_TABLE_FIELD)
-    for key, value in pairs(loct) do
-        local name = varGetName(key)
-        if standard[name] then
-            varCreate(vars, frameId, varRef, nil
-                , name, nil
-                , value , ('_G%s'):format(getTabelKey(key))
-                , function() return rdebug.index(rdebug._G, key) end
-            )
-        end
+    for name in pairs(standard) do
+        local value = rdebug.index(rdebug._G, name)
+        varCreate(vars, frameId, varRef, nil
+            , name, nil
+            , value , ('_G%s'):format(getTabelKey(name))
+            , function() return rdebug.index(rdebug._G, name) end
+        )
     end
     table.sort(vars, function(a, b) return a.name < b.name end)
     return vars
@@ -829,15 +883,15 @@ function m.scopes(frameId)
     return scopes
 end
 
-function m.extand(valueId)
+function m.extand(valueId, filter, start, count)
     local varRef = varPool[valueId]
     if not varRef then
         return nil, 'Error variablesReference'
     end
     if varRef.special then
-        return special_extand[varRef.special](varRef)
+        return special_extand[varRef.special](varRef, filter, start, count)
     end
-    return extandValue(varRef)
+    return extandValue(varRef, filter, start, count)
 end
 
 function m.set(valueId, name, value)
