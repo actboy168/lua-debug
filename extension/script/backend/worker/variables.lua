@@ -817,15 +817,11 @@ function special_extand.Return(varRef)
     return vars
 end
 
-function special_extand.GlobalIndexed(varRef, start, count)
-    return extandTableIndexed(varRef, start, count)
-end
-
 local function isStandardName(v)
     return rdebug.type(v) == 'string' and standard[rdebug.value(v)]
 end
 
-function special_extand.GlobalNamed(varRef)
+local function extandGlobalNamed(varRef)
     varRef.extand = varRef.extand or {}
     local frameId = varRef.frameId
     local vars = {}
@@ -845,9 +841,9 @@ end
 
 function special_extand.Global(varRef, filter, start, count)
     if filter == 'indexed' then
-        return special_extand.GlobalIndexed(varRef, start, count)
+        return extandTableIndexed(varRef, start, count)
     elseif filter == 'named' then
-        return special_extand.GlobalNamed(varRef)
+        return extandGlobalNamed(varRef)
     end
     return {}
 end
