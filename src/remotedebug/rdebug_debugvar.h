@@ -911,7 +911,7 @@ get_uservalue(rlua_State *L, lua_State *cL, int index, int getref) {
 	struct value *v = (struct value *)rlua_newuserdata(L, sizeof(struct value) * (sz + 1));
 	v->type = VAR_USERVALUE;
 	v->frame = 0;
-	v->index = 0;
+	v->index = index;
 	memcpy(v+1,u,sz * sizeof(struct value));
 	// u v
 	copy_table(L, -2);
