@@ -126,7 +126,7 @@ function special_has.Global()
     local gt = rdebug._G
     local key
     while true do
-        key = rdebug.nextv(gt, key)
+        key = rdebug.nextkey(gt, key)
         if not key then
             return false
         end
@@ -156,7 +156,7 @@ local function varCanExtand(type, subtype, value)
     if type == 'function' then
         return rdebug.getupvaluev(value, 1) ~= nil
     elseif type == 'table' then
-        if rdebug.nextv(value, nil) ~= nil then
+        if rdebug.nextkey(value, nil) ~= nil then
             return true
         end
         if rdebug.getmetatablev(value) ~= nil then

@@ -75,34 +75,17 @@ lclient_indexv(rlua_State *L) {
 }
 
 static int
-client_next(rlua_State *L, int getref) {
+lclient_nextkey(rlua_State *L) {
 	lua_State *hL = get_host(L);
 	rlua_settop(L, 2);
 	rlua_pushvalue(L, 1);
 	// table key table
 	rlua_insert(L, -2);
 	// table table key
-	if (next_key(L, hL, getref) == 0)
+	if (next_key(L, hL, 0) == 0)
 		return 0;
 	// table key_obj
-	rlua_insert(L, 1);
-	// key_obj table
-	rlua_pushvalue(L, 1);
-	// key_obj table key_obj
-	if (get_index(L, hL, getref) == 0) {
-		return 0;
-	}
-	return 2;
-}
-
-static int
-lclient_next(rlua_State *L) {
-	return client_next(L, 1);
-}
-
-static int
-lclient_nextv(rlua_State *L) {
-	return client_next(L, 0);
+	return 1;
 }
 
 static int
@@ -636,8 +619,7 @@ init_visitor(rlua_State *L) {
 		{ "getuservaluev", lclient_getuservaluev },
 		{ "index", lclient_index },
 		{ "indexv", lclient_indexv },
-		{ "next", lclient_next },
-		{ "nextv", lclient_nextv },
+		{ "nextkey", lclient_nextkey },
 		{ "getstack", lclient_getstack },
 		{ "getstackv", lclient_getstackv },
 		{ "copytable", lclient_copytable },

@@ -326,7 +326,7 @@ eval_value_(rlua_State *L, lua_State *cL, struct value *v) {
 }
 
 // extract L top into cL, return the lua type or LUA_TNONE(failed)
-int
+static int
 eval_value(rlua_State *L, lua_State *cL) {
 	if (lua_checkstack(cL, 1) == 0)
 		return rluaL_error(L, "stack overflow");
@@ -763,40 +763,6 @@ next_key(rlua_State *L, lua_State *cL, int getref) {
 	}
 	lua_pop(cL, 1);	// remove value
 	combine_tk(L, cL, VARKEY_NEXT, getref);
-	return 1;
-}
-
-// input L : tableref key
-// input cL :  table key
-// has next:
-//   output L : tableref next_key value
-//   output cL : table next_key
-// no next:
-//   output L :
-//   output cL :
-static int
-next_kv(rlua_State *L, lua_State *cL) {
-	if (lua_next(cL, -2) == 0) {
-		lua_pop(cL, 1);	// remove table
-		rlua_pop(L, 2);	// remove tableref key
-		return 0;
-	}
-	// cL: table next_key value
-	// L: tableref last_key
-	lua_pushvalue(cL, -2);	// table next_key value next_key
-	if (copy_toX(cL, L) == LUA_TNONE) {
-		create_index(L, VARKEY_NEXT);
-	}
-	lua_pop(cL, 1);
-	// L: tableref last_key next_key
-	rlua_remove(L, -2);
-	// L: tableref next_key
-	// cL: table next_key value
-	if (copy_toX(cL, L) == LUA_TNONE) {
-		create_index(L, VARKEY_INDEX);
-	}
-	// L: tableref next_key value
-	lua_pop(cL, 1);
 	return 1;
 }
 
