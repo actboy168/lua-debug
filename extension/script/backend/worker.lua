@@ -312,7 +312,7 @@ function CMD.stop(pkg)
         return
     end
     state = 'stopped'
-    stopReason = pkg.reason
+    stopReason = pkg.reason -- entry or pause
     hookmgr.step_in()
 end
 
@@ -345,12 +345,12 @@ function CMD.stepOut()
     hookmgr.step_out()
 end
 
-local function runLoop(reason, description)
-    --TODO: 只在lua栈帧时需要description？
+local function runLoop(reason, text)
+    --TODO: 只在lua栈帧时需要text？
     sendToMaster {
         cmd = 'eventStop',
         reason = reason,
-        text = description,
+        text = text,
     }
 
     while true do
