@@ -1,6 +1,6 @@
 # lua-debug
 
-[![Build Status](https://dev.azure.com/actboy168/lua-debug/_apis/build/status/actboy168.lua-debug?branchName=master)](https://dev.azure.com/actboy168/lua-debug/_build/latest?branchName=master) [![Build Status](https://travis-ci.org/actboy168/lua-debug.svg?branch=master)](https://travis-ci.org/actboy168/lua-debug)
+[![Build Status](https://dev.azure.com/actboy168/lua-debug/_apis/build/status/actboy168.lua-debug?branchName=master)](https://dev.azure.com/actboy168/lua-debug/_build/latest?definitionId=8&branchName=master) [![Build Status](https://travis-ci.org/actboy168/lua-debug.svg?branch=master)](https://travis-ci.org/actboy168/lua-debug)
 
 ## 安装
 在vscode中按Ctrl+P，输入
