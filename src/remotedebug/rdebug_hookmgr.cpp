@@ -15,7 +15,9 @@
 
 static int HOOK_MGR = 0;
 static int HOOK_CALLBACK = 0;
+#if defined(RDEBUG_DISABLE_THUNK)
 static int THUNK_MGR = 0;
+#endif
 
 void set_host(rlua_State* L, lua_State* hL);
 lua_State* get_host(rlua_State *L);
