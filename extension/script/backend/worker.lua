@@ -277,7 +277,11 @@ function CMD.setBreakpoints(pkg)
     if noDebug or not source.valid(pkg.source) then
         return
     end
-    breakpoint.update(pkg.source, pkg.breakpoints, pkg.content)
+    breakpoint.set_bp(pkg.source, pkg.breakpoints, pkg.content)
+end
+
+function CMD.setFunctionBreakpoints(pkg)
+    breakpoint.set_funcbp(pkg.breakpoints)
 end
 
 function CMD.setExceptionBreakpoints(pkg)
@@ -380,6 +384,14 @@ function hook.bp(line)
             runLoop 'breakpoint'
             return
         end
+    end
+end
+
+function hook.funcbp(func)
+    if not initialized then return end
+    if breakpoint.hit_funcbp(func) then
+        state = 'stopped'
+        runLoop 'function breakpoint'
     end
 end
 

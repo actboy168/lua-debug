@@ -95,8 +95,8 @@ function m.run(frameId, expression, context)
     return nil, ("unknown context `%s`"):format(context)
 end
 
-function m.eval(expression)
-    return rdebug.eval(eval_watch, expression, 0)
+function m.eval(expression, level)
+    return rdebug.eval(eval_watch, expression, level or 0)
 end
 
 function m.dump(content)

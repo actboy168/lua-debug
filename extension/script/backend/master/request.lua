@@ -173,14 +173,23 @@ function request.setBreakpoints(req)
     end
 end
 
+function request.setFunctionBreakpoints(req)
+    local args = req.arguments
+    mgr.broadcastToWorker {
+        cmd = 'setFunctionBreakpoints',
+        breakpoints = args.breakpoints,
+    }
+    response.success(req, {
+        breakpoints = {}
+    })
+end
+
 function request.setExceptionBreakpoints(req)
     local args = req.arguments
-    if type(args.filters) == 'table' then
-        mgr.broadcastToWorker {
-            cmd = 'setExceptionBreakpoints',
-            filters = args.filters,
-        }
-    end
+    mgr.broadcastToWorker {
+        cmd = 'setExceptionBreakpoints',
+        filters = args.filters,
+    }
     response.success(req)
 end
 

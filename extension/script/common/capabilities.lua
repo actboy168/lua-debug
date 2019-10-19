@@ -1,5 +1,6 @@
 return {
     supportsConfigurationDoneRequest = true,
+    supportsFunctionBreakpoints = true,
     supportsConditionalBreakpoints = true,
     supportsHitConditionalBreakpoints = true,
     supportsEvaluateForHovers = true,
