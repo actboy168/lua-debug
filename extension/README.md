@@ -9,6 +9,7 @@ Lua Debug Adapter for Visual Studio Code
 ## Feature
 
 * Breakpoints
+* Function breakpoints
 * Conditional breakpoints
 * Hit Conditional breakpoints
 * Step over, step in, step out
