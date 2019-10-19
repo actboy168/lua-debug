@@ -1,7 +1,7 @@
 |Capabilities                        | Available |
 |------------------------------------|-----------|
 | supportsConfigurationDoneRequest   |    🟩    |
-| supportsFunctionBreakpoints        |    🟨    |
+| supportsFunctionBreakpoints        |    🟩    |
 | supportsConditionalBreakpoints     |    🟩    |
 | supportsHitConditionalBreakpoints  |    🟩    |
 | supportsEvaluateForHovers          |    🟩    |
