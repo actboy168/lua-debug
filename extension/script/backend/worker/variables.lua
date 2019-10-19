@@ -900,8 +900,7 @@ function m.createText(value, context)
 end
 
 function m.createRef(value, evaluateName, context)
-    local var = varCreateReference(value, evaluateName, context)
-    return var.value, var.variablesReference
+    return varCreateReference(value, evaluateName, context)
 end
 
 ev.on('terminated', function()

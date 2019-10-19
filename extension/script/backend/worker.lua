@@ -252,7 +252,7 @@ function CMD.setVariable(pkg)
 end
 
 function CMD.evaluate(pkg)
-    local ok, result, ref = evaluate.run(pkg.frameId, pkg.expression, pkg.context)
+    local ok, result = evaluate.run(pkg.frameId, pkg.expression, pkg.context)
     if not ok then
         sendToMaster {
             cmd = 'evaluate',
@@ -263,13 +263,14 @@ function CMD.evaluate(pkg)
         }
         return
     end
+    result.result = result.value
+    result.value = nil
     sendToMaster {
         cmd = 'evaluate',
         command = pkg.command,
         seq = pkg.seq,
         success = true,
-        result = result,
-        variablesReference = ref,
+        body = result
     }
 end
 

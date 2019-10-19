@@ -26,13 +26,10 @@ function CMD.evaluate(w, req)
         response.error(req, req.message)
         return
     end
-    if req.variablesReference then
-        req.variablesReference = (w << 24) | req.variablesReference
+    if req.body.variablesReference then
+        req.body.variablesReference = (w << 24) | req.body.variablesReference
     end
-    response.success(req, {
-        result = req.result,
-        variablesReference = req.variablesReference,
-    })
+    response.success(req, req.body)
 end
 
 function CMD.source(_, req)
