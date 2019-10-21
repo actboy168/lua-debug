@@ -5,7 +5,6 @@ local ev = require 'common.event'
 
 local SHORT_TABLE_FIELD = 100
 local MAX_TABLE_FIELD = 1000
-local TEMPORARY = "(temporary)"
 local LUAVERSION = 54
 
 local info = {}
@@ -78,9 +77,14 @@ end
 ev.on('initializing', function()
     LUAVERSION = luaver.LUAVERSION
     init_standard()
-    TEMPORARY = LUAVERSION >= 54 and "(temporary)" or "(*temporary)"
 end)
 
+local function isTemporary(name)
+    if LUAVERSION >= 54 then
+        return name == "(C temporary)" or name == "(temporary)"
+    end
+    return name == "(*temporary)"
+end
 
 local special_has = {}
 
@@ -105,7 +109,7 @@ function special_has.Local(frameId)
         if name == nil then
             return false
         end
-        if name ~= TEMPORARY then
+        if not isTemporary(name) then
             return true
         end
         i = i + 1
@@ -711,7 +715,7 @@ function special_extand.Local(varRef)
         if name == nil then
             break
         end
-        if name ~= TEMPORARY then
+        if not isTemporary(name) then
             if name:sub(1,1) == "(" then
                 tempVar[name] = tempVar[name] and (tempVar[name] + 1) or 1
                 name = ("(%s #%d)"):format(name:sub(2,-2), tempVar[name])
