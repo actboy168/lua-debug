@@ -533,14 +533,16 @@ local function extandTableIndexed(varRef, start, count)
     local t = varRef.v
     local evaluateName = varRef.eval
     local vars = {}
+    local last = start + count - 1
     if start <= 0 then
         start = 1
     end
-    for key = start, start + count do
+    for key = start, last do
         local value = rdebug.indexv(t, key)
         if value ~= nil then
+            local name = (key > 0 and key < 1000) and ('[%03d]'):format(key) or ('%d'):format(key)
             varCreate(vars, varRef, nil
-                , ('%d'):format(key), nil
+                , name, nil
                 , value, evaluateName and ('%s[%d]'):format(evaluateName, key)
                 , function() return rdebug.index(t, key) end
             )
