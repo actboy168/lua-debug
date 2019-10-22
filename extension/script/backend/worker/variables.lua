@@ -55,17 +55,16 @@ local function init_standard()
         table.insert(lstandard, "newproxy")
         table.insert(lstandard, "setfenv")
         table.insert(lstandard, "unpack")
-    end
-    if LUAVERSION >= 52 then
+    elseif LUAVERSION == 52 then
         table.insert(lstandard, "rawlen")
-    end
-    if LUAVERSION == 52 or LUAVERSION == 53 then
         table.insert(lstandard, "bit32")
-    end
-    if LUAVERSION >= 53 then
+    elseif LUAVERSION == 53 then
+        table.insert(lstandard, "rawlen")
+        table.insert(lstandard, "bit32")
         table.insert(lstandard, "utf8")
-    end
-    if LUAVERSION >= 54 then
+    elseif LUAVERSION >= 54 then
+        table.insert(lstandard, "rawlen")
+        table.insert(lstandard, "utf8")
         table.insert(lstandard, "warn")
     end
     standard = {}
