@@ -889,7 +889,7 @@ end
 
 function m.set(valueId, name, value)
     local varRef = varPool[valueId]
-    if not varRef then
+    if not varRef or varRef.special then
         return nil, 'Error variablesReference'
     end
     return setValue(varRef, name, value)
