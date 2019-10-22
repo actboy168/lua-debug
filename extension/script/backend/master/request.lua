@@ -189,12 +189,24 @@ function request.setFunctionBreakpoints(req)
         breakpoints = {}
     })
     config.function_breakpoints = args.breakpoints
+    if not initializing then
+        mgr.broadcastToWorker {
+            cmd = 'setFunctionBreakpoints',
+            breakpoints = args.breakpoints,
+        }
+    end
 end
 
 function request.setExceptionBreakpoints(req)
     local args = req.arguments
     response.success(req)
     config.exception_breakpoints = args.filters
+    if not initializing then
+        mgr.broadcastToWorker {
+            cmd = 'setExceptionBreakpoints',
+            filters = args.filters,
+        }
+    end
 end
 
 function request.stackTrace(req)
