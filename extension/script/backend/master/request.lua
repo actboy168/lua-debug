@@ -11,6 +11,8 @@ local initializing = false
 local config = {
     initialize = {},
     breakpoints = {},
+    function_breakpoints = {},
+    exception_breakpoints = {},
 }
 
 ev.on('close', function()
@@ -96,6 +98,14 @@ local function initializeWorker(w)
             content = bp[3],
         })
     end
+    mgr.sendToWorker(w, {
+        cmd = 'setFunctionBreakpoints',
+        breakpoints = config.function_breakpoints,
+    })
+    mgr.sendToWorker(w, {
+        cmd = 'setExceptionBreakpoints',
+        filters = config.exception_breakpoints,
+    })
     tryStop(w)
     mgr.sendToWorker(w, {
         cmd = 'initialized',
@@ -175,22 +185,16 @@ end
 
 function request.setFunctionBreakpoints(req)
     local args = req.arguments
-    mgr.broadcastToWorker {
-        cmd = 'setFunctionBreakpoints',
-        breakpoints = args.breakpoints,
-    }
     response.success(req, {
         breakpoints = {}
     })
+    config.function_breakpoints = args.breakpoints
 end
 
 function request.setExceptionBreakpoints(req)
     local args = req.arguments
-    mgr.broadcastToWorker {
-        cmd = 'setExceptionBreakpoints',
-        filters = args.filters,
-    }
     response.success(req)
+    config.exception_breakpoints = args.filters
 end
 
 function request.stackTrace(req)
