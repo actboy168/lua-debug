@@ -155,8 +155,10 @@ local function normalizeNumber(str)
 end
 
 
-local function varCanExtand(type, subtype, value)
+local function varCanExtand(type, value)
     if type == 'function' then
+        return rdebug.getupvaluev(value, 1) ~= nil
+    elseif type == 'cfunction' then
         return rdebug.getupvaluev(value, 1) ~= nil
     elseif type == 'table' then
         if rdebug.nextkey(value, nil) ~= nil then
@@ -170,7 +172,12 @@ local function varCanExtand(type, subtype, value)
         if rdebug.getmetatablev(value) ~= nil then
             return true
         end
-        if subtype == 'full' and rdebug.getuservaluev(value) ~= nil then
+        if rdebug.getuservaluev(value) ~= nil then
+            return true
+        end
+        return false
+    elseif type == 'lightuserdata' then
+        if rdebug.getmetatablev(value) ~= nil then
             return true
         end
         return false
@@ -179,7 +186,13 @@ local function varCanExtand(type, subtype, value)
 end
 
 local function varGetName(value)
-    local type, subtype = rdebug.type(value)
+    local type = rdebug.type(value)
+    if LUAVERSION <= 52 and type == "float" then
+        local rvalue = rdebug.value(value)
+        if rvalue == math.floor(rvalue) then
+            type = 'integer'
+        end
+    end
     if type == 'string' then
         local str = rdebug.value(value)
         if #str < 32 then
@@ -194,28 +207,20 @@ local function varGetName(value)
         end
     elseif type == 'nil' then
         return 'nil'
-    elseif type == 'number' then
-        if LUAVERSION <= 52 then
-            local rvalue = rdebug.value(value)
-            if rvalue == math.floor(rvalue) then
-                subtype = 'integer'
-            end
+    elseif type == 'integer' then
+        local rvalue = rdebug.value(value)
+        if rvalue > 0 and rvalue < 1000 then
+            return ('[%03d]'):format(rvalue)
         end
-        if subtype == 'integer' then
-            local rvalue = rdebug.value(value)
-            if rvalue > 0 and rvalue < 1000 then
-                return ('[%03d]'):format(rvalue)
-            end
-            return ('%d'):format(rvalue)
-        else
-            return normalizeNumber(('%.4f'):format(rdebug.value(value)))
-        end
+        return ('%d'):format(rvalue)
+    elseif type == 'float' then
+        return normalizeNumber(('%.4f'):format(rdebug.value(value)))
     end
     return tostring(rdebug.value(value))
 end
 
 local function varGetShortValue(value)
-    local type, subtype = rdebug.type(value)
+    local type = rdebug.type(value)
     if type == 'string' then
         local str = rdebug.value(value)
         if #str < 16 then
@@ -230,23 +235,19 @@ local function varGetShortValue(value)
         end
     elseif type == 'nil' then
         return 'nil'
-    elseif type == 'number' then
-        if subtype == 'integer' then
-            return ('%d'):format(rdebug.value(value))
-        else
-            return normalizeNumber(('%f'):format(rdebug.value(value)))
-        end
+    elseif type == 'integer' then
+        return ('%d'):format(rdebug.value(value))
+    elseif type == 'float' then
+        return normalizeNumber(('%f'):format(rdebug.value(value)))
     elseif type == 'function' then
         return 'func'
+    elseif type == 'c function' then
+        return 'func'
     elseif type == 'table' then
-        if varCanExtand(type, subtype, value) then
+        if varCanExtand(type, value) then
             return "..."
         end
         return '{}'
-    elseif type == 'userdata' then
-        return 'userdata'
-    elseif type == 'thread' then
-        return 'thread'
     end
     return type
 end
@@ -332,7 +333,7 @@ local function getFunctionCode(str, startLn, endLn)
 end
 
 -- context: getvalue,setvalue,scopes,hover,watch,repl,copyvalue
-local function varGetValue(context, type, subtype, value)
+local function varGetValue(context, type, value)
     if type == 'string' then
         local str = rdebug.value(value)
         if context == "repl" or context == "copyvalue" then
@@ -356,16 +357,11 @@ local function varGetValue(context, type, subtype, value)
         end
     elseif type == 'nil' then
         return 'nil'
-    elseif type == 'number' then
-        if subtype == 'integer' then
-            return ('%d'):format(rdebug.value(value))
-        else
-            return normalizeNumber(('%f'):format(rdebug.value(value)))
-        end
+    elseif type == 'integer' then
+        return ('%d'):format(rdebug.value(value))
+    elseif type == 'float' then
+        return normalizeNumber(('%f'):format(rdebug.value(value)))
     elseif type == 'function' then
-        if subtype == 'c' then
-            return 'C function'
-        end
         rdebug.getinfo(value, "S", info)
         local src = source.create(info.source)
         if not source.valid(src) then
@@ -376,13 +372,15 @@ local function varGetValue(context, type, subtype, value)
         end
         local code = source.getCode(src.sourceReference)
         return getFunctionCode(code, info.linedefined, info.lastlinedefined)
+    elseif type == 'c function' then
+        return 'C function'
     elseif type == 'table' then
         return varGetTableValue(value)
     elseif type == 'userdata' then
         local meta = rdebug.getmetatablev(value)
         if meta ~= nil then
             local fn = rdebug.indexv(meta, '__debugger_tostring')
-            if fn ~= nil and rdebug.type(fn) == 'function' then
+            if fn ~= nil and (rdebug.type(fn) == 'function' or rdebug.type(fn) == 'c function') then
                 local ok, res = rdebug.evalref(fn, value)
                 if ok then
                     return res
@@ -393,48 +391,22 @@ local function varGetValue(context, type, subtype, value)
                 return 'userdata: ' .. tostring(rdebug.value(name))
             end
         end
-        if subtype == 'light' then
-            return 'light' .. tostring(rdebug.value(value))
-        end
         return 'userdata'
+    elseif type == 'lightuserdata' then
+        return 'light' .. tostring(rdebug.value(value))
     elseif type == 'thread' then
         return 'thread'
     end
     return tostring(rdebug.value(value))
 end
 
-local function varGetType(type, subtype)
-    if type == 'string'
-        or type == 'boolean'
-        or type == 'nil'
-        or type == 'table'
-        or type == 'table'
-        or type == 'thread'
-    then
-        return type
-    elseif type == 'number' then
-        return subtype
-    elseif type == 'function' then
-        if subtype == 'c' then
-            return 'C function'
-        end
-        return 'function'
-    elseif type == 'userdata' then
-        if subtype == 'light' then
-            return 'lightuserdata'
-        end
-        return 'userdata'
-    end
-    return type
-end
-
 local function varCreateReference(value, evaluateName, context)
-    local type, subtype = rdebug.type(value)
+    local type = rdebug.type(value)
     local result = {
-        type = varGetType(type, subtype),
-        value = varGetValue(context, type, subtype, value),
+        type = type,
+        value = varGetValue(context, type, value),
     }
-    if varCanExtand(type, subtype, value) then
+    if varCanExtand(type, value) then
         varPool[#varPool + 1] = {
             v = value,
             eval = evaluateName,
@@ -520,9 +492,7 @@ local function getTabelKey(key)
             return ('.%s'):format(str)
         end
         return ('[%q]'):format(str)
-    elseif type == 'boolean' then
-        return ('[%s]'):format(tostring(rdebug.value(key)))
-    elseif type == 'number' then
+    elseif type == 'boolean' or type == 'float' or type == 'integer' then
         return ('[%s]'):format(tostring(rdebug.value(key)))
     end
 end
@@ -593,8 +563,7 @@ local function extandFunction(varRef)
     local evaluateName = varRef.eval
     local vars = {}
     local i = 1
-    local _, subtype = rdebug.type(f)
-    local isCFunction = subtype == "c"
+    local isCFunction = rdebug.type(f) == "c function"
     while true do
         local name, value = rdebug.getupvaluev(f, i)
         if name == nil then
@@ -662,6 +631,8 @@ local function extandValue(varRef, filter, start, count)
     if type == 'table' then
         return extandTable(varRef, filter, start, count)
     elseif type == 'function' then
+        return extandFunction(varRef)
+    elseif type == 'c function' then
         return extandFunction(varRef)
     elseif type == 'userdata' then
         return extandUserdata(varRef)
@@ -900,8 +871,8 @@ function m.clean()
 end
 
 function m.createText(value, context)
-    local type, subtype = rdebug.type(value)
-    return varGetValue(context, type, subtype, value)
+    local type = rdebug.type(value)
+    return varGetValue(context, type, value)
 end
 
 function m.createRef(value, evaluateName, context)
