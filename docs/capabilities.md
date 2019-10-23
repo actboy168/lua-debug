@@ -8,7 +8,7 @@
 | exceptionBreakpointFilters         |    🟩    |
 | supportsStepBack                   |    🟨    |
 | supportsSetVariable                |    🟩    |
-| supportsRestartFrame               |    🟨    |
+| supportsRestartFrame               |    🟩    |
 | supportsGotoTargetsRequest         |    🟨    |
 | supportsStepInTargetsRequest       |    🟥    |
 | supportsCompletionsRequest         |    🟨    |

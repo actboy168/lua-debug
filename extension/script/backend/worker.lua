@@ -350,6 +350,14 @@ function CMD.stepOut()
     hookmgr.step_out()
 end
 
+function CMD.restartFrame()
+    variables.clean()
+    sendToMaster {
+        cmd = 'eventStop',
+        reason = 'restart',
+    }
+end
+
 local function runLoop(reason, text)
     --TODO: 只在lua栈帧时需要text？
     sendToMaster {
@@ -365,7 +373,6 @@ local function runLoop(reason, text)
         end
     end
     variables.clean()
-    rdebug.cleanwatch()
 end
 
 local hook = {}

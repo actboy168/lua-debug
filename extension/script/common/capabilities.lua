@@ -5,6 +5,7 @@ return {
     supportsHitConditionalBreakpoints = true,
     supportsEvaluateForHovers = true,
     supportsSetVariable = true,
+    supportsRestartFrame = true,
     supportsRestartRequest = true,
     supportsExceptionInfoRequest = true,
     supportsDelayedStackTraceLoading = true,

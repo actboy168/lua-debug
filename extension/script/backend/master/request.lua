@@ -427,6 +427,20 @@ function request.loadedSources(req)
     }
 end
 
+function request.restartFrame(req)
+    local args = req.arguments
+    local threadId = args.frameId >> 24
+    local frameId = args.frameId & 0x00FFFFFF
+    if not checkThreadId(req, threadId) then
+        return
+    end
+    response.success(req)
+    mgr.sendToWorker(threadId, {
+        cmd = 'restartFrame',
+        frameId = frameId,
+    })
+end
+
 --function print(...)
 --    local n = select('#', ...)
 --    local t = {}

@@ -868,6 +868,7 @@ end
 
 function m.clean()
     varPool = {}
+    rdebug.cleanwatch()
 end
 
 function m.createText(value, context)
