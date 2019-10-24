@@ -823,7 +823,7 @@ get_registry(rlua_State *L, int type) {
 	return 1;
 }
 
-static void
+static int
 get_metatable(rlua_State *L, lua_State *cL, int getref) {
 	if (lua_checkstack(cL, 2)==0)
 		rluaL_error(L, "stack overflow");
