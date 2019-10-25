@@ -85,18 +85,24 @@ local function tryStop(w)
     end
 end
 
+local function initializeWorkerBreakpoints(w, source, breakpoints, content)
+    mgr.sendToWorker(w, {
+        cmd = 'setBreakpoints',
+        source = source,
+        breakpoints = breakpoints,
+        content = content,
+    })
+end
+
 local function initializeWorker(w)
     mgr.sendToWorker(w, {
         cmd = 'initializing',
         config = config.initialize,
     })
-    for _, bp in pairs(config.breakpoints) do
-        mgr.sendToWorker(w, {
-            cmd = 'setBreakpoints',
-            source = bp[1],
-            breakpoints = bp[2],
-            content = bp[3],
-        })
+    for key, bp in pairs(config.breakpoints) do
+        if type(key) == "string" or (key >> 32) == w then
+            initializeWorkerBreakpoints(w, bp[1], bp[2], bp[3])
+        end
     end
     mgr.sendToWorker(w, {
         cmd = 'setFunctionBreakpoints',
@@ -165,21 +171,29 @@ function request.setBreakpoints(req)
         breakpoints = args.breakpoints
     })
     if args.source.sourceReference then
-        args.source.sourceReference = args.source.sourceReference & 0xffffffff
-    end
-    --TODO path 无视大小写？
-    config.breakpoints[args.source.sourceReference or args.source.path] = {
-        args.source,
-        args.breakpoints,
-        content,
-    }
-    if not initializing then
-        mgr.broadcastToWorker {
-            cmd = 'setBreakpoints',
-            source = args.source,
-            breakpoints = args.breakpoints,
-            content = content,
+        local sourceReference = args.source.sourceReference
+        local w = sourceReference >> 32
+        args.source.sourceReference = args.source.sourceReference & 0xFFFFFFFF
+        config.breakpoints[sourceReference] = {
+            args.source,
+            args.breakpoints,
+            content,
         }
+        if not initializing then
+            initializeWorkerBreakpoints(w, args.source, args.breakpoints, content)
+        end
+    else
+        --TODO path 无视大小写？
+        config.breakpoints[args.source.path] = {
+            args.source,
+            args.breakpoints,
+            content,
+        }
+        if not initializing then
+            for _, w in ipairs(mgr.threads()) do
+                initializeWorkerBreakpoints(w, args.source, args.breakpoints, content)
+            end
+        end
     end
 end
 
@@ -375,8 +389,8 @@ end
 
 function request.source(req)
     local args = req.arguments
-    local threadId = args.sourceReference >> 24
-    local sourceReference = args.sourceReference & 0x00FFFFFF
+    local threadId = args.sourceReference >> 32
+    local sourceReference = args.sourceReference & 0xFFFFFFFF
     if not checkThreadId(req, threadId) then
         return
     end

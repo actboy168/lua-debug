@@ -12,7 +12,7 @@ function CMD.stackTrace(w, req)
     for _, frame in ipairs(req.stackFrames) do
         frame.id = (w << 24) | frame.id
         if frame.source and frame.source.sourceReference then
-            frame.source.sourceReference = (w << 24) | frame.source.sourceReference
+            frame.source.sourceReference = (w << 32) | frame.source.sourceReference
         end
     end
     response.success(req, {
@@ -102,7 +102,10 @@ function CMD.setVariable(_, req)
     })
 end
 
-function CMD.loadedSource(_, req)
+function CMD.loadedSource(w, req)
+    if req.source and req.source.sourceReference then
+        req.source.sourceReference = (w << 32) | req.source.sourceReference
+    end
     event.loadedSource(req.reason, req.source)
 end
 
