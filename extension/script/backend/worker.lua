@@ -75,11 +75,11 @@ ev.on('output', function(category, output, source, line)
     }
 end)
 
-ev.on('loadedSource', function(reason, source)
+ev.on('loadedSource', function(reason, s)
     sendToMaster {
         cmd = 'loadedSource',
         reason = reason,
-        source = source
+        source = source.output(s)
     }
 end)
 
