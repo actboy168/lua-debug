@@ -1,10 +1,6 @@
 {
     "Lua.diagnostics.globals": [
         "ARGUMENTS",
-        "VSCODE"
     ],
-    "Lua.runtime.version": "Lua 5.4",
-    "files.associations": {
-        "functional": "cpp"
-    }
+    "Lua.runtime.version": "Lua 5.4"
 }

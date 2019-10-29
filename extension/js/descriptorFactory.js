@@ -39,7 +39,7 @@ function createDebugAdapterDescriptor(session, executable) {
     if (typeof session.configuration.debugServer === 'number') {
         return new DebugAdapterServer(session.configuration.debugServer);
     }
-    let VSCODE = getDataFolderName()
+    let vscode = getDataFolderName()
     let dir = getRuntimeDirectory()
     let platform = os.platform()
     if (platform == "win32") {
@@ -47,8 +47,8 @@ function createDebugAdapterDescriptor(session, executable) {
         let runtimeArgs = [
             "-e",
             "package.path=[["+path.join(dir, 'script/?.lua')+"]]",
-            "-e", "VSCODE='"+VSCODE+"'",
-            path.join(dir, 'script/frontend/main.lua')
+            path.join(dir, 'script/frontend/main.lua'),
+            vscode
         ]
         return new vscode.DebugAdapterExecutable(runtime, runtimeArgs);
     }
@@ -60,8 +60,8 @@ function createDebugAdapterDescriptor(session, executable) {
             "package.path=[["+path.join(dir, 'script/?.lua')+"]]",
             "-e",
             "package.cpath=[["+path.join(dir, 'bin/'+plat+'/?.so')+"]]",
-            "-e", "VSCODE='"+VSCODE+"'",
-            path.join(dir, 'script/frontend/main.lua')
+            path.join(dir, 'script/frontend/main.lua'),
+            vscode
         ]
         return new vscode.DebugAdapterExecutable(runtime, runtimeArgs);
     }

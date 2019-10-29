@@ -19,6 +19,7 @@
             "program": "${workspaceFolder}/extension/script/frontend/main.lua",
             "path": "${workspaceFolder}/extension/script/?.lua",
             "arg": [
+                ".vscode",
                 "4711"
             ]
         },
