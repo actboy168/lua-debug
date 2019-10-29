@@ -64,9 +64,9 @@ function checkRuntime() {
     if (platform == "win32") {
         return true
     }
-    let plat = platform == "darwin"? "macos": "linux"
+    let plat = platform == "darwin" ? "macos" : "linux"
     let dir = descriptorFactory.getRuntimeDirectory()
-    let runtime = path.join(dir, 'bin/'+plat.toLowerCase()+'/lua-debug')
+    let runtime = path.join(dir, 'bin/' + plat.toLowerCase() + '/lua-debug')
     return fs.existsSync(runtime)
 }
 

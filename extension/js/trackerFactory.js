@@ -2,7 +2,7 @@ const vscode = require("vscode");
 const fs = require('fs');
 
 function onWillReceiveMessage(m) {
-    if (m.type == "request" 
+    if (m.type == "request"
         && m.command == "setBreakpoints"
         && typeof m.arguments.source == 'object'
         && typeof m.arguments.source.path == 'string'
@@ -23,7 +23,7 @@ function onWillReceiveMessage(m) {
 
 function createDebugAdapterTracker(session) {
     return {
-        onWillReceiveMessage : onWillReceiveMessage,
+        onWillReceiveMessage: onWillReceiveMessage,
     };
 }
 
