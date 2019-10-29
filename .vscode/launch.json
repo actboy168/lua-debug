@@ -19,8 +19,8 @@
             "program": "${workspaceFolder}/extension/script/frontend/main.lua",
             "path": "${workspaceFolder}/extension/script/?.lua",
             "arg": [
-                ".vscode",
-                "4711"
+                "4711",
+                "${command:extensionPath}actboy168.lua-debug-1.18.3"
             ]
         },
         {
@@ -28,10 +28,13 @@
             "request": "launch",
             "name": "Test Extension",
             "runtimeExecutable": "${execPath}",
-            "sourceMaps": true,
+            "sourceMaps": false,
             "args": [
                 "--extensionDevelopmentPath=${workspaceFolder}/extension/"
-            ]
+            ],
+            "env": {
+                "VSCODE_EXTENSION_PATH" : "${command:extensionPath}actboy168.lua-debug-1.18.3"
+            }
         }
     ]
 }

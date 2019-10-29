@@ -4,42 +4,18 @@ const fs = require('fs');
 const os = require('os');
 const extension = require("./extension");
 
-function getDataFolderName() {
-    const product = JSON.parse(fs.readFileSync(path.join(vscode.env.appRoot, 'product.json')));
-    if (vscode.ExtensionExecutionContext == undefined) {
-        return product.dataFolderName;
-    }
-    if (extension.context.executionContext == vscode.ExtensionExecutionContext.Local) {
-        return product.dataFolderName;
-    }
-    return product.serverDataFolderName;
-}
-
-function getVersion(context) {
-    const package = JSON.parse(fs.readFileSync(path.join(context.extensionPath, 'package.json')));
-    return package.version
-}
-
-function getHomeDirectory() {
-    if (os.platform() != 'win32') {
-        return process.env.HOME
-    }
-    return process.env.USERPROFILE
-}
-
 function getRuntimeDirectory() {
     const context = extension.context
     if (path.basename(context.extensionPath) != 'extension') {
         return context.extensionPath
     }
-    return path.join(getHomeDirectory(), getDataFolderName() + '/extensions/actboy168.lua-debug-' + getVersion(context))
+    return process.env.VSCODE_EXTENSION_PATH
 }
 
 function createDebugAdapterDescriptor(session, executable) {
     if (typeof session.configuration.debugServer === 'number') {
         return new DebugAdapterServer(session.configuration.debugServer);
     }
-    let vscode = getDataFolderName()
     let dir = getRuntimeDirectory()
     let platform = os.platform()
     if (platform == "win32") {
@@ -47,8 +23,7 @@ function createDebugAdapterDescriptor(session, executable) {
         let runtimeArgs = [
             "-e",
             "package.path=[["+path.join(dir, 'script/?.lua')+"]]",
-            path.join(dir, 'script/frontend/main.lua'),
-            vscode
+            path.join(dir, 'script/frontend/main.lua')
         ]
         return new vscode.DebugAdapterExecutable(runtime, runtimeArgs);
     }
@@ -60,8 +35,7 @@ function createDebugAdapterDescriptor(session, executable) {
             "package.path=[["+path.join(dir, 'script/?.lua')+"]]",
             "-e",
             "package.cpath=[["+path.join(dir, 'bin/'+plat+'/?.so')+"]]",
-            path.join(dir, 'script/frontend/main.lua'),
-            vscode
+            path.join(dir, 'script/frontend/main.lua')
         ]
         return new vscode.DebugAdapterExecutable(runtime, runtimeArgs);
     }
