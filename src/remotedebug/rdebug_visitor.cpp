@@ -163,7 +163,6 @@ static int
 lclient_value(rlua_State *L) {
 	lua_State *hL = get_host(L);
 	rlua_settop(L, 1);
-	printf("lua_gettop = %d\n", lua_gettop(hL));
 	get_value(L, hL);
 	return 1;
 }
