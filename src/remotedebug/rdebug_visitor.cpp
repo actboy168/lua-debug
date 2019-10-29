@@ -130,7 +130,7 @@ lclient_copytable(rlua_State *L) {
 	for (unsigned int i = 0; i < hsize; ++i) {
 		if (remotedebug::table::get_kv(hL, t, i)) {
 			if (--maxn < 0) {
-				lua_pop(hL, 2);
+				lua_pop(hL, 3);
 				return 1;
 			}
 			rlua_pushvalue(L, 1); combine_kv(L, hL, 0, VAR_INDEX_KEY, i);
@@ -138,6 +138,7 @@ lclient_copytable(rlua_State *L) {
 			rlua_rawset(L, -3);
 		}
 	}
+	lua_pop(hL, 1);
 	return 1;
 }
 
@@ -162,6 +163,7 @@ static int
 lclient_value(rlua_State *L) {
 	lua_State *hL = get_host(L);
 	rlua_settop(L, 1);
+	printf("lua_gettop = %d\n", lua_gettop(hL));
 	get_value(L, hL);
 	return 1;
 }
@@ -538,7 +540,6 @@ addwatch(lua_State *hL, int idx) {
 static int
 storewatch(rlua_State *L, lua_State *hL, int idx) {
 	int ref = addwatch(hL, idx);
-	lua_remove(hL, idx);
 	get_registry(L, VAR_REGISTRY);
 	rlua_pushlightuserdata(L, &DEBUG_WATCH);
 	if (!get_index(L, hL, 1)) {
@@ -577,11 +578,13 @@ lclient_evalwatch(rlua_State *L) {
 		if (!storewatch(L, hL, i-rets)) {
 			rlua_pushboolean(L, 0);
 			rlua_pushstring(L, "error");
+			lua_settop(hL, n);
 			return 2;
 		}
 	}
 	rlua_pushboolean(L, 1);
 	rlua_insert(L, -1-rets);
+	lua_settop(hL, n);
 	return 1 + rets;
 }
 
