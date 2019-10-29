@@ -519,6 +519,7 @@ lclient_evalref(rlua_State *L) {
 
 static int
 addwatch(lua_State *hL, int idx) {
+	lua_checkstack(hL, 3);
 	lua_pushvalue(hL, idx);
 	if (lua::rawgetp(hL, LUA_REGISTRYINDEX, &DEBUG_WATCH) == LUA_TNIL) {
 		lua_pop(hL, 1);
