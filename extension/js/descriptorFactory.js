@@ -4,9 +4,9 @@ const os = require('os');
 const extension = require("./extension");
 
 function getRuntimeDirectory() {
-    const context = extension.context
-    if (path.basename(context.extensionPath) != 'extension') {
-        return context.extensionPath
+    const extensionPath = extension.context.extensionPath
+    if (path.basename(extensionPath) != 'extension') {
+        return extensionPath
     }
     return process.env.VSCODE_EXTENSION_PATH
 }
@@ -41,4 +41,3 @@ function createDebugAdapterDescriptor(session, executable) {
 }
 
 exports.createDebugAdapterDescriptor = createDebugAdapterDescriptor;
-exports.getRuntimeDirectory = getRuntimeDirectory;

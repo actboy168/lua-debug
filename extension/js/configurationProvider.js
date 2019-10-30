@@ -1,8 +1,6 @@
 const vscode = require("vscode");
 const path = require("path");
 const os = require('os');
-const fs = require('fs');
-const descriptorFactory = require("./descriptorFactory");
 
 function createDefaultProgram(folder) {
     const editor = vscode.window.activeTextEditor;
@@ -59,21 +57,7 @@ function mergeConfigurations(config) {
     return platname
 }
 
-function checkRuntime() {
-    let platform = os.platform()
-    if (platform == "win32") {
-        return true
-    }
-    let plat = platform == "darwin" ? "macos" : "linux"
-    let dir = descriptorFactory.getRuntimeDirectory()
-    let runtime = path.join(dir, 'bin/' + plat.toLowerCase() + '/lua-debug')
-    return fs.existsSync(runtime)
-}
-
-function resolveConfig(folder, config, token) {
-    if (!checkRuntime()) {
-        throw new Error('You need to compile `lua-debug`.');
-    }
+function resolveConfig(folder, config) {
     const settings = vscode.workspace.getConfiguration("lua.debug.settings");
     const plat = mergeConfigurations(config)
     config.type = 'lua';
