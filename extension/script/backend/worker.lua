@@ -375,9 +375,9 @@ local function runLoop(reason, text)
     variables.clean()
 end
 
-local hook = {}
+local event = {}
 
-function hook.bp(line)
+function event.bp(line)
     if not initialized then return end
     rdebug.getinfo(0, "S", info)
     local src = source.create(info.source)
@@ -395,7 +395,7 @@ function hook.bp(line)
     end
 end
 
-function hook.funcbp(func)
+function event.funcbp(func)
     if not initialized then return end
     if breakpoint.hit_funcbp(func) then
         state = 'stopped'
@@ -403,7 +403,7 @@ function hook.funcbp(func)
     end
 end
 
-function hook.step()
+function event.step()
     if not initialized then return end
     rdebug.getinfo(0, "S", info)
     local src = source.create(info.source)
@@ -423,7 +423,7 @@ function hook.step()
     end
 end
 
-function hook.newproto(proto, level)
+function event.newproto(proto, level)
     if not initialized then return end
     rdebug.getinfo(level, "S", info)
     local src = source.create(info.source)
@@ -480,8 +480,6 @@ local function getExceptionType()
     end
     return nil, 'lua_pcall'
 end
-
-local event = hook
 
 function event.update()
     workerThreadUpdate()
