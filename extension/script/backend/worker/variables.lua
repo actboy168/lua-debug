@@ -256,7 +256,6 @@ local TABLE_VALUE_MAXLEN = 32
 local function varGetTableValue(t)
     local asize = rdebug.tablesize(t)
     local str = ''
-    local mark = {}
     for i = 1, asize do
         local v = rdebug.indexv(t, i)
         if str == '' then
@@ -264,7 +263,6 @@ local function varGetTableValue(t)
         else
             str = str .. "," .. varGetShortValue(v)
         end
-        mark[i] = true
         if #str >= TABLE_VALUE_MAXLEN then
             return ("{%s,...}"):format(str)
         end
