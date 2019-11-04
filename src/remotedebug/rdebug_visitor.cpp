@@ -55,9 +55,12 @@ lclient_getfunc(rlua_State *L) {
 static int
 client_index(rlua_State *L, int getref) {
 	lua_State *hL = get_host(L);
-	if (rlua_gettop(L) != 2)
+	if (rlua_gettop(L) != 2) {
 		return rluaL_error(L, "need table key");
-
+	}
+	if (rlua_type(L, 2) != LUA_TSTRING && !rlua_isinteger(L, 2)) {
+		rluaL_typeerror(L, 2, "string or integer");
+	}
 	if (get_index(L, hL, getref)) {
 		return 1;
 	}
@@ -131,6 +134,7 @@ lclient_copytable(rlua_State *L) {
 				return 1;
 			}
 			rlua_pushvalue(L, 1); combine_kv(L, hL, 0, VAR_INDEX_KEY, i);
+			// TODO: 如果value使用getref==0，可以提高效率，但是getref==1仍然是需要的
 			rlua_pushvalue(L, 1); combine_kv(L, hL, 1, VAR_INDEX_VAL, i);
 			rlua_rawset(L, -3);
 		}

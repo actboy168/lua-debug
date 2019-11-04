@@ -529,7 +529,7 @@ local function extandTableNamed(varRef)
         varCreate(vars, varRef, nil
             , varGetName(key), nil
             , value, evaluateName and evalKey and ('%s%s'):format(evaluateName, evalKey)
-            , function() return rdebug.index(t, key) end
+            , function() return value end
         )
     end
     table.sort(vars, function(a, b) return a.name < b.name end)
@@ -798,7 +798,7 @@ local function extandGlobalNamed(varRef)
             varCreate(vars, varRef, nil
                 , varGetName(key), nil
                 , value, ('_G%s'):format(getTabelKey(key))
-                , function() return rdebug.index(rdebug._G, key) end
+                , function() return value end
             )
         end
     end

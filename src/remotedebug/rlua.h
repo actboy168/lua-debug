@@ -58,6 +58,7 @@ rlua_Integer (rluaL_checkinteger) (rlua_State *L, int arg);
 rlua_Integer (rluaL_optinteger) (rlua_State *L, int arg, rlua_Integer def);
 rlua_Integer (rluaL_len) (rlua_State *L, int idx);
 int (rluaL_argerror) (rlua_State *L, int arg, const char *extramsg);
+int (rluaL_typeerror) (rlua_State *L, int arg, const char *tname);
 
 void (rlua_close) (rlua_State *L);
 int  (rlua_pcallk) (rlua_State *L, int nargs, int nresults, int errfunc, rlua_KContext ctx, rlua_KFunction k);
