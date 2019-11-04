@@ -819,12 +819,14 @@ function special_extand.Standard(varRef)
     varRef.extand = varRef.extand or {}
     local vars = {}
     for name in pairs(standard) do
-        local value = rdebug.index(rdebug._G, name)
-        varCreate(vars, varRef, nil
-            , name, nil
-            , value , ('_G%s'):format(getTabelKey(name))
-            , function() return rdebug.index(rdebug._G, name) end
-        )
+        local value = rdebug.indexv(rdebug._G, name)
+        if value ~= nil then
+            varCreate(vars, varRef, nil
+                , name, nil
+                , value , ('_G%s'):format(getTabelKey(name))
+                , function() return rdebug.index(rdebug._G, name) end
+            )
+        end
     end
     table.sort(vars, function(a, b) return a.name < b.name end)
     return vars
