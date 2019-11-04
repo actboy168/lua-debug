@@ -36,8 +36,6 @@
 #define VAR_STACK 10
 #define VAR_INDEX_KEY 11
 #define VAR_INDEX_VAL 12
-#define VARKEY_INDEX 0
-#define VARKEY_NEXT 1
 
 struct value {
 	uint8_t type;
@@ -204,21 +202,10 @@ eval_value_(rlua_State *L, lua_State *cL, struct value *v) {
 				break;
 			}
 		}
-		if (v->frame == 0) {
-			// index key
-			lua_rawget(cL, -2);
-			lua_replace(cL, -2);
-			return lua_type(cL, -1);
-		} else {
-			// next key
-			if (lua_next(cL, -2) == 0) {
-				lua_pop(cL, 1);	// pop table
-				break;
-			}
-			lua_pop(cL, 1);	// pop value
-			lua_replace(cL, -2);
-			return lua_type(cL, -1);
-		}
+		// index key
+		lua_rawget(cL, -2);
+		lua_replace(cL, -2);
+		return lua_type(cL, -1);
 	}
 	case VAR_INDEX_KEY:
 	case VAR_INDEX_VAL: {
@@ -391,16 +378,11 @@ assign_value(rlua_State *L, struct value * v, lua_State *cL) {
 			}
 		}
 		// in cL : key, table, value, ...
-		if (v->frame == 0) {
-			// index key
-			lua_pushvalue(cL, -3);	// value, key, table, value, ...
-			lua_rawset(cL, -3);	// table, value, ...
-			lua_pop(cL, 2);
-			return 1;
-		} else {
-			// next key can't assign
-			break;
-		}
+		// index key
+		lua_pushvalue(cL, -3);	// value, key, table, value, ...
+		lua_rawset(cL, -3);	// table, value, ...
+		lua_pop(cL, 2);
+		return 1;
 	}
 	case VAR_INDEX_KEY:
 		break;
@@ -607,12 +589,12 @@ copy_table(rlua_State *L, int index) {
 
 // table key
 static void
-new_index(rlua_State *L, int type) {
+new_index(rlua_State *L) {
 	struct value *t = (struct value *)rlua_touserdata(L, -2);
 	int sz = sizeof_value(t);
 	struct value *v = (struct value *)rlua_newuserdata(L, sizeof(struct value) * (sz + 1));
 	v->type = VAR_INDEX;
-	v->frame = type;
+	v->frame = 0;
 	memcpy(v+1,t,sz * sizeof(struct value));
 	// t k v
 	copy_table(L, -3);	// copy uservalue from t to v
@@ -664,7 +646,7 @@ append_table(rlua_State *L, int index) {
 
 // table key
 static void
-new_index_object(rlua_State *L, int type) {
+new_index_object(rlua_State *L) {
 	struct value *t = (struct value *)rlua_touserdata(L, -2);
 	int ts = sizeof_value(t);
 	struct value *k = (struct value *)rlua_touserdata(L, -1);
@@ -672,7 +654,7 @@ new_index_object(rlua_State *L, int type) {
 
 	struct value *v = (struct value *)rlua_newuserdata(L, sizeof(struct value) * (ts + ks + 1));
 	v->type = VAR_INDEX_OBJ;
-	v->frame = type;
+	v->frame = 0;
 	v->index = ts;
 	memcpy(v+1,t,ts * sizeof(struct value));
 	// t k v
@@ -691,12 +673,12 @@ new_index_object(rlua_State *L, int type) {
 }
 
 static void
-create_index(rlua_State *L, int type) {
+create_index(rlua_State *L) {
 	if (rlua_type(L, -1) == LUA_TUSERDATA) {
-		new_index_object(L, type);
+		new_index_object(L);
 	}
 	else {
-		new_index(L, type);
+		new_index(L);
 	}
 }
 
@@ -727,7 +709,7 @@ table_key(rlua_State *L, lua_State *cL) {
 // output cL :
 // output L : v(key or value)
 static void
-combine_tk(rlua_State *L, lua_State *cL, int type, int getref) {
+combine_index(rlua_State *L, lua_State *cL, int getref) {
 	if (!getref && copy_toX(cL, L) != LUA_TNONE) {
 		lua_pop(cL, 2);
 		// L : t, k, v
@@ -737,7 +719,7 @@ combine_tk(rlua_State *L, lua_State *cL, int type, int getref) {
 	}
 	lua_pop(cL, 2);	// pop t v from cL
 	// L : t, k
-	create_index(L, type);
+	create_index(L);
 	// L : t, k, v
 	rlua_replace(L, -3);
 	rlua_pop(L, 1);
@@ -748,21 +730,25 @@ get_index(rlua_State *L, lua_State *cL, int getref) {
 	if (table_key(L, cL) == 0)
 		return 0;
 	lua_rawget(cL, -2);	// cL : table value
-	combine_tk(L, cL, VARKEY_INDEX, getref);
+	combine_index(L, cL, getref);
 	return 1;
 }
 
 // table last_key
 static int
-next_key(rlua_State *L, lua_State *cL, int getref) {
-	if (table_key(L, cL) == 0)
-		return 0;
-	if (lua_next(cL, -2) == 0) {
-		lua_pop(cL, 1);	// remove table
+next_key(rlua_State *L, lua_State *cL) {
+	if (table_key(L, cL) == 0) {
+		rlua_pop(L, 2);
 		return 0;
 	}
-	lua_pop(cL, 1);	// remove value
-	combine_tk(L, cL, VARKEY_NEXT, getref);
+	rlua_pop(L, 2);
+	if (lua_next(cL, -2) == 0) {
+		lua_pop(cL, 1);
+		return 0;
+	}
+	lua_pop(cL, 1);
+	copyvalue(cL, L);
+	lua_pop(cL, 2);
 	return 1;
 }
 

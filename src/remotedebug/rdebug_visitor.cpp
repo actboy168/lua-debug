@@ -79,12 +79,9 @@ lclient_nextkey(rlua_State *L) {
 	lua_State *hL = get_host(L);
 	rlua_settop(L, 2);
 	rlua_pushvalue(L, 1);
-	// table key table
 	rlua_insert(L, -2);
-	// table table key
-	if (next_key(L, hL, 0) == 0)
+	if (next_key(L, hL) == 0)
 		return 0;
-	// table key_obj
 	return 1;
 }
 
