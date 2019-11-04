@@ -266,7 +266,7 @@ local function varGetTableValue(t)
         end
         mark[i] = true
         if #str >= TABLE_VALUE_MAXLEN then
-            return ("{%s...}"):format(str)
+            return ("{%s,...}"):format(str)
         end
     end
 
@@ -285,7 +285,7 @@ local function varGetTableValue(t)
             str = str .. ',' .. kv[1] .. '=' .. varGetShortValue(kv[2])
         end
         if #str >= TABLE_VALUE_MAXLEN then
-            return ("{%s...}"):format(str)
+            return ("{%s,...}"):format(str)
         end
     end
     return ("{%s}"):format(str)
