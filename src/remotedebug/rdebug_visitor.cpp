@@ -4,7 +4,7 @@
 #include <stdio.h>
 
 static int DEBUG_WATCH = 0;
-static int DEBUG_WATCH_FUNC = 0;
+static int DEBUG_REFFUNC = 0;
 
 lua_State* get_host(rlua_State *L);
 
@@ -433,11 +433,11 @@ lclient_reffunc(rlua_State *L) {
 	size_t len = 0;
 	const char* func = rluaL_checklstring(L, 1, &len);
 	lua_State* hL = get_host(L);
-	if (lua::rawgetp(hL, LUA_REGISTRYINDEX, &DEBUG_WATCH_FUNC) == LUA_TNIL) {
+	if (lua::rawgetp(hL, LUA_REGISTRYINDEX, &DEBUG_REFFUNC) == LUA_TNIL) {
 		lua_pop(hL, 1);
 		lua_newtable(hL);
 		lua_pushvalue(hL, -1);
-		lua_rawsetp(hL, LUA_REGISTRYINDEX, &DEBUG_WATCH_FUNC);
+		lua_rawsetp(hL, LUA_REGISTRYINDEX, &DEBUG_REFFUNC);
 	}
 	if (luaL_loadbuffer(hL, func, len, "=")) {
 		rlua_pushnil(L);
@@ -452,7 +452,7 @@ lclient_reffunc(rlua_State *L) {
 
 static int
 getreffunc(lua_State *hL, lua_Integer func) {
-	if (lua::rawgetp(hL, LUA_REGISTRYINDEX, &DEBUG_WATCH_FUNC) != LUA_TTABLE) {
+	if (lua::rawgetp(hL, LUA_REGISTRYINDEX, &DEBUG_REFFUNC) != LUA_TTABLE) {
 		lua_pop(hL, 1);
 		return 0;
 	}
@@ -593,6 +593,7 @@ lclient_unwatch(rlua_State *L) {
 	rlua_Integer ref = rluaL_checkinteger(L, 1);
 	lua_State* hL = get_host(L);
 	if (lua::rawgetp(hL, LUA_REGISTRYINDEX, &DEBUG_WATCH) == LUA_TNIL) {
+		lua_pop(L, 1);
 		return 0;
 	}
 	luaL_unref(hL, -1, (int)ref);
