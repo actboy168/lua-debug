@@ -593,7 +593,7 @@ lclient_unwatch(rlua_State *L) {
 	rlua_Integer ref = rluaL_checkinteger(L, 1);
 	lua_State* hL = get_host(L);
 	if (lua::rawgetp(hL, LUA_REGISTRYINDEX, &DEBUG_WATCH) == LUA_TNIL) {
-		lua_pop(L, 1);
+		lua_pop(hL, 1);
 		return 0;
 	}
 	luaL_unref(hL, -1, (int)ref);
