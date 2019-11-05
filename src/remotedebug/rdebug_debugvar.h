@@ -10,33 +10,36 @@
 /*
 	TYPE            frame (16bit)      index (32bit)      size
 	-----------------------------------------------------------
-	VAR_FRAME_LOCAL stack frame        index              1
-	VAR_FRAME_FUNC  stack frame        -                  1
-	VAR_INDEX       0/1 (*)            index              ?
-	VAR_UPVALUE     -                  index              ?
-	VAR_GLOBAL      -                  -                  1
-	VAR_REGISTRY    -                  -                  1
-	VAR_METATABLE   0/1 (**)           - (lua type)       ?/1
-	VAR_USERVALUE   -                  -                  ?
+	VAR::FRAME_LOCAL stack frame        index              1
+	VAR::FRAME_FUNC  stack frame        -                  1
+	VAR::INDEX       0/1 (*)            index              ?
+	VAR::UPVALUE     -                  index              ?
+	VAR::GLOBAL      -                  -                  1
+	VAR::REGISTRY    -                  -                  1
+	VAR::METATABLE   0/1 (**)           - (lua type)       ?/1
+	VAR::USERVALUE   -                  -                  ?
 
 	* : 0 indexed value, 1 next key
 	** : 0 metatable of object ; 1 metatable of lua type
 */
 
-#define VAR_FRAME_LOCAL 0	// stack(frame, index)
-#define VAR_FRAME_FUNC 1 // stack(frame).func
-#define VAR_INDEX  2	// table[const key]
-#define VAR_UPVALUE 4	// func[index]
-#define VAR_GLOBAL 5	// _G
-#define VAR_REGISTRY 6	// REGISTRY
-#define VAR_METATABLE 8	// table.metatable
-#define VAR_USERVALUE 9	// userdata.uservalue
-#define VAR_STACK 10
-#define VAR_INDEX_KEY 11
-#define VAR_INDEX_VAL 12
+enum class VAR {
+	FRAME_LOCAL,	// stack(frame, index)
+	FRAME_FUNC,		// stack(frame).func
+	INDEX,			// table[const key]
+	UPVALUE,		// func[index]
+	GLOBAL,			// _G
+	REGISTRY,		// REGISTRY
+	METATABLE,		// table.metatable
+	USERVALUE,		// userdata.uservalue
+	STACK,
+	INDEX_KEY,
+	INDEX_VAL,
+};
+
 
 struct value {
-	uint8_t type;
+	VAR type;
 	uint16_t frame;
 	int index;
 };
@@ -45,22 +48,22 @@ struct value {
 static int
 sizeof_value(struct value *v) {
 	switch (v->type) {
-	case VAR_FRAME_LOCAL:
-	case VAR_FRAME_FUNC:
-	case VAR_GLOBAL:
-	case VAR_REGISTRY:
-	case VAR_STACK:
+	case VAR::FRAME_LOCAL:
+	case VAR::FRAME_FUNC:
+	case VAR::GLOBAL:
+	case VAR::REGISTRY:
+	case VAR::STACK:
 		return 1;
-	case VAR_METATABLE:
+	case VAR::METATABLE:
 		if (v->frame) {
 			return 1;
 		}
 		// go through
-	case VAR_INDEX:
-	case VAR_UPVALUE:
-	case VAR_USERVALUE:
-	case VAR_INDEX_KEY:
-	case VAR_INDEX_VAL:
+	case VAR::INDEX:
+	case VAR::UPVALUE:
+	case VAR::USERVALUE:
+	case VAR::INDEX_KEY:
+	case VAR::INDEX_VAL:
 		return 1 + sizeof_value(v+1);
 	}
 	return 0;
@@ -152,7 +155,7 @@ eval_value_(rlua_State *L, lua_State *cL, struct value *v) {
 		return rluaL_error(L, "stack overflow");
 
 	switch (v->type) {
-	case VAR_FRAME_LOCAL: {
+	case VAR::FRAME_LOCAL: {
 		lua_Debug ar;
 		if (lua_getstack(cL, v->frame, &ar) == 0)
 			break;
@@ -162,7 +165,7 @@ eval_value_(rlua_State *L, lua_State *cL, struct value *v) {
 		}
 		break;
 	}
-	case VAR_FRAME_FUNC: {
+	case VAR::FRAME_FUNC: {
 		lua_Debug ar;
 		if (lua_getstack(cL, v->frame, &ar) == 0)
 			break;
@@ -170,7 +173,7 @@ eval_value_(rlua_State *L, lua_State *cL, struct value *v) {
 			break;
 		return LUA_TFUNCTION;
 	}
-	case VAR_INDEX:{
+	case VAR::INDEX:{
 		int t = eval_value_(L, cL, v+1);
 		if (t == LUA_TNONE)
 			break;
@@ -195,8 +198,8 @@ eval_value_(rlua_State *L, lua_State *cL, struct value *v) {
 		lua_replace(cL, -2);
 		return lua_type(cL, -1);
 	}
-	case VAR_INDEX_KEY:
-	case VAR_INDEX_VAL: {
+	case VAR::INDEX_KEY:
+	case VAR::INDEX_VAL: {
 		int t = eval_value_(L, cL, v+1);
 		if (t == LUA_TNONE)
 			break;
@@ -205,7 +208,7 @@ eval_value_(rlua_State *L, lua_State *cL, struct value *v) {
 			lua_pop(cL, 1);
 			break;
 		}
-		bool ok = v->type == VAR_INDEX_KEY
+		bool ok = v->type == VAR::INDEX_KEY
 			? remotedebug::table::get_k(cL, -1, v->index)
 			: remotedebug::table::get_v(cL, -1, v->index)
 			;
@@ -216,7 +219,7 @@ eval_value_(rlua_State *L, lua_State *cL, struct value *v) {
 		lua_remove(cL, -2);
 		return lua_type(cL, -1);
 	}
-	case VAR_UPVALUE: {
+	case VAR::UPVALUE: {
 		int t = eval_value_(L, cL, v+1);
 		if (t == LUA_TNONE)
 			break;
@@ -233,17 +236,17 @@ eval_value_(rlua_State *L, lua_State *cL, struct value *v) {
 			break;
 		}
 	}
-	case VAR_GLOBAL:
+	case VAR::GLOBAL:
 #if LUA_VERSION_NUM == 501
 		lua_pushvalue(cL, LUA_GLOBALSINDEX);
 		return LUA_TTABLE;
 #else
 		return lua::rawgeti(cL, LUA_REGISTRYINDEX, LUA_RIDX_GLOBALS);
 #endif
-	case VAR_REGISTRY:
+	case VAR::REGISTRY:
 		lua_pushvalue(cL, LUA_REGISTRYINDEX);
 		return LUA_TTABLE;
-	case VAR_METATABLE:
+	case VAR::METATABLE:
 		if (v->frame == 1) {
 			switch(v->index) {
 			case LUA_TNIL:
@@ -281,7 +284,7 @@ eval_value_(rlua_State *L, lua_State *cL, struct value *v) {
 			lua_pushnil(cL);
 			return LUA_TNIL;
 		}
-	case VAR_USERVALUE: {
+	case VAR::USERVALUE: {
 		int t = eval_value_(L, cL, v+1);
 		if (t == LUA_TNONE)
 			break;
@@ -293,7 +296,7 @@ eval_value_(rlua_State *L, lua_State *cL, struct value *v) {
 		lua_replace(cL, -2);
 		return t;
 	}
-	case VAR_STACK:
+	case VAR::STACK:
 		lua_pushvalue(cL, v->index);
 		return lua_type(cL, -1);
 	}
@@ -326,7 +329,7 @@ static int
 assign_value(rlua_State *L, struct value * v, lua_State *cL) {
 	int top = lua_gettop(cL);
 	switch (v->type) {
-	case VAR_FRAME_LOCAL: {
+	case VAR::FRAME_LOCAL: {
 		lua_Debug ar;
 		if (lua_getstack(cL, v->frame, &ar) == 0) {
 			break;
@@ -336,13 +339,13 @@ assign_value(rlua_State *L, struct value * v, lua_State *cL) {
 		}
 		break;
 	}
-	case VAR_GLOBAL:
-	case VAR_REGISTRY:
-	case VAR_FRAME_FUNC:
-	case VAR_STACK:
+	case VAR::GLOBAL:
+	case VAR::REGISTRY:
+	case VAR::FRAME_FUNC:
+	case VAR::STACK:
 		// Can't assign frame func, etc.
 		break;
-	case VAR_INDEX: {
+	case VAR::INDEX: {
 		int t = eval_value_(L, cL, v+1);
 		if (t == LUA_TNONE)
 			break;
@@ -365,9 +368,9 @@ assign_value(rlua_State *L, struct value * v, lua_State *cL) {
 		lua_pop(cL, 2);
 		return 1;
 	}
-	case VAR_INDEX_KEY:
+	case VAR::INDEX_KEY:
 		break;
-	case VAR_INDEX_VAL: {
+	case VAR::INDEX_VAL: {
 		int t = eval_value_(L, cL, v+1);
 		if (t == LUA_TNONE)
 			break;
@@ -381,7 +384,7 @@ assign_value(rlua_State *L, struct value * v, lua_State *cL) {
 		lua_pop(cL, 1);
 		return 1;
 	}
-	case VAR_UPVALUE: {
+	case VAR::UPVALUE: {
 		int t = eval_value_(L, cL, v+1);
 		if (t == LUA_TNONE)
 			break;
@@ -397,7 +400,7 @@ assign_value(rlua_State *L, struct value * v, lua_State *cL) {
 		}
 		break;
 	}
-	case VAR_METATABLE: {
+	case VAR::METATABLE: {
 		if (v->frame == 1) {
 			switch(v->index) {
 			case LUA_TNIL:
@@ -434,7 +437,7 @@ assign_value(rlua_State *L, struct value * v, lua_State *cL) {
 		lua_pop(cL, 1);
 		return 1;
 	}
-	case VAR_USERVALUE: {
+	case VAR::USERVALUE: {
 		int t = eval_value_(L, cL, v+1);
 		if (t != LUA_TUSERDATA) {
 			break;
@@ -503,7 +506,7 @@ get_frame_local(rlua_State *L, lua_State *cL, int frame, int index, int getref) 
 	}
 	lua_pop(cL, 1);
 	struct value *v = (struct value *)rlua_newuserdata(L, sizeof(struct value));
-	v->type = VAR_FRAME_LOCAL;
+	v->type = VAR::FRAME_LOCAL;
 	v->frame = frame;
 	v->index = index;
 	return name;
@@ -524,7 +527,7 @@ get_frame_func(rlua_State *L, lua_State *cL, int frame) {
 	lua_pop(cL, 1);
 
 	struct value *v = (struct value *)rlua_newuserdata(L, sizeof(struct value));
-	v->type = VAR_FRAME_FUNC;
+	v->type = VAR::FRAME_FUNC;
 	v->frame = frame;
 	v->index = 0;
 	return 1;
@@ -547,7 +550,7 @@ get_stack(rlua_State *L, lua_State *cL, int index, int getref) {
 		lua_pop(cL, 1);
 	}
 	struct value *v = (struct value *)rlua_newuserdata(L, sizeof(struct value));
-	v->type = VAR_STACK;
+	v->type = VAR::STACK;
 	v->index = index;
 	return 1;
 }
@@ -574,7 +577,7 @@ new_index(rlua_State *L) {
 	struct value *t = (struct value *)rlua_touserdata(L, -2);
 	int sz = sizeof_value(t);
 	struct value *v = (struct value *)rlua_newuserdata(L, sizeof(struct value) * (sz + 1));
-	v->type = VAR_INDEX;
+	v->type = VAR::INDEX;
 	v->frame = 0;
 	memcpy(v+1,t,sz * sizeof(struct value));
 	// t k v
@@ -699,7 +702,7 @@ get_upvalue(rlua_State *L, lua_State *cL, int index, int getref) {
 	struct value *f = (struct value *)rlua_touserdata(L, -1);
 	int sz = sizeof_value(f);
 	struct value *v = (struct value *)rlua_newuserdata(L, sizeof(struct value) * (1+sz));
-	v->type = VAR_UPVALUE;
+	v->type = VAR::UPVALUE;
 	v->frame = 0;
 	v->index = index;
 	memcpy(v+1, f, sizeof(struct value) * sz);
@@ -709,10 +712,10 @@ get_upvalue(rlua_State *L, lua_State *cL, int index, int getref) {
 }
 
 static int
-get_registry(rlua_State *L, int type) {
+get_registry(rlua_State *L, VAR type) {
 	switch (type) {
-	case VAR_GLOBAL:
-	case VAR_REGISTRY:
+	case VAR::GLOBAL:
+	case VAR::REGISTRY:
 		break;
 	default:
 		return 0;
@@ -747,7 +750,7 @@ get_metatable(rlua_State *L, lua_State *cL, int getref) {
 		struct value *t = (struct value *)rlua_touserdata(L, -1);
 		int sz = sizeof_value(t);
 		struct value *v = (struct value *)rlua_newuserdata(L, sizeof(struct value) * (sz + 1));
-		v->type = VAR_METATABLE;
+		v->type = VAR::METATABLE;
 		v->frame = 0;
 		v->index = 0;
 		memcpy(v+1,t,sz * sizeof(struct value));
@@ -758,7 +761,7 @@ get_metatable(rlua_State *L, lua_State *cL, int getref) {
 	} else {
 		rlua_pop(L, 1);
 		struct value *v = (struct value *)rlua_newuserdata(L, sizeof(struct value));
-		v->type = VAR_METATABLE;
+		v->type = VAR::METATABLE;
 		v->frame = 1;
 		v->index = t;
 		return 1;
@@ -810,7 +813,7 @@ get_uservalue(rlua_State *L, lua_State *cL, int index, int getref) {
 	struct value *u = (struct value *)rlua_touserdata(L, -1);
 	int sz = sizeof_value(u);
 	struct value *v = (struct value *)rlua_newuserdata(L, sizeof(struct value) * (sz + 1));
-	v->type = VAR_USERVALUE;
+	v->type = VAR::USERVALUE;
 	v->frame = 0;
 	v->index = index;
 	memcpy(v+1,u,sz * sizeof(struct value));
@@ -821,7 +824,7 @@ get_uservalue(rlua_State *L, lua_State *cL, int index, int getref) {
 }
 
 static void
-combine_kv(rlua_State *L, lua_State *cL, int getref, int type, int index) {
+combine_kv(rlua_State *L, lua_State *cL, int getref, VAR type, int index) {
 	if (!getref && copy_toX(cL, L) != LUA_TNONE) {
 		rlua_replace(L, -2);
 		lua_pop(cL, 1);

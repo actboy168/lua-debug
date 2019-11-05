@@ -132,9 +132,9 @@ lclient_copytable(rlua_State *L) {
 				lua_pop(hL, 3);
 				return 1;
 			}
-			rlua_pushvalue(L, 1); combine_kv(L, hL, 0, VAR_INDEX_KEY, i);
+			rlua_pushvalue(L, 1); combine_kv(L, hL, 0, VAR::INDEX_KEY, i);
 			// TODO: 如果value使用getref==0，可以提高效率，但是getref==1仍然是需要的
-			rlua_pushvalue(L, 1); combine_kv(L, hL, 1, VAR_INDEX_VAL, i);
+			rlua_pushvalue(L, 1); combine_kv(L, hL, 1, VAR::INDEX_VAL, i);
 			rlua_rawset(L, -3);
 		}
 	}
@@ -538,7 +538,7 @@ addwatch(lua_State *hL, int idx) {
 
 static void
 storewatch(rlua_State *L, int ref) {
-	get_registry(L, VAR_REGISTRY);
+	get_registry(L, VAR::REGISTRY);
 	rlua_pushstring(L, "__debugger_watch");
 	new_index(L);
 	rlua_pushinteger(L, ref);
@@ -632,9 +632,9 @@ init_visitor(rlua_State *L) {
 	};
 	rlua_newtable(L);
 	rluaL_setfuncs(L,l,0);
-	get_registry(L, VAR_GLOBAL);
+	get_registry(L, VAR::GLOBAL);
 	rlua_setfield(L, -2, "_G");
-	get_registry(L, VAR_REGISTRY);
+	get_registry(L, VAR::REGISTRY);
 	rlua_setfield(L, -2, "_REGISTRY");
 	return 1;
 }
