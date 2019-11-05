@@ -537,19 +537,15 @@ addwatch(lua_State *hL, int idx) {
 	return ref;
 }
 
-static int
-storewatch(rlua_State *L, lua_State *hL, int idx) {
-	int ref = addwatch(hL, idx);
+static void
+storewatch(rlua_State *L, int ref) {
 	get_registry(L, VAR_REGISTRY);
 	rlua_pushlightuserdata(L, &DEBUG_WATCH);
-	if (!get_index(L, hL, 1)) {
-		return 0;
-	}
+	new_index(L);
 	rlua_pushinteger(L, ref);
-	if (!get_index(L, hL, 1)) {
-		return 0;
-	}
-	return 1;
+	new_index(L);
+	rlua_copy(L, -1, -5);
+	rlua_pop(L, 4);
 }
 
 static int
@@ -575,12 +571,7 @@ lclient_evalwatch(rlua_State *L) {
 	}
 	int rets = lua_gettop(hL) - n;
 	for (int i = 0; i < rets; ++i) {
-		if (!storewatch(L, hL, i-rets)) {
-			rlua_pushboolean(L, 0);
-			rlua_pushstring(L, "error");
-			lua_settop(hL, n);
-			return 2;
-		}
+		storewatch(L, addwatch(hL, i-rets));
 	}
 	rlua_pushboolean(L, 1);
 	rlua_insert(L, -1-rets);

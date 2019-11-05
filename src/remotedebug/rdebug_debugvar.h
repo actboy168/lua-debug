@@ -605,8 +605,7 @@ table_key(rlua_State *L, lua_State *cL) {
 		return rluaL_error(L, "stack overflow");
 	}
 	rlua_insert(L, -2);	// L : key table
-	int t = eval_value(L, cL);
-	if (t != LUA_TTABLE) {
+	if (eval_value(L, cL) != LUA_TTABLE) {
 		lua_pop(cL, 1);	// pop table
 		rlua_pop(L, 2);	// pop k/t
 		return 0;

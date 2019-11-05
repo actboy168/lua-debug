@@ -163,11 +163,11 @@ function m.exec(bp)
             if not info then
                 return key
             end
-            local ok, r = evaluate.eval(info)
+            local ok, res = evaluate.eval(info)
             if not ok then
                 return info
             end
-            return tostring(r)
+            return tostring(res)
         end)
         rdebug.getinfo(1, "Sl", info)
         local src = source.create(info.source)
