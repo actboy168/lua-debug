@@ -129,6 +129,7 @@ void  (rluaL_pushresultsize) (rluaL_Buffer *B, size_t sz);
 
 #define rlua_tonumber(L,i) rlua_tonumberx(L,(i),NULL)
 #define rlua_tointeger(L,i) rlua_tointegerx(L,(i),NULL)
+#define rlua_tostring(L,i)	rlua_tolstring(L, (i), NULL)
 #define rlua_call(L,n,r) rlua_callk(L, (n), (r), 0, NULL)
 #define rlua_pcall(L,n,r,f) rlua_pcallk(L, (n), (r), (f), 0, NULL)
 #define rluaL_loadbuffer(L,s,sz,n) rluaL_loadbufferx(L,s,sz,n,NULL)

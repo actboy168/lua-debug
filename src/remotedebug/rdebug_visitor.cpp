@@ -3,7 +3,6 @@
 #include <string.h>
 #include <stdio.h>
 
-static int DEBUG_WATCH = 0;
 static int DEBUG_REFFUNC = 0;
 
 lua_State* get_host(rlua_State *L);
@@ -525,11 +524,11 @@ static int
 addwatch(lua_State *hL, int idx) {
 	lua_checkstack(hL, 3);
 	lua_pushvalue(hL, idx);
-	if (lua::rawgetp(hL, LUA_REGISTRYINDEX, &DEBUG_WATCH) == LUA_TNIL) {
+	if (lua::getfield(hL, LUA_REGISTRYINDEX, "__debugger_watch") == LUA_TNIL) {
 		lua_pop(hL, 1);
 		lua_newtable(hL);
 		lua_pushvalue(hL, -1);
-		lua_rawsetp(hL, LUA_REGISTRYINDEX, &DEBUG_WATCH);
+		lua_setfield(hL, LUA_REGISTRYINDEX, "__debugger_watch");
 	}
 	lua_insert(hL, -2);
 	int ref = luaL_ref(hL, -2);
@@ -540,7 +539,7 @@ addwatch(lua_State *hL, int idx) {
 static void
 storewatch(rlua_State *L, int ref) {
 	get_registry(L, VAR_REGISTRY);
-	rlua_pushlightuserdata(L, &DEBUG_WATCH);
+	rlua_pushstring(L, "__debugger_watch");
 	new_index(L);
 	rlua_pushinteger(L, ref);
 	new_index(L);
@@ -583,7 +582,7 @@ static int
 lclient_unwatch(rlua_State *L) {
 	rlua_Integer ref = rluaL_checkinteger(L, 1);
 	lua_State* hL = get_host(L);
-	if (lua::rawgetp(hL, LUA_REGISTRYINDEX, &DEBUG_WATCH) == LUA_TNIL) {
+	if (lua::getfield(hL, LUA_REGISTRYINDEX, "__debugger_watch") == LUA_TNIL) {
 		lua_pop(hL, 1);
 		return 0;
 	}
@@ -595,7 +594,7 @@ static int
 lclient_cleanwatch(rlua_State *L) {
 	lua_State* hL = get_host(L);
 	lua_pushnil(hL);
-	lua_rawsetp(hL, LUA_REGISTRYINDEX, &DEBUG_WATCH);
+	lua_setfield(hL, LUA_REGISTRYINDEX, "__debugger_watch");
 	return 0;
 }
 
