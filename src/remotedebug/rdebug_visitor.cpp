@@ -59,7 +59,7 @@ client_index(rlua_State *L, int getref) {
 		return rluaL_error(L, "need table key");
 	}
 	rlua_Integer i = rluaL_checkinteger(L, 2);
-	if (i <= 0 || i > (std::numeric_limits<unsigned int>::max)()) {
+	if (i <= 0 || i > (std::numeric_limits<int>::max)()) {
 		return rluaL_error(L, "must be `unsigned int`");
 	}
 	if (get_index(L, hL, getref)) {
@@ -85,7 +85,7 @@ client_field(rlua_State *L, int getref) {
 		return rluaL_error(L, "need table key");
 	}
 	rluaL_checktype(L, 2, LUA_TSTRING);
-	if (get_index(L, hL, getref)) {
+	if (get_field(L, hL, getref)) {
 		return 1;
 	}
 	return 0;
@@ -228,7 +228,6 @@ lclient_assign(rlua_State *L) {
 	}
 	rluaL_checktype(L, 1, LUA_TUSERDATA);
 	struct value * ref = (struct value *)rlua_touserdata(L, 1);
-	rlua_getuservalue(L, 1);
 	int r = assign_value(L, ref, hL);
 	rlua_pushboolean(L, r);
 	return 1;
@@ -565,7 +564,7 @@ static void
 storewatch(rlua_State *L, int ref) {
 	get_registry(L, VAR::REGISTRY);
 	rlua_pushstring(L, "__debugger_watch");
-	new_index(L);
+	new_field(L);
 	rlua_pushinteger(L, ref);
 	new_index(L);
 	rlua_copy(L, -1, -5);
