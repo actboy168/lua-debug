@@ -468,8 +468,8 @@ local function pairsEventArgs()
 end
 
 local function getExceptionType()
-    local pcall = rdebug.value(rdebug.indexv(rdebug._G, 'pcall'))
-    local xpcall = rdebug.value(rdebug.indexv(rdebug._G, 'xpcall'))
+    local pcall = rdebug.value(rdebug.fieldv(rdebug._G, 'pcall'))
+    local xpcall = rdebug.value(rdebug.fieldv(rdebug._G, 'xpcall'))
     local level = 1
     while true do
         local f = rdebug.getfunc(level)
@@ -634,8 +634,8 @@ local function init_internalmodule(config)
     if not mod then
         return
     end
-    local newvalue = rdebug.index(rdebug.index(rdebug.index(rdebug._G, "package"), "loaded"), mod)
-    local oldvalue = rdebug.indexv(rdebug._REGISTRY, "lua-debug")
+    local newvalue = rdebug.field(rdebug.field(rdebug.field(rdebug._G, "package"), "loaded"), mod)
+    local oldvalue = rdebug.fieldv(rdebug._REGISTRY, "lua-debug")
     rdebug.assign(newvalue, oldvalue)
 end
 

@@ -377,14 +377,14 @@ local function varGetValue(context, type, value)
     elseif type == 'userdata' then
         local meta = rdebug.getmetatablev(value)
         if meta ~= nil then
-            local fn = rdebug.indexv(meta, '__debugger_tostring')
+            local fn = rdebug.fieldv(meta, '__debugger_tostring')
             if fn ~= nil and (rdebug.type(fn) == 'function' or rdebug.type(fn) == 'c function') then
                 local ok, res = rdebug.evalref(fn, value)
                 if ok then
                     return res
                 end
             end
-            local name = rdebug.indexv(meta, '__name')
+            local name = rdebug.fieldv(meta, '__name')
             if name ~= nil then
                 return 'userdata: ' .. tostring(rdebug.value(name))
             end
@@ -819,12 +819,12 @@ function special_extand.Standard(varRef)
     varRef.extand = varRef.extand or {}
     local vars = {}
     for name in pairs(standard) do
-        local value = rdebug.indexv(rdebug._G, name)
+        local value = rdebug.fieldv(rdebug._G, name)
         if value ~= nil then
             varCreate(vars, varRef, nil
                 , name, nil
                 , value , ('_G%s'):format(getTabelKey(name))
-                , function() return rdebug.index(rdebug._G, name) end
+                , function() return rdebug.field(rdebug._G, name) end
             )
         end
     end

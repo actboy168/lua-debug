@@ -2,6 +2,7 @@
 #include "rdebug_table.h"
 #include <string.h>
 #include <stdio.h>
+#include <limits>
 
 static int DEBUG_REFFUNC = 0;
 
@@ -57,8 +58,9 @@ client_index(rlua_State *L, int getref) {
 	if (rlua_gettop(L) != 2) {
 		return rluaL_error(L, "need table key");
 	}
-	if (rlua_type(L, 2) != LUA_TSTRING && !rlua_isinteger(L, 2)) {
-		rluaL_typeerror(L, 2, "string or integer");
+	rlua_Integer i = rluaL_checkinteger(L, 2);
+	if (i <= 0 || i > (std::numeric_limits<unsigned int>::max)()) {
+		return rluaL_error(L, "must be `unsigned int`");
 	}
 	if (get_index(L, hL, getref)) {
 		return 1;
@@ -74,6 +76,29 @@ lclient_index(rlua_State *L) {
 static int
 lclient_indexv(rlua_State *L) {
 	return client_index(L, 0);
+}
+
+static int
+client_field(rlua_State *L, int getref) {
+	lua_State *hL = get_host(L);
+	if (rlua_gettop(L) != 2) {
+		return rluaL_error(L, "need table key");
+	}
+	rluaL_checktype(L, 2, LUA_TSTRING);
+	if (get_index(L, hL, getref)) {
+		return 1;
+	}
+	return 0;
+}
+
+static int
+lclient_field(rlua_State *L) {
+	return client_field(L, 1);
+}
+
+static int
+lclient_fieldv(rlua_State *L) {
+	return client_field(L, 0);
 }
 
 static int
@@ -612,6 +637,8 @@ init_visitor(rlua_State *L) {
 		{ "getuservaluev", lclient_getuservaluev },
 		{ "index", lclient_index },
 		{ "indexv", lclient_indexv },
+		{ "field", lclient_field },
+		{ "fieldv", lclient_fieldv },
 		{ "nextkey", lclient_nextkey },
 		{ "getstack", lclient_getstack },
 		{ "getstackv", lclient_getstackv },
