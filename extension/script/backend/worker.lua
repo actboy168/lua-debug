@@ -377,10 +377,7 @@ end
 
 local event = {}
 
-function event.bp(line)
-    if not initialized then return end
-    rdebug.getinfo(0, "S", info)
-    local src = source.create(info.source)
+local function event_breakpoint(src, line)
     if not source.valid(src) then
         hookmgr.break_closeline()
         return
@@ -390,9 +387,16 @@ function event.bp(line)
         if breakpoint.exec(bp) then
             state = 'stopped'
             runLoop 'breakpoint'
-            return
+            return true
+        end
         end
     end
+
+function event.bp(line)
+    if not initialized then return end
+    rdebug.getinfo(0, "S", info)
+    local src = source.create(info.source)
+    event_breakpoint(src, line)
 end
 
 function event.funcbp(func)
@@ -403,10 +407,13 @@ function event.funcbp(func)
     end
 end
 
-function event.step()
+function event.step(line)
     if not initialized then return end
     rdebug.getinfo(0, "S", info)
     local src = source.create(info.source)
+    if event_breakpoint(src, line) then
+        return
+    end
     if not source.valid(src) then
         return
     end

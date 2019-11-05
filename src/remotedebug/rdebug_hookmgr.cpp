@@ -497,7 +497,8 @@ struct hookmgr {
         set_host(cL, hL);
         if ((step_mask & LUA_MASKLINE) && (!stepL || stepL == hL)) {
             rlua_pushstring(cL, "step");
-            if (rlua_pcall(cL, 1, 0, 0) != LUA_OK) {
+            rlua_pushinteger(cL, ar->currentline);
+            if (rlua_pcall(cL, 2, 0, 0) != LUA_OK) {
                 rlua_pop(cL, 1);
                 return;
             }
