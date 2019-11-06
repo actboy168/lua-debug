@@ -387,7 +387,7 @@ local function varGetValue(context, type, value)
             end
             local name = rdebug.fieldv(meta, '__name')
             if name ~= nil then
-                return 'userdata: ' .. tostring(rdebug.value(name))
+                return tostring(rdebug.value(name))
             end
         end
         return 'userdata'
