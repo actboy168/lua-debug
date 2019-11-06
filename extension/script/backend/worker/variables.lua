@@ -158,7 +158,7 @@ end
 local function varCanExtand(type, value)
     if type == 'function' then
         return rdebug.getupvaluev(value, 1) ~= nil
-    elseif type == 'cfunction' then
+    elseif type == 'c function' then
         return rdebug.getupvaluev(value, 1) ~= nil
     elseif type == 'table' then
         if rdebug.nextkey(value, nil) ~= nil then
