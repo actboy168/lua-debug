@@ -883,6 +883,35 @@ function m.createRef(value, evaluateName, context)
     return varCreateReference(value, evaluateName, context)
 end
 
+function m.tostring(v)
+    local meta = rdebug.getmetatablev(v)
+    if meta ~= nil then
+        local fn = rdebug.fieldv(meta, '__tostring')
+        if fn ~= nil and (rdebug.type(fn) == 'function' or rdebug.type(fn) == 'c function') then
+            local ok, res = rdebug.evalref(fn, v)
+            if ok then
+                return res
+            end
+        end
+    end
+    local type = rdebug.type(v)
+    if type == 'integer' or
+        type == 'float' or
+        type == 'string' or
+        type == 'boolean' or
+        type == 'nil'
+    then
+        return tostring(rdebug.value(v))
+    end
+    if meta ~= nil then
+        local name = rdebug.fieldv(meta, '__name')
+        if name ~= nil then
+            type = tostring(rdebug.value(name))
+        end
+    end
+    return ('%s: %s'):format(type, tostring(rdebug.value(v)))
+end
+
 ev.on('terminated', function()
     m.clean()
 end)

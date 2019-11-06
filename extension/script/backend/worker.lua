@@ -496,7 +496,7 @@ function event.print()
     if not initialized then return end
     local res = {}
     for arg in pairsEventArgs() do
-        res[#res + 1] = rdebug.tostring(arg)
+        res[#res + 1] = variables.tostring(arg)
     end
     res = table.concat(res, '\t') .. '\n'
     rdebug.getinfo(1, "Sl", info)
@@ -513,7 +513,7 @@ function event.iowrite()
     if not initialized then return end
     local res = {}
     for arg in pairsEventArgs() do
-        res[#res + 1] = rdebug.tostring(arg)
+        res[#res + 1] = variables.tostring(arg)
     end
     res = table.concat(res, '\t')
     rdebug.getinfo(1, "Sl", info)

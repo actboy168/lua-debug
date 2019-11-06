@@ -198,14 +198,6 @@ lclient_value(rlua_State *L) {
 	return 1;
 }
 
-static int
-lclient_tostring(rlua_State *L) {
-	lua_State *hL = get_host(L);
-	rlua_settop(L, 1);
-	tostring(L, hL);
-	return 1;
-}
-
 // userdata ref
 // any value
 // ref = value
@@ -655,7 +647,6 @@ init_visitor(rlua_State *L) {
 		{ "copytable", lclient_copytable },
 		{ "tablesize", lclient_tablesize },
 		{ "value", lclient_value },
-		{ "tostring", lclient_tostring },
 		{ "assign", lclient_assign },
 		{ "type", lclient_type },
 		{ "getinfo", lclient_getinfo },

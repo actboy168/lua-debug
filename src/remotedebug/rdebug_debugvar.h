@@ -149,7 +149,7 @@ copy_fromX(rlua_State *from, lua_State *to) {
 void
 copyvalue(lua_State *from, rlua_State *to) {
 	if (copy_toX(from, to) == LUA_TNONE) {
-		rlua_pushfstring(to, "[%s: %p]",
+		rlua_pushfstring(to, "%s: %p",
 			lua_typename(from, lua_type(from, -1)),
 			lua_topointer(from, -1)
 		);
@@ -475,28 +475,6 @@ get_value(rlua_State *L, lua_State *cL) {
 		return;
 	}
 	rlua_pop(L, 1);
-	copyvalue(cL, L);
-	lua_pop(cL,1);
-}
-
-static int
-safetostring(lua_State *L) {
-	luaL_tolstring(L, 1, 0);
-	return 1;
-}
-
-static void
-tostring(rlua_State *L, lua_State *cL) {
-	if (eval_value(L, cL) == LUA_TNONE) {
-		rlua_pop(L, 1);
-		rlua_pushstring(L, "nil");
-		// failed
-		return;
-	}
-	rlua_pop(L, 1);
-	lua_pushcfunction(cL, safetostring);
-	lua_insert(cL, -2);
-	lua_pcall(cL, 1, 1, 0);
 	copyvalue(cL, L);
 	lua_pop(cL,1);
 }
