@@ -12,12 +12,16 @@ lua_State* get_host(rlua_State *L);
 // return value, name
 static int
 client_getlocal(rlua_State *L, int getref) {
-	int frame = (int)rluaL_checkinteger(L, 1);
-	int index = (int)rluaL_checkinteger(L, 2);
-
+	rlua_Integer frame = rluaL_checkinteger(L, 1);
+	rlua_Integer index = rluaL_checkinteger(L, 2);
+	if (frame < 0 || frame > (std::numeric_limits<uint16_t>::max)()) {
+		return rluaL_error(L, "frame must be `uint16_t`");
+	}
+	if (index == 0 || index > (std::numeric_limits<uint8_t>::max)() || -index > (std::numeric_limits<uint8_t>::max)()) {
+		return rluaL_error(L, "index must be `uint8_t`");
+	}
 	lua_State *hL = get_host(L);
-
-	const char *name = get_frame_local(L, hL, frame, index, getref);
+	const char *name = get_frame_local(L, hL, (uint16_t)frame, (int)index, getref);
 	if (name) {
 		rlua_pushstring(L, name);
 		rlua_insert(L, -2);
