@@ -626,48 +626,6 @@ local function extandUserdata(varRef)
     return vars
 end
 
-local function extandValue(varRef, filter, start, count)
-    local type = rdebug.type(varRef.v)
-    if type == 'table' then
-        return extandTable(varRef, filter, start, count)
-    elseif type == 'function' then
-        return extandFunction(varRef)
-    elseif type == 'c function' then
-        return extandFunction(varRef)
-    elseif type == 'userdata' then
-        return extandUserdata(varRef)
-    end
-    return {}
-end
-
-local function setValue(varRef, name, value)
-    if not varRef.extand or not varRef.extand[name] then
-        return nil, 'Failed set variable'
-    end
-    local newvalue
-    if value == 'nil' then
-        newvalue = nil
-    elseif value == 'false' then
-        newvalue = false
-    elseif value == 'true' then
-        newvalue = true
-    elseif value:sub(1,1) == "'" and value:sub(-1,-1) == "'" then
-        newvalue = value:sub(2,-2)
-    elseif value:sub(1,1) == '"' and value:sub(-1,-1) == '"' then
-        newvalue = value:sub(2,-2)
-    elseif tonumber(value) then
-        newvalue = tonumber(value)
-    else
-        newvalue = value
-    end
-    local calcValue, evaluateName = varRef.extand[name][1], varRef.extand[name][2]
-    local rvalue = calcValue()
-    if not rdebug.assign(rvalue, newvalue) then
-        return nil, 'Failed set variable'
-    end
-    return varCreateReference(rvalue, evaluateName, "setvalue")
-end
-
 local special_extand = {}
 
 function special_extand.Local(varRef)
@@ -835,6 +793,51 @@ function special_extand.Standard(varRef)
     return vars
 end
 
+local function extandValue(varRef, filter, start, count)
+    if varRef.special then
+        return special_extand[varRef.special](varRef, filter, start, count)
+    end
+    local type = rdebug.type(varRef.v)
+    if type == 'table' then
+        return extandTable(varRef, filter, start, count)
+    elseif type == 'function' then
+        return extandFunction(varRef)
+    elseif type == 'c function' then
+        return extandFunction(varRef)
+    elseif type == 'userdata' then
+        return extandUserdata(varRef)
+    end
+    return {}
+end
+
+local function setValue(varRef, name, value)
+    if not varRef.extand or not varRef.extand[name] then
+        return nil, 'Failed set variable'
+    end
+    local newvalue
+    if value == 'nil' then
+        newvalue = nil
+    elseif value == 'false' then
+        newvalue = false
+    elseif value == 'true' then
+        newvalue = true
+    elseif value:sub(1,1) == "'" and value:sub(-1,-1) == "'" then
+        newvalue = value:sub(2,-2)
+    elseif value:sub(1,1) == '"' and value:sub(-1,-1) == '"' then
+        newvalue = value:sub(2,-2)
+    elseif tonumber(value) then
+        newvalue = tonumber(value)
+    else
+        newvalue = value
+    end
+    local calcValue, evaluateName = varRef.extand[name][1], varRef.extand[name][2]
+    local rvalue = calcValue()
+    if not rdebug.assign(rvalue, newvalue) then
+        return nil, 'Failed set variable'
+    end
+    return varCreateReference(rvalue, evaluateName, "setvalue")
+end
+
 local m = {}
 
 function m.scopes(frameId)
@@ -854,9 +857,6 @@ function m.extand(valueId, filter, start, count)
     local varRef = varPool[valueId]
     if not varRef then
         return nil, 'Error variablesReference'
-    end
-    if varRef.special then
-        return special_extand[varRef.special](varRef, filter, start, count)
     end
     return extandValue(varRef, filter, start, count)
 end
