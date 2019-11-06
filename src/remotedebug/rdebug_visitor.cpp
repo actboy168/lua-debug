@@ -157,9 +157,9 @@ lclient_copytable(rlua_State *L) {
 				lua_pop(hL, 3);
 				return 1;
 			}
-			rlua_pushvalue(L, 1); combine_kv(L, hL, 0, VAR::INDEX_KEY, i);
+			combine_kv(L, hL, 1, 0, VAR::INDEX_KEY, i);
 			// TODO: 如果value使用getref==0，可以提高效率，但是getref==1仍然是需要的
-			rlua_pushvalue(L, 1); combine_kv(L, hL, 1, VAR::INDEX_VAL, i);
+			combine_kv(L, hL, 1, 1, VAR::INDEX_VAL, i);
 			rlua_rawset(L, -3);
 		}
 	}

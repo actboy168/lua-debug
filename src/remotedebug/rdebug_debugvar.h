@@ -838,19 +838,17 @@ get_uservalue(rlua_State *L, lua_State *cL, int index, int getref) {
 }
 
 static void
-combine_kv(rlua_State *L, lua_State *cL, int getref, VAR type, int index) {
+combine_kv(rlua_State *L, lua_State *cL, int t, int getref, VAR type, int index) {
 	if (!getref && copy_toX(cL, L) != LUA_TNONE) {
-		rlua_replace(L, -2);
 		lua_pop(cL, 1);
 		return;
 	}
 	lua_pop(cL, 1);
-	struct value *f = (struct value *)rlua_touserdata(L, -1);
+	struct value *f = (struct value *)rlua_touserdata(L, t);
 	int sz = sizeof_value(f);
 	struct value *v = (struct value *)rlua_newuserdata(L, sz + sizeof(struct value));
 	v->type = type;
 	v->frame = 0;
 	v->index = index;
 	memcpy(v+1, f, sz);
-	rlua_replace(L, -2);
 }
