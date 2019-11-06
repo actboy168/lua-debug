@@ -838,8 +838,8 @@ get_uservalue(rlua_State *L, lua_State *cL, int index, int getref) {
 }
 
 static void
-combine_kv(rlua_State *L, lua_State *cL, int t, int getref, VAR type, int index) {
-	if (!getref && copy_toX(cL, L) != LUA_TNONE) {
+combine_key(rlua_State *L, lua_State *cL, int t, int index) {
+	if (copy_toX(cL, L) != LUA_TNONE) {
 		lua_pop(cL, 1);
 		return;
 	}
@@ -847,8 +847,25 @@ combine_kv(rlua_State *L, lua_State *cL, int t, int getref, VAR type, int index)
 	struct value *f = (struct value *)rlua_touserdata(L, t);
 	int sz = sizeof_value(f);
 	struct value *v = (struct value *)rlua_newuserdata(L, sz + sizeof(struct value));
-	v->type = type;
+	v->type = VAR::INDEX_KEY;
 	v->frame = 0;
 	v->index = index;
 	memcpy(v+1, f, sz);
+}
+
+static void
+combine_val(rlua_State *L, lua_State *cL, int t, int index) {
+	struct value *f = (struct value *)rlua_touserdata(L, t);
+	int sz = sizeof_value(f);
+	struct value *v = (struct value *)rlua_newuserdata(L, sz + sizeof(struct value));
+	v->type = VAR::INDEX_VAL;
+	v->frame = 0;
+	v->index = index;
+	memcpy(v+1, f, sz);
+
+	bool has = copy_toX(cL, L) != LUA_TNONE;
+	lua_pop(cL, 1);
+	if (!has) {
+		rlua_pushvalue(L, -1);
+	}
 }

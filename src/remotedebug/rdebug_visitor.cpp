@@ -150,6 +150,7 @@ lclient_copytable(rlua_State *L) {
 		return 0;
 	}
 	rlua_newtable(L);
+	rlua_Integer n = 0;
 	unsigned int hsize = remotedebug::table::hash_size(t);
 	for (unsigned int i = 0; i < hsize; ++i) {
 		if (remotedebug::table::get_kv(hL, t, i)) {
@@ -157,10 +158,11 @@ lclient_copytable(rlua_State *L) {
 				lua_pop(hL, 3);
 				return 1;
 			}
-			combine_kv(L, hL, 1, 0, VAR::INDEX_KEY, i);
-			// TODO: 如果value使用getref==0，可以提高效率，但是getref==1仍然是需要的
-			combine_kv(L, hL, 1, 1, VAR::INDEX_VAL, i);
-			rlua_rawset(L, -3);
+			combine_key(L, hL, 1, i);
+			rlua_rawseti(L, -2, ++n);
+			combine_val(L, hL, 1, i);
+			rlua_rawseti(L, -3, ++n);
+			rlua_rawseti(L, -2, ++n);
 		}
 	}
 	lua_pop(hL, 1);
