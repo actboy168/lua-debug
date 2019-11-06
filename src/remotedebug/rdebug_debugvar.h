@@ -44,8 +44,7 @@ struct value {
 	union {
 		struct {
 			uint16_t frame;
-			uint8_t  type;
-			uint8_t  n;
+			int16_t  n;
 		} local;
 		int index;
 	};
@@ -168,7 +167,7 @@ eval_value_(rlua_State *L, lua_State *cL, struct value *v) {
 		lua_Debug ar;
 		if (lua_getstack(cL, v->local.frame, &ar) == 0)
 			break;
-		const char* name = lua_getlocal(cL, &ar, v->local.type? (-v->local.n): v->local.n);
+		const char* name = lua_getlocal(cL, &ar, v->local.n);
 		if (name) {
 			return lua_type(cL, -1);
 		}
@@ -343,7 +342,7 @@ assign_value(rlua_State *L, struct value * v, lua_State *cL) {
 		if (lua_getstack(cL, v->local.frame, &ar) == 0) {
 			break;
 		}
-		if (lua_setlocal(cL, &ar, v->local.type? (-v->local.n): v->local.n) != NULL) {
+		if (lua_setlocal(cL, &ar, v->local.n) != NULL) {
 			return 1;
 		}
 		break;
@@ -503,7 +502,7 @@ tostring(rlua_State *L, lua_State *cL) {
 }
 
 static const char *
-get_frame_local(rlua_State *L, lua_State *cL, uint16_t frame, int index, int getref) {
+get_frame_local(rlua_State *L, lua_State *cL, uint16_t frame, int16_t n, int getref) {
 	lua_Debug ar;
 	if (lua_getstack(cL, frame, &ar) == 0) {
 		return NULL;
@@ -511,7 +510,7 @@ get_frame_local(rlua_State *L, lua_State *cL, uint16_t frame, int index, int get
 	if (lua_checkstack(cL, 1) == 0) {
 		rluaL_error(L, "stack overflow");
 	}
-	const char * name = lua_getlocal(cL, &ar, index);
+	const char * name = lua_getlocal(cL, &ar, n);
 	if (name == NULL)
 		return NULL;
 	if (!getref && copy_toX(cL, L) != LUA_TNONE) {
@@ -522,14 +521,7 @@ get_frame_local(rlua_State *L, lua_State *cL, uint16_t frame, int index, int get
 	struct value *v = (struct value *)rlua_newuserdata(L, sizeof(struct value));
 	v->type = VAR::FRAME_LOCAL;
 	v->local.frame = frame;
-	if (index > 0) {
-		v->local.type = 0;
-		v->local.n = (uint8_t)index;
-	}
-	else {
-		v->local.type = 1;
-		v->local.n = (uint8_t)(-index);
-	}
+	v->local.n = n;
 	return name;
 }
 
@@ -773,12 +765,12 @@ get_metatable(rlua_State *L, lua_State *cL, int getref) {
 		lua_pop(cL, 1);
 	}
 	if (t == LUA_TTABLE || t == LUA_TUSERDATA) {
-		struct value *t = (struct value *)rlua_touserdata(L, -1);
-		int sz = sizeof_value(t);
+		struct value *u = (struct value *)rlua_touserdata(L, -1);
+		int sz = sizeof_value(u);
 		struct value *v = (struct value *)rlua_newuserdata(L, sz + sizeof(struct value));
 		v->type = VAR::METATABLE;
-		v->index = 0;
-		memcpy(v+1,t,sz);
+		v->index = t;
+		memcpy(v+1,u,sz);
 		rlua_replace(L, -2);
 		return 1;
 	} else {

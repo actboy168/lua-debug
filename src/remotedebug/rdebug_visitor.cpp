@@ -21,7 +21,7 @@ client_getlocal(rlua_State *L, int getref) {
 		return rluaL_error(L, "index must be `uint8_t`");
 	}
 	lua_State *hL = get_host(L);
-	const char *name = get_frame_local(L, hL, (uint16_t)frame, (int)index, getref);
+	const char *name = get_frame_local(L, hL, (uint16_t)frame, (int16_t)index, getref);
 	if (name) {
 		rlua_pushstring(L, name);
 		rlua_insert(L, -2);
