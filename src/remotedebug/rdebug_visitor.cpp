@@ -503,7 +503,9 @@ lclient_eval(rlua_State *L) {
 	const char* source = rluaL_checkstring(L, 2);
 	rlua_Integer level = rluaL_checkinteger(L, 3);
 	lua_State* hL = get_host(L);
-	lua_checkstack(hL, 3);
+	if (lua_checkstack(hL, 3) == 0) {
+		return rluaL_error(L, "stack overflow");
+	}
 	if (!getreffunc(hL, (lua_Integer)func)) {
 		rlua_pushboolean(L, 0);
 		rlua_pushstring(L, "invalid func");
@@ -527,7 +529,9 @@ static int
 lclient_evalref(rlua_State *L) {
 	lua_State* hL = get_host(L);
 	int n = rlua_gettop(L);
-	lua_checkstack(hL, n);
+	if (lua_checkstack(hL, n) == 0) {
+		return rluaL_error(L, "stack overflow");
+	}
 	for (int i = 1; i <= n; ++i) {
 		rlua_pushvalue(L, i);
 		int t = eval_value(L, hL);
@@ -552,7 +556,6 @@ lclient_evalref(rlua_State *L) {
 
 static int
 addwatch(lua_State *hL, int idx) {
-	lua_checkstack(hL, 3);
 	lua_pushvalue(hL, idx);
 	if (lua::getfield(hL, LUA_REGISTRYINDEX, "__debugger_watch") == LUA_TNIL) {
 		lua_pop(hL, 1);
@@ -583,7 +586,9 @@ lclient_evalwatch(rlua_State *L) {
 	const char* source = rluaL_checkstring(L, 2);
 	rlua_Integer level = rluaL_checkinteger(L, 3);
 	lua_State* hL = get_host(L);
-	lua_checkstack(hL, 3);
+	if (lua_checkstack(hL, 3) == 0) {
+		return rluaL_error(L, "stack overflow");
+	}
 	if (!getreffunc(hL, (lua_Integer)func)) {
 		rlua_pushboolean(L, 0);
 		rlua_pushstring(L, "invalid func");
