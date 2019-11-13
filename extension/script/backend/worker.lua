@@ -457,13 +457,14 @@ local function getEventArgsRaw(i)
 end
 
 local function pairsEventArgs()
-    local n = 2
+    local max = rdebug.getstack()
+    local n = 1
     return function()
-        local value = rdebug.getstack(n)
-        if value ~= nil then
-            n = n + 1
-            return value
+        n = n + 1
+        if n > max then
+            return
         end
+        return rdebug.getstack(n)
     end
 end
 
