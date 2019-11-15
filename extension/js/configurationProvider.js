@@ -46,9 +46,9 @@ function mergeConfigurations(config) {
         platname = "Linux"
         platcfg = config.linux
     }
-    config.windows = null
-    config.osx = null
-    config.linux = null
+    config.windows = undefined
+    config.osx = undefined
+    config.linux = undefined
     if (typeof platcfg == 'object') {
         for (var k in platcfg) {
             config[k] = platcfg[k]
