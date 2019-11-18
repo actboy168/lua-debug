@@ -80,8 +80,11 @@ function resolveConfig(folder, config) {
     if (typeof config.termOnExit != 'boolean') {
         config.termOnExit = config.request == 'launch';
     }
-    if (typeof config.luaRuntime != 'string') {
-        config.luaRuntime = settings.luaRuntime
+    if (typeof config.luaVersion != 'string') {
+        config.luaVersion = settings.luaVersion
+    }
+    if (typeof config.luaArch != 'string') {
+        config.luaArch = settings.luaArch
     }
     if (typeof config.console != 'string') {
         config.console = settings.console

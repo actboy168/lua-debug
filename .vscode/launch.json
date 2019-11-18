@@ -6,7 +6,7 @@
             "request": "launch",
             "name": "Test Client",
             "console": "integratedTerminal",
-            "luaRuntime": "5.4 64bit",
+            "luaVersion": "5.4",
             "windows": {
                 "luaexe": "${command:extensionPath}actboy168.lua-debug-1.19.1/bin/win/lua-debug"
             },

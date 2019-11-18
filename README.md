@@ -13,8 +13,9 @@
     * program，lua.exe执行的入口文件 
     * cwd，lua.exe的当前目录
     * stopOnEntry，开始调试时是否先暂停
-    * luaexe，指定lua exe的路径，如果不填则由luaRuntime决定
-    * luaRuntime，指定lua运行时的版本
+    * luaexe，指定lua exe的路径，如果不填则由luaVersion和luaArch决定
+    * luaVersion，指定lua运行时的版本。可选项有5.1/5.2/5.3/5.4。
+    * luaArch，指定lua运行时的指令集，仅windows有效。可选项有x86/x86_64。
     * path，用于初始化package.path
     * cpath，用于初始化package.cpath
     * arg0，lua.exe的命令行参数，用于初始化arg的arg[-n] .. arg[0]

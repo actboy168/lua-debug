@@ -3,7 +3,8 @@
     "lua.debug.launch.console.internalConsole.description": "VS Code debug console (input stream not supported).",
     "lua.debug.launch.console.integratedTerminal.description": "VS Code integrated terminal.",
     "lua.debug.launch.console.externalTerminal.description": "External terminal that can be configured in user settings.",
-    "lua.debug.launch.luaRuntime.description": "Default lua runtime.",
+    "lua.debug.launch.luaVersion.description": "Default lua version.",
+    "lua.debug.launch.luaArch.description": "Default lua arch.",
     "lua.debug.launch.consoleCoding.description": "Console encoding.",
     "lua.debug.launch.sourceCoding.description": "Source encoding."
 }

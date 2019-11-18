@@ -132,19 +132,24 @@
                                 "markdownDescription": "Automatically terminate process after exit.",
                                 "default": true
                             },
-                            "luaRuntime": {
+                            "luaVersion": {
                                 "type": "string",
-                                "markdownDescription": "%lua.debug.launch.luaRuntime.description%",
-                                "default": "5.3 64bit",
+                                "markdownDescription": "%lua.debug.launch.luaVersion.description%",
+                                "default": "5.3",
                                 "enum": [
-                                    "5.1 32bit",
-                                    "5.1 64bit",
-                                    "5.2 32bit",
-                                    "5.2 64bit",
-                                    "5.3 32bit",
-                                    "5.3 64bit",
-                                    "5.4 32bit",
-                                    "5.4 64bit"
+                                    "5.1",
+                                    "5.2",
+                                    "5.3",
+                                    "5.4"
+                                ]
+                            },
+                            "luaArch": {
+                                "type": "string",
+                                "markdownDescription": "%lua.debug.launch.luaArch.description%",
+                                "default": "x86_64",
+                                "enum": [
+                                    "x86",
+                                    "x86_64"
                                 ]
                             },
                             "luaexe": {
@@ -435,19 +440,24 @@
                     "description": "%lua.debug.launch.console.description%",
                     "default": "internalConsole"
                 },
-                "lua.debug.settings.luaRuntime": {
+                "lua.debug.settings.luaVersion": {
                     "type": "string",
-                    "description": "%lua.debug.launch.luaRuntime.description%",
-                    "default": "5.3 64bit",
+                    "description": "%lua.debug.launch.luaVersion.description%",
+                    "default": "5.3",
                     "enum": [
-                        "5.1 32bit",
-                        "5.1 64bit",
-                        "5.2 32bit",
-                        "5.2 64bit",
-                        "5.3 32bit",
-                        "5.3 64bit",
-                        "5.4 32bit",
-                        "5.4 64bit"
+                        "5.1",
+                        "5.2",
+                        "5.3",
+                        "5.4"
+                    ]
+                },
+                "lua.debug.settings.luaArch": {
+                    "type": "string",
+                    "description": "%lua.debug.launch.luaArch.description%",
+                    "default": "x86_64",
+                    "enum": [
+                        "x86",
+                        "x86_64"
                     ]
                 },
                 "lua.debug.settings.consoleCoding": {

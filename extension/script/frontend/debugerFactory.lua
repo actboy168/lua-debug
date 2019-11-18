@@ -38,35 +38,27 @@ local function create_install_script(pid, dbg)
     return table.concat(res)
 end
 
-local function getLuaRuntime(args)
-    if args.luaRuntime == "5.4 64bit" then
-        return 54, 64
-    elseif args.luaRuntime == "5.4 32bit" then
-        return 54, 32
-    elseif args.luaRuntime == "5.3 64bit" then
-        return 53, 64
-    elseif args.luaRuntime == "5.3 32bit" then
-        return 53, 32
-    elseif args.luaRuntime == "5.2 64bit" then
-        return 52, 64
-    elseif args.luaRuntime == "5.2 32bit" then
-        return 52, 32
-    elseif args.luaRuntime == "5.1 64bit" then
-        return 51, 64
-    elseif args.luaRuntime == "5.1 32bit" then
-        return 51, 32
+local function getLuaVersion(args)
+    if args.luaVersion == "5.4" then
+        return 54
+    elseif args.luaVersion == "5.3" then
+        return 53
+    elseif args.luaVersion == "5.2" then
+        return 52
+    elseif args.luaVersion == "5.1" then
+        return 51
     end
-    return 53, 32
+    return 53
 end
 
 local function getLuaExe(args, dbg)
     if type(args.luaexe) == "string" then
         return fs.path(args.luaexe)
     end
-    local ver, bit = getLuaRuntime(args)
+    local ver = getLuaVersion(args)
     local runtime = 'runtime'
     if platformOS() == "Windows" then
-        if bit == 64 then
+        if args.luaArch == "x86_64" then
             runtime = runtime .. "/win64"
         else
             runtime = runtime .. "/win32"
