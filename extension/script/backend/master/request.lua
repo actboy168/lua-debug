@@ -36,22 +36,13 @@ local function checkThreadId(req, threadId)
 end
 
 function request.initialize(req)
-    if not mgr.isState 'birth' then
-        response.error(req, 'already initialized')
-        return
-    end
     firstWorker = true
     response.initialize(req)
-    mgr.setState 'initialized'
     event.initialized()
     event.capabilities()
 end
 
 function request.attach(req)
-    if not mgr.isState 'initialized' then
-        response.error(req, 'not initialized or unexpected state')
-        return
-    end
     response.success(req)
 
     initializing = true

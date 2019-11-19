@@ -8,7 +8,7 @@ local redirect = {}
 local mgr = {}
 local network
 local seq = 0
-local state = 'birth'
+local initialized = false
 local stat = {}
 local queue = {}
 local exit = false
@@ -141,11 +141,6 @@ local function updateOnce()
             event.output('stdout', res)
         end
     end
-
-    if mgr.isState 'terminated' then
-        mgr.setState 'birth'
-        return false
-    end
     if not network:update() then
         return true
     end
@@ -156,8 +151,9 @@ local function updateOnce()
     if req.type == 'request' then
         -- TODO
         local request = require 'backend.master.request'
-        if mgr.isState 'birth' then
+        if not initialized then
             if req.command == 'initialize' then
+                initialized = true
                 request.initialize(req)
             else
                 local response = require 'backend.master.response'
@@ -165,7 +161,7 @@ local function updateOnce()
             end
         else
             local f = request[req.command]
-            if f then
+            if f and req.command ~= 'initialize' then
                 if f(req) then
                     return true
                 end
@@ -186,29 +182,20 @@ function mgr.update()
     end
 end
 
-function mgr.isState(s)
-    return state == s
-end
-
-function mgr.setState(s)
-    state = s
-end
-
 function mgr.termOnExit(v)
     exit = v
 end
 
 function mgr.close()
-    if state == 'birth' then
+    if not initialized then
         return
     end
     mgr.broadcastToWorker {
         cmd = 'terminated',
     }
     ev.emit('close')
-    mgr.setState 'terminated'
     seq = 0
-    state = 'birth'
+    initialized = false
     stat = {}
     queue = {}
     network:close()
