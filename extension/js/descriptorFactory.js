@@ -13,7 +13,7 @@ function getRuntimeDirectory() {
 
 function createDebugAdapterDescriptor(session, executable) {
     if (typeof session.configuration.debugServer === 'number') {
-        return new DebugAdapterServer(session.configuration.debugServer);
+        return new vscode.DebugAdapterServer(session.configuration.debugServer);
     }
     let dir = getRuntimeDirectory()
     let platform = os.platform()
