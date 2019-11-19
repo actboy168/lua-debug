@@ -659,6 +659,7 @@ LUA_API int lua_resume (lua_State *L, lua_State *from, int nargs) {
   if (L->nCcalls >= LUAI_MAXCCALLS)
     return resume_error(L, "C stack overflow", nargs);
   luai_userstateresume(L, nargs);
+  luai_threadcall(L, from);
   L->nny = 0;  /* allow yields */
   api_checknelems(L, (L->status == LUA_OK) ? nargs + 1 : nargs);
   status = luaD_rawrunprotected(L, resume, &nargs);
@@ -679,7 +680,7 @@ LUA_API int lua_resume (lua_State *L, lua_State *from, int nargs) {
   L->nny = oldnny;  /* restore 'nny' */
   L->nCcalls--;
   lua_assert(L->nCcalls == ((from) ? from->nCcalls : 0));
-  luai_userstateresumefin(from);
+  luai_threadret(from, L);
   lua_unlock(L);
   return status;
 }

@@ -362,7 +362,9 @@ struct hookmgr {
         set_host(cL, hL);
         rlua_pushstring(cL, "r_thread");
         rlua_pushlightuserdata(cL, hL);
-        if (rlua_pcall(cL, 2, 0, 0) != LUA_OK) {
+        rlua_pushlightuserdata(cL, lua_touserdata(hL, -1));
+        rlua_pushinteger(cL, ar->currentline);
+        if (rlua_pcall(cL, 4, 0, 0) != LUA_OK) {
             rlua_pop(cL, 1);
             return;
         }
@@ -552,9 +554,6 @@ struct hookmgr {
             lua_sethook(hL, 0, 0, 0);
         }
     }
-    void setcoroutine(lua_State* hL) {
-        updatehookmask(hL);
-    }
     
     int update_mask = 0;
     void update_open(lua_State* hL, int enable) {
@@ -654,8 +653,8 @@ static int init(rlua_State* L) {
     return 0;
 }
 
-static int setcoroutine(rlua_State* L) {
-    hookmgr::get_self(L)->setcoroutine((lua_State*)rlua_touserdata(L, 1));
+static int updatehookmask(rlua_State* L) {
+    hookmgr::get_self(L)->updatehookmask((lua_State*)rlua_touserdata(L, 1));
     return 0;
 }
 
@@ -778,7 +777,7 @@ int luaopen_remotedebug_hookmgr(rlua_State* L) {
 
     static rluaL_Reg lib[] = {
         { "init", init },
-        { "setcoroutine", setcoroutine },
+        { "updatehookmask", updatehookmask },
         { "activeline", activeline },
         { "stacklevel", stacklevel },
         { "break_add", break_add },

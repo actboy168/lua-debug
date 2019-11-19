@@ -418,12 +418,14 @@ static int resume_error (lua_State *L, const char *msg) {
 
 LUA_API int lua_resume (lua_State *L, int nargs) {
   int status;
+  lua_State *from = NULL;
   lua_lock(L);
   if (L->status != LUA_YIELD && (L->status != 0 || L->ci != L->base_ci))
       return resume_error(L, "cannot resume non-suspended coroutine");
   if (L->nCcalls >= LUAI_MAXCCALLS)
     return resume_error(L, "C stack overflow");
   luai_userstateresume(L, nargs);
+  luai_threadcall(L, from);
   lua_assert(L->errfunc == 0);
   L->baseCcalls = ++L->nCcalls;
   status = luaD_rawrunprotected(L, resume, L->top - nargs);
@@ -437,6 +439,7 @@ LUA_API int lua_resume (lua_State *L, int nargs) {
     status = L->status;
   }
   --L->nCcalls;
+  luai_threadret(from, L);
   lua_unlock(L);
   return status;
 }

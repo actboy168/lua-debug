@@ -560,13 +560,13 @@ function event.exception()
     runLoop('exception', exceptionMsg)
 end
 
-function event.r_thread(co)
-    hookmgr.setcoroutine(co)
+function event.r_thread(L, from, type)
+    hookmgr.updatehookmask(L)
 end
 
 function event.thread()
-    local _, co = getEventArgsRaw(1)
-    hookmgr.setcoroutine(co)
+    local _, L = getEventArgsRaw(1)
+    hookmgr.updatehookmask(L)
 end
 
 function event.wait()
