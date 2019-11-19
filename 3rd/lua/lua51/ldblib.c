@@ -206,7 +206,7 @@ static const char KEY_HOOK = 'h';
 
 static void hookf (lua_State *L, lua_Debug *ar) {
   static const char *const hooknames[] =
-    {"call", "return", "line", "count", "tail return", "exception", "thread"};
+    {"call", "return", "line", "count", "tail return"};
   lua_pushlightuserdata(L, (void *)&KEY_HOOK);
   lua_rawget(L, LUA_REGISTRYINDEX);
   lua_pushlightuserdata(L, L);
@@ -227,8 +227,6 @@ static int makemask (const char *smask, int count) {
   if (strchr(smask, 'c')) mask |= LUA_MASKCALL;
   if (strchr(smask, 'r')) mask |= LUA_MASKRET;
   if (strchr(smask, 'l')) mask |= LUA_MASKLINE;
-  if (strchr(smask, 'e')) mask |= LUA_MASKEXCEPTION;
-  if (strchr(smask, 't')) mask |= LUA_MASKTHREAD;
   if (count > 0) mask |= LUA_MASKCOUNT;
   return mask;
 }
@@ -239,8 +237,6 @@ static char *unmakemask (int mask, char *smask) {
   if (mask & LUA_MASKCALL) smask[i++] = 'c';
   if (mask & LUA_MASKRET) smask[i++] = 'r';
   if (mask & LUA_MASKLINE) smask[i++] = 'l';
-  if (mask & LUA_MASKEXCEPTION) smask[i++] = 'e';
-  if (mask & LUA_MASKTHREAD) smask[i++] = 't';
   smask[i] = '\0';
   return smask;
 }
