@@ -24,6 +24,8 @@ local exceptionTrace = ''
 local outputCapture = {}
 local noDebug = false
 local openUpdate = false
+local coroutineTree = {}
+local statckFrame = {}
 
 local CMD = {}
 
@@ -92,8 +94,8 @@ end)
 --    ev.emit('output', 'stderr', table.concat(t, '\t')..'\n')
 --end
 
---local log = require 'common.log'
---print = log.info
+local log = require 'common.log'
+print = log.info
 
 function CMD.initializing(pkg)
     luaver.init()
@@ -113,80 +115,66 @@ function CMD.terminated()
 end
 
 function CMD.stackTrace(pkg)
-    local startFrame = pkg.startFrame
-    local endFrame = pkg.endFrame
-    local curFrame = 0
+    local levels = (pkg.levels and pkg.levels ~= 0) and pkg.levels or 200
+    local startFrame = pkg.startFrame and pkg.startFrame or 0
     local virtualFrame = 0
     local depth = 0
+    local n = levels
     local res = {}
 
     if startFrame == 0 then
         res = emulator.stackTrace()
         virtualFrame = #res
+    else
+        depth = statckFrame[startFrame]
+        if not depth then
+            sendToMaster {
+                cmd = 'stackTrace',
+                command = pkg.command,
+                seq = pkg.seq,
+                success = false,
+                message = "Invalid startFrame " .. startFrame,
+            }
+            return
+        end
     end
 
     while rdebug.getinfo(depth, "Sln", info) do
-        if curFrame ~= 0 and ((curFrame < startFrame) or (curFrame >= endFrame)) then
-            depth = depth + 1
-            curFrame = curFrame + 1
-            goto continue
-        end
-        local src
-        if curFrame == 0 then
-            if info.what == 'C' then
-                depth = depth + 1
-                goto continue
-            else
-                src = source.create(info.source)
-                if not source.valid(src) then
-                    depth = depth + 1
-                    goto continue
-                end
-            end
-        end
-        if (curFrame < startFrame) or (curFrame >= endFrame) then
-            depth = depth + 1
-            curFrame = curFrame + 1
-            goto continue
-        end
-        curFrame = curFrame + 1
-        if info.what == 'C' then
-            res[#res + 1] = {
-                id = depth,
-                name = info.what == 'main' and '[main chunk]' or info.name,
-                line = 0,
-                column = 0,
-                presentationHint = 'label',
-            }
-        else
+        local r = {
+            id = depth,
+            name = info.what == 'main' and '[main chunk]' or info.name,
+            line = 0,
+            column = 0,
+        }
+        if info.what ~= 'C' then
+            r.line = info.currentline
+            r.column = 1
             local src = source.create(info.source)
             if source.valid(src) then
-                res[#res + 1] = {
-                    id = depth,
-                    name = info.what == 'main' and '[main chunk]' or info.name,
-                    line = info.currentline,
-                    column = 1,
-                    source = source.output(src),
-                }
-            elseif curFrame ~= 0 then
-                res[#res + 1] = {
-                    id = depth,
-                    name = info.what == 'main' and '[main chunk]' or info.name,
-                    line = info.currentline,
-                    column = 1,
-                    presentationHint = 'label',
-                }
+                r.source = source.output(src)
             end
         end
+        if not r.source then
+            r.presentationHint = 'label'
+        end
+        res[#res + 1] = r
         depth = depth + 1
-        ::continue::
+        n = n - 1
+        if n <= 0 then
+            break
+        end
+    end
+    statckFrame[startFrame+#res] = depth
+    if not statckFrame.total then
+        statckFrame.total = virtualFrame + hookmgr.stacklevel()
     end
     sendToMaster {
         cmd = 'stackTrace',
         command = pkg.command,
         seq = pkg.seq,
+        success = true,
         stackFrames = res,
-        totalFrames = curFrame + virtualFrame,
+        totalFrames = statckFrame.total,
     }
 end
 
@@ -350,8 +338,13 @@ function CMD.stepOut()
     hookmgr.step_out()
 end
 
-function CMD.restartFrame()
+local function cleanFrame()
     variables.clean()
+    statckFrame = {}
+end
+
+function CMD.restartFrame()
+    cleanFrame()
     sendToMaster {
         cmd = 'eventStop',
         reason = 'restart',
@@ -372,7 +365,7 @@ local function runLoop(reason, text)
             break
         end
     end
-    variables.clean()
+    cleanFrame()
 end
 
 local event = {}
@@ -561,6 +554,13 @@ function event.exception()
 end
 
 function event.r_thread(L, from, type)
+    if from then
+        if type == 0 then
+            coroutineTree[L] = from
+        elseif type == 1 then
+            coroutineTree[from] = nil
+        end
+    end
     hookmgr.updatehookmask(L)
 end
 

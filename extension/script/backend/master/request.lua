@@ -220,18 +220,12 @@ function request.stackTrace(req)
     if not checkThreadId(req, threadId) then
         return
     end
-
-    local levels = args.levels and args.levels or 200
-    levels = levels ~= 0 and levels or 200
-    local startFrame = args.startFrame and args.startFrame or 0
-    local endFrame = startFrame + levels
-
     mgr.sendToWorker(threadId, {
         cmd = 'stackTrace',
         command = req.command,
         seq = req.seq,
-        startFrame = startFrame,
-        endFrame = endFrame,
+        startFrame = args.startFrame,
+        levels = args.levels,
     })
 end
 

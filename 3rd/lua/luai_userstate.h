@@ -24,5 +24,5 @@
         L->top--;                               \
     }
 
-#define luai_threadcall(L, from) luai_threadevent(L, from, 'c')
-#define luai_threadret(L, to) luai_threadevent(L, to, 'r')
+#define luai_threadcall(L, from) luai_threadevent(L, from, 0)
+#define luai_threadret(L, to) luai_threadevent(L, to, 1)

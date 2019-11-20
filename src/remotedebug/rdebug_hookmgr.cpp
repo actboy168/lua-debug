@@ -216,25 +216,19 @@ struct hookmgr {
     int step_target_level = 0;
     int step_mask = 0;
     
-    // TODO
-    static int stacklevel(lua_State* L) {
-        lua_Debug ar;
-        int n;
-        for (n = 0; lua_getstack(L, n + 1, (lua_Debug*)&ar) != 0; ++n) {
+    static int stacklevel(lua_State *L) {
+        int level = 0;
+#if LUA_VERSION_NUM >= 502
+        for (CallInfo* ci = L->ci; ci != &L->base_ci; ci = ci->previous) {
+            level++;
         }
-        return n;
-    }
-    static int stacklevel(lua_State* L, int pos) {
-        lua_Debug ar;
-        if (lua_getstack(L, pos, &ar) != 0) {
-            for (; lua_getstack(L, pos + 1, &ar) != 0; ++pos) {
-            }
+#else
+        for (CallInfo* ci = L->ci; ci > L->base_ci; ci--) {
+            level++;
+            if (f_isLua(ci)) level += ci->tailcalls; 
         }
-        else if (pos > 0) {
-            for (--pos; pos > 0 && lua_getstack(L, pos, &ar) == 0; --pos) {
-            }
-        }
-        return pos;
+#endif
+        return level;
     }
     void step_in(lua_State* hL) {
         step_current_level = 0;
@@ -274,7 +268,7 @@ struct hookmgr {
         }
     }
     void step_hook_return(lua_State* hL, lua_Debug* ar) {
-        step_current_level = stacklevel(hL, step_current_level) - 1;
+        step_current_level = stacklevel(hL) - 1;
         if (step_current_level > step_target_level) {
             step_hookmask(hL, LUA_MASKCALL | LUA_MASKRET);
         }
@@ -653,6 +647,16 @@ static int init(rlua_State* L) {
     return 0;
 }
 
+static int sethost(rlua_State* L) {
+    set_host(L, (lua_State*)rlua_touserdata(L, 1));
+    return 0;
+}
+
+static int gethost(rlua_State* L) {
+    rlua_pushlightuserdata(L, get_host(L));
+    return 1;
+}
+
 static int updatehookmask(rlua_State* L) {
     hookmgr::get_self(L)->updatehookmask((lua_State*)rlua_touserdata(L, 1));
     return 0;
@@ -777,6 +781,8 @@ int luaopen_remotedebug_hookmgr(rlua_State* L) {
 
     static rluaL_Reg lib[] = {
         { "init", init },
+        { "sethost", sethost },
+        { "gethost", gethost },
         { "updatehookmask", updatehookmask },
         { "activeline", activeline },
         { "stacklevel", stacklevel },
