@@ -94,8 +94,8 @@ end)
 --    ev.emit('output', 'stderr', table.concat(t, '\t')..'\n')
 --end
 
-local log = require 'common.log'
-print = log.info
+--local log = require 'common.log'
+--print = log.info
 
 function CMD.initializing(pkg)
     luaver.init()
@@ -114,34 +114,13 @@ function CMD.terminated()
     end
 end
 
-function CMD.stackTrace(pkg)
-    local levels = (pkg.levels and pkg.levels ~= 0) and pkg.levels or 200
-    local startFrame = pkg.startFrame and pkg.startFrame or 0
-    local virtualFrame = 0
-    local depth = 0
-    local n = levels
-    local res = {}
-
-    if startFrame == 0 then
-        res = emulator.stackTrace()
-        virtualFrame = #res
-    else
-        depth = statckFrame[startFrame]
-        if not depth then
-            sendToMaster {
-                cmd = 'stackTrace',
-                command = pkg.command,
-                seq = pkg.seq,
-                success = false,
-                message = "Invalid startFrame " .. startFrame,
-            }
-            return
+local function stackTrace(res, coid, start, levels)
+    for depth = start, start + levels do
+        if not rdebug.getinfo(depth, "Sln", info) then
+            return depth - start
         end
-    end
-
-    while rdebug.getinfo(depth, "Sln", info) do
         local r = {
-            id = depth,
+            id = (coid << 16) | depth,
             name = info.what == 'main' and '[main chunk]' or info.name,
             line = 0,
             column = 0,
@@ -158,16 +137,63 @@ function CMD.stackTrace(pkg)
             r.presentationHint = 'label'
         end
         res[#res + 1] = r
-        depth = depth + 1
-        n = n - 1
-        if n <= 0 then
-            break
+    end
+    return levels
+end
+
+local function calcStackLevel()
+    if statckFrame.total then
+        return
+    end
+    local n = 0
+    local baseL = hookmgr.gethost()
+    local L = baseL
+    repeat
+        hookmgr.sethost(L)
+        local sl = hookmgr.stacklevel()
+        n = n + sl
+        statckFrame[L] = sl
+        statckFrame[#statckFrame+1] = L
+        L = coroutineTree[L]
+    until not L
+    hookmgr.sethost(baseL)
+    statckFrame.total = n
+end
+
+function CMD.stackTrace(pkg)
+    local start = pkg.startFrame and pkg.startFrame or 0
+    local levels = (pkg.levels and pkg.levels ~= 0) and pkg.levels or 200
+    local res = {}
+
+    -- TODO
+    --local virtualFrame = 0
+    --if startFrame == 0 then
+    --    res = emulator.stackTrace()
+    --    virtualFrame = #res
+    --end
+
+    calcStackLevel()
+
+    local baseL = hookmgr.gethost()
+    local L = baseL
+    local coroutineId = 0
+    repeat
+        hookmgr.sethost(L)
+        coroutineId = coroutineId + 1
+        if start > statckFrame[L] then
+            start = start - statckFrame[L]
+        else
+            local n = stackTrace(res, coroutineId, start, levels)
+            if levels == n then
+                break
+            end
+            start = 0
+            levels = levels - n
         end
-    end
-    statckFrame[startFrame+#res] = depth
-    if not statckFrame.total then
-        statckFrame.total = virtualFrame + hookmgr.stacklevel()
-    end
+        L = coroutineTree[L]
+    until not L
+    hookmgr.sethost(baseL)
+
     sendToMaster {
         cmd = 'stackTrace',
         command = pkg.command,
@@ -188,11 +214,14 @@ function CMD.source(pkg)
 end
 
 function CMD.scopes(pkg)
+    local coid = pkg.frameId >> 16
+    local depth = pkg.frameId & 0xFFFF
+    hookmgr.sethost(statckFrame[coid])
     sendToMaster {
         cmd = 'scopes',
         command = pkg.command,
         seq = pkg.seq,
-        scopes = emulator.scopes(pkg.frameId),
+        scopes = emulator.scopes(depth),
     }
 end
 
@@ -240,7 +269,8 @@ function CMD.setVariable(pkg)
 end
 
 function CMD.evaluate(pkg)
-    local ok, result = evaluate.run(pkg.frameId, pkg.expression, pkg.context)
+    local depth = pkg.frameId & 0xFFFF
+    local ok, result = evaluate.run(depth, pkg.expression, pkg.context)
     if not ok then
         sendToMaster {
             cmd = 'evaluate',
