@@ -133,7 +133,7 @@ local function stackTrace(res, coid, start, levels)
                 r.source = source.output(src)
                 r.presentationHint = 'normal'
             else
-                r.presentationHint = 'subtle'
+                r.presentationHint = 'label'
             end
         else
             r.presentationHint = 'label'
