@@ -49,6 +49,8 @@ function request.attach(req)
     config = {
         initialize = req.arguments,
         breakpoints = {},
+        function_breakpoints = {},
+        exception_breakpoints = {},
     }
     mgr.termOnExit(req.arguments.termOnExit)
 end
