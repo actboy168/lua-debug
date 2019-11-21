@@ -131,9 +131,11 @@ local function stackTrace(res, coid, start, levels)
             local src = source.create(info.source)
             if source.valid(src) then
                 r.source = source.output(src)
+                r.presentationHint = 'normal'
+            else
+                r.presentationHint = 'subtle'
             end
-        end
-        if not r.source then
+        else
             r.presentationHint = 'label'
         end
         res[#res + 1] = r
