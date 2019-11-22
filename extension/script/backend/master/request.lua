@@ -451,4 +451,7 @@ end
 --    event.output('stdout', table.concat(t, '\t')..'\n')
 --end
 
+--local log = require 'common.log'
+--print = log.info
+
 return request
