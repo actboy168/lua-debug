@@ -597,8 +597,8 @@ function event.r_thread(co, type)
 end
 
 function event.thread()
-    local _, co = rdebug.getlocal(1, -1)
-    local _, type = rdebug.getlocal(1, -2)
+    local _, co = rdebug.getlocalv(1, -1)
+    local _, type = rdebug.getlocalv(1, -2)
     event.r_thread(co, type)
 end
 
