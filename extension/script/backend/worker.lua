@@ -97,6 +97,11 @@ end)
 --local log = require 'common.log'
 --print = log.info
 
+local function cleanFrame()
+    variables.clean()
+    statckFrame = {}
+end
+
 function CMD.initializing(pkg)
     luaver.init()
     ev.emit('initializing', pkg.config)
@@ -163,6 +168,8 @@ local function calcStackLevel()
 end
 
 function CMD.stackTrace(pkg)
+    cleanFrame()
+
     local start = pkg.startFrame and pkg.startFrame or 0
     local levels = (pkg.levels and pkg.levels ~= 0) and pkg.levels or 200
     local res = {}
@@ -181,7 +188,6 @@ function CMD.stackTrace(pkg)
     local coroutineId = 0
     repeat
         hookmgr.sethost(L)
-        coroutineId = coroutineId + 1
         if start > statckFrame[L] then
             start = start - statckFrame[L]
         else
@@ -192,6 +198,7 @@ function CMD.stackTrace(pkg)
             start = 0
             levels = levels - n
         end
+        coroutineId = coroutineId + 1
         L = coroutineTree[L]
     until not L
     hookmgr.sethost(baseL)
@@ -216,9 +223,9 @@ function CMD.source(pkg)
 end
 
 function CMD.scopes(pkg)
-    local coid = pkg.frameId >> 16
+    local coid = (pkg.frameId >> 16) + 1
     local depth = pkg.frameId & 0xFFFF
-    hookmgr.sethost(statckFrame[coid])
+    hookmgr.sethost(assert(statckFrame[coid]))
     sendToMaster {
         cmd = 'scopes',
         command = pkg.command,
@@ -370,11 +377,6 @@ function CMD.stepOut()
     hookmgr.step_out()
 end
 
-local function cleanFrame()
-    variables.clean()
-    statckFrame = {}
-end
-
 function CMD.restartFrame()
     cleanFrame()
     sendToMaster {
@@ -397,7 +399,6 @@ local function runLoop(reason, text)
             break
         end
     end
-    cleanFrame()
 end
 
 local event = {}
