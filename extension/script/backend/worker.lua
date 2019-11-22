@@ -480,14 +480,6 @@ local function getEventArgs(i)
     return true, rdebug.value(value)
 end
 
-local function getEventArgsRaw(i)
-    local name, value = rdebug.getlocal(1, -i)
-    if name == nil then
-        return false
-    end
-    return true, value
-end
-
 local function pairsEventArgs()
     local max = rdebug.getstack()
     local n = 1
@@ -592,20 +584,22 @@ function event.exception()
     runLoop('exception', exceptionMsg)
 end
 
-function event.r_thread(L, from, type)
-    if from then
+function event.r_thread(co, type)
+    local L = hookmgr.gethost()
+    if co then
         if type == 0 then
-            coroutineTree[L] = from
+            coroutineTree[L] = co
         elseif type == 1 then
-            coroutineTree[from] = nil
+            coroutineTree[co] = nil
         end
     end
     hookmgr.updatehookmask(L)
 end
 
 function event.thread()
-    local _, L = getEventArgsRaw(1)
-    hookmgr.updatehookmask(L)
+    local _, co = rdebug.getlocal(1, -1)
+    local _, type = rdebug.getlocal(1, -2)
+    event.r_thread(co, type)
 end
 
 function event.wait()
