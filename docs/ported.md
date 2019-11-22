@@ -10,8 +10,23 @@
 ``` lua
 local rdebug = require "remotedebug"
 
--- 在每次coroutine获得控制权时运行一次，例如你可以重载coroutine.resume/coroutine.wrap等
-rdebug.event("thread", co)
+-- 在每次coroutine获得和失去控制权时各运行一次，例如你可以重载coroutine.resume/coroutine.wrap等
+local coroutine_resume = coroutine.resume
+local coroutine_wrap   = coroutine.wrap
+function coroutine.resume(co, ...)
+    rdebug.event("thread", co, 0)
+    coroutine_resume(co, ...)
+    rdebug.event("thread", co, 1)
+end
+function coroutine.wrap(f)
+    local wf = coroutine_wrap(f)
+    local _, co = debug.getupvalue(wf, 1)
+    return function(...)
+        rdebug.event("thread", co, 0)
+        wf(...)
+        rdebug.event("thread", co, 1)
+    end
+end
 ```
 
 ## error支持
