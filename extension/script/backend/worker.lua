@@ -168,11 +168,17 @@ local function calcStackLevel()
 end
 
 function CMD.stackTrace(pkg)
-    cleanFrame()
-
     local start = pkg.startFrame and pkg.startFrame or 0
     local levels = (pkg.levels and pkg.levels ~= 0) and pkg.levels or 200
     local res = {}
+
+    --
+    -- 在VSCode的实现中这是一帧的第一个请求，所以在这里清理上一帧的数据。
+    -- 很特殊，但目前也只能这样。
+    --
+    if start == 0 and levels == 1 then
+        cleanFrame()
+    end
 
     -- TODO
     --local virtualFrame = 0
