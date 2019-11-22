@@ -193,7 +193,7 @@ struct hookmgr {
         }
         set_host(cL, hL);
         rlua_pushstring(cL, "funcbp");
-        rlua_pushfstring(cL, "[function: %p]", function);
+        rlua_pushfstring(cL, "function: %p", function);
         if (rlua_pcall(cL, 2, 0, 0) != LUA_OK) {
             rlua_pop(cL, 1);
         }
