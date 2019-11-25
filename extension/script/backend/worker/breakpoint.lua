@@ -146,14 +146,14 @@ end
 function m.exec(bp)
     if bp.condition then
         local ok, res = evaluate.eval(bp.condition)
-        if ok and type(res) == 'boolean' and res == false then
+        if not ok or res ~= true then
             return false
         end
     end
     bp.statHit = bp.statHit + 1
     if bp.hitCondition then
         local ok, res = evaluate.eval(bp.statHit .. ' ' .. bp.hitCondition)
-        if ok and type(res) == 'boolean' and res == false then
+        if not ok or res ~= true then
             return false
         end
     end
