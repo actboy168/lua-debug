@@ -11,7 +11,6 @@ local seq = 0
 local initialized = false
 local stat = {}
 local queue = {}
-local exit = false
 local masterThread
 local workers = {}
 
@@ -38,7 +37,18 @@ local function event_in(data)
 end
 
 local function event_close()
-    mgr.close()
+    if not initialized then
+        return
+    end
+    mgr.broadcastToWorker {
+        cmd = 'terminated',
+    }
+    ev.emit('close')
+    seq = 0
+    initialized = false
+    stat = {}
+    queue = {}
+    network:close()
 end
 
 local function recv()
@@ -179,28 +189,6 @@ function mgr.update()
         if updateOnce() then
             return
         end
-    end
-end
-
-function mgr.termOnExit(v)
-    exit = v
-end
-
-function mgr.close()
-    if not initialized then
-        return
-    end
-    mgr.broadcastToWorker {
-        cmd = 'terminated',
-    }
-    ev.emit('close')
-    seq = 0
-    initialized = false
-    stat = {}
-    queue = {}
-    network:close()
-    if exit then
-        os.exit(true, true)
     end
 end
 

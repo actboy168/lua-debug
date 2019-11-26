@@ -2,11 +2,13 @@ local mgr = require 'backend.master.mgr'
 local response = require 'backend.master.response'
 local event = require 'backend.master.event'
 local ev = require 'common.event'
+local utility = require 'remotedebug.utility'
 
 local request = {}
 
 local readyTrg = nil
 local firstWorker = true
+local firstTerminate = true
 local initializing = false
 local config = {
     initialize = {},
@@ -37,6 +39,7 @@ end
 
 function request.initialize(req)
     firstWorker = true
+    firstTerminate = true
     response.initialize(req)
     event.initialized()
     event.capabilities()
@@ -52,7 +55,6 @@ function request.attach(req)
         function_breakpoints = {},
         exception_breakpoints = {},
     }
-    mgr.termOnExit(req.arguments.termOnExit)
 end
 
 function request.launch(req)
@@ -300,14 +302,22 @@ function request.threads(req)
 end
 
 function request.disconnect(req)
-    response.success(req)
-    mgr.close()
-    return true
+    return request.terminate(req)
 end
 
 function request.terminate(req)
     response.success(req)
-    mgr.close()
+    mgr.broadcastToWorker {
+        cmd = 'terminated',
+    }
+    if config.initialize.termOnExit then
+        if firstTerminate then
+            utility.closeprocess()
+            firstTerminate = false
+        else
+            os.exit(true, true)
+        end
+    end
     return true
 end
 
