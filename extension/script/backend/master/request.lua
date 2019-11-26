@@ -151,11 +151,16 @@ local function skipBOM(s)
     return s
 end
 
+local function isValidPath(path)
+    local prefix = path:match "^(%a+):"
+    return not (prefix and #prefix > 1)
+end
+
 function request.setBreakpoints(req)
     local args = req.arguments
     local content = skipBOM(args.sourceContent)
-    if args.source.path and args.source.path:sub(1,4) == "git:" then
-        response.error(req, "Does not support git path.")
+    if args.source.path and not isValidPath(args.source.path) then
+        response.error(req, ("Does not support path: `%s`"):format(args.source.path))
         return
     end
     for _, bp in ipairs(args.breakpoints) do
