@@ -317,8 +317,8 @@ function request.terminate(req)
     }
     if config.initialize.termOnExit then
         if firstTerminate then
-            utility.closeprocess()
             firstTerminate = false
+            utility.closeprocess()
         else
             os.exit(true, true)
         end
