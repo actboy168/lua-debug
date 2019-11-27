@@ -56,18 +56,19 @@ local dbg = {}
 
 function dbg:start(addr, client)
     local address = ("%q, %s"):format(addr, client == true and "true" or "false")
-    rdebug.start(([=[
+    local bootstrap_lua = ([[
         package.path = %q
         package.cpath = %q
         if debug.setcstacklimit then debug.setcstacklimit(1000) end
+        require "remotedebug.thread".bootstrap_lua = debug.getinfo(1, "S").source
+    ]]):format(package.path, package.cpath)
+    rdebug.start(("assert(load(%q))(...)"):format(bootstrap_lua) .. ([[
         local logpath = %q
         local log = require 'common.log'
         log.file = logpath..'/worker.log'
-        local m = require 'backend.master'
-        m(logpath, %q, true)
-        local w = require 'backend.worker'
-        w.openupdate()
-    ]=]):format(
+        require 'backend.master' (logpath, %q, true)
+        require 'backend.worker' .openupdate()
+    ]]):format(
           root..'/script/?.lua'
         , root..rt..'/?.'..ext
         , root
