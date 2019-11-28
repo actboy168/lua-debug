@@ -61,7 +61,10 @@ function dbg:start(addr, client)
         package.cpath = %q
         if debug.setcstacklimit then debug.setcstacklimit(1000) end
         require "remotedebug.thread".bootstrap_lua = debug.getinfo(1, "S").source
-    ]]):format(package.path, package.cpath)
+    ]]):format(
+          root..'/script/?.lua'
+        , root..rt..'/?.'..ext
+    )
     rdebug.start(("assert(load(%q))(...)"):format(bootstrap_lua) .. ([[
         local logpath = %q
         local log = require 'common.log'
@@ -69,9 +72,7 @@ function dbg:start(addr, client)
         require 'backend.master' (logpath, %q, true)
         require 'backend.worker' .openupdate()
     ]]):format(
-          root..'/script/?.lua'
-        , root..rt..'/?.'..ext
-        , root
+          root
         , address
     ))
 end
