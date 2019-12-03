@@ -1,15 +1,35 @@
 local port = ...
-
 local fs = require 'bee.filesystem'
+local network = require 'common.network'
+local proxy = require 'frontend.proxy'
+local vscode
 WORKDIR = fs.exe_path():parent_path():parent_path():parent_path()
 
-local function run()
-    (require 'frontend.mainloop')(port)
+local function update()
+    while true do
+        local pkg = vscode.recv()
+        if pkg then
+            proxy.send(pkg)
+        else
+            return
+        end
+    end
 end
 
-if port then
-    run()
-    return
+local function run()
+    if port then
+        vscode = network.open('127.0.0.1:'..port)
+    else
+        vscode = require 'frontend.stdio'
+        --vscode.debug(true)
+    end
+    proxy.init(vscode)
+
+    while true do
+        network.update(0.05)
+        proxy.update()
+        update()
+    end
 end
 
 local log = require 'common.log'
