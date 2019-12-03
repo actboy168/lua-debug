@@ -909,7 +909,7 @@ function m.tostring(v)
             type = tostring(rdebug.value(name))
         end
     end
-    return ('%s: %s'):format(type, tostring(rdebug.value(v)))
+    return tostring(rdebug.value(v))
 end
 
 ev.on('terminated', function()
