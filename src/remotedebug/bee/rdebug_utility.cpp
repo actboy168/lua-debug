@@ -43,8 +43,8 @@ namespace rdebug_utility {
                     PostThreadMessageW(te.th32ThreadID, WM_QUIT, 0, 0);
                 }
             }
+            CloseHandle(h);
         }
-        CloseHandle(h);
     }
     bool isConsoleExe(const wchar_t* exe) {
         HANDLE hExe = CreateFileW(exe, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
