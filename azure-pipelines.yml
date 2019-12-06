@@ -12,7 +12,7 @@ jobs:
       git clone --depth 1 https://github.com/actboy168/luamake
       cd luamake
       git submodule update --init --recursive
-      build_msvc.bat
+      msvc_build.bat
       cd ..
     displayName: Compile luamake
   - script: |
