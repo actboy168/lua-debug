@@ -29,7 +29,7 @@ script:
   - git clone --depth 1 https://github.com/actboy168/luamake
   - cd luamake
   - git submodule update --init --recursive
-  - if [ "$TRAVIS_OS_NAME" == "windows" ]; then msvc_build.bat; fi
+  - if [ "$TRAVIS_OS_NAME" == "windows" ]; then ./msvc_build.bat; fi
   - if [ "$TRAVIS_OS_NAME" == "linux" ]; then ninja -f ninja/linux.ninja; fi
   - if [ "$TRAVIS_OS_NAME" == "osx" ]; then ninja -f ninja/macos.ninja; fi
   - cd ..
