@@ -146,7 +146,7 @@ end
 function m.exec(bp)
     if bp.condition then
         local ok, res = evaluate.eval(bp.condition)
-        if not ok or res ~= true then
+        if not ok or not res then
             return false
         end
     end
