@@ -119,6 +119,31 @@ function CMD.terminated()
     end
 end
 
+local function getFuncName(info)
+    if info.what == 'main' then
+        return '(main)'
+    end
+    if info.namewhat == '' then
+        return '(C)'
+    end
+    if info.namewhat == 'for iterator' then
+        return '(for iterator)'
+    end
+    if info.namewhat == 'hook' then
+        return '(hook)'
+    end
+    if info.namewhat == 'metamethod' then
+        return ('(metamethod %s)'):format(info.name)
+    end
+    if info.namewhat == 'field' and info.name == 'integer index' then
+        return '(field ?)'
+    end
+    if info.name == '?' then
+        return ('(%s ?)'):format(info.namewhat)
+    end
+    return info.name
+end
+
 local function stackTrace(res, coid, start, levels)
     for depth = start, start + levels do
         if not rdebug.getinfo(depth, "Sln", info) then
@@ -126,7 +151,7 @@ local function stackTrace(res, coid, start, levels)
         end
         local r = {
             id = (coid << 16) | depth,
-            name = info.what == 'main' and '[main chunk]' or info.name,
+            name = getFuncName(info),
             line = 0,
             column = 0,
         }
