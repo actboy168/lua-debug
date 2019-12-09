@@ -1,6 +1,6 @@
 local port = ...
 local fs = require 'bee.filesystem'
-local network = require 'common.network'
+local network = require 'frontend.network'
 local select = require "common.select"
 local proxy = require 'frontend.proxy'
 local vscode

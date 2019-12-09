@@ -1,4 +1,3 @@
-local proto = require 'common.protocol'
 local select = require 'common.select'
 
 local function parseAddress(address, client)
@@ -36,8 +35,6 @@ local function open(address, client)
     local session
     local srvfd
     local write = ''
-    local statR = {}
-    local statW = {}
     local e_send
     local e_event
     function t.event(status, fd)
@@ -87,10 +84,6 @@ local function open(address, client)
         end
         return true
     end
-    function m.debug(v)
-        statR.debug = v
-        statW.debug = v
-    end
     function m.send(data)
         if not session then
             write = write .. data
@@ -103,12 +96,6 @@ local function open(address, client)
             return ''
         end
         return select.recv(session)
-    end
-    function m.sendmsg(pkg)
-        m.send(proto.send(pkg, statW))
-    end
-    function m.recvmsg()
-        return proto.recv(m.recv(), statR)
     end
     function m.close()
         select.close(session)

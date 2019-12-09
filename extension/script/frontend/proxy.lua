@@ -1,4 +1,4 @@
-local network = require 'common.network'
+local network = require 'frontend.network'
 local debuggerFactory = require 'frontend.debugerFactory'
 local fs = require 'bee.filesystem'
 local sp = require 'bee.subprocess'
