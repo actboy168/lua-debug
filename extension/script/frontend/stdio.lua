@@ -13,10 +13,10 @@ local stat = {}
 function m.debug(v)
     stat.debug = v
 end
-function m.send(pkg)
+function m.sendmsg(pkg)
     STDOUT:write(proto.send(pkg, stat))
 end
-function m.recv()
+function m.recvmsg()
     local n = peek(STDIN)
     if n == nil or n == 0 then
         return proto.recv('', stat)

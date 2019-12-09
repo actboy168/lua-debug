@@ -71,6 +71,7 @@ local function close_connect(fd)
 end
 
 local function close(fd)
+    event[fd]('close', fd)
     close_listen(fd)
     close_connect(fd)
     close_read(fd)
@@ -78,6 +79,7 @@ local function close(fd)
     fd:close()
     read[fd] = nil
     write[fd] = nil
+    event[fd] = nil
     shutdown[fd] = true
     willclose[fd] = true
 end
@@ -130,6 +132,7 @@ function m.cleanup(fd)
     willclose[fd] = nil
     read[fd] = nil
     write[fd] = nil
+    event[fd] = nil
 end
 
 function m.listen(t)
@@ -172,9 +175,7 @@ local function updateLC()
         local fd = m.connect(wc)
         if fd then
             m.dontwantconnect(idx)
-            if event[fd] then
-                event[fd]('connect start', fd)
-            end
+            event[fd]('connect start', fd)
             break
         end
     end
@@ -188,9 +189,8 @@ local function updateLC()
     for _, fd in ipairs(rd) do
         local newfd = fd:accept()
         if newfd:status() then
-            if event[fd] then
-                event[fd]('accept', newfd)
-            end
+            event[fd]('accept', newfd)
+            event[newfd] = event[fd]
             attach(newfd)
         end
     end
@@ -198,14 +198,10 @@ local function updateLC()
         close_connect(fd)
         local ok, err = fd:status()
         if ok then
-            if event[fd] then
-                event[fd]('ok', fd)
-            end
+            event[fd]('ok', fd)
             attach(fd)
         else
-            if event[fd] then
-                event[fd]('connect failed', fd, err)
-            end
+            event[fd]('connect failed', fd, err)
             close(fd)
         end
     end

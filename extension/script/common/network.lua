@@ -38,6 +38,8 @@ local function open(address, client)
     local write = ''
     local statR = {}
     local statW = {}
+    local e_send
+    local e_event
     function t.event(status, fd)
         if status == 'connect start' then
             assert(t.client)
@@ -48,6 +50,14 @@ local function open(address, client)
             assert(t.client)
             select.close(srvfd)
             select.wantconnect(t)
+            return
+        end
+        if status == 'close' then
+            session = nil
+            if t.client then
+                srvfd = nil
+                select.wantconnect(t)
+            end
             return
         end
         if session then
@@ -63,32 +73,47 @@ local function open(address, client)
     else
         srvfd = assert(select.listen(t))
     end
+    function m.event_in(f)
+        e_send = f
+    end
+    function m.event_close(f)
+        e_event = f
+    end
+    function m.update()
+        select.update(0.05)
+        local data = m.recv()
+        if data ~= '' then
+            e_send(data)
+        end
+        return true
+    end
     function m.debug(v)
         statR.debug = v
         statW.debug = v
     end
-    function m.sendRaw(data)
+    function m.send(data)
         if not session then
             write = write .. data
             return
         end
         select.send(session, data)
     end
-    function m.recvRaw()
+    function m.recv()
         if not session then
             return ''
         end
         return select.recv(session)
     end
-    function m.send(pkg)
-        m.sendRaw(proto.send(pkg, statW))
+    function m.sendmsg(pkg)
+        m.send(proto.send(pkg, statW))
     end
-    function m.recv()
-        return proto.recv(m.recvRaw(), statR)
+    function m.recvmsg()
+        return proto.recv(m.recv(), statR)
     end
     function m.close()
-        session = nil
+        select.close(session)
         write = ''
+        e_event()
     end
     function m.is_closed()
         if not session then
@@ -99,7 +124,4 @@ local function open(address, client)
     return m
 end
 
-return {
-    open = open,
-    update = select.update,
-}
+return open

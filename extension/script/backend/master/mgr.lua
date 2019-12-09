@@ -48,7 +48,7 @@ local function event_close()
     initialized = false
     stat = {}
     queue = {}
-    network:close()
+    network.close()
 end
 
 local function recv()
@@ -66,8 +66,8 @@ end
 function mgr.init(io)
     network = io
     masterThread = thread.channel 'DbgMaster'
-    network:event_in(event_in)
-    network:event_close(event_close)
+    network.event_in(event_in)
+    network.event_close(event_close)
     return true
 end
 
@@ -98,7 +98,7 @@ function mgr.initConfig(config)
 end
 
 function mgr.sendToClient(pkg)
-    network:send(proto.send(pkg, stat))
+    network.send(proto.send(pkg, stat))
 end
 
 function mgr.sendToWorker(w, pkg)
@@ -151,7 +151,7 @@ local function updateOnce()
             event.output('stdout', res)
         end
     end
-    if not network:update() then
+    if not network.update() then
         return true
     end
     local req = recv()

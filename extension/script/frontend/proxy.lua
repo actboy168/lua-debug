@@ -25,7 +25,7 @@ local function getUnixAddress(pid)
 end
 
 local function response_initialize(req)
-    client.send {
+    client.sendmsg {
         type = 'response',
         seq = 0,
         command = 'initialize',
@@ -36,7 +36,7 @@ local function response_initialize(req)
 end
 
 local function response_restart(req)
-    client.send {
+    client.sendmsg {
         type = 'response',
         seq = 0,
         command = 'restart',
@@ -46,7 +46,7 @@ local function response_restart(req)
 end
 
 local function response_error(req, msg)
-    client.send {
+    client.sendmsg {
         type = 'response',
         seq = 0,
         command = req.command,
@@ -57,7 +57,7 @@ local function response_error(req, msg)
 end
 
 local function request_runinterminal(args)
-    client.send {
+    client.sendmsg {
         type = 'request',
         seq = 0,
         command = 'runInTerminal',
@@ -73,16 +73,16 @@ local function attach_process(pkg, pid)
     ) then
         return false
     end
-    server = network.open(getUnixAddress(pid), true)
-    server.send(initReq)
-    server.send(pkg)
+    server = network(getUnixAddress(pid), true)
+    server.sendmsg(initReq)
+    server.sendmsg(pkg)
     return true
 end
 
 local function attach_tcp(pkg, args)
-    server = network.open(args.address, args.client)
-    server.send(initReq)
-    server.send(pkg)
+    server = network(args.address, args.client)
+    server.sendmsg(initReq)
+    server.sendmsg(pkg)
 end
 
 local function proxy_attach(pkg)
@@ -123,7 +123,7 @@ local function proxy_launch_terminal(pkg)
         return
     end
     local pid = sp.get_id()
-    server = network.open(getUnixAddress(pid), true)
+    server = network(getUnixAddress(pid), true)
     local arguments, err = debuggerFactory.create_terminal(args, getDbgPath(), pid)
     if not arguments then
         response_error(pkg, err)
@@ -145,10 +145,10 @@ local function proxy_launch_console(pkg)
             response_error(pkg, err)
             return
         end
-        server = network.open(getUnixAddress(process:get_id()), true)
+        server = network(getUnixAddress(process:get_id()), true)
     else
         local pid = sp.get_id()
-        server = network.open(getUnixAddress(pid), true)
+        server = network(getUnixAddress(pid), true)
         local ok, err = debuggerFactory.create_luaexe(args, getDbgPath(), pid)
         if not ok then
             response_error(pkg, err)
@@ -170,8 +170,8 @@ local function proxy_launch(pkg)
             return
         end
     end
-    server.send(initReq)
-    server.send(pkg)
+    server.sendmsg(initReq)
+    server.sendmsg(pkg)
 end
 
 local function proxy_start(pkg)
@@ -189,7 +189,7 @@ function m.send(pkg)
         end
         if pkg.type == 'request' and pkg.command == 'restart' then
             response_restart(pkg)
-            server.send {
+            server.sendmsg {
                 type = 'request',
                 seq = 0,
                 command = 'terminate',
@@ -200,7 +200,7 @@ function m.send(pkg)
             restart = true
             return
         end
-        server.send(pkg)
+        server.sendmsg(pkg)
     elseif not initReq then
         if pkg.type == 'request' and pkg.command == 'initialize' then
             pkg.__norepl = true
@@ -224,9 +224,9 @@ end
 function m.update()
     if server then
         while true do
-            local pkg = server.recv()
+            local pkg = server.recvmsg()
             if pkg then
-                client.send(pkg)
+                client.sendmsg(pkg)
             else
                 break
             end
