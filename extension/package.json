@@ -20,7 +20,9 @@
     "engines": {
         "vscode": "^1.19.0"
     },
-    "extensionKind": "workspace",
+    "extensionKind": [
+        "workspace"
+    ],
     "repository": {
         "type": "git",
         "url": "https://github.com/actboy168/lua-debug"
