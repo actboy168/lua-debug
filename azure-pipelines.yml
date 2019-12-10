@@ -16,7 +16,8 @@ jobs:
       cd ..
     displayName: Compile luamake
   - script: |
-      .\luamake\luamake
+      .\luamake\luamake remake -arch x86
+      .\luamake\luamake remake -arch x64
     displayName: Compile
   - task: CopyFiles@2
     inputs:
