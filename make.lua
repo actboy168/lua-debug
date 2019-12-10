@@ -4,7 +4,15 @@ local platform = require "bee.platform"
 lm.gcc = 'clang'
 lm.gxx = 'clang++'
 
-lm.arch = ARGUMENTS.arch or (platform.OS == "Windows" and "x64" or "x86")
+local arguments = {}
+for i, v in ipairs(arg) do
+    if v:sub(1, 1) == '-' then
+        local k = v:sub(2)
+        arguments[k] = arg[i+1]
+    end
+end
+
+lm.arch = arguments.arch or (platform.OS == "Windows" and "x64" or "x86")
 
 lm.bindir = ("build/%s/bin/%s"):format(lm.plat, lm.arch)
 lm.objdir = ("build/%s/obj/%s"):format(lm.plat, lm.arch)
