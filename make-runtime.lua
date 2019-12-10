@@ -4,7 +4,7 @@ local platform = require "bee.platform"
 lm.gcc = 'clang'
 lm.gxx = 'clang++'
 
-lm.arch = ARGUMENTS.arch or 'x64'
+lm.arch = ARGUMENTS.arch or (platform.OS == "Windows" and "x64" or "x86")
 
 lm.bindir = ("build/%s/bin/%s"):format(lm.plat, lm.arch)
 lm.objdir = ("build/%s/obj/%s"):format(lm.plat, lm.arch)
@@ -227,9 +227,21 @@ for _, luaver in ipairs {"lua51","lua52","lua53","lua54"} do
 
 end
 
+lm:build 'copy_extension' {
+    '$luamake', 'lua', 'make/copy_extension.lua',
+}
+
+lm:build 'update_version' {
+    '$luamake', 'lua', 'make/update_version.lua',
+}
+
 lm:build 'install' {
-    '$luamake', 'lua', 'make/install-runtime.lua', lm.plat, lm.arch,
-    deps = install_deps
+    '$luamake', 'lua', 'make/install_runtime.lua', lm.plat, lm.arch,
+    deps = {
+        'copy_extension',
+        'update_version',
+        install_deps,
+    }
 }
 
 lm:default {
