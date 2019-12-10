@@ -12,59 +12,10 @@ for i, v in ipairs(arg) do
     end
 end
 
-lm.arch = arguments.arch or (platform.OS == "Windows" and "x64" or "x86")
+lm.arch = arguments.arch or (platform.OS == "Windows" and "x86" or "x64")
 
 lm.bindir = ("build/%s/bin/%s"):format(lm.plat, lm.arch)
 lm.objdir = ("build/%s/obj/%s"):format(lm.plat, lm.arch)
-
-local BUILD_BIN = platform.OS ~= "Windows" or lm.arch == "x86"
-
-local install_deps = {
-    BUILD_BIN and "bee",
-    BUILD_BIN and "lua",
-    BUILD_BIN and "bootstrap",
-    BUILD_BIN and "inject",
-    BUILD_BIN and platform.OS == "Windows" and "lua54",
-    platform.OS == "Windows" and "launcher",
-}
-
-if BUILD_BIN then
-    lm:import '3rd/bee.lua/make.lua'
-
-    if platform.OS == "Windows" then
-        lm:shared_library 'inject' {
-            deps = {
-                "bee",
-                "lua54"
-            },
-            includes = {
-                "3rd/bee.lua",
-                lm.arch == "x86" and "3rd/wow64ext/src",
-            },
-            sources = {
-                "src/process_inject/injectdll.cpp",
-                "src/process_inject/query_process.cpp",
-                "src/process_inject/inject.cpp",
-                lm.arch == "x86" and "3rd/wow64ext/src/wow64ext.cpp",
-            },
-            links = {
-                "advapi32",
-            }
-        }
-    else
-        lm:shared_library 'inject' {
-            deps = {
-                "bee",
-            },
-            includes = {
-                "3rd/bee.lua/3rd/lua/src",
-            },
-            sources = {
-                "src/process_inject/inject_osx.cpp",
-            }
-        }
-    end
-end
 
 if platform.OS == "Windows" then
     lm:source_set 'detours' {
@@ -119,11 +70,13 @@ lm:source_set 'runtime/onelua' {
     }
 }
 
+local runtimes = {}
+
 for _, luaver in ipairs {"lua51","lua52","lua53","lua54"} do
-    install_deps[#install_deps+1] = "runtime/"..luaver.."/lua"
-    install_deps[#install_deps+1] = "runtime/"..luaver.."/remotedebug"
+    runtimes[#runtimes+1] = "runtime/"..luaver.."/lua"
+    runtimes[#runtimes+1] = "runtime/"..luaver.."/remotedebug"
     if platform.OS == "Windows" then
-        install_deps[#install_deps+1] = "runtime/"..luaver.."/"..luaver
+        runtimes[#runtimes+1] = "runtime/"..luaver.."/"..luaver
     end
 
     lm.rootdir = '3rd/lua/'..luaver
@@ -235,22 +188,75 @@ for _, luaver in ipairs {"lua51","lua52","lua53","lua54"} do
 
 end
 
-lm:build 'copy_extension' {
-    '$luamake', 'lua', 'make/copy_extension.lua',
-}
-
-lm:build 'update_version' {
-    '$luamake', 'lua', 'make/update_version.lua',
-}
-
-lm:build 'install' {
-    '$luamake', 'lua', 'make/install_runtime.lua', lm.plat, lm.arch,
-    deps = {
-        'copy_extension',
-        'update_version',
-        install_deps,
+if platform.OS == "Windows" and lm.arch == "x64" then
+    lm:build 'install' {
+        '$luamake', 'lua', 'make/install_runtime.lua', lm.plat, lm.arch,
+        deps = {
+            "launcher",
+            runtimes,
+        }
     }
-}
+else
+    lm.rootdir = ''
+    lm:import '3rd/bee.lua/make.lua'
+
+    if platform.OS == "Windows" then
+        lm:shared_library 'inject' {
+            deps = {
+                "bee",
+                "lua54"
+            },
+            includes = {
+                "3rd/bee.lua",
+                lm.arch == "x86" and "3rd/wow64ext/src",
+            },
+            sources = {
+                "src/process_inject/injectdll.cpp",
+                "src/process_inject/query_process.cpp",
+                "src/process_inject/inject.cpp",
+                lm.arch == "x86" and "3rd/wow64ext/src/wow64ext.cpp",
+            },
+            links = {
+                "advapi32",
+            }
+        }
+    else
+        lm:shared_library 'inject' {
+            deps = {
+                "bee",
+            },
+            includes = {
+                "3rd/bee.lua/3rd/lua/src",
+            },
+            sources = {
+                "src/process_inject/inject_osx.cpp",
+            }
+        }
+    end
+
+    lm:build 'copy_extension' {
+        '$luamake', 'lua', 'make/copy_extension.lua',
+    }
+
+    lm:build 'update_version' {
+        '$luamake', 'lua', 'make/update_version.lua',
+    }
+
+    lm:build 'install' {
+        '$luamake', 'lua', 'make/install_runtime.lua', lm.plat, lm.arch,
+        deps = {
+            'copy_extension',
+            'update_version',
+            "bee",
+            "lua",
+            "bootstrap",
+            "inject",
+            platform.OS == "Windows" and "lua54",
+            platform.OS == "Windows" and "launcher",
+            runtimes,
+        }
+    }
+end
 
 lm:default {
     "install",
