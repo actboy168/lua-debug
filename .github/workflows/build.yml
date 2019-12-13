@@ -68,7 +68,7 @@ jobs:
         path: publish
   publish:
     runs-on: macOS-latest
-    needs: [msvc, linux, macos]
+    needs: [windows, linux, macos]
     steps:
       - uses: actions/download-artifact@v1.0.0
         with:
