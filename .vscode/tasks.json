@@ -20,6 +20,9 @@
         {
             "label": "Rebuild",
             "command": "luamake",
+            "args": [
+                "remake"
+            ]
         },
         {
             "label": "Copy Extension",
