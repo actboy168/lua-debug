@@ -82,3 +82,26 @@ jobs:
       with:
         name: lua-debug
         path: publish
+  publish:
+    if: github.event == 'push'
+    runs-on: macOS-latest
+    needs: [msvc, linux, macos]
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v1.0.0
+        with:
+          name: lua-debug
+          path: publish
+      - name: Publish
+        run: |
+          npm install -g vsce
+          cd publish/lua-debug
+          chmod -v +x runtime/linux/lua5*/lua
+          chmod -v +x runtime/macos/lua5*/lua
+          chmod -v +x bin/linux/lua-debug
+          chmod -v +x bin/macos/lua-debug
+          vsce publish -p $VSCE_KEY
+
+
+          
+    
