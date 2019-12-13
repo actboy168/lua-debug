@@ -27,16 +27,18 @@ jobs:
       with:
         ref: refs/heads/master
         submodules : recursive
+    - if: runner.os == 'Windows'
+      uses: ilammy/msvc-dev-cmd@v1
+      with:
+        arch: ${{ matrix.arch }}
+    - if: runner.os == 'Windows'
+      run: choco install -y ninja
     - if: runner.os == 'Linux'
       run: sudo apt-get install -y libreadline-dev ninja-build
     - if: runner.os == 'macOS'
       run: brew install ninja
     - run: git clone --recurse-submodules -j8 --depth 1 https://github.com/actboy168/luamake
-    - if: runner.os != 'Windows'
-      run: ninja -f ninja/${{ matrix.plat }}.ninja
-      working-directory: luamake
-    - if: runner.os == 'Windows'
-      run: .\msvc_build.bat
+    - run: ninja -f ninja/${{ matrix.plat }}.ninja
       working-directory: luamake
     - run: ./luamake/luamake -p ${{ matrix.plat }} -arch ${{ matrix.arch }}
       shell: bash
