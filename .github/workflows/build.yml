@@ -16,13 +16,8 @@ jobs:
     - uses: ilammy/msvc-dev-cmd@v1
       with:
         arch: ${{ matrix.arch }}
-    - name: Init
-      run: |
-        choco install -y ninja
-        refreshenv
     - name: Compile luamake
       run: |
-        git submodule update --init --recursive
         git clone --depth 1 https://github.com/actboy168/luamake
         cd luamake
         git submodule update --init --recursive
@@ -44,7 +39,6 @@ jobs:
         sudo apt-get install -y libreadline-dev ninja-build
     - name: Compile luamake
       run: |
-        git submodule update --init --recursive
         git clone --depth 1 https://github.com/actboy168/luamake
         cd luamake
         git submodule update --init --recursive
@@ -66,7 +60,6 @@ jobs:
         brew install ninja
     - name: Compile luamake
       run: |
-        git submodule update --init --recursive
         git clone --depth 1 https://github.com/actboy168/luamake
         cd luamake
         git submodule update --init --recursive
