@@ -91,7 +91,8 @@ jobs:
       - name: Publish
         run: |
           npm install -g vsce
-          cd publish/lua-debug
+          ls
+          cd publish
           chmod -v +x runtime/linux/lua5*/lua
           chmod -v +x runtime/macos/lua5*/lua
           chmod -v +x bin/linux/lua-debug
