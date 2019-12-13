@@ -1,7 +1,7 @@
 name: build
 on: [push]
 jobs:
-  msvc:
+  windows:
     runs-on: windows-latest
     strategy:
       matrix:
@@ -14,18 +14,15 @@ jobs:
     - uses: ilammy/msvc-dev-cmd@v1
       with:
         arch: ${{ matrix.arch }}
-    - name: Compile luamake
+    - name: luamake
       run: |
         git clone --depth 1 https://github.com/actboy168/luamake
         cd luamake
         git submodule update --init --recursive
         .\msvc_build.bat
         cd ..
-    - name: Compile
-      run: |
-        .\luamake\luamake remake -arch ${{ matrix.arch }}
-    - name: Upload artifact
-      uses: actions/upload-artifact@v1.0.0
+    - run: .\luamake\luamake remake -arch ${{ matrix.arch }}
+    - uses: actions/upload-artifact@v1.0.0
       with:
         name: lua-debug
         path: publish
@@ -36,21 +33,16 @@ jobs:
       with:
         ref: refs/heads/master
         submodules : recursive
-    - name: Init
-      run: |
-        sudo apt-get install -y libreadline-dev ninja-build
-    - name: Compile luamake
+    - run: sudo apt-get install -y libreadline-dev ninja-build
+    - name: luamake
       run: |
         git clone --depth 1 https://github.com/actboy168/luamake
         cd luamake
         git submodule update --init --recursive
         ninja -f ninja/linux.ninja
         cd ..
-    - name: Compile
-      run: |
-        ./luamake/luamake
-    - name: Upload artifact
-      uses: actions/upload-artifact@v1.0.0
+    - run: ./luamake/luamake
+    - uses: actions/upload-artifact@v1.0.0
       with:
         name: lua-debug
         path: publish
@@ -61,21 +53,16 @@ jobs:
       with:
         ref: refs/heads/master
         submodules : recursive
-    - name: Init
-      run: |
-        brew install ninja
-    - name: Compile luamake
+    - run: brew install ninja
+    - name: luamake
       run: |
         git clone --depth 1 https://github.com/actboy168/luamake
         cd luamake
         git submodule update --init --recursive
         ninja -f ninja/macos.ninja
         cd ..
-    - name: Compile
-      run: |
-        ./luamake/luamake
-    - name: Upload artifact
-      uses: actions/upload-artifact@v1.0.0
+    - run: ./luamake/luamake
+    - uses: actions/upload-artifact@v1.0.0
       with:
         name: lua-debug
         path: publish
@@ -83,8 +70,7 @@ jobs:
     runs-on: macOS-latest
     needs: [msvc, linux, macos]
     steps:
-      - name: Download artifact
-        uses: actions/download-artifact@v1.0.0
+      - uses: actions/download-artifact@v1.0.0
         with:
           name: lua-debug
           path: publish
