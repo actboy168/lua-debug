@@ -19,32 +19,22 @@ jobs:
       with:
         name: lua-debug
         path: publish
-  linux:
-    runs-on: ubuntu-latest
+  posix:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [linux, macos]
     steps:
     - uses: actions/checkout@v1
       with:
         ref: refs/heads/master
         submodules : recursive
     - run: sudo apt-get install -y libreadline-dev ninja-build
+      if: ${{ matrix.os }} == 'linux'
+    - run: sudo apt-get install -y libreadline-dev ninja-build
+      if: ${{ matrix.os }} == 'macos'
     - run: git clone --recurse-submodules -j8 --depth 1 https://github.com/actboy168/luamake
-    - run: ninja -f ninja/linux.ninja
-      working-directory: luamake
-    - run: ./luamake/luamake
-    - uses: actions/upload-artifact@v1.0.0
-      with:
-        name: lua-debug
-        path: publish
-  macos:
-    runs-on: macOS-latest
-    steps:
-    - uses: actions/checkout@v1
-      with:
-        ref: refs/heads/master
-        submodules : recursive
-    - run: brew install ninja
-    - run: git clone --recurse-submodules -j8 --depth 1 https://github.com/actboy168/luamake
-    - run: ninja -f ninja/macos.ninja
+    - run: ninja -f ninja/${{ matrix.os }}.ninja
       working-directory: luamake
     - run: ./luamake/luamake
     - uses: actions/upload-artifact@v1.0.0
@@ -53,7 +43,7 @@ jobs:
         path: publish
   publish:
     runs-on: macOS-latest
-    needs: [windows, linux, macos]
+    needs: [windows, posix]
     steps:
       - uses: actions/download-artifact@v1.0.0
         with:
