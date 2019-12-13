@@ -20,10 +20,15 @@ jobs:
         name: lua-debug
         path: publish
   posix:
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.image }}
     strategy:
       matrix:
         os: [linux, macos]
+        include:
+        - os: linux
+          image: ubuntu-latest
+        - os: macos
+          image: macos-latest
     steps:
     - uses: actions/checkout@v1
       with:
