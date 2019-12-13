@@ -2,21 +2,24 @@ name: build
 on: [push]
 jobs:
   compile:
-    runs-on: ${{ matrix.image }}
+    runs-on: ${{ matrix.os }}-latest
     strategy:
       fail-fast: false
       matrix:
-        os: [windows, linux, macos]
+        os: [windows, ubuntu, macos]
+        arch: [x86, x64]
         include:
         - os: windows
-          image: windows-latest
           plat: msvc
-        - os: linux
-          image: ubuntu-latest
+        - os: ubuntu
           plat: linux
         - os: macos
-          image: macos-latest
           plat: macos
+        exclude:
+          - os: ubuntu
+            arch: x86
+          - os: macos
+            arch: x86
     steps:
     - uses: actions/checkout@v1
       with:
@@ -35,14 +38,15 @@ jobs:
     - run: git clone --recurse-submodules -j8 --depth 1 https://github.com/actboy168/luamake
     - run: ninja -f ninja/${{ matrix.plat }}.ninja
       working-directory: luamake
-    - run: ./luamake/luamake -p ${{ matrix.plat }}
+    - if: matrix.arch != 'x64'
+      run: ./luamake/luamake -p ${{ matrix.plat }}
       shell: bash
-    - if: runner.os == 'Windows'
+    - if: matrix.arch == 'x64'
       uses: ilammy/msvc-dev-cmd@v1
       with:
         arch: x64
-    - if: runner.os == 'Windows'
-      run: .\luamake\luamake remake -arch x64
+    - if: matrix.arch == 'x64'
+      run: .\luamake\luamake -arch x64
     - uses: actions/upload-artifact@v1.0.0
       with:
         name: lua-debug
