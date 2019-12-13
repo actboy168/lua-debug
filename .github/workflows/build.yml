@@ -4,6 +4,7 @@ jobs:
   compile:
     runs-on: ${{ matrix.image }}
     strategy:
+      fail-fast: false
       matrix:
         os: [windows-x86, windows-x64, linux, macos]
         include:
