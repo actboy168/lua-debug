@@ -1,0 +1,80 @@
+name: build
+
+on: [push, pull_request]
+
+jobs:
+  msvc:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        arch: [x86, x64]
+    steps:
+    - uses: actions/checkout@v1
+      with:
+        ref: refs/heads/master
+        fetch-depth: 1
+        submodules : recursive
+    - uses: ilammy/msvc-dev-cmd@v1
+      with:
+        arch: ${{ matrix.arch }}
+    - name: Init
+      run: |
+        choco install -y ninja
+        refreshenv
+    - name: Compile luamake
+      run: |
+        git submodule update --init --recursive
+        git clone --depth 1 https://github.com/actboy168/luamake
+        cd luamake
+        git submodule update --init --recursive
+        msvc_build.bat
+        cd ..
+    - name: Compile
+      run: |
+        .\luamake\luamake remake -arch ${{ matrix.arch }}
+
+  linux:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+      with:
+        ref: refs/heads/master
+        fetch-depth: 1
+        submodules : recursive
+    - name: Init
+      run: |
+        sudo apt-get install -y libreadline-dev ninja-build
+    - name: Compile luamake
+      run: |
+        git submodule update --init --recursive
+        git clone --depth 1 https://github.com/actboy168/luamake
+        cd luamake
+        git submodule update --init --recursive
+        ninja -f ninja/linux.ninja
+        cd ..
+    - name: Compile
+      run: |
+        ./luamake/luamake
+
+  macos:
+    runs-on: macOS-latest
+    steps:
+    - uses: actions/checkout@v1
+      with:
+        ref: refs/heads/master
+        fetch-depth: 1
+        submodules : recursive
+    - name: Init
+      run: |
+        brew install ninja
+    - name: Compile luamake
+      run: |
+        git submodule update --init --recursive
+        git clone --depth 1 https://github.com/actboy168/luamake
+        cd luamake
+        git submodule update --init --recursive
+        ninja -f ninja/macos.ninja
+        cd ..
+    - name: Compile
+      run: |
+        ./luamake/luamake
