@@ -97,4 +97,4 @@ jobs:
           chmod -v +x runtime/macos/lua5*/lua
           chmod -v +x bin/linux/lua-debug
           chmod -v +x bin/macos/lua-debug
-          vsce publish -p ${{ secrets.VSCE_KEY }}
+          vsce publish -p ${{ secrets.VSCE_KEY }} || true
