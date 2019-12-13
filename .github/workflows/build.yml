@@ -1,5 +1,5 @@
 name: build
-on: [push, pull_request]
+on: [push]
 jobs:
   msvc:
     runs-on: windows-latest
@@ -24,7 +24,7 @@ jobs:
     - name: Compile
       run: |
         .\luamake\luamake remake -arch ${{ matrix.arch }}
-    - name: Upload artifact
+    - name: Upload artifac
       if: github.event == 'push'
       uses: actions/upload-artifact@v1.0.0
       with:
@@ -51,7 +51,6 @@ jobs:
       run: |
         ./luamake/luamake
     - name: Upload artifact
-      if: github.event == 'push'
       uses: actions/upload-artifact@v1.0.0
       with:
         name: lua-debug
@@ -77,13 +76,11 @@ jobs:
       run: |
         ./luamake/luamake
     - name: Upload artifact
-      if: github.event == 'push'
       uses: actions/upload-artifact@v1.0.0
       with:
         name: lua-debug
         path: publish
   publish:
-    if: github.event == 'push'
     runs-on: macOS-latest
     needs: [msvc, linux, macos]
     steps:
@@ -100,8 +97,4 @@ jobs:
           chmod -v +x runtime/macos/lua5*/lua
           chmod -v +x bin/linux/lua-debug
           chmod -v +x bin/macos/lua-debug
-          vsce publish -p $VSCE_KEY
-
-
-          
-    
+          vsce publish -p ${{ secrets.VSCE_KEY }}
