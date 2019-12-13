@@ -11,9 +11,7 @@ jobs:
       with:
         ref: refs/heads/master
         submodules : recursive
-    - run: git clone --depth 1 https://github.com/actboy168/luamake
-    - run: git submodule update --init --recursive
-      working-directory: luamake
+    - run: git clone --recurse-submodules -j8 --depth 1 https://github.com/actboy168/luamake
     - run: .\msvc_build.bat
       working-directory: luamake
     - run: .\luamake\luamake remake -arch ${{ matrix.arch }}
@@ -29,9 +27,7 @@ jobs:
         ref: refs/heads/master
         submodules : recursive
     - run: sudo apt-get install -y libreadline-dev ninja-build
-    - run: git clone --depth 1 https://github.com/actboy168/luamake
-    - run: git submodule update --init --recursive
-      working-directory: luamake
+    - run: git clone --recurse-submodules -j8 --depth 1 https://github.com/actboy168/luamake
     - run: ninja -f ninja/linux.ninja
       working-directory: luamake
     - run: ./luamake/luamake
@@ -47,9 +43,7 @@ jobs:
         ref: refs/heads/master
         submodules : recursive
     - run: brew install ninja
-    - run: git clone --depth 1 https://github.com/actboy168/luamake
-    - run: git submodule update --init --recursive
-      working-directory: luamake
+    - run: git clone --recurse-submodules -j8 --depth 1 https://github.com/actboy168/luamake
     - run: ninja -f ninja/macos.ninja
       working-directory: luamake
     - run: ./luamake/luamake
