@@ -24,8 +24,7 @@ jobs:
     - name: Compile
       run: |
         .\luamake\luamake remake -arch ${{ matrix.arch }}
-    - name: Upload artifac
-      if: github.event == 'push'
+    - name: Upload artifact
       uses: actions/upload-artifact@v1.0.0
       with:
         name: lua-debug
