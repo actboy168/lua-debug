@@ -11,13 +11,11 @@ jobs:
       with:
         ref: refs/heads/master
         submodules : recursive
-    - name: luamake
-      run: |
-        git clone --depth 1 https://github.com/actboy168/luamake
-        cd luamake
-        git submodule update --init --recursive
-        .\msvc_build.bat
-        cd ..
+    - run: git clone --depth 1 https://github.com/actboy168/luamake
+    - run: git submodule update --init --recursive
+      working-directory: luamake
+    - run: .\msvc_build.bat
+      working-directory: luamake
     - run: .\luamake\luamake remake -arch ${{ matrix.arch }}
     - uses: actions/upload-artifact@v1.0.0
       with:
@@ -31,13 +29,11 @@ jobs:
         ref: refs/heads/master
         submodules : recursive
     - run: sudo apt-get install -y libreadline-dev ninja-build
-    - name: luamake
-      run: |
-        git clone --depth 1 https://github.com/actboy168/luamake
-        cd luamake
-        git submodule update --init --recursive
-        ninja -f ninja/linux.ninja
-        cd ..
+    - run: git clone --depth 1 https://github.com/actboy168/luamake
+    - run: git submodule update --init --recursive
+      working-directory: luamake
+    - run: ninja -f ninja/linux.ninja
+      working-directory: luamake
     - run: ./luamake/luamake
     - uses: actions/upload-artifact@v1.0.0
       with:
@@ -51,13 +47,11 @@ jobs:
         ref: refs/heads/master
         submodules : recursive
     - run: brew install ninja
-    - name: luamake
-      run: |
-        git clone --depth 1 https://github.com/actboy168/luamake
-        cd luamake
-        git submodule update --init --recursive
-        ninja -f ninja/macos.ninja
-        cd ..
+    - run: git clone --depth 1 https://github.com/actboy168/luamake
+    - run: git submodule update --init --recursive
+      working-directory: luamake
+    - run: ninja -f ninja/macos.ninja
+      working-directory: luamake
     - run: ./luamake/luamake
     - uses: actions/upload-artifact@v1.0.0
       with:
@@ -71,13 +65,14 @@ jobs:
         with:
           name: lua-debug
           path: publish
+      - run: npm install -g vsce
       - name: Publish
+        working-directory: publish
         run: |
-          npm install -g vsce
-          cd publish
           chmod -v +x runtime/linux/lua5*/lua
           chmod -v +x runtime/macos/lua5*/lua
           chmod -v +x bin/linux/lua-debug
           chmod -v +x bin/macos/lua-debug
       - run: vsce publish -p ${{ secrets.VSCE_KEY }}
+        working-directory: publish
         continue-on-error: true
