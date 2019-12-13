@@ -1,7 +1,5 @@
 name: build
-
 on: [push, pull_request]
-
 jobs:
   msvc:
     runs-on: windows-latest
@@ -21,12 +19,11 @@ jobs:
         git clone --depth 1 https://github.com/actboy168/luamake
         cd luamake
         git submodule update --init --recursive
-        msvc_build.bat
+        .\msvc_build.bat
         cd ..
     - name: Compile
       run: |
         .\luamake\luamake remake -arch ${{ matrix.arch }}
-
   linux:
     runs-on: ubuntu-latest
     steps:
@@ -47,7 +44,6 @@ jobs:
     - name: Compile
       run: |
         ./luamake/luamake
-
   macos:
     runs-on: macOS-latest
     steps:
