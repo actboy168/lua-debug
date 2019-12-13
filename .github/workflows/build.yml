@@ -1,30 +1,18 @@
 name: build
 on: [push]
 jobs:
-  windows:
-    runs-on: windows-latest
-    strategy:
-      matrix:
-        arch: [x86, x64]
-    steps:
-    - uses: actions/checkout@v1
-      with:
-        ref: refs/heads/master
-        submodules : recursive
-    - run: git clone --recurse-submodules -j8 --depth 1 https://github.com/actboy168/luamake
-    - run: .\msvc_build.bat
-      working-directory: luamake
-    - run: .\luamake\luamake remake -arch ${{ matrix.arch }}
-    - uses: actions/upload-artifact@v1.0.0
-      with:
-        name: lua-debug
-        path: publish
-  posix:
+  compile:
     runs-on: ${{ matrix.image }}
     strategy:
       matrix:
-        os: [linux, macos]
+        os: [windows_x86, windows_x64, linux, macos]
         include:
+        - os: windows_x86
+          image: windows-latest
+          arch: x86
+        - os: windows_x64
+          image: windows-latest
+          arch: x64
         - os: linux
           image: ubuntu-latest
         - os: macos
@@ -37,18 +25,25 @@ jobs:
     - if: matrix.os == 'linux'
       run: sudo apt-get install -y libreadline-dev ninja-build
     - if: matrix.os == 'macos'
-      run:  brew install ninja
+      run: brew install ninja
     - run: git clone --recurse-submodules -j8 --depth 1 https://github.com/actboy168/luamake
-    - run: ninja -f ninja/${{ matrix.os }}.ninja
+    - if: runner.os != 'Windows'
+      run: ninja -f ninja/${{ matrix.os }}.ninja
       working-directory: luamake
-    - run: ./luamake/luamake
+    - if: runner.os == 'Windows'
+      run: .\msvc_build.bat
+      working-directory: luamake
+    - if: runner.os != 'Windows'
+      run: ./luamake/luamake
+    - if: runner.os == 'Windows'
+      run: .\luamake\luamake -arch ${{ matrix.arch }}
     - uses: actions/upload-artifact@v1.0.0
       with:
         name: lua-debug
         path: publish
   publish:
     runs-on: macOS-latest
-    needs: [windows, posix]
+    needs: compile
     steps:
       - uses: actions/download-artifact@v1.0.0
         with:
