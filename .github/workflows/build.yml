@@ -16,10 +16,10 @@ jobs:
         - os: macos
           plat: macos
         exclude:
-          - os: ubuntu
-            arch: x86
-          - os: macos
-            arch: x86
+        - os: ubuntu
+          arch: x86
+        - os: macos
+          arch: x86
     steps:
     - uses: actions/checkout@v1
       with:
@@ -38,14 +38,14 @@ jobs:
     - run: git clone --recurse-submodules -j8 --depth 1 https://github.com/actboy168/luamake
     - run: ninja -f ninja/${{ matrix.plat }}.ninja
       working-directory: luamake
-    - if: matrix.arch != 'x64'
+    - if: runner.os != 'Windows' || matrix.arch != 'x64'
       run: ./luamake/luamake -p ${{ matrix.plat }}
       shell: bash
-    - if: matrix.arch == 'x64'
+    - if: runner.os == 'Windows' && matrix.arch == 'x64'
       uses: ilammy/msvc-dev-cmd@v1
       with:
         arch: x64
-    - if: matrix.arch == 'x64'
+    - if: runner.os == 'Windows' && matrix.arch == 'x64'
       run: .\luamake\luamake -arch x64
     - uses: actions/upload-artifact@v1.0.0
       with:
