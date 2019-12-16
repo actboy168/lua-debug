@@ -813,10 +813,7 @@ void probe(rlua_State* cL, lua_State* hL, const char* name) {
         rlua_pop(cL, 1);
         return;
     }
-    lu_byte oldah = hL->allowhook;
-    hL->allowhook = 0;
     ((hookmgr*)rlua_touserdata(cL, -1))->probe(hL, name);
-    hL->allowhook = oldah;
     rlua_pop(cL, 1);
 }
 
@@ -825,10 +822,15 @@ int event(rlua_State* cL, lua_State* hL, const char* name) {
         rlua_pop(cL, 1);
         return -1;
     }
-    lu_byte oldah = hL->allowhook;
-    hL->allowhook = 0;
     int ok = ((hookmgr*)rlua_touserdata(cL, -1))->event(hL, name);
-    hL->allowhook = oldah;
     rlua_pop(cL, 1);
+    return ok;
+}
+
+int debug_pcall(lua_State* L, int nargs, int nresults, int errfunc) {
+    lu_byte oldah = L->allowhook;
+    L->allowhook = 0;
+    int ok = lua_pcall(L, nargs, nresults, errfunc);
+    L->allowhook = oldah;
     return ok;
 }

@@ -10,6 +10,8 @@
 
 static int DEBUG_REFFUNC = 0;
 
+int debug_pcall(lua_State* L, int nargs, int nresults, int errfunc);
+
 lua_State* get_host(rlua_State *L);
 
 enum class VAR : uint8_t {
@@ -1321,7 +1323,7 @@ lclient_eval(rlua_State *L) {
 	}
 	lua_pushstring(cL, source);
 	lua_pushinteger(cL, (lua_Integer)level);
-	if (lua_pcall(cL, 2, 1, 0)) {
+	if (debug_pcall(cL, 2, 1, 0)) {
 		rlua_pushboolean(L, 0);
 		rlua_pushstring(L, lua_tostring(cL, -1));
 		lua_pop(cL, 1);
@@ -1350,7 +1352,7 @@ lclient_evalref(rlua_State *L) {
 		}
 	}
 
-	if (lua_pcall(cL, n-1, 1, 0)) {
+	if (debug_pcall(cL, n-1, 1, 0)) {
 		rlua_pushboolean(L, 0);
 		rlua_pushstring(L, lua_tostring(cL, -1));
 		lua_pop(cL, 1);
@@ -1405,7 +1407,7 @@ lclient_evalwatch(rlua_State *L) {
 	lua_pushstring(cL, source);
 	lua_pushinteger(cL, (lua_Integer)level);
 	int n = lua_gettop(cL) - 3;
-	if (lua_pcall(cL, 2, LUA_MULTRET, 0)) {
+	if (debug_pcall(cL, 2, LUA_MULTRET, 0)) {
 		rlua_pushboolean(L, 0);
 		rlua_pushstring(L, lua_tostring(cL, -1));
 		lua_pop(cL, 1);
