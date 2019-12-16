@@ -26,6 +26,7 @@ local noDebug = false
 local openUpdate = false
 local coroutineTree = {}
 local statckFrame = {}
+local baseL
 
 local CMD = {}
 
@@ -178,7 +179,6 @@ local function calcStackLevel()
         return
     end
     local n = 0
-    local baseL = hookmgr.gethost()
     local L = baseL
     repeat
         hookmgr.sethost(L)
@@ -214,7 +214,6 @@ function CMD.stackTrace(pkg)
 
     calcStackLevel()
 
-    local baseL = hookmgr.gethost()
     local L = baseL
     local coroutineId = 0
     repeat
@@ -417,6 +416,7 @@ function CMD.restartFrame()
 end
 
 local function runLoop(reason, text)
+    baseL = hookmgr.gethost()
     --TODO: 只在lua栈帧时需要text？
     sendToMaster {
         cmd = 'eventStop',
@@ -446,8 +446,8 @@ local function event_breakpoint(src, line)
             runLoop 'breakpoint'
             return true
         end
-        end
     end
+end
 
 function event.bp(line)
     if not initialized then return end
