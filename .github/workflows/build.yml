@@ -28,7 +28,7 @@ jobs:
     - if: runner.os == 'Windows'
       uses: ilammy/msvc-dev-cmd@v1
       with:
-        arch: x86
+        arch: ${{ matrix.arch }}
     - if: runner.os == 'Windows'
       run: choco install -y ninja
     - if: runner.os == 'Linux'
@@ -38,21 +38,14 @@ jobs:
     - run: git clone --recurse-submodules -j8 --depth 1 https://github.com/actboy168/luamake
     - run: ninja -f ninja/${{ matrix.plat }}.ninja
       working-directory: luamake
-    - if: runner.os != 'Windows' || matrix.arch != 'x64'
-      run: ./luamake/luamake -p ${{ matrix.plat }}
+    - run: ./luamake/luamake -p ${{ matrix.plat }} -arch ${{ matrix.arch }}
       shell: bash
-    - if: runner.os == 'Windows' && matrix.arch == 'x64'
-      uses: ilammy/msvc-dev-cmd@v1
-      with:
-        arch: x64
-    - if: runner.os == 'Windows' && matrix.arch == 'x64'
-      run: .\luamake\luamake -arch x64
     - uses: actions/upload-artifact@v1.0.0
       with:
         name: lua-debug
         path: publish
   publish:
-    runs-on: macOS-latest
+    runs-on: macos-latest
     needs: compile
     steps:
       - uses: actions/download-artifact@v1.0.0
