@@ -125,7 +125,7 @@ local function getFuncName(info)
         return '(main)'
     end
     if info.namewhat == '' then
-        return '(C)'
+        return ('(%s ?)'):format(info.what)
     end
     if info.namewhat == 'for iterator' then
         return '(for iterator)'
