@@ -355,7 +355,10 @@ struct hookmgr {
         }
         set_host(cL, hL);
         rlua_pushstring(cL, "r_thread");
-        rlua_pushlightuserdata(cL, lua_touserdata(hL, -1));
+        void* L = lua_touserdata(hL, -1);
+        L   ? rlua_pushlightuserdata(cL, L)
+            : rlua_pushnil(cL)
+            ;
         rlua_pushinteger(cL, ar->currentline);
         if (rlua_pcall(cL, 3, 0, 0) != LUA_OK) {
             rlua_pop(cL, 1);
