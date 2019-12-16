@@ -48,7 +48,6 @@ local function event_close()
     initialized = false
     stat = {}
     queue = {}
-    network.close()
 end
 
 local function recv()

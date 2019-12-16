@@ -50,12 +50,14 @@ local function open(address, client)
             return
         end
         if status == 'close' then
-            session = nil
-            if t.client then
-                srvfd = nil
-                select.wantconnect(t)
+            if session == fd then
+                session = nil
+                if t.client then
+                    srvfd = nil
+                    select.wantconnect(t)
+                end
+                e_close()
             end
-            e_close()
             return
         end
         if session then

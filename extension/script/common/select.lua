@@ -71,7 +71,7 @@ local function close_connect(fd)
 end
 
 local function close(fd)
-    event[fd]('close', fd)
+    if event[fd] then event[fd]('close', fd) end
     close_listen(fd)
     close_connect(fd)
     close_read(fd)
