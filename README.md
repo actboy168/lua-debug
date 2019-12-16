@@ -1,7 +1,7 @@
 # lua-debug
 
 
-[![Build Status](https://github.com/actboy168/lua-debug/workflows/build/badge.svg)](https://github.com/actboy168/lua-debug/actions?workflow=build) [![Build Status](https://dev.azure.com/actboy168/lua-debug/_apis/build/status/actboy168.lua-debug?branchName=master)](https://dev.azure.com/actboy168/lua-debug/_build/latest?definitionId=8&branchName=master)
+[![Build Status](https://github.com/actboy168/lua-debug/workflows/build/badge.svg)](https://github.com/actboy168/lua-debug/actions?workflow=build)
 
 ## 安装
 在vscode中按Ctrl+P，输入
