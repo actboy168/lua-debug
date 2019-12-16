@@ -223,6 +223,14 @@ end
 
 function m.update()
     if server then
+        server.event_close(function()
+            if restart then
+                restart = false
+                proxy_start(startReq)
+                return
+            end
+            os.exit(0, true)
+        end)
         while true do
             local pkg = server.recvmsg()
             if pkg then
@@ -230,14 +238,6 @@ function m.update()
             else
                 break
             end
-        end
-        if server.is_closed() then
-            if restart then
-                restart = false
-                proxy_start(startReq)
-                return
-            end
-            os.exit(0, true)
         end
     end
 end

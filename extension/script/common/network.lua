@@ -35,8 +35,8 @@ local function open(address, client)
     local session
     local srvfd
     local write = ''
-    local e_send
-    local e_event
+    local e_send = function(_) end
+    local e_close = function() end
     function t.event(status, fd)
         if status == 'connect start' then
             assert(t.client)
@@ -55,6 +55,7 @@ local function open(address, client)
                 srvfd = nil
                 select.wantconnect(t)
             end
+            e_close()
             return
         end
         if session then
@@ -74,7 +75,7 @@ local function open(address, client)
         e_send = f
     end
     function m.event_close(f)
-        e_event = f
+        e_close = f
     end
     function m.update()
         select.update(0.05)
@@ -100,13 +101,6 @@ local function open(address, client)
     function m.close()
         select.close(session)
         write = ''
-        e_event()
-    end
-    function m.is_closed()
-        if not session then
-            return false
-        end
-        return select.is_closed(session)
     end
     return m
 end
