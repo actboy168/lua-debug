@@ -134,7 +134,7 @@ local function getFuncName(depth)
         end
         local previous = {}
         if rdebug.getinfo(depth+1, "S", previous) then
-            if previous.what == "Lua" then
+            if previous.what == "Lua" or previous.what == "main" then
                 return '(anonymous function)'
             end
             if previous.what == "C" then
