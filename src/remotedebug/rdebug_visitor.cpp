@@ -456,20 +456,6 @@ assign_value(rlua_State *L, struct value * v, lua_State *cL) {
 	return 0;
 }
 
-
-static void
-get_value(rlua_State *L, lua_State *cL) {
-	if (eval_value(L, cL) == LUA_TNONE) {
-		rlua_pop(L, 1);
-		rlua_pushnil(L);
-		// failed
-		return;
-	}
-	rlua_pop(L, 1);
-	copyvalue(cL, L);
-	lua_pop(cL,1);
-}
-
 static const char *
 get_frame_local(rlua_State *L, lua_State *cL, uint16_t frame, int16_t n, int getref) {
 	lua_Debug ar;
@@ -1012,7 +998,14 @@ static int
 lclient_value(rlua_State *L) {
 	lua_State *cL = get_host(L);
 	rlua_settop(L, 1);
-	get_value(L, cL);
+	if (eval_value(L, cL) == LUA_TNONE) {
+		rlua_pop(L, 1);
+		rlua_pushnil(L);
+		return 1;
+	}
+	rlua_pop(L, 1);
+	copyvalue(cL, L);
+	lua_pop(cL,1);
 	return 1;
 }
 
@@ -1052,8 +1045,36 @@ lclient_assign(rlua_State *L) {
 static int
 lclient_type(rlua_State *L) {
 	lua_State *cL = get_host(L);
-	int t = eval_value(L, cL);
+	switch(rlua_type(L, 1)) {
+	case LUA_TNIL:           rlua_pushstring(L, "nil");           return 1;
+	case LUA_TBOOLEAN:       rlua_pushstring(L, "boolean");       return 1;
+	case LUA_TSTRING:        rlua_pushstring(L, "string");        return 1;
+	case LUA_TLIGHTUSERDATA: rlua_pushstring(L, "lightuserdata"); return 1;
+	case LUA_TNUMBER:
+#if LUA_VERSION_NUM >= 503
+		if (rlua_isinteger(L, 1)) {
+			rlua_pushstring(L, "integer");
+		} else {
+			rlua_pushstring(L, "float");
+		}
+#else
+		rlua_pushstring(L, "float");
+#endif
+		return 1;
+	case LUA_TUSERDATA:
+		break;
+	default:
+		rluaL_error(L, "unexpected type: %s", rlua_typename(L, rlua_type(L, 1)));
+		return 1;
+	}
+
+	rlua_settop(L, 1);
+	struct value *v = (struct value *)rlua_touserdata(L, 1);
+	int t = eval_value_(L, cL, v);
 	switch (t) {
+	case LUA_TNONE:
+		rlua_pushstring(L, "unknown");
+		return 1;
 	case LUA_TFUNCTION:
 		if (lua_iscfunction(cL, -1)) {
 			rlua_pushstring(L, "c function");
