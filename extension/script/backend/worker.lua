@@ -162,7 +162,7 @@ local function getFuncName(depth)
 end
 
 local function stackTrace(res, coid, start, levels)
-    for depth = start, start + levels do
+    for depth = start, start + levels - 1 do
         if not rdebug.getinfo(depth, "Sln", info) then
             return depth - start
         end
@@ -230,6 +230,10 @@ function CMD.stackTrace(pkg)
 
     calcStackLevel()
 
+    if start + levels > statckFrame.total then
+        levels = statckFrame.total - start
+    end
+
     local L = baseL
     local coroutineId = 0
     repeat
@@ -246,7 +250,7 @@ function CMD.stackTrace(pkg)
         end
         coroutineId = coroutineId + 1
         L = coroutineTree[L]
-    until not L
+    until (not L or levels <= 0)
     hookmgr.sethost(baseL)
 
     sendToMaster {
