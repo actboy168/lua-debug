@@ -149,10 +149,7 @@ copyvalue(lua_State *from, rlua_State *to) {
 
 // L top : value, uservalue
 static int
-eval_value_(rlua_State *L, lua_State *cL, struct value *v) {
-	if (lua_checkstack(cL, 3) == 0)
-		return rluaL_error(L, "stack overflow");
-
+eval_value_(lua_State *cL, struct value *v) {
 	switch (v->type) {
 	case VAR::FRAME_LOCAL: {
 		lua_Debug ar;
@@ -173,7 +170,7 @@ eval_value_(rlua_State *L, lua_State *cL, struct value *v) {
 		return LUA_TFUNCTION;
 	}
 	case VAR::INDEX_INT:{
-		int t = eval_value_(L, cL, v+1);
+		int t = eval_value_(cL, v+1);
 		if (t == LUA_TNONE)
 			break;
 		if (t != LUA_TTABLE) {
@@ -187,7 +184,7 @@ eval_value_(rlua_State *L, lua_State *cL, struct value *v) {
 		return lua_type(cL, -1);
 	}
 	case VAR::INDEX_STR:{
-		int t = eval_value_(L, cL, (struct value *)((const char*)(v+1) + v->index));
+		int t = eval_value_(cL, (struct value *)((const char*)(v+1) + v->index));
 		if (t == LUA_TNONE)
 			break;
 		if (t != LUA_TTABLE) {
@@ -202,7 +199,7 @@ eval_value_(rlua_State *L, lua_State *cL, struct value *v) {
 	}
 	case VAR::INDEX_KEY:
 	case VAR::INDEX_VAL: {
-		int t = eval_value_(L, cL, v+1);
+		int t = eval_value_(cL, v+1);
 		if (t == LUA_TNONE)
 			break;
 		if (t != LUA_TTABLE) {
@@ -222,7 +219,7 @@ eval_value_(rlua_State *L, lua_State *cL, struct value *v) {
 		return lua_type(cL, -1);
 	}
 	case VAR::UPVALUE: {
-		int t = eval_value_(L, cL, v+1);
+		int t = eval_value_(cL, v+1);
 		if (t == LUA_TNONE)
 			break;
 		if (t != LUA_TFUNCTION) {
@@ -234,7 +231,7 @@ eval_value_(rlua_State *L, lua_State *cL, struct value *v) {
 			lua_replace(cL, -2);	// remove function
 			return lua_type(cL, -1);
 		} else {
-			rlua_pop(L, 1);
+			lua_pop(cL, 1);
 			break;
 		}
 	}
@@ -270,7 +267,7 @@ eval_value_(rlua_State *L, lua_State *cL, struct value *v) {
 				return LUA_TNONE;
 			}
 		} else {
-			int t = eval_value_(L, cL, v+1);
+			int t = eval_value_(cL, v+1);
 			if (t == LUA_TNONE)
 				break;
 			if (t != LUA_TTABLE && t != LUA_TUSERDATA) {
@@ -287,7 +284,7 @@ eval_value_(rlua_State *L, lua_State *cL, struct value *v) {
 			return LUA_TNIL;
 		}
 	case VAR::USERVALUE: {
-		int t = eval_value_(L, cL, v+1);
+		int t = eval_value_(cL, v+1);
 		if (t == LUA_TNONE)
 			break;
 		if (t != LUA_TUSERDATA) {
@@ -308,7 +305,7 @@ eval_value_(rlua_State *L, lua_State *cL, struct value *v) {
 // extract L top into cL, return the lua type or LUA_TNONE(failed)
 static int
 eval_value(rlua_State *L, lua_State *cL) {
-	if (lua_checkstack(cL, 1) == 0)
+	if (lua_checkstack(cL, 3) == 0)
 		return rluaL_error(L, "stack overflow");
 	int t = copy_fromX(L, cL);
 	if (t != LUA_TNONE) {
@@ -317,7 +314,7 @@ eval_value(rlua_State *L, lua_State *cL) {
 	t = rlua_type(L, -1);
 	if (t == LUA_TUSERDATA) {
 		struct value *v = (struct value *)rlua_touserdata(L, -1);
-		return eval_value_(L, cL, v);
+		return eval_value_(cL, v);
 	}
 	return LUA_TNONE;
 }
@@ -325,7 +322,7 @@ eval_value(rlua_State *L, lua_State *cL) {
 // assign cL top into ref object in L. pop cL.
 // return 0 failed
 static int
-assign_value(rlua_State *L, struct value * v, lua_State *cL) {
+assign_value(struct value * v, lua_State *cL) {
 	int top = lua_gettop(cL);
 	switch (v->type) {
 	case VAR::FRAME_LOCAL: {
@@ -345,7 +342,7 @@ assign_value(rlua_State *L, struct value * v, lua_State *cL) {
 		// Can't assign frame func, etc.
 		break;
 	case VAR::INDEX_INT: {
-		int t = eval_value_(L, cL, v+1);
+		int t = eval_value_(cL, v+1);
 		if (t == LUA_TNONE)
 			break;
 		if (t != LUA_TTABLE) {
@@ -359,7 +356,7 @@ assign_value(rlua_State *L, struct value * v, lua_State *cL) {
 		return 1;
 	}
 	case VAR::INDEX_STR: {
-		int t = eval_value_(L, cL, (struct value *)((const char*)(v+1) + v->index));
+		int t = eval_value_(cL, (struct value *)((const char*)(v+1) + v->index));
 		if (t == LUA_TNONE)
 			break;
 		if (t != LUA_TTABLE) {
@@ -375,7 +372,7 @@ assign_value(rlua_State *L, struct value * v, lua_State *cL) {
 	case VAR::INDEX_KEY:
 		break;
 	case VAR::INDEX_VAL: {
-		int t = eval_value_(L, cL, v+1);
+		int t = eval_value_(cL, v+1);
 		if (t == LUA_TNONE)
 			break;
 		if (t != LUA_TTABLE) {
@@ -389,7 +386,7 @@ assign_value(rlua_State *L, struct value * v, lua_State *cL) {
 		return 1;
 	}
 	case VAR::UPVALUE: {
-		int t = eval_value_(L, cL, v+1);
+		int t = eval_value_(cL, v+1);
 		if (t == LUA_TNONE)
 			break;
 		if (t != LUA_TFUNCTION) {
@@ -427,7 +424,7 @@ assign_value(rlua_State *L, struct value * v, lua_State *cL) {
 				return 0;
 			}
 		} else {
-			int t = eval_value_(L, cL, v+1);
+			int t = eval_value_(cL, v+1);
 			if (t != LUA_TTABLE && t != LUA_TUSERDATA) {
 				break;
 			}
@@ -442,7 +439,7 @@ assign_value(rlua_State *L, struct value * v, lua_State *cL) {
 		return 1;
 	}
 	case VAR::USERVALUE: {
-		int t = eval_value_(L, cL, v+1);
+		int t = eval_value_(cL, v+1);
 		if (t != LUA_TUSERDATA) {
 			break;
 		}
@@ -1035,9 +1032,11 @@ lclient_assign(rlua_State *L) {
 	default:
 		return rluaL_error(L, "Invalid value type %s", rlua_typename(L, vtype));
 	}
+	if (lua_checkstack(cL, 3) == 0)
+		return rluaL_error(L, "stack overflow");
 	rluaL_checktype(L, 1, LUA_TUSERDATA);
 	struct value * ref = (struct value *)rlua_touserdata(L, 1);
-	int r = assign_value(L, ref, cL);
+	int r = assign_value(ref, cL);
 	rlua_pushboolean(L, r);
 	return 1;
 }
@@ -1067,10 +1066,11 @@ lclient_type(rlua_State *L) {
 		rluaL_error(L, "unexpected type: %s", rlua_typename(L, rlua_type(L, 1)));
 		return 1;
 	}
-
+	if (lua_checkstack(cL, 3) == 0)
+		return rluaL_error(L, "stack overflow");
 	rlua_settop(L, 1);
 	struct value *v = (struct value *)rlua_touserdata(L, 1);
-	int t = eval_value_(L, cL, v);
+	int t = eval_value_(cL, v);
 	switch (t) {
 	case LUA_TNONE:
 		rlua_pushstring(L, "unknown");
