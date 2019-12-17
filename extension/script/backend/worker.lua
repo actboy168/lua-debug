@@ -120,11 +120,27 @@ function CMD.terminated()
     end
 end
 
-local function getFuncName(info)
+local function getFuncName(depth)
     if info.what == 'main' then
         return '(main)'
     end
     if info.namewhat == '' then
+        if luaver.LUAVERSION >= 52
+            and info.what == "Lua"
+            and rdebug.getinfo(depth, "t", info)
+            and info.istailcall
+        then
+            return '(...tail calls...)'
+        end
+        local previous = {}
+        if rdebug.getinfo(depth+1, "S", previous) then
+            if previous.what == "Lua" then
+                return '(anonymous function)'
+            end
+            if previous.what == "C" then
+                return '(called from C)'
+            end
+        end
         return ('(%s ?)'):format(info.what)
     end
     if info.namewhat == 'for iterator' then
@@ -152,7 +168,7 @@ local function stackTrace(res, coid, start, levels)
         end
         local r = {
             id = (coid << 16) | depth,
-            name = getFuncName(info),
+            name = getFuncName(depth),
             line = 0,
             column = 0,
         }
