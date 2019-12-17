@@ -203,6 +203,14 @@ local function calcStackLevel()
         statckFrame[L] = sl
         statckFrame[#statckFrame+1] = L
         L = coroutineTree[L]
+        if not L then
+            for depth = sl-1, 0, -1 do
+                if not rdebug.getinfo(depth, "S", info) or info.what ~= "C" then
+                    break
+                end
+                n = n - 1
+            end
+        end
     until not L
     hookmgr.sethost(baseL)
     statckFrame.total = n
