@@ -541,7 +541,7 @@ local function pairsEventArgs()
         if n > max then
             return
         end
-        return rdebug.getstack(n)
+        return n, rdebug.getstack(n)
     end
 end
 
@@ -573,7 +573,7 @@ end
 function event.print()
     if not initialized then return end
     local res = {}
-    for arg in pairsEventArgs() do
+    for _, arg in pairsEventArgs() do
         res[#res + 1] = variables.tostring(arg)
     end
     res = table.concat(res, '\t') .. '\n'
@@ -590,7 +590,7 @@ end
 function event.iowrite()
     if not initialized then return end
     local res = {}
-    for arg in pairsEventArgs() do
+    for _, arg in pairsEventArgs() do
         res[#res + 1] = variables.tostring(arg)
     end
     res = table.concat(res, '\t')
