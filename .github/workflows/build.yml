@@ -18,13 +18,11 @@ jobs:
       with:
         ref: refs/heads/master
         submodules : recursive
-    - if: runner.os == 'Windows'
-      uses: ilammy/msvc-dev-cmd@v1
-      with:
-        arch: ${{ matrix.arch }}
     - if: runner.os == 'Linux'
       run: sudo apt-get install -y libreadline-dev
     - uses: actboy168/setup-luamake@master
+      with:
+        arch: ${{ matrix.arch }}
     - run: luamake -arch ${{ matrix.arch }}
     - uses: actions/upload-artifact@v1.0.0
       with:
