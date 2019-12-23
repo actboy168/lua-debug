@@ -18,8 +18,6 @@ jobs:
       with:
         ref: refs/heads/master
         submodules : recursive
-    - if: runner.os == 'Linux'
-      run: sudo apt-get install -y libreadline-dev
     - uses: actboy168/setup-luamake@master
       with:
         arch: ${{ matrix.arch }}
@@ -32,11 +30,11 @@ jobs:
     runs-on: ubuntu-latest
     needs: compile
     steps:
-      - run: npm install -g vsce
       - uses: actions/download-artifact@v1.0.0
         with:
           name: lua-debug
           path: publish
+      - run: npm install -g vsce
       - name: Publish
         run: |
           chmod -v +x runtime/linux/lua5*/lua
