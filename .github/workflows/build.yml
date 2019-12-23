@@ -27,14 +27,14 @@ jobs:
         name: lua-debug
         path: publish
   publish:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     needs: compile
     steps:
+      - run: npm install -g vsce
       - uses: actions/download-artifact@v1.0.0
         with:
           name: lua-debug
           path: publish
-      - run: npm install -g vsce
       - name: Publish
         run: |
           chmod -v +x runtime/linux/lua5*/lua
