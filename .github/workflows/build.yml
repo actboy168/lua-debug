@@ -1,5 +1,5 @@
 name: build
-on: [push]
+on: push
 jobs:
   compile:
     runs-on: ${{ matrix.os }}-latest
@@ -8,13 +8,6 @@ jobs:
       matrix:
         os: [windows, ubuntu, macos]
         arch: [x86, x64]
-        include:
-        - os: windows
-          plat: msvc
-        - os: ubuntu
-          plat: linux
-        - os: macos
-          plat: macos
         exclude:
         - os: ubuntu
           arch: x86
