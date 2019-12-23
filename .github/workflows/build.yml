@@ -29,12 +29,7 @@ jobs:
       uses: ilammy/msvc-dev-cmd@v1
       with:
         arch: ${{ matrix.arch }}
-    - if: runner.os == 'Windows'
-      run: $env:Path += ";$pwd\luamake\tools\"
-    - if: runner.os == 'Linux'
-      run: sudo apt-get install -y libreadline-dev ninja-build
-    - if: runner.os == 'macOS'
-      run: brew install ninja
+    - uses: seanmiddleditch/gha-setup-ninja@v1
     - run: git clone --recurse-submodules -j8 --depth 1 https://github.com/actboy168/luamake
     - run: ninja -f ninja/${{ matrix.plat }}.ninja
       working-directory: luamake
