@@ -23,27 +23,27 @@ jobs:
     - uses: actboy168/setup-luamake@master
       with:
         arch: ${{ matrix.arch }}
-    - run: luamake -arch ${{ matrix.arch }}
+    - run: luamake
     - uses: actions/upload-artifact@v1.0.0
       with:
         name: lua-debug
         path: publish
   publish:
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     needs: compile
     steps:
+      - run: npm install -g vsce
       - uses: actions/download-artifact@v1.0.0
         with:
           name: lua-debug
           path: publish
-      - run: npm install -g vsce
       - name: Publish
-        working-directory: publish
         run: |
           chmod -v +x runtime/linux/lua5*/lua
           chmod -v +x runtime/macos/lua5*/lua
           chmod -v +x bin/linux/lua-debug
           chmod -v +x bin/macos/lua-debug
+        working-directory: publish
       - run: vsce publish -p ${{ secrets.VSCE_KEY }}
         working-directory: publish
         continue-on-error: true
