@@ -35,13 +35,7 @@ jobs:
         with:
           name: lua-debug
           path: publish
-      - name: Publish
-        run: |
-          chmod -v +x runtime/linux/lua5*/lua
-          chmod -v +x runtime/macos/lua5*/lua
-          chmod -v +x bin/linux/lua-debug
-          chmod -v +x bin/macos/lua-debug
-        working-directory: publish
-      - run: vsce publish -p ${{ secrets.VSCE_KEY }}
-        working-directory: publish
+      - run: chmod -v +x publish/runtime/[^w]*/lua5*/lua
+      - run: chmod -v +x publish/bin/[^w]*/lua-debug
+      - run: cd publish && vsce publish -p ${{ secrets.VSCE_KEY }}
         continue-on-error: true
