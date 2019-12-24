@@ -34,7 +34,7 @@ jobs:
       - uses: actions/download-artifact@v1.0.0
         with:
           name: lua-debug
-      - run: chmod -v +x runtime/[^w]*/lua5*/lua
-      - run: chmod -v +x bin/[^w]*/lua-debug
-      - run: vsce publish -p ${{ secrets.VSCE_KEY }}
+      - run: chmod -v +x lua-debug/runtime/[^w]*/lua5*/lua
+      - run: chmod -v +x lua-debug/bin/[^w]*/lua-debug
+      - run: cd lua-debug && vsce publish -p ${{ secrets.VSCE_KEY }}
         continue-on-error: true
