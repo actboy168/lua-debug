@@ -5,9 +5,9 @@
 #include <new>
 #include <memory>
 #include <array>
+#include <chrono>
 #include <vector>
 #include "rdebug_eventfree.h"
-#include "rdebug_timer.h"
 #include "thunk/thunk.h"
 
 #if LUA_VERSION_NUM < 504
@@ -61,6 +61,20 @@ static CallInfo* debug2ci(lua_State* hL, lua_Debug* ar) {
     return hL->base_ci + ar->i_ci;
 #endif
 }
+
+
+struct timer {
+    std::chrono::time_point<std::chrono::system_clock> last = std::chrono::system_clock::now();
+    bool update(int ms) {
+        auto now = std::chrono::system_clock::now();
+        auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(now - last);
+        if (diff.count() > ms) {
+            last = now;
+            return true;
+        }
+        return false;
+    }
+};
 
 struct hookmgr {
     enum class BP : uint8_t {
@@ -552,13 +566,13 @@ struct hookmgr {
     }
     
     int update_mask = 0;
+    timer timer;
     void update_open(lua_State* hL, int enable) {
         update_mask = enable? LUA_MASKRET: 0;
         updatehookmask(hL);
     }
     void update_hook(lua_State* hL) {
-        static remotedebug::timer t;
-        if (!t.update(200)) {
+        if (!timer.update(200)) {
             return;
         }
         if (rlua_rawgetp(cL, RLUA_REGISTRYINDEX, &HOOK_CALLBACK) != LUA_TFUNCTION) {
