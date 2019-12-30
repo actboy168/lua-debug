@@ -11,15 +11,8 @@ local startReq
 local restart = false
 local m = {}
 
-local function getDbgPath()
-    if WORKDIR:filename():string() ~= 'extension' then
-        return WORKDIR
-    end
-    return arg[2]
-end
-
 local function getUnixAddress(pid)
-    local path = getDbgPath() / "tmp"
+    local path = WORKDIR / "tmp"
     fs.create_directories(path)
     return "@"..(path / ("pid_%d"):format(pid)):string()
 end
@@ -124,7 +117,7 @@ local function proxy_launch_terminal(pkg)
     end
     local pid = sp.get_id()
     server = network(getUnixAddress(pid), true)
-    local arguments, err = debuggerFactory.create_terminal(args, getDbgPath(), pid)
+    local arguments, err = debuggerFactory.create_terminal(args, WORKDIR, pid)
     if not arguments then
         response_error(pkg, err)
         return
@@ -149,7 +142,7 @@ local function proxy_launch_console(pkg)
     else
         local pid = sp.get_id()
         server = network(getUnixAddress(pid), true)
-        local ok, err = debuggerFactory.create_luaexe(args, getDbgPath(), pid)
+        local ok, err = debuggerFactory.create_luaexe(args, WORKDIR, pid)
         if not ok then
             response_error(pkg, err)
             return
