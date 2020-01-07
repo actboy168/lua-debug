@@ -41,5 +41,6 @@
 
 #endif			/* } */
 
-#endif
+#include "luai_userstate.h"
 
+#endif
