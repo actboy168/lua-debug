@@ -183,7 +183,7 @@ function m.exec(bp)
             end
             local ok, res = evaluate.eval(info)
             if not ok then
-                return info
+                return '{'..info..'}'
             end
             return tostring(res)
         end)
@@ -224,9 +224,11 @@ local funcs = {}
 function m.set_funcbp(breakpoints)
     funcs = {}
     for _, bp in ipairs(breakpoints) do
-        funcs[#funcs+1] = bp.name
+        if evaluate.verify(bp.name) then
+            funcs[#funcs+1] = bp.name
+        end
     end
-    hookmgr.funcbp_open(#breakpoints > 0)
+    hookmgr.funcbp_open(#funcs > 0)
 end
 
 function m.hit_funcbp(func)
