@@ -218,7 +218,7 @@ const char *luaG_findlocal (lua_State *L, CallInfo *ci, int n, StkId *pos) {
       return NULL;  /* no name */
   }
   if (pos)
-  *pos = base + (n - 1);
+    *pos = base + (n - 1);
   return name;
 }
 
@@ -306,7 +306,7 @@ static void collectvalidlines (lua_State *L, Closure *f) {
     Table *t = luaH_new(L);  /* new table to store active lines */
     sethvalue2s(L, L->top, t);  /* push it on stack */
     api_incr_top(L);
-    setbvalue(&v, 1);  /* boolean 'true' to be the value of all indices */
+    setbtvalue(&v);  /* boolean 'true' to be the value of all indices */
     for (i = 0; i < p->sizelineinfo; i++) {  /* for all lines with code */
       currentline = nextline(p, currentline, i);
       luaH_setint(L, t, currentline, &v);  /* table[line] = true */
@@ -529,7 +529,7 @@ static const char *gxf (const Proto *p, int pc, Instruction i, int isup) {
 
 
 static const char *getobjname (const Proto *p, int lastpc, int reg,
-                         const char **name) {
+                               const char **name) {
   int pc;
   *name = luaF_getlocalname(p, reg + 1, lastpc);
   if (*name)  /* is a local? */
