@@ -12,7 +12,7 @@ for i, v in ipairs(arg) do
     end
 end
 
-lm.arch = arguments.arch
+lm.arch = arguments.arch or lm.arch
 
 lm.bindir = ("build/%s/bin/%s"):format(lm.plat, lm.arch)
 lm.objdir = ("build/%s/obj/%s"):format(lm.plat, lm.arch)
