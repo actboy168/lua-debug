@@ -147,6 +147,9 @@ function resolveConfig(folder, config) {
                 }
             }
             else {
+                if (plat == "Windows") {
+                    config.sourceCoding = "ansi"
+                }
                 if (typeof config.path != 'string' && typeof config.path != 'object') {
                     config.path = '${workspaceFolder}/?.lua'
                 }
