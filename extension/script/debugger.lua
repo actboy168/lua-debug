@@ -1,4 +1,4 @@
-local platform, root, luaapi = ...
+local platform, root, luaapi, ansi = ...
 
 local arch = (function()
     if string.packsize then
@@ -52,6 +52,10 @@ if luaapi then
 end
 local rdebug = assert(package.loadlib(remotedebug,'luaopen_remotedebug'))()
 
+if ansi then
+    root = rdebug.a2u(root)
+end
+
 local dbg = {}
 
 function dbg:start(addr, client)
@@ -73,7 +77,7 @@ function dbg:start(addr, client)
         require 'backend.worker' .openupdate()
     ]]):format(
           root
-        , address
+        , ansi and rdebug.a2u(address) or address
     ))
 end
 

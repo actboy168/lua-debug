@@ -20,20 +20,13 @@ local function towsl(s)
     end)
 end
 
-local function nativepath(s)
-    if not useWSL and not useUtf8 and platformOS() == "Windows" then
-        local unicode = require 'bee.unicode'
-        return unicode.u2a(s)
-    end
-    return towsl(s)
-end
-
 local function create_install_script(pid, dbg)
     local res = {}
-    res[#res+1] = ("local path=[[%s]];"):format(nativepath(dbg))
-    res[#res+1] = ("assert(loadfile(path..'/script/launch.lua'))('%s',path,%d):wait()"):format(
+    res[#res+1] = ("local path=[[%s]];"):format(towsl(dbg))
+    res[#res+1] = ("assert(loadfile(path..'/script/launch.lua'))('%s',path,%d%s):wait()"):format(
         platformOS():lower(),
-        pid
+        pid,
+        useUtf8 and "" or ",true"
     )
     return table.concat(res)
 end
