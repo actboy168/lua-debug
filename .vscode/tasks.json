@@ -25,6 +25,14 @@
             ]
         },
         {
+            "label": "Update Version",
+            "command": "luamake",
+            "args": [
+                "lua",
+                "make/update_version.lua",
+            ]
+        },
+        {
             "label": "Copy Extension",
             "command": "${workspaceFolder}/build/lua",
             "args": [
