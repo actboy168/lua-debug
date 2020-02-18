@@ -7,6 +7,7 @@ local utf8_char = utf8.char
 local table_concat = table.concat
 local string_char = string.char
 local math_type = math.type
+local setmetatable = setmetatable
 local Inf = math.huge
 
 local json = {}
@@ -50,43 +51,6 @@ local function encode_null(val)
     error "cannot serialise function: type not supported"
 end
 
-local function encode_table(val, stack)
-    local res = {}
-    stack = stack or {}
-    if stack[val] then error("circular reference") end
-    stack[val] = true
-    if next(val) == nil then
-        local meta = getmetatable(val)
-        if meta and meta.__name == 'json.object' then
-            return "{}"
-        else
-            return "[]"
-        end
-    elseif type(next(val)) == 'number' then
-        local max = 0
-        for k in pairs(val) do
-            if math_type(k) ~= "integer" then
-                error("invalid table: mixed or invalid key types")
-            end
-            max = max > k and max or k
-        end
-        for i = 1, max do
-            res[#res+1] = encode(val[i], stack)
-        end
-        stack[val] = nil
-        return "[" .. table_concat(res, ",") .. "]"
-    else
-        for k, v in pairs(val) do
-            if type(k) ~= "string" then
-                error("invalid table: mixed or invalid key types")
-            end
-            res[#res+1] = encode(k, stack) .. ":" .. encode(v, stack)
-        end
-        stack[val] = nil
-        return "{" .. table_concat(res, ",") .. "}"
-    end
-end
-
 local function encode_string(val)
     return '"' .. val:gsub('[%z\1-\31\127\\"/]', escape_char) .. '"'
 end
@@ -96,6 +60,48 @@ local function encode_number(val)
         error("unexpected number value '" .. tostring(val) .. "'")
     end
     return ("%.14g"):format(val):gsub(',', '.')
+end
+
+local function encode_table(val, stack)
+    local first_val = next(val)
+    if first_val == nil then
+        local meta = getmetatable(val)
+        if meta and meta.__name == 'json.object' then
+            return "{}"
+        else
+            return "[]"
+        end
+    elseif type(first_val) == 'number' then
+        local max = 0
+        for k in pairs(val) do
+            if math_type(k) ~= "integer" then
+                error("invalid table: mixed or invalid key types")
+            end
+            max = max > k and max or k
+        end
+        local res = {}
+        stack = stack or {}
+        if stack[val] then error("circular reference") end
+        stack[val] = true
+        for i = 1, max do
+            res[#res+1] = encode(val[i], stack)
+        end
+        stack[val] = nil
+        return "[" .. table_concat(res, ",") .. "]"
+    else
+        local res = {}
+        stack = stack or {}
+        if stack[val] then error("circular reference") end
+        stack[val] = true
+        for k, v in pairs(val) do
+            if type(k) ~= "string" then
+                error("invalid table: mixed or invalid key types")
+            end
+            res[#res+1] = encode_string(k) .. ":" .. encode(v, stack)
+        end
+        stack[val] = nil
+        return "{" .. table_concat(res, ",") .. "}"
+    end
 end
 
 local type_func_map = {
