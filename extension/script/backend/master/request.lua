@@ -6,10 +6,9 @@ local utility = require 'remotedebug.utility'
 
 local request = {}
 
-local readyTrg = nil
 local firstWorker = true
 local terminateTimestamp
-local initializing = false
+local state = 'none'
 local config = {
     initialize = {},
     breakpoints = {},
@@ -18,10 +17,7 @@ local config = {
 }
 
 ev.on('close', function()
-    if readyTrg then
-        readyTrg:remove()
-        readyTrg = nil
-    end
+    state = "none"
     event.terminated()
 end)
 
@@ -47,8 +43,7 @@ end
 
 function request.attach(req)
     response.success(req)
-
-    initializing = true
+    state = "initializing"
     config = {
         initialize = req.arguments,
         breakpoints = {},
@@ -113,18 +108,15 @@ local function initializeWorker(w)
     })
 end
 
+ev.on('worker-ready', function(w)
+    if state == "initialized" then
+        initializeWorker(w)
+    end
+end)
+
 function request.configurationDone(req)
     response.success(req)
-    initializing = false
-
-    if readyTrg then
-        readyTrg:remove()
-        readyTrg = nil
-    end
-    readyTrg = ev.on('worker-ready', function(w)
-        initializeWorker(w)
-    end)
-
+    state = "initialized"
     for _, w in ipairs(mgr.threads()) do
         initializeWorker(w)
     end
@@ -179,7 +171,7 @@ function request.setBreakpoints(req)
             args.breakpoints,
             content,
         }
-        if not initializing then
+        if state == "initialized" then
             initializeWorkerBreakpoints(w, args.source, args.breakpoints, content)
         end
     else
@@ -189,7 +181,7 @@ function request.setBreakpoints(req)
             args.breakpoints,
             content,
         }
-        if not initializing then
+        if state == "initialized" then
             for _, w in ipairs(mgr.threads()) do
                 initializeWorkerBreakpoints(w, args.source, args.breakpoints, content)
             end
@@ -203,7 +195,7 @@ function request.setFunctionBreakpoints(req)
         breakpoints = {}
     })
     config.function_breakpoints = args.breakpoints
-    if not initializing then
+    if state == "initialized" then
         mgr.broadcastToWorker {
             cmd = 'setFunctionBreakpoints',
             breakpoints = args.breakpoints,
@@ -215,7 +207,7 @@ function request.setExceptionBreakpoints(req)
     local args = req.arguments
     response.success(req)
     config.exception_breakpoints = args.filters
-    if not initializing then
+    if state == "initialized" then
         mgr.broadcastToWorker {
             cmd = 'setExceptionBreakpoints',
             filters = args.filters,
