@@ -1,5 +1,5 @@
 local utility = require 'remotedebug.utility'
-local ev = require 'common.event'
+local ev = require 'backend.event'
 local rdebug = require 'remotedebug.visitor'
 local OS = utility.platform_os()
 local absolute = utility.fs_absolute

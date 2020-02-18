@@ -1,7 +1,7 @@
 local mgr = require 'backend.master.mgr'
 local response = require 'backend.master.response'
 local event = require 'backend.master.event'
-local ev = require 'common.event'
+local ev = require 'backend.event'
 local utility = require 'remotedebug.utility'
 
 local request = {}

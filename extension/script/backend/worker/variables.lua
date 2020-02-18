@@ -1,7 +1,7 @@
 local rdebug = require 'remotedebug.visitor'
 local source = require 'backend.worker.source'
 local luaver = require 'backend.worker.luaver'
-local ev = require 'common.event'
+local ev = require 'backend.event'
 
 local SHORT_TABLE_FIELD = 100
 local MAX_TABLE_FIELD = 1000
