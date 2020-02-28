@@ -1464,6 +1464,40 @@ lclient_cleanwatch(rlua_State *L) {
 	return 0;
 }
 
+static const char* costatus(lua_State* L, lua_State* co) {
+	if (L == co) return "running";
+	switch (lua_status(co)) {
+	case LUA_YIELD:
+		return "suspended";
+	case LUA_OK: {
+		lua_Debug ar;
+		if (lua_getstack(co, 0, &ar)) return "normal";
+		if (lua_gettop(co) == 0) return "dead";
+		return "suspended";
+	}
+	default:
+		return "dead";
+	}
+}
+
+static int
+lclient_co_status(rlua_State *L) {
+	lua_State* cL = get_host(L);
+	if (eval_value(L, cL) == LUA_TNONE) {
+		rlua_pushstring(L, "invalid");
+		return 1;
+	}
+	if (lua_type(cL, -1) != LUA_TTHREAD) {
+		lua_pop(cL, 1);
+		rlua_pushstring(L, "invalid");
+		return 1;
+	}
+	const char* s = costatus(cL, lua_tothread(cL, -1));
+	lua_pop(cL, 1);
+	rlua_pushstring(L, s);
+	return 1;
+}
+
 int
 init_visitor(rlua_State *L) {
 	rluaL_Reg l[] = {
@@ -1494,6 +1528,7 @@ init_visitor(rlua_State *L) {
 		{ "evalwatch", lclient_evalwatch },
 		{ "unwatch", lclient_unwatch },
 		{ "cleanwatch", lclient_cleanwatch },
+		{ "co_status", lclient_co_status },
 		{ NULL, NULL },
 	};
 	rlua_newtable(L);

@@ -664,6 +664,7 @@ static int init(rlua_State* L) {
 }
 
 static int sethost(rlua_State* L) {
+    rluaL_checktype(L, 1, LUA_TLIGHTUSERDATA);
     set_host(L, (lua_State*)rlua_touserdata(L, 1));
     return 0;
 }

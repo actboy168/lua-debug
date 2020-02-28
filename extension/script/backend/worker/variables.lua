@@ -394,7 +394,7 @@ local function varGetValue(context, type, value)
     elseif type == 'lightuserdata' then
         return 'light' .. tostring(rdebug.value(value))
     elseif type == 'thread' then
-        return 'thread'
+        return ('thread (%s)'):format(rdebug.co_status(value))
     end
     return tostring(rdebug.value(value))
 end
