@@ -24,6 +24,7 @@ static void attach(lua_State* L) {
 	if (luaL_loadbuffer(L, buf.data(), buf.size(), "=(BOOTSTRAP)")) {
 		fprintf(stderr, "%s\n", lua_tostring(L, -1));
 		lua_pop(L, 1);
+		return;
 	}
 	lua_pushstring(L, root.generic_u8string().c_str());
 	lua_pushinteger(L, GetCurrentProcessId());
