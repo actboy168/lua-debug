@@ -188,10 +188,20 @@ for _, luaver in ipairs {"lua51","lua52","lua53","lua54"} do
 
 end
 
+lm:build 'copy_extension' {
+    '$luamake', 'lua', 'make/copy_extension.lua',
+}
+
+lm:build 'update_version' {
+    '$luamake', 'lua', 'make/update_version.lua',
+}
+
 if platform.OS == "Windows" and lm.arch == "x64" then
     lm:build 'install' {
         '$luamake', 'lua', 'make/install_runtime.lua', lm.plat, lm.arch,
         deps = {
+            'copy_extension',
+            'update_version',
             "launcher",
             runtimes,
         }
@@ -233,14 +243,6 @@ else
             }
         }
     end
-
-    lm:build 'copy_extension' {
-        '$luamake', 'lua', 'make/copy_extension.lua',
-    }
-
-    lm:build 'update_version' {
-        '$luamake', 'lua', 'make/update_version.lua',
-    }
 
     lm:build 'install' {
         '$luamake', 'lua', 'make/install_runtime.lua', lm.plat, lm.arch,
