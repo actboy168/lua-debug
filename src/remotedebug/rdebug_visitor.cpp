@@ -1434,6 +1434,9 @@ lclient_evalwatch(rlua_State *L) {
 		lua_pop(cL, 1);
 		return 2;
 	}
+	if (lua_checkstack(cL, 3) == 0) {
+		return rluaL_error(L, "stack overflow");
+	}
 	int rets = lua_gettop(cL) - n;
 	for (int i = 0; i < rets; ++i) {
 		storewatch(L, addwatch(cL, i-rets));
