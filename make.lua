@@ -196,10 +196,15 @@ lm:build 'update_version' {
     '$luamake', 'lua', 'make/update_version.lua',
 }
 
+lm.rootdir = ''
+lm:import '3rd/bee.lua/make.lua'
+
 if platform.OS == "Windows" and lm.arch == "x64" then
     lm:build 'install' {
         '$luamake', 'lua', 'make/install_runtime.lua', lm.plat, lm.arch,
         deps = {
+            'bee',
+            'bootstrap',
             'copy_extension',
             'update_version',
             "launcher",
@@ -207,9 +212,6 @@ if platform.OS == "Windows" and lm.arch == "x64" then
         }
     }
 else
-    lm.rootdir = ''
-    lm:import '3rd/bee.lua/make.lua'
-
     if platform.OS == "Windows" then
         lm:shared_library 'inject' {
             deps = {
