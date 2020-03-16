@@ -331,7 +331,7 @@ local function getFunctionCode(str, startLn, endLn)
     return str:sub(startPos, endPos)
 end
 
-local function quoted_string(s)
+local function quotedString(s)
     return ("%q"):format(s):sub(2,-2):gsub("\\\n", "\\n")
 end
 
@@ -349,9 +349,9 @@ local function varGetValue(context, type, value)
             return ("'%s...'"):format(str:sub(1, 2048))
         end
         if #str < 1024 then
-            return ("'%s'"):format(quoted_string(str))
+            return ("'%s'"):format(quotedString(str))
         end
-        return ("'%s...'"):format(quoted_string(str:sub(1, 1024)))
+        return ("'%s...'"):format(quotedString(str:sub(1, 1024)))
     elseif type == 'boolean' then
         if rdebug.value(value) then
             return 'true'
