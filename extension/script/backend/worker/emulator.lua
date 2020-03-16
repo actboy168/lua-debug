@@ -49,7 +49,7 @@ function m.scopes(frameId)
         if s == nil then
             break
         end
-        local var = variables.createRef(rdebug.fieldv(s, "value"), nil, "scopes")
+        local var = variables.createRef(rdebug.fieldv(s, "value"), nil, "variables")
         if var.variablesReference then
             res[#res+1] = {
                 name = rdebug.fieldv(s, "name"),

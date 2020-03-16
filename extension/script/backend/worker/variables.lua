@@ -331,11 +331,11 @@ local function getFunctionCode(str, startLn, endLn)
     return str:sub(startPos, endPos)
 end
 
--- context: getvalue,setvalue,scopes,hover,watch,repl,copyvalue
+-- context: variables,hover,watch,repl,clipboard
 local function varGetValue(context, type, value)
     if type == 'string' then
         local str = rdebug.value(value)
-        if context == "repl" or context == "copyvalue" then
+        if context == "repl" or context == "clipboard" then
             return ("'%s'"):format(str)
         end
         if context == "hover" then
@@ -476,7 +476,7 @@ local function varCreate(vars, varRef, kind, name, nameidx, value, evaluateName,
     if type(evaluateName) ~= "string" then
         evaluateName = nil
     end
-    local var = varCreateReference(value, evaluateName, "getvalue")
+    local var = varCreateReference(value, evaluateName, "variables")
     var.name = name
     var.evaluateName = evaluateName
     var.presentationHint = kind and { kind = kind } or nil
@@ -836,7 +836,7 @@ local function setValue(varRef, name, value)
     if not rdebug.assign(rvalue, newvalue) then
         return nil, 'Failed set variable'
     end
-    return varCreateReference(rvalue, evaluateName, "setvalue")
+    return varCreateReference(rvalue, evaluateName, "variables")
 end
 
 local m = {}

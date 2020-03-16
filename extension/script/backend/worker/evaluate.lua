@@ -65,7 +65,7 @@ local function run_watch(frameId, expression)
     return true, var
 end
 
-local function run_copyvalue(frameId, expression)
+local function run_clipboard(frameId, expression)
     local res = table.pack(rdebug.evalwatch(eval_watch, expression, frameId))
     if not res[1] then
         return false, res[2]
@@ -74,7 +74,7 @@ local function run_copyvalue(frameId, expression)
         return true, { value = 'nil' }
     end
     for i = 2, res.n do
-        res[i] = variables.createText(res[i], "copyvalue")
+        res[i] = variables.createText(res[i], "clipboard")
     end
     return true, { value = table.concat(res, ',', 2) }
 end
@@ -92,11 +92,11 @@ function m.run(frameId, expression, context)
         return run_repl(frameId, expression)
     end
     if context == "clipboard" then
-        return run_copyvalue(frameId, expression)
+        return run_clipboard(frameId, expression)
     end
     --兼容旧版本VSCode
     if context == "variables" then
-        return run_copyvalue(frameId, expression)
+        return run_clipboard(frameId, expression)
     end
     return nil, ("unknown context `%s`"):format(context)
 end
