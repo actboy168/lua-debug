@@ -272,6 +272,7 @@ local function parse_array()
         next_nonspace()
         local chr = _buf:sub(_pos, _pos)
         _pos = _pos + 1
+        next_nonspace()
         if chr == "]" then return res end
         if chr ~= "," then decode_error("expected ']' or ','") end
     end

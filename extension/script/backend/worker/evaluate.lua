@@ -58,7 +58,10 @@ local function run_hover(frameId, expression)
     if not ok then
         return false, res
     end
-    return true,  { result = variables.createText(res, "hover") }
+    local var = variables.createRef(res, "hover")
+    var.result = var.value
+    var.value = nil
+    return true, var
 end
 
 local function run_clipboard(frameId, expression)
