@@ -91,7 +91,11 @@ function m.run(frameId, expression, context)
     if context == "repl" then
         return run_repl(frameId, expression)
     end
-    if context == nil then
+    if context == "clipboard" then
+        return run_copyvalue(frameId, expression)
+    end
+    --兼容旧版本VSCode
+    if context == "variables" then
         return run_copyvalue(frameId, expression)
     end
     return nil, ("unknown context `%s`"):format(context)

@@ -32,6 +32,7 @@
 | supportsDisassembleRequest         |    🟥    |
 | supportsCancelRequest              |    🟨    |
 | supportsBreakpointLocationsRequest |    🟨    |
+| supportsClipboardContext           |    🟩    |
 
 * 🟩 Already supported.
 * 🟨 LuaDebug is not implemented.
