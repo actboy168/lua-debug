@@ -352,8 +352,6 @@ function CMD.evaluate(pkg)
         }
         return
     end
-    result.result = result.value
-    result.value = nil
     sendToMaster {
         cmd = 'evaluate',
         command = pkg.command,

@@ -26,17 +26,30 @@ local function run_repl(frameId, expression)
         if not ok then
             return false, res[2]
         end
-        return true, { value = '' }
-    end
-    if res.n == 1 then
-        return true, { value = 'nil' }
+        return true, { result = '' }
     end
     local var = variables.createRef(res[2], expression, "repl")
-    res[2] = var.value
+    local result = {var.value}
     for i = 3, res.n do
-        res[i] = variables.createText(res[i], "repl")
+        result[i-1] = variables.createText(res[i], "repl")
     end
-    var.value = table.concat(res, ',', 2)
+    var.result = table.concat(result, ',')
+    var.value = nil
+    return true, var
+end
+
+local function run_watch(frameId, expression)
+    local res = table.pack(rdebug.evalwatch(eval_watch, expression, frameId))
+    if not res[1] then
+        return false, res[2]
+    end
+    local var = variables.createRef(res[2], expression, "watch")
+    local result = {var.value}
+    for i = 3, res.n do
+        result[i-1] = variables.createText(res[i], "watch")
+    end
+    var.result = table.concat(result, ',')
+    var.value = nil
     return true, var
 end
 
@@ -45,24 +58,7 @@ local function run_hover(frameId, expression)
     if not ok then
         return false, res
     end
-    return true, variables.createRef(res, expression, "hover")
-end
-
-local function run_watch(frameId, expression)
-    local res = table.pack(rdebug.evalwatch(eval_watch, expression, frameId))
-    if not res[1] then
-        return false, res[2]
-    end
-    if res.n == 1 then
-        return true, { value = 'nil' }
-    end
-    local var = variables.createRef(res[2], expression, "watch")
-    res[2] = var.value
-    for i = 3, res.n do
-        res[i] = variables.createText(res[i], "watch")
-    end
-    var.value = table.concat(res, ',', 2)
-    return true, var
+    return true,  { result = variables.createText(res, "hover") }
 end
 
 local function run_clipboard(frameId, expression)
@@ -71,12 +67,13 @@ local function run_clipboard(frameId, expression)
         return false, res[2]
     end
     if res.n == 1 then
-        return true, { value = 'nil' }
+        return true, { result = 'nil' }
     end
+    local result = {}
     for i = 2, res.n do
-        res[i] = variables.createText(res[i], "clipboard")
+        result[i-1] = variables.createText(res[i], "clipboard")
     end
-    return true, { value = table.concat(res, ',', 2) }
+    return true, { result = table.concat(result, ',') }
 end
 
 local m = {}
