@@ -185,7 +185,7 @@ local function varCanExtand(type, value)
     return false
 end
 
-local function varGetName(value)
+local function varGetTableName(value)
     local type = rdebug.type(value)
     if LUAVERSION <= 52 and type == "float" then
         local rvalue = rdebug.value(value)
@@ -208,6 +208,26 @@ local function varGetName(value)
     elseif type == 'nil' then
         return 'nil'
     elseif type == 'integer' then
+        local rvalue = rdebug.value(value)
+        if rvalue > 0 and rvalue < 1000 then
+            return ('[%03d]'):format(rvalue)
+        end
+        return ('%d'):format(rvalue)
+    elseif type == 'float' then
+        return normalizeNumber(('%.4f'):format(rdebug.value(value)))
+    end
+    return tostring(rdebug.value(value))
+end
+
+local function varGetName(value)
+    local type = rdebug.type(value)
+    if LUAVERSION <= 52 and type == "float" then
+        local rvalue = rdebug.value(value)
+        if rvalue == math.floor(rvalue) then
+            type = 'integer'
+        end
+    end
+    if type == 'integer' then
         local rvalue = rdebug.value(value)
         if rvalue > 0 and rvalue < 1000 then
             return ('[%03d]'):format(rvalue)
@@ -272,7 +292,7 @@ local function varGetTableValue(t)
     local kvs = {}
     for i = 1, #loct, 3 do
         local key, value = loct[i], loct[i+1]
-        local kn = varGetName(key)
+        local kn = varGetTableName(key)
         kvs[#kvs + 1] = { kn, value }
     end
     table.sort(kvs, function(a, b) return a[1] < b[1] end)
