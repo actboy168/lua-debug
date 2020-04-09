@@ -152,7 +152,7 @@ function request.setBreakpoints(req)
     local args = req.arguments
     local content = skipBOM(args.sourceContent)
     if args.source.path and not isValidPath(args.source.path) then
-        response.error(req, ("Does not support path: `%s`"):format(args.source.path))
+        --response.error(req, ("Does not support path: `%s`"):format(args.source.path))
         return
     end
     for _, bp in ipairs(args.breakpoints) do
