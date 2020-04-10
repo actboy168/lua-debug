@@ -162,6 +162,10 @@ local function floatToString(v)
     return ('%.17g'):format(v)
 end
 
+local function quotedString(s)
+    return ("%q"):format(s):sub(2,-2):gsub("\\\n", "\\n")
+end
+
 local function varCanExtand(type, value)
     if type == 'function' then
         return rdebug.getupvaluev(value, 1) ~= nil
@@ -251,9 +255,9 @@ local function varGetShortValue(value)
     if type == 'string' then
         local str = rdebug.value(value)
         if #str < 16 then
-            return ("'%s'"):format(str)
+            return ("'%s'"):format(quotedString(str))
         end
-        return ("'%s...'"):format(str:sub(1, 16))
+        return ("'%s...'"):format(quotedString(str:sub(1, 16)))
     elseif type == 'boolean' then
         if rdebug.value(value) then
             return 'true'
@@ -356,10 +360,6 @@ local function getFunctionCode(str, startLn, endLn)
         return str:sub(startPos)
     end
     return str:sub(startPos, endPos)
-end
-
-local function quotedString(s)
-    return ("%q"):format(s):sub(2,-2):gsub("\\\n", "\\n")
 end
 
 -- context: variables,hover,watch,repl,clipboard
