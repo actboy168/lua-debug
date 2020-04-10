@@ -143,8 +143,8 @@ function special_has.Standard()
     return true
 end
 
-
-local function normalizeNumber(str)
+local function floatToShortString(v)
+    local str = ('%.4f'):format(v)
     if str:find('.', 1, true) then
         str = str:gsub('0+$', '')
         if str:sub(-1) == '.' then
@@ -154,6 +154,13 @@ local function normalizeNumber(str)
     return str
 end
 
+local function floatToString(v)
+    local g = ('%.16g'):format(v)
+    if tonumber(g) == v then
+        return g
+    end
+    return ('%.17g'):format(v)
+end
 
 local function varCanExtand(type, value)
     if type == 'function' then
@@ -185,7 +192,7 @@ local function varCanExtand(type, value)
     return false
 end
 
-local function varGetTableName(value)
+local function varGetShortName(value)
     local type = rdebug.type(value)
     if LUAVERSION <= 52 and type == "float" then
         local rvalue = rdebug.value(value)
@@ -214,7 +221,7 @@ local function varGetTableName(value)
         end
         return ('%d'):format(rvalue)
     elseif type == 'float' then
-        return normalizeNumber(('%.4f'):format(rdebug.value(value)))
+        return floatToShortString(rdebug.value(value))
     end
     return tostring(rdebug.value(value))
 end
@@ -234,7 +241,7 @@ local function varGetName(value)
         end
         return ('%d'):format(rvalue)
     elseif type == 'float' then
-        return normalizeNumber(('%.4f'):format(rdebug.value(value)))
+        return floatToString(rdebug.value(value))
     end
     return tostring(rdebug.value(value))
 end
@@ -258,7 +265,7 @@ local function varGetShortValue(value)
     elseif type == 'integer' then
         return ('%d'):format(rdebug.value(value))
     elseif type == 'float' then
-        return normalizeNumber(('%f'):format(rdebug.value(value)))
+        return floatToShortString(rdebug.value(value))
     elseif type == 'function' then
         return 'func'
     elseif type == 'c function' then
@@ -292,7 +299,7 @@ local function varGetTableValue(t)
     local kvs = {}
     for i = 1, #loct, 3 do
         local key, value = loct[i], loct[i+1]
-        local kn = varGetTableName(key)
+        local kn = varGetShortName(key)
         kvs[#kvs + 1] = { kn, value }
     end
     table.sort(kvs, function(a, b) return a[1] < b[1] end)
@@ -383,7 +390,7 @@ local function varGetValue(context, type, value)
     elseif type == 'integer' then
         return ('%d'):format(rdebug.value(value))
     elseif type == 'float' then
-        return normalizeNumber(('%f'):format(rdebug.value(value)))
+        return floatToString(rdebug.value(value))
     elseif type == 'function' then
         rdebug.getinfo(value, "S", info)
         local src = source.create(info.source)
