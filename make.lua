@@ -34,7 +34,7 @@ if platform.OS == "Windows" then
         },
         includes = {
             "3rd/bee.lua",
-            "3rd/bee.lua/3rd/lua/src",
+            "3rd/bee.lua/3rd/lua",
         },
         sources = {
             "3rd/bee.lua/bee/error.cpp",
@@ -59,7 +59,7 @@ end
 
 lm:source_set 'runtime/onelua' {
     includes = {
-        "3rd/bee.lua/3rd/lua/src",
+        "3rd/bee.lua/3rd/lua",
     },
     sources = {
         "src/remotedebug/onelua.c",
@@ -238,7 +238,7 @@ else
                 "bee",
             },
             includes = {
-                "3rd/bee.lua/3rd/lua/src",
+                "3rd/bee.lua/3rd/lua",
             },
             sources = {
                 "src/process_inject/inject_osx.cpp",
