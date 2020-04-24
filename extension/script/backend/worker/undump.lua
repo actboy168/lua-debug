@@ -107,30 +107,30 @@ local function LoadConstants53(f)
 end
 
 local function LoadConstants54(f)
+    local function makevariant(t,v) return t | (v << 4) end
     local LUA_TNIL = 0
-    local LUA_TFALSE  = 1 | (1 << 4)
-    local LUA_TTRUE   = 1 | (2 << 4)
-    local LUA_TNUMINT = 3 | (1 << 4)
-    local LUA_TNUMFLT = 3 | (2 << 4)
-    local LUA_TSHRSTR = 4 | (1 << 4)
-    local LUA_TLNGSTR = 4 | (2 << 4)
+    local LUA_TBOOLEAN = 1
+    local LUA_TNUMBER = 3
+    local LUA_TSTRING = 4
+    local LUA_VNIL	  = makevariant(LUA_TNIL, 0)
+    local LUA_VFALSE  = makevariant(LUA_TBOOLEAN, 0)
+    local LUA_VTRUE   = makevariant(LUA_TBOOLEAN, 1)
+    local LUA_VNUMINT = makevariant(LUA_TNUMBER, 0)
+    local LUA_VNUMFLT = makevariant(LUA_TNUMBER, 1)
+    local LUA_VSHRSTR = makevariant(LUA_TSTRING, 0)
+    local LUA_VLNGSTR = makevariant(LUA_TSTRING, 1)
     f.sizek = LoadInt()
     f.k = {}
     for i = 1, f.sizek do
         local t = LoadByte()
-        if t == LUA_TNIL then
-        elseif t == LUA_TFALSE then
-        elseif t == LUA_TTRUE then
-        elseif t == LUA_TNUMFLT then
+        if t == LUA_VNUMFLT then
             f.k[i] = LoadNumber()
-        elseif t == LUA_TNUMINT then
+        elseif t == LUA_VNUMINT then
             f.k[i] = LoadInteger()
-        elseif t == LUA_TSHRSTR then
-            f.k[i] = LoadString()
-        elseif t == LUA_TLNGSTR then
+        elseif t == LUA_VSHRSTR or t == LUA_VLNGSTR then
             f.k[i] = LoadString()
         else
-            assert(false)
+            assert(t == LUA_VNIL or t == LUA_VTRUE or t == LUA_VFALSE)
         end
     end
 end
