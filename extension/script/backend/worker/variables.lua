@@ -155,12 +155,21 @@ local function floatToShortString(v)
     return str
 end
 
-local function floatToString(v)
-    local g = ('%.16g'):format(v)
-    if tonumber(g) == v then
+local function floatToString(x)
+    if x ~= x then
+        return 'nan'
+    end
+    if x == math.huge then
+        return '+inf'
+    end
+    if x == -math.huge then
+        return '-inf'
+    end
+    local g = ('%.16g'):format(x)
+    if tonumber(g) == x then
         return g
     end
-    return ('%.17g'):format(v)
+    return ('%.17g'):format(x)
 end
 
 local function quotedString(s)
