@@ -940,13 +940,13 @@ lclient_getstack(rlua_State *L) {
 static int
 lclient_copytable(rlua_State *L) {
 	lua_State *cL = get_host(L);
-	rlua_Integer maxn = rluaL_optinteger(L, 2, 0xffff);
+	rlua_Integer maxn = rluaL_optinteger(L, 2, std::numeric_limits<unsigned int>::max());
 	rlua_settop(L, 1);
 	if (lua_checkstack(cL, 4) == 0) {
 		return rluaL_error(L, "stack overflow");
 	}
 	if (eval_value(L, cL) != LUA_TTABLE) {
-		lua_pop(cL, 1);	// pop table
+		lua_pop(cL, 1);
 		return 0;
 	}
 	const void* t = lua_topointer(cL, -1);

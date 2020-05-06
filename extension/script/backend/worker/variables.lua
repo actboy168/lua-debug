@@ -5,6 +5,7 @@ local ev = require 'backend.event'
 
 local SHORT_TABLE_FIELD <const> = 100
 local MAX_TABLE_FIELD <const> = 1000
+local TABLE_VALUE_MAXLEN <const> = 32
 local LUAVERSION = 54
 
 local info = {}
@@ -283,7 +284,6 @@ local function varGetShortValue(value)
     return type
 end
 
-local TABLE_VALUE_MAXLEN = 32
 local function varGetTableValue(t)
     local asize = rdebug.tablesize(t)
     local str = ''
@@ -362,8 +362,42 @@ local function getFunctionCode(str, startLn, endLn)
     return str:sub(startPos, endPos)
 end
 
+local function varGetFunctionCode(value)
+    rdebug.getinfo(value, "S", info)
+    local src = source.create(info.source)
+    if not source.valid(src) then
+        return tostring(rdebug.value(value))
+    end
+    if not src.sourceReference then
+        return ("%s:%d"):format(source.clientPath(src.path), info.linedefined)
+    end
+    local code = source.getCode(src.sourceReference)
+    return getFunctionCode(code, info.linedefined, info.lastlinedefined)
+end
+
+local function varGetUserdata(value)
+    local meta = rdebug.getmetatablev(value)
+    if meta ~= nil then
+        local fn = rdebug.fieldv(meta, '__debugger_tostring')
+        if fn ~= nil and (rdebug.type(fn) == 'function' or rdebug.type(fn) == 'c function') then
+            local ok, res = rdebug.evalref(fn, value)
+            if ok then
+                return res
+            end
+        end
+        local name = rdebug.fieldv(meta, '__name')
+        if name ~= nil then
+            return tostring(rdebug.value(name))
+        end
+    end
+    return 'userdata'
+end
+
 -- context: variables,hover,watch,repl,clipboard
 local function varGetValue(context, type, value)
+    if context == "clipboard" then
+        return serialize.value(type, value)
+    end
     if type == 'string' then
         local str = rdebug.value(value)
         if context == "repl" or context == "clipboard" then
@@ -392,36 +426,13 @@ local function varGetValue(context, type, value)
     elseif type == 'float' then
         return floatToString(rdebug.value(value))
     elseif type == 'function' then
-        rdebug.getinfo(value, "S", info)
-        local src = source.create(info.source)
-        if not source.valid(src) then
-            return tostring(rdebug.value(value))
-        end
-        if not src.sourceReference then
-            return ("%s:%d"):format(source.clientPath(src.path), info.linedefined)
-        end
-        local code = source.getCode(src.sourceReference)
-        return getFunctionCode(code, info.linedefined, info.lastlinedefined)
+        return varGetFunctionCode(value)
     elseif type == 'c function' then
         return 'C function'
     elseif type == 'table' then
         return varGetTableValue(value)
     elseif type == 'userdata' then
-        local meta = rdebug.getmetatablev(value)
-        if meta ~= nil then
-            local fn = rdebug.fieldv(meta, '__debugger_tostring')
-            if fn ~= nil and (rdebug.type(fn) == 'function' or rdebug.type(fn) == 'c function') then
-                local ok, res = rdebug.evalref(fn, value)
-                if ok then
-                    return res
-                end
-            end
-            local name = rdebug.fieldv(meta, '__name')
-            if name ~= nil then
-                return tostring(rdebug.value(name))
-            end
-        end
-        return 'userdata'
+        return varGetUserdata(value)
     elseif type == 'lightuserdata' then
         return 'light' .. tostring(rdebug.value(value))
     elseif type == 'thread' then
