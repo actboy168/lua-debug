@@ -404,9 +404,6 @@ end
 
 -- context: variables,hover,watch,repl,clipboard
 local function varGetValue(context, type, value)
-    if context == "clipboard" then
-        return serialize.value(type, value)
-    end
     if type == 'string' then
         local str = rdebug.value(value)
         if context == "repl" or context == "clipboard" then
