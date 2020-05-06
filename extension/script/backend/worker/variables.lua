@@ -1,6 +1,7 @@
 local rdebug = require 'remotedebug.visitor'
 local source = require 'backend.worker.source'
 local luaver = require 'backend.worker.luaver'
+local serialize = require 'backend.worker.serialize'
 local ev = require 'backend.event'
 
 local SHORT_TABLE_FIELD <const> = 100
@@ -436,6 +437,9 @@ local function varGetValue(context, type, value)
     elseif type == 'c function' then
         return 'C function'
     elseif type == 'table' then
+        if context == "clipboard" then
+            return serialize(value)
+        end
         return varGetTableValue(value)
     elseif type == 'userdata' then
         return varGetUserdata(value)
