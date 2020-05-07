@@ -214,7 +214,16 @@ local function InitCompat()
         LoadConstants = LoadConstants53
         return
     end
+    if version == 0x54 then
+        Version = 504
+        LoadLength = LoadLength54
+        LoadInt = LoadLength54
+        LoadLineInfo = function () return unpack 'b' end
+        LoadConstants = LoadConstants54
+        return
+    end
     if version == 0x03 then
+        --TODO: 兼容旧版本
         undo()
         version = LoadLength54()
         if version == 504 then
@@ -226,7 +235,7 @@ local function InitCompat()
             return
         end
     end
-    assert(false, tostring(version))
+    assert(false, "unknown lua version: "..version)
 end
 
 local function CheckHeader()
