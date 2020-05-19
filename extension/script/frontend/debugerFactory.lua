@@ -23,7 +23,7 @@ end
 local function create_install_script(pid, dbg)
     local res = {}
     res[#res+1] = ("local path=[[%s]];"):format(towsl(dbg))
-    res[#res+1] = ("assert(loadfile(path..'/script/launch.lua'))('%s',path,%d%s):wait()"):format(
+    res[#res+1] = ("assert(loadfile(path..[[/script/launch.lua]]))([[%s]],path,%d%s):wait()"):format(
         platformOS():lower(),
         pid,
         useUtf8 and "" or ",true"
