@@ -22,11 +22,10 @@ local compat_dump = assert(load(readfile 'backend.worker.eval.dump'))
 local function run_repl(frameId, expression)
     local res = table.pack(rdebug.evalwatch(eval_repl, 'return ' .. expression, frameId))
     if not res[1] then
-        local ok = rdebug.evalwatch(eval_repl, expression, frameId)
-        if not ok then
+        res = table.pack(rdebug.evalwatch(eval_repl, expression, frameId))
+        if not res[1] then
             return false, res[2]
         end
-        return true, { result = '' }
     end
     local var = variables.createRef(res[2], expression, "repl")
     local result = {var.value}
