@@ -55,11 +55,19 @@ local function encode_string(val)
     return '"' .. val:gsub('[%z\1-\31\127\\"/]', escape_char) .. '"'
 end
 
+local function convertreal(v)
+    local g = ('%.16g'):format(v)
+    if tonumber(g) == v then
+        return g
+    end
+    return ('%.17g'):format(v)
+end
+
 local function encode_number(val)
     if val ~= val or val <= -Inf or val >= Inf then
         error("unexpected number value '" .. tostring(val) .. "'")
     end
-    return ("%.14g"):format(val):gsub(',', '.')
+    return convertreal(val):gsub(',', '.')
 end
 
 local function encode_table(val, stack)
