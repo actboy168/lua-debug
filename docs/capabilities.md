@@ -10,7 +10,7 @@
 | supportsSetVariable                |    🟩    |
 | supportsRestartFrame               |    🟩    |
 | supportsGotoTargetsRequest         |    🟨    |
-| supportsStepInTargetsRequest       |    🟥    |
+| supportsStepInTargetsRequest       |    🟨    |
 | supportsCompletionsRequest         |    🟨    |
 | completionTriggerCharacters        |    🟨    |
 | supportsModulesRequest             |    🟥    |
@@ -33,6 +33,8 @@
 | supportsCancelRequest              |    🟨    |
 | supportsBreakpointLocationsRequest |    🟨    |
 | supportsClipboardContext           |    🟩    |
+| supportsSteppingGranularity        |    🟥    |
+| supportsInstructionBreakpoints     |    🟥    |
 
 * 🟩 Already supported.
 * 🟨 LuaDebug is not implemented.
