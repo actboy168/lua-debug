@@ -13,6 +13,7 @@ local Inf = math.huge
 local json = {}
 
 json.null = function() end
+json.object_mt = {}
 
 -------------------------------------------------------------------------------
 -- Encode
@@ -73,8 +74,7 @@ end
 local function encode_table(val, stack)
     local first_val = next(val)
     if first_val == nil then
-        local meta = getmetatable(val)
-        if meta and meta.__name == 'json.object' then
+        if getmetatable(val) == json.object_mt then
             return "{}"
         else
             return "[]"
@@ -315,7 +315,7 @@ local function parse_object()
         if chr ~= "," then decode_error("expected '}' or ','") end
     end
     if next(res) == nil then
-        setmetatable(res, {__name = 'json.object'})
+        setmetatable(res, json.object_mt)
     end
     return res
 end
