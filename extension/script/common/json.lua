@@ -238,10 +238,10 @@ local function parse_string()
         elseif x == 34 then -- '"' (end of string)
             local s = _buf:sub(_pos + 1, j - 1)
             if has_surrogate_escape then
-                s = s:gsub("\\u[dD][89aAbB]..\\u....", parse_unicode_escape)
+                s = s:gsub("\\u[dD][89aAbB]%x%x\\u%x%x%x%x", parse_unicode_escape)
             end
             if has_unicode_escape then
-                s = s:gsub("\\u....", parse_unicode_escape)
+                s = s:gsub("\\u%x%x%x%x", parse_unicode_escape)
             end
             if has_escape then
                 s = s:gsub("\\.", escape_char_map_inv)
