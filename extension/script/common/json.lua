@@ -23,7 +23,7 @@ json.object_mt = {}
 
 local encode
 
-local escape_char_map = {
+local encode_escape_map = {
     [ "\"" ] = "\\\"",
     [ "\\" ] = "\\\\",
     [ "/" ]  = "\\/",
@@ -34,13 +34,15 @@ local escape_char_map = {
     [ "\t" ] = "\\t",
 }
 
-local escape_char_map_inv = {}
-for k, v in pairs(escape_char_map) do
-    escape_char_map_inv[v] = k
+local decode_escape_set = {}
+local decode_escape_map = {}
+for k, v in pairs(encode_escape_map) do
+    decode_escape_map[v] = k
+    decode_escape_set[string_byte(v, 2)] = true
 end
 
-local function escape_char(c)
-    return escape_char_map[c] or ("\\u%04x"):format(c:byte())
+local function encode_escape(c)
+    return encode_escape_map[c] or ("\\u%04x"):format(c:byte())
 end
 
 local function encode_nil()
@@ -55,7 +57,7 @@ local function encode_null(val)
 end
 
 local function encode_string(val)
-    return '"' .. val:gsub('[%z\1-\31\127\\"/]', escape_char) .. '"'
+    return '"' .. val:gsub('[%z\1-\31\127\\"/]', encode_escape) .. '"'
 end
 
 local function convertreal(v)
@@ -143,17 +145,6 @@ end
 local decode
 local _buf
 local _pos
-
-local escape_chars = {
-    [ string_byte "\\" ] = true,
-    [ string_byte "/" ] = true,
-    [ string_byte '"' ] = true,
-    [ string_byte "b" ] = true,
-    [ string_byte "f" ] = true,
-    [ string_byte "n" ] = true,
-    [ string_byte "r" ] = true,
-    [ string_byte "t" ] = true,
-}
 
 local literal_map = {
     [ "true"  ] = true,
@@ -243,7 +234,7 @@ local function parse_string()
                     i = i + 5
                 end
             else
-                if not escape_chars[nx] then
+                if not decode_escape_set[nx] then
                     _pos = i
                     decode_error("invalid escape char '" .. string_char(nx) .. "' in string")
                 end
@@ -259,7 +250,7 @@ local function parse_string()
                 s = s:gsub("\\u%x%x%x%x", parse_unicode_escape)
             end
             if has_escape then
-                s = s:gsub("\\.", escape_char_map_inv)
+                s = s:gsub("\\.", decode_escape_map)
             end
             _pos = i + 1
             return s
