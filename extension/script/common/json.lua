@@ -145,15 +145,14 @@ local _buf
 local _pos
 
 local escape_chars = {
-    [ "\\" ] = true,
-    [ "/" ] = true,
-    [ '"' ] = true,
-    [ "b" ] = true,
-    [ "f" ] = true,
-    [ "n" ] = true,
-    [ "r" ] = true,
-    [ "t" ] = true,
-    [ "u" ] = true,
+    [ string_byte "\\" ] = true,
+    [ string_byte "/" ] = true,
+    [ string_byte '"' ] = true,
+    [ string_byte "b" ] = true,
+    [ string_byte "f" ] = true,
+    [ string_byte "n" ] = true,
+    [ string_byte "r" ] = true,
+    [ string_byte "t" ] = true,
 }
 
 local literal_map = {
@@ -163,16 +162,17 @@ local literal_map = {
 }
 
 local function next_word()
-    local f = _pos
-    local idx = _buf:find("[ \t\r\n%]},]", _pos)
-    _pos = idx and idx or (#_buf + 1)
-    return _buf:sub(f, _pos - 1), f
+    local _, newpos, word, eol = _buf:find("([^ \t\r\n%]},]*)([ \t\r\n%]},]?)", _pos)
+    if eol ~= "" then
+        return word, newpos
+    end
+    return word, newpos + 1
 end
 
 local function next_byte()
     _pos = _buf:find("[^ \t\r\n]", _pos)
     if _pos then
-        return _buf:byte(_pos)
+        return string_byte(_buf, _pos)
     end
     _pos = #_buf + 1
 end
@@ -194,8 +194,8 @@ local function getline(str, n)
     end
 end
 
-local function decode_error(msg, idx)
-    error(("%s at line %d col %d"):format(msg, getline(msg, idx or _pos)))
+local function decode_error(msg)
+    error(("%s at line %d col %d"):format(msg, getline(msg, _pos)))
 end
 
 local function parse_unicode_escape(s)
@@ -212,36 +212,46 @@ local function parse_string()
     local has_unicode_escape = false
     local has_surrogate_escape = false
     local has_escape = false
-    local last
-    for j = _pos + 1, #_buf do
-        local x = _buf:byte(j)
-        if x < 32 then
-            decode_error("control character in string", j)
+    local i = _pos
+    while true do
+        i = _buf:find('[\0-\31\\"]', i + 1)
+        if not i then
+            decode_error "expected closing quote for string"
         end
-        if last == 92 then -- "\\" (escape char)
-            if x == 117 then -- "u" (unicode escape sequence)
-                local hex = _buf:sub(j + 1, j + 5)
-                if not hex:find("%x%x%x%x") then
-                    decode_error("invalid unicode escape in string", j)
+        local x = string_byte(_buf, i)
+        if x < 32 then
+            _pos = i
+            decode_error "control character in string"
+        end
+        if x == 92 --[[ "\\" ]] then
+            local nx = string_byte(_buf, i+1)
+            if nx == 117 --[[ "u" ]] then
+                local hex = _buf:sub(i+2, i+5)
+                if not hex:match "%x%x%x%x" then
+                    _pos = i
+                    decode_error "invalid unicode escape in string"
                 end
-                if hex:find("^[dD][89aAbB]") then
-                    if not _buf:sub(j + 5, j + 10):match('\\u%x%x%x%x') then
-                        decode_error("missing low surrogate", j)
+                if hex:match "^[dD][89aAbB]" then
+                    if not _buf:sub(i+6, i+11):match '\\u%x%x%x%x' then
+                        _pos = i
+                        decode_error "missing low surrogate"
                     end
                     has_surrogate_escape = true
+                    i = i + 11
                 else
                     has_unicode_escape = true
+                    i = i + 5
                 end
             else
-                local c = string_char(x)
-                if not escape_chars[c] then
-                    decode_error("invalid escape char '" .. c .. "' in string", j)
+                if not escape_chars[nx] then
+                    _pos = i
+                    decode_error("invalid escape char '" .. string_char(nx) .. "' in string")
                 end
                 has_escape = true
+                i = i + 1
             end
-            last = nil
-        elseif x == 34 then -- '"' (end of string)
-            local s = _buf:sub(_pos + 1, j - 1)
+        elseif x == 34 --[[ '"' ]] then
+            local s = _buf:sub(_pos + 1, i - 1)
             if has_surrogate_escape then
                 s = s:gsub("\\u[dD][89aAbB]%x%x\\u%x%x%x%x", parse_unicode_escape)
             end
@@ -251,30 +261,30 @@ local function parse_string()
             if has_escape then
                 s = s:gsub("\\.", escape_char_map_inv)
             end
-            _pos = j + 1
+            _pos = i + 1
             return s
-        else
-            last = x
         end
     end
-    decode_error("expected closing quote for string")
 end
 
 local function parse_number()
-    local word, f = next_word()
+    local word, newpos = next_word()
     local n = tonumber(word)
     if not n or word:find '[^-+.%deE]' or word:match '^0[1-9]' then
-        decode_error("invalid number '" .. word .. "'", f)
+        decode_error("invalid number '" .. word .. "'")
     end
+    _pos = newpos
     return n
 end
 
 local function parse_literal()
-    local word, f = next_word()
-    if literal_map[word] == nil then
-        decode_error("invalid literal '" .. word .. "'", f)
+    local word, newpos = next_word()
+    local res = literal_map[word]
+    if res == nil then
+        decode_error("invalid literal '" .. word .. "'")
     end
-    return literal_map[word]
+    _pos = newpos
+    return res
 end
 
 local function parse_array()
@@ -291,7 +301,7 @@ local function parse_array()
         local chr = next_byte()
         _pos = _pos + 1
         if chr == 93 --[[ "]" ]] then return res end
-        if chr ~= 44 --[[ "," ]] then decode_error("expected ']' or ','") end
+        if chr ~= 44 --[[ "," ]] then decode_error "expected ']' or ','" end
     end
 end
 
@@ -305,18 +315,18 @@ local function parse_object()
             break
         end
         if chr ~= 34 --[[ '"' ]] then
-            decode_error("expected string for key")
+            decode_error "expected string for key"
         end
         local key = parse_string()
         if next_byte() ~= 58 --[[ ":" ]] then
-            decode_error("expected ':' after key")
+            decode_error "expected ':' after key"
         end
         _pos = _pos + 1
         res[key] = decode()
         local chr = next_byte()
         _pos = _pos + 1
         if chr == 125 --[[ "}" ]] then break end
-        if chr ~= 44 --[[ "," ]] then decode_error("expected '}' or ','") end
+        if chr ~= 44 --[[ "," ]] then decode_error "expected '}' or ','" end
     end
     if next(res) == nil then
         setmetatable(res, json.object_mt)
@@ -361,7 +371,7 @@ function json.decode(str)
     _pos = 1
     local res = decode()
     if next_byte() ~= nil then
-        decode_error("trailing garbage")
+        decode_error "trailing garbage"
     end
     return res
 end
