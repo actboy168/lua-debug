@@ -169,9 +169,12 @@ local function next_word()
     return _buf:sub(f, _pos - 1), f
 end
 
-local function next_nonspace()
-    local idx = _buf:find("[^ \t\r\n]", _pos)
-    _pos = idx and idx or (#_buf + 1)
+local function next_byte()
+    _pos = _buf:find("[^ \t\r\n]", _pos)
+    if _pos then
+        return _buf:byte(_pos)
+    end
+    _pos = #_buf + 1
 end
 
 local function getline(str, n)
@@ -276,21 +279,17 @@ end
 
 local function parse_array()
     _pos = _pos + 1
-    next_nonspace()
-    if _buf:byte(_pos) == 93 --[[ "]" ]] then
+    if next_byte() == 93 --[[ "]" ]] then
         _pos = _pos + 1
         return {}
     end
     local res = {}
-    local n = 1
+    local n = 0
     while true do
-        next_nonspace()
-        res[n] = decode()
         n = n + 1
-        next_nonspace()
-        local chr = _buf:byte(_pos)
+        res[n] = decode()
+        local chr = next_byte()
         _pos = _pos + 1
-        next_nonspace()
         if chr == 93 --[[ "]" ]] then return res end
         if chr ~= 44 --[[ "," ]] then decode_error("expected ']' or ','") end
     end
@@ -300,8 +299,7 @@ local function parse_object()
     local res = {}
     _pos = _pos + 1
     while true do
-        next_nonspace()
-        local chr = _buf:byte(_pos)
+        local chr = next_byte()
         if chr == 125 --[[ "}" ]] then
             _pos = _pos + 1
             break
@@ -309,17 +307,13 @@ local function parse_object()
         if chr ~= 34 --[[ '"' ]] then
             decode_error("expected string for key")
         end
-        local key = decode()
-        next_nonspace()
-        if _buf:byte(_pos) ~= 58 --[[ ":" ]] then
+        local key = parse_string()
+        if next_byte() ~= 58 --[[ ":" ]] then
             decode_error("expected ':' after key")
         end
         _pos = _pos + 1
-        next_nonspace()
-        local val = decode()
-        res[key] = val
-        next_nonspace()
-        local chr = _buf:byte(_pos)
+        res[key] = decode()
+        local chr = next_byte()
         _pos = _pos + 1
         if chr == 125 --[[ "}" ]] then break end
         if chr ~= 44 --[[ "," ]] then decode_error("expected '}' or ','") end
@@ -351,7 +345,7 @@ local char_func_map = {
 }
 
 decode = function()
-    local chr = _buf:byte(_pos)
+    local chr = next_byte()
     local f = char_func_map[chr]
     if f then
         return f()
@@ -365,10 +359,8 @@ function json.decode(str)
     end
     _buf = str
     _pos = 1
-    next_nonspace()
     local res = decode()
-    next_nonspace()
-    if _pos <= #str then
+    if next_byte() ~= nil then
         decode_error("trailing garbage")
     end
     return res
