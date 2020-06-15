@@ -172,18 +172,25 @@ local function next_nonspace()
     _pos = idx and idx or (#_buf + 1)
 end
 
-local function decode_error(msg, idx)
-    idx = idx or _pos
-    local line_count = 1
-    local col_count = 1
-    for i = 1, idx - 1 do
-        col_count = col_count + 1
-        if _buf:sub(i, i) == "\n" then
-            line_count = line_count + 1
-            col_count = 1
+local function getline(str, n)
+    local line = 1
+    local pos = 1
+    while true do
+        local f, _, nl1, nl2 = str:find('([\n\r])([\n\r]?)', pos)
+        if not f then
+            return line, n - pos + 1
         end
+        local newpos = f + ((nl1 == nl2 or nl2 == '') and 1 or 2)
+        if newpos > n then
+            return line, n - pos + 1
+        end
+        pos = newpos
+        line = line + 1
     end
-    error(("%s at line %d col %d"):format(msg, line_count, col_count))
+end
+
+local function decode_error(msg, idx)
+    error(("%s at line %d col %d"):format(msg, getline(msg, idx or _pos)))
 end
 
 local function parse_unicode_escape(s)
