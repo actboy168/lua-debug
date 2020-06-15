@@ -3,9 +3,11 @@ local type = type
 local next = next
 local error = error
 local tonumber = tonumber
+local tostring = tostring
 local utf8_char = utf8.char
 local table_concat = table.concat
 local string_char = string.char
+local string_byte = string.byte
 local math_type = math.type
 local setmetatable = setmetatable
 local Inf = math.huge
@@ -275,7 +277,7 @@ end
 local function parse_array()
     _pos = _pos + 1
     next_nonspace()
-    if _buf:sub(_pos, _pos) == "]" then
+    if _buf:byte(_pos) == 93 --[[ "]" ]] then
         _pos = _pos + 1
         return {}
     end
@@ -286,11 +288,11 @@ local function parse_array()
         res[n] = decode()
         n = n + 1
         next_nonspace()
-        local chr = _buf:sub(_pos, _pos)
+        local chr = _buf:byte(_pos)
         _pos = _pos + 1
         next_nonspace()
-        if chr == "]" then return res end
-        if chr ~= "," then decode_error("expected ']' or ','") end
+        if chr == 93 --[[ "]" ]] then return res end
+        if chr ~= 44 --[[ "," ]] then decode_error("expected ']' or ','") end
     end
 end
 
@@ -299,16 +301,17 @@ local function parse_object()
     _pos = _pos + 1
     while true do
         next_nonspace()
-        if _buf:sub(_pos, _pos) == "}" then
+        local chr = _buf:byte(_pos)
+        if chr == 125 --[[ "}" ]] then
             _pos = _pos + 1
             break
         end
-        if _buf:sub(_pos, _pos) ~= '"' then
+        if chr ~= 34 --[[ '"' ]] then
             decode_error("expected string for key")
         end
         local key = decode()
         next_nonspace()
-        if _buf:sub(_pos, _pos) ~= ":" then
+        if _buf:byte(_pos) ~= 58 --[[ ":" ]] then
             decode_error("expected ':' after key")
         end
         _pos = _pos + 1
@@ -316,10 +319,10 @@ local function parse_object()
         local val = decode()
         res[key] = val
         next_nonspace()
-        local chr = _buf:sub(_pos, _pos)
+        local chr = _buf:byte(_pos)
         _pos = _pos + 1
-        if chr == "}" then break end
-        if chr ~= "," then decode_error("expected '}' or ','") end
+        if chr == 125 --[[ "}" ]] then break end
+        if chr ~= 44 --[[ "," ]] then decode_error("expected '}' or ','") end
     end
     if next(res) == nil then
         setmetatable(res, json.object_mt)
@@ -328,32 +331,32 @@ local function parse_object()
 end
 
 local char_func_map = {
-    [ '"' ] = parse_string,
-    [ "0" ] = parse_number,
-    [ "1" ] = parse_number,
-    [ "2" ] = parse_number,
-    [ "3" ] = parse_number,
-    [ "4" ] = parse_number,
-    [ "5" ] = parse_number,
-    [ "6" ] = parse_number,
-    [ "7" ] = parse_number,
-    [ "8" ] = parse_number,
-    [ "9" ] = parse_number,
-    [ "-" ] = parse_number,
-    [ "t" ] = parse_literal,
-    [ "f" ] = parse_literal,
-    [ "n" ] = parse_literal,
-    [ "[" ] = parse_array,
-    [ "{" ] = parse_object,
+    [ string_byte '"' ] = parse_string,
+    [ string_byte "0" ] = parse_number,
+    [ string_byte "1" ] = parse_number,
+    [ string_byte "2" ] = parse_number,
+    [ string_byte "3" ] = parse_number,
+    [ string_byte "4" ] = parse_number,
+    [ string_byte "5" ] = parse_number,
+    [ string_byte "6" ] = parse_number,
+    [ string_byte "7" ] = parse_number,
+    [ string_byte "8" ] = parse_number,
+    [ string_byte "9" ] = parse_number,
+    [ string_byte "-" ] = parse_number,
+    [ string_byte "t" ] = parse_literal,
+    [ string_byte "f" ] = parse_literal,
+    [ string_byte "n" ] = parse_literal,
+    [ string_byte "[" ] = parse_array,
+    [ string_byte "{" ] = parse_object,
 }
 
 decode = function()
-    local chr = _buf:sub(_pos, _pos)
+    local chr = _buf:byte(_pos)
     local f = char_func_map[chr]
     if f then
         return f()
     end
-    decode_error("unexpected character '" .. chr .. "'")
+    decode_error("unexpected character '" .. string_char(chr) .. "'")
 end
 
 function json.decode(str)
