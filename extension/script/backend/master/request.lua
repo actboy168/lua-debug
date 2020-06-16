@@ -151,10 +151,6 @@ end
 function request.setBreakpoints(req)
     local args = req.arguments
     local content = skipBOM(args.sourceContent)
-    if args.source.path and not isValidPath(args.source.path) then
-        --response.error(req, ("Does not support path: `%s`"):format(args.source.path))
-        return
-    end
     for _, bp in ipairs(args.breakpoints) do
         bp.id = genBreakpointID()
         bp.verified = false
@@ -162,6 +158,12 @@ function request.setBreakpoints(req)
     response.success(req, {
         breakpoints = args.breakpoints
     })
+    -- 因为VSCode奇葩处理方式，所以无论如何都必须返回success，让它高兴。
+    -- https://github.com/microsoft/vscode/issues/85279
+    if args.source.path and not isValidPath(args.source.path) then
+        --response.error(req, ("Does not support path: `%s`"):format(args.source.path))
+        return
+    end
     if args.source.sourceReference then
         local sourceReference = args.source.sourceReference
         local w = sourceReference >> 32
