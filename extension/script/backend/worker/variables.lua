@@ -173,8 +173,20 @@ local function floatToString(x)
     return ('%.17g'):format(x)
 end
 
+local escape_char = {
+    [ "\\" .. string.byte "\a" ] = "\\".."a",
+    [ "\\" .. string.byte "\b" ] = "\\".."b",
+    [ "\\" .. string.byte "\f" ] = "\\".."f",
+    [ "\\" .. string.byte "\n" ] = "\\".."n",
+    [ "\\" .. string.byte "\r" ] = "\\".."r",
+    [ "\\" .. string.byte "\t" ] = "\\".."t",
+    [ "\\" .. string.byte "\v" ] = "\\".."v",
+    [ "\\" .. string.byte "\\" ] = "\\".."\\",
+    [ "\\" .. string.byte "\"" ] = "\\".."\"",
+}
+
 local function quotedString(s)
-    return ("%q"):format(s):sub(2,-2):gsub("\\\n", "\\n")
+    return ("%q"):format(s):sub(2,-2):gsub("\\[1-9][0-9]?", escape_char):gsub("\\\n", "\\n")
 end
 
 local function varCanExtand(type, value)
