@@ -19,7 +19,7 @@ namespace rdebug_utility {
 #define FS_ABSOLUTE(path) fs::absolute(path).lexically_normal()
 #endif
         try {
-            auto res = FS_ABSOLUTE(fs::path(bee::lua::tostring<fs::path::string_type>(L, 1))).generic_u8string();
+            auto res = FS_ABSOLUTE(fs::path(bee::lua::checkstring(L, 1))).generic_u8string();
             lua_pushlstring(L, res.data(), res.size());
             return 1;
         } catch (const std::exception& e) {
