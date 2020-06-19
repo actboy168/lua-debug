@@ -1,5 +1,5 @@
 /*
-** $Id: lparser.c,v 2.155 2016/08/01 19:51:24 roberto Exp $
+** $Id: lparser.c,v 2.155.1.2 2017/04/29 18:11:40 roberto Exp $
 ** Lua Parser
 ** See Copyright Notice in lua.h
 */
@@ -544,6 +544,7 @@ static void open_func (LexState *ls, FuncState *fs, BlockCnt *bl) {
   fs->bl = NULL;
   f = fs->f;
   f->source = ls->source;
+  luaC_objbarrier(ls->L, f, f->source);
   f->maxstacksize = 2;  /* registers 0/1 are always valid */
   enterblock(fs, bl, 0);
 }
@@ -1392,7 +1393,7 @@ static void test_then_block (LexState *ls, int *escapelist) {
     luaK_goiffalse(ls->fs, &v);  /* will jump to label if condition is true */
     enterblock(fs, &bl, 0);  /* must enter block before 'goto' */
     gotostat(ls, v.t);  /* handle goto/break */
-    while (testnext(ls, ';')) {}  /* skip semicolons */
+    while (testnext(ls, ';')) {}  /* skip colons */
     if (block_follow(ls, 0)) {  /* 'goto' is the entire block? */
       leaveblock(fs);
       return;  /* and that is it */
@@ -1616,6 +1617,7 @@ static void mainfunc (LexState *ls, FuncState *fs) {
   fs->f->is_vararg = 1;  /* main function is always declared vararg */
   init_exp(&v, VLOCAL, 0);  /* create and... */
   newupvalue(fs, ls->envn, &v);  /* ...set environment upvalue */
+  luaC_objbarrier(ls->L, fs->f, ls->envn);
   luaX_next(ls);  /* read first token */
   statlist(ls);  /* parse main body */
   check(ls, TK_EOS);
@@ -1634,6 +1636,7 @@ LClosure *luaY_parser (lua_State *L, ZIO *z, Mbuffer *buff,
   sethvalue(L, L->top, lexstate.h);  /* anchor it */
   luaD_inctop(L);
   funcstate.f = cl->p = luaF_newproto(L);
+  luaC_objbarrier(L, cl, cl->p);
   funcstate.f->source = luaS_new(L, name);  /* create and anchor TString */
   lua_assert(iswhite(funcstate.f));  /* do not need barrier here */
   lexstate.buff = buff;
