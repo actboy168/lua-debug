@@ -297,14 +297,14 @@ local function parse_array()
 end
 
 local function parse_object()
-    local res = {}
     _pos = _pos + 1
+    local chr = next_byte()
+    if chr == 125 --[[ "}" ]] then
+        _pos = _pos + 1
+        return setmetatable({}, json.object_mt)
+    end
+    local res = {}
     while true do
-        local chr = next_byte()
-        if chr == 125 --[[ "}" ]] then
-            _pos = _pos + 1
-            break
-        end
         if chr ~= 34 --[[ '"' ]] then
             decode_error "expected string for key"
         end
@@ -314,13 +314,11 @@ local function parse_object()
         end
         _pos = _pos + 1
         res[key] = decode()
-        local chr = next_byte()
+        chr = next_byte()
         _pos = _pos + 1
         if chr == 125 --[[ "}" ]] then break end
         if chr ~= 44 --[[ "," ]] then decode_error "expected '}' or ','" end
-    end
-    if next(res) == nil then
-        setmetatable(res, json.object_mt)
+        chr = next_byte()
     end
     return res
 end
