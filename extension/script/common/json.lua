@@ -260,12 +260,20 @@ end
 
 local function parse_number()
     local word, newpos = next_word()
-    local n = tonumber(word)
-    if not n or word:find '[^-+.%deE]' or word:match '^0[1-9]' then
+    if not (
+       word:match '^-?[1-9][0-9]*$'
+    or word:match '^-?[1-9][0-9]*[Ee][+-]?[0-9]+$'
+    or word:match '^-?[1-9][0-9]*%.[0-9]+$'
+    or word:match '^-?[1-9][0-9]*%.[0-9]+[Ee][+-]?[0-9]+$'
+    or word:match '^-?0$'
+    or word:match '^-?0[Ee][+-]?[0-9]+$'
+    or word:match '^-?0%.[0-9]+$'
+    or word:match '^-?0%.[0-9]+[Ee][+-]?[0-9]+$'
+    ) then
         decode_error("invalid number '" .. word .. "'")
     end
     _pos = newpos
-    return n
+    return tonumber(word)
 end
 
 local function parse_literal()
