@@ -142,20 +142,22 @@ end
 -- Decode
 -------------------------------------------------------------------------------
 
-local decode
-local _buf
-local _pos
+local statusBuf
+local statusPos
+local statusTop
+local statusAry = {}
+local statusRef = {}
 
 local function get_word()
-    return _buf:match("^[^ \t\r\n%]},]*", _pos)
+    return statusBuf:match("^[^ \t\r\n%]},]*", statusPos)
 end
 
 local function next_byte()
-    _pos = _buf:find("[^ \t\r\n]", _pos)
-    if _pos then
-        return string_byte(_buf, _pos)
+    statusPos = statusBuf:find("[^ \t\r\n]", statusPos)
+    if statusPos then
+        return string_byte(statusBuf, statusPos)
     end
-    _pos = #_buf + 1
+    statusPos = #statusBuf + 1
 end
 
 local function getline(str, n)
@@ -176,7 +178,7 @@ local function getline(str, n)
 end
 
 local function decode_error(msg)
-    error(("ERROR: %s at line %d col %d"):format(msg, getline(msg, _pos)))
+    error(("ERROR: %s at line %d col %d"):format(msg, getline(msg, statusPos)))
 end
 
 local function strchar(chr)
@@ -200,28 +202,28 @@ local function parse_string()
     local has_unicode_escape = false
     local has_surrogate_escape = false
     local has_escape = false
-    local i = _pos
+    local i = statusPos
     while true do
-        i = _buf:find('[\0-\31\\"]', i + 1)
+        i = statusBuf:find('[\0-\31\\"]', i + 1)
         if not i then
             decode_error "expected closing quote for string"
         end
-        local x = string_byte(_buf, i)
+        local x = string_byte(statusBuf, i)
         if x < 32 then
-            _pos = i
+            statusPos = i
             decode_error "control character in string"
         end
         if x == 92 --[[ "\\" ]] then
-            local nx = string_byte(_buf, i+1)
+            local nx = string_byte(statusBuf, i+1)
             if nx == 117 --[[ "u" ]] then
-                local hex = _buf:sub(i+2, i+5)
+                local hex = statusBuf:sub(i+2, i+5)
                 if not hex:match "%x%x%x%x" then
-                    _pos = i
+                    statusPos = i
                     decode_error "invalid unicode escape in string"
                 end
                 if hex:match "^[dD][89aAbB]" then
-                    if not _buf:sub(i+6, i+11):match '\\u%x%x%x%x' then
-                        _pos = i
+                    if not statusBuf:sub(i+6, i+11):match '\\u%x%x%x%x' then
+                        statusPos = i
                         decode_error "missing low surrogate"
                     end
                     has_surrogate_escape = true
@@ -232,14 +234,14 @@ local function parse_string()
                 end
             else
                 if not decode_escape_set[nx] then
-                    _pos = i
+                    statusPos = i
                     decode_error("invalid escape char '" .. strchar(nx) .. "' in string")
                 end
                 has_escape = true
                 i = i + 1
             end
         elseif x == 34 --[[ '"' ]] then
-            local s = _buf:sub(_pos + 1, i - 1)
+            local s = statusBuf:sub(statusPos + 1, i - 1)
             if has_surrogate_escape then
                 s = s:gsub("\\u[dD][89aAbB]%x%x\\u%x%x%x%x", parse_unicode_escape)
             end
@@ -249,7 +251,7 @@ local function parse_string()
             if has_escape then
                 s = s:gsub("\\.", decode_escape_map)
             end
-            _pos = i + 1
+            statusPos = i + 1
             return s
         end
     end
@@ -269,76 +271,57 @@ local function parse_number()
     ) then
         decode_error("invalid number '" .. word .. "'")
     end
-    _pos = _pos + #word
+    statusPos = statusPos + #word
     return tonumber(word)
 end
 
 local function parse_true()
-    if _buf:sub(_pos, _pos+3) ~= "true" then
+    if statusBuf:sub(statusPos, statusPos+3) ~= "true" then
         decode_error("invalid literal '" .. get_word() .. "'")
     end
-    _pos = _pos + 4
+    statusPos = statusPos + 4
     return true
 end
 
 local function parse_false()
-    if _buf:sub(_pos, _pos+4) ~= "false" then
+    if statusBuf:sub(statusPos, statusPos+4) ~= "false" then
         decode_error("invalid literal '" .. get_word() .. "'")
     end
-    _pos = _pos + 5
+    statusPos = statusPos + 5
     return false
 end
 
 local function parse_null()
-    if _buf:sub(_pos, _pos+3) ~= "null" then
+    if statusBuf:sub(statusPos, statusPos+3) ~= "null" then
         decode_error("invalid literal '" .. get_word() .. "'")
     end
-    _pos = _pos + 4
+    statusPos = statusPos + 4
     return nil
 end
 
 local function parse_array()
-    _pos = _pos + 1
-    if next_byte() == 93 --[[ "]" ]] then
-        _pos = _pos + 1
-        return {}
-    end
+    statusPos = statusPos + 1
     local res = {}
-    local n = 0
-    while true do
-        n = n + 1
-        res[n] = decode()
-        local chr = next_byte()
-        _pos = _pos + 1
-        if chr == 93 --[[ "]" ]] then return res end
-        if chr ~= 44 --[[ "," ]] then decode_error "expected ']' or ','" end
+    if next_byte() == 93 --[[ "]" ]] then
+        statusPos = statusPos + 1
+        return res
     end
+    statusTop = statusTop + 1
+    statusAry[statusTop] = true
+    statusRef[statusTop] = res
+    return res
 end
 
 local function parse_object()
-    _pos = _pos + 1
-    local chr = next_byte()
-    if chr == 125 --[[ "}" ]] then
-        _pos = _pos + 1
-        return setmetatable({}, json.object_mt)
-    end
+    statusPos = statusPos + 1
     local res = {}
-    while true do
-        if chr ~= 34 --[[ '"' ]] then
-            decode_error "expected string for key"
-        end
-        local key = parse_string()
-        if next_byte() ~= 58 --[[ ":" ]] then
-            decode_error "expected ':' after key"
-        end
-        _pos = _pos + 1
-        res[key] = decode()
-        chr = next_byte()
-        _pos = _pos + 1
-        if chr == 125 --[[ "}" ]] then break end
-        if chr ~= 44 --[[ "," ]] then decode_error "expected '}' or ','" end
-        chr = next_byte()
+    if next_byte() == 125 --[[ "}" ]] then
+        statusPos = statusPos + 1
+        return setmetatable(res, json.object_mt)
     end
+    statusTop = statusTop + 1
+    statusAry[statusTop] = false
+    statusRef[statusTop] = res
     return res
 end
 
@@ -362,22 +345,69 @@ local char_func_map = {
     [ string_byte "{" ] = parse_object,
 }
 
-decode = function()
+local function decode()
     local chr = next_byte()
     local f = char_func_map[chr]
-    if f then
-        return f()
+    if not f then
+        decode_error("unexpected character '" .. strchar(chr) .. "'")
     end
-    decode_error("unexpected character '" .. strchar(chr) .. "'")
+    return f()
+end
+
+local function parse_item()
+    local top = statusTop
+    local ref = statusRef[top]
+    if statusAry[top] then
+        ref[#ref+1] = decode()
+    else
+        local chr = next_byte()
+        if chr ~= 34 --[[ '"' ]] then
+            decode_error "expected string for key"
+        end
+        local key = parse_string()
+        if next_byte() ~= 58 --[[ ":" ]] then
+            decode_error "expected ':' after key"
+        end
+        statusPos = statusPos + 1
+        ref[key] = decode()
+    end
+    if top == statusTop then
+        while true do
+            local chr = next_byte(); statusPos = statusPos + 1
+            if statusAry[statusTop] then
+                if chr ~= 93 --[[ "]" ]] then
+                    if chr == nil or chr == 44 --[[ "," ]] then
+                        return
+                    end
+                    decode_error "expected ']' or ','"
+                end
+            else
+                if chr ~= 125 --[[ "}" ]] then
+                    if chr == nil or chr == 44 --[[ "," ]] then
+                        return
+                    end
+                    decode_error "expected '}' or ','"
+                end
+            end
+            statusTop = statusTop - 1
+            if statusTop == 0 then
+                return
+            end
+        end
+    end
 end
 
 function json.decode(str)
     if type(str) ~= "string" then
         error("expected argument of type string, got " .. type(str))
     end
-    _buf = str
-    _pos = 1
+    statusBuf = str
+    statusPos = 1
+    statusTop = 0
     local res = decode()
+    while statusTop > 0 do
+        parse_item()
+    end
     if next_byte() ~= nil then
         decode_error "trailing garbage"
     end
