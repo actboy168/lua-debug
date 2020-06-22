@@ -146,18 +146,8 @@ local decode
 local _buf
 local _pos
 
-local literal_map = {
-    [ "true"  ] = true,
-    [ "false" ] = false,
-    [ "null"  ] = json.null,
-}
-
-local function next_word()
-    local _, newpos, word, eol = _buf:find("([^ \t\r\n%]},]*)([ \t\r\n%]},]?)", _pos)
-    if eol ~= "" then
-        return word, newpos
-    end
-    return word, newpos + 1
+local function get_word()
+    return _buf:match("^[^ \t\r\n%]},]*", _pos)
 end
 
 local function next_byte()
@@ -266,7 +256,7 @@ local function parse_string()
 end
 
 local function parse_number()
-    local word, newpos = next_word()
+    local word = get_word()
     if not (
        word:match '^-?[1-9][0-9]*$'
     or word:match '^-?[1-9][0-9]*[Ee][+-]?[0-9]+$'
@@ -279,18 +269,32 @@ local function parse_number()
     ) then
         decode_error("invalid number '" .. word .. "'")
     end
-    _pos = newpos
+    _pos = _pos + #word
     return tonumber(word)
 end
 
-local function parse_literal()
-    local word, newpos = next_word()
-    local res = literal_map[word]
-    if res == nil then
-        decode_error("invalid literal '" .. word .. "'")
+local function parse_true()
+    if _buf:sub(_pos, _pos+3) ~= "true" then
+        decode_error("invalid literal '" .. get_word() .. "'")
     end
-    _pos = newpos
-    return res
+    _pos = _pos + 4
+    return true
+end
+
+local function parse_false()
+    if _buf:sub(_pos, _pos+4) ~= "false" then
+        decode_error("invalid literal '" .. get_word() .. "'")
+    end
+    _pos = _pos + 5
+    return false
+end
+
+local function parse_null()
+    if _buf:sub(_pos, _pos+3) ~= "null" then
+        decode_error("invalid literal '" .. get_word() .. "'")
+    end
+    _pos = _pos + 4
+    return nil
 end
 
 local function parse_array()
@@ -351,9 +355,9 @@ local char_func_map = {
     [ string_byte "8" ] = parse_number,
     [ string_byte "9" ] = parse_number,
     [ string_byte "-" ] = parse_number,
-    [ string_byte "t" ] = parse_literal,
-    [ string_byte "f" ] = parse_literal,
-    [ string_byte "n" ] = parse_literal,
+    [ string_byte "t" ] = parse_true,
+    [ string_byte "f" ] = parse_false,
+    [ string_byte "n" ] = parse_null,
     [ string_byte "[" ] = parse_array,
     [ string_byte "{" ] = parse_object,
 }
