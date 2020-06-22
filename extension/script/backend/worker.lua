@@ -611,7 +611,7 @@ function event.panic(msg)
     if not exceptionFilters['lua_panic'] then
         return
     end
-    exceptionMsg, exceptionTrace = traceback(tostring(msg), 0)
+    exceptionMsg, exceptionTrace = traceback(tostring(msg))
     state = 'stopped'
     runLoop('exception', exceptionMsg)
 end
@@ -622,7 +622,7 @@ function event.r_exception(msg)
     if not type or not exceptionFilters[type] then
         return
     end
-    exceptionMsg, exceptionTrace = traceback(tostring(msg), 0)
+    exceptionMsg, exceptionTrace = traceback(tostring(msg))
     state = 'stopped'
     runLoop('exception', exceptionMsg)
 end
@@ -634,7 +634,7 @@ function event.exception()
         return
     end
     local _, msg = getEventArgs(1)
-    exceptionMsg, exceptionTrace = traceback(msg, level - 3)
+    exceptionMsg, exceptionTrace = traceback(msg)
     state = 'stopped'
     runLoop('exception', exceptionMsg)
 end

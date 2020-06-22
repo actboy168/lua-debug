@@ -2,6 +2,7 @@ local rdebug = require 'remotedebug.visitor'
 local hookmgr = require 'remotedebug.hookmgr'
 local source = require 'backend.worker.source'
 local luaver = require 'backend.worker.luaver'
+local fs = require 'backend.worker.filesystem'
 
 local info = {}
 
@@ -96,22 +97,32 @@ local function pushfuncname(f, info)
     end
 end
 
-local function replacewhere(msg, level)
+local function replacewhere(msg)
     local f, l = msg:find ':[-%d]+: '
-    if f then
-        msg = msg:sub(l + 1)
+    if not f then
+        if rdebug.getinfo(1, "Sl", info) then
+            msg = ('%s:%d: %s'):format(getshortsrc(info), info.currentline, msg)
+        end
+        return msg, 0
     end
-    if not rdebug.getinfo(level + 1, "Sl", info) then
-        return msg
+    local srcpath = fs.source_normalize(msg:sub(1, f-1))
+    local line = tonumber(msg:sub(f+1, l-2))
+    local message = msg:sub(l + 1)
+    local level = 1
+    while true do
+        if not rdebug.getinfo(level, "Sl", info) then
+            return ('%s:%d: %s'):format(source.clientPath(srcpath), line, message), 0
+        end
+        if line == info.currentline and srcpath == fs.source_normalize(info.source:sub(2)) then
+            return ('%s:%d: %s'):format(getshortsrc(info), info.currentline, message), level
+        end
+        level = level + 1
     end
-    return ('%s:%d: %s'):format(getshortsrc(info), info.currentline, msg)
 end
 
-return function(msg, level)
+return function(msg)
     local s = {}
-    if msg then
-        msg = replacewhere(msg, level)
-    end
+    local message, level = replacewhere(msg)
     s[#s + 1] = 'stack traceback:'
     local last = hookmgr.stacklevel()
     local n1 = ((last - level) > 21) and 10 or -1
@@ -135,5 +146,5 @@ return function(msg, level)
             end
         end
     end
-    return msg, table.concat(s)
+    return message, table.concat(s)
 end
