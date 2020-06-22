@@ -374,18 +374,15 @@ local function parse_item()
     if top == statusTop then
         while true do
             local chr = next_byte(); statusPos = statusPos + 1
+            if chr == 44 --[[ "," ]] then
+                return
+            end
             if statusAry[statusTop] then
                 if chr ~= 93 --[[ "]" ]] then
-                    if chr == nil or chr == 44 --[[ "," ]] then
-                        return
-                    end
                     decode_error "expected ']' or ','"
                 end
             else
                 if chr ~= 125 --[[ "}" ]] then
-                    if chr == nil or chr == 44 --[[ "," ]] then
-                        return
-                    end
                     decode_error "expected '}' or ','"
                 end
             end
