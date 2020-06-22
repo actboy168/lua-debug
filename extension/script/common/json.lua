@@ -186,7 +186,14 @@ local function getline(str, n)
 end
 
 local function decode_error(msg)
-    error(("%s at line %d col %d"):format(msg, getline(msg, _pos)))
+    error(("ERROR: %s at line %d col %d"):format(msg, getline(msg, _pos)))
+end
+
+local function strchar(chr)
+    if chr then
+        return string_char(chr)
+    end
+    return "<eol>"
 end
 
 local function parse_unicode_escape(s)
@@ -236,7 +243,7 @@ local function parse_string()
             else
                 if not decode_escape_set[nx] then
                     _pos = i
-                    decode_error("invalid escape char '" .. string_char(nx) .. "' in string")
+                    decode_error("invalid escape char '" .. strchar(nx) .. "' in string")
                 end
                 has_escape = true
                 i = i + 1
@@ -357,7 +364,7 @@ decode = function()
     if f then
         return f()
     end
-    decode_error("unexpected character '" .. string_char(chr) .. "'")
+    decode_error("unexpected character '" .. strchar(chr) .. "'")
 end
 
 function json.decode(str)
