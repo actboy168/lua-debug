@@ -15,7 +15,7 @@ local Inf = math.huge
 local json = {}
 
 json.null = function() end
-json.object_mt = {}
+json.object = {}
 
 -------------------------------------------------------------------------------
 -- Encode
@@ -41,10 +41,6 @@ for k, v in pairs(encode_escape_map) do
     decode_escape_set[string_byte(v, 2)] = true
 end
 
-local function encode_escape(c)
-    return encode_escape_map[c] or ("\\u%04x"):format(c:byte())
-end
-
 local function encode_nil()
     return "null"
 end
@@ -54,6 +50,10 @@ local function encode_null(val)
         return "null"
     end
     error "cannot serialise function: type not supported"
+end
+
+local function encode_escape(c)
+    return encode_escape_map[c] or ("\\u%04x"):format(c:byte())
 end
 
 local function encode_string(val)
@@ -78,7 +78,7 @@ end
 local function encode_table(val, stack)
     local first_val = next(val)
     if first_val == nil then
-        if getmetatable(val) == json.object_mt then
+        if getmetatable(val) == json.object then
             return "{}"
         else
             return "[]"
@@ -284,7 +284,7 @@ local function parse_null()
         decode_error("invalid literal '" .. get_word() .. "'")
     end
     statusPos = statusPos + 4
-    return nil
+    return json.null
 end
 
 local function parse_array()
@@ -305,7 +305,7 @@ local function parse_object()
     local res = {}
     if next_byte() == 125 --[[ "}" ]] then
         statusPos = statusPos + 1
-        return setmetatable(res, json.object_mt)
+        return setmetatable(res, json.object)
     end
     statusTop = statusTop + 1
     statusAry[statusTop] = false
