@@ -188,19 +188,19 @@ local function strchar(chr)
     return "<eol>"
 end
 
+local function parse_unicode_surrogate(s1, s2)
+    local n1 = tonumber(s1,  16)
+    local n2 = tonumber(s2, 16)
+    return utf8_char(0x10000 + (n1 - 0xd800) * 0x400 + (n2 - 0xdc00))
+end
+
 local function parse_unicode_escape(s)
-    local n1 = tonumber(s:sub(3, 6),  16)
-    local n2 = tonumber(s:sub(9, 12), 16)
-    if n2 then
-        return utf8_char((n1 - 0xd800) * 0x400 + (n2 - 0xdc00) + 0x10000)
-    else
-        return utf8_char(n1)
-    end
+    local n1 = tonumber(s,  16)
+    return utf8_char(n1)
 end
 
 local function parse_string()
     local has_unicode_escape = false
-    local has_surrogate_escape = false
     local has_escape = false
     local i = statusPos
     while true do
@@ -216,22 +216,12 @@ local function parse_string()
         if x == 92 --[[ "\\" ]] then
             local nx = string_byte(statusBuf, i+1)
             if nx == 117 --[[ "u" ]] then
-                local hex = statusBuf:sub(i+2, i+5)
-                if not hex:match "%x%x%x%x" then
+                if not statusBuf:match("^%x%x%x%x", i+2) then
                     statusPos = i
                     decode_error "invalid unicode escape in string"
                 end
-                if hex:match "^[dD][89aAbB]" then
-                    if not statusBuf:sub(i+6, i+11):match '\\u%x%x%x%x' then
-                        statusPos = i
-                        decode_error "missing low surrogate"
-                    end
-                    has_surrogate_escape = true
-                    i = i + 11
-                else
-                    has_unicode_escape = true
-                    i = i + 5
-                end
+                has_unicode_escape = true
+                i = i + 5
             else
                 if not decode_escape_set[nx] then
                     statusPos = i
@@ -242,11 +232,9 @@ local function parse_string()
             end
         elseif x == 34 --[[ '"' ]] then
             local s = statusBuf:sub(statusPos + 1, i - 1)
-            if has_surrogate_escape then
-                s = s:gsub("\\u[dD][89aAbB]%x%x\\u%x%x%x%x", parse_unicode_escape)
-            end
             if has_unicode_escape then
-                s = s:gsub("\\u%x%x%x%x", parse_unicode_escape)
+                s = s:gsub("\\u([dD][89aAbB]%x%x)\\u([dD][c-fC-F]%x%x)", parse_unicode_surrogate)
+                     :gsub("\\u(%x%x%x%x)", parse_unicode_escape)
             end
             if has_escape then
                 s = s:gsub("\\.", decode_escape_map)
