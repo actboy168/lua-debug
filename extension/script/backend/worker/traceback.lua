@@ -127,13 +127,14 @@ return function(msg)
     local last = hookmgr.stacklevel()
     local n1 = ((last - level) > 21) and 10 or -1
     local opt = luaver.LUAVERSION >= 52 and "Slnt" or "Sln"
-    while rdebug.getinfo(level, opt, info) do
-        local f = rdebug.getfunc(level)
-        level = level + 1
+    local depth = level
+    while rdebug.getinfo(depth, opt, info) do
+        local f = rdebug.getfunc(depth)
+        depth = depth + 1
         n1 = n1 - 1
         if n1 == 1 then
             s[#s + 1] = '\n\t...'
-            level = last - 10
+            depth = last - 10
         else
             s[#s + 1] = ('\n\t%s:'):format(getshortsrc(info))
             if info.currentline > 0 then
@@ -146,5 +147,5 @@ return function(msg)
             end
         end
     end
-    return message, table.concat(s)
+    return message, table.concat(s), level
 end

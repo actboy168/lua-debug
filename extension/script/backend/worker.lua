@@ -21,11 +21,13 @@ local stopReason = 'step'
 local exceptionFilters = {}
 local exceptionMsg = ''
 local exceptionTrace = ''
+local exceptionLevel = 0
 local outputCapture = {}
 local noDebug = false
 local openUpdate = false
 local coroutineTree = {}
-local statckFrame = {}
+local stackFrame = {}
+local skipFrame = 0
 local baseL
 
 local CMD = {}
@@ -40,11 +42,12 @@ local function workerThreadUpdate(timeout)
         if not ok then
             break
         end
-        local pkg = assert(json.decode(msg))
         local ok, e = xpcall(function()
-        if CMD[pkg.cmd] then
-            CMD[pkg.cmd](pkg)
-        end
+            local pkg = json.decode(msg)
+            local f = CMD[pkg.cmd]
+            if f then
+                f(pkg)
+            end
         end, debug.traceback)
         if not ok then
             err:push(e)
@@ -100,7 +103,7 @@ end)
 
 local function cleanFrame()
     variables.clean()
-    statckFrame = {}
+    stackFrame = {}
 end
 
 function CMD.initializing(pkg)
@@ -195,7 +198,7 @@ local function stackTrace(res, coid, start, levels)
 end
 
 local function calcStackLevel()
-    if statckFrame.total then
+    if stackFrame.total then
         return
     end
     local n = 0
@@ -203,21 +206,26 @@ local function calcStackLevel()
     repeat
         hookmgr.sethost(L)
         local sl = hookmgr.stacklevel()
-        n = n + sl
-        statckFrame[L] = sl
-        statckFrame[#statckFrame+1] = L
-        L = coroutineTree[L]
+        local curL = L
+        stackFrame[#stackFrame+1] = curL
+        L = coroutineTree[curL]
         if not L then
             for depth = sl-1, 0, -1 do
                 if not rdebug.getinfo(depth, "S", info) or info.what ~= "C" then
                     break
                 end
-                n = n - 1
+                sl = sl - 1
+            end
+            if skipFrame > 0 then
+                skipFrame = math.min(sl, skipFrame)
+                sl = sl - skipFrame
             end
         end
+        n = n + sl
+        stackFrame[curL] = sl
     until not L
     hookmgr.sethost(baseL)
-    statckFrame.total = n
+    stackFrame.total = n
 end
 
 function CMD.stackTrace(pkg)
@@ -242,17 +250,22 @@ function CMD.stackTrace(pkg)
 
     calcStackLevel()
 
-    if start + levels > statckFrame.total then
-        levels = statckFrame.total - start
+    if start + levels > stackFrame.total then
+        levels = stackFrame.total - start
     end
 
     local L = baseL
     local coroutineId = 0
     repeat
         hookmgr.sethost(L)
-        if start > statckFrame[L] then
-            start = start - statckFrame[L]
+        local curL = L
+        L = coroutineTree[curL]
+        if start > stackFrame[curL] then
+            start = start - stackFrame[curL]
         else
+            if not L then
+                start = start + skipFrame
+            end
             local n = stackTrace(res, coroutineId, start, levels)
             if levels == n then
                 break
@@ -261,7 +274,6 @@ function CMD.stackTrace(pkg)
             levels = levels - n
         end
         coroutineId = coroutineId + 1
-        L = coroutineTree[L]
     until (not L or levels <= 0)
     hookmgr.sethost(baseL)
 
@@ -271,7 +283,7 @@ function CMD.stackTrace(pkg)
         seq = pkg.seq,
         success = true,
         stackFrames = res,
-        totalFrames = statckFrame.total,
+        totalFrames = stackFrame.total,
     }
 end
 
@@ -287,7 +299,7 @@ end
 function CMD.scopes(pkg)
     local coid = (pkg.frameId >> 16) + 1
     local depth = pkg.frameId & 0xFFFF
-    hookmgr.sethost(assert(statckFrame[coid]))
+    hookmgr.sethost(assert(stackFrame[coid]))
     sendToMaster {
         cmd = 'scopes',
         command = pkg.command,
@@ -445,7 +457,7 @@ function CMD.restartFrame()
     }
 end
 
-local function runLoop(reason, text)
+local function runLoop(reason, text, level)
     baseL = hookmgr.gethost()
     --TODO: 只在lua栈帧时需要text？
     sendToMaster {
@@ -453,6 +465,7 @@ local function runLoop(reason, text)
         reason = reason,
         text = text,
     }
+    skipFrame = level or 0
 
     while true do
         workerThreadUpdate(0.01)
@@ -611,9 +624,9 @@ function event.panic(msg)
     if not exceptionFilters['lua_panic'] then
         return
     end
-    exceptionMsg, exceptionTrace = traceback(tostring(msg))
+    exceptionMsg, exceptionTrace, exceptionLevel = traceback(tostring(msg))
     state = 'stopped'
-    runLoop('exception', exceptionMsg)
+    runLoop('exception', exceptionMsg, exceptionLevel)
 end
 
 function event.r_exception(msg)
@@ -622,9 +635,9 @@ function event.r_exception(msg)
     if not type or not exceptionFilters[type] then
         return
     end
-    exceptionMsg, exceptionTrace = traceback(tostring(msg))
+    exceptionMsg, exceptionTrace, exceptionLevel = traceback(tostring(msg))
     state = 'stopped'
-    runLoop('exception', exceptionMsg)
+    runLoop('exception', exceptionMsg, exceptionLevel)
 end
 
 function event.exception()
@@ -634,9 +647,9 @@ function event.exception()
         return
     end
     local _, msg = getEventArgs(1)
-    exceptionMsg, exceptionTrace = traceback(msg)
+    exceptionMsg, exceptionTrace, exceptionLevel = traceback(msg)
     state = 'stopped'
-    runLoop('exception', exceptionMsg)
+    runLoop('exception', exceptionMsg, exceptionLevel)
 end
 
 function event.r_thread(co, type)
