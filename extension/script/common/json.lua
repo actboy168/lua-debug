@@ -6,6 +6,7 @@ local tonumber = tonumber
 local tostring = tostring
 local utf8_char = utf8.char
 local table_concat = table.concat
+local table_sort = table.sort
 local string_char = string.char
 local string_byte = string.byte
 local math_type = math.type
@@ -13,13 +14,10 @@ local setmetatable = setmetatable
 local Inf = math.huge
 
 local json = {}
-
 json.null = function() end
 json.object = {}
 
--------------------------------------------------------------------------------
--- Encode
--------------------------------------------------------------------------------
+-- json.encode --
 
 local encode
 
@@ -41,6 +39,13 @@ for k, v in pairs(encode_escape_map) do
     decode_escape_set[string_byte(v, 2)] = true
 end
 
+for i = 0, 31 do
+    local c = string_char(i)
+    if not decode_escape_map[c] then
+        encode_escape_map[c] = ("\\u%04x"):format(i)
+    end
+end
+
 local function encode_nil()
     return "null"
 end
@@ -52,12 +57,8 @@ local function encode_null(val)
     error "cannot serialise function: type not supported"
 end
 
-local function encode_escape(c)
-    return encode_escape_map[c] or ("\\u%04x"):format(c:byte())
-end
-
 local function encode_string(val)
-    return '"' .. val:gsub('[%z\1-\31\127\\"/]', encode_escape) .. '"'
+    return '"' .. val:gsub('[\0-\31\\"/]', encode_escape_map) .. '"'
 end
 
 local function convertreal(v)
@@ -75,7 +76,7 @@ local function encode_number(val)
     return convertreal(val):gsub(',', '.')
 end
 
-local function encode_table(val, stack)
+local function encode_table(val, mark)
     local first_val = next(val)
     if first_val == nil then
         if getmetatable(val) == json.object then
@@ -83,7 +84,27 @@ local function encode_table(val, stack)
         else
             return "[]"
         end
-    elseif type(first_val) == 'number' then
+    end
+    mark = mark or {}
+    if mark[val] then error("circular reference") end
+    mark[val] = true
+    local res = {}
+    if type(first_val) == 'string' then
+        local key = {}
+        for k in pairs(val) do
+            if type(k) ~= "string" then
+                error("invalid table: mixed or invalid key types")
+            end
+            key[#key+1] = k
+        end
+        table_sort(key)
+        for i = 1, #key do
+            local k = key[i]
+            res[i] = encode_string(k) .. ":" .. encode(val[k], mark)
+        end
+        mark[val] = nil
+        return "{" .. table_concat(res, ",") .. "}"
+    else
         local max = 0
         for k in pairs(val) do
             if math_type(k) ~= "integer" then
@@ -91,28 +112,11 @@ local function encode_table(val, stack)
             end
             max = max > k and max or k
         end
-        local res = {}
-        stack = stack or {}
-        if stack[val] then error("circular reference") end
-        stack[val] = true
         for i = 1, max do
-            res[#res+1] = encode(val[i], stack)
+            res[i] = encode(val[i], mark)
         end
-        stack[val] = nil
+        mark[val] = nil
         return "[" .. table_concat(res, ",") .. "]"
-    else
-        local res = {}
-        stack = stack or {}
-        if stack[val] then error("circular reference") end
-        stack[val] = true
-        for k, v in pairs(val) do
-            if type(k) ~= "string" then
-                error("invalid table: mixed or invalid key types")
-            end
-            res[#res+1] = encode_string(k) .. ":" .. encode(v, stack)
-        end
-        stack[val] = nil
-        return "{" .. table_concat(res, ",") .. "}"
     end
 end
 
@@ -125,11 +129,11 @@ local type_func_map = {
     [ "function" ] = encode_null,
 }
 
-encode = function(val, stack)
+encode = function(val, mark)
     local t = type(val)
     local f = type_func_map[t]
     if f then
-        return f(val, stack)
+        return f(val, mark)
     end
     error("unexpected type '" .. t .. "'")
 end
@@ -138,9 +142,7 @@ function json.encode(val)
     return encode(val)
 end
 
--------------------------------------------------------------------------------
--- Decode
--------------------------------------------------------------------------------
+-- json.decode --
 
 local statusBuf
 local statusPos
