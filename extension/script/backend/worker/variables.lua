@@ -232,7 +232,7 @@ local function varGetShortName(value)
         if #str < 32 then
             return str
         end
-        return str:sub(1, 32) .. '...'
+        return quotedString(str:sub(1, 32)) .. '...'
     elseif type == 'boolean' then
         if rdebug.value(value) then
             return 'true'
@@ -269,6 +269,8 @@ local function varGetName(value)
         return ('%d'):format(rvalue)
     elseif type == 'float' then
         return floatToString(rdebug.value(value))
+    elseif type == 'string' then
+        return quotedString(rdebug.value(value))
     end
     return tostring(rdebug.value(value))
 end
