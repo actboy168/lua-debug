@@ -120,7 +120,7 @@ local function encode_table(val, mark)
     end
 end
 
-local type_func_map = {
+local encode_map = {
     [ "nil"      ] = encode_nil,
     [ "table"    ] = encode_table,
     [ "string"   ] = encode_string,
@@ -131,16 +131,14 @@ local type_func_map = {
 
 encode = function(val, mark)
     local t = type(val)
-    local f = type_func_map[t]
+    local f = encode_map[t]
     if f then
         return f(val, mark)
     end
     error("unexpected type '" .. t .. "'")
 end
 
-function json.encode(val)
-    return encode(val)
-end
+json.encode = encode
 
 -- json.decode --
 
@@ -162,7 +160,7 @@ local function next_byte()
     statusPos = #statusBuf + 1
 end
 
-local function getline(str, n)
+local function find_line(str, n)
     local line = 1
     local pos = 1
     while true do
@@ -180,7 +178,7 @@ local function getline(str, n)
 end
 
 local function decode_error(msg)
-    error(("ERROR: %s at line %d col %d"):format(msg, getline(msg, statusPos)))
+    error(("ERROR: %s at line %d col %d"):format(msg, find_line(msg, statusPos)))
 end
 
 local function strchar(chr)
@@ -190,18 +188,18 @@ local function strchar(chr)
     return "<eol>"
 end
 
-local function parse_unicode_surrogate(s1, s2)
+local function decode_unicode_surrogate(s1, s2)
     local n1 = tonumber(s1,  16)
     local n2 = tonumber(s2, 16)
     return utf8_char(0x10000 + (n1 - 0xd800) * 0x400 + (n2 - 0xdc00))
 end
 
-local function parse_unicode_escape(s)
+local function decode_unicode_escape(s)
     local n1 = tonumber(s,  16)
     return utf8_char(n1)
 end
 
-local function parse_string()
+local function decode_string()
     local has_unicode_escape = false
     local has_escape = false
     local i = statusPos
@@ -235,8 +233,8 @@ local function parse_string()
         elseif x == 34 --[[ '"' ]] then
             local s = statusBuf:sub(statusPos + 1, i - 1)
             if has_unicode_escape then
-                s = s:gsub("\\u([dD][89aAbB]%x%x)\\u([dD][c-fC-F]%x%x)", parse_unicode_surrogate)
-                     :gsub("\\u(%x%x%x%x)", parse_unicode_escape)
+                s = s:gsub("\\u([dD][89aAbB]%x%x)\\u([dD][c-fC-F]%x%x)", decode_unicode_surrogate)
+                     :gsub("\\u(%x%x%x%x)", decode_unicode_escape)
             end
             if has_escape then
                 s = s:gsub("\\.", decode_escape_map)
@@ -247,7 +245,7 @@ local function parse_string()
     end
 end
 
-local function parse_number()
+local function decode_number()
     local word = get_word()
     if not (
        word:match '^-?[1-9][0-9]*$'
@@ -265,7 +263,7 @@ local function parse_number()
     return tonumber(word)
 end
 
-local function parse_true()
+local function decode_true()
     if statusBuf:sub(statusPos, statusPos+3) ~= "true" then
         decode_error("invalid literal '" .. get_word() .. "'")
     end
@@ -273,7 +271,7 @@ local function parse_true()
     return true
 end
 
-local function parse_false()
+local function decode_false()
     if statusBuf:sub(statusPos, statusPos+4) ~= "false" then
         decode_error("invalid literal '" .. get_word() .. "'")
     end
@@ -281,7 +279,7 @@ local function parse_false()
     return false
 end
 
-local function parse_null()
+local function decode_null()
     if statusBuf:sub(statusPos, statusPos+3) ~= "null" then
         decode_error("invalid literal '" .. get_word() .. "'")
     end
@@ -289,7 +287,7 @@ local function parse_null()
     return json.null
 end
 
-local function parse_array()
+local function decode_array()
     statusPos = statusPos + 1
     local res = {}
     if next_byte() == 93 --[[ "]" ]] then
@@ -302,7 +300,7 @@ local function parse_array()
     return res
 end
 
-local function parse_object()
+local function decode_object()
     statusPos = statusPos + 1
     local res = {}
     if next_byte() == 125 --[[ "}" ]] then
@@ -315,36 +313,36 @@ local function parse_object()
     return res
 end
 
-local char_func_map = {
-    [ string_byte '"' ] = parse_string,
-    [ string_byte "0" ] = parse_number,
-    [ string_byte "1" ] = parse_number,
-    [ string_byte "2" ] = parse_number,
-    [ string_byte "3" ] = parse_number,
-    [ string_byte "4" ] = parse_number,
-    [ string_byte "5" ] = parse_number,
-    [ string_byte "6" ] = parse_number,
-    [ string_byte "7" ] = parse_number,
-    [ string_byte "8" ] = parse_number,
-    [ string_byte "9" ] = parse_number,
-    [ string_byte "-" ] = parse_number,
-    [ string_byte "t" ] = parse_true,
-    [ string_byte "f" ] = parse_false,
-    [ string_byte "n" ] = parse_null,
-    [ string_byte "[" ] = parse_array,
-    [ string_byte "{" ] = parse_object,
+local decode_map = {
+    [ string_byte '"' ] = decode_string,
+    [ string_byte "0" ] = decode_number,
+    [ string_byte "1" ] = decode_number,
+    [ string_byte "2" ] = decode_number,
+    [ string_byte "3" ] = decode_number,
+    [ string_byte "4" ] = decode_number,
+    [ string_byte "5" ] = decode_number,
+    [ string_byte "6" ] = decode_number,
+    [ string_byte "7" ] = decode_number,
+    [ string_byte "8" ] = decode_number,
+    [ string_byte "9" ] = decode_number,
+    [ string_byte "-" ] = decode_number,
+    [ string_byte "t" ] = decode_true,
+    [ string_byte "f" ] = decode_false,
+    [ string_byte "n" ] = decode_null,
+    [ string_byte "[" ] = decode_array,
+    [ string_byte "{" ] = decode_object,
 }
 
 local function decode()
     local chr = next_byte()
-    local f = char_func_map[chr]
+    local f = decode_map[chr]
     if not f then
         decode_error("unexpected character '" .. strchar(chr) .. "'")
     end
     return f()
 end
 
-local function parse_item()
+local function decode_item()
     local top = statusTop
     local ref = statusRef[top]
     if statusAry[top] then
@@ -354,7 +352,7 @@ local function parse_item()
         if chr ~= 34 --[[ '"' ]] then
             decode_error "expected string for key"
         end
-        local key = parse_string()
+        local key = decode_string()
         if next_byte() ~= 58 --[[ ":" ]] then
             decode_error "expected ':' after key"
         end
@@ -393,7 +391,7 @@ function json.decode(str)
     statusTop = 0
     local res = decode()
     while statusTop > 0 do
-        parse_item()
+        decode_item()
     end
     if next_byte() ~= nil then
         decode_error "trailing garbage"
