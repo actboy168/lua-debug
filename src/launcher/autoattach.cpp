@@ -75,8 +75,8 @@ namespace autoattach {
 				return base::c_call<void>(real::lua_settop, L, index);
 			}
 			static void __cdecl lua_close(lua_State* L) {
+				base::c_call<void>(real::lua_close, L);
 				hookLuaStates.erase(L);
-				return base::c_call<void>(real::lua_close, L);
 			}
 		}
 
