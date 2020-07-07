@@ -32,6 +32,8 @@
     },
     "main": "./js/extension.js",
     "activationEvents": [
+        "onCommand:extension.lua-debug.runEditorContents",
+        "onCommand:extension.lua-debug.debugEditorContents",
         "onDebugInitialConfigurations",
         "onDebugResolve:lua"
     ],
@@ -39,6 +41,32 @@
         "breakpoints": [
             {
                 "language": "lua"
+            }
+        ],
+        "menus": {
+            "editor/title": [
+                {
+                    "command": "extension.lua-debug.runEditorContents",
+                    "when": "resourceLangId == lua",
+                    "group": "1_run@10"
+                },
+                {
+                    "command": "extension.lua-debug.debugEditorContents",
+                    "when": "resourceLangId == lua",
+                    "group": "1_run@20"
+                }
+            ]
+        },
+        "commands": [
+            {
+                "command": "extension.lua-debug.runEditorContents",
+                "title": "Run File",
+                "icon": "$(play)"
+            },
+            {
+                "command": "extension.lua-debug.debugEditorContents",
+                "title": "Debug File",
+                "icon": "$(debug-alt)"
             }
         ],
         "debuggers": [

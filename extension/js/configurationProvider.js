@@ -25,7 +25,7 @@ function provideDebugConfigurations(folder, token) {
         {
             type: 'lua',
             request: 'launch',
-            name: 'Launch',
+            name: 'Debug',
             program: program
         }
     ];

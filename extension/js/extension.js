@@ -5,9 +5,28 @@ const trackerFactory = require("./trackerFactory");
 
 function activate(context) {
     exports.context = context;
-    context.subscriptions.push(vscode.debug.registerDebugConfigurationProvider('lua', configurationProvider));
-    context.subscriptions.push(vscode.debug.registerDebugAdapterDescriptorFactory('lua', descriptorFactory));
-    context.subscriptions.push(vscode.debug.registerDebugAdapterTrackerFactory('lua', trackerFactory));
+    context.subscriptions.push(
+        vscode.debug.registerDebugConfigurationProvider('lua', configurationProvider),
+        vscode.debug.registerDebugAdapterDescriptorFactory('lua', descriptorFactory),
+        vscode.debug.registerDebugAdapterTrackerFactory('lua', trackerFactory),
+        vscode.commands.registerCommand("extension.lua-debug.runEditorContents", (uri) => {
+            vscode.debug.startDebugging(undefined, {
+                type: 'lua',
+                name: 'Run Editor Contents',
+                request: 'launch',
+                program: uri.fsPath,
+                noDebug: true
+            });
+        }),
+        vscode.commands.registerCommand("extension.lua-debug.debugEditorContents", (uri) => {
+            vscode.debug.startDebugging(undefined, {
+                type: 'lua',
+                name: 'Debug Editor Contents',
+                request: 'launch',
+                program: uri.fsPath
+            });
+        })
+    );
 }
 
 function deactivate() {
