@@ -1,4 +1,17 @@
-local platform, root, luaapi, ansi = ...
+local root, luaapi, ansi = ...
+
+local platform = (function()
+    if package.config:sub(1,1) == "\\" then
+        return "windows"
+    end
+    local name = io.popen('uname -s','r'):read('*l')
+    if name == "Linux" then
+        return "linux"
+    elseif name == "Darwin" then
+        return "macos"
+    end
+    error "unknown platform"
+end)()
 
 local arch = (function()
     if string.packsize then

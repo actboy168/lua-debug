@@ -8,6 +8,6 @@ local function dofile(filename, ...)
     local func = assert(load(str, "=(BOOTSTRAP)"))
     return func(...)
 end
-local dbg = dofile(path.."/script/debugger.lua","windows",path,luaapi)
+local dbg = dofile(path.."/script/debugger.lua",path,luaapi)
 dbg:start(("@%s/tmp/pid_%s"):format(path, pid))
 dbg:wait()

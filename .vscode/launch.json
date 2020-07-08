@@ -16,6 +16,8 @@
             "osx": {
                 "luaexe": "${command:extensionPath}actboy168.lua-debug-1.24.1/bin/macos/lua-debug",
             },
+            "outputCapture": [
+            ],
             "program": "${workspaceFolder}/extension/script/frontend/main.lua",
             "path": "${workspaceFolder}/extension/script/?.lua",
             "arg": [
