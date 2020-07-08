@@ -62,13 +62,11 @@ end
 local function installBootstrap2(c, luaexe, pid, dbg)
     c[#c+1] = towsl(luaexe:string())
     c[#c+1] = "-e"
-    local script = {}
-    script[#script+1] = ("local path=[[%s]];"):format(towsl(dbg:string()))
-    script[#script+1] = ("assert(loadfile(path..[[/script/launch.lua]]))(path,%d%s):wait()"):format(
+    c[#c+1] = ("dofile[[%s]];DBG(%d%s)"):format(
+        (dbg / "script" / "launch.lua"):string(),
         pid,
         useUtf8 and "" or ",true"
     )
-    c[#c+1] = table.concat(script)
 end
 
 local function installBootstrap2Simple(c, luaexe, pid)

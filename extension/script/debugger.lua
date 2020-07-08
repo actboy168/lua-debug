@@ -1,4 +1,4 @@
-local root, luaapi, ansi = ...
+local root, luaapi = ...
 
 local platform = (function()
     if package.config:sub(1,1) == "\\" then
@@ -67,18 +67,17 @@ if luaapi then
 end
 local rdebug = assert(package.loadlib(remotedebug,'luaopen_remotedebug'))()
 
-local function utf8(s)
-    if ansi and platform == "windows" then
-        return rdebug.a2u(s)
-    end
-    return s
-end
-
-root = utf8(root)
 
 local dbg = {}
 
-function dbg:start(addr, client)
+function dbg:start(addr, client, ansi)
+    local function utf8(s)
+        if ansi and platform == "windows" then
+            return rdebug.a2u(s)
+        end
+        return s
+    end
+    local root = utf8(root)
     local address = ("%q, %s"):format(utf8(addr), client == true and "true" or "false")
     local bootstrap_lua = ([[
         package.path = %q
