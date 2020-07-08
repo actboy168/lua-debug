@@ -68,7 +68,7 @@ end
 local rdebug = assert(package.loadlib(remotedebug,'luaopen_remotedebug'))()
 
 local function utf8(s)
-    if ansi then
+    if ansi and platform == "windows" then
         return rdebug.a2u(root)
     end
     return s
