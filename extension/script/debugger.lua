@@ -13,11 +13,13 @@ local arch = (function()
         if platform ~= "windows" then
             return 64
         end
-        local size = #tostring(io.stderr)
-        if size <= 15 then
-            return 32
+        local pointer = tostring(io.stderr):match "%((.*)%)"
+        if pointer then
+            if #pointer <= 10 then
+                return 32
+            end
+            return 64
         end
-        return 64
     end
     assert(false, "unknown arch")
 end)()
