@@ -69,7 +69,7 @@ local rdebug = assert(package.loadlib(remotedebug,'luaopen_remotedebug'))()
 
 local function utf8(s)
     if ansi and platform == "windows" then
-        return rdebug.a2u(root)
+        return rdebug.a2u(s)
     end
     return s
 end
@@ -103,6 +103,14 @@ end
 
 function dbg:wait()
     rdebug.probe 'wait'
+end
+
+function dbg:set_wait(name, f)
+    _G[name] = function(...)
+        _G[name] = nil
+        f(...)
+        rdebug.probe 'wait'
+    end
 end
 
 debug.getregistry()["lua-debug"] = dbg

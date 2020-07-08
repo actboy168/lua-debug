@@ -20,16 +20,6 @@ local function towsl(s)
     end)
 end
 
-local function create_install_script(pid, dbg)
-    local res = {}
-    res[#res+1] = ("local path=[[%s]];"):format(towsl(dbg))
-    res[#res+1] = ("assert(loadfile(path..[[/script/launch.lua]]))(path,%d%s):wait()"):format(
-        pid,
-        useUtf8 and "" or ",true"
-    )
-    return table.concat(res)
-end
-
 local function getLuaVersion(args)
     if args.luaVersion == "5.4" then
         return 54
@@ -69,11 +59,26 @@ local function installBootstrap1(option, luaexe, args)
     end
 end
 
-local function installBootstrap2(c, luaexe, args, pid, dbg)
+local function installBootstrap2(c, luaexe, pid, dbg)
     c[#c+1] = towsl(luaexe:string())
     c[#c+1] = "-e"
-    c[#c+1] = create_install_script(pid, dbg:string())
+    local script = {}
+    script[#script+1] = ("local path=[[%s]];"):format(towsl(dbg:string()))
+    script[#script+1] = ("assert(loadfile(path..[[/script/launch.lua]]))(path,%d%s):wait()"):format(
+        pid,
+        useUtf8 and "" or ",true"
+    )
+    c[#c+1] = table.concat(script)
+end
 
+local function installBootstrap2Simple(c, luaexe, pid)
+    c[#c+1] = towsl(luaexe:string())
+    c[#c+1] = "-ldbg"
+    c[#c+1] = "-e"
+    c[#c+1] = ("DBG(%d)"):format(pid)
+end
+
+local function installBootstrap3(c, args)
     if type(args.arg0) == "string" then
         c[#c+1] = args.arg0
     elseif type(args.arg0) == "table" then
@@ -133,7 +138,12 @@ local function create_terminal(args, dbg, pid)
         option.args[1] = "wsl"
     end
     installBootstrap1(option, luaexe, args)
-    installBootstrap2(option.args, luaexe, args, pid, dbg)
+    if type(args.luaexe) == "string" then
+        installBootstrap2(option.args, luaexe, pid, dbg)
+    else
+        installBootstrap2Simple(option.args, luaexe, pid)
+    end
+    installBootstrap3(option.args, args)
     return option
 end
 
@@ -154,7 +164,8 @@ local function create_luaexe(args, dbg, pid)
         option[1] = SystemRoot .. "\\sysnative\\wsl.exe"
     end
     installBootstrap1(option, luaexe, args)
-    installBootstrap2(option, luaexe, args, pid, dbg)
+    installBootstrap2(option, luaexe, pid, dbg)
+    installBootstrap3(option.args, args)
     return sp.spawn(option)
 end
 

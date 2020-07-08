@@ -64,10 +64,18 @@ end
 local packageDir,sourceDir,extensionPath = ...
 local extensionDirName = getExtensionDirName(packageDir)
 local extensionDir = fs.path(extensionPath) / extensionDirName
+sourceDir = fs.path(sourceDir)
 if not fs.exists(extensionDir) then
     error("`" .. extensionDir:string() .. "` is not installed.")
 end
 
-copy_directory(fs.path(sourceDir), extensionDir)
+copy_directory(sourceDir, extensionDir)
+
+local DBG = sourceDir / "script" / "dbg.lua"
+for _, platform in ipairs {"linux","macos","win32","win64"} do
+    for _, luaver in ipairs {"lua51","lua52","lua53","lua54"} do
+        fs.copy_file(DBG, extensionDir / "runtime" / platform / luaver / "dbg.lua", true)
+    end
+end
 
 print 'ok'
