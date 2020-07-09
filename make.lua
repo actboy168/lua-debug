@@ -224,7 +224,6 @@ else
             },
             sources = {
                 "src/process_inject/injectdll.cpp",
-                "src/process_inject/query_process.cpp",
                 "src/process_inject/inject.cpp",
                 lm.arch == "x86" and "3rd/wow64ext/src/wow64ext.cpp",
             },
