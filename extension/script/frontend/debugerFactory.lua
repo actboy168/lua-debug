@@ -118,7 +118,7 @@ local function exists_exe(luaexe, modify)
     return fs.exists(luaexe)
 end
 
-local function create_terminal(args, dbg, pid)
+local function create_luaexe_in_terminal(args, dbg, pid)
     initialize(args)
     local luaexe = getLuaExe(args, dbg)
     if not exists_exe(luaexe, false) then
@@ -145,7 +145,7 @@ local function create_terminal(args, dbg, pid)
     return option
 end
 
-local function create_luaexe(args, dbg, pid)
+local function create_luaexe_in_console(args, dbg, pid)
     initialize(args)
     local luaexe = getLuaExe(args, dbg)
     if not exists_exe(luaexe, true) then
@@ -167,7 +167,7 @@ local function create_luaexe(args, dbg, pid)
     return sp.spawn(option)
 end
 
-local function create_process(args)
+local function create_process_in_console(args)
     initialize(args)
     local application = args.runtimeExecutable
     local option = {
@@ -201,7 +201,7 @@ local function create_process(args)
 end
 
 return {
-    create_terminal = create_terminal,
-    create_process = create_process,
-    create_luaexe = create_luaexe,
+    create_luaexe_in_console   = create_luaexe_in_console,
+    create_luaexe_in_terminal  = create_luaexe_in_terminal,
+    create_process_in_console  = create_process_in_console,
 }
