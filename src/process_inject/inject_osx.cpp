@@ -6,16 +6,10 @@ static int injectdll(lua_State* L) {
     return 1;
 }
 
-static int query_process(lua_State* L) {
-    lua_newtable(L);
-    return 1;
-}
-
 extern "C" __attribute__((visibility("default")))
 int luaopen_inject(lua_State* L) {
     luaL_Reg lib[] = {
         {"injectdll", injectdll},
-        {"query_process", query_process},
         {NULL, NULL},
     };
     luaL_newlib(L, lib);
