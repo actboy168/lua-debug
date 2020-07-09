@@ -112,7 +112,7 @@ local function proxy_launch_terminal(pkg)
     local args = pkg.arguments
     if args.runtimeExecutable then
         --TODO: support runtimeExecutable's integratedTerminal/externalTerminal
-        response_error(pkg, "`runtimeExecutable` is not supported.")
+        response_error(pkg, "`runtimeExecutable` is not supported in `"..args.console.."`.")
         return
     end
     local pid = sp.get_id()
