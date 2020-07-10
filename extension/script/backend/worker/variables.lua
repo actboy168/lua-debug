@@ -564,6 +564,13 @@ local function getTabelKey(key)
     end
 end
 
+local function evaluateTabelKey(table, key)
+    local evaluateKey = getTabelKey(key)
+    if table and evaluateKey then
+        return ("%s%s"):format(table, evaluateKey)
+    end
+end
+
 local function extandTableIndexed(varRef, start, count)
     varRef.extand = varRef.extand or {}
     local t = varRef.v
@@ -595,10 +602,9 @@ local function extandTableNamed(varRef)
     local loct = rdebug.tablehash(t,MAX_TABLE_FIELD)
     for i = 1, #loct, 3 do
         local key, value, valueref = loct[i], loct[i+1], loct[i+2]
-        local evalKey = getTabelKey(key)
         varCreate(vars, varRef, nil
             , varGetName(key), nil
-            , value, evaluateName and evalKey and ('%s%s'):format(evaluateName, evalKey)
+            , value, evaluateTabelKey(evaluateName, key)
             , function() return valueref end
         )
     end
@@ -826,7 +832,7 @@ local function extandGlobalNamed(varRef)
         if not isStandardName(key) then
             varCreate(vars, varRef, nil
                 , varGetName(key), nil
-                , value, ('_G%s'):format(getTabelKey(key))
+                , value, evaluateTabelKey("_G", key)
                 , function() return valueref end
             )
         end
@@ -852,7 +858,7 @@ function special_extand.Standard(varRef)
         if value ~= nil then
             varCreate(vars, varRef, nil
                 , name, nil
-                , value , ('_G%s'):format(getTabelKey(name))
+                , value, evaluateTabelKey("_G", key)
                 , function() return rdebug.field(rdebug._G, name) end
             )
         end
