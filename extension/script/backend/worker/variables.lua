@@ -195,7 +195,8 @@ local function varCanExtand(type, value)
     elseif type == 'c function' then
         return rdebug.getupvaluev(value, 1) ~= nil
     elseif type == 'table' then
-        if rdebug.nextkey(value, nil) ~= nil then
+        local asize, hsize = rdebug.tablesize(value)
+        if asize == 0 and hsize == 0 then
             return true
         end
         if rdebug.getmetatablev(value) ~= nil then
