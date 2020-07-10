@@ -1479,7 +1479,7 @@ static const char* costatus(lua_State* L, lua_State* co) {
 }
 
 static int
-lclient_co_status(rlua_State *L) {
+lclient_costatus(rlua_State *L) {
 	lua_State* cL = get_host(L);
 	if (copy_fromR(L, cL) == LUA_TNONE) {
 		rlua_pushstring(L, "invalid");
@@ -1527,7 +1527,7 @@ init_visitor(rlua_State *L) {
 		{ "evalwatch", lclient_evalwatch },
 		{ "unwatch", lclient_unwatch },
 		{ "cleanwatch", lclient_cleanwatch },
-		{ "co_status", lclient_co_status },
+		{ "costatus", lclient_costatus },
 		{ NULL, NULL },
 	};
 	rlua_newtable(L);
