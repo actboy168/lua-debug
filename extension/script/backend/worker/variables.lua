@@ -411,7 +411,7 @@ local function varGetUserdata(value)
     if meta ~= nil then
         local fn = rdebug.fieldv(meta, '__debugger_tostring')
         if fn ~= nil and (rdebug.type(fn) == 'function' or rdebug.type(fn) == 'c function') then
-            local ok, res = rdebug.evalref(fn, value)
+            local ok, res = rdebug.eval(fn, value)
             if ok then
                 return res
             end
@@ -968,7 +968,7 @@ function m.tostring(v)
     if meta ~= nil then
         local fn = rdebug.fieldv(meta, '__tostring')
         if fn ~= nil and (rdebug.type(fn) == 'function' or rdebug.type(fn) == 'c function') then
-            local ok, res = rdebug.evalref(fn, v)
+            local ok, res = rdebug.eval(fn, v)
             if ok then
                 return res
             end
