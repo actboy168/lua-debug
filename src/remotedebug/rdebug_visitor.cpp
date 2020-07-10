@@ -1368,7 +1368,7 @@ addwatch(lua_State *cL, int idx) {
 }
 
 static int
-lclient_evalwatch(rlua_State *L) {
+lclient_watch(rlua_State *L) {
 	lua_State* cL = get_host(L);
 	int n = lua_gettop(cL);
 	int nargs = rlua_gettop(L);
@@ -1404,18 +1404,6 @@ lclient_evalwatch(rlua_State *L) {
 	}
 	lua_settop(cL, n);
 	return 1 + rets;
-}
-
-static int
-lclient_unwatch(rlua_State *L) {
-	rlua_Integer ref = rluaL_checkinteger(L, 1);
-	lua_State* cL = get_host(L);
-	if (lua::getfield(cL, LUA_REGISTRYINDEX, "__debugger_watch") == LUA_TNIL) {
-		lua_pop(cL, 1);
-		return 0;
-	}
-	luaL_unref(cL, -1, (int)ref);
-	return 0;
 }
 
 static int
@@ -1487,8 +1475,7 @@ init_visitor(rlua_State *L) {
 		{ "getinfo", lclient_getinfo },
 		{ "reffunc", lclient_reffunc },
 		{ "eval", lclient_eval },
-		{ "evalwatch", lclient_evalwatch },
-		{ "unwatch", lclient_unwatch },
+		{ "watch", lclient_watch },
 		{ "cleanwatch", lclient_cleanwatch },
 		{ "costatus", lclient_costatus },
 		{ NULL, NULL },

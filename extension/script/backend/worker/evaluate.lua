@@ -20,9 +20,9 @@ local eval_dump   = assert(rdebug.reffunc(readfile 'backend.worker.eval.dump'))
 local compat_dump = assert(load(readfile 'backend.worker.eval.dump'))
 
 local function run_repl(frameId, expression)
-    local res = table.pack(rdebug.evalwatch(eval_repl, 'return ' .. expression, frameId))
+    local res = table.pack(rdebug.watch(eval_repl, 'return ' .. expression, frameId))
     if not res[1] then
-        res = table.pack(rdebug.evalwatch(eval_repl, expression, frameId))
+        res = table.pack(rdebug.watch(eval_repl, expression, frameId))
         if not res[1] then
             return false, res[2]
         end
@@ -38,7 +38,7 @@ local function run_repl(frameId, expression)
 end
 
 local function run_watch(frameId, expression)
-    local res = table.pack(rdebug.evalwatch(eval_watch, expression, frameId))
+    local res = table.pack(rdebug.watch(eval_watch, expression, frameId))
     if not res[1] then
         return false, res[2]
     end
@@ -53,7 +53,7 @@ local function run_watch(frameId, expression)
 end
 
 local function run_hover(frameId, expression)
-    local ok, res = rdebug.evalwatch(eval_watch, expression, frameId)
+    local ok, res = rdebug.watch(eval_watch, expression, frameId)
     if not ok then
         return false, res
     end
@@ -64,7 +64,7 @@ local function run_hover(frameId, expression)
 end
 
 local function run_clipboard(frameId, expression)
-    local res = table.pack(rdebug.evalwatch(eval_watch, expression, frameId))
+    local res = table.pack(rdebug.watch(eval_watch, expression, frameId))
     if not res[1] then
         return false, res[2]
     end
