@@ -163,7 +163,7 @@ local function create_luaexe_in_console(args, dbg, pid)
     end
     installBootstrap1(option, luaexe, args)
     installBootstrap2(option, luaexe, pid, dbg)
-    installBootstrap3(option.args, args)
+    installBootstrap3(option, args)
     return sp.spawn(option)
 end
 
