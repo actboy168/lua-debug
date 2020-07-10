@@ -57,8 +57,8 @@ local function getshortsrc(info)
 end
 
 local function findfield(t, f, level, name)
-    local loct = rdebug.copytable(t, 5000)
-    for i = 1, #loct, 3 do
+    local loct = rdebug.tablehashv(t, 5000)
+    for i = 1, #loct, 2 do
         local key, value = loct[i], loct[i+1]
         if rdebug.type(key) == 'string' then
             local skey = rdebug.value(key)

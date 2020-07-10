@@ -84,9 +84,9 @@ local function putTable(t)
             count = count + 1
         end
 
-        local loct = rdebug.copytable(t)
+        local loct = rdebug.tablehashv(t)
         local kvs = {}
-        for i = 1, #loct, 3 do
+        for i = 1, #loct, 2 do
             local key, value = loct[i], loct[i+1]
             kvs[#kvs + 1] = { key, value }
         end

@@ -790,13 +790,22 @@ combine_key(rlua_State *L, lua_State *cL, int t, int index) {
 }
 
 static void
-combine_val(rlua_State *L, lua_State *cL, int t, int index) {
-	struct value *v = create_value(L, VAR::INDEX_VAL, t);
-	v->index = index;
-	bool has = copy_toX(cL, L) != LUA_TNONE;
-	lua_pop(cL, 1);
-	if (!has) {
-		rlua_pushvalue(L, -1);
+combine_val(rlua_State *L, lua_State *cL, int t, int index, int ref) {
+	if (ref) {
+		struct value *v = create_value(L, VAR::INDEX_VAL, t);
+		v->index = index;
+		if (copy_toX(cL, L) != LUA_TNONE) {
+			lua_pop(cL, 1);
+		}
+		else {
+			lua_pop(cL, 1);
+			rlua_pushvalue(L, -1);
+		}
+		return;
+	}
+	if (copy_toX(cL, L) == LUA_TNONE) {
+		struct value *v = create_value(L, VAR::INDEX_VAL, t);
+		v->index = index;
 	}
 }
 
@@ -923,7 +932,7 @@ lclient_getstack(rlua_State *L) {
 }
 
 static int
-lclient_copytable(rlua_State *L) {
+tablehash(rlua_State *L, int ref) {
 	lua_State *cL = get_host(L);
 	rlua_Integer maxn = rluaL_optinteger(L, 2, std::numeric_limits<unsigned int>::max());
 	rlua_settop(L, 1);
@@ -950,13 +959,25 @@ lclient_copytable(rlua_State *L) {
 			}
 			combine_key(L, cL, 1, i);
 			rlua_rawseti(L, -2, ++n);
-			combine_val(L, cL, 1, i);
-			rlua_rawseti(L, -3, ++n);
+			combine_val(L, cL, 1, i, ref);
+			if (ref) {
+				rlua_rawseti(L, -3, ++n);
+			}
 			rlua_rawseti(L, -2, ++n);
 		}
 	}
 	lua_pop(cL, 1);
 	return 1;
+}
+
+static int
+lclient_tablehash(rlua_State *L) {
+	return tablehash(L, 1);
+}
+
+static int
+lclient_tablehashv(rlua_State *L) {
+	return tablehash(L, 0);
 }
 
 int lclient_tablesize(rlua_State *L) {
@@ -1504,7 +1525,8 @@ init_visitor(rlua_State *L) {
 		{ "fieldv", lclient_fieldv },
 		{ "nextkey", lclient_nextkey },
 		{ "getstack", lclient_getstack },
-		{ "copytable", lclient_copytable },
+		{ "tablehash", lclient_tablehash },
+		{ "tablehashv", lclient_tablehashv },
 		{ "tablesize", lclient_tablesize },
 		{ "value", lclient_value },
 		{ "assign", lclient_assign },

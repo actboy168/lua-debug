@@ -323,9 +323,9 @@ local function varGetTableValue(t)
         end
     end
 
-    local loct = rdebug.copytable(t,SHORT_TABLE_FIELD)
+    local loct = rdebug.tablehashv(t,SHORT_TABLE_FIELD)
     local kvs = {}
-    for i = 1, #loct, 3 do
+    for i = 1, #loct, 2 do
         local key, value = loct[i], loct[i+1]
         local kn = varGetShortName(key)
         kvs[#kvs + 1] = { kn, value }
@@ -591,7 +591,7 @@ local function extandTableNamed(varRef)
     local t = varRef.v
     local evaluateName = varRef.eval
     local vars = {}
-    local loct = rdebug.copytable(t,MAX_TABLE_FIELD)
+    local loct = rdebug.tablehash(t,MAX_TABLE_FIELD)
     for i = 1, #loct, 3 do
         local key, value, valueref = loct[i], loct[i+1], loct[i+2]
         local evalKey = getTabelKey(key)
@@ -819,7 +819,7 @@ end
 local function extandGlobalNamed(varRef)
     varRef.extand = varRef.extand or {}
     local vars = {}
-    local loct = rdebug.copytable(rdebug._G,MAX_TABLE_FIELD)
+    local loct = rdebug.tablehash(rdebug._G,MAX_TABLE_FIELD)
     for i = 1, #loct, 3 do
         local key, value, valueref = loct[i], loct[i+1], loct[i+2]
         if not isStandardName(key) then
