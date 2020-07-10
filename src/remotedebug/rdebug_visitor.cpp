@@ -87,7 +87,7 @@ create_value(rlua_State *L, VAR type, int t, size_t extrasz = 0) {
 
 // copy a value from -> to, return the lua type of copied or LUA_TNONE
 static int
-copy_toX(lua_State *from, rlua_State *to) {
+copy_toR(lua_State *from, rlua_State *to) {
 	int t = lua_type(from, -1);
 	switch(t) {
 	case LUA_TNIL:
@@ -123,9 +123,12 @@ copy_toX(lua_State *from, rlua_State *to) {
 }
 
 static int
-copy_fromX(rlua_State *from, lua_State *to) {
+copy_fromR(rlua_State *from, lua_State *to) {
+	if (lua_checkstack(to, 1) == 0) {
+		return rluaL_error(from, "stack overflow");
+	}
 	int t = rlua_type(from, -1);
-	switch(t) {
+	switch (t) {
 	case LUA_TNIL:
 		lua_pushnil(to);
 		break;
@@ -144,10 +147,17 @@ copy_fromX(rlua_State *from, lua_State *to) {
 		const char *str = rlua_tolstring(from, -1, &sz);
 		lua_pushlstring(to, str, sz);
 		break;
-		}
+	}
 	case LUA_TLIGHTUSERDATA:
 		lua_pushlightuserdata(to, rlua_touserdata(from, -1));
 		break;
+	case LUA_TUSERDATA: {
+		if (lua_checkstack(to, 3) == 0) {
+			return rluaL_error(from, "stack overflow");
+		}
+		struct value *v = (struct value *)rlua_touserdata(from, -1);
+		return eval_value_(to, v);
+	}
 	default:
 		return LUA_TNONE;
 	}
@@ -156,7 +166,7 @@ copy_fromX(rlua_State *from, lua_State *to) {
 
 void
 copyvalue(lua_State *from, rlua_State *to) {
-	if (copy_toX(from, to) == LUA_TNONE) {
+	if (copy_toR(from, to) == LUA_TNONE) {
 		rlua_pushfstring(to, "%s: %p",
 			lua_typename(from, lua_type(from, -1)),
 			lua_topointer(from, -1)
@@ -319,23 +329,6 @@ eval_value_(lua_State *cL, struct value *v) {
 	return LUA_TNONE;
 }
 
-// extract L top into cL, return the lua type or LUA_TNONE(failed)
-static int
-eval_value(rlua_State *L, lua_State *cL) {
-	if (lua_checkstack(cL, 3) == 0)
-		return rluaL_error(L, "stack overflow");
-	int t = copy_fromX(L, cL);
-	if (t != LUA_TNONE) {
-		return t;
-	}
-	t = rlua_type(L, -1);
-	if (t == LUA_TUSERDATA) {
-		struct value *v = (struct value *)rlua_touserdata(L, -1);
-		return eval_value_(cL, v);
-	}
-	return LUA_TNONE;
-}
-
 // assign cL top into ref object in L. pop cL.
 // return 0 failed
 static int
@@ -482,7 +475,7 @@ get_frame_local(rlua_State *L, lua_State *cL, uint16_t frame, int16_t n, int get
 	const char * name = lua_getlocal(cL, &ar, n);
 	if (name == NULL)
 		return NULL;
-	if (!getref && copy_toX(cL, L) != LUA_TNONE) {
+	if (!getref && copy_toR(cL, L) != LUA_TNONE) {
 		lua_pop(cL, 1);
 		return name;
 	}
@@ -521,7 +514,7 @@ get_stack(rlua_State *L, lua_State *cL, int index) {
 		rluaL_error(L, "stack overflow");
 	}
 	lua_pushvalue(cL, index);
-	if (copy_toX(cL, L) != LUA_TNONE) {
+	if (copy_toR(cL, L) != LUA_TNONE) {
 		lua_pop(cL, 1);
 		return 1;
 	}
@@ -538,13 +531,13 @@ table_key(rlua_State *L, lua_State *cL) {
 		return rluaL_error(L, "stack overflow");
 	}
 	rlua_insert(L, -2);	// L : key table
-	if (eval_value(L, cL) != LUA_TTABLE) {
+	if (copy_fromR(L, cL) != LUA_TTABLE) {
 		lua_pop(cL, 1);	// pop table
 		rlua_pop(L, 2);	// pop k/t
 		return 0;
 	}
 	rlua_insert(L, -2);	// L : table key
-	if (eval_value(L, cL) == LUA_TNONE) {	// key
+	if (copy_fromR(L, cL) == LUA_TNONE) {	// key
 		lua_pop(cL, 1);	// pop table
 		rlua_pop(L, 2);	// pop k/t
 		return 0;
@@ -566,7 +559,7 @@ new_index(rlua_State *L) {
 // output L : v(key or value)
 static void
 combine_index(rlua_State *L, lua_State *cL, int getref) {
-	if (!getref && copy_toX(cL, L) != LUA_TNONE) {
+	if (!getref && copy_toR(cL, L) != LUA_TNONE) {
 		lua_pop(cL, 2);
 		// L : t, k, v
 		rlua_replace(L, -3);
@@ -606,7 +599,7 @@ new_field(rlua_State *L) {
 // output L : v(key or value)
 static void
 combine_field(rlua_State *L, lua_State *cL, int getref) {
-	if (!getref && copy_toX(cL, L) != LUA_TNONE) {
+	if (!getref && copy_toR(cL, L) != LUA_TNONE) {
 		lua_pop(cL, 2);
 		// L : t, k, v
 		rlua_replace(L, -3);
@@ -636,7 +629,7 @@ get_upvalue(rlua_State *L, lua_State *cL, int index, int getref) {
 		rlua_pop(L, 1);
 		return NULL;
 	}
-	int t = eval_value(L, cL);
+	int t = copy_fromR(L, cL);
 	if (t == LUA_TNONE) {
 		rlua_pop(L, 1);	// remove function object
 		return NULL;
@@ -653,7 +646,7 @@ get_upvalue(rlua_State *L, lua_State *cL, int index, int getref) {
 		return NULL;
 	}
 
-	if (!getref && copy_toX(cL, L) != LUA_TNONE) {
+	if (!getref && copy_toR(cL, L) != LUA_TNONE) {
 		rlua_replace(L, -2);	// remove function object
 		lua_pop(cL, 1);
 		return name;
@@ -683,7 +676,7 @@ static int
 get_metatable(rlua_State *L, lua_State *cL, int getref) {
 	if (lua_checkstack(cL, 2)==0)
 		rluaL_error(L, "stack overflow");
-	int t = eval_value(L, cL);
+	int t = copy_fromR(L, cL);
 	if (t == LUA_TNONE) {
 		rlua_pop(L, 1);
 		return 0;
@@ -716,7 +709,7 @@ static int
 get_uservalue(rlua_State *L, lua_State *cL, int index, int getref) {
 	if (lua_checkstack(cL, 2)==0)
 		return rluaL_error(L, "stack overflow");
-	int t = eval_value(L, cL);
+	int t = copy_fromR(L, cL);
 	if (t == LUA_TNONE) {
 		rlua_pop(L, 1);
 		return 0;
@@ -742,7 +735,7 @@ get_uservalue(rlua_State *L, lua_State *cL, int index, int getref) {
 		}
 		lua_getuservalue(cL, -1);
 #endif
-		if (copy_toX(cL, L) != LUA_TNONE) {
+		if (copy_toR(cL, L) != LUA_TNONE) {
 			lua_pop(cL, 2);	// pop userdata / uservalue
 			rlua_replace(L, -2);
 			return 1;
@@ -762,7 +755,7 @@ get_uservalue(rlua_State *L, lua_State *cL, int index, int getref) {
 
 static void
 combine_key(rlua_State *L, lua_State *cL, int t, int index) {
-	if (copy_toX(cL, L) != LUA_TNONE) {
+	if (copy_toR(cL, L) != LUA_TNONE) {
 		lua_pop(cL, 1);
 		return;
 	}
@@ -776,7 +769,7 @@ combine_val(rlua_State *L, lua_State *cL, int t, int index, int ref) {
 	if (ref) {
 		struct value *v = create_value(L, VAR::INDEX_VAL, t);
 		v->index = index;
-		if (copy_toX(cL, L) != LUA_TNONE) {
+		if (copy_toR(cL, L) != LUA_TNONE) {
 			lua_pop(cL, 1);
 		}
 		else {
@@ -785,7 +778,7 @@ combine_val(rlua_State *L, lua_State *cL, int t, int index, int ref) {
 		}
 		return;
 	}
-	if (copy_toX(cL, L) == LUA_TNONE) {
+	if (copy_toR(cL, L) == LUA_TNONE) {
 		struct value *v = create_value(L, VAR::INDEX_VAL, t);
 		v->index = index;
 	}
@@ -910,7 +903,7 @@ tablehash(rlua_State *L, int ref) {
 	if (lua_checkstack(cL, 4) == 0) {
 		return rluaL_error(L, "stack overflow");
 	}
-	if (eval_value(L, cL) != LUA_TTABLE) {
+	if (copy_fromR(L, cL) != LUA_TTABLE) {
 		lua_pop(cL, 1);
 		return 0;
 	}
@@ -954,7 +947,7 @@ lclient_tablehashv(rlua_State *L) {
 static int
 lclient_tablesize(rlua_State *L) {
 	lua_State* cL = get_host(L);
-	if (eval_value(L, cL) != LUA_TTABLE) {
+	if (copy_fromR(L, cL) != LUA_TTABLE) {
 		lua_pop(cL, 1);
 		return 0;
 	}
@@ -977,7 +970,7 @@ lclient_tablekey(rlua_State *L) {
 	if (lua_checkstack(cL, 2) == 0) {
 		return rluaL_error(L, "stack overflow");
 	}
-	if (eval_value(L, cL) != LUA_TTABLE) {
+	if (copy_fromR(L, cL) != LUA_TTABLE) {
 		lua_pop(cL, 1);
 		return 0;
 	}
@@ -1008,7 +1001,7 @@ static int
 lclient_value(rlua_State *L) {
 	lua_State *cL = get_host(L);
 	rlua_settop(L, 1);
-	if (eval_value(L, cL) == LUA_TNONE) {
+	if (copy_fromR(L, cL) == LUA_TNONE) {
 		rlua_pop(L, 1);
 		rlua_pushnil(L);
 		return 1;
@@ -1028,22 +1021,11 @@ lclient_assign(rlua_State *L) {
 	if (lua_checkstack(cL, 2) == 0)
 		return rluaL_error(L, "stack overflow");
 	rlua_settop(L, 2);
-	int vtype = rlua_type(L, 2);
-	switch (vtype) {
-	case LUA_TNUMBER:
-	case LUA_TNIL:
-	case LUA_TBOOLEAN:
-	case LUA_TLIGHTUSERDATA:
-	case LUA_TSTRING:
-		copy_fromX(L, cL);
-		break;
-	case LUA_TUSERDATA:
-		if (eval_value(L, cL) == LUA_TNONE) {
-			lua_pushnil(cL);
+	if (copy_fromR(L, cL) == LUA_TNONE) {
+		if (rlua_type(L, 2) != LUA_TUSERDATA) {
+			return rluaL_error(L, "Invalid value type %s", rlua_typename(L, rlua_type(L, 2)));
 		}
-		break;
-	default:
-		return rluaL_error(L, "Invalid value type %s", rlua_typename(L, vtype));
+		lua_pushnil(cL);
 	}
 	if (lua_checkstack(cL, 3) == 0)
 		return rluaL_error(L, "stack overflow");
@@ -1226,7 +1208,7 @@ lclient_getinfo(rlua_State *L) {
 		break;
 	case LUA_TUSERDATA: {
 		rlua_pushvalue(L, 1);
-		int t = eval_value(L, cL);
+		int t = copy_fromR(L, cL);
 		if (t != LUA_TFUNCTION) {
 			if (t != LUA_TNONE) {
 				lua_pop(cL, 1);	// remove none function
@@ -1378,7 +1360,7 @@ lclient_evalref(rlua_State *L) {
 	}
 	for (int i = 1; i <= n; ++i) {
 		rlua_pushvalue(L, i);
-		int t = eval_value(L, cL);
+		int t = copy_fromR(L, cL);
 		rlua_pop(L, 1);
 		if (i == 1 && t != LUA_TFUNCTION) {
 			lua_pop(cL, 1);
@@ -1499,7 +1481,7 @@ static const char* costatus(lua_State* L, lua_State* co) {
 static int
 lclient_co_status(rlua_State *L) {
 	lua_State* cL = get_host(L);
-	if (eval_value(L, cL) == LUA_TNONE) {
+	if (copy_fromR(L, cL) == LUA_TNONE) {
 		rlua_pushstring(L, "invalid");
 		return 1;
 	}
