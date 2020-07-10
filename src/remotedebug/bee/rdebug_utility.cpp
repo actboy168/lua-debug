@@ -26,10 +26,6 @@ namespace rdebug_utility {
             return bee::lua::push_error(L, e);
         }
     }
-    static int platform_os(lua_State* L) {
-        lua_pushstring(L, BEE_OS_NAME);
-        return 1;
-    }
 
     
 #if defined(_WIN32)
@@ -95,7 +91,6 @@ int luaopen_remotedebug_utility(lua_State* L) {
 #endif
     luaL_Reg lib[] = {
         {"fs_absolute", rdebug_utility::fs_absolute},
-        {"platform_os", rdebug_utility::platform_os},
         {"closeprocess", rdebug_utility::closeprocess},
         {NULL, NULL}};
     luaL_setfuncs(L, lib, 0);
