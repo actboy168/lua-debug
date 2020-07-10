@@ -864,7 +864,7 @@ function special_extand.Standard(varRef)
         if value ~= nil then
             varCreate(vars, varRef, nil
                 , name, nil
-                , value, evaluateTabelKey("_G", key)
+                , value, ("_G.%s"):format(name)
                 , function() return rdebug.field(rdebug._G, name) end
             )
         end
