@@ -630,24 +630,6 @@ get_field(rlua_State *L, lua_State *cL, int getref) {
 	return 1;
 }
 
-// table last_key
-static int
-next_key(rlua_State *L, lua_State *cL) {
-	if (table_key(L, cL) == 0) {
-		rlua_pop(L, 2);
-		return 0;
-	}
-	rlua_pop(L, 2);
-	if (lua_next(cL, -2) == 0) {
-		lua_pop(cL, 1);
-		return 0;
-	}
-	lua_pop(cL, 1);
-	copyvalue(cL, L);
-	lua_pop(cL, 2);
-	return 1;
-}
-
 static const char *
 get_upvalue(rlua_State *L, lua_State *cL, int index, int getref) {
 	if (rlua_type(L, -1) != LUA_TUSERDATA) {
@@ -907,17 +889,6 @@ lclient_fieldv(rlua_State *L) {
 }
 
 static int
-lclient_nextkey(rlua_State *L) {
-	lua_State *cL = get_host(L);
-	rlua_settop(L, 2);
-	rlua_pushvalue(L, 1);
-	rlua_insert(L, -2);
-	if (next_key(L, cL) == 0)
-		return 0;
-	return 1;
-}
-
-static int
 lclient_getstack(rlua_State *L) {
 	lua_State *cL = get_host(L);
 	if (rlua_gettop(L) == 0) {
@@ -980,7 +951,8 @@ lclient_tablehashv(rlua_State *L) {
 	return tablehash(L, 0);
 }
 
-int lclient_tablesize(rlua_State *L) {
+static int
+lclient_tablesize(rlua_State *L) {
 	lua_State* cL = get_host(L);
 	if (eval_value(L, cL) != LUA_TTABLE) {
 		lua_pop(cL, 1);
@@ -995,6 +967,41 @@ int lclient_tablesize(rlua_State *L) {
 	rlua_pushinteger(L, remotedebug::table::hash_size(t));
 	lua_pop(cL, 1);
 	return 2;
+}
+
+static int
+lclient_tablekey(rlua_State *L) {
+	lua_State *cL = get_host(L);
+	unsigned int idx = (unsigned int)rluaL_optinteger(L, 2, 0);
+	rlua_settop(L, 1);
+	if (lua_checkstack(cL, 2) == 0) {
+		return rluaL_error(L, "stack overflow");
+	}
+	if (eval_value(L, cL) != LUA_TTABLE) {
+		lua_pop(cL, 1);
+		return 0;
+	}
+	const void* t = lua_topointer(cL, -1);
+	if (!t) {
+		lua_pop(cL, 1);
+		return 0;
+	}
+	unsigned int hsize = remotedebug::table::hash_size(t);
+	for (unsigned int i = idx; i < hsize; ++i) {
+		if (remotedebug::table::get_k(cL, t, i)) {
+			if (lua_type(cL, -1) == LUA_TSTRING) {
+				size_t sz;
+				const char *str = lua_tolstring(cL, -1, &sz);
+				rlua_pushlstring(L, str, sz);
+				rlua_pushinteger(L, i + 1);
+				lua_pop(cL, 2);
+				return 2;
+			}
+			lua_pop(cL, 1);
+		}
+	}
+	lua_pop(cL, 1);
+	return 0;
 }
 
 static int
@@ -1523,11 +1530,11 @@ init_visitor(rlua_State *L) {
 		{ "indexv", lclient_indexv },
 		{ "field", lclient_field },
 		{ "fieldv", lclient_fieldv },
-		{ "nextkey", lclient_nextkey },
 		{ "getstack", lclient_getstack },
 		{ "tablehash", lclient_tablehash },
 		{ "tablehashv", lclient_tablehashv },
 		{ "tablesize", lclient_tablesize },
+		{ "tablekey", lclient_tablekey },
 		{ "value", lclient_value },
 		{ "assign", lclient_assign },
 		{ "type", lclient_type },

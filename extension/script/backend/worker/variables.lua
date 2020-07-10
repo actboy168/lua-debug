@@ -128,17 +128,23 @@ function special_has.Return(frameId)
 end
 
 function special_has.Global()
-    local gt = rdebug._G
-    local key
-    while true do
-        key = rdebug.nextkey(gt, key)
+    local global = rdebug._G
+    local asize, hsize = rdebug.tablesize(global)
+    if asize ~= 0 then
+        return true
+    end
+    local key = nil
+    local next = 0
+    while next < hsize do
+        key, next = rdebug.tablekey(global, next)
         if not key then
-            return false
+            break
         end
         if not standard[key] then
             return true
         end
     end
+    return false
 end
 
 function special_has.Standard()
