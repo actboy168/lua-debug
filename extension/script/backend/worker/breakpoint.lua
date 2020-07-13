@@ -16,12 +16,12 @@ local function updateHook()
     if enable then
         if next(currentactive) == nil and next(waitverify) == nil then
             enable = false
-            hookmgr.break_close()
+            hookmgr.break_open(false)
         end
     else
         if next(currentactive) ~= nil or next(waitverify) ~= nil then
             enable = true
-            hookmgr.break_open()
+            hookmgr.break_open(true)
         end
     end
 end
@@ -239,7 +239,7 @@ ev.on('terminated', function()
     info = {}
     m = {}
     enable = false
-    hookmgr.break_close()
+    hookmgr.break_open(false)
 end)
 
 return m
