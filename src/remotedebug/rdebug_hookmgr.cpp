@@ -679,29 +679,6 @@ static int updatehookmask(rlua_State* L) {
     return 0;
 }
 
-static int activeline(rlua_State* L) {
-    lua_State* hL = get_host(L);
-    int level = (int)rluaL_checkinteger(L, 1);
-    lua_Debug ar;
-    if (lua_getstack(hL, level, &ar) == 0) {
-        return 0;
-    }
-    if (lua_getinfo(hL, "L", &ar) == 0) {
-        lua_pop(hL, 1);
-        return 0;
-    }
-    rlua_newtable(L);
-    lua_pushnil(hL);
-    while (lua_next(hL, -2)) {
-        lua_pop(hL, 1);
-        rlua_pushinteger(L, lua_tointeger(hL, -1));
-        rlua_pushboolean(L, 1);
-        rlua_rawset(L, -3);
-    }
-    lua_pop(hL, 1);
-    return 1;
-}
-
 static int stacklevel(rlua_State* L) {
     lua_State* hL = get_host(L);
     rlua_pushinteger(L, hookmgr::stacklevel(hL));
@@ -801,7 +778,6 @@ int luaopen_remotedebug_hookmgr(rlua_State* L) {
         { "sethost", sethost },
         { "gethost", gethost },
         { "updatehookmask", updatehookmask },
-        { "activeline", activeline },
         { "stacklevel", stacklevel },
         { "break_add", break_add },
         { "break_del", break_del },

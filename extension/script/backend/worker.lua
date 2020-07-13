@@ -537,7 +537,7 @@ function event.newproto(proto, level)
     if not source.valid(src) then
         return false
     end
-    return breakpoint.newproto(proto, src, hookmgr.activeline(level))
+    return breakpoint.newproto(proto, src, info.linedefined.."-"..info.lastlinedefined)
 end
 
 local function getEventArgs(i)
