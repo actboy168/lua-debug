@@ -34,24 +34,19 @@ local function getinfo(proto)
             l[line] = true
         end
     end
-    return {
-        activelines = l,
-        linedefined = proto.linedefined,
-        lastlinedefined = proto.lastlinedefined,
-    }
+    return l
 end
 
 local function calc_lines(proto, src, tmp)
-    local info = getinfo(proto)
     local actives = src.activelines
     local defines = src.definelines
     local maxn = 0
-    for l in pairs(info.activelines) do
+    for l in pairs(getinfo(proto)) do
         actives[l] = true
         maxn = math.max(maxn, l)
     end
-    local startLn = info.linedefined
-    local endLn = info.lastlinedefined
+    local startLn = proto.linedefined
+    local endLn = proto.lastlinedefined
     if endLn == 0 then
         startLn = 1
         endLn = maxn
@@ -82,7 +77,7 @@ local function normalize(src, maxline)
     end
 end
 
-local function parser_lines(content)
+return function (content)
     local proto = getproto(content)
     if not proto then
         return
@@ -94,10 +89,5 @@ local function parser_lines(content)
     src.definelines = { }
     calc_lines(proto, src, tmp)
     normalize(src, tmp.maxline)
-    return src
-end
-
-return function (src, content)
-    src.si = parser_lines(content)
     return src
 end

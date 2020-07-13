@@ -121,12 +121,11 @@ local function create(source)
         -- TODO
         return {}
     else
-        local src = {
+        return {
             sourceReference = codeReference(source),
             protos = {},
+            si = parser(source)
         }
-        parser(src, source)
-        return src
     end
 end
 
@@ -147,7 +146,7 @@ end
 
 function m.c2s(clientsrc, content)
     if content then
-        parser(clientsrc, content)
+        clientsrc.si = parser(content)
     end
 
     -- TODO: 不遍历？
