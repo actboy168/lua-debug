@@ -101,14 +101,14 @@ function dbg:start(addr, client, ansi)
 end
 
 function dbg:wait()
-    rdebug.probe 'wait'
+    rdebug.event 'wait'
 end
 
 function dbg:set_wait(name, f)
     _G[name] = function(...)
         _G[name] = nil
         f(...)
-        rdebug.probe 'wait'
+        rdebug.event 'wait'
     end
 end
 
