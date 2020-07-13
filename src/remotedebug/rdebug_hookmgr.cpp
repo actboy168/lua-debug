@@ -119,20 +119,25 @@ struct hookmgr {
     }
     void break_open(lua_State* hL, bool enable) {
         if (enable)
-            break_update(hL, hL->ci);
+            break_update(hL, hL->ci, LUA_HOOKCALL);
         else
             break_hookmask(hL, 0);
+    }
+    void break_openline(lua_State* hL) {
+        break_hookmask(hL, LUA_MASKCALL | LUA_MASKRET | LUA_MASKLINE);
     }
     void break_closeline(lua_State* hL) {
         break_hookmask(hL, LUA_MASKCALL | LUA_MASKRET);
     }
-    bool break_has(lua_State* hL, Proto* p) {
+    bool break_has(lua_State* hL, Proto* p, int event) {
         if (!p) {
             return false;
         }
         size_t key = break_hash(p);
         switch (break_map[key]) {
         case BP::None: {
+            break_map[key] = BP::Ignore;
+            break_proto[key] = p;
             rluaL_checkstack(cL, 4, NULL);
             if (rlua_rawgetp(cL, RLUA_REGISTRYINDEX, &HOOK_CALLBACK) != LUA_TFUNCTION) {
                 rlua_pop(cL, 1);
@@ -141,18 +146,12 @@ struct hookmgr {
             set_host(cL, hL);
             rlua_pushstring(cL, "newproto");
             rlua_pushlightuserdata(cL, p);
-            if (rlua_pcall(cL, 2, 1, 0) != LUA_OK) {
+            rlua_pushinteger(cL, event != LUA_HOOKRET? 0: 1);
+            if (rlua_pcall(cL, 3, 0, 0) != LUA_OK) {
                 rlua_pop(cL, 1);
                 return false;
             }
-            bool exist = rlua_toboolean(cL, -1);
-            rlua_pop(cL, 1);
-            if (!exist) {
-                break_del(hL, p);
-                return false;
-            }
-            break_add(hL, p);
-            return true;
+            return break_has(hL, p, event);
         }
         case BP::Break:
             return true;
@@ -161,25 +160,25 @@ struct hookmgr {
             return break_proto[key] != p;
         }
     }
-    void break_update(lua_State* hL, CallInfo* ci) {
-        if (break_has(hL, ci2proto(ci))) {
-            break_hookmask(hL, LUA_MASKCALL | LUA_MASKRET | LUA_MASKLINE);
+    void break_update(lua_State* hL, CallInfo* ci, int event) {
+        if (break_has(hL, ci2proto(ci), event)) {
+            break_openline(hL);
         }
         else {
-            break_hookmask(hL, LUA_MASKCALL | LUA_MASKRET);
+            break_closeline(hL);
         }
     }
     void break_hook_call(lua_State* hL, lua_Debug* ar) {
-        break_update(hL, debug2ci(hL, ar));
+        break_update(hL, debug2ci(hL, ar), ar->event);
     }
     void break_hook_return(lua_State* hL, lua_Debug* ar) {
 #if LUA_VERSION_NUM >= 502
-        break_update(hL, ar->i_ci->previous);
+        break_update(hL, ar->i_ci->previous, ar->event);
 #else
         if (!lua_getstack(hL, 1, ar)) {
             return;
         }
-        break_update(hL, hL->base_ci + ar->i_ci);
+        break_update(hL, hL->base_ci + ar->i_ci, ar->event);
 #endif
     }
     void break_hookmask(lua_State* hL, int mask) {

@@ -36,7 +36,6 @@ local function hasActiveBreakpoint(bps, activeline)
 end
 
 local function updateBreakpoint(bpkey, src, lineinfo, bps)
-    local has_bp
     if next(bps) == nil then
         currentactive[bpkey] = nil
         for proto in pairs(src.protos) do
@@ -46,7 +45,6 @@ local function updateBreakpoint(bpkey, src, lineinfo, bps)
         currentactive[bpkey] = bps
         for proto, key in pairs(src.protos) do
             if hasActiveBreakpoint(bps, lineinfo[key]) then
-                has_bp = true
                 hookmgr.break_add(proto)
             else
                 hookmgr.break_del(proto)
@@ -54,7 +52,6 @@ local function updateBreakpoint(bpkey, src, lineinfo, bps)
         end
     end
     updateHook()
-    return has_bp
 end
 
 local function bpKey(src)
@@ -121,7 +118,7 @@ local function verifyBreakpoint(src, lineinfo, breakpoints)
         })
         ::continue::
     end
-    return updateBreakpoint(bpkey, src, lineinfo, res)
+    updateBreakpoint(bpkey, src, lineinfo, res)
 end
 
 function m.find(src, currentline)
@@ -207,9 +204,10 @@ function m.newproto(proto, src, key)
     src.protos[proto] = key
     local bpkey = bpKey(src)
     local wv = waitverify[bpkey]
+    print(src.path, wv)
     if wv then
         waitverify[bpkey] = nil
-        return verifyBreakpoint(src, wv.lineinfo, wv.breakpoints)
+        verifyBreakpoint(src, wv.lineinfo, wv.breakpoints)
     end
 end
 
