@@ -18,11 +18,8 @@ local rdebug = require "remotedebug"
 #### rdebug.clear()
 关闭调试器VM。
 
-#### rdebug.probe(name: string)
-触发一个事件给调试器VM。它会等调试器VM处理完毕才会返回。
-
-#### rdebug.event(name: string, ...): any
-触发一个事件给调试器VM。和probe相比，它可以传递参数，也可以从调试器VM中获取返回值。
+#### rdebug.event(name: string): boolean|nil
+触发一个事件给调试器VM。它会等调试器VM处理完毕才会返回。如果失败或者返回值不是boolean，则返回nil，否则返回事件的返回值。
 
 #### rdebug.a2u(str: string): string
 字符串编码转换，从ansi到utf8。
@@ -136,9 +133,6 @@ local hookmgr = require "remotedebug.hookmgr"
 #### hookmgr.updatehookmask(co: thread)
 更新指定协程的hookmask。(因为Lua不会帮你更新)
 
-#### hookmgr.activeline(frame: integer): {integer:boolean}
-获取指定帧的函数的有效行。
-
 #### hookmgr.stacklevel(): integer
 获取当前的栈层级。
 
@@ -150,9 +144,6 @@ local hookmgr = require "remotedebug.hookmgr"
 
 #### hookmgr.break_open()
 启用`bp`事件。
-
-#### hookmgr.break_close()
-关闭`bp`事件。
 
 #### hookmgr.break_closeline()
 仅在本次函数调用中关闭`bp`事件。
