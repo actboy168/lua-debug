@@ -35,7 +35,7 @@ local function hasActiveBreakpoint(bps, activeline)
     return false
 end
 
-local function updateBreakpoint(bpkey, src, lineinfo, bps)
+local function updateBreakpoint(bpkey, src, bps)
     if next(bps) == nil then
         currentactive[bpkey] = nil
         for proto in pairs(src.protos) do
@@ -43,6 +43,7 @@ local function updateBreakpoint(bpkey, src, lineinfo, bps)
         end
     else
         currentactive[bpkey] = bps
+        local lineinfo = src.lineinfo
         for proto, key in pairs(src.protos) do
             if hasActiveBreakpoint(bps, lineinfo[key]) then
                 hookmgr.break_add(proto)
@@ -75,17 +76,17 @@ local function valid(bp)
     return true
 end
 
-local function verifyBreakpoint(src, lineinfo, breakpoints)
+local function verifyBreakpoint(src, breakpoints)
     local bpkey = bpKey(src)
     local curbp = currentactive[bpkey]
+    local lineinfo = src.lineinfo
     local hits = {}
+    local res = {}
     if curbp then
         for _, bp in ipairs(curbp) do
             hits[bp.realLine] = bp.statHit
         end
     end
-
-    local res = {}
     for _, bp in ipairs(breakpoints) do
         if not valid(bp) then
             goto continue
@@ -118,7 +119,7 @@ local function verifyBreakpoint(src, lineinfo, breakpoints)
         })
         ::continue::
     end
-    updateBreakpoint(bpkey, src, lineinfo, res)
+    updateBreakpoint(bpkey, src, res)
 end
 
 function m.find(src, currentline)
@@ -130,32 +131,28 @@ function m.find(src, currentline)
     return currentBP[currentline]
 end
 
-local function getLineInfo(src, content)
-    if src then
-        if not src.lineinfo then
-            if content then
-                src.lineinfo = parser(content)
-            elseif src.sourceReference then
-                src.lineinfo = parser(source.getCode(src.sourceReference))
-            end
+local function calcLineInfo(src, content)
+    if not src.lineinfo then
+        if content then
+            src.lineinfo = parser(content)
+        elseif src.sourceReference then
+            src.lineinfo = parser(source.getCode(src.sourceReference))
         end
-        return src.lineinfo
     end
-    if content then
-        return parser(content)
-    end
+    return src.lineinfo
 end
 
 function m.set_bp(clientsrc, breakpoints, content)
     local src = source.c2s(clientsrc)
-    local lineinfo = getLineInfo(src, content)
-    if lineinfo then
-        if src then
-            verifyBreakpoint(src, lineinfo, breakpoints)
-        else
+    if src then
+        if calcLineInfo(src, content) then
+            verifyBreakpoint(src, breakpoints)
+        end
+    else
+        if content then
             waitverify[bpKey(clientsrc)] = {
                 breakpoints = breakpoints,
-                lineinfo = lineinfo,
+                lineinfo = parser(content),
             }
             updateHook()
         end
@@ -207,12 +204,12 @@ function m.newproto(proto, src, key)
     if wv then
         waitverify[bpkey] = nil
         src.lineinfo = wv.lineinfo
-        verifyBreakpoint(src, wv.lineinfo, wv.breakpoints)
+        verifyBreakpoint(src, wv.breakpoints)
         return
     end
     local bps = currentactive[bpkey]
     if bps and src.lineinfo then
-        updateBreakpoint(key, src, src.lineinfo, bps)
+        updateBreakpoint(key, src, bps)
         return
     end
 end
