@@ -1,4 +1,5 @@
 local select = require 'common.select'
+local proto = require 'common.protocol'
 
 local function parseAddress(address, client)
     if address:sub(1,1) == '@' then
@@ -103,6 +104,16 @@ local function open(address, client)
     function m.close()
         select.close(session)
         write = ''
+    end
+    local stat = {}
+    function m.debug(v)
+        stat.debug = v
+    end
+    function m.sendmsg(pkg)
+        m.send(proto.send(pkg, stat))
+    end
+    function m.recvmsg()
+        return proto.recv(m.recv(), stat)
     end
     return m
 end
