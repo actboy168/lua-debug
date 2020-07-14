@@ -206,7 +206,14 @@ function m.newproto(proto, src, key)
     local wv = waitverify[bpkey]
     if wv then
         waitverify[bpkey] = nil
+        src.lineinfo = wv.lineinfo
         verifyBreakpoint(src, wv.lineinfo, wv.breakpoints)
+        return
+    end
+    local bps = currentactive[bpkey]
+    if bps and src.lineinfo then
+        updateBreakpoint(key, src, src.lineinfo, bps)
+        return
     end
 end
 
