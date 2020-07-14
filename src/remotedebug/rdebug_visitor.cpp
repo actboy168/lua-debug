@@ -767,19 +767,17 @@ combine_val(rlua_State *L, lua_State *cL, int t, int index, int ref) {
 	if (ref) {
 		struct value *v = create_value(L, VAR::INDEX_VAL, t);
 		v->index = index;
-		if (copy_toR(cL, L) != LUA_TNONE) {
-			lua_pop(cL, 1);
-		}
-		else {
-			lua_pop(cL, 1);
+		if (copy_toR(cL, L) == LUA_TNONE) {
 			rlua_pushvalue(L, -1);
 		}
+		lua_pop(cL, 1);
 		return;
 	}
 	if (copy_toR(cL, L) == LUA_TNONE) {
 		struct value *v = create_value(L, VAR::INDEX_VAL, t);
 		v->index = index;
 	}
+	lua_pop(cL, 1);
 }
 
 // frame, index
