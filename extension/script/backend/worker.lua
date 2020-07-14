@@ -98,8 +98,8 @@ end)
 --    ev.emit('output', 'stderr', table.concat(t, '\t')..'\n')
 --end
 
-local log = require 'common.log'
-print = log.info
+--local log = require 'common.log'
+--print = log.info
 
 local function cleanFrame()
     variables.clean()

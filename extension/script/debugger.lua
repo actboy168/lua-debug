@@ -98,10 +98,12 @@ function dbg:start(addr, client, ansi)
           root
         , address
     ))
+    return self
 end
 
 function dbg:wait()
     rdebug.event 'wait'
+    return self
 end
 
 function dbg:set_wait(name, f)
@@ -110,6 +112,7 @@ function dbg:set_wait(name, f)
         f(...)
         rdebug.event 'wait'
     end
+    return self
 end
 
 debug.getregistry()["lua-debug"] = dbg
