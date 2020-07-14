@@ -204,7 +204,6 @@ function m.newproto(proto, src, key)
     src.protos[proto] = key
     local bpkey = bpKey(src)
     local wv = waitverify[bpkey]
-    print(src.path, wv)
     if wv then
         waitverify[bpkey] = nil
         verifyBreakpoint(src, wv.lineinfo, wv.breakpoints)
