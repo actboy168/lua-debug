@@ -638,7 +638,7 @@ function event.exception()
     if not type or not exceptionFilters[type] then
         return
     end
-    local _, msg = getEventArgs(1)
+    local _, msg = getEventArgs(2)
     exceptionMsg, exceptionTrace, exceptionLevel = traceback(msg)
     state = 'stopped'
     runLoop('exception', exceptionMsg, exceptionLevel)
