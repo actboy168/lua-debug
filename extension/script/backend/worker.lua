@@ -563,14 +563,14 @@ local function getExceptionType()
         end
         f = rdebug.value(f)
         if f == pcall then
-            return level, 'pcall'
+            return 'pcall'
         end
         if f == xpcall then
-            return level, 'xpcall'
+            return 'xpcall'
         end
         level = level + 1
     end
-    return nil, 'lua_pcall'
+    return 'lua_pcall'
 end
 
 function event.update()
@@ -623,7 +623,7 @@ end
 
 function event.r_exception(msg)
     if not initialized then return end
-    local _, type = getExceptionType()
+    local type = getExceptionType()
     if not type or not exceptionFilters[type] then
         return
     end
@@ -634,7 +634,7 @@ end
 
 function event.exception()
     if not initialized then return end
-    local level, type = getExceptionType()
+    local type = getExceptionType()
     if not type or not exceptionFilters[type] then
         return
     end
