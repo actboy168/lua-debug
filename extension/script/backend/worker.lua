@@ -693,16 +693,6 @@ local function lst2map(t)
     return r
 end
 
-local function init_internalmodule(config)
-    local mod = config.internalModule
-    if not mod then
-        return
-    end
-    local newvalue = rdebug.field(rdebug.field(rdebug.field(rdebug._G, "package"), "loaded"), mod)
-    local oldvalue = rdebug.fieldv(rdebug._REGISTRY, "lua-debug")
-    rdebug.assign(newvalue, oldvalue)
-end
-
 ev.on('initializing', function(config)
     noDebug = config.noDebug
     hookmgr.update_open(not noDebug and openUpdate)
@@ -716,7 +706,6 @@ ev.on('initializing', function(config)
     if outputCapture["io.write"] then
         stdio.open_iowrite(true)
     end
-    init_internalmodule(config)
 end)
 
 ev.on('terminated', function()
