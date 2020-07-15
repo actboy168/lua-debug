@@ -123,9 +123,12 @@ end
 
 function m.path_relative(path, base)
     local normalize = pathFormat == "path" and normalize_win32 or normalize_posix
+    local equal = pathFormat == "path"
+        and (function(a, b) return a:lower() == b:lower() end)
+        or (function(a, b) return a == b end)
     local rpath = normalize(path)
     local rbase = normalize(base)
-    while #rpath > 0 and #rbase > 0 and rpath[1] == rbase[1] do
+    while #rpath > 0 and #rbase > 0 and equal(rpath[1], rbase[1]) do
         table.remove(rpath, 1)
         table.remove(rbase, 1)
     end

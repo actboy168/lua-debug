@@ -103,7 +103,7 @@ function resolveConfig(folder, config) {
         ]
     }
     if (typeof config.pathFormat != 'string') {
-        if (plat == "Linux") {
+        if (plat == "Linux" && !config.useWSL) {
             config.pathFormat = "linuxpath"
         }
         else {
