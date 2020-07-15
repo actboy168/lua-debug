@@ -10,4 +10,4 @@ local function dofile(filename, ...)
 end
 local dbg = dofile(path.."/script/debugger.lua",path,luaapi)
 dbg:start(("@%s/tmp/pid_%s"):format(path, pid))
-dbg:wait()
+dbg:event "wait"

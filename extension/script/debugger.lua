@@ -101,8 +101,8 @@ function dbg:start(addr, client, ansi)
     return self
 end
 
-function dbg:wait()
-    rdebug.event 'wait'
+function dbg:event(...)
+    rdebug.event(...)
     return self
 end
 
