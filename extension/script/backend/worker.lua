@@ -535,9 +535,9 @@ end
 local function getEventArgs(i)
     local name, value = rdebug.getlocal(1, -i)
     if name == nil then
-        return false
+        return
     end
-    return true, rdebug.value(value)
+    return rdebug.value(value)
 end
 
 local function pairsEventArgs()
@@ -638,7 +638,7 @@ function event.exception()
     if not type or not exceptionFilters[type] then
         return
     end
-    local _, msg = getEventArgs(2)
+    local msg = getEventArgs(2)
     exceptionMsg, exceptionTrace, exceptionLevel = traceback(msg)
     state = 'stopped'
     runLoop('exception', exceptionMsg, exceptionLevel)
@@ -657,8 +657,8 @@ function event.r_thread(co, type)
 end
 
 function event.thread()
-    local _, co = rdebug.getlocalv(1, -1)
-    local _, type = rdebug.getlocalv(1, -2)
+    local co = getEventArgs(1)
+    local type = getEventArgs(2)
     event.r_thread(co, type)
 end
 
