@@ -447,6 +447,11 @@
                                 "type": "string",
                                 "markdownDescription": "Internal module name",
                                 "default": "debugger"
+                            },
+                            "useWSL": {
+                                "type": "boolean",
+                                "description": "Use Windows Subsystem for Linux.",
+                                "default": true
                             }
                         }
                     }
