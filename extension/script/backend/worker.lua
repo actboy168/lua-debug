@@ -6,7 +6,6 @@ local breakpoint = require 'backend.worker.breakpoint'
 local evaluate = require 'backend.worker.evaluate'
 local traceback = require 'backend.worker.traceback'
 local stdout = require 'backend.worker.stdout'
-local emulator = require 'backend.worker.emulator'
 local luaver = require 'backend.worker.luaver'
 local ev = require 'backend.event'
 local hookmgr = require 'remotedebug.hookmgr'
@@ -241,13 +240,6 @@ function CMD.stackTrace(pkg)
         cleanFrame()
     end
 
-    -- TODO
-    --local virtualFrame = 0
-    --if startFrame == 0 then
-    --    res = emulator.stackTrace()
-    --    virtualFrame = #res
-    --end
-
     calcStackLevel()
 
     if start + levels > stackFrame.total then
@@ -292,7 +284,7 @@ function CMD.source(pkg)
         cmd = 'source',
         command = pkg.command,
         seq = pkg.seq,
-        content = emulator.getCode(pkg.sourceReference),
+        content = source.getCode(pkg.sourceReference),
     }
 end
 
@@ -304,7 +296,7 @@ function CMD.scopes(pkg)
         cmd = 'scopes',
         command = pkg.command,
         seq = pkg.seq,
-        scopes = emulator.scopes(depth),
+        scopes = variables.scopes(depth),
     }
 end
 
@@ -673,29 +665,6 @@ end
 function event.wait()
     while not initialized do
         workerThreadUpdate(0.01)
-    end
-end
-
-function event.event_call()
-    local code = rdebug.value(rdebug.getstack(2))
-    local name = rdebug.value(rdebug.getstack(3))
-    if emulator.eventCall(state, code, name) then
-        return true
-    end
-end
-
-function event.event_return()
-    emulator.eventReturn()
-end
-
-function event.event_line()
-    local line = rdebug.value(rdebug.getstack(2))
-    local scope = rdebug.getstack(3)
-    if emulator.eventLine(state, line, scope) then
-        emulator.open()
-        state = 'stopped'
-        runLoop 'step'
-        emulator.close()
     end
 end
 
