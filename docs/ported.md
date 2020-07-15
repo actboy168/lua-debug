@@ -10,21 +10,22 @@
 ``` lua
 local rdebug = require "remotedebug"
 
--- 在每次coroutine获得和失去控制权时各运行一次，例如你可以重载coroutine.resume/coroutine.wrap等
-local coroutine_resume = coroutine.resume
-local coroutine_wrap   = coroutine.wrap
+local rawcoroutineresume = coroutine.resume
+local rawcoroutinewrap   = coroutine.wrap
+local function coreturn(co, ...)
+    rdebug.event("thread", co, 1)
+    return ...
+end
 function coroutine.resume(co, ...)
     rdebug.event("thread", co, 0)
-    coroutine_resume(co, ...)
-    rdebug.event("thread", co, 1)
+    return coreturn(co, rawcoroutineresume(co, ...))
 end
 function coroutine.wrap(f)
-    local wf = coroutine_wrap(f)
+    local wf = rawcoroutinewrap(f)
     local _, co = debug.getupvalue(wf, 1)
     return function(...)
         rdebug.event("thread", co, 0)
-        wf(...)
-        rdebug.event("thread", co, 1)
+        return coreturn(co, wf(...))
     end
 end
 ```
@@ -37,8 +38,23 @@ end
 ``` lua
 local rdebug = require "remotedebug"
 
--- 在每次lua抛出错误时运行一次，例如你可以重载pcall/xpcall等
-rdebug.event("exception", errormsg)
+local rawxpcall = xpcall
+function pcall(f, ...)
+    return rawxpcall(f,
+        function(msg)
+            rdebug.event("exception", msg)
+            return msg
+        end,
+    ...)
+end
+function xpcall(f, msgh, ...)
+    return rawxpcall(f,
+        function(msg)
+            rdebug.event("exception", msg)
+            return msgh and msgh(msg) or msg
+        end
+    , ...)
+end
 ```
 
 ## 使用你的lua重写编译remotedebug
