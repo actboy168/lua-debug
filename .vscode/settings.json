@@ -1,3 +1,7 @@
 {
-    "Lua.runtime.version": "Lua 5.4"
+    "Lua.runtime.version": "Lua 5.4",
+    "Lua.diagnostics.globals": [
+        "loadstring",
+        "unpack"
+    ]
 }
