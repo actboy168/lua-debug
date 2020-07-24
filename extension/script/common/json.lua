@@ -16,7 +16,8 @@ local string_format = string.format
 local math_type = math.type
 local setmetatable = setmetatable
 local getmetatable = getmetatable
-local Inf = math.huge
+local pinf = math.huge
+local ninf = -pinf
 
 local json = {}
 json.object = {}
@@ -79,11 +80,18 @@ local function convertreal(v)
     return string_format('%.17g', v)
 end
 
+if string_match(tostring(1/2), "%p") == "," then
+    local _convertreal = convertreal
+    function convertreal(v)
+        return string_gsub(_convertreal(v), ',', '.')
+    end
+end
+
 function encode_map.number(v)
-    if v ~= v or v <= -Inf or v >= Inf then
+    if v ~= v or v <= ninf or v >= pinf then
         error("unexpected number value '" .. tostring(v) .. "'")
     end
-    return string_gsub(convertreal(v), ',', '.')
+    return convertreal(v)
 end
 
 function encode_map.boolean(v)
@@ -206,12 +214,20 @@ local function get_word()
 end
 
 local function next_byte()
-    statusPos = string_find(statusBuf, "[^ \t\r\n]", statusPos)
-    if statusPos then
-        return string_byte(statusBuf, statusPos)
+    local pos = string_find(statusBuf, "[^ \t\r\n]", statusPos)
+    if pos then
+        statusPos = pos
+        return string_byte(statusBuf, pos)
     end
-    statusPos = #statusBuf + 1
-    decode_error("unexpected character '<eol>'")
+    return -1
+end
+
+local function consume_byte(c)
+    local _, pos = string_find(statusBuf, c, statusPos)
+    if pos then
+        statusPos = pos + 1
+        return true
+    end
 end
 
 local function expect_byte(c)
@@ -293,15 +309,12 @@ end
 
 local function decode_number_negative()
     local word = get_word()
-    if not (
-        string_match(word, '^.[1-9][0-9]*$')
-     or string_match(word, '^.[1-9][0-9]*%.[0-9]+$')
-     or string_match(word, '^.[1-9][0-9]*[Ee][+-]?[0-9]+$')
-     or string_match(word, '^.[1-9][0-9]*%.[0-9]+[Ee][+-]?[0-9]+$')
-     or word == "-0"
-     or string_match(word, '^.0%.[0-9]+$')
-     or string_match(word, '^.0[Ee][+-]?[0-9]+$')
-     or string_match(word, '^.0%.[0-9]+[Ee][+-]?[0-9]+$')
+    if  string_match(word, '^.0[0-9]')
+     or not (
+        string_match(word, '^.[0-9]+$')
+     or string_match(word, '^.[0-9]+%.[0-9]+$')
+     or string_match(word, '^.[0-9]+[Ee][+-]?[0-9]+$')
+     or string_match(word, '^.[0-9]+%.[0-9]+[Ee][+-]?[0-9]+$')
     ) then
         decode_error("invalid number '" .. word .. "'")
     end
@@ -350,8 +363,7 @@ end
 local function decode_array()
     statusPos = statusPos + 1
     local res = {}
-    if next_byte() == 93 --[[ "]" ]] then
-        statusPos = statusPos + 1
+    if consume_byte "^[ \t\r\n]*%]" then
         return res
     end
     statusTop = statusTop + 1
@@ -363,8 +375,7 @@ end
 local function decode_object()
     statusPos = statusPos + 1
     local res = {}
-    if next_byte() == 125 --[[ "}" ]] then
-        statusPos = statusPos + 1
+    if consume_byte "^[ \t\r\n]*}" then
         return setmetatable(res, json.object)
     end
     statusTop = statusTop + 1
@@ -395,11 +406,15 @@ local decode_uncompleted_map = {
 local function unexpected_character()
     decode_error("unexpected character '" .. string_sub(statusBuf, statusPos, statusPos) .. "'")
 end
+local function unexpected_eol()
+    decode_error("unexpected character '<eol>'")
+end
 
 local decode_map = {}
 for i = 0, 255 do
     decode_map[i] = decode_uncompleted_map[i] or unexpected_character
 end
+decode_map[-1] = unexpected_eol
 
 local function decode()
     return decode_map[next_byte()]()
