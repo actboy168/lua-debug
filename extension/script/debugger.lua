@@ -115,5 +115,44 @@ function dbg:set_wait(name, f)
     return self
 end
 
+function dbg:setup_patch()
+    local rawxpcall = xpcall
+    function pcall(f, ...)
+        return rawxpcall(f,
+            function(msg)
+                debug:event("exception", msg)
+                return msg
+            end,
+        ...)
+    end
+    function xpcall(f, msgh, ...)
+        return rawxpcall(f,
+            function(msg)
+                debug:event("exception", msg)
+                return msgh and msgh(msg) or msg
+            end
+        , ...)
+    end
+    local rawcoroutineresume = coroutine.resume
+    local rawcoroutinewrap   = coroutine.wrap
+    local function coreturn(co, ...)
+        debug:event("thread", co, 1)
+        return ...
+    end
+    function coroutine.resume(co, ...)
+        debug:event("thread", co, 0)
+        return coreturn(co, rawcoroutineresume(co, ...))
+    end
+    function coroutine.wrap(f)
+        local wf = rawcoroutinewrap(f)
+        local _, co = debug.getupvalue(wf, 1)
+        return function(...)
+            debug:event("thread", co, 0)
+            return coreturn(co, wf(...))
+        end
+    end
+    return self
+end
+
 debug.getregistry()["lua-debug"] = dbg
 return dbg
