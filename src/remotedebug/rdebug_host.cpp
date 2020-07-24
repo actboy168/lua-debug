@@ -146,7 +146,7 @@ lhost_event(lua_State *L) {
 	return 1;
 }
 
-#if defined(_WIN32)
+#if defined(_WIN32) && !defined(RLUA_DISABLE)
 #include <bee/utility/unicode_win.h>
 #include <bee/lua/binding.h>
 
@@ -164,7 +164,7 @@ int luaopen_remotedebug(lua_State *L) {
 		{ "start", lhost_start },
 		{ "clear", lhost_clear },
 		{ "event", lhost_event },
-#if defined(_WIN32)
+#if defined(_WIN32) && !defined(RLUA_DISABLE)
 		{ "a2u",   la2u },
 #endif
 		{ NULL, NULL },
