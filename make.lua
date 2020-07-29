@@ -13,9 +13,10 @@ for i, v in ipairs(arg) do
 end
 
 lm.arch = arguments.arch or lm.arch
+local mode = lm.mode or "release"
 
-lm.bindir = ("build/%s/bin/%s"):format(lm.plat, lm.arch)
-lm.objdir = ("build/%s/obj/%s"):format(lm.plat, lm.arch)
+lm.bindir = ("build/%s/bin/%s/%s"):format(lm.plat, lm.arch, mode)
+lm.objdir = ("build/%s/obj/%s/%s"):format(lm.plat, lm.arch, mode)
 
 if platform.OS == "Windows" then
     lm:source_set 'detours' {
@@ -201,7 +202,7 @@ lm:import '3rd/bee.lua/make.lua'
 
 if platform.OS == "Windows" and lm.arch == "x64" then
     lm:build 'install' {
-        '$luamake', 'lua', 'make/install_runtime.lua', lm.plat, lm.arch,
+        '$luamake', 'lua', 'make/install_runtime.lua', lm.plat, lm.arch, mode,
         deps = {
             'bee',
             'bootstrap',
@@ -246,7 +247,7 @@ else
     end
 
     lm:build 'install' {
-        '$luamake', 'lua', 'make/install_runtime.lua', lm.plat, lm.arch,
+        '$luamake', 'lua', 'make/install_runtime.lua', lm.plat, lm.arch, mode,
         deps = {
             'copy_extension',
             'update_version',

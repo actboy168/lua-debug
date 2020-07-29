@@ -1,4 +1,4 @@
-local platform, arch = ...
+local platform, arch, mode = ...
 local fs = require 'bee.filesystem'
 local CWD = fs.current_path()
 
@@ -8,7 +8,7 @@ local dll = platform == 'msvc' and ".dll" or ".so"
 if platform ~= 'msvc' or arch == 'x86' then
     local binplat = platform ~= 'msvc' and platform or 'win'
     local output = CWD / 'publish' / 'bin' / binplat
-    local bindir = CWD / 'build' / platform / 'bin' / arch
+    local bindir = CWD / 'build' / platform / 'bin' / arch / mode
     fs.create_directories(output)
     fs.copy_file(bindir / ('bee'..dll),       output / ('bee'..dll),        true)
     fs.copy_file(bindir / ('lua'..exe),       output / ('lua-debug'..exe),  true)
@@ -20,7 +20,7 @@ if platform ~= 'msvc' or arch == 'x86' then
 end
 
 do
-    local bindir = CWD / 'build' / platform / 'bin' / arch
+    local bindir = CWD / 'build' / platform / 'bin' / arch / mode
     local bootstrap = CWD / "3rd" / "bee.lua" / "bootstrap"
     fs.copy_file(bootstrap / "main.lua",      CWD / 'build' / "main.lua",   true)
     fs.copy_file(bindir / ('bee'..dll),       CWD / 'build' / ('bee'..dll), true)
@@ -32,14 +32,14 @@ end
 
 if platform == 'msvc' then
     local output = CWD / 'publish' / 'bin' / 'win'
-    local bindir = CWD / 'build' / platform / 'bin' / arch
+    local bindir = CWD / 'build' / platform / 'bin' / arch / mode
     fs.create_directories(output)
     fs.copy_file(bindir / 'launcher.dll', output / ('launcher.'..arch..'.dll'), true)
 end
 
 for _, luaver in ipairs {"lua51","lua52","lua53","lua54"} do
     local rtplat = platform ~= 'msvc' and platform or (arch == 'x86' and 'win32' or 'win64')
-    local bindir = CWD / 'build' / platform / 'bin' / arch / 'runtime' / luaver
+    local bindir = CWD / 'build' / platform / 'bin' / arch / mode / 'runtime' / luaver
     local output = CWD / 'publish' / 'runtime' / rtplat / luaver
     fs.create_directories(output)
     fs.copy_file(bindir / ('lua'..exe),         output / ('lua'..exe),         true)
