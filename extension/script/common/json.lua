@@ -16,15 +16,15 @@ local string_format = string.format
 local math_type = math.type
 local setmetatable = setmetatable
 local getmetatable = getmetatable
-local pinf = math.huge
-local ninf = -pinf
+local huge = math.huge
+local tiny = -huge
 
 local json = {}
 json.object = {}
 
 -- json.encode --
-local statusMark
-local statusQue
+local statusVisited
+local statusBuilder
 
 local encode_map = {}
 
@@ -55,7 +55,7 @@ end
 
 local function encode(v)
     local res = encode_map[type(v)](v)
-    statusQue[#statusQue+1] = res
+    statusBuilder[#statusBuilder+1] = res
 end
 
 encode_map["nil"] = function ()
@@ -67,8 +67,8 @@ local function encode_string(v)
 end
 
 function encode_map.string(v)
-    statusQue[#statusQue+1] = '"'
-    statusQue[#statusQue+1] = encode_string(v)
+    statusBuilder[#statusBuilder+1] = '"'
+    statusBuilder[#statusBuilder+1] = encode_string(v)
     return '"'
 end
 
@@ -88,7 +88,7 @@ if string_match(tostring(1/2), "%p") == "," then
 end
 
 function encode_map.number(v)
-    if v ~= v or v <= ninf or v >= pinf then
+    if v ~= v or v <= tiny or v >= huge then
         error("unexpected number value '" .. tostring(v) .. "'")
     end
     return convertreal(v)
@@ -111,10 +111,10 @@ function encode_map.table(t)
             return "[]"
         end
     end
-    if statusMark[t] then
+    if statusVisited[t] then
         error("circular reference")
     end
-    statusMark[t] = true
+    statusVisited[t] = true
     if type(first_val) == 'string' then
         local key = {}
         for k in next, t do
@@ -125,18 +125,18 @@ function encode_map.table(t)
         end
         table_sort(key)
         local k = key[1]
-        statusQue[#statusQue+1] = '{"'
-        statusQue[#statusQue+1] = encode_string(k)
-        statusQue[#statusQue+1] = '":'
+        statusBuilder[#statusBuilder+1] = '{"'
+        statusBuilder[#statusBuilder+1] = encode_string(k)
+        statusBuilder[#statusBuilder+1] = '":'
         encode(t[k])
         for i = 2, #key do
             local k = key[i]
-            statusQue[#statusQue+1] = ',"'
-            statusQue[#statusQue+1] = encode_string(k)
-            statusQue[#statusQue+1] = '":'
+            statusBuilder[#statusBuilder+1] = ',"'
+            statusBuilder[#statusBuilder+1] = encode_string(k)
+            statusBuilder[#statusBuilder+1] = '":'
             encode(t[k])
         end
-        statusMark[t] = nil
+        statusVisited[t] = nil
         return "}"
     else
         local max = 0
@@ -148,13 +148,13 @@ function encode_map.table(t)
                 max = k
             end
         end
-        statusQue[#statusQue+1] = "["
+        statusBuilder[#statusBuilder+1] = "["
         encode(t[1])
         for i = 2, max do
-            statusQue[#statusQue+1] = ","
+            statusBuilder[#statusBuilder+1] = ","
             encode(t[i])
         end
-        statusMark[t] = nil
+        statusVisited[t] = nil
         return "]"
     end
 end
@@ -171,10 +171,10 @@ encode_map[ "userdata" ] = encode_unexpected
 encode_map[ "thread"   ] = encode_unexpected
 
 function json.encode(v)
-    statusMark = {}
-    statusQue = {}
+    statusVisited = {}
+    statusBuilder = {}
     encode(v)
-    return table_concat(statusQue)
+    return table_concat(statusBuilder)
 end
 
 json._encode_map = encode_map
@@ -294,46 +294,46 @@ local function decode_string()
 end
 
 local function decode_number()
-    local word = get_word()
-    if not (
-        string_match(word, '^.[0-9]*$')
-     or string_match(word, '^.[0-9]*%.[0-9]+$')
-     or string_match(word, '^.[0-9]*[Ee][+-]?[0-9]+$')
-     or string_match(word, '^.[0-9]*%.[0-9]+[Ee][+-]?[0-9]+$')
-    ) then
-        decode_error("invalid number '" .. word .. "'")
+    local num, c = string_match(statusBuf, '^([0-9]+%.?[0-9]*)([eE]?)', statusPos)
+    if not num or string_byte(num, -1) == 0x2E --[[ "." ]] then
+        decode_error("invalid number '" .. get_word() .. "'")
     end
-    statusPos = statusPos + #word
-    return tonumber(word)
-end
-
-local function decode_number_negative()
-    local word = get_word()
-    if  string_match(word, '^.0[0-9]')
-     or not (
-        string_match(word, '^.[0-9]+$')
-     or string_match(word, '^.[0-9]+%.[0-9]+$')
-     or string_match(word, '^.[0-9]+[Ee][+-]?[0-9]+$')
-     or string_match(word, '^.[0-9]+%.[0-9]+[Ee][+-]?[0-9]+$')
-    ) then
-        decode_error("invalid number '" .. word .. "'")
+    if c ~= '' then
+        num = string_match(statusBuf, '^([^eE]*[eE][-+]?[0-9]+)[ \t\r\n%]},]', statusPos)
+        if not num then
+            decode_error("invalid number '" .. get_word() .. "'")
+        end
     end
-    statusPos = statusPos + #word
-    return tonumber(word)
+    statusPos = statusPos + #num
+    return tonumber(num)
 end
 
 local function decode_number_zero()
-    local word = get_word()
-    if not (
-        #word == 1
-     or string_match(word, '^.%.[0-9]+$')
-     or string_match(word, '^.[Ee][+-]?[0-9]+$')
-     or string_match(word, '^.%.[0-9]+[Ee][+-]?[0-9]+$')
-    ) then
-        decode_error("invalid number '" .. word .. "'")
+    local num, c = string_match(statusBuf, '^(.%.?[0-9]*)([eE]?)', statusPos)
+    if not num or string_byte(num, -1) == 0x2E --[[ "." ]] or string_match(statusBuf, '^.[0-9]+', statusPos) then
+        decode_error("invalid number '" .. get_word() .. "'")
     end
-    statusPos = statusPos + #word
-    return tonumber(word)
+    if c ~= '' then
+        num = string_match(statusBuf, '^([^eE]*[eE][-+]?[0-9]+)[ \t\r\n%]},]', statusPos)
+        if not num then
+            decode_error("invalid number '" .. get_word() .. "'")
+        end
+    end
+    statusPos = statusPos + #num
+    return tonumber(num)
+end
+
+local function decode_number_negative()
+    statusPos = statusPos + 1
+    local c = string_byte(statusBuf, statusPos)
+    if c then
+        if c == 0x30 then
+            return -decode_number_zero()
+        elseif c > 0x30 and c < 0x3A then
+            return -decode_number()
+        end
+    end
+    decode_error("invalid number '" .. get_word() .. "'")
 end
 
 local function decode_true()
