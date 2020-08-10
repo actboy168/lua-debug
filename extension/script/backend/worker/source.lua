@@ -4,6 +4,7 @@ local crc32 = require 'backend.worker.crc32'
 
 local sourcePool = {}
 local codePool = {}
+local knownClientPath = {}
 local skipFiles = {}
 local sourceMaps = {}
 local workspaceFolder = nil
@@ -68,6 +69,16 @@ local function glob_replace(pattern, target)
     return table.concat(s)
 end
 
+local function covertPath(p)
+    p = fs.fromwsl(p)
+    local native = fs.path_native(fs.path_normalize(p))
+    if knownClientPath[native] then
+        p = knownClientPath[native]
+        knownClientPath[native] = nil
+    end
+    return p
+end
+
 local function serverPathToClientPath(p)
     if not sourceUtf8 then
         p = fs.a2u(p)
@@ -83,11 +94,11 @@ local function serverPathToClientPath(p)
     for _, pattern in ipairs(sourceMaps) do
         local res = glob_replace(pattern, nativePath)
         if res then
-            return skip, fs.fromwsl(res)
+            return skip, covertPath(res)
         end
     end
     -- TODO: 忽略没有映射的source？
-    return skip, fs.fromwsl(fs.source_normalize(p))
+    return skip, covertPath(fs.source_normalize(p))
 end
 
 local function codeReference(s)
@@ -153,9 +164,11 @@ function m.c2s(clientsrc)
         local nativepath = fs.path_native(fs.path_normalize(clientsrc.path))
         for _, source in pairs(sourcePool) do
             if source.path and not source.sourceReference and fs.path_native(fs.path_normalize(source.path)) == nativepath then
+                source.path = clientsrc.path
                 return source
             end
         end
+        knownClientPath[nativepath] = clientsrc.path
     end
 end
 
