@@ -129,16 +129,14 @@ end
 
 local m = {}
 
-function m.create(source, hide)
+function m.create(source)
     local src = sourcePool[source]
     if src then
         return src
     end
     local newSource = create(source)
     sourcePool[source] = newSource
-    if not hide then
-        ev.emit('loadedSource', 'new', newSource)
-    end
+    ev.emit('loadedSource', 'new', newSource)
     return newSource
 end
 
