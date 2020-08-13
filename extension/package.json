@@ -68,10 +68,6 @@
                 "command": "extension.lua-debug.debugEditorContents",
                 "title": "Debug File",
                 "icon": "$(debug-alt)"
-            },
-            {
-                "command": "extension.lua-debug.pickProcess",
-                "title": "Pick Process"
             }
         ],
         "debuggers": [
