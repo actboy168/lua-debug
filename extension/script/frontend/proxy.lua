@@ -86,8 +86,9 @@ local function proxy_attach(pkg)
         return
     end
     if args.processId then
-        if not attach_process(pkg, args.processId) then
-            response_error(pkg, ('Cannot attach process `%d`.'):format(args.processId))
+        local processId = tonumber(args.processId)
+        if not attach_process(pkg, processId) then
+            response_error(pkg, ('Cannot attach process `%d`.'):format(processId))
         end
         return
     end

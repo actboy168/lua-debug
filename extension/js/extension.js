@@ -2,6 +2,7 @@ const vscode = require("vscode");
 const configurationProvider = require("./configurationProvider");
 const descriptorFactory = require("./descriptorFactory");
 const trackerFactory = require("./trackerFactory");
+const pickProcess = require("./pickProcess");
 
 function activate(context) {
     exports.context = context;
@@ -9,6 +10,7 @@ function activate(context) {
         vscode.debug.registerDebugConfigurationProvider('lua', configurationProvider),
         vscode.debug.registerDebugAdapterDescriptorFactory('lua', descriptorFactory),
         vscode.debug.registerDebugAdapterTrackerFactory('lua', trackerFactory),
+        vscode.commands.registerCommand("extension.lua-debug.pickProcess", pickProcess.pick),
         vscode.commands.registerCommand("extension.lua-debug.runEditorContents", (uri) => {
             vscode.debug.startDebugging(undefined, {
                 type: 'lua',

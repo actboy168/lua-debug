@@ -34,6 +34,7 @@
     "activationEvents": [
         "onCommand:extension.lua-debug.runEditorContents",
         "onCommand:extension.lua-debug.debugEditorContents",
+        "onCommand:extension.lua-debug.pickProcess",
         "onDebugInitialConfigurations",
         "onDebugResolve:lua"
     ],
@@ -67,6 +68,10 @@
                 "command": "extension.lua-debug.debugEditorContents",
                 "title": "Debug File",
                 "icon": "$(debug-alt)"
+            },
+            {
+                "command": "extension.lua-debug.pickProcess",
+                "title": "Pick Process"
             }
         ],
         "debuggers": [
@@ -76,6 +81,9 @@
                     "lua"
                 ],
                 "label": "Lua Debug",
+                "variables": {
+                    "pickProcess": "extension.lua-debug.pickProcess"
+                },
                 "configurationSnippets": [
                     {
                         "label": "Lua Debug: Launch Script",
@@ -115,6 +123,17 @@
                             "request": "attach",
                             "stopOnEntry": true,
                             "address": "127.0.0.1:4278"
+                        }
+                    },
+                    {
+                        "label": "Lua Debug: Attach Process",
+                        "description": "A new configuration for attaching a lua debug program",
+                        "body": {
+                            "name": "${1:attach}",
+                            "type": "lua",
+                            "request": "attach",
+                            "stopOnEntry": true,
+                            "processId": "${command:pickProcess}"
                         }
                     }
                 ],
@@ -356,9 +375,9 @@
                                 "default": true
                             },
                             "processId": {
-                                "type": "integer",
+                                "type": "string",
                                 "markdownDescription": "Id of process to attach to.",
-                                "default": 0
+                                "default": "${command:pickProcess}"
                             },
                             "processName": {
                                 "type": "string",
