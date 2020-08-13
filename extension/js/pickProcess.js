@@ -51,6 +51,9 @@ async function getlist(name) {
 }
 
 async function pick() {
+    if (os.platform() != "win32") {
+        return;
+    }
     const process = await vscode.window.showQuickPick(getlist(), { placeHolder: "Select process to attach to" });
     if (process) {
         return process.ProcessId;
