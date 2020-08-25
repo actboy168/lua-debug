@@ -151,15 +151,21 @@ function special_has.Standard()
     return true
 end
 
-local function floatToShortString(v)
-    local str = ('%.4f'):format(v)
+local function floatNormalize(str)
     if str:find('.', 1, true) then
         str = str:gsub('0+$', '')
         if str:sub(-1) == '.' then
             return str .. '0'
         end
+        return str
+    else
+        return str .. ".0"
     end
-    return str
+end
+
+local function floatToShortString(v)
+    local str = ('%.4f'):format(v)
+    return floatNormalize(str)
 end
 
 local function floatToString(x)
@@ -173,10 +179,10 @@ local function floatToString(x)
         return '-inf'
     end
     local g = ('%.16g'):format(x)
-    if tonumber(g) == x then
-        return g
+    if tonumber(g) ~= x then
+        g = ('%.17g'):format(x)
     end
-    return ('%.17g'):format(x)
+    return floatNormalize(g)
 end
 
 local escape_char = {
