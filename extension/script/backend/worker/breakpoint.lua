@@ -27,9 +27,11 @@ local function updateHook()
 end
 
 local function hasActiveBreakpoint(bps, activeline)
-    for line in pairs(bps) do
-        if activeline[line] then
-            return true
+    if activeline then
+        for line in pairs(bps) do
+            if activeline[line] then
+                return true
+            end
         end
     end
     return false
