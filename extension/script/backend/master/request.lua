@@ -53,12 +53,12 @@ function request.attach(req)
 end
 
 function request.launch(req)
-    return request.attach(req)
+    request.attach(req)
+    config.launch = true
 end
 
 local function tryStop(w)
     if firstWorker then
-        firstWorker = false
         if not not config.initialize.stopOnEntry then
             mgr.sendToWorker(w, {
                 cmd = 'stop',
@@ -102,10 +102,18 @@ local function initializeWorker(w)
         cmd = 'setExceptionBreakpoints',
         filters = config.exception_breakpoints,
     })
+    if firstWorker and config.launch then
+        mgr.sendToWorker(w, {
+            cmd = 'setSearchPath',
+            path = config.initialize.path,
+            cpath = config.initialize.cpath,
+        })
+    end
     tryStop(w)
     mgr.sendToWorker(w, {
         cmd = 'initialized',
     })
+    firstWorker = false
 end
 
 ev.on('worker-ready', function(w)

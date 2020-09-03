@@ -27,35 +27,11 @@ local function nativepath(s)
     return towsl(s)
 end
 
-local function init_searchpath(config, name)
-    if not config[name] then
-        return
-    end
-    local value = config[name]
-    if type(value) == 'table' then
-        local path = {}
-        for _, v in ipairs(value) do
-            if type(v) == "string" then
-                path[#path+1] = nativepath(v)
-            end
-        end
-        value = table.concat(path, ";")
-    else
-        value = nativepath(value)
-    end
-    local visitor = rdebug.field(rdebug.field(rdebug._G, "package"), name)
-    if not rdebug.assign(visitor, value) then
-        return
-    end
-end
-
 ev.on('initializing', function(config)
     sourceFormat = config.sourceFormat or (isWindows and "path" or "linuxpath")
     pathFormat = config.pathFormat or "path"
     useWSL = config.useWSL
     useUtf8 = config.sourceCoding == "utf8"
-    init_searchpath(config, 'path')
-    init_searchpath(config, 'cpath')
 end)
 
 local function normalize_posix(p)
@@ -151,6 +127,7 @@ function m.path_filename(path)
     return paths[#paths]
 end
 
+m.nativepath = nativepath
 m.a2u = a2u
 
 return m

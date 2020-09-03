@@ -67,7 +67,6 @@ if luaapi then
 end
 local rdebug = assert(package.loadlib(remotedebug,'luaopen_remotedebug'))()
 
-
 local dbg = {}
 
 function dbg:start(addr, client, ansi)
@@ -154,5 +153,15 @@ function dbg:setup_patch()
     return self
 end
 
+dbg.attach_thread = ([[
+local f = assert(io.open(%q.."/script/debugger.lua"))
+local str = f:read "a"
+f:close()
+assert(load(str, "=(BOOTSTRAP)"))(%q)
+:start "<Not Needed>"
+:event "wait"
+]]):format(root, root)
+
 debug.getregistry()["lua-debug"] = dbg
+
 return dbg

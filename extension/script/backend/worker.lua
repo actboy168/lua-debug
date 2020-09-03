@@ -11,6 +11,7 @@ local ev = require 'backend.event'
 local hookmgr = require 'remotedebug.hookmgr'
 local stdio = require 'remotedebug.stdio'
 local thread = require 'remotedebug.thread'
+local fs = require 'backend.worker.filesystem'
 local err = thread.channel 'errlog'
 
 local initialized = false
@@ -447,6 +448,32 @@ function CMD.restartFrame()
         cmd = 'eventStop',
         reason = 'restart',
     }
+end
+
+function CMD.setSearchPath(pkg)
+    local function set_search_path(name)
+        if not pkg[name] then
+            return
+        end
+        local value = pkg[name]
+        if type(value) == 'table' then
+            local path = {}
+            for _, v in ipairs(value) do
+                if type(v) == "string" then
+                    path[#path+1] = fs.nativepath(v)
+                end
+            end
+            value = table.concat(path, ";")
+        else
+            value = fs.nativepath(value)
+        end
+        local visitor = rdebug.field(rdebug.field(rdebug._G, "package"), name)
+        if not rdebug.assign(visitor, value) then
+            return
+        end
+    end
+    set_search_path "path"
+    set_search_path "cpath"
 end
 
 local function runLoop(reason, text, level)
