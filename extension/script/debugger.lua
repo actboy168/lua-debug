@@ -153,14 +153,7 @@ function dbg:setup_patch()
     return self
 end
 
-dbg.attach_thread = ([[
-local f = assert(io.open(%q.."/script/debugger.lua"))
-local str = f:read "a"
-f:close()
-assert(load(str, "=(BOOTSTRAP)"))(%q)
-:start "<Not Needed>"
-:event "wait"
-]]):format(root, root)
+dbg.root = root
 
 debug.getregistry()["lua-debug"] = dbg
 
