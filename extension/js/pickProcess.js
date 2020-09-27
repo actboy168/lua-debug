@@ -56,7 +56,7 @@ async function pick() {
     }
     const process = await vscode.window.showQuickPick(getlist(), { placeHolder: "Select process to attach to" });
     if (process) {
-        return process.ProcessId;
+        return process.description;
     }
 }
 

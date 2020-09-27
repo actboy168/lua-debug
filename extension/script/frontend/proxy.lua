@@ -93,7 +93,7 @@ local function proxy_attach(pkg)
         return
     end
     if args.processName then
-        local pids = require "query_process"(args.processName)
+        local pids = require "frontend.query_process"(args.processName)
         if #pids == 0 then
             response_error(pkg, ('Cannot found process `%s`.'):format(args.processName))
             return
