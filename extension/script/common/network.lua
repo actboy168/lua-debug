@@ -38,6 +38,7 @@ local function open(address, client)
     local write = ''
     local e_send = function(_) end
     local e_close = function() end
+    local stat = {}
     function t.event(status, fd)
         if status == 'connect start' then
             assert(t.client)
@@ -78,7 +79,11 @@ local function open(address, client)
         e_send = f
     end
     function m.event_close(f)
-        e_close = f
+        e_close = function()
+            write = ''
+            stat = {debug=stat.debug}
+            f()
+        end
     end
     function m.update()
         select.update(0.05)
@@ -90,7 +95,9 @@ local function open(address, client)
     end
     function m.send(data)
         if not session then
-            write = write .. data
+            if client then
+                write = write .. data
+            end
             return
         end
         select.send(session, data)
@@ -105,7 +112,6 @@ local function open(address, client)
         select.close(session)
         write = ''
     end
-    local stat = {}
     function m.debug(v)
         stat.debug = v
     end
