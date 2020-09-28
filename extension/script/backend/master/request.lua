@@ -314,10 +314,10 @@ end
 
 function request.terminate(req)
     response.success(req)
-    mgr.broadcastToWorker {
-        cmd = 'terminated',
-    }
     if config.initialize.termOnExit then
+        mgr.broadcastToWorker {
+            cmd = 'exit',
+        }
         if not terminateTimestamp then
             terminateTimestamp = os.clock()
             utility.closeprocess()
@@ -326,6 +326,10 @@ function request.terminate(req)
                 os.exit(true, true)
             end
         end
+    else
+        mgr.broadcastToWorker {
+            cmd = 'terminated',
+        }
     end
     return true
 end

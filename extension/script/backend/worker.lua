@@ -120,6 +120,12 @@ function CMD.terminated()
         initialized = false
         state = 'running'
         ev.emit('terminated')
+    end
+end
+
+function CMD.exit()
+    if initialized then
+        CMD.terminated()
         sendToMaster {
             cmd = 'eventThread',
             reason = 'exited',
@@ -696,7 +702,7 @@ function event.wait()
 end
 
 function event.exit()
-    CMD.terminated()
+    CMD.exit()
 end
 
 hookmgr.init(function(name, ...)
