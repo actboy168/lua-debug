@@ -9,7 +9,7 @@
 ---
 
 ---
----@class remotedebug.visitor
+---@class RemoteDebugVisitor
 ---在调试器VM提供了一套可以访问、修改调试目标的数据以及状态的API。
 ---
 ---为了避免对调试目标的影响，remotedebug尽可能地不持有调试目标的对象，所以visitor只会记录获取对象的路径，每次当调试器VM需要这个对象时，都会通过路径找到这个对象。由于这种方法和直接持有对象比，比较低效，所以visitor的每个访问API都提供了两个版本，例如getlocal和getlocalv。没有v的访问函数，总是会返回一个userdata，它保存了这个对象路径，每次访问都会遍历路径来找到它。有v的访问函数，如果对象是可以跨VM复制的值，例如number/string/boolean等，那么visitor会将这个值复制到调试器VM，并返回它，如果不能复制，则依然是返回保存了路径的userdata。
