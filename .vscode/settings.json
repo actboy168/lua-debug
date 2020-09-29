@@ -1,5 +1,6 @@
 {
     "Lua.runtime.version": "Lua 5.4",
+    "Lua.awakened.cat": false,
     "Lua.diagnostics.globals": [
         "loadstring",
         "unpack"

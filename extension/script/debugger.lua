@@ -65,6 +65,8 @@ local remotedebug = root..rt..'/remotedebug.'..ext
 if luaapi then
     assert(package.loadlib(remotedebug,'init'))(luaapi)
 end
+
+---@type remotedebug
 local rdebug = assert(package.loadlib(remotedebug,'luaopen_remotedebug'))()
 
 local dbg = {}
