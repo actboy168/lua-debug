@@ -1,11 +1,11 @@
 ---
----@class remotedebug.stdio
+---@class RemoteDebugStdio
 ---用于截获调试目标中的输出。
 ---
 local stdio = {}
 
 ---
----@class remotedebug.redirect
+---@class RemoteDebugRedirect
 ---
 local redirect = {}
 
@@ -33,7 +33,7 @@ end
 
 ---
 ---@param iotype string
----@return remotedebug.redirect
+---@return RemoteDebugRedirect
 ---重定向调试目标的stdout/stderr。
 ---
 function stdio.redirect(iotype)

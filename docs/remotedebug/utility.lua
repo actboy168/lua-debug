@@ -1,9 +1,7 @@
 ---
----@class remotedebug.utility
+---@class RemoteDebugUtility
 ---
 local utility = {}
-
-
 
 ---
 ---@param path string

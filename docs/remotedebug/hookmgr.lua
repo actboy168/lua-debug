@@ -4,13 +4,13 @@
 ---
 
 ---
----@class remotedebug.hookmgr
+---@class RemoteDebugHookmgr
 ---在调试器VM提供了一个hook管理器。理论上它可以用visitor提供的API，完全由Lua实现。但出于对性能的考虑，所以将hook的管理有C++实现，这也是remotedebug中唯一考虑了性能的一个模块。
 ---
 local hookmgr = {}
 
 ---
----@param callback fun(key:string,...):boolean|nil
+---@param callback fun(name:string,...):boolean|nil
 ---初始化hookmgr，并注册一个回调函数。当有事件被触发时，会调用回调函数。事件可以是rdebug.probe/rdebug.event触发的，也可以是hookmgr内部触发的内置事件。
 ---* `newproto` proto也就是函数原型，每次调试器遇到新的proto就会触发这个事件。返回值需要告诉调试器这个proto是否包含断点，然后调试器会自动调用hookmgr.break_add或hookmgr.break_del。
 ---* `bp` 执行有断点的proto时会触发，需要自己检查是否命中了行号。
