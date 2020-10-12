@@ -93,4 +93,19 @@ function event.thread(reason, threadId)
     }
 end
 
+function event.invalidated(areas, threadId)
+    if not mgr.getClient().supportsInvalidatedEvent then
+        return
+    end
+    mgr.sendToClient {
+        type = 'event',
+        seq = mgr.newSeq(),
+        event = 'invalidated',
+        body = {
+            areas = areas,
+            threadId = threadId,
+        }
+    }
+end
+
 return event

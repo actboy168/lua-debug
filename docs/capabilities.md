@@ -1,4 +1,4 @@
-|Capabilities                        | Available |
+| Capabilities                       | Available |
 |------------------------------------|-----------|
 | supportsConfigurationDoneRequest   |    🟩    |
 | supportsFunctionBreakpoints        |    🟩    |
@@ -35,6 +35,15 @@
 | supportsClipboardContext           |    🟩    |
 | supportsSteppingGranularity        |    🟥    |
 | supportsInstructionBreakpoints     |    🟥    |
+
+| Capabilities (Client)              | Available |
+|------------------------------------|-----------|
+| supportsVariableType               |    🟩    |
+| supportsVariablePaging             |    🟩    |
+| supportsRunInTerminalRequest       |    🟩    |
+| supportsMemoryReferences           |    🟥    |
+| supportsProgressReporting          |    🟨    |
+| supportsInvalidatedEvent           |    🟩    |
 
 * 🟩 Already supported.
 * 🟨 LuaDebug is not implemented.

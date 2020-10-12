@@ -13,6 +13,8 @@ local info = {}
 local varPool = {}
 local standard = {}
 
+local showIntegerAsHex = false
+
 local function init_standard()
     local lstandard = {
         "_G",
@@ -185,6 +187,14 @@ local function floatToString(x)
     return floatNormalize(g)
 end
 
+local function formatInteger(v)
+    if showIntegerAsHex then
+        return ('0x%x'):format(rdebug.value(v))
+    else
+        return ('%d'):format(rdebug.value(v))
+    end
+end
+
 local escape_char = {
     [ "\\" .. string.byte "\a" ] = "\\".."a",
     [ "\\" .. string.byte "\b" ] = "\\".."b",
@@ -305,7 +315,7 @@ local function varGetShortValue(value)
     elseif type == 'nil' then
         return 'nil'
     elseif type == 'integer' then
-        return ('%d'):format(rdebug.value(value))
+        return formatInteger(value)
     elseif type == 'float' then
         return floatToShortString(rdebug.value(value))
     elseif type == 'function' then
@@ -456,7 +466,7 @@ local function varGetValue(context, type, value)
     elseif type == 'nil' then
         return 'nil'
     elseif type == 'integer' then
-        return ('%d'):format(rdebug.value(value))
+        return formatInteger(value)
     elseif type == 'float' then
         return floatToString(rdebug.value(value))
     elseif type == 'function' then
@@ -485,6 +495,9 @@ local function varCreateReference(value, evaluateName, context)
         value = varGetValue(context, type, value),
         variablesReference = 0,
     }
+    if type == "integer" then
+        result.__vscodeVariableMenuContext = showIntegerAsHex and "integer/hex" or "integer/dec"
+    end
     if varCanExtand(type, value) then
         varPool[#varPool + 1] = {
             v = value,
@@ -996,6 +1009,14 @@ function m.tostring(v)
         end
     end
     return tostring(rdebug.value(v))
+end
+
+function m.showIntegerAsDec()
+    showIntegerAsHex = false
+end
+
+function m.showIntegerAsHex()
+    showIntegerAsHex = true
 end
 
 ev.on('terminated', function()

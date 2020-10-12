@@ -87,6 +87,10 @@ function CMD.eventThread(w, req)
     event.thread(req.reason, w)
 end
 
+function CMD.eventInvalidated(w, req)
+    event.invalidated(req.areas, w)
+end
+
 function CMD.exceptionInfo(_, req)
     response.success(req, {
         breakMode = req.breakMode,

@@ -56,7 +56,19 @@
                     "when": "resourceLangId == lua",
                     "group": "1_run@20"
                 }
-            ]
+            ],
+            "debug/variables/context": [
+                {
+                    "command": "extension.lua-debug.showIntegerAsDec",
+                    "when": "debugConfigurationType == 'lua' && debugProtocolVariableMenuContext == 'integer/hex'",
+                    "group": "1_view"
+                },
+                {
+                    "command": "extension.lua-debug.showIntegerAsHex",
+                    "when": "debugConfigurationType == 'lua' && debugProtocolVariableMenuContext == 'integer/dec'",
+                    "group": "1_view"
+                }
+              ]
         },
         "commands": [
             {
@@ -68,6 +80,14 @@
                 "command": "extension.lua-debug.debugEditorContents",
                 "title": "Debug File",
                 "icon": "$(debug-alt)"
+            },
+            {
+                "command": "extension.lua-debug.showIntegerAsDec",
+                "title": "Show as Dec"
+            },
+            {
+                "command": "extension.lua-debug.showIntegerAsHex",
+                "title": "Show as Hex"
             }
         ],
         "debuggers": [

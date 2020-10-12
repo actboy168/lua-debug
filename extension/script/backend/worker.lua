@@ -482,6 +482,22 @@ function CMD.setSearchPath(pkg)
     set_search_path "cpath"
 end
 
+function CMD.customRequestShowIntegerAsDec()
+    variables.showIntegerAsDec()
+    sendToMaster {
+        cmd = "eventInvalidated",
+        areas = "variables",
+    }
+end
+
+function CMD.customRequestShowIntegerAsHex()
+    variables.showIntegerAsHex()
+    sendToMaster {
+        cmd = "eventInvalidated",
+        areas = "variables",
+    }
+end
+
 local function runLoop(reason, text, level)
     baseL = hookmgr.gethost()
     --TODO: 只在lua栈帧时需要text？

@@ -13,6 +13,7 @@ local stat = {}
 local queue = {}
 local masterThread
 local workers = {}
+local client = {}
 
 ev.on('thread', function(reason, threadId)
     if reason == "started" then
@@ -189,6 +190,14 @@ function mgr.update()
             return
         end
     end
+end
+
+function mgr.setClient(c)
+    client = c
+end
+
+function mgr.getClient()
+    return client
 end
 
 return mgr

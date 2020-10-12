@@ -36,6 +36,7 @@ end
 function request.initialize(req)
     firstWorker = true
     terminateTimestamp = nil
+    mgr.setClient(req.arguments)
     response.initialize(req)
     event.initialized()
     event.capabilities()
@@ -463,6 +464,20 @@ function request.restartFrame(req)
         cmd = 'restartFrame',
         frameId = frameId,
     })
+end
+
+function request.customRequestShowIntegerAsDec(req)
+    response.success(req)
+    mgr.broadcastToWorker {
+        cmd = 'customRequestShowIntegerAsDec'
+    }
+end
+
+function request.customRequestShowIntegerAsHex(req)
+    response.success(req)
+    mgr.broadcastToWorker {
+        cmd = 'customRequestShowIntegerAsHex'
+    }
 end
 
 --function print(...)

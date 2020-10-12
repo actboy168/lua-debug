@@ -27,6 +27,18 @@ function activate(context) {
                 request: 'launch',
                 program: uri.fsPath
             });
+        }),
+        vscode.commands.registerCommand('extension.lua-debug.showIntegerAsDec', (variable) => {
+            const ds = vscode.debug.activeDebugSession;
+            if (ds) {
+                ds.customRequest('customRequestShowIntegerAsDec');
+            }
+        }),
+        vscode.commands.registerCommand('extension.lua-debug.showIntegerAsHex', (variable) => {
+            const ds = vscode.debug.activeDebugSession;
+            if (ds) {
+                ds.customRequest('customRequestShowIntegerAsHex');
+            }
         })
     );
 }

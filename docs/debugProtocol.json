@@ -181,7 +181,7 @@
 		"StoppedEvent": {
 			"allOf": [ { "$ref": "#/definitions/Event" }, {
 				"type": "object",
-				"description": "The event indicates that the execution of the debuggee has stopped due to some condition.\nThis can be caused by a break point previously set, a stepping action has completed, by executing a debugger statement etc.",
+				"description": "The event indicates that the execution of the debuggee has stopped due to some condition.\nThis can be caused by a break point previously set, a stepping request has completed, by executing a debugger statement etc.",
 				"properties": {
 					"event": {
 						"type": "string",
@@ -193,7 +193,7 @@
 							"reason": {
 								"type": "string",
 								"description": "The reason for the event.\nFor backward compatibility this string is shown in the UI if the 'description' attribute is missing (but it must not be translated).",
-								"_enum": [ "step", "breakpoint", "exception", "pause", "entry", "goto", "function breakpoint", "data breakpoint" ]
+								"_enum": [ "step", "breakpoint", "exception", "pause", "entry", "goto", "function breakpoint", "data breakpoint", "instruction breakpoint" ]
 							},
 							"description": {
 								"type": "string",
@@ -650,6 +650,40 @@
 			}]
 		},
 
+		"InvalidatedEvent": {
+			"allOf": [ { "$ref": "#/definitions/Event" }, {
+				"type": "object",
+				"description": "This event signals that some state in the debug adapter has changed and requires that the client needs to re-render the data snapshot previously requested.\nDebug adapters do not have to emit this event for runtime changes like stopped or thread events because in that case the client refetches the new state anyway. But the event can be used for example to refresh the UI after rendering formatting has changed in the debug adapter.\nThis event should only be sent if the debug adapter has received a value true for the 'supportsInvalidatedEvent' capability of the 'initialize' request.",
+				"properties": {
+					"event": {
+						"type": "string",
+						"enum": [ "invalidated" ]
+					},
+					"body": {
+						"type": "object",
+						"properties": {
+							"areas": {
+								"type": "array",
+								"description": "Optional set of logical areas that got invalidated. This property has a hint characteristic: a client can only be expected to make a 'best effort' in honouring the areas but there are no guarantees. If this property is missing, empty, or if values are not understand the client should assume a single value 'all'.",
+								"items": {
+									"$ref": "#/definitions/InvalidatedAreas"
+								}
+							},
+							"threadId": {
+								"type": "number",
+								"description": "If specified, the client only needs to refetch data related to this thread."
+							},
+							"stackFrameId": {
+								"type": "number",
+								"description": "If specified, the client only needs to refetch data related to this stack frame (and the 'threadId' is ignored)."
+							}
+						}
+					}
+				},
+				"required": [ "event", "body" ]
+			}]
+		},
+
 		"RunInTerminalRequest": {
 			"allOf": [ { "$ref": "#/definitions/Request" }, {
 				"type": "object",
@@ -794,6 +828,10 @@
 				"supportsProgressReporting": {
 					"type": "boolean",
 					"description": "Client supports progress reporting."
+				},
+				"supportsInvalidatedEvent": {
+					"type": "boolean",
+					"description": "Client supports the invalidated event."
 				}
 			},
 			"required": [ "adapterID" ]
@@ -1356,6 +1394,63 @@
 			}]
 		},
 
+		"SetInstructionBreakpointsRequest": {
+			"allOf": [
+				{ "$ref": "#/definitions/Request" },
+				{
+					"type": "object",
+					"description": "Replaces all existing instruction breakpoints. Typically, instruction breakpoints would be set from a diassembly window. \nTo clear all instruction breakpoints, specify an empty array.\nWhen an instruction breakpoint is hit, a 'stopped' event (with reason 'instruction breakpoint') is generated.\nClients should only call this request if the capability 'supportsInstructionBreakpoints' is true.",
+					"properties": {
+						"command": {
+						"type": "string",
+						"enum": [ "setInstructionBreakpoints" ]
+					},
+					"arguments": {
+						"$ref": "#/definitions/SetInstructionBreakpointsArguments"
+					}
+				},
+				"required": [ "command", "arguments" ]
+			}]
+		},
+		"SetInstructionBreakpointsArguments": {
+			"type": "object",
+			"description": "Arguments for 'setInstructionBreakpoints' request",
+			"properties": {
+				"breakpoints": {
+					"type": "array",
+					"items": {
+						"$ref": "#/definitions/InstructionBreakpoint"
+					},
+					"description": "The instruction references of the breakpoints"
+				}
+			},
+			"required": ["breakpoints"]
+		},
+		"SetInstructionBreakpointsResponse": {
+			"allOf": [
+				{ "$ref": "#/definitions/Response" },
+				{
+					"type": "object",
+					"description": "Response to 'setInstructionBreakpoints' request",
+					"properties": {
+						"body": {
+							"type": "object",
+							"properties": {
+								"breakpoints": {
+									"type": "array",
+									"items": {
+										"$ref": "#/definitions/Breakpoint"
+									},
+								"description": "Information about the breakpoints. The array elements correspond to the elements of the 'breakpoints' array."
+							}
+						},
+						"required": [ "breakpoints" ]
+					}
+				},
+				"required": [ "body" ]
+			}]
+		},
+
 		"ContinueRequest": {
 			"allOf": [ { "$ref": "#/definitions/Request" }, {
 				"type": "object",
@@ -1425,6 +1520,10 @@
 				"threadId": {
 					"type": "integer",
 					"description": "Execute 'next' for this thread."
+				},
+				"granularity": {
+					"$ref": "#/definitions/SteppingGranularity",
+					"description": "Optional granularity to step. If no granularity is specified, a granularity of 'statement' is assumed."
 				}
 			},
 			"required": [ "threadId" ]
@@ -1463,6 +1562,10 @@
 				"targetId": {
 					"type": "integer",
 					"description": "Optional id of the target to step into."
+				},
+				"granularity": {
+					"$ref": "#/definitions/SteppingGranularity",
+					"description": "Optional granularity to step. If no granularity is specified, a granularity of 'statement' is assumed."
 				}
 			},
 			"required": [ "threadId" ]
@@ -1497,6 +1600,10 @@
 				"threadId": {
 					"type": "integer",
 					"description": "Execute 'stepOut' for this thread."
+				},
+				"granularity": {
+					"$ref": "#/definitions/SteppingGranularity",
+					"description": "Optional granularity to step. If no granularity is specified, a granularity of 'statement' is assumed."
 				}
 			},
 			"required": [ "threadId" ]
@@ -1531,6 +1638,10 @@
 				"threadId": {
 					"type": "integer",
 					"description": "Execute 'stepBack' for this thread."
+				},
+				"granularity": {
+					"$ref": "#/definitions/SteppingGranularity",
+					"description": "Optional granularity to step. If no granularity is specified, a granularity of 'statement' is assumed."
 				}
 			},
 			"required": [ "threadId" ]
@@ -2840,6 +2951,14 @@
 				"supportsClipboardContext": {
 					"type": "boolean",
 					"description": "The debug adapter supports the 'clipboard' context value in the 'evaluate' request."
+				},
+				"supportsSteppingGranularity": {
+					"type": "boolean",
+					"description": "The debug adapter supports stepping granularities (argument 'granularity') for the stepping requests."
+				},
+				"supportsInstructionBreakpoints": {
+					"type": "boolean",
+					"description": "The debug adapter supports adding breakpoints based on instruction references."
 				}
 			}
 		},
@@ -3357,9 +3476,33 @@
 			"required": [ "dataId" ]
 		},
 
+		"InstructionBreakpoint": {
+			"type": "object",
+			"description": "Properties of a breakpoint passed to the setInstructionBreakpoints request",
+			"properties": {
+				"instructionReference": {
+					"type": "string",
+					"description": "The instruction reference of the breakpoint.\nThis should be a memory or instruction pointer reference from an EvaluateResponse, Variable, StackFrame, GotoTarget, or Breakpoint."
+				},
+				"offset": {
+					"type": "integer",
+					"description": "An optional offset from the instruction reference.\nThis can be negative."
+				},
+				"condition": {
+					"type": "string",
+					"description": "An optional expression for conditional breakpoints.\nIt is only honored by a debug adapter if the capability 'supportsConditionalBreakpoints' is true."
+				},
+				"hitCondition": {
+					"type": "string",
+					"description": "An optional expression that controls how many hits of the breakpoint are ignored.\nThe backend is expected to interpret the expression as needed.\nThe attribute is only honored by a debug adapter if the capability 'supportsHitConditionalBreakpoints' is true."
+				}
+			},
+			"required": [ "instructionReference" ]
+		},
+
 		"Breakpoint": {
 			"type": "object",
-			"description": "Information about a Breakpoint created in setBreakpoints or setFunctionBreakpoints.",
+			"description": "Information about a Breakpoint created in setBreakpoints, setFunctionBreakpoints, setInstructionBreakpoints, or setDataBreakpoints.",
 			"properties": {
 				"id": {
 					"type": "integer",
@@ -3392,9 +3535,28 @@
 				"endColumn": {
 					"type": "integer",
 					"description": "An optional end column of the actual range covered by the breakpoint.\nIf no end line is given, then the end column is assumed to be in the start line."
+				},
+				"instructionReference": {
+					"type": "string",
+					"description": "An optional memory reference to where the breakpoint is set."
+				},
+				"offset": {
+					"type": "integer",
+					"description": "An optional offset from the instruction reference.\nThis can be negative."
 				}
 			},
 			"required": [ "verified" ]
+		},
+
+		"SteppingGranularity": {
+			"type": "string",
+			"description": "The granularity of one 'step' in the stepping requests 'next', 'stepIn', 'stepOut', and 'stepBack'.",
+			"enum": [ "statement", "line", "instruction" ],
+			"enumDescriptions": [
+				"The step should allow the program to run until the current statement has finished executing.\nThe meaning of a statement is determined by the adapter and it may be considered equivalent to a line.\nFor example 'for(int i = 0; i < 10; i++) could be considered to have 3 statements 'int i = 0', 'i < 10', and 'i++'.",
+				"The step should allow the program to run until the current source line has executed.",
+				"The step should allow one instruction to execute (e.g. one x86 instruction)."
+			]
 		},
 
 		"StepInTarget": {
@@ -3685,6 +3847,18 @@
 				}
 			},
 			"required": [ "address", "instruction" ]
+		},
+
+		"InvalidatedAreas": {
+			"type": "string",
+			"description": "Logical areas that can be invalidated by the 'invalidated' event.",
+			"_enum": [ "all", "stacks", "threads", "variables" ],
+			"enumDescriptions": [
+				"All previously fetched data has become invalid and needs to be refetched.",
+				"Previously fetched stack related data has become invalid and needs to be refetched.",
+				"Previously fetched thread related data has become invalid and needs to be refetched.",
+				"Previously fetched variable data has become invalid and needs to be refetched."
+			]
 		}
 
 	}
