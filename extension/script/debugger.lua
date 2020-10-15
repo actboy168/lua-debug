@@ -83,7 +83,6 @@ function dbg:start(addr, client, ansi)
     local bootstrap_lua = ([[
         package.path = %q
         package.cpath = %q
-        if debug.setcstacklimit then debug.setcstacklimit(200) end
         require "remotedebug.thread".bootstrap_lua = debug.getinfo(1, "S").source
     ]]):format(
           root..'/script/?.lua'
