@@ -167,6 +167,9 @@ function resolveConfig(folder, config) {
             throw new Error('Missing `address` to debug');
         }
     }
+    config.configuration = {
+        variables: vscode.workspace.getConfiguration("lua.debug.variables")
+    }
     return config
 }
 

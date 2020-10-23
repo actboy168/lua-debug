@@ -29,12 +29,14 @@ function activate(context) {
             });
         }),
         vscode.commands.registerCommand('extension.lua-debug.showIntegerAsDec', (variable) => {
+            vscode.workspace.getConfiguration("lua.debug.variables").update("showIntegerAsHex", false, vscode.ConfigurationTarget.workspace);
             const ds = vscode.debug.activeDebugSession;
             if (ds) {
                 ds.customRequest('customRequestShowIntegerAsDec');
             }
         }),
         vscode.commands.registerCommand('extension.lua-debug.showIntegerAsHex', (variable) => {
+            vscode.workspace.getConfiguration("lua.debug.variables").update("showIntegerAsHex", true, vscode.ConfigurationTarget.workspace);
             const ds = vscode.debug.activeDebugSession;
             if (ds) {
                 ds.customRequest('customRequestShowIntegerAsHex');

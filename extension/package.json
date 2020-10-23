@@ -485,6 +485,11 @@
         ],
         "configuration": {
             "properties": {
+                "lua.debug.variables.showIntegerAsHex": {
+                    "type": "boolean",
+                    "description": "Show integer as hex.",
+                    "default": false
+                },
                 "lua.debug.settings.console": {
                     "type": "string",
                     "enum": [

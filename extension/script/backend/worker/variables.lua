@@ -77,7 +77,8 @@ local function init_standard()
     end
 end
 
-ev.on('initializing', function()
+ev.on('initializing', function(config)
+    showIntegerAsHex = config.configuration.variables.showIntegerAsHex
     LUAVERSION = luaver.LUAVERSION
     init_standard()
 end)
