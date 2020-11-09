@@ -83,7 +83,7 @@ function CMD.eventOutput(_, req)
 end
 
 function CMD.eventThread(w, req)
-    ev.emit('thread', req.reason, w)
+    ev.emit('thread', w, req)
     event.thread(req.reason, w)
 end
 

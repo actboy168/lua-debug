@@ -15,11 +15,11 @@ local masterThread
 local workers = {}
 local client = {}
 
-ev.on('thread', function(reason, threadId)
-    if reason == "started" then
-        workers[threadId] = assert(thread.channel("DbgWorker" .. threadId))
+ev.on('thread', function(threadId, msg)
+    if msg.reason == "started" then
+        workers[threadId] = assert(thread.channel(msg.channel))
         ev.emit('worker-ready', threadId)
-    elseif reason == "exited" then
+    elseif msg.reason == "exited" then
         workers[threadId] = nil
     end
 end)

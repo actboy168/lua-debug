@@ -32,9 +32,11 @@ local baseL
 
 local CMD = {}
 
-thread.newchannel ('DbgWorker' .. thread.id)
+local WorkerId = ('DbgWorker(%s)'):format(tostring(hookmgr.gethost()))
+
+thread.newchannel (WorkerId)
 local masterThread = thread.channel 'DbgMaster'
-local workerThread = thread.channel ('DbgWorker' .. thread.id)
+local workerThread = thread.channel (WorkerId)
 
 local function workerThreadUpdate(timeout)
     while true do
@@ -770,6 +772,7 @@ end)
 sendToMaster {
     cmd = 'eventThread',
     reason = 'started',
+    channel = WorkerId,
 }
 
 local w = {}
