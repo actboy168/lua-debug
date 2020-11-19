@@ -1,5 +1,23 @@
 local root, luaapi = ...
 
+if debug.getregistry()["lua-debug"] then
+    local dbg = debug.getregistry()["lua-debug"]
+    local empty = {root = dbg.root}
+    function empty:start()
+        return self
+    end
+    function empty:event(...)
+        return self
+    end
+    function empty:set_wait(...)
+        return self
+    end
+    function empty:setup_patch()
+        return self
+    end
+    return empty
+end
+
 local platform = (function()
     if package.config:sub(1,1) == "\\" then
         return "windows"
