@@ -1,6 +1,7 @@
 local fs = require 'backend.worker.filesystem'
 local ev = require 'backend.event'
 local crc32 = require 'backend.worker.crc32'
+local parser = require 'backend.worker.parser'
 
 local sourcePool = {}
 local codePool = {}
@@ -113,6 +114,14 @@ local function codeReference(s)
     return hash
 end
 
+local function splitline(source)
+    local path, line, content = source:match "^--@([^:]+):(%d+)\n(.*)$"
+    if path and line and content then
+        return path, tonumber(line), content
+    end
+    return source:sub(2)
+end
+
 local function create(source)
     local h = source:sub(1, 1)
     if h == '@' then
@@ -131,6 +140,21 @@ local function create(source)
         -- TODO
         return {}
     else
+        local serverPath, line, content = splitline(source)
+        if serverPath and line and content then
+            local skip, clientPath = serverPathToClientPath(serverPath)
+            if skip then
+                return {
+                    skippath = clientPath,
+                }
+            end
+            return {
+                path = clientPath,
+                protos = {},
+                startline = line and (line-1) or nil,
+                content = content
+            }
+        end
         return {
             sourceReference = codeReference(source),
             protos = {},
@@ -157,18 +181,23 @@ function m.c2s(clientsrc)
         local ref = clientsrc.sourceReference
         for _, source in pairs(sourcePool) do
             if source.sourceReference == ref then
-                return source
+                return {source}
             end
         end
     else
+        local results = {}
         local nativepath = fs.path_native(fs.path_normalize(clientsrc.path))
         for _, source in pairs(sourcePool) do
             if source.path and not source.sourceReference and fs.path_native(fs.path_normalize(source.path)) == nativepath then
                 source.path = clientsrc.path
-                return source
+                results[#results+1] = source
             end
         end
-        knownClientPath[nativepath] = clientsrc.path
+        if #results == 0 then
+            knownClientPath[nativepath] = clientsrc.path
+            return
+        end
+        return results
     end
 end
 
@@ -188,6 +217,13 @@ function m.output(s)
             path = fs.path_normalize(s.path),
         }
     end
+end
+
+function m.line(s, currentline)
+    if s.startline then
+        return currentline + s.startline
+    end
+    return currentline
 end
 
 function m.getCode(ref)

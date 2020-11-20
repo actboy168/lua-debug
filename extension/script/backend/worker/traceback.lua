@@ -39,8 +39,7 @@ local function shortsrc(source, maxlen)
     end
 end
 
-local function getshortsrc(info)
-    local src = source.create(info.source)
+local function getshortsrc(src)
     if src.sourceReference then
         local code = source.getCode(src.sourceReference)
         return shortsrc(code)
@@ -91,7 +90,8 @@ local function pushfuncname(f, info)
     elseif info.what == 'main' then
         return 'main chunk'
     elseif info.what ~= 'C' then
-        return ('function <%s:%d>'):format(getshortsrc(info), info.linedefined)
+        local src = source.create(info.source)
+        return ('function <%s:%d>'):format(getshortsrc(src), source.line(src, info.linedefined))
     else
         return '?'
     end
@@ -101,23 +101,19 @@ local function replacewhere(msg)
     local f, l = msg:find ':[-%d]+: '
     if not f then
         if rdebug.getinfo(1, "Sl", info) then
-            msg = ('%s:%d: %s'):format(getshortsrc(info), info.currentline, msg)
+            local src = source.create(info.source)
+            msg = ('%s:%d: %s'):format(getshortsrc(src), source.line(src, info.currentline), msg)
         end
         return msg, 0
     end
     local srcpath = fs.source_normalize(msg:sub(1, f-1))
     local line = tonumber(msg:sub(f+1, l-2))
     local message = msg:sub(l + 1)
-    local level = 1
-    while true do
-        if not rdebug.getinfo(level, "Sl", info) then
-            return ('%s:%d: %s'):format(source.clientPath(srcpath), line, message), 0
-        end
-        if line == info.currentline and srcpath == fs.source_normalize(info.source:sub(2)) then
-            return ('%s:%d: %s'):format(getshortsrc(info), info.currentline, message), level
-        end
-        level = level + 1
+    if not rdebug.getinfo(1, "Sl", info) then
+        return ('%s:%d: %s'):format(source.clientPath(srcpath), line, message), 1
     end
+    local src = source.create(info.source)
+    return ('%s:%d: %s'):format(getshortsrc(src), source.line(src, info.currentline), message), 1
 end
 
 return function(msg)
@@ -136,9 +132,10 @@ return function(msg)
             s[#s + 1] = '\n\t...'
             depth = last - 10
         else
-            s[#s + 1] = ('\n\t%s:'):format(getshortsrc(info))
+            local src = source.create(info.source)
+            s[#s + 1] = ('\n\t%s:'):format(getshortsrc(src))
             if info.currentline > 0 then
-                s[#s + 1] = ('%d:'):format(info.currentline)
+                s[#s + 1] = ('%d:'):format(source.line(src, info.currentline))
             end
             s[#s + 1] = " in "
             s[#s + 1] = pushfuncname(f, info)

@@ -188,13 +188,14 @@ local function stackTrace(res, coid, start, levels)
             column = 0,
         }
         if info.what ~= 'C' then
-            r.line = info.currentline
             r.column = 1
             local src = source.create(info.source)
             if source.valid(src) then
+                r.line = source.line(src, info.currentline)
                 r.source = source.output(src)
                 r.presentationHint = 'normal'
             else
+                r.line = info.currentline
                 r.presentationHint = 'label'
             end
         else
@@ -525,7 +526,7 @@ local function event_breakpoint(src, line)
         hookmgr.break_closeline()
         return
     end
-    local bp = breakpoint.find(src, line)
+    local bp = breakpoint.find(src, source.line(src, line))
     if bp then
         if breakpoint.exec(bp) then
             state = 'stopped'
@@ -638,7 +639,7 @@ function event.print()
     rdebug.getinfo(1, "Sl", info)
     local src = source.create(info.source)
     if source.valid(src) then
-        stdout(res, src, info.currentline)
+        stdout(res, src, source.line(src, info.currentline))
     else
         stdout(res)
     end
@@ -655,7 +656,7 @@ function event.iowrite()
     rdebug.getinfo(1, "Sl", info)
     local src = source.create(info.source)
     if source.valid(src) then
-        stdout(res, src, info.currentline)
+        stdout(res, src, source.line(src, info.currentline))
     else
         stdout(res)
     end

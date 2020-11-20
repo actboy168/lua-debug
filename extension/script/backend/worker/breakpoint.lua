@@ -61,6 +61,17 @@ local function bpKey(src)
     if src.sourceReference then
         return src.sourceReference
     end
+    local path = fs.path_native(fs.path_normalize(src.path))
+    if src.startline then
+        return path..":"..src.startline
+    end
+    return path
+end
+
+local function bpClientKey(src)
+    if src.sourceReference then
+        return src.sourceReference
+    end
     return fs.path_native(fs.path_normalize(src.path))
 end
 
@@ -133,9 +144,34 @@ function m.find(src, currentline)
     return currentBP[currentline]
 end
 
+local function parserInlineLineinfo(src)
+    local old = parser(src.content)
+    local new = {}
+    local diff = src.startline + 1
+    for k, v in pairs(old) do
+        if type(k) == "number" then
+            new[k+diff] = v+diff
+        else
+            local newv = {}
+            for l in pairs(v) do newv[l+diff] = true end
+            if k == "0-0" then
+                new[k] = newv
+            else
+                local s, e = k:match "^(%d+)-(%d+)$"
+                s = tonumber(s)+1
+                e = tonumber(e)+1
+                new[("%d-%d"):format(s, e)] = newv
+            end
+        end
+    end
+    return new
+end
+
 local function calcLineInfo(src, content)
     if not src.lineinfo then
-        if content then
+        if src.content then
+            src.lineinfo = parserInlineLineinfo(src)
+        elseif content then
             src.lineinfo = parser(content)
         elseif src.sourceReference then
             src.lineinfo = parser(source.getCode(src.sourceReference))
@@ -145,16 +181,18 @@ local function calcLineInfo(src, content)
 end
 
 function m.set_bp(clientsrc, breakpoints, content)
-    local src = source.c2s(clientsrc)
-    if src then
-        if calcLineInfo(src, content) then
-            verifyBreakpoint(src, breakpoints)
+    local srcarray = source.c2s(clientsrc)
+    if srcarray then
+        for _, src in ipairs(srcarray) do
+            if calcLineInfo(src, content) then
+                verifyBreakpoint(src, breakpoints)
+            end
         end
     else
         if content then
-            waitverify[bpKey(clientsrc)] = {
+            waitverify[bpClientKey(clientsrc)] = {
                 breakpoints = breakpoints,
-                lineinfo = parser(content),
+                content = content,
             }
             updateHook()
         end
@@ -190,7 +228,7 @@ function m.exec(bp)
         rdebug.getinfo(1, "Sl", info)
         local src = source.create(info.source)
         if source.valid(src) then
-            ev.emit('output', 'stdout', res, src, info.currentline)
+            ev.emit('output', 'stdout', res, src, source.line(src, info.currentline))
         else
             ev.emit('output', 'stdout', res)
         end
@@ -201,15 +239,20 @@ end
 
 function m.newproto(proto, src, key)
     src.protos[proto] = key
-    local bpkey = bpKey(src)
+    local bpkey = bpClientKey(src) --TODO
     local wv = waitverify[bpkey]
     if wv then
-        waitverify[bpkey] = nil
-        src.lineinfo = wv.lineinfo
-        verifyBreakpoint(src, wv.breakpoints)
+        if src.content then
+            src.lineinfo = parserInlineLineinfo(src)
+            verifyBreakpoint(src, wv.breakpoints)
+        else
+            waitverify[bpkey] = nil
+            src.lineinfo = parser(wv.content)
+            verifyBreakpoint(src, wv.breakpoints)
+        end
         return
     end
-    local bps = currentactive[bpkey]
+    local bps = currentactive[bpKey(src)]
     if bps and src.lineinfo then
         updateBreakpoint(key, src, bps)
         return
