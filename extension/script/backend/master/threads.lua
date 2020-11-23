@@ -1,6 +1,6 @@
+local mgr = require 'backend.master.mgr'
 local event = require 'backend.master.event'
 local response = require 'backend.master.response'
-local ev = require 'backend.event'
 
 local CMD = {}
 
@@ -82,9 +82,14 @@ function CMD.eventOutput(_, req)
     event.output(req.category, req.output, req.source, req.line)
 end
 
-function CMD.eventThread(w, req)
-    ev.emit('thread', w, req)
-    event.thread(req.reason, w)
+function CMD.startThread(workerId)
+    local w = mgr.startThread(workerId)
+    event.thread('started', w)
+end
+
+function CMD.exitThread(w)
+    mgr.exitThread(w)
+    event.thread('exited', w)
 end
 
 function CMD.eventInvalidated(w, req)

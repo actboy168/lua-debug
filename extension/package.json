@@ -42,6 +42,9 @@
         "breakpoints": [
             {
                 "language": "lua"
+            },
+            {
+                "language": "html"
             }
         ],
         "menus": {

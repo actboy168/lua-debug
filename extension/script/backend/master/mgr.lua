@@ -14,15 +14,13 @@ local queue = {}
 local masterThread
 local workers = {}
 local client = {}
+local maxThreadId = 0
+local threads = {}
 
-ev.on('thread', function(threadId, msg)
-    if msg.reason == "started" then
-        workers[threadId] = assert(thread.channel(msg.channel))
-        ev.emit('worker-ready', threadId)
-    elseif msg.reason == "exited" then
-        workers[threadId] = nil
-    end
-end)
+local function genThreadId()
+    maxThreadId = maxThreadId + 1
+    return maxThreadId
+end
 
 local function event_in(data)
     local msg = proto.recv(data, stat)
@@ -112,29 +110,37 @@ function mgr.broadcastToWorker(pkg)
     end
 end
 
-function mgr.threads()
-    local t = {}
-    for w in pairs(workers) do
-        t[#t + 1] = w
-    end
-    return t
+function mgr.workers()
+    return workers
 end
 
 function mgr.hasThread(w)
     return workers[w] ~= nil
 end
 
+function mgr.startThread(workerId)
+    local workerChannel = ('DbgWorker(%s)'):format(workerId)
+    local threaId = genThreadId()
+    workers[threaId] = assert(thread.channel(workerChannel))
+    threads[workerId] = threaId
+    ev.emit('worker-ready', threaId)
+    return threaId
+end
+
+function mgr.exitThread(w)
+    workers[w] = nil
+end
+
 local function updateOnce()
-    local threads = require 'backend.master.threads'
+    local threadCMD = require 'backend.master.threads'
     while true do
         local ok, w, msg = masterThread:pop()
         if not ok then
             break
         end
-        local _ = workers[w]
         local pkg = assert(json.decode(msg))
-        if threads[pkg.cmd] then
-            threads[pkg.cmd](w, pkg)
+        if threadCMD[pkg.cmd] then
+            threadCMD[pkg.cmd](threads[w] or w, pkg)
         end
     end
     if redirect.stderr then

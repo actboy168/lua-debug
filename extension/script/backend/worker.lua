@@ -32,11 +32,12 @@ local baseL
 
 local CMD = {}
 
-local WorkerId = ('DbgWorker(%s)'):format(tostring(hookmgr.gethost()))
+local WorkerId = tostring(hookmgr.gethost())
+local WorkerChannel = ('DbgWorker(%s)'):format(WorkerId)
 
-thread.newchannel (WorkerId)
+thread.newchannel (WorkerChannel)
 local masterThread = thread.channel 'DbgMaster'
-local workerThread = thread.channel (WorkerId)
+local workerThread = thread.channel (WorkerChannel)
 
 local function workerThreadUpdate(timeout)
     while true do
@@ -58,7 +59,7 @@ local function workerThreadUpdate(timeout)
 end
 
 local function sendToMaster(msg)
-	masterThread:push(thread.id, assert(json.encode(msg)))
+	masterThread:push(WorkerId, assert(json.encode(msg)))
 end
 
 ev.on('breakpoint', function(reason, bp)
@@ -129,8 +130,7 @@ function CMD.exit()
     if initialized then
         CMD.terminated()
         sendToMaster {
-            cmd = 'eventThread',
-            reason = 'exited',
+            cmd = 'exitThread',
         }
     end
 end
@@ -771,9 +771,7 @@ ev.on('terminated', function()
 end)
 
 sendToMaster {
-    cmd = 'eventThread',
-    reason = 'started',
-    channel = WorkerId,
+    cmd = 'startThread',
 }
 
 local w = {}

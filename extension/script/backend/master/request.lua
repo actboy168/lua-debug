@@ -126,7 +126,7 @@ end)
 function request.configurationDone(req)
     response.success(req)
     state = "initialized"
-    for _, w in ipairs(mgr.threads()) do
+    for w in pairs(mgr.workers()) do
         initializeWorker(w)
     end
     mgr.initConfig(config)
@@ -193,7 +193,7 @@ function request.setBreakpoints(req)
             content,
         }
         if state == "initialized" then
-            for _, w in ipairs(mgr.threads()) do
+            for w in pairs(mgr.workers()) do
                 initializeWorkerBreakpoints(w, args.source, args.breakpoints, content)
             end
         end
@@ -306,7 +306,11 @@ function request.evaluate(req)
 end
 
 function request.threads(req)
-    response.threads(req, mgr.threads())
+    local t = {}
+    for w in pairs(mgr.workers()) do
+        t[#t + 1] = w
+    end
+    response.threads(req, t)
 end
 
 function request.disconnect(req)

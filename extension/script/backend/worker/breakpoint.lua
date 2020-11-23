@@ -239,7 +239,7 @@ end
 
 function m.newproto(proto, src, key)
     src.protos[proto] = key
-    local bpkey = bpClientKey(src) --TODO
+    local bpkey = bpClientKey(src)
     local wv = waitverify[bpkey]
     if wv then
         if src.content then
