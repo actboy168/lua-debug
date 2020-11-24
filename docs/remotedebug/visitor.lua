@@ -182,7 +182,7 @@ end
 
 ---
 ---@param f refvalue
----@vararg
+---@vararg any
 ---@return boolean
 ---@return ...
 ---执行函数f，如果成功，则第一个返回值是true，随后会将f返回值保存在注册表中并其引用。如果失败，则返回false和错误原因。
@@ -192,7 +192,7 @@ end
 
 ---
 ---@param f refvalue
----@vararg
+---@vararg any
 ---@return boolean
 ---@return string | integer | number | boolean | nil
 ---执行函数f，如果成功，则第一个返回值是true，随后会将f的第一个返回值调用`visitor.value`并返回。如果失败，则返回false和错误原因。
