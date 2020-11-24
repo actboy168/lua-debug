@@ -4,11 +4,6 @@
 ---
 
 ---
----@class vararg
----TODO：用来支持不定参数的返回值
----
-
----
 ---@class RemoteDebugVisitor
 ---在调试器VM提供了一套可以访问、修改调试目标的数据以及状态的API。
 ---
@@ -189,7 +184,7 @@ end
 ---@param f refvalue
 ---@vararg
 ---@return boolean
----@return vararg
+---@return ...
 ---执行函数f，如果成功，则第一个返回值是true，随后会将f返回值保存在注册表中并其引用。如果失败，则返回false和错误原因。
 ---
 function visitor.watch(f,...)
