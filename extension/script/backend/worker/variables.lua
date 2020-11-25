@@ -669,7 +669,7 @@ local function extandFunction(varRef)
         if name == nil then
             break
         end
-        local displayName = isCFunction and ("[%d]"):format(i) or name
+        local displayName = isCFunction and ("[upvalue %d]"):format(i) or name
         local fi = i
         varCreate(vars, varRef, "virtual"
             , displayName, nil
