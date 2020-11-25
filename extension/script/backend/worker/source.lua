@@ -151,7 +151,7 @@ local function create(source)
             return {
                 path = clientPath,
                 protos = {},
-                startline = line and (line-1) or nil,
+                startline = line,
                 content = content
             }
         end
@@ -221,7 +221,7 @@ end
 
 function m.line(s, currentline)
     if s.startline then
-        return currentline + s.startline
+        return currentline + s.startline - 2
     end
     return currentline
 end

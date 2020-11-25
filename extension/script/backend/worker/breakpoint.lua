@@ -147,7 +147,7 @@ end
 local function parserInlineLineinfo(src)
     local old = parser(src.content)
     local new = {}
-    local diff = src.startline + 1
+    local diff = src.startline
     for k, v in pairs(old) do
         if type(k) == "number" then
             new[k+diff] = v+diff
