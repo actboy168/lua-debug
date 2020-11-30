@@ -17,22 +17,22 @@ return {
         {
             default = false,
             filter = 'pcall',
-            label = 'Exception: Lua pcall',
+            label = 'Exception: pcall',
         },
         {
             default = false,
             filter = 'xpcall',
-            label = 'Exception: Lua xpcall',
+            label = 'Exception: xpcall',
         },
         {
             default = true,
             filter = 'lua_pcall',
-            label = 'Exception: C lua_pcall',
+            label = 'Exception: lua_pcall',
         },
         {
             default = true,
             filter = 'lua_panic',
-            label = 'Exception: C lua_panic',
+            label = 'Exception: lua_panic',
         }
     }
 }
