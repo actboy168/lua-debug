@@ -109,11 +109,17 @@ local function replacewhere(msg)
     local srcpath = fs.source_normalize(msg:sub(1, f-1))
     local line = tonumber(msg:sub(f+1, l-2))
     local message = msg:sub(l + 1)
-    if not rdebug.getinfo(1, "Sl", info) then
-        return ('%s:%d: %s'):format(source.clientPath(srcpath), line, message), 1
+    local level = 0
+    while true do
+        if not rdebug.getinfo(level, "Sl", info) then
+            return ('%s:%d: %s'):format(source.clientPath(srcpath), line, message), 0
+        end
+        if info.what ~= 'C' then
+            local src = source.create(info.source)
+            return ('%s:%d: %s'):format(getshortsrc(src), source.line(src, info.currentline), message), level
+        end
+        level = level + 1
     end
-    local src = source.create(info.source)
-    return ('%s:%d: %s'):format(getshortsrc(src), source.line(src, info.currentline), message), 1
 end
 
 return function(msg)
