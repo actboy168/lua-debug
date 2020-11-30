@@ -1,7 +1,6 @@
 local fs = require 'backend.worker.filesystem'
 local ev = require 'backend.event'
 local crc32 = require 'backend.worker.crc32'
-local parser = require 'backend.worker.parser'
 
 local sourcePool = {}
 local codePool = {}
@@ -43,8 +42,6 @@ ev.on('initializing', function(config)
 end)
 
 ev.on('terminated', function()
-    sourcePool = {}
-    codePool = {}
     skipFiles = {}
     sourceMaps = {}
     workspaceFolder = nil
