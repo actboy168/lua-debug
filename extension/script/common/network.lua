@@ -86,7 +86,7 @@ local function open(address, client)
         end
     end
     function m.update()
-        select.update(0.05)
+        select.update(0)
         local data = m.recv()
         if data ~= '' then
             e_send(data)

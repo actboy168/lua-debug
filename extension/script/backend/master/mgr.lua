@@ -193,6 +193,7 @@ end
 function mgr.update()
     while true do
         if updateOnce() then
+            thread.sleep(0.01)
             return
         end
     end
