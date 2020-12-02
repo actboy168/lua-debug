@@ -19,17 +19,6 @@ if platform ~= 'msvc' or arch == 'x86' then
     end
 end
 
-do
-    local bindir = CWD / 'build' / platform / 'bin' / arch / mode
-    local bootstrap = CWD / "3rd" / "bee.lua" / "bootstrap"
-    fs.copy_file(bootstrap / "main.lua",      CWD / 'build' / "main.lua",   true)
-    fs.copy_file(bindir / ('bee'..dll),       CWD / 'build' / ('bee'..dll), true)
-    fs.copy_file(bindir / ('bootstrap'..exe), CWD / 'build' / ('lua'..exe), true)
-    if platform == 'msvc' then
-        fs.copy_file(bindir / 'lua54.dll',    CWD / 'build' / 'lua54.dll',  true)
-    end
-end
-
 if platform == 'msvc' then
     local output = CWD / 'publish' / 'bin' / 'win'
     local bindir = CWD / 'build' / platform / 'bin' / arch / mode

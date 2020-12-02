@@ -34,8 +34,9 @@
         },
         {
             "label": "Copy Extension",
-            "command": "${workspaceFolder}/build/lua",
+            "command": "luamake",
             "args": [
+                "lua",
                 "make/copy.lua",
                 "extension",
                 "extension",
@@ -44,8 +45,9 @@
         },
         {
             "label": "Copy Publish",
-            "command": "${workspaceFolder}/build/lua",
+            "command": "luamake",
             "args": [
+                "lua",
                 "make/copy.lua",
                 "publish",
                 "publish",
