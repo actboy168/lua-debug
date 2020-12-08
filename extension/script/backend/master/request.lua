@@ -101,7 +101,7 @@ local function initializeWorker(w)
     })
     mgr.sendToWorker(w, {
         cmd = 'setExceptionBreakpoints',
-        filters = config.exception_breakpoints,
+        arguments = config.exception_breakpoints,
     })
     if firstWorker and config.launch then
         mgr.sendToWorker(w, {
@@ -217,11 +217,11 @@ end
 function request.setExceptionBreakpoints(req)
     local args = req.arguments
     response.success(req)
-    config.exception_breakpoints = args.filters
+    config.exception_breakpoints = args
     if state == "initialized" then
         mgr.broadcastToWorker {
             cmd = 'setExceptionBreakpoints',
-            filters = args.filters,
+            arguments = args,
         }
     end
 end

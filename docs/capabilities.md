@@ -35,6 +35,7 @@
 | supportsClipboardContext           |    🟩    |
 | supportsSteppingGranularity        |    🟥    |
 | supportsInstructionBreakpoints     |    🟥    |
+| supportsExceptionFilterOptions     |    🟩    |
 
 | Capabilities (Client)              | Available |
 |------------------------------------|-----------|

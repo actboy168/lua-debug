@@ -388,8 +388,15 @@ end
 
 function CMD.setExceptionBreakpoints(pkg)
     exceptionFilters = {}
-    for _, filter in ipairs(pkg.filters) do
+    for _, filter in ipairs(pkg.arguments.filters) do
         exceptionFilters[filter] = true
+    end
+    for _, filter in ipairs(pkg.arguments.filterOptions) do
+        if type(filter.condition) == "string" and evaluate.verify(filter.condition) then
+            exceptionFilters[filter.filterId] = filter.condition
+        else
+            exceptionFilters[filter.filterId] = true
+        end
     end
     if hookmgr.exception_open then
         hookmgr.exception_open(next(exceptionFilters) ~= nil)
@@ -663,12 +670,21 @@ function event.iowrite()
     return true
 end
 
+local function execExceptionBreakpoint(type, level)
+    local filter = exceptionFilters[type]
+    if filter == true or filter == nil then
+        return filter
+    end
+    local ok, res = evaluate.eval(filter, level)
+    return (not ok) or res
+end
+
 function event.panic(msg)
     if not initialized then return end
-    if not exceptionFilters['lua_panic'] then
+    exceptionMsg, exceptionTrace, exceptionLevel = traceback(tostring(msg))
+    if not execExceptionBreakpoint('lua_panic', exceptionLevel) then
         return
     end
-    exceptionMsg, exceptionTrace, exceptionLevel = traceback(tostring(msg))
     state = 'stopped'
     runLoop('exception', exceptionMsg, exceptionLevel)
 end
@@ -676,10 +692,10 @@ end
 function event.r_exception(msg)
     if not initialized then return end
     local type = getExceptionType()
-    if not type or not exceptionFilters[type] then
+    exceptionMsg, exceptionTrace, exceptionLevel = traceback(tostring(msg))
+    if not execExceptionBreakpoint(type, exceptionLevel) then
         return
     end
-    exceptionMsg, exceptionTrace, exceptionLevel = traceback(tostring(msg))
     state = 'stopped'
     runLoop('exception', exceptionMsg, exceptionLevel)
 end
@@ -687,11 +703,11 @@ end
 function event.exception()
     if not initialized then return end
     local type = getExceptionType()
-    if not type or not exceptionFilters[type] then
-        return
-    end
     local msg = getEventArgs(2)
     exceptionMsg, exceptionTrace, exceptionLevel = traceback(msg)
+    if not execExceptionBreakpoint(type, exceptionLevel) then
+        return
+    end
     state = 'stopped'
     runLoop('exception', exceptionMsg, exceptionLevel)
 end
