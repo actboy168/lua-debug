@@ -18,7 +18,7 @@
     },
     "private": true,
     "engines": {
-        "vscode": "^1.19.0"
+        "vscode": "^1.52.0"
     },
     "extensionKind": [
         "workspace"
