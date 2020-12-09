@@ -97,7 +97,7 @@ thunk* thunk_create_allocf(intptr_t dbg, intptr_t allocf)
 		return 0;
 	}
 	memcpy(sc + 2, &dbg, sizeof(dbg));
-	memcpy(sc + 12, &hook, sizeof(hook));
+	memcpy(sc + 12, &allocf, sizeof(allocf));
 	if (!t->write(&sc)) {
 		return 0;
 	}
