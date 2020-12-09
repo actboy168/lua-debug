@@ -385,6 +385,7 @@ struct hookmgr {
     rlua_State* cL = 0;
     std::unique_ptr<thunk> sc_full_hook;
     std::unique_ptr<thunk> sc_idle_hook;
+    void* eventfree = nullptr;
 
     hookmgr(rlua_State* L)
         : cL(L)
@@ -586,13 +587,13 @@ struct hookmgr {
             reinterpret_cast<intptr_t>(this),
             reinterpret_cast<intptr_t>(&idle_hook_callback)
         ));
-        remotedebug::eventfree::create(hL, freeobj_callback, this);
+        eventfree = remotedebug::eventfree::create(hL, freeobj_callback, this);
     }
     ~hookmgr() {
         if (!hostL) {
             return;
         }
-        remotedebug::eventfree::destroy(hostL);
+        remotedebug::eventfree::destroy(hostL, eventfree);
         lua_sethook(hostL, 0, 0, 0);
 #if defined(LUA_HOOKEXCEPTION)
         exception_open(hostL, 0);

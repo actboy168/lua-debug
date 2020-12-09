@@ -79,3 +79,27 @@ thunk* thunk_create_panic(intptr_t dbg, intptr_t panic)
 	}
 	return t.release();
 }
+
+thunk* thunk_create_allocf(intptr_t dbg, intptr_t allocf)
+{
+	// void* __cedel thunk_allocf(void *ud, void *ptr, size_t osize, size_t nsize)
+	// {
+	//     return `allocf`(`dbg`, ptr, osize, nsize);
+	// }
+	static unsigned char sc[] = {
+		0x48, 0xbf, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // mov rdi, dbg
+		0x48, 0xb8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // mov rax, hook
+		0xff, 0xd0,                                                 // call rax
+		0xc3,                                                       // ret
+	};
+	std::unique_ptr<thunk> t(new thunk);
+	if (!t->create(sizeof(sc))) {
+		return 0;
+	}
+	memcpy(sc + 2, &dbg, sizeof(dbg));
+	memcpy(sc + 12, &hook, sizeof(hook));
+	if (!t->write(&sc)) {
+		return 0;
+	}
+	return t.release();
+}
