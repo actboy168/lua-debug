@@ -2,6 +2,9 @@ const vscode = require("vscode");
 const path = require("path");
 const os = require('os');
 
+const TriggerKindInitial = 1;
+const TriggerKindDynamic = 2;
+
 function createDefaultProgram(folder) {
     const editor = vscode.window.activeTextEditor;
     if (editor && editor.document.languageId === 'lua') {
@@ -16,20 +19,56 @@ function createDefaultProgram(folder) {
     }
 }
 
-function provideDebugConfigurations(folder, token) {
-    let program = createDefaultProgram(folder);
-    if (!program) {
-        program = '${file}';
-    }
-    return [
-        {
-            type: 'lua',
-            request: 'launch',
-            name: 'Debug',
-            program: program
+exports.initial = {
+    type: "provider",
+    triggerKind: TriggerKindInitial,
+    provideDebugConfigurations: function (folder) {
+        let program = createDefaultProgram(folder);
+        if (!program) {
+            program = '${file}';
         }
-    ];
-}
+        return [
+            {
+                type: 'lua',
+                request: 'launch',
+                name: 'Debug',
+                program: program
+            }
+        ];
+    }
+};
+
+
+
+exports.dynamic = {
+    type: "provider",
+    triggerKind: TriggerKindDynamic,
+    provideDebugConfigurations: function (folder) {
+        let configurations = [];
+        let program = createDefaultProgram(folder);
+        if (program) {
+            configurations.push({
+                type: 'lua',
+                request: 'launch',
+                name: 'Debug Current File',
+                program: program
+            });
+        }
+        configurations.push({
+            type: 'lua',
+            request: 'attach',
+            name: 'Attach TCP',
+            address: "127.0.0.1:4278"
+        });
+        configurations.push({
+            type: 'lua',
+            request: 'attach',
+            name: 'Attach Process',
+            processId: "${command:pickProcess}"
+        });
+        return configurations;
+    }
+};
 
 function mergeConfigurations(config) {
     let platname
@@ -173,13 +212,13 @@ function resolveConfig(folder, config) {
     return config
 }
 
-function resolveDebugConfiguration(folder, config, token) {
-    try {
-        return resolveConfig(folder, config);
-    } catch (err) {
-        return vscode.window.showErrorMessage(err.message, { modal: true }).then(_ => undefined);
+exports.resolve = {
+    type: "resolver",
+    resolveDebugConfiguration: function (folder, config) {
+        try {
+            return resolveConfig(folder, config);
+        } catch (err) {
+            return vscode.window.showErrorMessage(err.message, { modal: true }).then(_ => undefined);
+        }
     }
-}
-
-exports.provideDebugConfigurations = provideDebugConfigurations;
-exports.resolveDebugConfiguration = resolveDebugConfiguration;
+};

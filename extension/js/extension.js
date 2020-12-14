@@ -6,8 +6,17 @@ const pickProcess = require("./pickProcess");
 
 function activate(context) {
     exports.context = context;
+    for (const i in configurationProvider) {
+        let provider = configurationProvider[i];
+        if (provider.type == 'resolver') {
+            vscode.debug.registerDebugConfigurationProvider('lua', provider);
+        }
+        else if (provider.type == 'provider') {
+            vscode.debug.registerDebugConfigurationProvider('lua', provider, provider.triggerKind);
+        }
+    }
+
     context.subscriptions.push(
-        vscode.debug.registerDebugConfigurationProvider('lua', configurationProvider),
         vscode.debug.registerDebugAdapterDescriptorFactory('lua', descriptorFactory),
         vscode.debug.registerDebugAdapterTrackerFactory('lua', trackerFactory),
         vscode.commands.registerCommand("extension.lua-debug.pickProcess", pickProcess.pick),
