@@ -36,6 +36,7 @@
         "onCommand:extension.lua-debug.debugEditorContents",
         "onCommand:extension.lua-debug.pickProcess",
         "onDebugInitialConfigurations",
+        "onDebugDynamicConfigurations",
         "onDebugResolve:lua"
     ],
     "contributes": {
