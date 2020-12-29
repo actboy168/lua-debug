@@ -263,18 +263,18 @@ local funcs = {}
 function m.set_funcbp(breakpoints)
     funcs = {}
     for _, bp in ipairs(breakpoints) do
-        if evaluate.verify(bp.name) then
-            funcs[#funcs+1] = bp.name
+        if evaluate.verify(bp.name) and valid(bp) then
+            funcs[#funcs+1] = bp
         end
     end
     hookmgr.funcbp_open(#funcs > 0)
 end
 
 function m.hit_funcbp(func)
-    for _, funcstr in ipairs(funcs) do
-        local ok, res = evaluate.eval(funcstr, 1)
+    for _, bp in ipairs(funcs) do
+        local ok, res = evaluate.eval(bp.name, 1)
         if ok and res == func then
-            return true
+            return m.exec(bp)
         end
     end
 end
