@@ -229,7 +229,8 @@
                             "path": {
                                 "type": [
                                     "string",
-                                    "array"
+                                    "array",
+                                    "null"
                                 ],
                                 "markdownDescription": "Search path for Lua programs",
                                 "default": "${workspaceFolder}/?.lua"
@@ -237,7 +238,8 @@
                             "cpath": {
                                 "type": [
                                     "string",
-                                    "array"
+                                    "array",
+                                    "null"
                                 ],
                                 "markdownDescription": "Search path for native libraries",
                                 "default": "${workspaceFolder}/?.dll"
