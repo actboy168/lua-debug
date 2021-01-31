@@ -455,7 +455,7 @@ end
 
 function CMD.setSearchPath(pkg)
     local function set_search_path(name)
-        if not pkg[name] then
+        if not pkg[name] or pkg[name] == json.null then
             return
         end
         local value = pkg[name]
