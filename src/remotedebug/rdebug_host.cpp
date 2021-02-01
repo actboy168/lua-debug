@@ -3,7 +3,7 @@
 static int DEBUG_HOST = 0;	// host L in client VM
 static int DEBUG_CLIENT = 0;	// client L in host VM for hook
 
-int  event(rlua_State* cL, lua_State* hL, const char* name);
+int  event(rlua_State* cL, lua_State* hL, const char* name, int nargs);
 
 rlua_State *
 get_client(lua_State *L) {
@@ -48,7 +48,7 @@ static int
 lhost_clear(lua_State *L) {
 	rlua_State *cL = get_client(L);
 	if (cL) {
-		event(cL, L, "exit");
+		event(cL, L, "exit", 0);
 	}
 	clear_client(L);
 	return 0;
@@ -138,7 +138,7 @@ lhost_event(lua_State *L) {
 	if (!cL) {
 		return 0;
 	}
-	int ok = event(cL, L, luaL_checkstring(L, 1));
+	int ok = event(cL, L, luaL_checkstring(L, 1), lua_gettop(L) - 1);
 	if (ok < 0) {
 		return 0;
 	}

@@ -337,7 +337,7 @@ struct hookmgr {
             return;
         }
         set_host(cL, hL);
-        rlua_pushstring(cL, "r_exception");
+        rlua_pushstring(cL, "exception");
         copy_value(hL, cL, true);
         if (rlua_pcall(cL, 2, 0, 0) != LUA_OK) {
             rlua_pop(cL, 1);
@@ -366,7 +366,7 @@ struct hookmgr {
             return;
         }
         set_host(cL, hL);
-        rlua_pushstring(cL, "r_thread");
+        rlua_pushstring(cL, "thread");
         void* L = lua_touserdata(hL, -1);
         L   ? rlua_pushlightuserdata(cL, L)
             : rlua_pushnil(cL)
@@ -394,14 +394,19 @@ struct hookmgr {
         break_proto.fill(0);
     }
 
-    int event(lua_State* hL, const char* name) {
+    int event(lua_State* hL, const char* name, int nargs) {
         if (rlua_rawgetp(cL, RLUA_REGISTRYINDEX, &HOOK_CALLBACK) != LUA_TFUNCTION) {
             rlua_pop(cL, 1);
             return -1;
         }
         set_host(cL, hL);
         rlua_pushstring(cL, name);
-        if (rlua_pcall(cL, 1, 1, 0) != LUA_OK) {
+        for (int i = 0; i < nargs; ++i) {
+            lua_pushvalue(hL, i + 2);
+            copy_value(hL, cL, true);
+            lua_pop(hL, 1);
+        }
+        if (rlua_pcall(cL, 1 + nargs, 1, 0) != LUA_OK) {
             rlua_pop(cL, 1);
             return -1;
         }
@@ -782,12 +787,12 @@ int luaopen_remotedebug_hookmgr(rlua_State* L) {
     return 1;
 }
 
-int event(rlua_State* cL, lua_State* hL, const char* name) {
+int event(rlua_State* cL, lua_State* hL, const char* name, int nargs) {
     if (LUA_TUSERDATA != rlua_rawgetp(cL, RLUA_REGISTRYINDEX, &HOOK_MGR)) {
         rlua_pop(cL, 1);
         return -1;
     }
-    int ok = ((hookmgr*)rlua_touserdata(cL, -1))->event(hL, name);
+    int ok = ((hookmgr*)rlua_touserdata(cL, -1))->event(hL, name, nargs);
     rlua_pop(cL, 1);
     return ok;
 }

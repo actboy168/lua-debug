@@ -19,10 +19,11 @@ end
 
 ---
 ---@param name string
+---@vararg any
 ---@return boolean | nil
 ---触发一个事件给调试器VM。它会等调试器VM处理完毕才会返回。如果失败或者返回值不是boolean，则返回nil，否则返回事件的返回值。
 ---
-function rdebug.event(name)
+function rdebug.event(name,...)
 end
 
 ---

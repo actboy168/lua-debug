@@ -577,14 +577,6 @@ function event.newproto(proto, level)
     return breakpoint.newproto(proto, src, info.linedefined.."-"..info.lastlinedefined)
 end
 
-local function getEventArgs(i)
-    local name, value = rdebug.getlocal(1, -i)
-    if name == nil then
-        return
-    end
-    return rdebug.value(value)
-end
-
 local function pairsEventArgs()
     local max = rdebug.getstack()
     local n = 1
@@ -675,21 +667,9 @@ function event.panic(msg)
     runLoop('exception', exceptionMsg, exceptionLevel)
 end
 
-function event.r_exception(msg)
+function event.exception(msg)
     if not initialized then return end
     local type = getExceptionType()
-    exceptionMsg, exceptionTrace, exceptionLevel = traceback(rdebug.value(msg))
-    if not execExceptionBreakpoint(type, exceptionLevel) then
-        return
-    end
-    state = 'stopped'
-    runLoop('exception', exceptionMsg, exceptionLevel)
-end
-
-function event.exception()
-    if not initialized then return end
-    local type = getExceptionType()
-    local msg = getEventArgs(2)
     exceptionMsg, exceptionTrace, exceptionLevel = traceback(msg)
     if not execExceptionBreakpoint(type, exceptionLevel) then
         return
@@ -698,7 +678,7 @@ function event.exception()
     runLoop('exception', exceptionMsg, exceptionLevel)
 end
 
-function event.r_thread(co, type)
+function event.thread(co, type)
     local L = hookmgr.gethost()
     if co then
         if type == 0 then
@@ -708,12 +688,6 @@ function event.r_thread(co, type)
         end
     end
     hookmgr.updatehookmask(L)
-end
-
-function event.thread()
-    local co = getEventArgs(1)
-    local type = getEventArgs(2)
-    event.r_thread(co, type)
 end
 
 function event.wait()
