@@ -589,27 +589,6 @@ local function pairsEventArgs()
     end
 end
 
-local function getExceptionType()
-    local pcall = rdebug.value(rdebug.fieldv(rdebug._G, 'pcall'))
-    local xpcall = rdebug.value(rdebug.fieldv(rdebug._G, 'xpcall'))
-    local level = 1
-    while true do
-        local f = rdebug.getfunc(level)
-        if f == nil then
-            break
-        end
-        f = rdebug.value(f)
-        if f == pcall then
-            return 'pcall'
-        end
-        if f == xpcall then
-            return 'xpcall'
-        end
-        level = level + 1
-    end
-    return 'lua_pcall'
-end
-
 function event.update()
     workerThreadUpdate()
 end
@@ -657,25 +636,45 @@ local function execExceptionBreakpoint(type, level)
     return (not ok) or res
 end
 
-function event.panic(msg)
-    if not initialized then return end
-    exceptionMsg, exceptionTrace, exceptionLevel = traceback(rdebug.value(msg))
-    if not execExceptionBreakpoint('lua_panic', exceptionLevel) then
-        return
+local function getExceptionType()
+    local pcall = rdebug.value(rdebug.fieldv(rdebug._G, 'pcall'))
+    local xpcall = rdebug.value(rdebug.fieldv(rdebug._G, 'xpcall'))
+    local level = 1
+    while true do
+        local f = rdebug.getfunc(level)
+        if f == nil then
+            break
+        end
+        f = rdebug.value(f)
+        if f == pcall then
+            return 'pcall'
+        end
+        if f == xpcall then
+            return 'xpcall'
+        end
+        level = level + 1
     end
-    state = 'stopped'
-    runLoop('exception', exceptionMsg, exceptionLevel)
+    return 'lua_pcall'
 end
 
-function event.exception(msg)
-    if not initialized then return end
-    local type = getExceptionType()
+local function runException(type, error)
+    local msg = rdebug.value(error)
     exceptionMsg, exceptionTrace, exceptionLevel = traceback(msg)
     if not execExceptionBreakpoint(type, exceptionLevel) then
         return
     end
     state = 'stopped'
     runLoop('exception', exceptionMsg, exceptionLevel)
+end
+
+function event.panic(error)
+    if not initialized then return end
+    runException('lua_panic', error)
+end
+
+function event.exception(error)
+    if not initialized then return end
+    runException(getExceptionType(), error)
 end
 
 function event.thread(co, type)
