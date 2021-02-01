@@ -138,7 +138,7 @@ get_registry_value(rlua_State *L, const char* name, int ref) {
 	v->index = 0;
 }
 
-static void
+static int
 ref_value(lua_State* from, rlua_State* to) {
 	if (lua::getfield(from, LUA_REGISTRYINDEX, "__debugger_ref") == LUA_TNIL) {
 		lua_pop(from, 1);
@@ -147,23 +147,37 @@ ref_value(lua_State* from, rlua_State* to) {
 		lua_setfield(from, LUA_REGISTRYINDEX, "__debugger_ref");
 	}
 	lua_pushvalue(from, -2);
-	get_registry_value(to, "__debugger_ref", luaL_ref(from, -2));
+	int ref = luaL_ref(from, -2);
+	get_registry_value(to, "__debugger_ref", ref);
 	lua_pop(from, 1);
+	return ref;
 }
 
 void
+unref_value(lua_State* from, int ref) {
+	if (ref >= 0) {
+		if (lua::getfield(from, LUA_REGISTRYINDEX, "__debugger_ref") == LUA_TTABLE) {
+			luaL_unref(from, -1, ref);
+		}
+		lua_pop(from, 1);
+	}
+}
+
+int
 copy_value(lua_State *from, rlua_State *to, bool ref) {
 	if (copy_toR(from, to) == LUA_TNONE) {
 		if (ref) {
-			ref_value(from, to);
+			return ref_value(from, to);
 		}
 		else {
 			rlua_pushfstring(to, "%s: %p",
 				lua_typename(from, lua_type(from, -1)),
 				lua_topointer(from, -1)
 			);
+			return LUA_NOREF;
 		}
 	}
+	return LUA_NOREF;
 }
 
 // L top : value, uservalue

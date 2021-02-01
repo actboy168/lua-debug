@@ -22,8 +22,8 @@ static int THUNK_MGR = 0;
 
 void set_host(rlua_State* L, lua_State* hL);
 lua_State* get_host(rlua_State *L);
-void copy_value(lua_State *hL, rlua_State *cL, bool ref);
-
+int copy_value(lua_State* from, rlua_State* to, bool ref);
+void unref_value(lua_State* from, int ref);
 
 #define BPMAP_SIZE (1 << 16)
 
@@ -338,11 +338,11 @@ struct hookmgr {
         }
         set_host(cL, hL);
         rlua_pushstring(cL, "exception");
-        copy_value(hL, cL, true);
+        int ref = copy_value(hL, cL, true);
         if (rlua_pcall(cL, 2, 0, 0) != LUA_OK) {
             rlua_pop(cL, 1);
-            return;
         }
+        unref_value(hL, ref);
     }
 #endif
 
@@ -394,18 +394,7 @@ struct hookmgr {
         break_proto.fill(0);
     }
 
-    int event(lua_State* hL, const char* name, int nargs) {
-        if (rlua_rawgetp(cL, RLUA_REGISTRYINDEX, &HOOK_CALLBACK) != LUA_TFUNCTION) {
-            rlua_pop(cL, 1);
-            return -1;
-        }
-        set_host(cL, hL);
-        rlua_pushstring(cL, name);
-        for (int i = 0; i < nargs; ++i) {
-            lua_pushvalue(hL, i + 2);
-            copy_value(hL, cL, true);
-            lua_pop(hL, 1);
-        }
+    int call_event(lua_State* hL, int nargs) {
         if (rlua_pcall(cL, 1 + nargs, 1, 0) != LUA_OK) {
             rlua_pop(cL, 1);
             return -1;
@@ -419,14 +408,38 @@ struct hookmgr {
         return -1;
     }
 
+    int event(lua_State* hL, const char* name, int nargs) {
+        if (rlua_rawgetp(cL, RLUA_REGISTRYINDEX, &HOOK_CALLBACK) != LUA_TFUNCTION) {
+            rlua_pop(cL, 1);
+            return -1;
+        }
+        set_host(cL, hL);
+        rlua_pushstring(cL, name);
+        if (nargs == 0) {
+            return call_event(hL, 0);
+        }
+        std::vector<int> refs; refs.resize(nargs);
+        for (int i = 0; i < nargs; ++i) {
+            lua_pushvalue(hL, i + 2);
+            refs[i] = copy_value(hL, cL, true);
+            lua_pop(hL, 1);
+        }
+        int nres = call_event(hL, nargs);
+        for (int i = 0; i < nargs; ++i) {
+            unref_value(hL, refs[i]);
+        }
+        return nres;
+    }
+
     void panic(lua_State* hL) {
         if (rlua_rawgetp(cL, RLUA_REGISTRYINDEX, &HOOK_CALLBACK) == LUA_TFUNCTION) {
             set_host(cL, hL);
             rlua_pushstring(cL, "panic");
-            copy_value(hL, cL, true);
+            int ref = copy_value(hL, cL, true);
             if (rlua_pcall(cL, 2, 0, 0) != LUA_OK) {
                 rlua_pop(cL, 1);
             }
+            unref_value(hL, ref);
         }
         else {
             rlua_pop(cL, 1);
