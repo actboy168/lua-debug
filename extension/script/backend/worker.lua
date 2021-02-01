@@ -628,12 +628,12 @@ function event.iowrite()
     return true
 end
 
-local function execExceptionBreakpoint(type, level)
+local function execExceptionBreakpoint(type, level, error)
     local filter = exceptionFilters[type]
     if filter == true or filter == nil then
         return filter
     end
-    local ok, res = evaluate.eval(filter, level)
+    local ok, res = evaluate.eval(filter, level, { error = error })
     return (not ok) or res
 end
 
@@ -660,7 +660,7 @@ end
 
 local function runException(type, error)
     local message, trace, level = traceback(error)
-    if not execExceptionBreakpoint(type, level) then
+    if not execExceptionBreakpoint(type, level, error) then
         return
     end
     currentException = {
