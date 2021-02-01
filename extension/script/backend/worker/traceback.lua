@@ -97,7 +97,8 @@ local function pushfuncname(f, info)
     end
 end
 
-local function replacewhere(msg)
+local function replacewhere(error)
+    local msg = rdebug.value(error)
     local f, l = msg:find ':[-%d]+: '
     if not f then
         if rdebug.getinfo(1, "Sl", info) then
@@ -122,9 +123,9 @@ local function replacewhere(msg)
     end
 end
 
-return function(msg)
+return function(error)
     local s = {}
-    local message, level = replacewhere(msg)
+    local message, level = replacewhere(error)
     s[#s + 1] = 'stack traceback:'
     local last = hookmgr.stacklevel()
     local n1 = ((last - level) > 21) and 10 or -1

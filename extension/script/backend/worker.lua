@@ -19,9 +19,10 @@ local info = {}
 local state = 'running'
 local stopReason = 'step'
 local exceptionFilters = {}
-local exceptionMsg = ''
-local exceptionTrace = ''
-local exceptionLevel = 0
+local currentException = {
+    message = '',
+    Trace = '',
+}
 local outputCapture = {}
 local noDebug = false
 local openUpdate = false
@@ -395,9 +396,9 @@ function CMD.exceptionInfo(pkg)
         command = pkg.command,
         seq = pkg.seq,
         breakMode = 'always',
-        exceptionId = exceptionMsg,
+        exceptionId = currentException.message,
         details = {
-            stackTrace = exceptionTrace,
+            stackTrace = currentException.trace,
         }
     }
 end
@@ -658,13 +659,16 @@ local function getExceptionType()
 end
 
 local function runException(type, error)
-    local msg = rdebug.value(error)
-    exceptionMsg, exceptionTrace, exceptionLevel = traceback(msg)
-    if not execExceptionBreakpoint(type, exceptionLevel) then
+    local message, trace, level = traceback(error)
+    if not execExceptionBreakpoint(type, level) then
         return
     end
+    currentException = {
+        message = message,
+        trace = trace,
+    }
     state = 'stopped'
-    runLoop('exception', exceptionMsg, exceptionLevel)
+    runLoop('exception', message, level)
 end
 
 function event.panic(error)
