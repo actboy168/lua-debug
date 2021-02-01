@@ -22,7 +22,7 @@ static int THUNK_MGR = 0;
 
 void set_host(rlua_State* L, lua_State* hL);
 lua_State* get_host(rlua_State *L);
-void copyvalue(lua_State *hL, rlua_State *cL);
+void copy_value(lua_State *hL, rlua_State *cL, bool ref);
 
 
 #define BPMAP_SIZE (1 << 16)
@@ -338,7 +338,7 @@ struct hookmgr {
         }
         set_host(cL, hL);
         rlua_pushstring(cL, "r_exception");
-        copyvalue(hL, cL);
+        copy_value(hL, cL, true);
         if (rlua_pcall(cL, 2, 0, 0) != LUA_OK) {
             rlua_pop(cL, 1);
             return;
@@ -418,7 +418,7 @@ struct hookmgr {
         if (rlua_rawgetp(cL, RLUA_REGISTRYINDEX, &HOOK_CALLBACK) == LUA_TFUNCTION) {
             set_host(cL, hL);
             rlua_pushstring(cL, "panic");
-            copyvalue(hL, cL);
+            copy_value(hL, cL, true);
             if (rlua_pcall(cL, 2, 0, 0) != LUA_OK) {
                 rlua_pop(cL, 1);
             }

@@ -667,7 +667,7 @@ end
 
 function event.panic(msg)
     if not initialized then return end
-    exceptionMsg, exceptionTrace, exceptionLevel = traceback(tostring(msg))
+    exceptionMsg, exceptionTrace, exceptionLevel = traceback(rdebug.value(msg))
     if not execExceptionBreakpoint('lua_panic', exceptionLevel) then
         return
     end
@@ -678,7 +678,7 @@ end
 function event.r_exception(msg)
     if not initialized then return end
     local type = getExceptionType()
-    exceptionMsg, exceptionTrace, exceptionLevel = traceback(tostring(msg))
+    exceptionMsg, exceptionTrace, exceptionLevel = traceback(rdebug.value(msg))
     if not execExceptionBreakpoint(type, exceptionLevel) then
         return
     end

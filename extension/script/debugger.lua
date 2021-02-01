@@ -138,7 +138,7 @@ function dbg:setup_patch()
     function pcall(f, ...)
         return rawxpcall(f,
             function(msg)
-                debug:event("exception", msg)
+                dbg:event("exception", msg)
                 return msg
             end,
         ...)
@@ -146,7 +146,7 @@ function dbg:setup_patch()
     function xpcall(f, msgh, ...)
         return rawxpcall(f,
             function(msg)
-                debug:event("exception", msg)
+                dbg:event("exception", msg)
                 return msgh and msgh(msg) or msg
             end
         , ...)
@@ -154,18 +154,18 @@ function dbg:setup_patch()
     local rawcoroutineresume = coroutine.resume
     local rawcoroutinewrap   = coroutine.wrap
     local function coreturn(co, ...)
-        debug:event("thread", co, 1)
+        dbg:event("thread", co, 1)
         return ...
     end
     function coroutine.resume(co, ...)
-        debug:event("thread", co, 0)
+        dbg:event("thread", co, 0)
         return coreturn(co, rawcoroutineresume(co, ...))
     end
     function coroutine.wrap(f)
         local wf = rawcoroutinewrap(f)
         local _, co = debug.getupvalue(wf, 1)
         return function(...)
-            debug:event("thread", co, 0)
+            dbg:event("thread", co, 0)
             return coreturn(co, wf(...))
         end
     end

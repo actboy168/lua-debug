@@ -120,13 +120,49 @@ copy_toR(lua_State *from, rlua_State *to) {
 	return t;
 }
 
+static void
+get_registry_value(rlua_State *L, const char* name, int ref) {
+	size_t len = strlen(name);
+	struct value *v = (struct value *)rlua_newuserdata(L, 3 * sizeof(struct value) + len);
+	v->type = VAR::INDEX_INT;
+	v->index = ref;
+	v++;
+
+	v->type = VAR::INDEX_STR;
+	v->index = (int)len;
+	v++;
+	memcpy(v,name,len);
+	v = (struct value *)((char*)v+len);
+
+	v->type = VAR::REGISTRY;
+	v->index = 0;
+}
+
+static void
+ref_value(lua_State* from, rlua_State* to) {
+	if (lua::getfield(from, LUA_REGISTRYINDEX, "__debugger_ref") == LUA_TNIL) {
+		lua_pop(from, 1);
+		lua_newtable(from);
+		lua_pushvalue(from, -1);
+		lua_setfield(from, LUA_REGISTRYINDEX, "__debugger_ref");
+	}
+	lua_pushvalue(from, -2);
+	get_registry_value(to, "__debugger_ref", luaL_ref(from, -2));
+	lua_pop(from, 1);
+}
+
 void
-copyvalue(lua_State *from, rlua_State *to) {
+copy_value(lua_State *from, rlua_State *to, bool ref) {
 	if (copy_toR(from, to) == LUA_TNONE) {
-		rlua_pushfstring(to, "%s: %p",
-			lua_typename(from, lua_type(from, -1)),
-			lua_topointer(from, -1)
-		);
+		if (ref) {
+			ref_value(from, to);
+		}
+		else {
+			rlua_pushfstring(to, "%s: %p",
+				lua_typename(from, lua_type(from, -1)),
+				lua_topointer(from, -1)
+			);
+		}
 	}
 }
 
@@ -1003,7 +1039,7 @@ lclient_value(rlua_State *L) {
 		return 1;
 	}
 	rlua_pop(L, 1);
-	copyvalue(cL, L);
+	copy_value(cL, L, false);
 	lua_pop(cL,1);
 	return 1;
 }
@@ -1279,37 +1315,6 @@ lclient_getinfo(rlua_State *L) {
 	return 1;
 }
 
-static void
-get_registry_value(rlua_State *L, const char* name, int ref) {
-	size_t len = strlen(name);
-	struct value *v = (struct value *)rlua_newuserdata(L, 3 * sizeof(struct value) + len);
-	v->type = VAR::INDEX_INT;
-	v->index = ref;
-	v++;
-
-	v->type = VAR::INDEX_STR;
-	v->index = (int)len;
-	v++;
-	memcpy(v,name,len);
-	v = (struct value *)((char*)v+len);
-
-	v->type = VAR::REGISTRY;
-	v->index = 0;
-}
-
-static void
-debug_ref(rlua_State *L, lua_State* cL) {
-	if (lua::getfield(cL, LUA_REGISTRYINDEX, "__debugger_ref") == LUA_TNIL) {
-		lua_pop(cL, 1);
-		lua_newtable(cL);
-		lua_pushvalue(cL, -1);
-		lua_setfield(cL, LUA_REGISTRYINDEX, "__debugger_ref");
-	}
-	lua_pushvalue(cL, -2);
-	get_registry_value(L, "__debugger_ref", luaL_ref(cL, -2));
-	lua_pop(cL, 1);
-}
-
 static int
 lclient_load(rlua_State *L) {
 	size_t len = 0;
@@ -1321,7 +1326,7 @@ lclient_load(rlua_State *L) {
 		lua_pop(cL, 2);
 		return 2;
 	}
-	debug_ref(L, cL);
+	ref_value(cL, L);
 	lua_pop(cL, 1);
 	return 1;
 }
@@ -1352,7 +1357,7 @@ lclient_eval(rlua_State *L) {
 		return 2;
 	}
 	rlua_pushboolean(L, 1);
-	copyvalue(cL, L);
+	copy_value(cL, L, false);
 	lua_pop(cL, 1);
 	return 2;
 }
