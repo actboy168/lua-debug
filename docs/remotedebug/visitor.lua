@@ -177,7 +177,7 @@ end
 ---@return refvalue
 ---在调试目标中加载script作为函数，并保存在注册表中。
 ---
-function visitor.reffunc(script)
+function visitor.load(script)
 end
 
 ---

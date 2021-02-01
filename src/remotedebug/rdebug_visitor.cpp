@@ -1297,24 +1297,31 @@ get_registry_value(rlua_State *L, const char* name, int ref) {
 	v->index = 0;
 }
 
-static int
-lclient_reffunc(rlua_State *L) {
-	size_t len = 0;
-	const char* func = rluaL_checklstring(L, 1, &len);
-	lua_State* cL = get_host(L);
-	if (lua::getfield(cL, LUA_REGISTRYINDEX, "__debugger_reffunc") == LUA_TNIL) {
+static void
+debug_ref(rlua_State *L, lua_State* cL) {
+	if (lua::getfield(cL, LUA_REGISTRYINDEX, "__debugger_ref") == LUA_TNIL) {
 		lua_pop(cL, 1);
 		lua_newtable(cL);
 		lua_pushvalue(cL, -1);
-		lua_setfield(cL, LUA_REGISTRYINDEX, "__debugger_reffunc");
+		lua_setfield(cL, LUA_REGISTRYINDEX, "__debugger_ref");
 	}
+	lua_pushvalue(cL, -2);
+	get_registry_value(L, "__debugger_ref", luaL_ref(cL, -2));
+	lua_pop(cL, 1);
+}
+
+static int
+lclient_load(rlua_State *L) {
+	size_t len = 0;
+	const char* func = rluaL_checklstring(L, 1, &len);
+	lua_State* cL = get_host(L);
 	if (luaL_loadbuffer(cL, func, len, "=")) {
 		rlua_pushnil(L);
 		rlua_pushstring(L, lua_tostring(cL, -1));
 		lua_pop(cL, 2);
 		return 2;
 	}
-	get_registry_value(L, "__debugger_reffunc", luaL_ref(cL, -2));
+	debug_ref(L, cL);
 	lua_pop(cL, 1);
 	return 1;
 }
@@ -1471,7 +1478,7 @@ init_visitor(rlua_State *L) {
 		{ "assign", lclient_assign },
 		{ "type", lclient_type },
 		{ "getinfo", lclient_getinfo },
-		{ "reffunc", lclient_reffunc },
+		{ "load", lclient_load },
 		{ "eval", lclient_eval },
 		{ "watch", lclient_watch },
 		{ "cleanwatch", lclient_cleanwatch },
