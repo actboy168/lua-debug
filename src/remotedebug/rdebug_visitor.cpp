@@ -1346,6 +1346,32 @@ lclient_load(rlua_State *L) {
 }
 
 static int
+eval_copy_args(rlua_State *from, lua_State *to) {
+	int t = copy_fromR(from, to);
+	if (t == LUA_TNONE) {
+		if (rlua_type(from, -1) == LUA_TTABLE) {
+			if (lua_checkstack(to, 3) == 0) {
+				return rluaL_error(from, "stack overflow");
+			}
+			lua_newtable(to);
+			rlua_pushnil(from);
+			while (rlua_next(from, -2)) {
+				copy_fromR(from, to);
+				rlua_pop(from, 1);
+				copy_fromR(from, to);
+				lua_insert(to, -2);
+				lua_rawset(to, -3);
+			}
+			return LUA_TTABLE;
+		}
+		else {
+			lua_pushnil(to);
+		}
+	}
+	return t;
+}
+
+static int
 lclient_eval(rlua_State *L) {
 	lua_State* cL = get_host(L);
 	int nargs = rlua_gettop(L);
@@ -1354,10 +1380,7 @@ lclient_eval(rlua_State *L) {
 	}
 	for (int i = 1; i <= nargs; ++i) {
 		rlua_pushvalue(L, i);
-		int t = copy_fromR(L, cL);
-		if (t == LUA_TNONE) {
-			lua_pushnil(cL);
-		}
+		int t = eval_copy_args(L, cL);
 		rlua_pop(L, 1);
 		if (i == 1 && t != LUA_TFUNCTION) {
 			lua_pop(cL, 1);
@@ -1401,10 +1424,7 @@ lclient_watch(rlua_State *L) {
 	}
 	for (int i = 1; i <= nargs; ++i) {
 		rlua_pushvalue(L, i);
-		int t = copy_fromR(L, cL);
-		if (t == LUA_TNONE) {
-			lua_pushnil(cL);
-		}
+		int t = eval_copy_args(L, cL);
 		rlua_pop(L, 1);
 		if (i == 1 && t != LUA_TFUNCTION) {
 			lua_pop(cL, 1);

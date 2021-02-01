@@ -1,5 +1,5 @@
-local source, level = ...
-level = level + 2
+local source, level, symbol = ...
+level = (level or 0) + 2
 
 if _VERSION == "Lua 5.1" then
 	load = loadstring
@@ -12,43 +12,52 @@ if _VERSION == "Lua 5.1" then
 end
 
 local f = assert(debug.getinfo(level,"f").func, "can't find function")
-local args = {}
-local local_id = {}
-local local_value = {}
-local upvalue_id = {}
-local i = 1
-while true do
-	local name, value = debug.getlocal(level, i)
-	if name == nil then
-		break
+local args_name = {}
+local args_value = {}
+do
+	local i = 1
+	while true do
+		local name, value = debug.getupvalue(f, i)
+		if name == nil then
+			break
+		end
+		if #name > 0 then
+			args_name[#args_name+1] = name
+			args_value[name] = value
+		end
+		i = i + 1
 	end
-	if name:byte() ~= 40 then	-- '('
-		args[#args+1] = name
-		local_id[name] = i
-		local_value[name] = value
-	end
-	i = i + 1
 end
-local i = 1
-while true do
-	local name = debug.getupvalue(f, i)
-	if name == nil then
-		break
+do
+	local i = 1
+	while true do
+		local name, value = debug.getlocal(level, i)
+		if name == nil then
+			break
+		end
+		if name:byte() ~= 40 then	-- '('
+			args_name[#args_name+1] = name
+			args_value[name] = value
+		end
+		i = i + 1
 	end
-	if #name > 0 then
-		args[#args+1] = name
-		upvalue_id[name] = i
-	end
-	i = i + 1
 end
+
+if symbol then
+	for name, value in pairs(symbol) do
+		args_name[#args_name+1] = name
+		args_value[name] = value
+	end
+end
+
 local full_source
-if #args > 0 then
+if #args_name > 0 then
 	full_source = ([[
 local $ARGS
 return function(...)
 return $SOURCE
 end]]):gsub("%$(%w+)", {
-	ARGS = table.concat(args, ","),
+	ARGS = table.concat(args_name, ","),
 	SOURCE = source,
 })
 else
@@ -60,23 +69,16 @@ end]]):gsub("%$(%w+)", {
 })
 end
 local func = assert(load(full_source, '=(EVAL)'))()
-local i = 1
-while true do
-	local name = debug.getupvalue(func, i)
-	if name == nil then
-		break
-	end
-	local uvid = upvalue_id[name]
-	if uvid then
-		local upname, upvalue = debug.getupvalue(f, uvid)
-		if upname ~= nil then
-			debug.setupvalue(func, i, upvalue)
+do
+	local i = 1
+	while true do
+		local name = debug.getupvalue(func, i)
+		if name == nil then
+			break
 		end
+		debug.setupvalue(func, i, args_value[name])
+		i = i + 1
 	end
-	if local_id[name] then
-		debug.setupvalue(func, i, local_value[name])
-	end
-	i = i + 1
 end
 local vararg, v = debug.getlocal(level, -1)
 if vararg then
@@ -89,7 +91,7 @@ if vararg then
 		else
 			break
 		end
-		i=i+1
+		i = i + 1
 	end
 	return func(table.unpack(vargs))
 else

@@ -100,8 +100,8 @@ function m.run(frameId, expression, context)
     return nil, ("unknown context `%s`"):format(context)
 end
 
-function m.eval(expression, level)
-    return rdebug.eval(eval_watch, expression, level or 0)
+function m.eval(expression, level, symbol)
+    return rdebug.eval(eval_watch, expression, level, symbol)
 end
 
 function m.verify(expression)

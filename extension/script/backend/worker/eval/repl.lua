@@ -1,5 +1,5 @@
 local source, level = ...
-level = level + 2
+level = (level or 0) + 2
 
 if _VERSION == "Lua 5.1" then
 	load = loadstring

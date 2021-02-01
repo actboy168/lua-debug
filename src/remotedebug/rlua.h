@@ -112,6 +112,7 @@ void (rlua_rotate) (rlua_State *L, int idx, int n);
 void (rlua_copy) (rlua_State *L, int fromidx, int toidx);
 int  (rlua_checkstack) (rlua_State *L, int n);
 void (rluaL_checkstack) (rlua_State *L, int sz, const char *msg);
+int  (rlua_next) (rlua_State *L, int idx);
 
 void  (rluaL_buffinit) (rlua_State *L, rluaL_Buffer *B);
 char *(rluaL_prepbuffsize) (rluaL_Buffer *B, size_t sz);
