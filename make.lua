@@ -67,7 +67,6 @@ lm:source_set 'runtime/onelua' {
     },
     flags = {
         platform.OS == "Linux" and "-fPIC",
-        platform.OS ~= "Windows" and "-fvisibility=hidden",
     }
 }
 
@@ -182,9 +181,6 @@ for _, luaver in ipairs {"lua51","lua52","lua53","lua54"} do
         ldflags = {
             platform.OS == "Windows" and ("/DELAYLOAD:%s.dll"):format(luaver),
         },
-        flags = {
-            platform.OS ~= "Windows" and "-fvisibility=hidden"
-        }
     }
 
 end
