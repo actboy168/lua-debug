@@ -22,7 +22,8 @@ getproto(function()end)
 getproto(assert(loadfile "extension/script/backend/worker/undump.lua"))
 
 local si = parser(assert(loadfile "extension/script/frontend/main.lua"))
-assert(si.activelines[25] == false)
-assert(si.activelines[27] == true)
+assert(si["20-34"])
+assert(si["20-34"][25] == nil)
+assert(si["20-34"][27] == true)
 
 print "ok"
