@@ -111,7 +111,7 @@ function dbg:start(addr, client, ansi)
         local log = require 'common.log'
         log.file = logpath..'/worker.log'
         require 'backend.master' (logpath, %q, true)
-        require 'backend.worker' .openupdate()
+        require 'backend.worker'
     ]]):format(
           root
         , address

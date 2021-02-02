@@ -68,4 +68,4 @@ remotedebug引用了非公开的lua头文件lstate.h，如果你的lua有修改�
 
 update事件，只会影响调试运行过程中的执行GUI操作的响应时间（一般就是新的断点和暂停），所以一般不大于0.2秒就足够了。
 
-关闭方法：搜索openupdate，将其去掉。
+关闭方法：使用enable_update事件。

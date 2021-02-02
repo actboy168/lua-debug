@@ -25,7 +25,7 @@ local currentException = {
 }
 local outputCapture = {}
 local noDebug = false
-local openUpdate = false
+local openUpdate = true
 local coroutineTree = {}
 local stackFrame = {}
 local skipFrame = 0
@@ -594,6 +594,11 @@ function event.update()
     workerThreadUpdate()
 end
 
+function event.enable_update(flag)
+    openUpdate = flag
+    hookmgr.update_open(not noDebug and openUpdate)
+end
+
 function event.print()
     if not initialized then return end
     local res = {}
@@ -752,12 +757,3 @@ end)
 sendToMaster {
     cmd = 'startThread',
 }
-
-local w = {}
-
-function w.openupdate()
-    openUpdate = true
-    hookmgr.update_open(true)
-end
-
-return w
