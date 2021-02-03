@@ -757,3 +757,5 @@ end)
 sendToMaster {
     cmd = 'startThread',
 }
+
+hookmgr.update_open(true)
