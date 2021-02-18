@@ -159,12 +159,14 @@ for _, luaver in ipairs {"lua51","lua52","lua53","lua54"} do
         includes = {
             "3rd/bee.lua/",
             "3rd/bee.lua/3rd/lua-seri",
+            "3rd/bee.lua/bee/nonstd",
             platform.OS ~= "Windows" and "3rd/lua/"..luaver,
         },
         sources = {
             "src/remotedebug/*.cpp",
             "3rd/bee.lua/bee/error.cpp",
             "3rd/bee.lua/bee/net/*.cpp",
+            "3rd/bee.lua/bee/nonstd/fmt/*.cc",
             platform.OS == "Windows" and "3rd/bee.lua/bee/platform/version_win.cpp",
             platform.OS == "Windows" and "3rd/bee.lua/bee/utility/module_version_win.cpp",
             platform.OS == "Windows" and "3rd/bee.lua/bee/utility/unicode_win.cpp",
