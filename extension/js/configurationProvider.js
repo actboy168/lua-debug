@@ -106,7 +106,7 @@ function resolveConfig(folder, config) {
     if (typeof config.name != 'string') {
         config.name = 'Not specified';
     }
-    config.workspaceFolder = folder;
+    config.workspaceFolder = folder? folder.uri.fsPath: undefined;
     if (typeof config.cwd != 'string') {
         config.cwd = '${cwd}';
     }
