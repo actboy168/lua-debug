@@ -106,9 +106,9 @@ function resolveConfig(folder, config) {
     if (typeof config.name != 'string') {
         config.name = 'Not specified';
     }
-    config.workspaceFolder = '${workspaceFolder}';
+    config.workspaceFolder = folder;
     if (typeof config.cwd != 'string') {
-        config.cwd = '${workspaceFolder}';
+        config.cwd = '${cwd}';
     }
     if (typeof config.stopOnEntry != 'boolean') {
         config.stopOnEntry = true;
@@ -166,20 +166,20 @@ function resolveConfig(folder, config) {
             if (typeof config.luaexe == 'string') {
                 if (typeof config.path != 'string' && typeof config.path != 'object') {
                     config.path = [
-                        '${workspaceFolder}/?.lua',
+                        '${cwd}/?.lua',
                         path.dirname(config.luaexe) + '/?.lua',
                     ]
                 }
                 if (typeof config.cpath != 'string' && typeof config.cpath != 'object') {
                     if (plat == "Windows") {
                         config.cpath = [
-                            '${workspaceFolder}/?.dll',
+                            '${cwd}/?.dll',
                             path.dirname(config.luaexe) + '/?.dll',
                         ]
                     }
                     else {
                         config.cpath = [
-                            '${workspaceFolder}/?.so',
+                            '${cwd}/?.so',
                             path.dirname(config.luaexe) + '/?.so',
                         ]
                     }
@@ -188,14 +188,14 @@ function resolveConfig(folder, config) {
             else {
                 config.sourceCoding = plat == "Windows" ? "ansi" : "utf8";
                 if (typeof config.path != 'string' && typeof config.path != 'object') {
-                    config.path = '${workspaceFolder}/?.lua'
+                    config.path = '${cwd}/?.lua'
                 }
                 if (typeof config.cpath != 'string' && typeof config.cpath != 'object') {
                     if (plat == "Windows") {
-                        config.cpath = '${workspaceFolder}/?.dll'
+                        config.cpath = '${cwd}/?.dll'
                     }
                     else {
-                        config.cpath = '${workspaceFolder}/?.so'
+                        config.cpath = '${cwd}/?.so'
                     }
                 }
             }
