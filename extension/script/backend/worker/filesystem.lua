@@ -1,6 +1,5 @@
 local utility = require 'remotedebug.utility'
 local ev = require 'backend.event'
-local rdebug = require 'remotedebug.visitor'
 local absolute = utility.fs_absolute
 local u2a = utility.u2a or function (...) return ... end
 local a2u = utility.a2u or function (...) return ... end

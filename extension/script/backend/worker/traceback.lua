@@ -2,7 +2,6 @@ local rdebug = require 'remotedebug.visitor'
 local hookmgr = require 'remotedebug.hookmgr'
 local source = require 'backend.worker.source'
 local luaver = require 'backend.worker.luaver'
-local fs = require 'backend.worker.filesystem'
 
 local info = {}
 
