@@ -44,7 +44,7 @@ end
 ---@return integer
 ---获取当前的栈层级。
 ---
-function hookmgr.updatehookmask()
+function hookmgr.stacklevel()
 end
 
 ---
