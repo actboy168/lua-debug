@@ -98,34 +98,30 @@ local function pushfuncname(f, info)
 end
 
 local function replacewhere(error)
-    local msg = tostring(rdebug.value(error))
-    local f, l = msg:find ':[-%d]+: '
-    if not f then
-        if rdebug.getinfo(1, "Sl", info) then
-            local src = source.create(info.source)
-            msg = ('%s:%d: %s'):format(getshortsrc(src), source.line(src, info.currentline), msg)
-        end
-        return msg, 1
-    end
-    local srcpath = fs.source_normalize(msg:sub(1, f-1))
-    local line = tonumber(msg:sub(f+1, l-2))
-    local message = msg:sub(l + 1)
-    local level = 0
+    local depth = 0
     while true do
-        if not rdebug.getinfo(level, "Sl", info) then
-            return ('%s:%d: %s'):format(source.clientPath(srcpath), line, message), 0
+        if not rdebug.getinfo(depth, "Sl", info) then
+            return -1
         end
         if info.what ~= 'C' then
             local src = source.create(info.source)
-            return ('%s:%d: %s'):format(getshortsrc(src), source.line(src, info.currentline), message), level
+            local message = tostring(rdebug.value(error))
+            local f, l = message:find ':[-%d]+: '
+            if f and l then
+                message = message:sub(l + 1)
+            end
+            return depth, ('%s:%d: %s'):format(getshortsrc(src), source.line(src, info.currentline), message)
         end
-        level = level + 1
+        depth = depth + 1
     end
 end
 
 return function(error)
     local s = {}
-    local message, level = replacewhere(error)
+    local level, message = replacewhere(error)
+    if level < 0 then
+        return -1
+    end
     s[#s + 1] = 'stack traceback:'
     local last = hookmgr.stacklevel()
     local n1 = ((last - level) > 21) and 10 or -1
@@ -151,5 +147,5 @@ return function(error)
             end
         end
     end
-    return message, table.concat(s), level
+    return level, message, table.concat(s)
 end
