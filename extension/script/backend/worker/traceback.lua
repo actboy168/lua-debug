@@ -98,14 +98,14 @@ local function pushfuncname(f, info)
 end
 
 local function replacewhere(error)
-    local msg = rdebug.value(error)
+    local msg = tostring(rdebug.value(error))
     local f, l = msg:find ':[-%d]+: '
     if not f then
         if rdebug.getinfo(1, "Sl", info) then
             local src = source.create(info.source)
             msg = ('%s:%d: %s'):format(getshortsrc(src), source.line(src, info.currentline), msg)
         end
-        return msg, 0
+        return msg, 1
     end
     local srcpath = fs.source_normalize(msg:sub(1, f-1))
     local line = tonumber(msg:sub(f+1, l-2))
