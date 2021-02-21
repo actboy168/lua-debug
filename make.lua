@@ -4,6 +4,12 @@ local platform = require "bee.platform"
 lm.gcc = 'clang'
 lm.gxx = 'clang++'
 
+if platform.OS == "Windows" then
+    lm.defines = {
+        "_WIN32_WINNT=0x0601",
+    }
+end
+
 local arguments = {}
 for i, v in ipairs(arg) do
     if v:sub(1, 1) == '-' then
