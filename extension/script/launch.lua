@@ -11,6 +11,7 @@ local function dofile(filename, ...)
     return func(...)
 end
 local dbg = dofile(path.."/script/debugger.lua",path)
-dbg:set_wait("DBG", function(pid, ansi)
+dbg:set_wait("DBG", function(args)
+    local pid, ansi = args[1], args[2]
     dbg:start(("@%s/tmp/pid_%s"):format(path, pid), false, ansi)
 end)

@@ -62,7 +62,7 @@ end
 local function installBootstrap2(c, luaexe, pid, dbg)
     c[#c+1] = towsl(luaexe:string())
     c[#c+1] = "-e"
-    c[#c+1] = ("dofile[[%s]];DBG(%d%s)"):format(
+    c[#c+1] = ("dofile[[%s]];DBG{%d%s}"):format(
         (dbg / "script" / "launch.lua"):string(),
         pid,
         useUtf8 and "" or ",true"
@@ -73,7 +73,7 @@ local function installBootstrap2Simple(c, luaexe, pid)
     c[#c+1] = towsl(luaexe:string())
     c[#c+1] = "-ldbg"
     c[#c+1] = "-e"
-    c[#c+1] = ("DBG(%d)"):format(pid)
+    c[#c+1] = ("DBG{%d}"):format(pid)
 end
 
 local function installBootstrap3(c, args)
@@ -136,7 +136,7 @@ local function create_luaexe_in_terminal(args, dbg, pid)
         option.args[1] = "wsl"
     end
     installBootstrap1(option, luaexe, args)
-    if type(args.luaexe) == "string" then
+    if type(args.luaexe) == "string" or platformOS() ~= "Windows" then
         installBootstrap2(option.args, luaexe, pid, dbg)
     else
         installBootstrap2Simple(option.args, luaexe, pid)

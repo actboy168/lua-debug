@@ -24,7 +24,7 @@ end
 fs.copy_file(root / "LICENSE", outputDir / "LICENSE", true)
 
 local DBG = root / 'extension' / "script" / "dbg.lua"
-for _, platform in ipairs {"linux","macos","win32","win64"} do
+for _, platform in ipairs {"win32","win64"} do
     for _, luaver in ipairs {"lua51","lua52","lua53","lua54"} do
         local dir = outputDir / "runtime" / platform / luaver
         fs.create_directories(dir)
