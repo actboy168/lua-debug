@@ -39,7 +39,7 @@ do
 		if name:byte() ~= 40 then	-- '('
 			args_name[#args_name+1] = name
 			args_value[name] = value
-			locals[#locals+1] = ("[%d]={%s},"):format(i,name)
+			locals[#locals+1] = ("%s={idx=%d, val=%s},"):format(name, i, name)
 		end
 		i = i + 1
 	end
@@ -75,6 +75,7 @@ end
 end
 
 local func, update = assert(load(full_source, '=(EVAL)'))()
+local found = {}
 do
 	local i = 1
 	while true do
@@ -83,6 +84,7 @@ do
 			break
 		end
 		debug.setupvalue(func, i, args_value[name])
+		found[name] = true
 		i = i + 1
 	end
 end
@@ -106,7 +108,9 @@ do
 		rets = table.pack(func())
 	end
 end
-for k,v in pairs(update()) do
-	debug.setlocal(level,k,v[1])
+for name, loc in pairs(update()) do
+	if found[name] then
+		debug.setlocal(level, loc.idx, loc.val)
+	end
 end
 return table.unpack(rets)
