@@ -22,6 +22,8 @@ local tiny = -huge
 local json = {}
 json.object = {}
 
+json.supportSparseArray = true
+
 -- json.encode --
 local statusVisited
 local statusBuilder
@@ -116,21 +118,21 @@ function encode_map.table(t)
     end
     statusVisited[t] = true
     if type(first_val) == 'string' then
-        local key = {}
+        local keys = {}
         for k in next, t do
             if type(k) ~= "string" then
                 error("invalid table: mixed or invalid key types")
             end
-            key[#key+1] = k
+            keys[#keys+1] = k
         end
-        table_sort(key)
-        local k = key[1]
+        table_sort(keys)
+        local k = keys[1]
         statusBuilder[#statusBuilder+1] = '{"'
         statusBuilder[#statusBuilder+1] = encode_string(k)
         statusBuilder[#statusBuilder+1] = '":'
         encode(t[k])
-        for i = 2, #key do
-            local k = key[i]
+        for i = 2, #keys do
+            local k = keys[i]
             statusBuilder[#statusBuilder+1] = ',"'
             statusBuilder[#statusBuilder+1] = encode_string(k)
             statusBuilder[#statusBuilder+1] = '":'
@@ -139,14 +141,19 @@ function encode_map.table(t)
         statusVisited[t] = nil
         return "}"
     else
+        local count = 0
         local max = 0
         for k in next, t do
             if math_type(k) ~= "integer" or k <= 0 then
                 error("invalid table: mixed or invalid key types")
             end
+            count = count + 1
             if max < k then
                 max = k
             end
+        end
+        if not json.supportSparseArray and count ~= max then
+            error("sparse array are not supported")
         end
         statusBuilder[#statusBuilder+1] = "["
         encode(t[1])
