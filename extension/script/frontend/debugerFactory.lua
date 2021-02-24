@@ -33,6 +33,11 @@ local function getLuaVersion(args)
     return 53
 end
 
+local function Is64BitWindows()
+    -- https://docs.microsoft.com/en-us/archive/blogs/david.wang/howto-detect-process-bitness
+    return os.getenv "PROCESSOR_ARCHITECTURE" == "AMD64" or os.getenv "PROCESSOR_ARCHITEW6432" == "AMD64"
+end
+
 local function getLuaExe(args, dbg)
     if type(args.luaexe) == "string" then
         return fs.path(args.luaexe)
@@ -40,7 +45,7 @@ local function getLuaExe(args, dbg)
     local ver = getLuaVersion(args)
     local runtime = 'runtime'
     if platformOS() == "Windows" then
-        if args.luaArch == "x86_64" then
+        if args.luaArch == "x86_64" and Is64BitWindows() then
             runtime = runtime .. "/win64"
         else
             runtime = runtime .. "/win32"
