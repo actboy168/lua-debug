@@ -21,7 +21,7 @@ local stopReason = 'step'
 local exceptionFilters = {}
 local currentException = {
     message = '',
-    Trace = '',
+    trace = '',
 }
 local outputCapture = {}
 local noDebug = false
