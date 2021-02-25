@@ -141,7 +141,7 @@ local function create_luaexe_in_terminal(args, dbg, pid)
         option.args[1] = "wsl"
     end
     installBootstrap1(option, luaexe, args)
-    if type(args.luaexe) == "string" or platformOS() ~= "Windows" then
+    if type(args.luaexe) == "string" or platformOS() ~= "Windows" or getLuaVersion(args) < 53 then
         installBootstrap2(option.args, luaexe, pid, dbg)
     else
         installBootstrap2Simple(option.args, luaexe, pid)
