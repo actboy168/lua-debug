@@ -225,6 +225,7 @@ else
             },
             includes = {
                 "3rd/bee.lua",
+                "3rd/bee.lua/3rd/lua",
                 lm.arch == "x86" and "3rd/wow64ext/src",
             },
             sources = {
