@@ -9,7 +9,7 @@ namespace remotedebug::eventfree {
         notify cb;
         void* ud;
 #if !defined(RDEBUG_DISABLE_THUNK)
-        std::unique_ptr<thunk> thunk;
+        std::unique_ptr<thunk> f;
 #endif
     };
     static void* fake_allocf(void *ud, void *ptr, size_t osize, size_t nsize) {
@@ -27,8 +27,8 @@ namespace remotedebug::eventfree {
 #if defined(RDEBUG_DISABLE_THUNK)
         lua_setallocf(L, fake_allocf, self);
 #else
-        self->thunk.reset(thunk_create_allocf((intptr_t)self, (intptr_t)fake_allocf));
-        lua_setallocf(L, (lua_Alloc)self->thunk->data, self->l_ud);
+        self->f.reset(thunk_create_allocf((intptr_t)self, (intptr_t)fake_allocf));
+        lua_setallocf(L, (lua_Alloc)self->f->data, self->l_ud);
 #endif
         return self;
     }

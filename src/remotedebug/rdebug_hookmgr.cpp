@@ -570,13 +570,13 @@ struct hookmgr {
     }
     
     int update_mask = 0;
-    timer timer;
+    timer update_timer;
     void update_open(lua_State* hL, int enable) {
         update_mask = enable? LUA_MASKRET: 0;
         updatehookmask(hL);
     }
     void update_hook(lua_State* hL) {
-        if (!timer.update(200)) {
+        if (!update_timer.update(200)) {
             return;
         }
         if (rlua_rawgetp(cL, RLUA_REGISTRYINDEX, &HOOK_CALLBACK) != LUA_TFUNCTION) {
