@@ -108,6 +108,7 @@ for _, luaver in ipairs {"lua51","lua52","lua53","lua54"} do
             },
             sources = {
                 "lua.c",
+                "../../../make/lua-debug.rc",
             },
             defines = {
                 luaver == "lua51" and "_CRT_SECURE_NO_WARNINGS",
