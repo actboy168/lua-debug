@@ -67,7 +67,16 @@ else
     rt = rt .. "/" .. platform
 end
 if _VERSION == "Lua 5.4" then
-    rt = rt .. "/lua54"
+    local ver = (function ()
+        local i = 0
+        while arg[i] ~= nil do
+            i = i - 1
+        end
+        return arg[i + 1]
+            : match "^(.+)[\\/][^/\\]*$" -- parent_path
+            : match "[\\/]?([^\\/]*)$"   -- filename
+    end)()
+    rt = rt .. "/" .. ver
 elseif _VERSION == "Lua 5.3" then
     rt = rt .. "/lua53"
 elseif _VERSION == "Lua 5.2" then

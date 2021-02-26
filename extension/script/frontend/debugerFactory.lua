@@ -21,16 +21,28 @@ local function towsl(s)
 end
 
 local function getLuaVersion(args)
-    if args.luaVersion == "5.4" then
-        return 54
+    if args.luaVersion == "lasest" then
+        return "lua-lasest"
+    elseif args.luaVersion == "5.4" then
+        return "lua54"
     elseif args.luaVersion == "5.3" then
-        return 53
+        return "lua53"
     elseif args.luaVersion == "5.2" then
-        return 52
+        return "lua52"
     elseif args.luaVersion == "5.1" then
-        return 51
+        return "lua51"
     end
-    return 53
+    return "lua54"
+end
+
+local function supportSimpleLaunch(args)
+    if platformOS() ~= "Windows" then
+        return false
+    end
+    if args.luaVersion == "5.1" or args.luaVersion == "5.2" then
+        return false
+    end
+    return true
 end
 
 local function Is64BitWindows()
@@ -42,7 +54,6 @@ local function getLuaExe(args, dbg)
     if type(args.luaexe) == "string" then
         return fs.path(args.luaexe)
     end
-    local ver = getLuaVersion(args)
     local runtime = 'runtime'
     if platformOS() == "Windows" then
         if args.luaArch == "x86_64" and Is64BitWindows() then
@@ -53,7 +64,7 @@ local function getLuaExe(args, dbg)
     else
         runtime = runtime .. "/" .. platformOS():lower()
     end
-    runtime = runtime .. "/lua" .. ver
+    runtime = runtime .. "/" .. getLuaVersion(args)
     return dbg / runtime / (platformOS() == "Windows" and "lua.exe" or "lua")
 end
 
@@ -141,10 +152,10 @@ local function create_luaexe_in_terminal(args, dbg, pid)
         option.args[1] = "wsl"
     end
     installBootstrap1(option, luaexe, args)
-    if type(args.luaexe) == "string" or platformOS() ~= "Windows" or getLuaVersion(args) < 53 then
-        installBootstrap2(option.args, luaexe, pid, dbg)
-    else
+    if type(args.luaexe) ~= "string" and supportSimpleLaunch(args) then
         installBootstrap2Simple(option.args, luaexe, pid)
+    else
+        installBootstrap2(option.args, luaexe, pid, dbg)
     end
     installBootstrap3(option.args, args)
     return option

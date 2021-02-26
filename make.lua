@@ -75,7 +75,7 @@ lm:source_set 'runtime/onelua' {
 
 local runtimes = {}
 
-for _, luaver in ipairs {"lua51","lua52","lua53","lua54"} do
+for _, luaver in ipairs {"lua51","lua52","lua53","lua54","lua-lasest"} do
     runtimes[#runtimes+1] = "runtime/"..luaver.."/lua"
     runtimes[#runtimes+1] = "runtime/"..luaver.."/remotedebug"
     if platform.OS == "Windows" then
@@ -140,14 +140,19 @@ for _, luaver in ipairs {"lua51","lua52","lua53","lua54"} do
                 "m",
                 "dl",
                 platform.OS == "Linux" and "pthread",
-                luaver ~= "lua54" and "readline"
+                (luaver == "lua51" or luaver == "lua52" or luaver == "lua53") and "readline"
             }
         }
     end
 
     lm.rootdir = ''
 
-    local lua_version_num = 100 * math.tointeger(luaver:sub(4,4)) + math.tointeger(luaver:sub(5,5))
+    local lua_version_num
+    if luaver == "lua-lasest" then
+        lua_version_num = 504
+    else
+        lua_version_num = 100 * math.tointeger(luaver:sub(4,4)) + math.tointeger(luaver:sub(5,5))
+    end
 
     lm:shared_library ('runtime/'..luaver..'/remotedebug') {
         deps = {

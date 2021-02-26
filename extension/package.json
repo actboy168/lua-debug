@@ -204,12 +204,13 @@
                             "luaVersion": {
                                 "type": "string",
                                 "markdownDescription": "%lua.debug.launch.luaVersion.description%",
-                                "default": "5.3",
+                                "default": "5.4",
                                 "enum": [
                                     "5.1",
                                     "5.2",
                                     "5.3",
-                                    "5.4"
+                                    "5.4",
+                                    "lasest"
                                 ]
                             },
                             "luaArch": {
@@ -514,12 +515,13 @@
                 "lua.debug.settings.luaVersion": {
                     "type": "string",
                     "description": "%lua.debug.launch.luaVersion.description%",
-                    "default": "5.3",
+                    "default": "5.4",
                     "enum": [
                         "5.1",
                         "5.2",
                         "5.3",
-                        "5.4"
+                        "5.4",
+                        "lasest"
                     ]
                 },
                 "lua.debug.settings.luaArch": {
