@@ -200,7 +200,9 @@ lm:build 'update_version' {
 }
 
 lm.rootdir = ''
-lm:import '3rd/bee.lua/make.lua'
+lm:import("3rd/bee.lua/make.lua", {
+    EXE_RESOURCE = "../../make/lua-debug.rc"
+})
 
 if platform.OS == "Windows" and lm.arch == "x64" then
     lm:build 'install' {
