@@ -1,9 +1,6 @@
 local lm = require "luamake"
 local platform = require "bee.platform"
 
-lm.gcc = 'clang'
-lm.gxx = 'clang++'
-
 if platform.OS == "Windows" then
     lm.defines = {
         "_WIN32_WINNT=0x0601",
@@ -141,6 +138,7 @@ for _, luaver in ipairs {"lua51","lua52","lua53","lua54"} do
             links = {
                 "m",
                 "dl",
+                platform.OS == "Linux" and "pthread",
                 luaver ~= "lua54" and "readline"
             }
         }
@@ -177,14 +175,13 @@ for _, luaver in ipairs {"lua51","lua52","lua53","lua54"} do
             platform.OS == "Windows" and "3rd/bee.lua/bee/utility/module_version_win.cpp",
             platform.OS == "Windows" and "3rd/bee.lua/bee/utility/unicode_win.cpp",
         },
+        crt = platform.OS == "Linux" and "static" or "dynamic",
         links = {
             platform.OS == "Windows" and "version",
             platform.OS == "Windows" and "ws2_32",
             platform.OS == "Windows" and "user32",
             platform.OS == "Windows" and "delayimp",
-            platform.OS == "Linux" and "stdc++",
             platform.OS == "Linux" and "pthread",
-            platform.OS == "Linux" and "stdc++fs",
         },
         ldflags = {
             platform.OS == "Windows" and ("/DELAYLOAD:%s.dll"):format(luaver),
