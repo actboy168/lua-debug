@@ -75,7 +75,7 @@ lm:source_set 'runtime/onelua' {
 
 local runtimes = {}
 
-for _, luaver in ipairs {"lua51","lua52","lua53","lua54","lua-lasest"} do
+for _, luaver in ipairs {"lua51","lua52","lua53","lua54","lua-latest"} do
     runtimes[#runtimes+1] = "runtime/"..luaver.."/lua"
     runtimes[#runtimes+1] = "runtime/"..luaver.."/remotedebug"
     if platform.OS == "Windows" then
@@ -148,7 +148,7 @@ for _, luaver in ipairs {"lua51","lua52","lua53","lua54","lua-lasest"} do
     lm.rootdir = ''
 
     local lua_version_num
-    if luaver == "lua-lasest" then
+    if luaver == "lua-latest" then
         lua_version_num = 504
     else
         lua_version_num = 100 * math.tointeger(luaver:sub(4,4)) + math.tointeger(luaver:sub(5,5))

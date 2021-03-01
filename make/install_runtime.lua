@@ -26,7 +26,7 @@ if platform == 'msvc' then
     fs.copy_file(bindir / 'launcher.dll', output / ('launcher.'..arch..'.dll'), true)
 end
 
-for _, luaver in ipairs {"lua51","lua52","lua53","lua54","lua-lasest"} do
+for _, luaver in ipairs {"lua51","lua52","lua53","lua54","lua-latest"} do
     local rtplat = platform ~= 'msvc' and platform or (arch == 'x86' and 'win32' or 'win64')
     local bindir = CWD / 'build' / platform / 'bin' / arch / mode / 'runtime' / luaver
     local output = CWD / 'publish' / 'runtime' / rtplat / luaver

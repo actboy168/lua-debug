@@ -21,8 +21,8 @@ local function towsl(s)
 end
 
 local function getLuaVersion(args)
-    if args.luaVersion == "lasest" then
-        return "lua-lasest"
+    if args.luaVersion == "latest" then
+        return "lua-latest"
     elseif args.luaVersion == "5.4" then
         return "lua54"
     elseif args.luaVersion == "5.3" then
