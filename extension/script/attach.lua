@@ -8,6 +8,16 @@ local function dofile(filename, ...)
     local func = assert(load(str, "=(debugger.lua)"))
     return func(...)
 end
-local dbg = dofile(path.."/script/debugger.lua",path,luaapi)
+local function isLatest()
+    local ipc = dofile(path.."/script/common/ipc.lua")
+    local fd = ipc(path, pid, "luaVersion")
+    local result = false
+    if fd then
+        result = "latest" == fd:read "a"
+        fd:close()
+    end
+    return result
+end
+local dbg = dofile(path.."/script/debugger.lua",path,isLatest(),luaapi)
 dbg:start(("@%s/tmp/pid_%s"):format(path, pid))
 dbg:event "wait"

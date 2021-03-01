@@ -1,4 +1,4 @@
-local root, luaapi = ...
+local root, latest, luaapi = ...
 
 if debug.getregistry()["lua-debug"] then
     local dbg = debug.getregistry()["lua-debug"]
@@ -66,7 +66,9 @@ else
     assert(arch == 64)
     rt = rt .. "/" .. platform
 end
-if _VERSION == "Lua 5.4" then
+if latest then
+    rt = rt .. "/lua-latest"
+elseif _VERSION == "Lua 5.4" then
     local ver = (function ()
         local i = 0
         while arg[i] ~= nil do

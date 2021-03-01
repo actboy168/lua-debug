@@ -59,6 +59,13 @@ local function request_runinterminal(args)
 end
 
 local function attach_process(pkg, pid)
+    if pkg.args.luaVersion == "latest" then
+        fs.create_directories(WORKDIR / "tmp")
+        local ipc = require "common.ipc"
+        local fd = assert(ipc(WORKDIR, pid, "luaVersion", "w"))
+        fd:write("latest")
+        fd:close()
+    end
     if not inject.injectdll(pid
         , (WORKDIR / "bin" / "win" / "launcher.x86.dll"):string()
         , (WORKDIR / "bin" / "win" / "launcher.x64.dll"):string()

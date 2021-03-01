@@ -210,7 +210,7 @@
                                     "5.2",
                                     "5.3",
                                     "5.4",
-                                    "lasest"
+                                    "latest"
                                 ]
                             },
                             "luaArch": {
@@ -484,6 +484,18 @@
                                 "type": "boolean",
                                 "description": "Use Windows Subsystem for Linux.",
                                 "default": true
+                            },
+                            "luaVersion": {
+                                "type": "string",
+                                "markdownDescription": "%lua.debug.launch.luaVersion.description%",
+                                "default": "5.4",
+                                "enum": [
+                                    "5.1",
+                                    "5.2",
+                                    "5.3",
+                                    "5.4",
+                                    "latest"
+                                ]
                             }
                         }
                     }
@@ -521,7 +533,7 @@
                         "5.2",
                         "5.3",
                         "5.4",
-                        "lasest"
+                        "latest"
                     ]
                 },
                 "lua.debug.settings.luaArch": {
