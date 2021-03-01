@@ -72,8 +72,8 @@ end
 copy_directory(sourceDir, extensionDir)
 
 local DBG = sourceDir / "script" / "dbg.lua"
-for _, platform in ipairs {"linux","macos","win32","win64"} do
-    for _, luaver in ipairs {"lua51","lua52","lua53","lua54"} do
+for _, platform in ipairs {"win32","win64"} do
+    for _, luaver in ipairs {"lua53","lua54","lua-latest"} do
         fs.copy_file(DBG, extensionDir / "runtime" / platform / luaver / "dbg.lua", true)
     end
 end

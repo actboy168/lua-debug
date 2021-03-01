@@ -75,21 +75,33 @@ local function installBootstrap1(option, luaexe, args)
     end
 end
 
-local function installBootstrap2(c, luaexe, pid, dbg)
+local function installBootstrap2(c, luaexe, args, pid, dbg)
     c[#c+1] = towsl(luaexe:string())
     c[#c+1] = "-e"
-    c[#c+1] = ("dofile[[%s]];DBG{%d%s}"):format(
+    local params = {}
+    params[#params+1] = pid
+    if not useUtf8 then
+        params[#params+1] = '[[ansi]]'
+    end
+    if args.luaVersion == "latest" then
+        params[#params+1] = '[[latest]]'
+    end
+    c[#c+1] = ("dofile[[%s]];DBG{%s}"):format(
         (dbg / "script" / "launch.lua"):string(),
-        pid,
-        useUtf8 and "" or ",true"
+        table.concat(params, ",")
     )
 end
 
-local function installBootstrap2Simple(c, luaexe, pid)
+local function installBootstrap2Simple(c, luaexe, args, pid)
     c[#c+1] = towsl(luaexe:string())
     c[#c+1] = "-ldbg"
     c[#c+1] = "-e"
-    c[#c+1] = ("DBG{%d}"):format(pid)
+    local params = {}
+    params[#params+1] = pid
+    if args.luaVersion == "latest" then
+        params[#params+1] = '[[latest]]'
+    end
+    c[#c+1] = ("DBG{%s}"):format(table.concat(params, ","))
 end
 
 local function installBootstrap3(c, args)
@@ -153,9 +165,9 @@ local function create_luaexe_in_terminal(args, dbg, pid)
     end
     installBootstrap1(option, luaexe, args)
     if type(args.luaexe) ~= "string" and supportSimpleLaunch(args) then
-        installBootstrap2Simple(option.args, luaexe, pid)
+        installBootstrap2Simple(option.args, luaexe, args, pid)
     else
-        installBootstrap2(option.args, luaexe, pid, dbg)
+        installBootstrap2(option.args, luaexe, args, pid, dbg)
     end
     installBootstrap3(option.args, args)
     return option
@@ -178,7 +190,7 @@ local function create_luaexe_in_console(args, dbg, pid)
         option[1] = SystemRoot .. "\\sysnative\\wsl.exe"
     end
     installBootstrap1(option, luaexe, args)
-    installBootstrap2(option, luaexe, pid, dbg)
+    installBootstrap2(option, luaexe, args, pid, dbg)
     installBootstrap3(option, args)
     return sp.spawn(option)
 end
