@@ -17,27 +17,27 @@ return {
     exceptionBreakpointFilters = {
         {
             default = false,
-            filter = 'pcall',
-            label = 'Exception: pcall',
+            filter = 'lua',
+            label = 'Caught Errors By Lua',
             supportsCondition = true,
-        },
-        {
-            default = false,
-            filter = 'xpcall',
-            label = 'Exception: xpcall',
-            supportsCondition = true,
+            description = 'Breaks on errors, if it is caught by lua.',
+            conditionDescription = 'error:match "attempt to index a nil value"',
         },
         {
             default = true,
-            filter = 'lua_pcall',
-            label = 'Exception: lua_pcall',
+            filter = 'native',
+            label = 'Caught Errors By Native',
             supportsCondition = true,
+            description = 'Breaks on errors, if it is caught by native code.',
+            conditionDescription = 'error:match "attempt to index a nil value"',
         },
         {
             default = true,
-            filter = 'lua_panic',
-            label = 'Exception: lua_panic',
+            filter = 'panic',
+            label = 'Uncaught Errors',
             supportsCondition = true,
+            description = 'Breaks only on errors that are nor handled.',
+            conditionDescription = 'error:match "attempt to index a nil value"',
         }
     }
 }

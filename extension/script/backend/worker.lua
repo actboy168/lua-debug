@@ -639,7 +639,7 @@ local function execExceptionBreakpoint(type, level, error)
         return filter
     end
     local ok, res = evaluate.eval(filter, level, { error = error })
-    return (not ok) or res
+    return ok and res
 end
 
 local function getExceptionType()
@@ -653,14 +653,14 @@ local function getExceptionType()
         end
         f = rdebug.value(f)
         if f == pcall then
-            return 'pcall'
+            return 'lua'
         end
         if f == xpcall then
-            return 'xpcall'
+            return 'lua'
         end
         level = level + 1
     end
-    return 'lua_pcall'
+    return 'native'
 end
 
 local function runException(type, error)
@@ -678,7 +678,7 @@ end
 
 function event.panic(error)
     if not initialized then return end
-    runException('lua_panic', error)
+    runException('panic', error)
 end
 
 function event.exception(error)
