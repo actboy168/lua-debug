@@ -5,7 +5,7 @@ local function dofile(filename, ...)
     local f = assert(io.open(filename))
     local str = f:read "*a"
     f:close()
-    local func = assert(load(str, "=(BOOTSTRAP)"))
+    local func = assert(load(str, "=(debugger.lua)"))
     return func(...)
 end
 local dbg = dofile(path.."/script/debugger.lua",path,luaapi)
