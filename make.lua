@@ -165,6 +165,7 @@ for _, luaver in ipairs {"lua51","lua52","lua53","lua54","lua-latest"} do
             ("DBG_LUA_VERSION=%d"):format(lua_version_num),
             platform.OS == "Windows" and "_CRT_SECURE_NO_WARNINGS",
             platform.OS == "Windows" and "_WIN32_WINNT=0x0601",
+            platform.OS == "Windows" and ("LUA_DLL_VERSION="..luaver)
         },
         includes = {
             "3rd/bee.lua/",

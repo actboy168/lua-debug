@@ -86,7 +86,7 @@ function dbg:init(cfg)
 
     local ext = platform == "windows" and "dll" or "so"
     local remotedebug = cfg.root..rt..'/remotedebug.'..ext
-    if cfg.luaapi then
+    if platform == "windows" then
         assert(package.loadlib(remotedebug,'init'))(cfg.luaapi)
     end
 
