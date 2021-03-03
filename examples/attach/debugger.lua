@@ -21,13 +21,12 @@ local function getLatestDebugger()
     return luaDebugs[1][2]
 end
 
-local function dofile(filename, ...)
+local function dofile(filename)
     local load = _VERSION == "Lua 5.1" and loadstring or load
     local f = assert(io.open(filename))
     local str = f:read "*a"
     f:close()
-    local func = assert(load(str, "=(debugger.lua)"))
-    return func(...)
+    return assert(load(str, "=(debugger.lua)"))()
 end
 
 local path = getLatestDebugger()
