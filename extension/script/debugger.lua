@@ -103,6 +103,7 @@ function dbg:init(cfg)
     self.utf8 = utf8
     self.path  = self.root..'/script/?.lua'
     self.cpath = self.root..rt..'/?.'..ext
+    return self
 end
 
 function dbg:start(addr, client)
