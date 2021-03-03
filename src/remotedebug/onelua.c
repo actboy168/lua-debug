@@ -7,7 +7,6 @@
 #define LUA_USE_MACOSX
 #elif defined(_WIN32)
 #include "utf8_crt.c"
-#include "utf8_unicode.c"
 #endif
 
 #define LUAI_MAXCCALLS 1000
