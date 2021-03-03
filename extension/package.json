@@ -83,7 +83,7 @@
             {
                 "command": "extension.lua-debug.debugEditorContents",
                 "title": "Debug File",
-                "icon": "$(debug-alt)"
+                "icon": "$(debug-alt-small)"
             },
             {
                 "command": "extension.lua-debug.showIntegerAsDec",
