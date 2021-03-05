@@ -15,7 +15,6 @@ if platform ~= 'msvc' or arch == 'x86' then
     fs.copy_file(bindir / ('inject'..dll),    output / ('inject'..dll),     true)
     if platform == 'msvc' then
         fs.copy_file(bindir / 'lua54.dll',    output / 'lua54.dll',         true)
-        require 'msvc'.copy_vcrt(arch, output)
     end
 end
 
@@ -35,6 +34,10 @@ for _, luaver in ipairs {"lua51","lua52","lua53","lua54","lua-latest"} do
     fs.copy_file(bindir / ('remotedebug'..dll), output / ('remotedebug'..dll), true)
     if platform == 'msvc' then
         fs.copy_file(bindir / (luaver..'.dll'), output / (luaver..'.dll'), true)
-        require 'msvc'.copy_vcrt(arch, output)
     end
+end
+
+if platform == 'msvc' then
+    local rtplat = arch == 'x86' and 'win32' or 'win64'
+    require 'msvc'.copy_vcrt(arch, CWD / 'publish' / 'vcredist' / rtplat)
 end

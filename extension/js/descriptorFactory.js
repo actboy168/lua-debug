@@ -3,19 +3,11 @@ const path = require("path");
 const os = require('os');
 const extension = require("./extension");
 
-function getRuntimeDirectory() {
-    const extensionPath = extension.context.extensionPath
-    if (path.basename(extensionPath) != 'extension') {
-        return extensionPath
-    }
-    return process.env.VSCODE_EXTENSION_PATH
-}
-
 function createDebugAdapterDescriptor(session, executable) {
     if (typeof session.configuration.debugServer === 'number') {
         return new vscode.DebugAdapterServer(session.configuration.debugServer);
     }
-    let dir = getRuntimeDirectory()
+    let dir = extension.extensionDirectory
     let platform = os.platform()
     if (platform == "win32") {
         let runtime = path.join(dir, 'bin/win/lua-debug.exe')

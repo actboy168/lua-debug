@@ -1,11 +1,53 @@
 const vscode = require("vscode");
+const path = require("path");
+const os = require('os');
+const fs = require('fs').promises;
 const configurationProvider = require("./configurationProvider");
 const descriptorFactory = require("./descriptorFactory");
 const trackerFactory = require("./trackerFactory");
 const pickProcess = require("./pickProcess");
 
-function activate(context) {
-    exports.context = context;
+function getExtensionDirectory(context) {
+    const extensionPath = context.extensionPath
+    if (path.basename(extensionPath) != 'extension') {
+        return extensionPath
+    }
+    return process.env.VSCODE_EXTENSION_PATH
+}
+
+async function copyDirectory(src, dst) {
+    for (const filename of await fs.readdir(src)) {
+        await fs.copyFile(path.join(src, filename), path.join(dst, filename));
+    }
+}
+
+async function fsExists(file) {
+    return !! await fs.stat(file).catch(e => false);
+}
+
+async function install() {
+    if (os.platform() != "win32") {
+        return;
+    }
+    const extensionDir = exports.extensionDirectory;
+    const installedFile = path.join(extensionDir, "vcredist", "installed");
+    if (await fsExists(installedFile)) {
+        return;
+    }
+    for (const arch of  ["win32", "win64"]) {
+        for (const luaversion of  ["lua51", "lua52", "lua53", "lua54", "lua-latest"]) {
+            await copyDirectory(path.join(extensionDir, "vcredist", arch), path.join(extensionDir, "runtime", arch, luaversion))
+        }
+    }
+    await copyDirectory(path.join(extensionDir, "vcredist", "win32"), path.join(extensionDir, "bin", "win"))
+    await fs.writeFile(installedFile, '', 'utf8');
+}
+
+async function activate(context) {
+    exports.extensionDirectory = getExtensionDirectory(context)
+
+    await install();
+
     for (const i in configurationProvider) {
         let provider = configurationProvider[i];
         if (provider.type == 'resolver') {
@@ -54,8 +96,4 @@ function activate(context) {
     );
 }
 
-function deactivate() {
-}
-
 exports.activate = activate;
-exports.deactivate = deactivate;
