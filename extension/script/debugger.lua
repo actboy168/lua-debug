@@ -1,3 +1,5 @@
+local root = ...
+
 if debug.getregistry()["lua-debug"] then
     local dbg = debug.getregistry()["lua-debug"]
     local empty = {root = dbg.root}
@@ -21,7 +23,10 @@ end
 
 local dbg = {}
 
-function dbg:init(cfg)
+function dbg:start(cfg)
+    if type(cfg) == "string" then
+        cfg = {address = cfg}
+    end
     local platform = (function()
         if package.config:sub(1,1) == "\\" then
             return "windows"
@@ -85,7 +90,7 @@ function dbg:init(cfg)
     end
 
     local ext = platform == "windows" and "dll" or "so"
-    local remotedebug = cfg.root..rt..'/remotedebug.'..ext
+    local remotedebug = root..rt..'/remotedebug.'..ext
     if platform == "windows" then
         assert(package.loadlib(remotedebug,'init'))(cfg.luaapi)
     end
@@ -99,22 +104,15 @@ function dbg:init(cfg)
         end
         return s
     end
-    self.root = utf8(cfg.root)
-    self.utf8 = utf8
-    self.path  = self.root..'/script/?.lua'
-    self.cpath = self.root..rt..'/?.'..ext
-    return self
-end
+    self.root = utf8(root)
 
-function dbg:start(addr, client)
-    local address = ("%q, %s"):format(self.utf8(addr), client == true and "true" or "false")
     local bootstrap_lua = ([[
         package.path = %q
         package.cpath = %q
         require "remotedebug.thread".bootstrap_lua = debug.getinfo(1, "S").source
     ]]):format(
-          self.path
-        , self.cpath
+          self.root..'/script/?.lua'
+        , self.root..rt..'/?.'..ext
     )
     self.rdebug.start(("assert(load(%q))(...)"):format(bootstrap_lua) .. ([[
         local logpath = %q
@@ -124,7 +122,7 @@ function dbg:start(addr, client)
         require 'backend.worker'
     ]]):format(
           self.root
-        , address
+        , ("%q, %s"):format(utf8(cfg.address), cfg.client == true and "true" or "false")
     ))
     return self
 end
