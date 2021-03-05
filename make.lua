@@ -229,15 +229,19 @@ else
                 "bee",
                 "lua54"
             },
+            defines = {
+                "BEE_INLINE",
+            },
             includes = {
                 "3rd/bee.lua",
                 "3rd/bee.lua/3rd/lua",
-                lm.arch == "x86" and "3rd/wow64ext/src",
+                "3rd/wow64ext/src",
             },
             sources = {
                 "src/process_inject/injectdll.cpp",
                 "src/process_inject/inject.cpp",
-                lm.arch == "x86" and "3rd/wow64ext/src/wow64ext.cpp",
+                "3rd/wow64ext/src/wow64ext.cpp",
+                "3rd/bee.lua/bee/utility/unicode_win.cpp",
             },
             links = {
                 "advapi32",
