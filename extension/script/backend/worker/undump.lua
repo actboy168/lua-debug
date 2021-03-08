@@ -235,7 +235,7 @@ local function InitCompat()
             return
         end
     end
-    assert(false, "unknown lua version: "..version)
+    assert(false, ("unknown lua version: 0x%x"):format(version))
 end
 
 local function CheckHeader()
