@@ -15,7 +15,7 @@ end
 
 local function getactivelines(proto)
     local l = {}
-    if version >= 504 then
+    if version >= 0x54 then
         local n = proto.linedefined
         local abs = {}
         for _, line in ipairs(proto.abslineinfo) do
