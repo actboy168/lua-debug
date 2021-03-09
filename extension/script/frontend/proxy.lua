@@ -3,7 +3,6 @@ local debuger_factory = require 'frontend.debuger_factory'
 local fs = require 'bee.filesystem'
 local sp = require 'bee.subprocess'
 local platform_os = require 'frontend.platform_os'
-local inject = require 'inject'
 local server
 local client
 local initReq
@@ -66,6 +65,7 @@ local function attach_process(pkg, pid)
         fd:write("latest")
         fd:close()
     end
+    local inject = require 'inject'
     if not inject.injectdll(pid
         , (WORKDIR / "bin" / "win" / "launcher.x86.dll"):string()
         , (WORKDIR / "bin" / "win" / "launcher.x64.dll"):string()

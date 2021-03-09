@@ -12,9 +12,9 @@ if platform ~= 'msvc' or arch == 'x86' then
     fs.create_directories(output)
     fs.copy_file(bindir / ('bee'..dll),       output / ('bee'..dll),        true)
     fs.copy_file(bindir / ('lua'..exe),       output / ('lua-debug'..exe),  true)
-    fs.copy_file(bindir / ('inject'..dll),    output / ('inject'..dll),     true)
     if platform == 'msvc' then
-        fs.copy_file(bindir / 'lua54.dll',    output / 'lua54.dll',         true)
+        fs.copy_file(bindir / 'inject.dll',  output / 'inject.dll', true)
+        fs.copy_file(bindir / 'lua54.dll',   output / 'lua54.dll',  true)
     end
 end
 

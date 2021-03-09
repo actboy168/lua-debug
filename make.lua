@@ -247,18 +247,6 @@ else
                 "advapi32",
             }
         }
-    else
-        lm:shared_library 'inject' {
-            deps = {
-                "bee",
-            },
-            includes = {
-                "3rd/bee.lua/3rd/lua",
-            },
-            sources = {
-                "src/process_inject/inject_osx.cpp",
-            }
-        }
     end
 
     lm:build 'install' {
@@ -269,7 +257,7 @@ else
             "bee",
             "lua",
             "bootstrap",
-            "inject",
+            platform.OS == "Windows" and "inject",
             platform.OS == "Windows" and "lua54",
             platform.OS == "Windows" and "launcher",
             runtimes,

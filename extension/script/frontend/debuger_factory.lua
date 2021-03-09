@@ -1,7 +1,6 @@
 local fs = require 'bee.filesystem'
 local sp = require 'bee.subprocess'
 local platform_os = require 'frontend.platform_os'
-local inject = require 'inject'
 
 local useWSL = false
 local useUtf8 = false
@@ -219,6 +218,7 @@ local function create_process_in_console(args)
     if not process then
         return nil, err
     end
+    local inject = require 'inject'
     inject.injectdll(process
         , (WORKDIR / "bin" / "win" / "launcher.x86.dll"):string()
         , (WORKDIR / "bin" / "win" / "launcher.x64.dll"):string()
