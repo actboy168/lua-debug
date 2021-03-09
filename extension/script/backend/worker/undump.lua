@@ -97,7 +97,7 @@ local function LoadConstants53(f)
         elseif t == LUA_TLNGSTR then
             f.k[i] = LoadString()
         else
-            assert(false)
+            error("unknown type: " .. t)
         end
     end
 end
@@ -119,14 +119,19 @@ local function LoadConstants54(f)
     f.k = {}
     for i = 1, f.sizek do
         local t = LoadByte()
-        if t == LUA_VNUMFLT then
+        if t == LUA_VNIL then
+        elseif t == LUA_VTRUE then
+            f.k[i] = true
+        elseif t == LUA_VFALSE then
+            f.k[i] = false
+        elseif t == LUA_VNUMFLT then
             f.k[i] = LoadNumber()
         elseif t == LUA_VNUMINT then
             f.k[i] = LoadInteger()
         elseif t == LUA_VSHRSTR or t == LUA_VLNGSTR then
             f.k[i] = LoadString()
         else
-            assert(t == LUA_VNIL or t == LUA_VTRUE or t == LUA_VFALSE)
+            error("unknown type: " .. t)
         end
     end
 end
@@ -216,7 +221,7 @@ local function InitCompat()
         LoadConstants = LoadConstants54
         return
     end
-    assert(false, ("unknown lua version: 0x%x"):format(Version))
+    error(("unknown lua version: 0x%x"):format(Version))
 end
 
 local function CheckHeader()
