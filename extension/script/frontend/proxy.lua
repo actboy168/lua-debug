@@ -1,8 +1,8 @@
 local network = require 'common.network'
-local debuggerFactory = require 'frontend.debugerFactory'
+local debuger_factory = require 'frontend.debuger_factory'
 local fs = require 'bee.filesystem'
 local sp = require 'bee.subprocess'
-local platformOS = require 'frontend.platformOS'
+local platform_os = require 'frontend.platform_os'
 local inject = require 'inject'
 local server
 local client
@@ -87,8 +87,8 @@ end
 
 local function proxy_attach(pkg)
     local args = pkg.arguments
-    platformOS.init(args)
-    if platformOS() ~= "Windows" then
+    platform_os.init(args)
+    if platform_os() ~= "Windows" then
         attach_tcp(pkg, args)
         return
     end
@@ -125,7 +125,7 @@ local function proxy_launch_terminal(pkg)
     end
     local pid = sp.get_id()
     server = network(getUnixAddress(pid), true)
-    local arguments, err = debuggerFactory.create_luaexe_in_terminal(args, WORKDIR, pid)
+    local arguments, err = debuger_factory.create_luaexe_in_terminal(args, WORKDIR, pid)
     if not arguments then
         response_error(pkg, err)
         return
@@ -137,11 +137,11 @@ end
 local function proxy_launch_console(pkg)
     local args = pkg.arguments
     if args.runtimeExecutable then
-        if platformOS() ~= "Windows" then
+        if platform_os() ~= "Windows" then
             response_error(pkg, "`runtimeExecutable` is not supported.")
             return
         end
-        local process, err = debuggerFactory.create_process_in_console(args)
+        local process, err = debuger_factory.create_process_in_console(args)
         if not process then
             response_error(pkg, err)
             return
@@ -150,7 +150,7 @@ local function proxy_launch_console(pkg)
     else
         local pid = sp.get_id()
         server = network(getUnixAddress(pid), true)
-        local ok, err = debuggerFactory.create_luaexe_in_console(args, WORKDIR, pid)
+        local ok, err = debuger_factory.create_luaexe_in_console(args, WORKDIR, pid)
         if not ok then
             response_error(pkg, err)
             return
@@ -161,7 +161,7 @@ end
 
 local function proxy_launch(pkg)
     local args = pkg.arguments
-    platformOS.init(args)
+    platform_os.init(args)
     if args.console == 'integratedTerminal' or args.console == 'externalTerminal' then
         if not proxy_launch_terminal(pkg) then
             return

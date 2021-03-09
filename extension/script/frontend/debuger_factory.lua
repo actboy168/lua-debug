@@ -1,6 +1,6 @@
 local fs = require 'bee.filesystem'
 local sp = require 'bee.subprocess'
-local platformOS = require 'frontend.platformOS'
+local platform_os = require 'frontend.platform_os'
 local inject = require 'inject'
 
 local useWSL = false
@@ -36,7 +36,7 @@ local function getLuaVersion(args)
 end
 
 local function supportSimpleLaunch(args)
-    if platformOS() ~= "Windows" then
+    if platform_os() ~= "Windows" then
         return false
     end
     if args.luaVersion == "5.1" or args.luaVersion == "5.2" then
@@ -55,17 +55,17 @@ local function getLuaExe(args, dbg)
         return fs.path(args.luaexe)
     end
     local runtime = 'runtime'
-    if platformOS() == "Windows" then
+    if platform_os() == "Windows" then
         if args.luaArch == "x86_64" and Is64BitWindows() then
             runtime = runtime .. "/win64"
         else
             runtime = runtime .. "/win32"
         end
     else
-        runtime = runtime .. "/" .. platformOS():lower()
+        runtime = runtime .. "/" .. platform_os():lower()
     end
     runtime = runtime .. "/" .. getLuaVersion(args)
-    return dbg / runtime / (platformOS() == "Windows" and "lua.exe" or "lua")
+    return dbg / runtime / (platform_os() == "Windows" and "lua.exe" or "lua")
 end
 
 local function installBootstrap1(option, luaexe, args)
@@ -132,7 +132,7 @@ local function exists_exe(luaexe, modify)
     if fs.exists(luaexe) then
         return true
     end
-    if platformOS() ~= "Windows" then
+    if platform_os() ~= "Windows" then
         return false
     end
     if not luaexe:equal_extension "" then
