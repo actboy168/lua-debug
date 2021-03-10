@@ -51,6 +51,7 @@ if platform.OS == "Windows" then
         defines = {
             "BEE_INLINE",
             "_CRT_SECURE_NO_WARNINGS",
+            "LUA_DLL_VERSION=lua54"
         },
         links = {
             "ws2_32",

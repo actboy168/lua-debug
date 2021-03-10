@@ -6,7 +6,7 @@
 #include <DelayImp.h>
 
 #if !defined(LUA_DLL_VERSION)
-#define LUA_DLL_VERSION latest
+#error "Need LUA_DLL_VERSION"
 #endif
 
 #define LUA_STRINGIZE(_x) LUA_STRINGIZE_(_x)
