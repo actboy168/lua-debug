@@ -194,7 +194,7 @@ local function create_luaexe_in_console(args, dbg, pid)
     return sp.spawn(option)
 end
 
-local function create_process_in_console(args)
+local function create_process_in_console(args, callback)
     initialize(args)
     local application = args.runtimeExecutable
     local option = {
@@ -224,6 +224,9 @@ local function create_process_in_console(args)
         , (WORKDIR / "bin" / "win" / "launcher.x64.dll"):string()
         , "launch"
     )
+    if callback then
+        callback(process)
+    end
     process:resume()
     return process
 end

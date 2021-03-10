@@ -16,6 +16,14 @@ local function getUnixAddress(pid)
     return "@"..(path / ("pid_%d"):format(pid)):string()
 end
 
+local function ipc_send_latest(pid)
+    fs.create_directories(WORKDIR / "tmp")
+    local ipc = require "common.ipc"
+    local fd = assert(ipc(WORKDIR, pid, "luaVersion", "w"))
+    fd:write("latest")
+    fd:close()
+end
+
 local function response_initialize(req)
     client.sendmsg {
         type = 'response',
@@ -59,11 +67,7 @@ end
 
 local function attach_process(pkg, pid)
     if pkg.args.luaVersion == "latest" then
-        fs.create_directories(WORKDIR / "tmp")
-        local ipc = require "common.ipc"
-        local fd = assert(ipc(WORKDIR, pid, "luaVersion", "w"))
-        fd:write("latest")
-        fd:close()
+        ipc_send_latest(pid)
     end
     local inject = require 'inject'
     if not inject.injectdll(pid
@@ -141,12 +145,17 @@ local function proxy_launch_console(pkg)
             response_error(pkg, "`runtimeExecutable` is not supported.")
             return
         end
-        local process, err = debuger_factory.create_process_in_console(args)
+        local process, err = debuger_factory.create_process_in_console(args, function (process)
+            local pid = process:get_id()
+            server = network(getUnixAddress(pid), true)
+            if args.luaVersion == "latest" then
+                ipc_send_latest(pid)
+            end
+        end)
         if not process then
             response_error(pkg, err)
             return
         end
-        server = network(getUnixAddress(process:get_id()), true)
     else
         local pid = sp.get_id()
         server = network(getUnixAddress(pid), true)
