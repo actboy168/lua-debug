@@ -117,6 +117,7 @@ int  (rlua_next) (rlua_State *L, int idx);
 void  (rluaL_buffinit) (rlua_State *L, rluaL_Buffer *B);
 char *(rluaL_prepbuffsize) (rluaL_Buffer *B, size_t sz);
 void  (rluaL_pushresultsize) (rluaL_Buffer *B, size_t sz);
+void  (rluaL_requiref) (rlua_State *L, const char *modname, rlua_CFunction openf, int glb);
 
 #define rlua_pop(L,n) rlua_settop(L, -(n)-1)
 #define rlua_pushcfunction(L,f) rlua_pushcclosure(L, (f), 0)

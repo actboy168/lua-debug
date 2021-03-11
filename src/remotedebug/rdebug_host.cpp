@@ -1,4 +1,5 @@
 ﻿#include "rlua.h"
+#include "rdebug_cmodule.h"
 
 static int DEBUG_HOST = 0;	// host L in client VM
 static int DEBUG_CLIENT = 0;	// client L in host VM for hook
@@ -63,6 +64,8 @@ client_main(rlua_State *L) {
 	rlua_pushboolean(L, 1);
 	rlua_setfield(L, RLUA_REGISTRYINDEX, "LUA_NOENV");
 	rluaL_openlibs(L);
+	remotedebug::require_all(L);
+
 #if !defined(RLUA_DISABLE) || LUA_VERSION_NUM >= 504
 #	if !defined(LUA_GCGEN)
 #		define LUA_GCGEN 10

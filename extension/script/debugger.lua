@@ -108,11 +108,9 @@ function dbg:start(cfg)
 
     local bootstrap_lua = ([[
         package.path = %q
-        package.cpath = %q
         require "remotedebug.thread".bootstrap_lua = debug.getinfo(1, "S").source
     ]]):format(
           self.root..'/script/?.lua'
-        , self.root..rt..'/?.'..ext
     )
     self.rdebug.start(("assert(load(%q))(...)"):format(bootstrap_lua) .. ([[
         local logpath = %q
