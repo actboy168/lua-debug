@@ -28,7 +28,7 @@
 #include "ltm.h"
 #include "lvm.h"
 
-#include "luai_userstate.h"
+#include "luai_devent.h"
 
 #define noLuaClosure(f)		((f) == NULL || (f)->c.tt == LUA_TCCL)
 

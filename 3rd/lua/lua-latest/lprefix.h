@@ -41,6 +41,6 @@
 
 #endif			/* } */
 
-#include "luai_userstate.h"
+#include "luai_devent.h"
 
 #endif

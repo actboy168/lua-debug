@@ -28,7 +28,7 @@
 #include "ltm.h"
 #include "lvm.h"
 
-#include "luai_userstate.h"
+#include "luai_devent.h"
 
 
 static const char *getfuncname (lua_State *L, CallInfo *ci, const char **name);
