@@ -29,33 +29,6 @@ thunk* thunk_create_hook(intptr_t dbg, intptr_t hook)
 	return t.release();
 }
 
-thunk* thunk_create_panic(intptr_t dbg, intptr_t panic)
-{
-	// int __cedel thunk_panic(lua_State* L)
-	// {
-	//    `panic`(`dbg`, L);
-	//     return `undefinition`;
-	// }
-	static unsigned char sc[] = {
-		0xff, 0x74, 0x24, 0x04,       // push [esp+4]
-		0x68, 0x00, 0x00, 0x00, 0x00, // push dbg
-		0xe8, 0x00, 0x00, 0x00, 0x00, // call panic
-		0x83, 0xc4, 0x08,             // add esp, 8
-		0xc3,                         // ret
-	};
-	std::unique_ptr<thunk> t(new thunk);
-	if (!t->create(sizeof(sc))) {
-		return 0;
-	}
-	memcpy(sc + 5, &dbg, sizeof(dbg));
-	panic = panic - ((intptr_t)t->data + 14);
-	memcpy(sc + 10, &panic, sizeof(panic));
-	if (!t->write(&sc)) {
-		return 0;
-	}
-	return t.release();
-}
-
 thunk* thunk_create_allocf(intptr_t dbg, intptr_t allocf)
 {
 	// void* __cedel thunk_allocf(void *ud, void *ptr, size_t osize, size_t nsize)

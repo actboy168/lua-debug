@@ -14,7 +14,6 @@ local hookmgr = {}
 ---* `update` 每隔一段时间触发。需要用hookmgr.update_open激活。
 ---* `exception` 每次触发非内存错误时触发。需要用hookmgr.exception_open激活。需要补丁支持。
 ---* `thread` 每次进入或退出thread会触发。需要用hookmgr.thread_open激活。需要补丁支持。
----* `panic` 进入panic时触发。
 ---
 function hookmgr.init(callback)
 end

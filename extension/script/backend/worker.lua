@@ -729,11 +729,6 @@ local function runException(flags, error)
     runLoop('exception', message, level)
 end
 
-function event.panic(error)
-    if not initialized then return end
-    runException({'panic'}, error)
-end
-
 function event.exception(error, errcode)
     if not initialized then return end
     if errcode == nil or errcode == -1 then

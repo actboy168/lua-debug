@@ -22,9 +22,3 @@ thunk* thunk_create_hook(intptr_t dbg, intptr_t hook) {
     t->data = (void*)hook;
     return t;
 }
-
-thunk* thunk_create_panic(intptr_t dbg, intptr_t panic) {
-    thunk* t = new thunk;
-    t->data = (void*)panic;
-    return t;
-}
