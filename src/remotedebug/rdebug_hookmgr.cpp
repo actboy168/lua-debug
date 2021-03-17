@@ -339,7 +339,8 @@ struct hookmgr {
         set_host(cL, hL);
         rlua_pushstring(cL, "exception");
         int ref = copy_value(hL, cL, true);
-        if (rlua_pcall(cL, 2, 0, 0) != LUA_OK) {
+        rlua_pushinteger(cL, ar->currentline);
+        if (rlua_pcall(cL, 3, 0, 0) != LUA_OK) {
             rlua_pop(cL, 1);
         }
         unref_value(hL, ref);

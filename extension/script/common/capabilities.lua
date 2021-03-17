@@ -38,6 +38,13 @@ return {
         },
         {
             default = false,
+            filter = 'syntax',
+            label = 'Syntax Errors',
+            supportsCondition = true,
+            description = 'Syntax error.',
+        },
+        {
+            default = false,
             filter = 'other',
             label = 'Native Errors',
             supportsCondition = true,

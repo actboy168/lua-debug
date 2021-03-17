@@ -28,6 +28,7 @@
 #include "ltm.h"
 #include "lvm.h"
 
+#include "luai_userstate.h"
 
 
 static const char *getfuncname (lua_State *L, CallInfo *ci, const char **name);
@@ -616,8 +617,7 @@ static void addinfo (lua_State *L, const char *msg) {
 
 
 void luaG_errormsg (lua_State *L) {
-  if (L->hookmask & LUA_MASKEXCEPTION)
-    luaD_callhook(L, LUA_HOOKEXCEPTION, -1);
+  luai_errevent(L, LUA_ERRRUN);
   if (L->errfunc != 0) {  /* is there an error handling function? */
     StkId errfunc = restorestack(L, L->errfunc);
     if (!ttisfunction(errfunc)) luaD_throw(L, LUA_ERRERR);

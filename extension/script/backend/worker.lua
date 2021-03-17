@@ -648,28 +648,47 @@ local function execExceptionBreakpoint(flags, level, error)
     end
 end
 
+local ERREVENT_ERRRUN    <const> = 0x02
+local ERREVENT_ERRSYNTAX <const> = 0x03
+local ERREVENT_ERRMEM    <const> = 0x04
+local ERREVENT_ERRERR    <const> = 0x05
+local ERREVENT_PANIC     <const> = 0x10
+
 local function GlobalFunction(name)
     return rdebug.value(rdebug.fieldv(rdebug._G, name))
 end
 
-local function getExceptionType()
-    if not rdebug.getinfo(0, "Sl", info) then
+local function getExceptionType(errcode)
+    errcode = errcode & 0xF
+    if errcode == ERREVENT_ERRRUN then
+        if rdebug.getinfo(0, "Sl", info) then
+            if info.what ~= 'C' then
+                return "runtime"
+            end
+            local raisefunc = rdebug.value(rdebug.getfunc(0))
+            if raisefunc == GlobalFunction "assert" then
+                return "assert"
+            end
+            if raisefunc == GlobalFunction "error" then
+                return "error"
+            end
+        end
         return "other"
+    elseif errcode == ERREVENT_ERRSYNTAX then
+        return "syntax"
+    elseif errcode == ERREVENT_ERRMEM then
+        return "unknown"
+    elseif errcode == ERREVENT_ERRERR then
+        return "unknown"
+    else
+        return "unknown"
     end
-    if info.what ~= 'C' then
-        return "runtime"
-    end
-    local raisefunc = rdebug.value(rdebug.getfunc(0))
-    if raisefunc == GlobalFunction "assert" then
-        return "assert"
-    end
-    if raisefunc == GlobalFunction "error" then
-        return "error"
-    end
-    return "other"
 end
 
-local function getExceptionCaught()
+local function getExceptionCaught(errcode)
+    if errcode & ERREVENT_PANIC ~= 0 then
+        return "panic"
+    end
     local pcall = GlobalFunction 'pcall'
     local xpcall = GlobalFunction 'xpcall'
     local level = 1
@@ -690,11 +709,11 @@ local function getExceptionCaught()
     return 'native'
 end
 
-local function getExceptionFlags()
-    local flags = {}
-    flags[#flags+1] = getExceptionType()
-    flags[#flags+1] = getExceptionCaught()
-    return flags
+local function getExceptionFlags(errcode)
+    return {
+        getExceptionType(errcode),
+        getExceptionCaught(errcode),
+    }
 end
 
 local function runException(flags, error)
@@ -715,9 +734,13 @@ function event.panic(error)
     runException({'panic'}, error)
 end
 
-function event.exception(error)
+function event.exception(error, errcode)
     if not initialized then return end
-    runException(getExceptionFlags(), error)
+    if errcode == nil or errcode == -1 then
+        --TODO:暂时兼容旧版本
+        errcode = ERREVENT_ERRRUN
+    end
+    runException(getExceptionFlags(errcode), error)
 end
 
 function event.thread(co, type)
