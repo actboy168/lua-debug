@@ -17,6 +17,34 @@ return {
     exceptionBreakpointFilters = {
         {
             default = false,
+            filter = 'runtime',
+            label = 'Runtime Errors',
+            supportsCondition = true,
+            description = 'Error raised by lua runtime.',
+        },
+        {
+            default = false,
+            filter = 'assert',
+            label = 'Assertion Errors',
+            supportsCondition = true,
+            description = 'Error raised by `assert`.',
+        },
+        {
+            default = false,
+            filter = 'error',
+            label = 'Common Errors',
+            supportsCondition = true,
+            description = 'Error raised by `error`.',
+        },
+        {
+            default = false,
+            filter = 'other',
+            label = 'Native Errors',
+            supportsCondition = true,
+            description = 'Error raised by `lua_error`.',
+        },
+        {
+            default = false,
             filter = 'lua',
             label = 'Caught Errors By Lua',
             supportsCondition = true,

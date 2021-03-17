@@ -633,18 +633,45 @@ function event.iowrite()
     return true
 end
 
-local function execExceptionBreakpoint(type, level, error)
-    local filter = exceptionFilters[type]
-    if filter == true or filter == nil then
-        return filter
+local function execExceptionBreakpoint(flags, level, error)
+    for _, flag in ipairs(flags) do
+        local filter = exceptionFilters[flag]
+        if filter == true then
+            return true
+        end
+        if filter ~= nil then
+            local ok, res = evaluate.eval(filter, level, { error = error })
+            if ok and res then
+                return true
+            end
+        end
     end
-    local ok, res = evaluate.eval(filter, level, { error = error })
-    return ok and res
+end
+
+local function GlobalFunction(name)
+    return rdebug.value(rdebug.fieldv(rdebug._G, name))
 end
 
 local function getExceptionType()
-    local pcall = rdebug.value(rdebug.fieldv(rdebug._G, 'pcall'))
-    local xpcall = rdebug.value(rdebug.fieldv(rdebug._G, 'xpcall'))
+    if not rdebug.getinfo(0, "Sl", info) then
+        return "other"
+    end
+    if info.what ~= 'C' then
+        return "runtime"
+    end
+    local raisefunc = rdebug.value(rdebug.getfunc(0))
+    if raisefunc == GlobalFunction "assert" then
+        return "assert"
+    end
+    if raisefunc == GlobalFunction "error" then
+        return "error"
+    end
+    return "other"
+end
+
+local function getExceptionCaught()
+    local pcall = GlobalFunction 'pcall'
+    local xpcall = GlobalFunction 'xpcall'
     local level = 1
     while true do
         local f = rdebug.getfunc(level)
@@ -663,9 +690,16 @@ local function getExceptionType()
     return 'native'
 end
 
-local function runException(type, error)
+local function getExceptionFlags()
+    local flags = {}
+    flags[#flags+1] = getExceptionType()
+    flags[#flags+1] = getExceptionCaught()
+    return flags
+end
+
+local function runException(flags, error)
     local level, message, trace = traceback(error)
-    if level < 0 or not execExceptionBreakpoint(type, level, error) then
+    if level < 0 or not execExceptionBreakpoint(flags, level, error) then
         return
     end
     currentException = {
@@ -678,12 +712,12 @@ end
 
 function event.panic(error)
     if not initialized then return end
-    runException('panic', error)
+    runException({'panic'}, error)
 end
 
 function event.exception(error)
     if not initialized then return end
-    runException(getExceptionType(), error)
+    runException(getExceptionFlags(), error)
 end
 
 function event.thread(co, type)
