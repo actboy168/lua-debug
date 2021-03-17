@@ -265,6 +265,9 @@ function m.set_funcbp(breakpoints)
     for _, bp in ipairs(breakpoints) do
         if evaluate.verify(bp.name) and valid(bp) then
             funcs[#funcs+1] = bp
+            bp.verified = true
+            bp.statHit = 0
+            ev.emit('breakpoint', 'changed', bp)
         end
     end
     hookmgr.funcbp_open(#funcs > 0)

@@ -202,8 +202,12 @@ end
 
 function request.setFunctionBreakpoints(req)
     local args = req.arguments
+    for _, bp in ipairs(args.breakpoints) do
+        bp.id = genBreakpointID()
+        bp.verified = false
+    end
     response.success(req, {
-        breakpoints = {}
+        breakpoints = args.breakpoints
     })
     config.function_breakpoints = args.breakpoints
     if state == "initialized" then
