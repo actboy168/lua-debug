@@ -42,7 +42,7 @@ local rawxpcall = xpcall
 function pcall(f, ...)
     return rawxpcall(f,
         function(msg)
-            rdebug.event("exception", msg)
+            rdebug.event("exception", msg，2--[[LUA_ERRRUN]])
             return msg
         end,
     ...)
@@ -50,7 +50,7 @@ end
 function xpcall(f, msgh, ...)
     return rawxpcall(f,
         function(msg)
-            rdebug.event("exception", msg)
+            rdebug.event("exception", msg，22--[[LUA_ERRRUN]])
             return msgh and msgh(msg) or msg
         end
     , ...)
