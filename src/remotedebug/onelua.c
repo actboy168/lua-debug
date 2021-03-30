@@ -13,6 +13,8 @@
 
 /* no need to change anything below this line ----------------------------- */
 
+#define LUA_CORE
+#define LUA_LIB
 #include "lprefix.h"
 
 #include <assert.h>
@@ -33,8 +35,6 @@
 
 
 /* setup for luaconf.h */
-#define LUA_CORE
-#define LUA_LIB
 #define ltable_c
 #define lvm_c
 #include "luaconf.h"
