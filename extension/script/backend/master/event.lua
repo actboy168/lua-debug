@@ -20,41 +20,30 @@ function event.capabilities()
     }
 end
 
-function event.stopped(threadId, msg)
+function event.stopped(body)
     mgr.sendToClient {
         type = 'event',
         seq = mgr.newSeq(),
         event = 'stopped',
-        body = {
-            reason = msg,
-            threadId = threadId,
-        }
+        body = body
     }
 end
 
-function event.breakpoint(reason, breakpoint)
+function event.breakpoint(body)
     mgr.sendToClient {
         type = 'event',
         seq = mgr.newSeq(),
         event = 'breakpoint',
-        body = {
-            reason = reason,
-            breakpoint = breakpoint,
-        }
+        body = body
     }
 end
 
-function event.output(category, output, source, line)
+function event.output(body)
     mgr.sendToClient {
         type = 'event',
         seq = mgr.newSeq(),
         event = 'output',
-        body = {
-            category = category,
-            output = output,
-            source = source,
-            line = line,
-        }
+        body = body
     }
 end
 
@@ -69,15 +58,12 @@ function event.terminated()
     }
 end
 
-function event.loadedSource(reason, source)
+function event.loadedSource(body)
     mgr.sendToClient {
         type = 'event',
         seq = mgr.newSeq(),
         event = 'loadedSource',
-        body = {
-            reason = reason,
-            source = source,
-        }
+        body = body
     }
 end
 
@@ -93,7 +79,7 @@ function event.thread(reason, threadId)
     }
 end
 
-function event.invalidated(areas, threadId)
+function event.invalidated(body)
     if not mgr.getClient().supportsInvalidatedEvent then
         return
     end
@@ -101,10 +87,7 @@ function event.invalidated(areas, threadId)
         type = 'event',
         seq = mgr.newSeq(),
         event = 'invalidated',
-        body = {
-            areas = areas,
-            threadId = threadId,
-        }
+        body = body
     }
 end
 

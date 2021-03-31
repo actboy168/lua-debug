@@ -118,7 +118,7 @@ function mgr.hasThread(w)
     return workers[w] ~= nil
 end
 
-function mgr.startThread(workerId)
+function mgr.initWorker(workerId)
     local workerChannel = ('DbgWorker(%s)'):format(workerId)
     local threaId = genThreadId()
     workers[threaId] = assert(thread.channel(workerChannel))
@@ -127,20 +127,20 @@ function mgr.startThread(workerId)
     return threaId
 end
 
-function mgr.exitThread(w)
+function mgr.exitWorker(w)
     workers[w] = nil
 end
 
 local function updateOnce()
     local threadCMD = require 'backend.master.threads'
     while true do
-        local ok, w, msg = masterThread:pop()
+        local ok, w, cmd, msg = masterThread:pop()
         if not ok then
             break
         end
-        local pkg = assert(json.decode(msg))
-        if threadCMD[pkg.cmd] then
-            threadCMD[pkg.cmd](threads[w] or w, pkg)
+        if threadCMD[cmd] then
+            local pkg = assert(json.decode(msg))
+            threadCMD[cmd](threads[w] or w, pkg)
         end
     end
     if redirect.stderr then

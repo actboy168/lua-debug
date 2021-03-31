@@ -59,21 +59,21 @@ local function workerThreadUpdate(timeout)
     end
 end
 
-local function sendToMaster(msg)
-	masterThread:push(WorkerId, assert(json.encode(msg)))
+local function sendToMaster(cmd)
+    return function (pkg)
+        masterThread:push(WorkerId, cmd, assert(json.encode(pkg)))
+    end
 end
 
 ev.on('breakpoint', function(reason, bp)
-    sendToMaster {
-        cmd = 'eventBreakpoint',
+    sendToMaster 'eventBreakpoint' {
         reason = reason,
         breakpoint = bp,
     }
 end)
 
 ev.on('output', function(category, output, source, line)
-    sendToMaster {
-        cmd = 'eventOutput',
+    sendToMaster 'eventOutput' {
         category = category,
         output = output,
         source = source and {
@@ -86,8 +86,7 @@ ev.on('output', function(category, output, source, line)
 end)
 
 ev.on('loadedSource', function(reason, s)
-    sendToMaster {
-        cmd = 'loadedSource',
+    sendToMaster 'eventLoadedSource' {
         reason = reason,
         source = source.output(s)
     }
@@ -130,9 +129,10 @@ end
 function CMD.exit()
     if initialized then
         CMD.terminated()
-        sendToMaster {
-            cmd = 'exitThread',
+        sendToMaster 'eventThread' {
+            reason = 'exited'
         }
+        sendToMaster 'exitWorker' {}
     end
 end
 
@@ -255,19 +255,19 @@ function CMD.stackTrace(pkg)
     until (not L or levels <= 0)
     hookmgr.sethost(baseL)
 
-    sendToMaster {
-        cmd = 'stackTrace',
+    sendToMaster 'stackTrace' {
         command = pkg.command,
         seq = pkg.seq,
         success = true,
-        stackFrames = res,
-        totalFrames = 0x10000,
+        body = {
+            stackFrames = res,
+            totalFrames = 0x10000,
+        }
     }
 end
 
 function CMD.source(pkg)
-    sendToMaster {
-        cmd = 'source',
+    sendToMaster 'source' {
         command = pkg.command,
         seq = pkg.seq,
         content = source.getCode(pkg.sourceReference),
@@ -289,19 +289,19 @@ function CMD.scopes(pkg)
     local coid = (pkg.frameId >> 16) + 1
     local depth = pkg.frameId & 0xFFFF
     hookmgr.sethost(assert(findFrame(coid)))
-    sendToMaster {
-        cmd = 'scopes',
+    sendToMaster 'scopes' {
         command = pkg.command,
         seq = pkg.seq,
-        scopes = variables.scopes(depth),
+        body = {
+            scopes = variables.scopes(depth)
+        }
     }
 end
 
 function CMD.variables(pkg)
     local vars, err = variables.extand(pkg.valueId, pkg.filter, pkg.start, pkg.count)
     if not vars then
-        sendToMaster {
-            cmd = 'variables',
+        sendToMaster 'variables' {
             command = pkg.command,
             seq = pkg.seq,
             success = false,
@@ -309,20 +309,20 @@ function CMD.variables(pkg)
         }
         return
     end
-    sendToMaster {
-        cmd = 'variables',
+    sendToMaster 'variables' {
         command = pkg.command,
         seq = pkg.seq,
         success = true,
-        variables = vars,
+        body = {
+            variables = vars
+        }
     }
 end
 
 function CMD.setVariable(pkg)
     local var, err = variables.set(pkg.valueId, pkg.name, pkg.value)
     if not var then
-        sendToMaster {
-            cmd = 'setVariable',
+        sendToMaster 'setVariable' {
             command = pkg.command,
             seq = pkg.seq,
             success = false,
@@ -330,13 +330,14 @@ function CMD.setVariable(pkg)
         }
         return
     end
-    sendToMaster {
-        cmd = 'setVariable',
+    sendToMaster 'setVariable' {
         command = pkg.command,
         seq = pkg.seq,
         success = true,
-        value = var.value,
-        type = var.type,
+        body = {
+            value = var.value,
+            type = var.type,
+        }
     }
 end
 
@@ -344,8 +345,7 @@ function CMD.evaluate(pkg)
     local depth = pkg.frameId & 0xFFFF
     local ok, result = evaluate.run(depth, pkg.expression, pkg.context)
     if not ok then
-        sendToMaster {
-            cmd = 'evaluate',
+        sendToMaster 'evaluate' {
             command = pkg.command,
             seq = pkg.seq,
             success = false,
@@ -353,8 +353,7 @@ function CMD.evaluate(pkg)
         }
         return
     end
-    sendToMaster {
-        cmd = 'evaluate',
+    sendToMaster 'evaluate' {
         command = pkg.command,
         seq = pkg.seq,
         success = true,
@@ -391,14 +390,15 @@ function CMD.setExceptionBreakpoints(pkg)
 end
 
 function CMD.exceptionInfo(pkg)
-    sendToMaster {
-        cmd = 'exceptionInfo',
+    sendToMaster 'exceptionInfo' {
         command = pkg.command,
         seq = pkg.seq,
-        breakMode = 'always',
-        exceptionId = currentException.message,
-        details = {
-            stackTrace = currentException.trace,
+        body = {
+            breakMode = 'always',
+            exceptionId = currentException.message,
+            details = {
+                stackTrace = currentException.trace,
+            }
         }
     }
 end
@@ -447,8 +447,7 @@ end
 
 function CMD.restartFrame()
     cleanFrame()
-    sendToMaster {
-        cmd = 'eventStop',
+    sendToMaster 'eventStop' {
         reason = 'restart',
     }
 end
@@ -481,16 +480,14 @@ end
 
 function CMD.customRequestShowIntegerAsDec()
     variables.showIntegerAsDec()
-    sendToMaster {
-        cmd = "eventInvalidated",
+    sendToMaster 'eventInvalidated' {
         areas = "variables",
     }
 end
 
 function CMD.customRequestShowIntegerAsHex()
     variables.showIntegerAsHex()
-    sendToMaster {
-        cmd = "eventInvalidated",
+    sendToMaster 'eventInvalidated' {
         areas = "variables",
     }
 end
@@ -498,8 +495,7 @@ end
 local function runLoop(reason, text, level)
     baseL = hookmgr.gethost()
     --TODO: 只在lua栈帧时需要text？
-    sendToMaster {
-        cmd = 'eventStop',
+    sendToMaster 'eventStop' {
         reason = reason,
         text = text,
     }
@@ -806,8 +802,9 @@ ev.on('terminated', function()
     end
 end)
 
-sendToMaster {
-    cmd = 'startThread',
+sendToMaster 'initWorker' {}
+sendToMaster 'eventThread' {
+    reason = 'started',
 }
 
 hookmgr.update_open(true)
