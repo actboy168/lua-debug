@@ -147,14 +147,20 @@ local function updateOnce()
         local res = redirect.stderr:read(redirect.stderr:peek())
         if res then
             local event = require 'backend.master.event'
-            event.output('stderr', res)
+            event.output {
+                category = 'stderr',
+                output = res,
+            }
         end
     end
     if redirect.stdout then
         local res = redirect.stdout:read(redirect.stdout:peek())
         if res then
             local event = require 'backend.master.event'
-            event.output('stdout', res)
+            event.output {
+                category = 'stdout',
+                output = res,
+            }
         end
     end
     if not network.update() then

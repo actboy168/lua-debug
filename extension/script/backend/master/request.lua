@@ -494,7 +494,10 @@ end
 --    for i = 1, n do
 --        t[i] = tostring(select(i, ...))
 --    end
---    event.output('stdout', table.concat(t, '\t')..'\n')
+--    event.output {
+--        category = 'stdout',
+--        output = table.concat(t, '\t')..'\n',
+--    }
 --end
 
 --local log = require 'common.log'
