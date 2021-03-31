@@ -76,7 +76,9 @@ do
 		if name == nil then
 			break
 		end
-		debug.setupvalue(func, i, args_value[name])
+		if name ~= "_ENV" then
+			debug.setupvalue(func, i, args_value[name])
+		end
 		i = i + 1
 	end
 end
