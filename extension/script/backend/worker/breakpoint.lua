@@ -5,6 +5,7 @@ local evaluate = require 'backend.worker.evaluate'
 local ev = require 'backend.event'
 local hookmgr = require 'remotedebug.hookmgr'
 local parser = require 'backend.worker.parser'
+local stdout = require 'backend.worker.stdout'
 
 local currentactive = {}
 local waitverify = {}
@@ -226,12 +227,7 @@ function m.exec(bp)
             return tostring(res)
         end)
         rdebug.getinfo(1, "Sl", info)
-        local src = source.create(info.source)
-        if source.valid(src) then
-            ev.emit('output', 'stdout', res, src, source.line(src, info.currentline))
-        else
-            ev.emit('output', 'stdout', res)
-        end
+        stdout(res, info)
         return false
     end
     return true

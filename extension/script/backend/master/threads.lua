@@ -21,7 +21,10 @@ function CMD.eventBreakpoint(_, req)
     event.breakpoint(req)
 end
 
-function CMD.eventOutput(_, req)
+function CMD.eventOutput(w, req)
+    if req.variablesReference then
+        req.variablesReference = (w << 24) | req.variablesReference
+    end
     event.output(req)
 end
 

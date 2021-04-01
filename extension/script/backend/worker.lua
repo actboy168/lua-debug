@@ -72,17 +72,8 @@ ev.on('breakpoint', function(reason, bp)
     }
 end)
 
-ev.on('output', function(category, output, source, line)
-    sendToMaster 'eventOutput' {
-        category = category,
-        output = output,
-        source = source and {
-            name = source.name,
-            path = source.path,
-            sourceReference = source.sourceReference,
-        } or nil,
-        line = line,
-    }
+ev.on('output', function(body)
+    sendToMaster 'eventOutput' (body)
 end)
 
 ev.on('loadedSource', function(reason, s)
@@ -98,7 +89,10 @@ end)
 --    for i = 1, n do
 --        t[i] = tostring(select(i, ...))
 --    end
---    ev.emit('output', 'stderr', table.concat(t, '\t')..'\n')
+--    ev.emit('output', {
+--        category = 'stderr',
+--        output = table.concat(t, '\t')..'\n',
+--    })
 --end
 
 --local log = require 'common.log'
@@ -603,12 +597,7 @@ function event.print()
     end
     res = table.concat(res, '\t') .. '\n'
     rdebug.getinfo(1, "Sl", info)
-    local src = source.create(info.source)
-    if source.valid(src) then
-        stdout(res, src, source.line(src, info.currentline))
-    else
-        stdout(res)
-    end
+    stdout(res, info)
     return true
 end
 
@@ -620,12 +609,7 @@ function event.iowrite()
     end
     res = table.concat(res, '\t')
     rdebug.getinfo(1, "Sl", info)
-    local src = source.create(info.source)
-    if source.valid(src) then
-        stdout(res, src, source.line(src, info.currentline))
-    else
-        stdout(res)
-    end
+    stdout(res, info)
     return true
 end
 
