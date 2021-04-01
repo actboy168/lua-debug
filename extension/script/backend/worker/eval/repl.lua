@@ -22,7 +22,7 @@ do
 		if name == nil then
 			break
 		end
-		if #name > 0 then
+		if #name > 0 and name ~= "_ENV" then
 			args_name[#args_name+1] = name
 			args_value[name] = value
 			updates[#updates+1] = ("{'u',name=%q,idx=%d,val=%s}"):format(name, i, name)
