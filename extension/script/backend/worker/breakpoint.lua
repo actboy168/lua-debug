@@ -269,11 +269,18 @@ function m.set_funcbp(breakpoints)
     hookmgr.funcbp_open(#funcs > 0)
 end
 
+function m.hit_bp(src, currentline)
+    local bp = m.find(src, currentline)
+    if bp and m.exec(bp) then
+        return bp
+    end
+end
+
 function m.hit_funcbp(func)
     for _, bp in ipairs(funcs) do
         local ok, res = evaluate.eval(bp.name, 1)
-        if ok and res == func then
-            return m.exec(bp)
+        if ok and res == func and m.exec(bp) then
+            return bp
         end
     end
 end

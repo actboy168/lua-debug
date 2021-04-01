@@ -486,13 +486,10 @@ function CMD.customRequestShowIntegerAsHex()
     }
 end
 
-local function runLoop(reason, text, level)
+local function runLoop(reason, level)
     baseL = hookmgr.gethost()
     --TODO: 只在lua栈帧时需要text？
-    sendToMaster 'eventStop' {
-        reason = reason,
-        text = text,
-    }
+    sendToMaster 'eventStop' (reason)
     skipFrame = level or 0
 
     while true do
@@ -510,13 +507,14 @@ local function event_breakpoint(src, line)
         hookmgr.break_closeline()
         return
     end
-    local bp = breakpoint.find(src, source.line(src, line))
+    local bp = breakpoint.hit_bp(src, source.line(src, line))
     if bp then
-        if breakpoint.exec(bp) then
-            state = 'stopped'
-            runLoop 'breakpoint'
-            return true
-        end
+        state = 'stopped'
+        runLoop {
+            reason = 'breakpoint',
+            hitBreakpointIds = {bp.id}
+        }
+        return true
     end
 end
 
@@ -529,9 +527,13 @@ end
 
 function event.funcbp(func)
     if not initialized then return end
-    if breakpoint.hit_funcbp(func) then
+    local bp = breakpoint.hit_funcbp(func)
+    if bp then
         state = 'stopped'
-        runLoop 'function breakpoint'
+        runLoop {
+            reason = 'function breakpoint',
+            hitBreakpointIds = {bp.id}
+        }
     end
 end
 
@@ -554,7 +556,9 @@ function event.step(line)
         hookmgr.step_cancel()
     end
     if state == 'stopped' then
-        runLoop(stopReason)
+        runLoop {
+            reason = stopReason
+        }
     end
 end
 
@@ -706,7 +710,10 @@ local function runException(flags, error)
         trace = trace,
     }
     state = 'stopped'
-    runLoop('exception', message, level)
+    runLoop({
+        reason = 'exception',
+        text = message,
+    }, level)
 end
 
 function event.exception(error, errcode)
