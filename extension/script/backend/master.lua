@@ -1,6 +1,6 @@
 local nt = require "backend.master.named_thread"
 
-return function (logpath, address, errthread)
+local function initMaster(logpath, address, errthread)
     if not nt.init() then
         return
     end
@@ -34,3 +34,12 @@ return function (logpath, address, errthread)
         end
     ]]):format(address, logpath))
 end
+
+local function hasMaster()
+    return nt.hasChannel "DbgMaster"
+end
+
+return {
+    init = initMaster,
+    has = hasMaster,
+}

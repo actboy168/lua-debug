@@ -37,6 +37,11 @@ local function createChannel(name)
     return not ok
 end
 
+local function hasChannel(name)
+    local ok = pcall(thread.channel, name)
+    return ok
+end
+
 local function createThread(name, script)
     if createChannel(reqChannelName(name)) then
         return
@@ -70,5 +75,6 @@ end})
 return {
     init = init,
     createChannel = createChannel,
+    hasChannel = hasChannel,
     createThread = createThread,
 }

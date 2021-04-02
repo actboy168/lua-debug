@@ -21,9 +21,7 @@ if debug.getregistry()["lua-debug"] then
     return empty
 end
 
-local dbg = {}
-
-function dbg:start(cfg)
+local function initDebugger(dbg, cfg)
     if type(cfg) == "string" then
         cfg = {address = cfg}
     end
@@ -96,15 +94,22 @@ function dbg:start(cfg)
     end
 
     ---@type RemoteDebug
-    self.rdebug = assert(package.loadlib(remotedebug,'luaopen_remotedebug'))()
+    dbg.rdebug = assert(package.loadlib(remotedebug,'luaopen_remotedebug'))()
 
     local function utf8(s)
         if cfg.ansi and platform == "windows" then
-            return self.rdebug.a2u(s)
+            return dbg.rdebug.a2u(s)
         end
         return s
     end
-    self.root = utf8(root)
+    dbg.root = utf8(root)
+    dbg.address = cfg.address and utf8(cfg.address) or nil
+end
+
+local dbg = {}
+
+function dbg:start(cfg)
+    initDebugger(self, cfg)
 
     local bootstrap_lua = ([[
         package.path = %q
@@ -116,11 +121,33 @@ function dbg:start(cfg)
         local logpath = %q
         local log = require 'common.log'
         log.file = logpath..'/worker.log'
-        require 'backend.master' (logpath, %q, true)
+        require 'backend.master' .init(logpath, %q, true)
         require 'backend.worker'
     ]]):format(
           self.root
-        , ("%q, %s"):format(utf8(cfg.address), cfg.client == true and "true" or "false")
+        , ("%q, %s"):format(dbg.address, cfg.client == true and "true" or "false")
+    ))
+    return self
+end
+
+function dbg:attach(cfg)
+    initDebugger(self, cfg)
+
+    local bootstrap_lua = ([[
+        package.path = %q
+        require "remotedebug.thread".bootstrap_lua = debug.getinfo(1, "S").source
+    ]]):format(
+          self.root..'/script/?.lua'
+    )
+    self.rdebug.start(("assert(load(%q))(...)"):format(bootstrap_lua) .. ([[
+        if require 'backend.master' .has() then
+            local logpath = %q
+            local log = require 'common.log'
+            log.file = logpath..'/worker.log'
+            require 'backend.worker'
+        end
+    ]]):format(
+        self.root
     ))
     return self
 end
