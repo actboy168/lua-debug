@@ -107,9 +107,15 @@ local function replacewhere(error)
             local message = tostring(rdebug.value(error))
             local f, l = message:find ':[-%d]+: '
             if f and l then
+                local where_path = message:sub(1, f - 1)
+                local where_line = tonumber(message:sub(f + 1, l - 2))
+                local where_src = source.create("@"..where_path)
                 message = message:sub(l + 1)
+                if src ~= where_src or where_line ~= info.currentline then
+                    return depth, ('%s:%d: %s'):format(getshortsrc(where_src), source.line(src, where_line), message)
+                end
             end
-            return depth, ('%s:%d: %s'):format(getshortsrc(src), source.line(src, info.currentline), message)
+            return depth, message
         end
         depth = depth + 1
     end
