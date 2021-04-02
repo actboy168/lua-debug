@@ -743,6 +743,10 @@ function event.wait()
     end
 end
 
+function event.setThreadName(name)
+    sendToMaster 'setThreadName' (name)
+end
+
 function event.exit()
     CMD.exit()
 end

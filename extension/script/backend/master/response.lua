@@ -40,13 +40,6 @@ function response.initialize(req)
 end
 
 function response.threads(req, threads)
-    local thds = {}
-    for _, id in ipairs(threads) do
-        thds[#thds + 1] = {
-            name = ('Thread %d'):format(id),
-            id = id,
-        }
-    end
     mgr.sendToClient {
         type = 'response',
         seq = mgr.newSeq(),
@@ -54,7 +47,7 @@ function response.threads(req, threads)
         request_seq = req.seq,
         success = true,
         body = {
-            threads = thds
+            threads = threads
         },
     }
 end

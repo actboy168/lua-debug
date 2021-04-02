@@ -13,6 +13,7 @@ local stat = {}
 local queue = {}
 local masterThread
 local workers = {}
+local workersName = {}
 local client = {}
 local maxThreadId = 0
 local threads = {}
@@ -110,6 +111,14 @@ function mgr.broadcastToWorker(pkg)
     end
 end
 
+function mgr.setThreadName(w, name)
+    workersName[w] = name
+end
+
+function mgr.getThreadName(w)
+    return workersName[w]
+end
+
 function mgr.workers()
     return workers
 end
@@ -129,6 +138,7 @@ end
 
 function mgr.exitWorker(w)
     workers[w] = nil
+    workersName[w] = nil
 end
 
 local function updateOnce()

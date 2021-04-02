@@ -118,4 +118,8 @@ function CMD.setVariable(_, req)
     response.success(req, req.body)
 end
 
+function CMD.setThreadName(w, name)
+    mgr.setThreadName(w, name)
+end
+
 return CMD

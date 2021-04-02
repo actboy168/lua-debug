@@ -310,11 +310,17 @@ function request.evaluate(req)
 end
 
 function request.threads(req)
-    local t = {}
+    local threads = {}
     for w in pairs(mgr.workers()) do
-        t[#t + 1] = w
+        threads[#threads + 1] = {
+            name = ('%s (%d)'):format(mgr.getThreadName(w) or "Thread", w),
+            id = w,
+        }
     end
-    response.threads(req, t)
+    table.sort(threads, function (a, b)
+        return a.name < b.name
+    end)
+    response.threads(req, threads)
 end
 
 function request.disconnect(req)
