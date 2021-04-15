@@ -6,20 +6,22 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-latest, ubuntu-16.04, macos-latest]
-        arch: [x86, x64]
-        exclude:
+        include:
+        - os: windows-latest
+          target: x86
+        - os: windows-latest
+          target: x64
         - os: ubuntu-16.04
-          arch: x86
+          target: universal
         - os: macos-latest
-          arch: x86
+          target: x86_64-apple-macos10.12
     steps:
     - uses: actions/checkout@v1
       with:
         ref: refs/heads/master
         submodules : recursive
     - uses: actboy168/setup-luamake@master
-    - run: luamake -arch ${{ matrix.arch }}
+    - run: luamake -target ${{ matrix.target }}
     - uses: actions/upload-artifact@v1.0.0
       with:
         name: lua-debug
