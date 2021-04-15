@@ -1,14 +1,14 @@
-local platform, arch, mode = ...
+local platform, target, mode = ...
 local fs = require 'bee.filesystem'
 local CWD = fs.current_path()
 
 local exe = platform == 'msvc' and ".exe" or ""
 local dll = platform == 'msvc' and ".dll" or ".so"
 
-if platform ~= 'msvc' or arch == 'x86' then
+if platform ~= 'msvc' or target == 'x86' then
     local binplat = platform ~= 'msvc' and platform or 'win'
     local output = CWD / 'publish' / 'bin' / binplat
-    local bindir = CWD / 'build' / platform / 'bin' / arch / mode
+    local bindir = CWD / 'build' / platform / 'bin' / target / mode
     fs.create_directories(output)
     fs.copy_file(bindir / ('bee'..dll),       output / ('bee'..dll),        true)
     fs.copy_file(bindir / ('lua'..exe),       output / ('lua-debug'..exe),  true)
@@ -20,14 +20,14 @@ end
 
 if platform == 'msvc' then
     local output = CWD / 'publish' / 'bin' / 'win'
-    local bindir = CWD / 'build' / platform / 'bin' / arch / mode
+    local bindir = CWD / 'build' / platform / 'bin' / target / mode
     fs.create_directories(output)
-    fs.copy_file(bindir / 'launcher.dll', output / ('launcher.'..arch..'.dll'), true)
+    fs.copy_file(bindir / 'launcher.dll', output / ('launcher.'..target..'.dll'), true)
 end
 
 for _, luaver in ipairs {"lua51","lua52","lua53","lua54","lua-latest"} do
-    local rtplat = platform ~= 'msvc' and platform or (arch == 'x86' and 'win32' or 'win64')
-    local bindir = CWD / 'build' / platform / 'bin' / arch / mode / 'runtime' / luaver
+    local rtplat = platform ~= 'msvc' and platform or (target == 'x86' and 'win32' or 'win64')
+    local bindir = CWD / 'build' / platform / 'bin' / target / mode / 'runtime' / luaver
     local output = CWD / 'publish' / 'runtime' / rtplat / luaver
     fs.create_directories(output)
     fs.copy_file(bindir / ('lua'..exe),         output / ('lua'..exe),         true)
@@ -38,6 +38,6 @@ for _, luaver in ipairs {"lua51","lua52","lua53","lua54","lua-latest"} do
 end
 
 if platform == 'msvc' then
-    local rtplat = arch == 'x86' and 'win32' or 'win64'
-    require 'msvc'.copy_vcrt(arch, CWD / 'publish' / 'vcredist' / rtplat)
+    local rtplat = target == 'x86' and 'win32' or 'win64'
+    require 'msvc'.copy_vcrt(target, CWD / 'publish' / 'vcredist' / rtplat)
 end
