@@ -25,53 +25,59 @@ local function initDebugger(dbg, cfg)
     if type(cfg) == "string" then
         cfg = {address = cfg}
     end
-    local platform = (function()
-        if package.config:sub(1,1) == "\\" then
-            return "windows"
-        end
-        local name = io.popen('uname -s','r'):read('*l')
-        if name == "Linux" then
-            return "linux"
-        elseif name == "Darwin" then
-            return "macos"
-        end
-        error "unknown platform"
-    end)()
 
-    local arch = (function()
-        if string.packsize then
-            local size = string.packsize "T"
-            if size == 8 then
-                return 64
-            end
-            if size == 4 then
-                return 32
-            end
-        else
-            if platform ~= "windows" then
-                return 64
-            end
-            local pointer = tostring(io.stderr):match "%((.*)%)"
-            if pointer then
-                if #pointer <= 10 then
-                    return 32
-                end
-                return 64
+    local OS
+    local ARCH
+    do
+        local function shell(command)
+            local f = assert(io.popen(command, 'r'))
+            local r = f:read '*l'
+            f:close()
+            return r:lower()
+        end
+        local function detect_windows()
+            OS = "windows"
+            if os.getenv "PROCESSOR_ARCHITECTURE" == "AMD64" then
+                ARCH = "x86_64"
+            else
+                ARCH = "x86"
             end
         end
-        assert(false, "unknown arch")
-    end)()
+        local function detect_linux()
+            OS = "linux"
+            ARCH = "x86_64"
+            local machine = shell "uname -m"
+            assert(machine:match "x86_64" or machine:match "amd64", "unknown ARCH")
+        end
+        local function detect_macos()
+            OS = "macos"
+            ARCH = shell "uname -m"
+            assert(ARCH == "x86_64" or ARCH == "arm64", "unknown ARCH")
+        end
+        if package.config:sub(1,1) == "\\" then
+            detect_windows()
+        else
+            local name = shell 'uname -s'
+            if name == "linux" then
+                detect_linux()
+            elseif name == "darwin" then
+                detect_macos()
+            else
+                error "unknown OS"
+            end
+        end
+    end
 
     local rt = "/runtime"
-    if platform == "windows" then
-        if arch == 64 then
+    if OS == "windows" then
+        if ARCH == "x86_64" then
             rt = rt .. "/win64"
         else
             rt = rt .. "/win32"
         end
     else
-        assert(arch == 64)
-        rt = rt .. "/" .. platform
+        assert(ARCH == "x86_64")
+        rt = rt .. "/" .. OS
     end
     if cfg.latest then
         rt = rt .. "/lua-latest"
@@ -87,9 +93,9 @@ local function initDebugger(dbg, cfg)
         error(_VERSION .. " is not supported.")
     end
 
-    local ext = platform == "windows" and "dll" or "so"
+    local ext = OS == "windows" and "dll" or "so"
     local remotedebug = root..rt..'/remotedebug.'..ext
-    if platform == "windows" then
+    if OS == "windows" then
         assert(package.loadlib(remotedebug,'init'))(cfg.luaapi)
     end
 
@@ -97,7 +103,7 @@ local function initDebugger(dbg, cfg)
     dbg.rdebug = assert(package.loadlib(remotedebug,'luaopen_remotedebug'))()
 
     local function utf8(s)
-        if cfg.ansi and platform == "windows" then
+        if cfg.ansi and OS == "windows" then
             return dbg.rdebug.a2u(s)
         end
         return s
