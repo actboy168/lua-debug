@@ -9,7 +9,7 @@
 #	endif
 #elif defined(__linux__) || defined(__ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__)
 #	if defined(__ia64__)
-#		include "thunk_linux.inl"
+#		include "thunk_posix_amd64.inl"
 #else
 #		include "thunk_other.inl"
 #	endif
