@@ -7,16 +7,25 @@ if platform.OS == "Windows" then
     }
 end
 
-local arguments = {}
-for i, v in ipairs(arg) do
-    if v:sub(1, 1) == '-' then
-        local k = v:sub(2)
-        arguments[k] = arg[i+1]
+local mode = lm.mode or "release"
+if platform.OS == "Linux" then
+    lm.target = lm.target or "universal"
+elseif platform.OS == "macOS" then
+    local function shell(command)
+        local f = assert(io.popen(command, 'r'))
+        local r = f:read '*l'
+        f:close()
+        return r:lower()
+    end
+    if not lm.target then
+        local machine = shell "uname -m"
+        if machine == "arm64" then
+            lm.target = "arm64-apple-macos11"
+        else
+            lm.target = "x86_64-apple-macos10.12"
+        end
     end
 end
-
-lm.target = arguments.target or lm.target
-local mode = lm.mode or "release"
 
 lm.bindir = ("build/%s/bin/%s/%s"):format(lm.plat, lm.target, mode)
 lm.objdir = ("build/%s/obj/%s/%s"):format(lm.plat, lm.target, mode)

@@ -5,12 +5,6 @@ local CWD = fs.current_path()
 local OS = require 'bee.platform'.OS:lower()
 local ARCH
 do
-    local function shell(command)
-        local f = assert(io.popen(command, 'r'))
-        local r = f:read '*l'
-        f:close()
-        return r:lower()
-    end
     if OS == 'windows' then
         if target == 'x86' then
             ARCH = 'x86'
@@ -20,11 +14,7 @@ do
     elseif OS == 'linux' then
         ARCH = 'x86_64'
     elseif OS == 'macos' then
-        if target then
-            ARCH = target:match '^(.*)-'
-        else
-            ARCH = shell "uname -m"
-        end
+        ARCH = target:match '^([^-]*)-'
     end
 end
 
