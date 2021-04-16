@@ -15,8 +15,6 @@ jobs:
           target: universal
         - os: macos-latest
           target: x86_64-apple-macos10.12
-        - os: macos-latest
-          target: arm64-apple-macos11
     steps:
     - uses: actions/checkout@v1
       with:
