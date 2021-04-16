@@ -50,9 +50,6 @@ local function Is64BitWindows()
 end
 
 local function getLuaExe(args, dbg)
-    if type(args.luaexe) == "string" then
-        return fs.path(args.luaexe)
-    end
     local OS = platform_os():lower()
     local ARCH = args.luaArch
     if OS == "windows" then
@@ -67,11 +64,15 @@ local function getLuaExe(args, dbg)
             ARCH = "x86_64"
         end
     end
-    return dbg / "runtime"
+    local luaexe = dbg / "runtime"
         / OS
         / ARCH
         / getLuaVersion(args)
         / (platform_os() == "Windows" and "lua.exe" or "lua")
+    if fs.exists(luaexe) then
+        return luaexe
+    end
+    return nil, ("No runtime (OS: %s, ARCH: %s) is found, you need to compile it yourself."):format(OS, ARCH)
 end
 
 local function installBootstrap1(option, luaexe, args)
@@ -134,32 +135,28 @@ local function installBootstrap3(c, args)
     end
 end
 
-local function exists_exe(luaexe, modify)
-    if fs.exists(luaexe) then
-        return true
+local function checkLuaExe(args, dbg)
+    if type(args.luaexe) == "string" then
+        local luaexe = fs.path(args.luaexe)
+        if fs.exists(luaexe) then
+            return luaexe
+        end
+        if platform_os() == "Windows" and luaexe:equal_extension "" then
+            luaexe = fs.path(luaexe):replace_extension "exe"
+            if fs.exists(luaexe) then
+                return luaexe
+            end
+        end
+        return nil, ("No file `%s`."):format(args.luaexe)
     end
-    if platform_os() ~= "Windows" then
-        return false
-    end
-    if not luaexe:equal_extension "" then
-        return false
-    end
-    if modify then
-        luaexe:replace_extension "exe"
-    else
-        luaexe = fs.path(luaexe):replace_extension "exe"
-    end
-    return fs.exists(luaexe)
+    return getLuaExe(args, dbg)
 end
 
 local function create_luaexe_in_terminal(args, dbg, pid)
     initialize(args)
-    local luaexe = getLuaExe(args, dbg)
-    if not exists_exe(luaexe, false) then
-        if args.luaexe then
-            return nil, ("No file `%s`."):format(args.luaexe)
-        end
-        return nil, "Non-Windows need to compile lua-debug first."
+    local luaexe, err = checkLuaExe(args, dbg)
+    if not luaexe then
+        return nil, err
     end
     local option = {
         kind = (args.console == "integratedTerminal") and "integrated" or "external",
@@ -181,12 +178,9 @@ end
 
 local function create_luaexe_in_console(args, dbg, pid)
     initialize(args)
-    local luaexe = getLuaExe(args, dbg)
-    if not exists_exe(luaexe, true) then
-        if args.luaexe then
-            return nil, ("No file `%s`."):format(args.luaexe)
-        end
-        return nil, "Non-Windows need to compile lua-debug first."
+    local luaexe, err = checkLuaExe(args, dbg)
+    if not luaexe then
+        return nil, err
     end
     local option = {
         console = 'hide'
