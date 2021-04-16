@@ -3,37 +3,37 @@ const path = require("path");
 const os = require('os');
 const extension = require("./extension");
 
+function getPlatformOS() {
+    let platform = os.platform()
+    if (platform == "win32") {
+        return "windows"
+    }
+    else if (platform == "darwin") {
+        return "macos"
+    }
+    else {
+        return "linux"
+    }
+}
+
 function createDebugAdapterDescriptor(session, executable) {
     if (typeof session.configuration.debugServer === 'number') {
         return new vscode.DebugAdapterServer(session.configuration.debugServer);
     }
-    let dir = extension.extensionDirectory
-    let platform = os.platform()
-    if (platform == "win32") {
-        let runtime = path.join(dir, 'bin/windows/lua-debug.exe')
-        let runtimeArgs = [
-            "-E",
-            "-e",
-            "package.path=[[" + path.join(dir, 'script/?.lua') + "]]",
-            "-e",
-            "package.cpath=[[" + path.join(dir, 'bin/windows/?.dll') + "]]",
-            path.join(dir, 'script/frontend/main.lua')
-        ]
-        return new vscode.DebugAdapterExecutable(runtime, runtimeArgs);
-    }
-    else {
-        let plat = platform == "darwin" ? "macos" : "linux"
-        let runtime = path.join(dir, 'bin/' + plat + '/lua-debug')
-        let runtimeArgs = [
-            "-E",
-            "-e",
-            "package.path=[[" + path.join(dir, 'script/?.lua') + "]]",
-            "-e",
-            "package.cpath=[[" + path.join(dir, 'bin/' + plat + '/?.so') + "]]",
-            path.join(dir, 'script/frontend/main.lua')
-        ]
-        return new vscode.DebugAdapterExecutable(runtime, runtimeArgs);
-    }
+    let OS = getPlatformOS()
+    let ROOT = extension.extensionDirectory
+    let EXE = OS == "windows" ? ".exe" : ""
+    let DLL = OS == "windows" ? ".dll" : ".so"
+    let runtime = path.join(ROOT, 'bin/' + OS + '/lua-debug' + EXE)
+    let runtimeArgs = [
+        "-E",
+        "-e",
+        "package.path=[[" + path.join(ROOT, 'script/?.lua') + "]]",
+        "-e",
+        "package.cpath=[[" + path.join(ROOT, 'bin/' + OS + '/?' + DLL) + "]]",
+        path.join(ROOT, 'script/frontend/main.lua')
+    ]
+    return new vscode.DebugAdapterExecutable(runtime, runtimeArgs, { cwd : ROOT });
 }
 
 exports.createDebugAdapterDescriptor = createDebugAdapterDescriptor;

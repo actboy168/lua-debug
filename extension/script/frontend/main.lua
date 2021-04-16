@@ -4,7 +4,7 @@ local network = require 'common.network'
 local select = require "common.select"
 local proxy = require 'frontend.proxy'
 local vscode
-WORKDIR = fs.exe_path():parent_path():parent_path():parent_path()
+WORKDIR = fs.current_path()
 
 local function update()
     while true do

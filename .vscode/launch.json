@@ -18,6 +18,7 @@
             },
             "outputCapture": [
             ],
+            "cwd": "${command:extensionPath}actboy168.lua-debug-1.36.6",
             "program": "${workspaceFolder}/extension/script/frontend/main.lua",
             "path": "${workspaceFolder}/extension/script/?.lua",
             "arg": [
