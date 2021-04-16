@@ -53,18 +53,25 @@ local function getLuaExe(args, dbg)
     if type(args.luaexe) == "string" then
         return fs.path(args.luaexe)
     end
-    local runtime = 'runtime'
-    if platform_os() == "Windows" then
-        if args.luaArch == "x86_64" and Is64BitWindows() then
-            runtime = runtime .. "/win64"
-        else
-            runtime = runtime .. "/win32"
+    local OS = platform_os():lower()
+    local ARCH = args.luaArch
+    if OS == "windows" then
+        if ARCH == "x86_64" and not Is64BitWindows() then
+            ARCH = "x86"
         end
-    else
-        runtime = runtime .. "/" .. platform_os():lower()
+    elseif OS == "linux" then
+        ARCH = "x86_64"
+    elseif OS == "macos" then
+        --TODO: detect M1
+        if ARCH == "x86" then
+            ARCH = "x86_64"
+        end
     end
-    runtime = runtime .. "/" .. getLuaVersion(args)
-    return dbg / runtime / (platform_os() == "Windows" and "lua.exe" or "lua")
+    return dbg / "runtime"
+        / OS
+        / ARCH
+        / getLuaVersion(args)
+        / (platform_os() == "Windows" and "lua.exe" or "lua")
 end
 
 local function installBootstrap1(option, luaexe, args)
@@ -220,8 +227,8 @@ local function create_process_in_console(args, callback)
     end
     local inject = require 'inject'
     inject.injectdll(process
-        , (WORKDIR / "bin" / "win" / "launcher.x86.dll"):string()
-        , (WORKDIR / "bin" / "win" / "launcher.x64.dll"):string()
+        , (WORKDIR / "bin" / "windows" / "launcher.x86.dll"):string()
+        , (WORKDIR / "bin" / "windows" / "launcher.x64.dll"):string()
         , "launch"
     )
     if callback then

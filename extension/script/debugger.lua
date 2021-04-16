@@ -68,17 +68,7 @@ local function initDebugger(dbg, cfg)
         end
     end
 
-    local rt = "/runtime"
-    if OS == "windows" then
-        if ARCH == "x86_64" then
-            rt = rt .. "/win64"
-        else
-            rt = rt .. "/win32"
-        end
-    else
-        assert(ARCH == "x86_64")
-        rt = rt .. "/" .. OS
-    end
+    local rt = "/runtime/" .. OS .. "/" .. ARCH
     if cfg.latest then
         rt = rt .. "/lua-latest"
     elseif _VERSION == "Lua 5.4" then

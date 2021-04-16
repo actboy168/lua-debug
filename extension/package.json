@@ -542,7 +542,8 @@
                     "default": "x86_64",
                     "enum": [
                         "x86",
-                        "x86_64"
+                        "x86_64",
+                        "arm64"
                     ]
                 },
                 "lua.debug.settings.consoleCoding": {

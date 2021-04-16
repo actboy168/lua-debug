@@ -8,6 +8,7 @@ local path = (function ()
         :match("(.+)[/\\][%w_.-]+$")
         :match("(.+)[/\\][%w_.-]+$")
         :match("(.+)[/\\][%w_.-]+$")
+        :match("(.+)[/\\][%w_.-]+$")
 end)()
 
 local function dofile(filename, ...)

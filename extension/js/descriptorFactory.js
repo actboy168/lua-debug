@@ -10,13 +10,13 @@ function createDebugAdapterDescriptor(session, executable) {
     let dir = extension.extensionDirectory
     let platform = os.platform()
     if (platform == "win32") {
-        let runtime = path.join(dir, 'bin/win/lua-debug.exe')
+        let runtime = path.join(dir, 'bin/windows/lua-debug.exe')
         let runtimeArgs = [
             "-E",
             "-e",
             "package.path=[[" + path.join(dir, 'script/?.lua') + "]]",
             "-e",
-            "package.cpath=[[" + path.join(dir, 'bin/win/?.dll') + "]]",
+            "package.cpath=[[" + path.join(dir, 'bin/windows/?.dll') + "]]",
             path.join(dir, 'script/frontend/main.lua')
         ]
         return new vscode.DebugAdapterExecutable(runtime, runtimeArgs);

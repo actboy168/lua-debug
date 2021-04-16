@@ -71,8 +71,8 @@ local function attach_process(pkg, pid)
     end
     local inject = require 'inject'
     if not inject.injectdll(pid
-        , (WORKDIR / "bin" / "win" / "launcher.x86.dll"):string()
-        , (WORKDIR / "bin" / "win" / "launcher.x64.dll"):string()
+        , (WORKDIR / "bin" / "windows" / "launcher.x86.dll"):string()
+        , (WORKDIR / "bin" / "windows" / "launcher.x64.dll"):string()
         , "attach"
     ) then
         return false
