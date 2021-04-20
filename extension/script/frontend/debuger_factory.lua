@@ -51,7 +51,9 @@ end
 
 local function IsArm64Macos()
     local f <close> = assert(io.popen("uname -v", "r"))
-    return f:read "l":match "release_arm64"
+    if f:read "l":match "RELEASE_ARM64" then
+        return true
+    end
 end
 
 local function getLuaExe(args, dbg)
