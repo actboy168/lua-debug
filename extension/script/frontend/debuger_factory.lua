@@ -78,7 +78,7 @@ local function getLuaExe(args, dbg)
         / OS
         / ARCH
         / getLuaVersion(args)
-        / (platform_os() == "Windows" and "lua.exe" or "lua")
+        / (OS == "windows" and "lua.exe" or "lua")
     if fs.exists(luaexe) then
         return luaexe
     end
