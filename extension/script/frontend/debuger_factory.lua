@@ -49,6 +49,11 @@ local function Is64BitWindows()
     return os.getenv "PROCESSOR_ARCHITECTURE" == "AMD64" or os.getenv "PROCESSOR_ARCHITEW6432" == "AMD64"
 end
 
+local function IsArm64Macos()
+    local f <close> = assert(io.popen("uname -v", "r"))
+    return f:read "l":match "release_arm64"
+end
+
 local function getLuaExe(args, dbg)
     local OS = platform_os():lower()
     local ARCH = args.luaArch
@@ -59,8 +64,11 @@ local function getLuaExe(args, dbg)
     elseif OS == "linux" then
         ARCH = "x86_64"
     elseif OS == "macos" then
-        --TODO: detect M1
-        if ARCH == "x86" then
+        if IsArm64Macos() then
+            if ARCH == "x86" then
+                ARCH = "x86_64"
+            end
+        else
             ARCH = "x86_64"
         end
     end
