@@ -971,7 +971,16 @@
 		},
 		"RestartArguments": {
 			"type": "object",
-			"description": "Arguments for 'restart' request."
+			"description": "Arguments for 'restart' request.",
+			"properties": {
+				"arguments": {
+					"oneOf": [
+						{ "$ref": "#/definitions/LaunchRequestArguments" },
+						{ "$ref": "#/definitions/AttachRequestArguments" }
+					],
+					"description": "The latest version of the 'launch' or 'attach' configuration."
+				}
+			}
 		},
 		"RestartResponse": {
 			"allOf": [ { "$ref": "#/definitions/Response" }, {
@@ -1245,7 +1254,7 @@
 		"SetExceptionBreakpointsRequest": {
 			"allOf": [ { "$ref": "#/definitions/Request" }, {
 				"type": "object",
-				"description": "The request configures the debuggers response to thrown exceptions.\nIf an exception is configured to break, a 'stopped' event is fired (with reason 'exception').\nClients should only call this request if the capability 'exceptionBreakpointFilters' returns one or more filters.\nIf a filter or filter option is invalid (e.g. due to an invalid 'condition'), the request should fail with an 'ErrorResponse' explaining the problem(s).",
+				"description": "The request configures the debuggers response to thrown exceptions.\nIf an exception is configured to break, a 'stopped' event is fired (with reason 'exception').\nClients should only call this request if the capability 'exceptionBreakpointFilters' returns one or more filters.",
 				"properties": {
 					"command": {
 						"type": "string",

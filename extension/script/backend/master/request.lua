@@ -373,11 +373,15 @@ function request.terminate(req)
 end
 
 function request.restart(req)
+    local args = req.arguments.arguments
     response.success(req)
     mgr.broadcastToWorker {
         cmd = 'disconnect',
     }
     mgr.setTerminateDebuggeeCallback(function()
+        if args then
+            config.initialize = args
+        end
         for w in pairs(mgr.workers()) do
             initializeWorker(w)
         end
