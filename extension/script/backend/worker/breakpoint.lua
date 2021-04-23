@@ -76,14 +76,30 @@ local function bpClientKey(src)
     return fs.path_native(fs.path_normalize(src.path))
 end
 
+local function NormalizeErrorMessage(what, err)
+    return ("%s: %s."):format(what, err:gsub("^:%d+: %(EVAL%):%d+: (.*)$", "%1"))
+end
+
 local function valid(bp)
     if bp.condition then
-        if not evaluate.verify(bp.condition) then
+        local ok, err = evaluate.verify(bp.condition)
+        if not ok then
+            ev.emit('breakpoint', 'changed', {
+                id = bp.id,
+                message = NormalizeErrorMessage("Condition Error", err),
+                verified = false,
+            })
             return false
         end
     end
     if bp.hitCondition then
-        if not evaluate.verify('0 ' .. bp.hitCondition) then
+        local ok, err = evaluate.verify('0 ' .. bp.hitCondition)
+        if not ok then
+            ev.emit('breakpoint', 'changed', {
+                id = bp.id,
+                message = NormalizeErrorMessage("HitCondition Error", err),
+                verified = false,
+            })
             return false
         end
     end
@@ -107,6 +123,11 @@ local function verifyBreakpoint(src, breakpoints)
         end
         local activeline = lineinfo[bp.line]
         if not activeline then
+            ev.emit('breakpoint', 'changed', {
+                id = bp.id,
+                message = "The breakpoint didn't hit a valid line.",
+                verified = false,
+            })
             goto continue
         end
         bp.source = src
@@ -128,7 +149,6 @@ local function verifyBreakpoint(src, breakpoints)
         ev.emit('breakpoint', 'changed', {
             id = bp.id,
             line = bp.line,
-            message = bp.message,
             verified = true,
         })
         ::continue::
@@ -259,12 +279,23 @@ local funcs = {}
 function m.set_funcbp(breakpoints)
     funcs = {}
     for _, bp in ipairs(breakpoints) do
-        if evaluate.verify(bp.name) and valid(bp) then
-            funcs[#funcs+1] = bp
-            bp.verified = true
-            bp.statHit = 0
-            ev.emit('breakpoint', 'changed', bp)
+        local ok, err = evaluate.verify(bp.name)
+        if not ok then
+            ev.emit('breakpoint', 'changed', {
+                id = bp.id,
+                message = NormalizeErrorMessage("Error", err),
+                verified = false,
+            })
+            goto continue
         end
+        if not valid(bp) then
+            goto continue
+        end
+        funcs[#funcs+1] = bp
+        bp.verified = true
+        bp.statHit = 0
+        ev.emit('breakpoint', 'changed', bp)
+        ::continue::
     end
     hookmgr.funcbp_open(#funcs > 0)
 end

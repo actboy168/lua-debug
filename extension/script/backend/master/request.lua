@@ -161,6 +161,7 @@ function request.setBreakpoints(req)
     for _, bp in ipairs(args.breakpoints) do
         bp.id = genBreakpointID()
         bp.verified = false
+        bp.message = "Wait verify. (The source file is not loaded.)"
     end
     response.success(req, {
         breakpoints = args.breakpoints
@@ -203,6 +204,7 @@ function request.setFunctionBreakpoints(req)
     for _, bp in ipairs(args.breakpoints) do
         bp.id = genBreakpointID()
         bp.verified = false
+        bp.message = "Wait verify."
     end
     response.success(req, {
         breakpoints = args.breakpoints
@@ -218,7 +220,9 @@ end
 
 function request.setExceptionBreakpoints(req)
     local args = req.arguments
-    response.success(req)
+    response.success(req, {
+        breakpoints = {},
+    })
     config.exception_breakpoints = args
     if state == "initialized" then
         mgr.broadcastToWorker {
