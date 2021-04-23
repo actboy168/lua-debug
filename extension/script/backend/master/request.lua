@@ -220,14 +220,39 @@ end
 
 function request.setExceptionBreakpoints(req)
     local args = req.arguments
+    local breakpoints = {}
+    local filter = {}
+    local function addExceptionBreakpoint(opt)
+        local id = genBreakpointID()
+        breakpoints[#breakpoints+1] = {
+            id = id,
+            verified = false,
+            message = "Wait verify."
+        }
+        filter[#filter+1] = {
+            id = id,
+            filterId = opt.filterId,
+            condition = opt.condition,
+        }
+    end
+    for _, filterId in ipairs(args.filters) do
+        addExceptionBreakpoint {
+            filterId = filterId
+        }
+    end
+    if args.filterOptions then
+        for _, opt in ipairs(args.filterOptions) do
+            addExceptionBreakpoint(opt)
+        end
+    end
     response.success(req, {
-        breakpoints = {},
+        breakpoints = breakpoints,
     })
-    config.exception_breakpoints = args
+    config.exception_breakpoints = filter
     if state == "initialized" then
         mgr.broadcastToWorker {
             cmd = 'setExceptionBreakpoints',
-            arguments = args,
+            arguments = filter,
         }
     end
 end

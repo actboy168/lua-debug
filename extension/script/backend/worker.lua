@@ -18,7 +18,6 @@ local initialized = false
 local info = {}
 local state = 'running'
 local stopReason = 'step'
-local exceptionFilters = {}
 local currentException = {
     message = '',
     trace = '',
@@ -363,20 +362,7 @@ function CMD.setFunctionBreakpoints(pkg)
 end
 
 function CMD.setExceptionBreakpoints(pkg)
-    exceptionFilters = {}
-    for _, filter in ipairs(pkg.arguments.filters) do
-        exceptionFilters[filter] = true
-    end
-    for _, filter in ipairs(pkg.arguments.filterOptions) do
-        if type(filter.condition) == "string" and evaluate.verify(filter.condition) then
-            exceptionFilters[filter.filterId] = filter.condition
-        else
-            exceptionFilters[filter.filterId] = true
-        end
-    end
-    if hookmgr.exception_open then
-        hookmgr.exception_open(next(exceptionFilters) ~= nil)
-    end
+    breakpoint.setExceptionBreakpoints(pkg.arguments)
 end
 
 function CMD.exceptionInfo(pkg)
@@ -613,21 +599,6 @@ function event.iowrite()
     return true
 end
 
-local function execExceptionBreakpoint(flags, level, error)
-    for _, flag in ipairs(flags) do
-        local filter = exceptionFilters[flag]
-        if filter == true then
-            return true
-        end
-        if filter ~= nil then
-            local ok, res = evaluate.eval(filter, level, { error = error })
-            if ok and res then
-                return true
-            end
-        end
-    end
-end
-
 local ERREVENT_ERRRUN    <const> = 0x02
 local ERREVENT_ERRSYNTAX <const> = 0x03
 local ERREVENT_ERRMEM    <const> = 0x04
@@ -698,7 +669,7 @@ end
 
 local function runException(flags, error)
     local level, message, trace = traceback(error)
-    if level < 0 or not execExceptionBreakpoint(flags, level, error) then
+    if level < 0 or not breakpoint.hitExceptionBreakpoint(flags, level, error) then
         return
     end
     currentException = {

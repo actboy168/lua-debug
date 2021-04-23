@@ -316,6 +316,55 @@ function m.hit_funcbp(func)
     end
 end
 
+local exceptionFilters = {}
+
+function m.hitExceptionBreakpoint(flags, level, error)
+    for _, flag in ipairs(flags) do
+        local filter = exceptionFilters[flag]
+        if filter == true then
+            return true
+        end
+        if filter ~= nil then
+            local ok, res = evaluate.eval(filter, level, { error = error })
+            if ok and res then
+                return true
+            end
+        end
+    end
+end
+
+function m.setExceptionBreakpoints(breakpoints)
+    exceptionFilters = {}
+    for _, filter in ipairs(breakpoints) do
+        if not filter.condition then
+            exceptionFilters[filter.filterId] = true
+            ev.emit('breakpoint', 'changed', {
+                id = filter.id,
+                verified = true,
+            })
+            goto continue
+        end
+        local ok, err = evaluate.verify(filter.condition)
+        if not ok then
+            ev.emit('breakpoint', 'changed', {
+                id = filter.id,
+                message = NormalizeErrorMessage("Error", err),
+                verified = false,
+            })
+            goto continue
+        end
+        exceptionFilters[filter.filterId] = filter.condition
+        ev.emit('breakpoint', 'changed', {
+            id = filter.id,
+            verified = true,
+        })
+        ::continue::
+    end
+    if hookmgr.exception_open then
+        hookmgr.exception_open(next(exceptionFilters) ~= nil)
+    end
+end
+
 ev.on('terminated', function()
     currentactive = {}
     waitverify = {}
