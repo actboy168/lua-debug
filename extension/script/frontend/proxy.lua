@@ -6,8 +6,6 @@ local platform_os = require 'frontend.platform_os'
 local server
 local client
 local initReq
-local startReq
-local restart = false
 local m = {}
 
 local function getUnixAddress(pid)
@@ -185,9 +183,9 @@ local function proxy_launch(pkg)
 end
 
 local function proxy_start(pkg)
-    if pkg.command == 'attach' then
+    if pkg.arguments.request == 'attach' then
         proxy_attach(pkg)
-    elseif pkg.command == 'launch' then
+    elseif pkg.arguments.request == 'launch' then
         proxy_launch(pkg)
     end
 end
@@ -195,19 +193,6 @@ end
 function m.send(pkg)
     if server then
         if pkg.type == 'response' and pkg.command == 'runInTerminal' then
-            return
-        end
-        if pkg.type == 'request' and pkg.command == 'restart' then
-            response_restart(pkg)
-            server.sendmsg {
-                type = 'request',
-                seq = 0,
-                command = 'terminate',
-                arguments = {
-                    restart = true,
-                }
-            }
-            restart = true
             return
         end
         server.sendmsg(pkg)
@@ -222,7 +207,6 @@ function m.send(pkg)
     else
         if pkg.type == 'request' then
             if pkg.command == 'attach' or pkg.command == 'launch' then
-                startReq = pkg
                 proxy_start(pkg)
             else
                 response_error(pkg, 'error request')
@@ -234,11 +218,6 @@ end
 function m.update()
     if server then
         server.event_close(function()
-            if restart then
-                restart = false
-                proxy_start(startReq)
-                return
-            end
             os.exit(0, true)
         end)
         while true do

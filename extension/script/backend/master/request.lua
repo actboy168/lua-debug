@@ -372,6 +372,19 @@ function request.terminate(req)
     return true
 end
 
+function request.restart(req)
+    response.success(req)
+    mgr.broadcastToWorker {
+        cmd = 'disconnect',
+    }
+    mgr.setTerminateDebuggeeCallback(function()
+        for w in pairs(mgr.workers()) do
+            initializeWorker(w)
+        end
+        mgr.initConfig(config)
+    end)
+end
+
 function request.pause(req)
     local args = req.arguments
     local threadId = args.threadId
