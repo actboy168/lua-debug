@@ -20,7 +20,7 @@
 | supportsExceptionOptions           |    🟥    |
 | supportsValueFormattingOptions     |    🟥    |
 | supportsExceptionInfoRequest       |    🟩    |
-| supportTerminateDebuggee           |    🟥    |
+| supportTerminateDebuggee           |    🟩    |
 | supportsDelayedStackTraceLoading   |    🟩    |
 | supportsLoadedSourcesRequest       |    🟩    |
 | supportsLogPoints                  |    🟩    |

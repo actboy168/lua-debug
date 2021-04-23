@@ -116,9 +116,6 @@ function resolveConfig(folder, config) {
     if (typeof config.stopOnThreadEntry != 'boolean') {
         config.stopOnThreadEntry = false;
     }
-    if (typeof config.termOnExit != 'boolean') {
-        config.termOnExit = config.request == 'launch';
-    }
     if (typeof config.luaVersion != 'string') {
         config.luaVersion = settings.luaVersion
     }

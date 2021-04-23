@@ -7,7 +7,6 @@ local utility = require 'remotedebug.utility'
 local request = {}
 
 local firstWorker = true
-local terminateTimestamp
 local state = 'none'
 local config = {
     initialize = {},
@@ -35,7 +34,6 @@ end
 
 function request.initialize(req)
     firstWorker = true
-    terminateTimestamp = nil
     mgr.setClient(req.arguments)
     response.initialize(req)
     event.initialized()
@@ -310,42 +308,31 @@ function request.evaluate(req)
 end
 
 function request.threads(req)
-    local threads = {}
-    for w in pairs(mgr.workers()) do
-        threads[#threads + 1] = {
-            name = ('%s (%d)'):format(mgr.getThreadName(w) or "Thread", w),
-            id = w,
-        }
-    end
-    table.sort(threads, function (a, b)
-        return a.name < b.name
-    end)
-    response.threads(req, threads)
+    response.threads(req, mgr.threads())
 end
 
 function request.disconnect(req)
-    return request.terminate(req)
+    response.success(req)
+    local args = req.arguments
+    if args.terminateDebuggee == nil then
+        args.terminateDebuggee = config.request == 'launch'
+    end
+    mgr.broadcastToWorker {
+        cmd = 'disconnect',
+    }
+    if args.terminateDebuggee then
+        mgr.terminateDebuggee()
+    end
+    return true
 end
 
 function request.terminate(req)
     response.success(req)
-    if config.initialize.termOnExit then
-        mgr.broadcastToWorker {
-            cmd = 'exit',
-        }
-        if not terminateTimestamp then
-            terminateTimestamp = os.clock()
-            utility.closeprocess()
-        else
-            if terminateTimestamp - os.clock() > 2 then
-                os.exit(true, true)
-            end
-        end
-    else
-        mgr.broadcastToWorker {
-            cmd = 'terminated',
-        }
-    end
+    --TODO
+    mgr.broadcastToWorker {
+        cmd = 'disconnect',
+    }
+    utility.closeprocess()
     return true
 end
 

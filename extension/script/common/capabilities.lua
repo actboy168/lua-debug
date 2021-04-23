@@ -14,6 +14,7 @@ return {
     supportsTerminateRequest = true,
     supportsClipboardContext = true,
     supportsExceptionFilterOptions = true,
+    supportTerminateDebuggee = true,
     exceptionBreakpointFilters = {
         {
             default = false,

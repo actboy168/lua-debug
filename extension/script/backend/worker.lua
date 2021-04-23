@@ -33,8 +33,8 @@ local baseL
 
 local CMD = {}
 
-local WorkerId = tostring(hookmgr.gethost())
-local WorkerChannel = ('DbgWorker(%s)'):format(WorkerId)
+local WorkerIdent = tostring(hookmgr.gethost())
+local WorkerChannel = ('DbgWorker(%s)'):format(WorkerIdent)
 
 thread.newchannel (WorkerChannel)
 local masterThread = thread.channel 'DbgMaster'
@@ -61,7 +61,7 @@ end
 
 local function sendToMaster(cmd)
     return function (pkg)
-        masterThread:push(WorkerId, cmd, assert(json.encode(pkg)))
+        masterThread:push(WorkerIdent, cmd, assert(json.encode(pkg)))
     end
 end
 
@@ -110,23 +110,19 @@ end
 
 function CMD.initialized()
     initialized = true
+    sendToMaster 'eventThread' {
+        reason = 'started',
+    }
 end
 
-function CMD.terminated()
+function CMD.disconnect()
     if initialized then
         initialized = false
         state = 'running'
         ev.emit('terminated')
-    end
-end
-
-function CMD.exit()
-    if initialized then
-        CMD.terminated()
         sendToMaster 'eventThread' {
             reason = 'exited'
         }
-        sendToMaster 'exitWorker' {}
     end
 end
 
@@ -748,7 +744,7 @@ function event.setThreadName(name)
 end
 
 function event.exit()
-    CMD.exit()
+    sendToMaster 'exitWorker' {}
 end
 
 hookmgr.init(function(name, ...)
@@ -798,8 +794,5 @@ ev.on('terminated', function()
 end)
 
 sendToMaster 'initWorker' {}
-sendToMaster 'eventThread' {
-    reason = 'started',
-}
 
 hookmgr.update_open(true)

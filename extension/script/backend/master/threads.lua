@@ -4,8 +4,8 @@ local response = require 'backend.master.response'
 
 local CMD = {}
 
-function CMD.initWorker(workerId)
-    mgr.initWorker(workerId)
+function CMD.initWorker(WorkerIdent)
+    mgr.initWorker(WorkerIdent)
 end
 
 function CMD.exitWorker(w)
@@ -30,6 +30,11 @@ end
 
 function CMD.eventThread(w, req)
     req.threadId = w
+    if req.reason == "started" then
+        mgr.setThreadStatus(w, "connect")
+    elseif req.reason == "exited" then
+        mgr.setThreadStatus(w, "disconnect")
+    end
     event.thread(req)
 end
 

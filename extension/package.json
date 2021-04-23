@@ -196,11 +196,6 @@
                                 "markdownDescription": "Automatically stop after thread entry.",
                                 "default": true
                             },
-                            "termOnExit": {
-                                "type": "boolean",
-                                "markdownDescription": "Automatically terminate process after exit.",
-                                "default": true
-                            },
                             "luaVersion": {
                                 "type": "string",
                                 "markdownDescription": "%lua.debug.launch.luaVersion.description%",
@@ -381,11 +376,6 @@
                                 "type": "boolean",
                                 "markdownDescription": "Automatically stop after thread entry.",
                                 "default": true
-                            },
-                            "termOnExit": {
-                                "type": "boolean",
-                                "markdownDescription": "Automatically terminate process after exit.",
-                                "default": false
                             },
                             "address": {
                                 "type": "string",
