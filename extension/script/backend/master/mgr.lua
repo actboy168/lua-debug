@@ -18,7 +18,7 @@ local threadChannel = {}
 local threadCatalog = {}
 local threadStatus = {}
 local threadName = {}
-local wantTerminateDebuggee
+local terminateDebuggeeCallback
 
 local function genThreadId()
     maxThreadId = maxThreadId + 1
@@ -153,18 +153,24 @@ end
 
 function mgr.setThreadStatus(threadId, status)
     threadStatus[threadId] = status
-    if wantTerminateDebuggee and status == "disconnect" then
+    if terminateDebuggeeCallback and status == "disconnect" then
         for _, s in pairs(threadStatus) do
             if s == "connect" then
                 return
             end
         end
-        os.exit(true, true)
+        terminateDebuggeeCallback()
     end
 end
 
-function mgr.terminateDebuggee()
-    wantTerminateDebuggee = true
+function mgr.setTerminateDebuggeeCallback(callback)
+    for _, s in pairs(threadStatus) do
+        if s == "connect" then
+            terminateDebuggeeCallback = callback
+            return
+        end
+    end
+    callback()
 end
 
 function mgr.exitWorker(w)

@@ -321,18 +321,25 @@ function request.disconnect(req)
         cmd = 'disconnect',
     }
     if args.terminateDebuggee then
-        mgr.terminateDebuggee()
+        mgr.setTerminateDebuggeeCallback(function()
+            os.exit(true, true)
+        end)
     end
     return true
 end
 
 function request.terminate(req)
     response.success(req)
-    --TODO
+    --TODO:
+    --  现在调试器激活是会屏蔽SIGINT，导致closeprocess无法生效，所以需要先将调试器关闭，再调用closeprocess。
+    --  或许需要让调试器和SIGINT不再冲突。
+    --
     mgr.broadcastToWorker {
         cmd = 'disconnect',
     }
-    utility.closeprocess()
+    mgr.setTerminateDebuggeeCallback(function()
+        utility.closeprocess()
+    end)
     return true
 end
 
