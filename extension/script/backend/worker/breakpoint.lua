@@ -320,15 +320,13 @@ local exceptionFilters = {}
 
 function m.hitExceptionBreakpoint(flags, level, error)
     for _, flag in ipairs(flags) do
-        local filter = exceptionFilters[flag]
-        if filter == true then
-            return true
+        local bp = exceptionFilters[flag]
+        if not bp.condition then
+            return bp
         end
-        if filter ~= nil then
-            local ok, res = evaluate.eval(filter, level, { error = error })
-            if ok and res then
-                return true
-            end
+        local ok, res = evaluate.eval(bp.condition, level, { error = error })
+        if ok and res then
+            return bp
         end
     end
 end
@@ -337,7 +335,9 @@ function m.setExceptionBreakpoints(breakpoints)
     exceptionFilters = {}
     for _, filter in ipairs(breakpoints) do
         if not filter.condition then
-            exceptionFilters[filter.filterId] = true
+            exceptionFilters[filter.filterId] = {
+                id = filter.id,
+            }
             ev.emit('breakpoint', 'changed', {
                 id = filter.id,
                 verified = true,
@@ -353,7 +353,10 @@ function m.setExceptionBreakpoints(breakpoints)
             })
             goto continue
         end
-        exceptionFilters[filter.filterId] = filter.condition
+        exceptionFilters[filter.filterId] = {
+            id = filter.id,
+            condition = filter.condition,
+        }
         ev.emit('breakpoint', 'changed', {
             id = filter.id,
             verified = true,

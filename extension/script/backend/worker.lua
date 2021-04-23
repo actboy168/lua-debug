@@ -669,7 +669,11 @@ end
 
 local function runException(flags, error)
     local level, message, trace = traceback(error)
-    if level < 0 or not breakpoint.hitExceptionBreakpoint(flags, level, error) then
+    if level < 0 then
+        return
+    end
+    local bp = breakpoint.hitExceptionBreakpoint(flags, level, error)
+    if not bp then
         return
     end
     currentException = {
@@ -679,6 +683,7 @@ local function runException(flags, error)
     state = 'stopped'
     runLoop({
         reason = 'exception',
+        hitBreakpointIds = {bp.id},
         text = message,
     }, level)
 end
