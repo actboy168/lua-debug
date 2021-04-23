@@ -289,7 +289,6 @@ ev.on('terminated', function()
     currentactive = {}
     waitverify = {}
     info = {}
-    m = {}
     enable = false
     hookmgr.break_open(false)
 end)
