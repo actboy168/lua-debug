@@ -389,6 +389,16 @@ function request.restart(req)
     end)
 end
 
+function request.terminateThreads(req)
+    local args = req.arguments
+    response.success(req)
+    for _, w in ipairs(args.threadIds) do
+        mgr.sendToWorker(w, {
+            cmd = 'disconnect',
+        })
+    end
+end
+
 function request.pause(req)
     local args = req.arguments
     local threadId = args.threadId

@@ -25,7 +25,7 @@
 | supportsDelayedStackTraceLoading   |    🟩    |
 | supportsLoadedSourcesRequest       |    🟩    |
 | supportsLogPoints                  |    🟩    |
-| supportsTerminateThreadsRequest    |    🟨    |
+| supportsTerminateThreadsRequest    |    🟩    |
 | supportsSetExpression              |    🟥    |
 | supportsTerminateRequest           |    🟩    |
 | supportsDataBreakpoints            |    🟨    |

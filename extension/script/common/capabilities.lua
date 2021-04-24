@@ -15,6 +15,7 @@ return {
     supportsClipboardContext = true,
     supportsExceptionFilterOptions = true,
     supportTerminateDebuggee = true,
+    supportsTerminateThreadsRequest = true,
     exceptionBreakpointFilters = {
         {
             default = false,
