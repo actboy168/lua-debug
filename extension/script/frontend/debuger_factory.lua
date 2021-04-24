@@ -34,16 +34,6 @@ local function getLuaVersion(args)
     return "lua54"
 end
 
-local function supportSimpleLaunch(args)
-    if platform_os() ~= "Windows" then
-        return false
-    end
-    if args.luaVersion == "5.1" or args.luaVersion == "5.2" then
-        return false
-    end
-    return true
-end
-
 local function Is64BitWindows()
     -- https://docs.microsoft.com/en-us/archive/blogs/david.wang/howto-detect-process-bitness
     return os.getenv "PROCESSOR_ARCHITECTURE" == "AMD64" or os.getenv "PROCESSOR_ARCHITEW6432" == "AMD64"
@@ -109,18 +99,6 @@ local function installBootstrap2(c, luaexe, args, pid, dbg)
     )
 end
 
-local function installBootstrap2Simple(c, luaexe, args, pid)
-    c[#c+1] = towsl(luaexe:string())
-    c[#c+1] = "-ldbg"
-    c[#c+1] = "-e"
-    local params = {}
-    params[#params+1] = pid
-    if args.luaVersion == "latest" then
-        params[#params+1] = '[[latest]]'
-    end
-    c[#c+1] = ("DBG{%s}"):format(table.concat(params, ","))
-end
-
 local function installBootstrap3(c, args)
     if type(args.arg0) == "string" then
         c[#c+1] = args.arg0
@@ -177,11 +155,7 @@ local function create_luaexe_in_terminal(args, dbg, pid)
         option.args[1] = "wsl"
     end
     installBootstrap1(option, luaexe, args)
-    if type(args.luaexe) ~= "string" and supportSimpleLaunch(args) then
-        installBootstrap2Simple(option.args, luaexe, args, pid)
-    else
-        installBootstrap2(option.args, luaexe, args, pid, dbg)
-    end
+    installBootstrap2(option.args, luaexe, args, pid, dbg)
     installBootstrap3(option.args, args)
     return option
 end
