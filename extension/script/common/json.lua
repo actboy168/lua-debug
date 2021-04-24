@@ -93,6 +93,9 @@ function encode_map.number(v)
     if v ~= v or v <= tiny or v >= huge then
         error("unexpected number value '" .. tostring(v) .. "'")
     end
+    if math_type(v) == "integer" then
+        return string_format('%d', v)
+    end
     return convertreal(v)
 end
 
