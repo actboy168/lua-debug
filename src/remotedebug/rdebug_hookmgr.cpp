@@ -516,22 +516,34 @@ struct hookmgr {
         }
     }
 
+    lua_State* getmainthread(lua_State* L) {
+        return L->l_G->mainthread;
+    }
+
+    void sethook(lua_State* L, lua_Hook func, int mask, int count) {
+        lua_sethook(L, func, mask, count);
+        lua_State* mainL = getmainthread(L);
+        if (mainL != L) {
+            lua_sethook(mainL, func, mask, count);
+        }
+    }
+
     void updatehookmask(lua_State* hL) {
         int mask = break_mask | funcbp_mask;
         if (!stepL || stepL == hL) {
             mask |= step_mask;
         }
         if (mask) {
-            lua_sethook(hL, (lua_Hook)sc_full_hook->data, mask | exception_mask | thread_mask, 0);
+            sethook(hL, (lua_Hook)sc_full_hook->data, mask | exception_mask, 0);
         }
         else if (update_mask) {
-            lua_sethook(hL, (lua_Hook)sc_idle_hook->data, update_mask | exception_mask | thread_mask, 0xfffff);
+            sethook(hL, (lua_Hook)sc_idle_hook->data, update_mask | exception_mask, 0xfffff);
         }
-        else if (exception_mask | thread_mask) {
-            lua_sethook(hL, (lua_Hook)sc_idle_hook->data, exception_mask | thread_mask, 0);
+        else if (exception_mask) {
+            sethook(hL, (lua_Hook)sc_idle_hook->data, exception_mask, 0);
         }
         else {
-            lua_sethook(hL, 0, 0, 0);
+            sethook(hL, 0, 0, 0);
         }
     }
     
