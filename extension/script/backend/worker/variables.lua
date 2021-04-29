@@ -494,7 +494,6 @@ local function varCreateReference(value, evaluateName, context)
     local result = {
         type = type,
         value = varGetValue(context, type, value),
-        variablesReference = 0,
     }
     if type == "integer" then
         result.__vscodeVariableMenuContext = showIntegerAsHex and "integer/hex" or "integer/dec"

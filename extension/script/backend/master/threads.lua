@@ -69,8 +69,10 @@ function CMD.evaluate(w, req)
         response.error(req, req.message)
         return
     end
-    if req.body.variablesReference ~= 0 then
+    if req.body.variablesReference then
         req.body.variablesReference = (w << 24) | req.body.variablesReference
+    else
+        req.body.variablesReference = 0
     end
     response.success(req, req.body)
 end
@@ -91,8 +93,10 @@ end
 
 function CMD.scopes(w, req)
     for _, scope in ipairs(req.body.scopes) do
-        if scope.variablesReference ~= 0 then
+        if scope.variablesReference then
             scope.variablesReference = (w << 24) | scope.variablesReference
+        else
+            scope.variablesReference = 0
         end
     end
     response.success(req, req.body)
@@ -104,8 +108,10 @@ function CMD.variables(w, req)
         return
     end
     for _, var in ipairs(req.body.variables) do
-        if var.variablesReference ~= 0 then
+        if var.variablesReference then
             var.variablesReference = (w << 24) | var.variablesReference
+        else
+            var.variablesReference = 0
         end
     end
     response.success(req, req.body)
