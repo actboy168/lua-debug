@@ -1,35 +1,35 @@
 local lm = require "luamake"
 local platform = require "bee.platform"
+local fs = require "bee.filesystem"
 
 lm.windows = {
     defines = "_WIN32_WINNT=0x0601"
 }
 
-local target
 if lm.os == "windows" then
-    target = lm.target
+    assert(lm.arch == "x86" or lm.arch == "x86_64")
 elseif lm.os == "linux" then
-    target = "universal"
+    lm.arch = "x86_64"
 elseif lm.os == "macos" then
-    if not lm.target then
+    if not lm.arch then
         local function shell(command)
             local f = assert(io.popen(command, 'r'))
             local r = f:read '*l'
             f:close()
             return r:lower()
         end
-        local machine = shell "uname -m"
-        if machine == "arm64" then
-            target = "arm64-apple-macos11"
-        else
-            target = "x86_64-apple-macos10.12"
-        end
+        lm.arch = shell "uname -m"
     end
-    target = lm.target
+    assert(lm.arch == "arm64" or lm.arch == "x86_64")
 end
 
-lm.bindir = ("$builddir/bin/%s/%s"):format(lm.os, target, lm.mode)
-lm.objdir = ("$builddir/obj/%s/%s"):format(lm.os, target, lm.mode)
+lm:import("3rd/bee.lua/make.lua", {
+    EXE_RESOURCE = "../../make/lua-debug.rc"
+})
+
+lm.bindir = ("$builddir/bin/%s/%s"):format(lm.arch, lm.mode)
+lm.objdir = ("$builddir/obj/%s/%s"):format(lm.arch, lm.mode)
+local bindir = fs.path(lm.builddir) / 'bin' / lm.arch / lm.mode
 
 if platform.OS == "Windows" then
     lm:source_set 'detours' {
@@ -231,14 +231,9 @@ lm:build 'update_version' {
     '$luamake', 'lua', 'make/update_version.lua',
 }
 
-lm.rootdir = ''
-lm:import("3rd/bee.lua/make.lua", {
-    EXE_RESOURCE = "../../make/lua-debug.rc"
-})
-
-if platform.OS == "Windows" and target == "x64" then
+if platform.OS == "Windows" and lm.arch == "x86_64" then
     lm:build 'install' {
-        '$luamake', 'lua', 'make/install_runtime.lua', lm.builddir, target, lm.mode,
+        '$luamake', 'lua', 'make/install_runtime.lua', bindir,
         deps = {
             'bee',
             'bootstrap',
@@ -276,7 +271,7 @@ else
     end
 
     lm:build 'install' {
-        '$luamake', 'lua', 'make/install_runtime.lua', lm.builddir, target, lm.mode,
+        '$luamake', 'lua', 'make/install_runtime.lua', bindir,
         deps = {
             'copy_extension',
             'update_version',

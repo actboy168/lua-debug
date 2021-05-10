@@ -1,32 +1,23 @@
-local builddir, target, mode = ...
+local builddir, arch, mode = ...
 local fs = require 'bee.filesystem'
 local CWD = fs.current_path()
 
 local OS = require 'bee.platform'.OS:lower()
-local ARCH
-do
-    if OS == 'windows' then
-        if target == 'x86' then
-            ARCH = 'x86'
-        elseif target == 'x64' then
-            ARCH = 'x86_64'
-        end
-    elseif OS == 'linux' then
-        ARCH = 'x86_64'
-    elseif OS == 'macos' then
-        ARCH = target:match '^([^-]*)-'
-    end
-end
 
 local exe = OS == 'windows' and ".exe" or ""
 local dll = OS == 'windows' and ".dll" or ".so"
+local bindir = CWD / builddir / 'bin' / arch / mode
+local ArchAlias = {
+    x86_64 = "x64",
+    x86 = "x86",
+}
 
 do
     --copy lua-debug
-    local input = CWD / builddir / 'bin' / target / mode
+    local input = bindir
     local output = CWD / 'publish' / 'bin' / OS
     fs.create_directories(output)
-    if (OS == 'windows' and ARCH == 'x86') or (OS ~= 'windows' and ARCH == 'x86_64') then
+    if (OS == 'windows' and arch == 'x86') or (OS ~= 'windows' and arch == 'x86_64') then
         fs.create_directories(output)
         fs.copy_file(input / ('bee'..dll),       output / ('bee'..dll),        true)
         fs.copy_file(input / ('lua'..exe),       output / ('lua-debug'..exe),  true)
@@ -36,15 +27,15 @@ do
         end
     end
     if OS == 'windows' then
-        fs.copy_file(input / 'launcher.dll', output / ('launcher.'..target..'.dll'), true)
+        fs.copy_file(input / 'launcher.dll', output / ('launcher.'..ArchAlias[arch]..'.dll'), true)
     end
 end
 
 do
     --copy runtime
     for _, luaver in ipairs {"lua51","lua52","lua53","lua54","lua-latest"} do
-        local input = CWD / builddir / 'bin' / target / mode / 'runtime' / luaver
-        local output = CWD / 'publish' / 'runtime' / OS / ARCH / luaver
+        local input = bindir / 'runtime' / luaver
+        local output = CWD / 'publish' / 'runtime' / OS / arch / luaver
         fs.create_directories(output)
         fs.copy_file(input / ('lua'..exe),         output / ('lua'..exe),         true)
         fs.copy_file(input / ('remotedebug'..dll), output / ('remotedebug'..dll), true)
@@ -55,5 +46,5 @@ do
 end
 
 if OS == 'windows' then
-    require 'msvc'.copy_vcrt(target, CWD / 'publish' / 'vcredist' / ARCH)
+    require 'msvc'.copy_vcrt(ArchAlias[arch], CWD / 'publish' / 'vcredist' / arch)
 end
