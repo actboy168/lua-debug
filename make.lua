@@ -1,34 +1,35 @@
 local lm = require "luamake"
 local platform = require "bee.platform"
 
-if platform.OS == "Windows" then
-    lm.defines = {
-        "_WIN32_WINNT=0x0601",
-    }
-end
+lm.windows = {
+    defines = "_WIN32_WINNT=0x0601"
+}
 
-local mode = lm.mode or "release"
-if platform.OS == "Linux" then
-    lm.target = lm.target or "universal"
-elseif platform.OS == "macOS" then
-    local function shell(command)
-        local f = assert(io.popen(command, 'r'))
-        local r = f:read '*l'
-        f:close()
-        return r:lower()
-    end
+local target
+if lm.os == "windows" then
+    target = lm.target
+elseif lm.os == "linux" then
+    target = "universal"
+elseif lm.os == "macos" then
     if not lm.target then
+        local function shell(command)
+            local f = assert(io.popen(command, 'r'))
+            local r = f:read '*l'
+            f:close()
+            return r:lower()
+        end
         local machine = shell "uname -m"
         if machine == "arm64" then
-            lm.target = "arm64-apple-macos11"
+            target = "arm64-apple-macos11"
         else
-            lm.target = "x86_64-apple-macos10.12"
+            target = "x86_64-apple-macos10.12"
         end
     end
+    target = lm.target
 end
 
-lm.bindir = ("build/%s/bin/%s/%s"):format(lm.plat, lm.target, mode)
-lm.objdir = ("build/%s/obj/%s/%s"):format(lm.plat, lm.target, mode)
+lm.bindir = ("$builddir/bin/%s/%s"):format(lm.os, target, lm.mode)
+lm.objdir = ("$builddir/obj/%s/%s"):format(lm.os, target, lm.mode)
 
 if platform.OS == "Windows" then
     lm:source_set 'detours' {
@@ -78,8 +79,8 @@ lm:source_set 'runtime/onelua' {
     sources = {
         "src/remotedebug/onelua.c",
     },
-    flags = {
-        platform.OS == "Linux" and "-fPIC",
+    linux = {
+        flags = "-fPIC"
     }
 }
 
@@ -138,19 +139,23 @@ for _, luaver in ipairs {"lua51","lua52","lua53","lua54","lua-latest"} do
             defines = {
                 luaver == "lua51" and "_XOPEN_SOURCE=600",
                 luaver == "lua52" and "_XOPEN_SOURCE=600",
-                (luaver == "lua51" and platform.OS == "macOS") and "LUA_USE_DLOPEN",
-                platform.OS == "macOS" and "LUA_USE_MACOSX",
-                platform.OS == "Linux" and "LUA_USE_LINUX",
-            },
-            ldflags = {
-                platform.OS == "Linux" and "-Wl,-E"
             },
             visibility = "default",
             links = {
                 "m",
                 "dl",
-                platform.OS == "Linux" and "pthread",
                 (luaver == "lua51" or luaver == "lua52" or luaver == "lua53") and "readline"
+            },
+            linux = {
+                defines = "LUA_USE_LINUX",
+                links = "pthread",
+                ldflags = "-Wl,-E",
+            },
+            macos = {
+                defines = {
+                    "LUA_USE_MACOSX",
+                    luaver == "lua51" and "LUA_USE_DLOPEN",
+                }
             }
         }
     end
@@ -165,44 +170,55 @@ for _, luaver in ipairs {"lua51","lua52","lua53","lua54","lua-latest"} do
     end
 
     lm:shared_library ('runtime/'..luaver..'/remotedebug') {
-        deps = {
-            platform.OS == "Windows" and ('runtime/'..luaver..'/'..luaver),
-            "runtime/onelua",
-        },
+        deps = "runtime/onelua",
         defines = {
             "BEE_STATIC",
             "BEE_INLINE",
             ("DBG_LUA_VERSION=%d"):format(lua_version_num),
-            platform.OS == "Windows" and "_CRT_SECURE_NO_WARNINGS",
-            platform.OS == "Windows" and "_WIN32_WINNT=0x0601",
-            platform.OS == "Windows" and ("LUA_DLL_VERSION="..luaver)
         },
         includes = {
             "3rd/bee.lua/",
             "3rd/bee.lua/3rd/lua-seri",
             "3rd/bee.lua/bee/nonstd",
-            platform.OS ~= "Windows" and "3rd/lua/"..luaver,
         },
         sources = {
             "src/remotedebug/*.cpp",
             "3rd/bee.lua/bee/error.cpp",
             "3rd/bee.lua/bee/net/*.cpp",
             "3rd/bee.lua/bee/nonstd/fmt/*.cc",
-            platform.OS == "Windows" and "3rd/bee.lua/bee/platform/version_win.cpp",
-            platform.OS == "Windows" and "3rd/bee.lua/bee/utility/module_version_win.cpp",
-            platform.OS == "Windows" and "3rd/bee.lua/bee/utility/unicode_win.cpp",
         },
-        crt = platform.OS == "Linux" and "static" or "dynamic",
-        links = {
-            platform.OS == "Windows" and "version",
-            platform.OS == "Windows" and "ws2_32",
-            platform.OS == "Windows" and "user32",
-            platform.OS == "Windows" and "delayimp",
-            platform.OS == "Linux" and "pthread",
+        windows = {
+            deps = {
+                'runtime/'..luaver..'/'..luaver,
+            },
+            defines = {
+                "_CRT_SECURE_NO_WARNINGS",
+                "_WIN32_WINNT=0x0601",
+                ("LUA_DLL_VERSION="..luaver)
+            },
+            sources = {
+                "3rd/bee.lua/bee/platform/version_win.cpp",
+                "3rd/bee.lua/bee/utility/module_version_win.cpp",
+                "3rd/bee.lua/bee/utility/unicode_win.cpp",
+            },
+            links = {
+                "version",
+                "ws2_32",
+                "user32",
+                "delayimp",
+            },
+            ldflags = {
+                ("/DELAYLOAD:%s.dll"):format(luaver),
+            },
         },
-        ldflags = {
-            platform.OS == "Windows" and ("/DELAYLOAD:%s.dll"):format(luaver),
+        linux = {
+            includes = "3rd/lua/"..luaver,
+            links = "pthread",
+            crt = "static",
         },
+        macos = {
+            includes = "3rd/lua/"..luaver,
+        }
     }
 
 end
@@ -220,9 +236,9 @@ lm:import("3rd/bee.lua/make.lua", {
     EXE_RESOURCE = "../../make/lua-debug.rc"
 })
 
-if platform.OS == "Windows" and lm.target == "x64" then
+if platform.OS == "Windows" and target == "x64" then
     lm:build 'install' {
-        '$luamake', 'lua', 'make/install_runtime.lua', lm.plat, lm.target, mode,
+        '$luamake', 'lua', 'make/install_runtime.lua', lm.builddir, target, lm.mode,
         deps = {
             'bee',
             'bootstrap',
@@ -260,7 +276,7 @@ else
     end
 
     lm:build 'install' {
-        '$luamake', 'lua', 'make/install_runtime.lua', lm.plat, lm.target, mode,
+        '$luamake', 'lua', 'make/install_runtime.lua', lm.builddir, target, lm.mode,
         deps = {
             'copy_extension',
             'update_version',

@@ -1,4 +1,4 @@
-local platform, target, mode = ...
+local builddir, target, mode = ...
 local fs = require 'bee.filesystem'
 local CWD = fs.current_path()
 
@@ -23,7 +23,7 @@ local dll = OS == 'windows' and ".dll" or ".so"
 
 do
     --copy lua-debug
-    local input = CWD / 'build' / platform / 'bin' / target / mode
+    local input = CWD / builddir / 'bin' / target / mode
     local output = CWD / 'publish' / 'bin' / OS
     fs.create_directories(output)
     if (OS == 'windows' and ARCH == 'x86') or (OS ~= 'windows' and ARCH == 'x86_64') then
@@ -43,7 +43,7 @@ end
 do
     --copy runtime
     for _, luaver in ipairs {"lua51","lua52","lua53","lua54","lua-latest"} do
-        local input = CWD / 'build' / platform / 'bin' / target / mode / 'runtime' / luaver
+        local input = CWD / builddir / 'bin' / target / mode / 'runtime' / luaver
         local output = CWD / 'publish' / 'runtime' / OS / ARCH / luaver
         fs.create_directories(output)
         fs.copy_file(input / ('lua'..exe),         output / ('lua'..exe),         true)
@@ -54,6 +54,6 @@ do
     end
 end
 
-if platform == 'msvc' then
+if OS == 'windows' then
     require 'msvc'.copy_vcrt(target, CWD / 'publish' / 'vcredist' / ARCH)
 end

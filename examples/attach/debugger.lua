@@ -1,4 +1,4 @@
-local INSIDERS = false
+local INSIDERS = true
 
 local function searchDebugger(luaDebugs, tag)
     if INSIDERS then
