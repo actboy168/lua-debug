@@ -27,9 +27,8 @@ lm:import("3rd/bee.lua/make.lua", {
     EXE_RESOURCE = "../../make/lua-debug.rc"
 })
 
-lm.bindir = ("$builddir/bin/%s/%s"):format(lm.arch, lm.mode)
-lm.objdir = ("$builddir/obj/%s/%s"):format(lm.arch, lm.mode)
-local bindir = fs.path(lm.builddir) / 'bin' / lm.arch / lm.mode
+lm.builddir = ("build/%s/%s/%s"):format(lm.os, lm.arch, lm.mode)
+local bindir = fs.path(lm.builddir) / 'bin'
 
 if platform.OS == "Windows" then
     lm:source_set 'detours' {
