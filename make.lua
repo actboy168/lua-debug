@@ -233,7 +233,7 @@ lm:build 'update_version' {
 
 if platform.OS == "Windows" and lm.arch == "x86_64" then
     lm:build 'install' {
-        '$luamake', 'lua', 'make/install_runtime.lua', bindir,
+        '$luamake', 'lua', 'make/install_runtime.lua', bindir, lm.arch,
         deps = {
             'bee',
             'bootstrap',
@@ -271,7 +271,7 @@ else
     end
 
     lm:build 'install' {
-        '$luamake', 'lua', 'make/install_runtime.lua', bindir,
+        '$luamake', 'lua', 'make/install_runtime.lua', bindir, lm.arch,
         deps = {
             'copy_extension',
             'update_version',

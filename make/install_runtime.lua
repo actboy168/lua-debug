@@ -1,4 +1,4 @@
-local builddir, arch, mode = ...
+local bindir, arch = ...
 local fs = require 'bee.filesystem'
 local CWD = fs.current_path()
 
@@ -6,7 +6,7 @@ local OS = require 'bee.platform'.OS:lower()
 
 local exe = OS == 'windows' and ".exe" or ""
 local dll = OS == 'windows' and ".dll" or ".so"
-local bindir = CWD / builddir / 'bin' / arch / mode
+
 local ArchAlias = {
     x86_64 = "x64",
     x86 = "x86",
@@ -14,7 +14,7 @@ local ArchAlias = {
 
 do
     --copy lua-debug
-    local input = bindir
+    local input = fs.path(bindir)
     local output = CWD / 'publish' / 'bin' / OS
     fs.create_directories(output)
     if (OS == 'windows' and arch == 'x86') or (OS ~= 'windows' and arch == 'x86_64') then
@@ -34,7 +34,7 @@ end
 do
     --copy runtime
     for _, luaver in ipairs {"lua51","lua52","lua53","lua54","lua-latest"} do
-        local input = bindir / 'runtime' / luaver
+        local input = fs.path(bindir) / 'runtime' / luaver
         local output = CWD / 'publish' / 'runtime' / OS / arch / luaver
         fs.create_directories(output)
         fs.copy_file(input / ('lua'..exe),         output / ('lua'..exe),         true)
