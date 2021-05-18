@@ -321,12 +321,14 @@ local exceptionFilters = {}
 function m.hitExceptionBreakpoint(flags, level, error)
     for _, flag in ipairs(flags) do
         local bp = exceptionFilters[flag]
-        if not bp.condition then
-            return bp
-        end
-        local ok, res = evaluate.eval(bp.condition, level, { error = error })
-        if ok and res then
-            return bp
+        if bp then
+            if not bp.condition then
+                return bp
+            end
+            local ok, res = evaluate.eval(bp.condition, level, { error = error })
+            if ok and res then
+                return bp
+            end
         end
     end
 end
