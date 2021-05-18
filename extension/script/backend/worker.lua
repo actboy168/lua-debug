@@ -642,7 +642,7 @@ local function getExceptionCaught(errcode)
     end
     local pcall = GlobalFunction 'pcall'
     local xpcall = GlobalFunction 'xpcall'
-    local level = 1
+    local level = 0
     while true do
         local f = rdebug.getfunc(level)
         if f == nil then
