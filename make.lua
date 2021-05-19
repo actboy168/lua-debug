@@ -41,7 +41,7 @@ if platform.OS == "Windows" then
     }
 
     lm:lua_library 'launcher' {
-        export_luaopen = false,
+        export_luaopen = "off",
         deps = {
             "detours",
         },
