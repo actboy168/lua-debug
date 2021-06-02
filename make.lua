@@ -191,6 +191,7 @@ for _, luaver in ipairs {"lua51","lua52","lua53","lua54","lua-latest"} do
             deps = {
                 'runtime/'..luaver..'/'..luaver,
             },
+			includes = '3rd/lua/'..luaver,
             defines = {
                 "_CRT_SECURE_NO_WARNINGS",
                 "_WIN32_WINNT=0x0601",
