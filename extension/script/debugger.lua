@@ -21,15 +21,12 @@ if debug.getregistry()["lua-debug"] then
     return empty
 end
 
-local function initDebugger(dbg, cfg)
-    if type(cfg) == "string" then
-        cfg = {address = cfg}
-    end
-
+local function detectLuaDebugPath(cfg)
     local OS
     local ARCH
     do
         local function shell(command)
+            --NOTICE: io.popen可能会多线程不安全
             local f = assert(io.popen(command, 'r'))
             local r = f:read '*l'
             f:close()
@@ -84,16 +81,33 @@ local function initDebugger(dbg, cfg)
     end
 
     local ext = OS == "windows" and "dll" or "so"
-    local remotedebug = root..rt..'/remotedebug.'..ext
-    if OS == "windows" then
+    return root..rt..'/remotedebug.'..ext
+end
+
+local function initDebugger(dbg, cfg)
+    if type(cfg) == "string" then
+        cfg = {address = cfg}
+    end
+
+    local remotedebug = os.getenv "LUA_DEBUG_PATH"
+    local updateenv = false
+    if not remotedebug then
+        remotedebug = detectLuaDebugPath(cfg)
+        updateenv = true
+    end
+    local isWindows = package.config:sub(1,1) == "\\"
+    if isWindows then
         assert(package.loadlib(remotedebug,'init'))(cfg.luaapi)
     end
 
     ---@type RemoteDebug
     dbg.rdebug = assert(package.loadlib(remotedebug,'luaopen_remotedebug'))()
+    if updateenv then
+        dbg.rdebug.setenv("LUA_DEBUG_PATH",remotedebug)
+    end
 
     local function utf8(s)
-        if cfg.ansi and OS == "windows" then
+        if cfg.ansi and isWindows then
             return dbg.rdebug.a2u(s)
         end
         return s

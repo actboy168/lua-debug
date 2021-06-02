@@ -34,4 +34,12 @@ end
 function rdebug.a2u(str)
 end
 
+---
+---@param name string
+---@param value string
+---设置环境变量，可以被os.getenv获取。（如果set和get为同一个CRT）
+---
+function rdebug.setenv(name, value)
+end
+
 return rdebug

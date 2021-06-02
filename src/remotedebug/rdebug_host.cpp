@@ -1,5 +1,6 @@
 ﻿#include "rlua.h"
 #include "rdebug_cmodule.h"
+#include <stdlib.h>
 
 static int DEBUG_HOST = 0;	// host L in client VM
 static int DEBUG_CLIENT = 0;	// client L in host VM for hook
@@ -161,12 +162,25 @@ la2u(lua_State *L) {
 }
 #endif
 
+static int lsetenv(lua_State* L) {
+    const char* name = luaL_checkstring(L, 1);
+    const char* value = luaL_checkstring(L, 2);
+#if defined(_WIN32)
+    lua_pushfstring(L, "%s=%s", name, value);
+    ::_putenv(lua_tostring(L, -1));
+#else
+    ::setenv(name, value, 1);
+#endif
+    return 0;
+}
+
 RLUA_FUNC
 int luaopen_remotedebug(lua_State *L) {
 	luaL_Reg l[] = {
 		{ "start", lhost_start },
 		{ "clear", lhost_clear },
 		{ "event", lhost_event },
+		{"setenv", lsetenv},
 #if defined(_WIN32) && !defined(RLUA_DISABLE)
 		{ "a2u",   la2u },
 #endif
