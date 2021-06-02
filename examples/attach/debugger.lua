@@ -1,4 +1,4 @@
-local INSIDERS = true
+local INSIDERS = false
 
 local function searchDebugger(luaDebugs, tag)
     if INSIDERS then
@@ -6,7 +6,7 @@ local function searchDebugger(luaDebugs, tag)
     end
     local isWindows = package.config:sub(1,1) == "\\"
     local extensionPath = (isWindows and os.getenv "USERPROFILE" or os.getenv "HOME") .. "/.vscode"..tag.."/extensions"
-    local command = isWindows and ("dir /B " .. extensionPath:gsub("/", "\\") .. " 2>nul") or ("ls -1 " .. extensionPath)
+    local command = isWindows and ("dir /B " .. extensionPath:gsub("/", "\\") .. " 2>nul") or ("ls -1 " .. extensionPath .. " 2>/dev/null")
     for name in io.popen(command):lines() do
         local a, b, c = name:match "^actboy168%.lua%-debug%-(%d+)%.(%d+)%.(%d+)$"
         if a then
