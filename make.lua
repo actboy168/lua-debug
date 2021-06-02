@@ -48,6 +48,7 @@ if platform.OS == "Windows" then
         includes = {
             "3rd/bee.lua",
             "3rd/bee.lua/3rd/lua",
+            "3rd/detours/src",
         },
         sources = {
             "3rd/bee.lua/bee/error.cpp",
