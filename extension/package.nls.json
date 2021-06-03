@@ -6,5 +6,7 @@
     "lua.debug.launch.luaVersion.description": "Default lua version.",
     "lua.debug.launch.luaArch.description": "Default lua arch.",
     "lua.debug.launch.consoleCoding.description": "Console encoding.",
-    "lua.debug.launch.sourceCoding.description": "Source encoding."
+    "lua.debug.launch.sourceCoding.description": "Source encoding.",
+    "lua.debug.launch.path.description": "Search path for Lua programs",
+    "lua.debug.launch.cpath.description": "Search path for native libraries"
 }

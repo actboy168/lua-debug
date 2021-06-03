@@ -160,42 +160,36 @@ function resolveConfig(folder, config) {
                     throw new Error('Missing `program` to debug');
                 }
             }
-            if (typeof config.luaexe == 'string') {
-                if (typeof config.path != 'string' && typeof config.path != 'object') {
-                    config.path = [
-                        '${cwd}/?.lua',
-                        path.dirname(config.luaexe) + '/?.lua',
-                    ]
-                }
-                if (typeof config.cpath != 'string' && typeof config.cpath != 'object') {
-                    if (plat == "Windows") {
-                        config.cpath = [
-                            '${cwd}/?.dll',
-                            path.dirname(config.luaexe) + '/?.dll',
-                        ]
-                    }
-                    else {
-                        config.cpath = [
-                            '${cwd}/?.so',
-                            path.dirname(config.luaexe) + '/?.so',
-                        ]
-                    }
-                }
+            if (typeof config.luaexe != 'string') {
+                config.sourceCoding = plat == "Windows" ? "ansi" : "utf8";
+            }
+            // path
+            if (typeof config.path == 'string') {
+                config.path = [config.path]
+            }
+            else if (typeof config.path == 'object') {
             }
             else {
-                config.sourceCoding = plat == "Windows" ? "ansi" : "utf8";
-                if (typeof config.path != 'string' && typeof config.path != 'object') {
-                    config.path = '${cwd}/?.lua'
-                }
-                if (typeof config.cpath != 'string' && typeof config.cpath != 'object') {
-                    if (plat == "Windows") {
-                        config.cpath = '${cwd}/?.dll'
-                    }
-                    else {
-                        config.cpath = '${cwd}/?.so'
-                    }
+                config.path = ['${cwd}/?.lua']
+                if (typeof config.luaexe == 'string') {
+                    config.path.push(path.dirname(config.luaexe) + '/?.lua')
                 }
             }
+            config.path = config.path.concat(settings.path)
+            // cpath
+            if (typeof config.cpath == 'string') {
+                config.cpath = [config.cpath]
+            }
+            else if (typeof config.cpath == 'object') {
+            }
+            else {
+                let ext = plat == "Windows"? "dll" : "so"
+                config.cpath = ['${cwd}/?.' + ext]
+                if (typeof config.luaexe == 'string') {
+                    config.cpath.push(path.dirname(config.luaexe) + '/?.' + ext)
+                }
+            }
+            config.cpath = config.cpath.concat(settings.cpath)
         }
     }
     else if (config.request == 'attach') {

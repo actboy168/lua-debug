@@ -554,6 +554,22 @@
                         "utf8",
                         "ansi"
                     ]
+                },
+                "lua.debug.settings.path": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "%lua.debug.launch.path.description%",
+                    "default": []
+                },
+                "lua.debug.settings.cpath": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "%lua.debug.launch.cpath.description%",
+                    "default": []
                 }
             }
         }
