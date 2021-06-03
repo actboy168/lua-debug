@@ -7,6 +7,7 @@ local utility = require 'remotedebug.utility'
 local request = {}
 
 local firstWorker = true
+local closeProcess = false
 local state = 'none'
 local config = {
     initialize = {},
@@ -344,15 +345,19 @@ function request.disconnect(req)
     response.success(req)
     local args = req.arguments
     if args.terminateDebuggee == nil then
-        args.terminateDebuggee = config.request == 'launch'
+        args.terminateDebuggee = not not config.launch
     end
     mgr.broadcastToWorker {
         cmd = 'disconnect',
     }
     if args.terminateDebuggee then
-        mgr.setTerminateDebuggeeCallback(function()
+        if closeProcess then
+            mgr.setTerminateDebuggeeCallback(function()
+                os.exit(true, true)
+            end)
+        else
             os.exit(true, true)
-        end)
+        end
     end
     return true
 end
@@ -367,6 +372,7 @@ function request.terminate(req)
         cmd = 'disconnect',
     }
     mgr.setTerminateDebuggeeCallback(function()
+        closeProcess = true
         utility.closeprocess()
     end)
     return true
