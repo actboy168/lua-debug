@@ -103,11 +103,11 @@ function mgr.sendToClient(pkg)
 end
 
 function mgr.sendToWorker(w, pkg)
-    return threadChannel[w]:push(assert(json.encode(pkg)))
+    return threadChannel[w]:push(json.encode(pkg))
 end
 
 function mgr.broadcastToWorker(pkg)
-    local msg = assert(json.encode(pkg))
+    local msg = json.encode(pkg)
     for _, channel in pairs(threadChannel) do
         channel:push(msg)
     end
@@ -192,7 +192,7 @@ local function updateOnce()
             break
         end
         if threadCMD[cmd] then
-            local pkg = assert(json.decode(msg))
+            local pkg = json.decode(msg)
             threadCMD[cmd](threadCatalog[w] or w, pkg)
         end
     end

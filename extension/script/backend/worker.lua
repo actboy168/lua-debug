@@ -60,7 +60,7 @@ end
 
 local function sendToMaster(cmd)
     return function (pkg)
-        masterThread:push(WorkerIdent, cmd, assert(json.encode(pkg)))
+        masterThread:push(WorkerIdent, cmd, json.encode(pkg))
     end
 end
 
