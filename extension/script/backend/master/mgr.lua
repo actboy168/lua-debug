@@ -114,7 +114,11 @@ function mgr.broadcastToWorker(pkg)
 end
 
 function mgr.setThreadName(w, name)
-    threadName[w] = name
+    if name == json.null then
+        threadName[w] = nil
+    else
+        threadName[w] = name
+    end
 end
 
 function mgr.workers()
