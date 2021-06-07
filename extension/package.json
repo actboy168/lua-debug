@@ -39,6 +39,12 @@
         "onDebugDynamicConfigurations",
         "onDebugResolve:lua"
     ],
+    "capabilities": {
+        "untrustedWorkspaces": {
+            "supported": false,
+            "description" : "Debugging is disabled in Restricted Mode."
+        }
+    },
     "contributes": {
         "breakpoints": [
             {
