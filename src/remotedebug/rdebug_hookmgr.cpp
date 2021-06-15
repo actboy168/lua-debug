@@ -517,7 +517,14 @@ struct hookmgr {
     }
 
     lua_State* getmainthread(lua_State* L) {
+#if !defined(RDEBUG_FAST) && LUA_VERSION_NUM >= 502
+        lua_rawgeti(L,  LUA_REGISTRYINDEX, LUA_RIDX_MAINTHREAD);
+        lua_State* mL = lua_tothread(L, -1);
+        lua_pop(L, 1);
+        return mL;
+#else
         return L->l_G->mainthread;
+#endif
     }
 
     void sethook(lua_State* L, lua_Hook func, int mask, int count) {
