@@ -130,7 +130,9 @@ function mgr.threads()
     for threadId, status in pairs(threadStatus) do
         if status == "connect" then
             t[#t + 1] = {
-                name = ('%s (%d)'):format(threadName[threadId] or "Thread", threadId),
+                name = (threadName[threadId] or "Thread (${id})"):gsub("%$%{([^}]*)%}", {
+                    id = threadId
+                }),
                 id = threadId,
             }
         end
