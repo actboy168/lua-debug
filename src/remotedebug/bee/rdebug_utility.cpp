@@ -29,18 +29,21 @@ namespace rdebug_utility {
 
     
 #if defined(_WIN32)
-    static void closeWindow() {
+    static bool closeWindow() {
+        bool ok = false;
         HANDLE h = CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, 0);
         if (h != INVALID_HANDLE_VALUE) {
             THREADENTRY32 te;
             te.dwSize = sizeof(te);
             for (BOOL ok = Thread32First(h, &te); ok; ok = Thread32Next(h, &te)) {
                 if (te.th32OwnerProcessID == GetCurrentProcessId()) {
-                    PostThreadMessageW(te.th32ThreadID, WM_QUIT, 0, 0);
+                    BOOL suc = PostThreadMessageW(te.th32ThreadID, WM_QUIT, 0, 0);
+                    ok = ok || suc;
                 }
             }
             CloseHandle(h);
         }
+        return ok;
     }
     bool isConsoleExe(const wchar_t* exe) {
         HANDLE hExe = CreateFileW(exe, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
@@ -69,15 +72,17 @@ namespace rdebug_utility {
     }
 #endif
 
-    static int closeprocess(lua_State* L) {
+    static int closewindow(lua_State* L) {
+        bool ok = false;
 #if defined(_WIN32)
-        closeWindow();
-        if (isConsoleProcess()) {
-            raise(SIGINT);
-        }
-#else
-        raise(SIGINT);
+        ok = closeWindow();
 #endif
+        lua_pushboolean(L, ok);
+        return 1;
+    }
+
+    static int closeprocess(lua_State* L) {
+        raise(SIGINT);
         return 0;
     }
 }
@@ -91,6 +96,7 @@ int luaopen_remotedebug_utility(lua_State* L) {
 #endif
     luaL_Reg lib[] = {
         {"fs_absolute", rdebug_utility::fs_absolute},
+        {"closewindow", rdebug_utility::closewindow},
         {"closeprocess", rdebug_utility::closeprocess},
         {NULL, NULL}};
     luaL_setfuncs(L, lib, 0);

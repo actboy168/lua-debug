@@ -364,6 +364,9 @@ end
 
 function request.terminate(req)
     response.success(req)
+    if utility.closewindow() then
+        return
+    end
     --TODO:
     --  现在调试器激活是会屏蔽SIGINT，导致closeprocess无法生效，所以需要先将调试器关闭，再调用closeprocess。
     --  或许需要让调试器和SIGINT不再冲突。
