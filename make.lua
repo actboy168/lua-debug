@@ -33,7 +33,6 @@ local bindir = fs.path(lm.builddir) / 'bin'
 if platform.OS == "Windows" then
     lm:source_set 'detours' {
         rootdir = "3rd/detours/src",
-        permissive = true,
         sources = {
             "*.cpp",
             "!uimports.cpp"
