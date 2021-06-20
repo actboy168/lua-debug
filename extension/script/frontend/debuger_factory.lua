@@ -148,7 +148,7 @@ local function create_luaexe_in_terminal(args, dbg, pid)
     end
     local option = {
         kind = (args.console == "integratedTerminal") and "integrated" or "external",
-        title = "Lua Debug",
+        title = args.name,
         args = {},
     }
     if useWSL then
