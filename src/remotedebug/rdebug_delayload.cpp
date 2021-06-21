@@ -19,6 +19,10 @@ namespace remotedebug::delayload {
 	static HMODULE    luadll = 0;
 	static FindLuaApi luaapi = 0;
 
+	HMODULE get_luadll() {
+		return luadll;
+	}
+
 	void set_luadll(HMODULE handle) {
 		if (luadll) return;
 		luadll = handle;

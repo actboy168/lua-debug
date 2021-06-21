@@ -1,5 +1,6 @@
 ﻿#include "rlua.h"
 #include "rdebug_cmodule.h"
+#include "rdebug_putenv.h"
 #include <stdlib.h>
 
 static int DEBUG_HOST = 0;	// host L in client VM
@@ -167,7 +168,7 @@ static int lsetenv(lua_State* L) {
     const char* value = luaL_checkstring(L, 2);
 #if defined(_WIN32)
     lua_pushfstring(L, "%s=%s", name, value);
-    ::_putenv(lua_tostring(L, -1));
+    remotedebug::putenv(lua_tostring(L, -1));
 #else
     ::setenv(name, value, 1);
 #endif
@@ -180,7 +181,7 @@ int luaopen_remotedebug(lua_State *L) {
 		{ "start", lhost_start },
 		{ "clear", lhost_clear },
 		{ "event", lhost_event },
-		{"setenv", lsetenv},
+		{ "setenv", lsetenv },
 #if defined(_WIN32) && !defined(RLUA_DISABLE)
 		{ "a2u",   la2u },
 #endif
