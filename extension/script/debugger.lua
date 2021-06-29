@@ -89,7 +89,7 @@ local function initDebugger(dbg, cfg)
         cfg = {address = cfg}
     end
 
-    local remotedebug = os.getenv "LUA_DEBUG_PATH"
+    local remotedebug = os.getenv "LUA_DEBUG_CORE"
     local updateenv = false
     if not remotedebug then
         remotedebug = detectLuaDebugPath(cfg)
@@ -102,8 +102,11 @@ local function initDebugger(dbg, cfg)
 
     ---@type RemoteDebug
     dbg.rdebug = assert(package.loadlib(remotedebug,'luaopen_remotedebug'))()
+    if not os.getenv "LUA_DEBUG_PATH" then
+        dbg.rdebug.setenv("LUA_DEBUG_PATH",root)
+    end
     if updateenv then
-        dbg.rdebug.setenv("LUA_DEBUG_PATH",remotedebug)
+        dbg.rdebug.setenv("LUA_DEBUG_CORE",remotedebug)
     end
 
     local function utf8(s)
