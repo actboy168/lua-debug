@@ -143,7 +143,6 @@ for _, luaver in ipairs {"lua51","lua52","lua53","lua54","lua-latest"} do
             links = {
                 "m",
                 "dl",
-                (luaver == "lua51" or luaver == "lua52" or luaver == "lua53") and "readline"
             },
             linux = {
                 defines = "LUA_USE_LINUX",
