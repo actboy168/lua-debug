@@ -64,7 +64,7 @@ local function request_runinterminal(args)
 end
 
 local function attach_process(pkg, pid)
-    if pkg.args.luaVersion == "latest" then
+    if pkg.arguments.luaVersion == "latest" then
         ipc_send_latest(pid)
     end
     local inject = require 'inject'
