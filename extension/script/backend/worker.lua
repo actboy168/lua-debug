@@ -32,24 +32,10 @@ local baseL
 
 local CMD = {}
 
-local WorkerIdent = tostring(hookmgr.gethost())
+local WorkerIdent = tostring(thread.id)
 local WorkerChannel = ('DbgWorker(%s)'):format(WorkerIdent)
 
-
-local function createChannel(name)
-    local ok, errmsg = pcall(thread.newchannel, name)
-    if ok then
-        return
-    end
-    if errmsg:sub(1,17) ~= "Duplicate channel" then
-        error(errmsg)
-    end
-    local c = thread.channel(WorkerChannel)
-    while c:pop() do
-    end
-end
-
-createChannel(WorkerChannel)
+thread.newchannel(WorkerChannel)
 local masterThread = thread.channel 'DbgMaster'
 local workerThread = thread.channel (WorkerChannel)
 
