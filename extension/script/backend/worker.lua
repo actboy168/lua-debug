@@ -554,18 +554,6 @@ function event.newproto(proto, level)
     return breakpoint.newproto(proto, src, info.linedefined.."-"..info.lastlinedefined)
 end
 
-local function pairsEventArgs()
-    local max = rdebug.getstack()
-    local n = 1
-    return function()
-        n = n + 1
-        if n > max then
-            return
-        end
-        return n, rdebug.getstack(n)
-    end
-end
-
 function event.update()
     workerThreadUpdate()
 end
@@ -575,11 +563,12 @@ function event.enable_update(flag)
     hookmgr.update_open(not noDebug and openUpdate)
 end
 
-function event.print()
+function event.print(...)
     if not initialized then return end
     local res = {}
-    for _, arg in pairsEventArgs() do
-        res[#res + 1] = variables.tostring(arg)
+    local args = table.pack(...)
+    for i = 1, args.n do
+        res[#res + 1] = variables.tostring(args[i])
     end
     res = table.concat(res, '\t') .. '\n'
     rdebug.getinfo(1, "Sl", info)
@@ -587,11 +576,12 @@ function event.print()
     return true
 end
 
-function event.iowrite()
+function event.iowrite(...)
     if not initialized then return end
     local res = {}
-    for _, arg in pairsEventArgs() do
-        res[#res + 1] = variables.tostring(arg)
+    local args = table.pack(...)
+    for i = 1, args.n do
+        res[#res + 1] = variables.tostring(args[i])
     end
     res = table.concat(res, '\t')
     rdebug.getinfo(1, "Sl", info)

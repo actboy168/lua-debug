@@ -5,7 +5,7 @@
 
 lua_State* get_host(rlua_State *L);
 rlua_State* get_client(lua_State *L);
-int  event(rlua_State* cL, lua_State* hL, const char* name, int nargs);
+int  event(rlua_State* cL, lua_State* hL, const char* name, int start);
 
 static int getIoOutput(lua_State* L) {
 #if LUA_VERSION_NUM >= 502
@@ -98,15 +98,12 @@ static int callfunc(lua_State* L) {
 }
 
 static int redirect_print(lua_State* L) {
-	rlua_State *cL = get_client(L);
+    rlua_State *cL = get_client(L);
     if (cL) {
-        lua_pushnil(L);
-        lua_insert(L, 1);
-	    int ok = event(cL, L, "print", 0);
+        int ok = event(cL, L, "print", 1);
         if (ok > 0) {
             return 0;
         }
-        lua_remove(L, 1);
     }
     return callfunc(L);
 }
@@ -117,7 +114,7 @@ static int redirect_f_write(lua_State* L) {
     if (ok) {
         rlua_State *cL = get_client(L);
         if (cL) {
-            int ok = event(cL, L, "iowrite", 0);
+            int ok = event(cL, L, "iowrite", 2);
             if (ok > 0) {
                 lua_settop(L, 1);
                 return 1;
@@ -128,16 +125,13 @@ static int redirect_f_write(lua_State* L) {
 }
 
 static int redirect_io_write(lua_State* L) {
-	rlua_State *cL = get_client(L);
+    rlua_State *cL = get_client(L);
     if (cL) {
-        lua_pushnil(L);
-        lua_insert(L, 1);
-	    int ok = event(cL, L, "iowrite", 0);
+        int ok = event(cL, L, "iowrite", 1);
         if (ok > 0) {
             getIoOutput(L);
             return 1;
         }
-        lua_remove(L, 1);
     }
     return callfunc(L);
 }

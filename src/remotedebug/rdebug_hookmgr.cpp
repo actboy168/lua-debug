@@ -378,7 +378,7 @@ struct hookmgr {
         break_proto.fill(0);
     }
 
-    int call_event(lua_State* hL, int nargs) {
+    int call_event(int nargs) {
         if (rlua_pcall(cL, 1 + nargs, 1, 0) != LUA_OK) {
             rlua_pop(cL, 1);
             return -1;
@@ -392,23 +392,24 @@ struct hookmgr {
         return -1;
     }
 
-    int event(lua_State* hL, const char* name, int nargs) {
+    int event(lua_State* hL, const char* name, int start) {
         if (rlua_rawgetp(cL, RLUA_REGISTRYINDEX, &HOOK_CALLBACK) != LUA_TFUNCTION) {
             rlua_pop(cL, 1);
             return -1;
         }
+        int nargs = lua_gettop(hL) - start + 1;
         set_host(cL, hL);
         rlua_pushstring(cL, name);
-        if (nargs == 0) {
-            return call_event(hL, 0);
+        if (nargs <= 0) {
+            return call_event(0);
         }
         std::vector<int> refs; refs.resize(nargs);
         for (int i = 0; i < nargs; ++i) {
-            lua_pushvalue(hL, i + 2);
+            lua_pushvalue(hL, start + i);
             refs[i] = copy_value(hL, cL, true);
             lua_pop(hL, 1);
         }
-        int nres = call_event(hL, nargs);
+        int nres = call_event(nargs);
         for (int i = 0; i < nargs; ++i) {
             unref_value(hL, refs[i]);
         }
@@ -777,12 +778,12 @@ int luaopen_remotedebug_hookmgr(rlua_State* L) {
     return 1;
 }
 
-int event(rlua_State* cL, lua_State* hL, const char* name, int nargs) {
+int event(rlua_State* cL, lua_State* hL, const char* name, int start) {
     if (LUA_TUSERDATA != rlua_rawgetp(cL, RLUA_REGISTRYINDEX, &HOOK_MGR)) {
         rlua_pop(cL, 1);
         return -1;
     }
-    int ok = ((hookmgr*)rlua_touserdata(cL, -1))->event(hL, name, nargs);
+    int ok = ((hookmgr*)rlua_touserdata(cL, -1))->event(hL, name, start);
     rlua_pop(cL, 1);
     return ok;
 }

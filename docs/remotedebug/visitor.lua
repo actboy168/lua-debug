@@ -94,14 +94,6 @@ end
 visitor.fieldv = visitor.field
 
 ---
----@param idx integer | nil
----@return refvalue
----返回栈上的对象,没有idx时返回栈上有几个对象，有idx时返回栈上第idx个对象。等同于lua_gettop/lua_pushvalue。
----
-function visitor.getstack(idx)
-end
-
----
 ---@param t refvalue
 ---@param limit integer | nil
 ---@return refvalue[]

@@ -553,25 +553,6 @@ get_frame_func(rlua_State *L, lua_State *cL, int frame) {
 	return 1;
 }
 
-static int
-get_stack(rlua_State *L, lua_State *cL, int index) {
-	if (index > lua_gettop(cL)) {
-		return 0;
-	}
-	if (lua_checkstack(cL, 1) == 0) {
-		rluaL_error(L, "stack overflow");
-	}
-	lua_pushvalue(cL, index);
-	if (copy_toR(cL, L) != LUA_TNONE) {
-		lua_pop(cL, 1);
-		return 1;
-	}
-	lua_pop(cL, 1);
-	struct value *v = create_value(L, VAR::STACK);
-	v->index = index;
-	return 1;
-}
-
 // table key
 static int
 table_key(rlua_State *L, lua_State *cL) {
@@ -925,20 +906,6 @@ lclient_field(rlua_State *L) {
 static int
 lclient_fieldv(rlua_State *L) {
 	return client_field(L, 0);
-}
-
-static int
-lclient_getstack(rlua_State *L) {
-	lua_State *cL = get_host(L);
-	if (rlua_gettop(L) == 0) {
-		rlua_pushinteger(L, lua_gettop(cL));
-		return 1;
-	}
-	int index = (int)rluaL_checkinteger(L, 1);
-	if (get_stack(L, cL, index)) {
-		return 1;
-	}
-	return 0;
 }
 
 static int
@@ -1508,7 +1475,6 @@ init_visitor(rlua_State *L) {
 		{ "indexv", lclient_indexv },
 		{ "field", lclient_field },
 		{ "fieldv", lclient_fieldv },
-		{ "getstack", lclient_getstack },
 		{ "tablehash", lclient_tablehash },
 		{ "tablehashv", lclient_tablehashv },
 		{ "tablesize", lclient_tablesize },
