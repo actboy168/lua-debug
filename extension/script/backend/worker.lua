@@ -35,7 +35,21 @@ local CMD = {}
 local WorkerIdent = tostring(hookmgr.gethost())
 local WorkerChannel = ('DbgWorker(%s)'):format(WorkerIdent)
 
-thread.newchannel (WorkerChannel)
+
+local function createChannel(name)
+    local ok, errmsg = pcall(thread.newchannel, name)
+    if ok then
+        return
+    end
+    if errmsg:sub(1,17) ~= "Duplicate channel" then
+        error(errmsg)
+    end
+    local c = thread.channel(WorkerChannel)
+    while c:pop() do
+    end
+end
+
+createChannel(WorkerChannel)
 local masterThread = thread.channel 'DbgMaster'
 local workerThread = thread.channel (WorkerChannel)
 
