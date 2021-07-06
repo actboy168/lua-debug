@@ -137,7 +137,8 @@ return function(error)
         depth = depth + 1
         n1 = n1 - 1
         if n1 == 1 then
-            s[#s + 1] = '\n\t...'
+            local n = last - 10 - depth
+            s[#s + 1] = ("\n\t...\t(skipping %d levels)"):format(n);
             depth = last - 10
         else
             local src = source.create(info.source)
