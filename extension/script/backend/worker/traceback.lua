@@ -54,7 +54,7 @@ local function getshortsrc(src)
     end
 end
 
-local function findfield(t, f, level, name)
+local function findfield(t, f, level)
     if level == 0 then
         return
     end
@@ -63,13 +63,16 @@ local function findfield(t, f, level, name)
         local key, value = loct[i], loct[i+1]
         if rdebug.type(key) == 'string' then
             local skey = rdebug.value(key)
-            if skey ~= '_G' then
+            if not (level == 2 and skey == '_G') then
                 local tvalue = rdebug.type(value)
                 if (tvalue == 'function' or tvalue == 'c function') and rdebug.value(value) == f then
-                    return name and (name .. '.' .. skey) or skey
+                    return skey
                 end
                 if tvalue == 'table' then
-                    return findfield(value, f, level - 1, name and (name .. '.' .. skey) or skey)
+                    local res = findfield(value, f, level - 1)
+                    if res then
+                        return res .. '.' .. skey
+                    end
                 end
             end
         end
