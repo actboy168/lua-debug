@@ -55,18 +55,21 @@ local function getshortsrc(src)
 end
 
 local function findfield(t, f, level, name)
+    if level == 0 then
+        return
+    end
     local loct = rdebug.tablehashv(t, 5000)
     for i = 1, #loct, 2 do
         local key, value = loct[i], loct[i+1]
         if rdebug.type(key) == 'string' then
             local skey = rdebug.value(key)
-            if level ~= 0 or skey ~= '_G' then
+            if skey ~= '_G' then
                 local tvalue = rdebug.type(value)
                 if (tvalue == 'function' or tvalue == 'c function') and rdebug.value(value) == f then
                     return name and (name .. '.' .. skey) or skey
                 end
-                if level < 2 and tvalue == 'table' then
-                    return findfield(value, f, level + 1, name and (name .. '.' .. skey) or skey)
+                if tvalue == 'table' then
+                    return findfield(value, f, level - 1, name and (name .. '.' .. skey) or skey)
                 end
             end
         end
