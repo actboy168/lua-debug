@@ -178,7 +178,7 @@ local function create_luaexe_in_console(args, dbg, pid)
     installBootstrap3(option, args)
     return sp.spawn(option)
 end
-io.write()
+
 local function create_process_in_console(args, callback)
     initialize(args)
     local application = args.runtimeExecutable
