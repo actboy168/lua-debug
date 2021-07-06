@@ -71,7 +71,7 @@ local function findfield(t, f, level)
                 if tvalue == 'table' then
                     local res = findfield(value, f, level - 1)
                     if res then
-                        return res .. '.' .. skey
+                        return skey .. '.' .. res
                     end
                 end
             end
