@@ -657,12 +657,13 @@ local function getExceptionFlags(errcode)
     }
 end
 
-local function runException(flags, error)
-    local level, message, trace = traceback(error)
+local function runException(flags, errobj)
+    local errmsg = variables.tostring(errobj)
+    local level, message, trace = traceback(errmsg)
     if level < 0 then
         return
     end
-    local bp = breakpoint.hitExceptionBreakpoint(flags, level, error)
+    local bp = breakpoint.hitExceptionBreakpoint(flags, level, errobj)
     if not bp then
         return
     end
@@ -678,13 +679,13 @@ local function runException(flags, error)
     }, level)
 end
 
-function event.exception(error, errcode)
+function event.exception(errobj, errcode)
     if not initialized then return end
     if errcode == nil or errcode == -1 then
         --TODO:暂时兼容旧版本
         errcode = ERREVENT_ERRRUN
     end
-    runException(getExceptionFlags(errcode), error)
+    runException(getExceptionFlags(errcode), errobj)
 end
 
 function event.thread(co, type)
