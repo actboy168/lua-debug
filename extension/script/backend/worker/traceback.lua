@@ -127,7 +127,7 @@ local function replacewhere(error)
     end
 end
 
-return function(error)
+local function traceback(error)
     local s = {}
     local level, message = replacewhere(error)
     if level < 0 then
@@ -161,3 +161,8 @@ return function(error)
     end
     return level, message, table.concat(s)
 end
+
+return {
+    traceback = traceback,
+    pushglobalfuncname = pushglobalfuncname,
+}
