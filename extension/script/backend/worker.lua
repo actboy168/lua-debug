@@ -126,7 +126,7 @@ function CMD.disconnect()
 end
 
 local function getFuncName(depth)
-    local funcname = traceback.pushglobalfuncname(rdebug.getfunc(depth))
+    local funcname = traceback.pushglobalfuncname(info.func)
     if funcname then
         return funcname
     end
@@ -172,7 +172,7 @@ end
 
 local function stackTrace(res, coid, start, levels)
     for depth = start, start + levels - 1 do
-        if not rdebug.getinfo(depth, "Sln", info) then
+        if not rdebug.getinfo(depth, "Slnf", info) then
             return true, depth - start
         end
         local r = {
@@ -606,11 +606,11 @@ end
 local function getExceptionType(errcode)
     errcode = errcode & 0xF
     if errcode == ERREVENT_ERRRUN then
-        if rdebug.getinfo(0, "Sl", info) then
+        if rdebug.getinfo(0, "Slf", info) then
             if info.what ~= 'C' then
                 return "runtime"
             end
-            local raisefunc = rdebug.value(rdebug.getfunc(0))
+            local raisefunc = rdebug.value(info.func)
             if raisefunc == GlobalFunction "assert" then
                 return "assert"
             end
@@ -638,11 +638,10 @@ local function getExceptionCaught(errcode)
     local xpcall = GlobalFunction 'xpcall'
     local level = 0
     while true do
-        local f = rdebug.getfunc(level)
-        if f == nil then
+        if not rdebug.getinfo(level, "f", info) then
             break
         end
-        f = rdebug.value(f)
+        local f = rdebug.value(info.func)
         if f == pcall then
             return 'lua'
         end

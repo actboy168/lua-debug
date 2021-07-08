@@ -136,10 +136,9 @@ local function traceback(error)
     s[#s + 1] = 'stack traceback:'
     local last = hookmgr.stacklevel()
     local n1 = ((last - level) > 21) and 10 or -1
-    local opt = luaver.LUAVERSION >= 52 and "Slnt" or "Sln"
+    local opt = luaver.LUAVERSION >= 52 and "Slntf" or "Slnf"
     local depth = level
     while rdebug.getinfo(depth, opt, info) do
-        local f = rdebug.getfunc(depth)
         depth = depth + 1
         n1 = n1 - 1
         if n1 == 1 then
@@ -153,7 +152,7 @@ local function traceback(error)
                 s[#s + 1] = ('%d:'):format(source.line(src, info.currentline))
             end
             s[#s + 1] = " in "
-            s[#s + 1] = pushfuncname(f)
+            s[#s + 1] = pushfuncname(info.func)
             if info.istailcall then
                 s[#s + 1] = '\n\t(...tail calls...)'
             end

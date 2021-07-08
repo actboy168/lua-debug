@@ -25,15 +25,6 @@ visitor._G = nil
 ---
 visitor._REGISTRY = nil
 
-
----
----@param frame integer
----@return refvalue
----指定帧的函数。等同于debug.getinfo(frame, "f")。
----
-function visitor.getfunc(frame)
-end
-
 ---
 ---@param frame integer
 ---@param index integer
@@ -155,7 +146,7 @@ function visitor.type(v)
 end
 
 ---
----@param frame integer
+---@param frame integer | refvalue
 ---@param what string
 ---@param result table | nil
 ---@return table

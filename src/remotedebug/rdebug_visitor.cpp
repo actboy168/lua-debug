@@ -534,23 +534,10 @@ get_frame_local(rlua_State *L, lua_State *cL, uint16_t frame, int16_t n, int get
 	return name;
 }
 
-static int
-get_frame_func(rlua_State *L, lua_State *cL, int frame) {
-	lua_Debug ar;
-	if (lua_getstack(cL, frame, &ar) == 0) {
-		return 0;
-	}
-	if (lua_checkstack(cL, 1) == 0) {
-		rluaL_error(L, "stack overflow");
-	}
-	if (lua_getinfo(cL, "f", &ar) == 0) {
-		return 0;
-	}
-	lua_pop(cL, 1);
-
+static void
+get_frame_func(rlua_State *L, int frame) {
 	struct value *v = create_value(L, VAR::FRAME_FUNC);
 	v->index = frame;
-	return 1;
 }
 
 // table key
@@ -842,21 +829,6 @@ lclient_getlocal(rlua_State *L) {
 static int
 lclient_getlocalv(rlua_State *L) {
 	return client_getlocal(L, 0);
-}
-
-// frame
-// return func
-static int
-lclient_getfunc(rlua_State *L) {
-	int frame = (int)rluaL_checkinteger(L, 1);
-
-	lua_State *cL = get_host(L);
-
-	if (get_frame_func(L, cL, frame)) {
-		return 1;
-	}
-
-	return 0;
 }
 
 static int
@@ -1185,15 +1157,18 @@ lclient_getinfo(rlua_State *L) {
 	rlua_settop(L, 3);
 	size_t optlen = 0;
 	const char* options = rluaL_checklstring(L, 2, &optlen);
-	if (optlen > 5) {
+	if (optlen > 7) {
 		return rluaL_error(L, "invalid option");
 	}
+	bool hasf = false;
+	int frame = 0;
 	int size = 0;
 	for (const char* what = options; *what; what++) {
 		switch (*what) {
 		case 'S': size += 5; break;
 		case 'l': size += 1; break;
 		case 'n': size += 2; break;
+		case 'f': size += 1; hasf = true; break;
 #if LUA_VERSION_NUM >= 502
 		case 'u': size += 1; break;
 		case 't': size += 1; break;
@@ -1214,10 +1189,12 @@ lclient_getinfo(rlua_State *L) {
 
 	switch (rlua_type(L, 1)) {
 	case LUA_TNUMBER:
-		if (lua_getstack(cL, (int)rluaL_checkinteger(L, 1), &ar) == 0)
+		frame = (int)rluaL_checkinteger(L, 1);
+		if (lua_getstack(cL, frame, &ar) == 0)
 			return 0;
 		if (lua_getinfo(cL, options, &ar) == 0)
 			return 0;
+		if (hasf) lua_pop(cL, 1);
 		break;
 	case LUA_TUSERDATA: {
 		rlua_pushvalue(L, 1);
@@ -1227,6 +1204,9 @@ lclient_getinfo(rlua_State *L) {
 				lua_pop(cL, 1);	// remove none function
 			}
 			return rluaL_error(L, "Need a function ref, It's %s", rlua_typename(L, t));
+		}
+		if (hasf) {
+			return rluaL_error(L, "invalid option");
 		}
 		rlua_pop(L, 1);
 		char what[8];
@@ -1271,6 +1251,10 @@ lclient_getinfo(rlua_State *L) {
 				rlua_pushnil(L);
 			}
 			rlua_setfield(L, 3, "namewhat");
+			break;
+		case 'f':
+			get_frame_func(L, frame);
+			rlua_setfield(L, 3, "func");
 			break;
 #if LUA_VERSION_NUM >= 502
 		case 'u':
@@ -1464,7 +1448,6 @@ init_visitor(rlua_State *L) {
 	rluaL_Reg l[] = {
 		{ "getlocal", lclient_getlocal },
 		{ "getlocalv", lclient_getlocalv },
-		{ "getfunc", lclient_getfunc },
 		{ "getupvalue", lclient_getupvalue },
 		{ "getupvaluev", lclient_getupvaluev },
 		{ "getmetatable", lclient_getmetatable },

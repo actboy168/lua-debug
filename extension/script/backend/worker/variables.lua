@@ -121,8 +121,8 @@ function special_has.Local(frameId)
 end
 
 function special_has.Upvalue(frameId)
-    local f = rdebug.getfunc(frameId)
-    return rdebug.getupvaluev(f, 1) ~= nil
+    rdebug.getinfo(frameId, "f", info)
+    return rdebug.getupvaluev(info.func, 1) ~= nil
 end
 
 function special_has.Return(frameId)
@@ -766,7 +766,8 @@ function special_extand.Upvalue(varRef)
     local frameId = varRef.frameId
     local vars = {}
     local i = 1
-    local f = rdebug.getfunc(frameId)
+    rdebug.getinfo(frameId, "f", info)
+    local f = info.func
     while true do
         local name, value = rdebug.getupvaluev(f, i)
         if name == nil then
