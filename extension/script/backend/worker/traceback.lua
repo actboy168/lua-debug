@@ -86,7 +86,7 @@ local function pushglobalfuncname(f)
     end
 end
 
-local function pushfuncname(f, info)
+local function pushfuncname(f)
     local funcname = pushglobalfuncname(f)
     if funcname then
         return ("function '%s'"):format(funcname)
@@ -153,7 +153,7 @@ return function(error)
                 s[#s + 1] = ('%d:'):format(source.line(src, info.currentline))
             end
             s[#s + 1] = " in "
-            s[#s + 1] = pushfuncname(f, info)
+            s[#s + 1] = pushfuncname(f)
             if info.istailcall then
                 s[#s + 1] = '\n\t(...tail calls...)'
             end
