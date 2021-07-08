@@ -542,13 +542,13 @@ struct hookmgr {
             mask |= step_mask;
         }
         if (mask) {
-            sethook(hL, (lua_Hook)sc_full_hook->data, mask | exception_mask, 0);
+            sethook(hL, (lua_Hook)sc_full_hook->data, mask | exception_mask | thread_mask, 0);
         }
         else if (update_mask) {
-            sethook(hL, (lua_Hook)sc_idle_hook->data, update_mask | exception_mask, 0xfffff);
+            sethook(hL, (lua_Hook)sc_idle_hook->data, update_mask | exception_mask | thread_mask, 0xfffff);
         }
-        else if (exception_mask) {
-            sethook(hL, (lua_Hook)sc_idle_hook->data, exception_mask, 0);
+        else if (exception_mask | thread_mask) {
+            sethook(hL, (lua_Hook)sc_idle_hook->data, exception_mask | thread_mask, 0);
         }
         else {
             sethook(hL, 0, 0, 0);
