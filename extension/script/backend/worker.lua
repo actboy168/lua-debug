@@ -641,6 +641,9 @@ local function getExceptionCaught(errcode)
         if not rdebug.getinfo(level, "f", info) then
             break
         end
+        if level >= 100 then
+            return 'native'
+        end
         local f = rdebug.value(info.func)
         if f == pcall then
             return 'lua'
