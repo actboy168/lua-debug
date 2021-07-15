@@ -317,9 +317,7 @@ struct hookmgr {
         set_host(cL, hL);
         rlua_pushstring(cL, "exception");
 #if LUA_VERSION_NUM >= 504
-        if (ar->i_ci->u2.transferinfo.ntransfer == 1) {
-            hL->top = hL->stack + ar->i_ci->u2.transferinfo.ftransfer;
-        }
+        hL->top = hL->stack + ar->i_ci->u2.funcidx;
 #endif
         int ref = copy_value(hL, cL, true);
         rlua_pushinteger(cL, ar->currentline);
