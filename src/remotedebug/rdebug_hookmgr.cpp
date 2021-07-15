@@ -314,13 +314,17 @@ struct hookmgr {
             rlua_pop(cL, 1);
             return;
         }
+		int errcode;
         set_host(cL, hL);
         rlua_pushstring(cL, "exception");
 #if LUA_VERSION_NUM >= 504
-        hL->top = hL->stack + ar->i_ci->u2.funcidx;
+		hL->top = hL->stack + ar->currentline;
+		errcode = ar->i_ci->u2.transferinfo.ntransfer;
+#else
+		errcode = ar->currentline;
 #endif
         int ref = copy_value(hL, cL, true);
-        rlua_pushinteger(cL, ar->currentline);
+        rlua_pushinteger(cL, errcode);
         if (rlua_pcall(cL, 3, 0, 0) != LUA_OK) {
             rlua_pop(cL, 1);
         }
