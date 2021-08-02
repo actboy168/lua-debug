@@ -1443,6 +1443,17 @@ lclient_costatus(rlua_State *L) {
 	return 1;
 }
 
+
+static int
+lclient_gccount(rlua_State *L) {
+	lua_State* cL = get_host(L);
+	int k = lua_gc(cL, LUA_GCCOUNT, 0);
+	int b = lua_gc(cL, LUA_GCCOUNTB, 0);
+	size_t m = ((size_t)k << 10) & (size_t)b;
+	rlua_pushinteger(L, (rlua_Integer)m);
+	return 1;
+}
+
 int
 init_visitor(rlua_State *L) {
 	rluaL_Reg l[] = {
@@ -1471,6 +1482,7 @@ init_visitor(rlua_State *L) {
 		{ "watch", lclient_watch },
 		{ "cleanwatch", lclient_cleanwatch },
 		{ "costatus", lclient_costatus },
+		{ "gccount", lclient_gccount },
 		{ NULL, NULL },
 	};
 	rlua_newtable(L);
