@@ -126,6 +126,9 @@ end
 local function checkLuaExe(args, dbg)
     if type(args.luaexe) == "string" then
         local luaexe = fs.path(args.luaexe)
+        if not args.luaexe:find(package.config:sub(1,1), 1, true) then
+            return luaexe
+        end
         if fs.exists(luaexe) then
             return luaexe
         end
@@ -173,6 +176,7 @@ local function create_luaexe_in_console(args, dbg, pid)
         local SystemRoot = (os.getenv "SystemRoot") or "C:\\WINDOWS"
         option[1] = SystemRoot .. "\\sysnative\\wsl.exe"
     end
+    option.searchPath = true
     installBootstrap1(option, luaexe, args)
     installBootstrap2(option, luaexe, args, pid, dbg)
     installBootstrap3(option, args)
