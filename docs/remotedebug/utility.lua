@@ -4,11 +4,10 @@
 local utility = {}
 
 ---
----@param path string
 ---@return string
----把一个路径变为绝对路径，并且把它规则化。
+---获取当前路径
 ---
-function utility.fs_absolute(path)
+function utility.fs_current_path(path)
 end
 
 ---

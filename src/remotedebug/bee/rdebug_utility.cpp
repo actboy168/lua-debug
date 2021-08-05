@@ -12,14 +12,9 @@
 #include <signal.h>
 
 namespace rdebug_utility {
-    static int fs_absolute(lua_State* L) {
-#if defined(_WIN32)
-#define FS_ABSOLUTE(path) fs::absolute(path)
-#else
-#define FS_ABSOLUTE(path) fs::absolute(path).lexically_normal()
-#endif
+    static int fs_current_path(lua_State* L) {
         try {
-            auto res = FS_ABSOLUTE(fs::path(bee::lua::checkstring(L, 1))).generic_u8string();
+            auto res = fs::current_path().generic_u8string();
             lua_pushlstring(L, res.data(), res.size());
             return 1;
         } catch (const std::exception& e) {
@@ -95,7 +90,7 @@ int luaopen_remotedebug_utility(lua_State* L) {
     lua_newtable(L);
 #endif
     luaL_Reg lib[] = {
-        {"fs_absolute", rdebug_utility::fs_absolute},
+        {"fs_current_path", rdebug_utility::fs_current_path},
         {"closewindow", rdebug_utility::closewindow},
         {"closeprocess", rdebug_utility::closeprocess},
         {NULL, NULL}};
