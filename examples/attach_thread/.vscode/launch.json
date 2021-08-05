@@ -1,0 +1,20 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "test",
+            "type": "lua",
+            "request": "launch",
+            "stopOnEntry": true,
+            "stopOnThreadEntry": true,
+            "luaexe": "luamake",
+            "path": null,
+            "cpath": null,
+            "arg0": ["lua"],
+            "program": "${workspaceFolder}/test.lua",
+            "skipFiles": [
+                "${exe}/*"
+            ]
+        }
+    ]
+}
