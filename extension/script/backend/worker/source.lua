@@ -11,6 +11,9 @@ local workspaceFolder = nil
 local sourceUtf8 = true
 
 local function makeSkipFile(pattern)
+    pattern = pattern:gsub("%$%{([^}]*)%}", {
+        exe = fs.program_path()
+    })
     skipFiles[#skipFiles + 1] = ('^%s$'):format(fs.source_native(fs.source_normalize(pattern)):gsub('[%^%$%(%)%%%.%[%]%+%-%?]', '%%%0'):gsub('%*', '.*'))
 end
 

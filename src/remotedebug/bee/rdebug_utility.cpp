@@ -8,6 +8,8 @@
 #include <bee/lua/binding.h>
 #endif
 #include <bee/filesystem.h>
+#include <bee/utility/path_helper.h>
+#include <bee/utility/path_helper.cpp>
 #include <bee/platform.h>
 #include <signal.h>
 
@@ -22,7 +24,16 @@ namespace rdebug_utility {
         }
     }
 
-    
+    static int fs_program_path(lua_State* L) {
+        try {
+            auto res = bee::path_helper::exe_path().remove_filename().generic_u8string();
+            lua_pushlstring(L, res.data(), res.size());
+            return 1;
+        } catch (const std::exception& e) {
+            return bee::lua::push_error(L, e);
+        }
+    }
+
 #if defined(_WIN32)
     static bool closeWindow() {
         bool ok = false;
@@ -91,6 +102,7 @@ int luaopen_remotedebug_utility(lua_State* L) {
 #endif
     luaL_Reg lib[] = {
         {"fs_current_path", rdebug_utility::fs_current_path},
+        {"fs_program_path", rdebug_utility::fs_program_path},
         {"closewindow", rdebug_utility::closewindow},
         {"closeprocess", rdebug_utility::closeprocess},
         {NULL, NULL}};

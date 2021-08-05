@@ -7,7 +7,14 @@ local utility = {}
 ---@return string
 ---获取当前路径
 ---
-function utility.fs_current_path(path)
+function utility.fs_current_path()
+end
+
+---
+---@return string
+---获取exe所在目录
+---
+function utility.fs_program_path()
 end
 
 ---

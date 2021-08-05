@@ -1,6 +1,7 @@
 local utility = require 'remotedebug.utility'
 local ev = require 'backend.event'
 local fs_current_path = utility.fs_current_path
+local fs_program_path = utility.fs_program_path
 local u2a = utility.u2a or function (...) return ... end
 local a2u = utility.a2u or function (...) return ... end
 
@@ -137,6 +138,7 @@ function m.path_filename(path)
     return paths[#paths]
 end
 
+m.program_path = fs_program_path
 m.nativepath = nativepath
 m.a2u = a2u
 
