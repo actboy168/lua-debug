@@ -175,7 +175,9 @@ function resolveConfig(folder, config) {
                     config.path.push(path.dirname(config.luaexe) + '/?.lua')
                 }
             }
-            config.path = config.path.concat(settings.path)
+            if (config.path) {
+                config.path = config.path.concat(settings.path)
+            }
             // cpath
             if (typeof config.cpath == 'string') {
                 config.cpath = [config.cpath]
@@ -189,7 +191,9 @@ function resolveConfig(folder, config) {
                     config.cpath.push(path.dirname(config.luaexe) + '/?.' + ext)
                 }
             }
-            config.cpath = config.cpath.concat(settings.cpath)
+            if (config.cpath) {
+                config.cpath = config.cpath.concat(settings.cpath)
+            }
         }
     }
     else if (config.request == 'attach') {
