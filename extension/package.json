@@ -157,7 +157,7 @@
                             "type": "lua",
                             "request": "attach",
                             "stopOnEntry": true,
-                            "processId": "${command:pickProcess}"
+                            "processId": "^\"\\${command:pickProcess}\""
                         }
                     }
                 ],
