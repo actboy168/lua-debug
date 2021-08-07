@@ -30,12 +30,13 @@
 | supportsTerminateRequest           |    🟩    |
 | supportsDataBreakpoints            |    🟨    |
 | supportsReadMemoryRequest          |    🟥    |
-| supportsDisassembleRequest         |    🟥    |
+| supportsWriteMemoryRequest         |    🟥    |
+| supportsDisassembleRequest         |    🟨    |
 | supportsCancelRequest              |    🟨    |
 | supportsBreakpointLocationsRequest |    🟨    |
 | supportsClipboardContext           |    🟩    |
 | supportsSteppingGranularity        |    🟥    |
-| supportsInstructionBreakpoints     |    🟥    |
+| supportsInstructionBreakpoints     |    🟨    |
 | supportsExceptionFilterOptions     |    🟩    |
 
 | Capabilities (Client)              | Available |
