@@ -18,7 +18,7 @@
     },
     "private": true,
     "engines": {
-        "vscode": "^1.52.0"
+        "vscode": "^1.54.0"
     },
     "extensionKind": [
         "workspace"
@@ -55,16 +55,14 @@
             }
         ],
         "menus": {
-            "editor/title": [
+            "editor/title/run": [
                 {
                     "command": "extension.lua-debug.runEditorContents",
-                    "when": "resourceLangId == lua",
-                    "group": "1_run@10"
+                    "when": "resourceLangId == lua"
                 },
                 {
                     "command": "extension.lua-debug.debugEditorContents",
-                    "when": "resourceLangId == lua",
-                    "group": "1_run@20"
+                    "when": "resourceLangId == lua"
                 }
             ],
             "debug/variables/context": [
