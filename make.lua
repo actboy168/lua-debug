@@ -8,9 +8,7 @@ lm.windows = {
 
 if lm.os == "windows" then
     assert(lm.arch == "x86" or lm.arch == "x86_64")
-elseif lm.os == "linux" then
-    lm.arch = "x86_64"
-elseif lm.os == "macos" then
+else
     if not lm.arch then
         local function shell(command)
             local f = assert(io.popen(command, 'r'))
@@ -20,7 +18,6 @@ elseif lm.os == "macos" then
         end
         lm.arch = shell "uname -m"
     end
-    assert(lm.arch == "arm64" or lm.arch == "x86_64")
 end
 
 lm:import("3rd/bee.lua/make.lua", {
@@ -175,6 +172,7 @@ for _, luaver in ipairs {"lua51","lua52","lua53","lua54","lua-latest"} do
             ("DBG_LUA_VERSION=%d"):format(lua_version_num),
         },
         includes = {
+            "3rd/lua/"..luaver,
             "3rd/bee.lua/",
             "3rd/bee.lua/3rd/lua-seri",
             "3rd/bee.lua/bee/nonstd",
@@ -189,7 +187,6 @@ for _, luaver in ipairs {"lua51","lua52","lua53","lua54","lua-latest"} do
             deps = {
                 'runtime/'..luaver..'/'..luaver,
             },
-			includes = '3rd/lua/'..luaver,
             defines = {
                 "_CRT_SECURE_NO_WARNINGS",
                 "_WIN32_WINNT=0x0601",
@@ -211,12 +208,8 @@ for _, luaver in ipairs {"lua51","lua52","lua53","lua54","lua-latest"} do
             },
         },
         linux = {
-            includes = "3rd/lua/"..luaver,
             links = "pthread",
             crt = "static",
-        },
-        macos = {
-            includes = "3rd/lua/"..luaver,
         }
     }
 
