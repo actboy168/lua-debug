@@ -46,6 +46,10 @@ local function detectLuaDebugPath(cfg)
             local machine = shell "uname -m"
             assert(machine:match "x86_64" or machine:match "amd64", "unknown ARCH")
         end
+        local function detect_android()
+            OS = "android"
+            ARCH = shell "uname -m"
+        end
         local function detect_macos()
             OS = "macos"
             ARCH = shell "uname -m"
@@ -56,7 +60,11 @@ local function detectLuaDebugPath(cfg)
         else
             local name = shell 'uname -s'
             if name == "linux" then
-                detect_linux()
+                if shell 'uname -o' == 'android' then
+                    detect_android()
+                else
+                    detect_linux()
+                end
             elseif name == "darwin" then
                 detect_macos()
             else
