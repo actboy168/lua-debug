@@ -13,11 +13,17 @@ local ArchAlias = {
 }
 
 do
+    local LuaDebugArch <const> = {
+        windows = "x86",
+        linux = "x86_64",
+        macos = "x86_64",
+        android = "aarch64",
+    }
     --copy lua-debug
     local input = fs.path(bindir)
     local output = CWD / 'publish' / 'bin' / OS
     fs.create_directories(output)
-    if (OS == 'windows' and arch == 'x86') or (OS ~= 'windows' and arch == 'x86_64') then
+    if LuaDebugArch[OS] == arch then
         fs.create_directories(output)
         fs.copy_file(input / ('bee'..dll),       output / ('bee'..dll),        true)
         fs.copy_file(input / ('lua'..exe),       output / ('lua-debug'..exe),  true)
