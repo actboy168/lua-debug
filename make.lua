@@ -210,6 +210,9 @@ for _, luaver in ipairs {"lua51","lua52","lua53","lua54","lua-latest"} do
         linux = {
             links = "pthread",
             crt = "static",
+        },
+        android = {
+            links = "m",
         }
     }
 
