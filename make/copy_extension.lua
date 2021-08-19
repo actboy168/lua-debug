@@ -21,4 +21,5 @@ function (path)
     return (ext ~= '.dll') and (ext ~= '.exe')
 end
 )
-fs.copy_file(root / "LICENSE", outputDir / "LICENSE", fs.copy_options.overwrite_existing)
+fs.copy_file(root / "LICENSE",   outputDir / "LICENSE",   fs.copy_options.overwrite_existing)
+fs.copy_file(root / "README.md", outputDir / "README.md", fs.copy_options.overwrite_existing)
