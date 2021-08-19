@@ -9,7 +9,7 @@ local function copy_directory(from, to, filter)
             copy_directory(fromfile, to / fromfile:filename(), filter)
         else
             if (not filter) or filter(fromfile) then
-                fs.copy_file(fromfile, to / fromfile:filename(), true)
+                fs.copy_file(fromfile, to / fromfile:filename(), fs.copy_options.overwrite_existing)
             end
         end
     end
@@ -21,4 +21,4 @@ function (path)
     return (ext ~= '.dll') and (ext ~= '.exe')
 end
 )
-fs.copy_file(root / "LICENSE", outputDir / "LICENSE", true)
+fs.copy_file(root / "LICENSE", outputDir / "LICENSE", fs.copy_options.overwrite_existing)

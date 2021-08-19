@@ -25,15 +25,15 @@ do
     fs.create_directories(output)
     if LuaDebugArch[OS] == arch then
         fs.create_directories(output)
-        fs.copy_file(input / ('bee'..dll),       output / ('bee'..dll),        true)
-        fs.copy_file(input / ('lua'..exe),       output / ('lua-debug'..exe),  true)
+        fs.copy_file(input / ('bee'..dll),       output / ('bee'..dll),        fs.copy_options.overwrite_existing)
+        fs.copy_file(input / ('lua'..exe),       output / ('lua-debug'..exe),  fs.copy_options.overwrite_existing)
         if OS == 'windows' then
-            fs.copy_file(input / 'inject.dll',  output / 'inject.dll', true)
-            fs.copy_file(input / 'lua54.dll',   output / 'lua54.dll',  true)
+            fs.copy_file(input / 'inject.dll',  output / 'inject.dll', fs.copy_options.overwrite_existing)
+            fs.copy_file(input / 'lua54.dll',   output / 'lua54.dll',  fs.copy_options.overwrite_existing)
         end
     end
     if OS == 'windows' then
-        fs.copy_file(input / 'launcher.dll', output / ('launcher.'..ArchAlias[arch]..'.dll'), true)
+        fs.copy_file(input / 'launcher.dll', output / ('launcher.'..ArchAlias[arch]..'.dll'), fs.copy_options.overwrite_existing)
     end
 end
 
@@ -43,10 +43,10 @@ do
         local input = fs.path(bindir) / 'runtime' / luaver
         local output = CWD / 'publish' / 'runtime' / OS / arch / luaver
         fs.create_directories(output)
-        fs.copy_file(input / ('lua'..exe),         output / ('lua'..exe),         true)
-        fs.copy_file(input / ('remotedebug'..dll), output / ('remotedebug'..dll), true)
+        fs.copy_file(input / ('lua'..exe),         output / ('lua'..exe),         fs.copy_options.overwrite_existing)
+        fs.copy_file(input / ('remotedebug'..dll), output / ('remotedebug'..dll), fs.copy_options.overwrite_existing)
         if OS == 'windows' then
-            fs.copy_file(input / (luaver..'.dll'), output / (luaver..'.dll'), true)
+            fs.copy_file(input / (luaver..'.dll'), output / (luaver..'.dll'), fs.copy_options.overwrite_existing)
         end
     end
 end
