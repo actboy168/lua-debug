@@ -55,7 +55,7 @@ local function copy_directory(from, to, filter)
                 if not crtdll(filename:string():lower()) then
                     print('copy', fromfile, to / filename)
                 end
-                fs.copy_file(fromfile, to / filename, true)
+                fs.copy_file(fromfile, to / filename, fs.copy_options.overwrite_existing)
             end
         end
     end
