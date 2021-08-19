@@ -5,7 +5,7 @@
 ## Requirements
 
 * Lua 5.1 - 5.4
-* Platform: Windows, macOS, Linux
+* Platform: Windows, macOS, Linux, Android
 
 ## Feature
 
