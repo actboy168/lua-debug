@@ -124,4 +124,12 @@ end
 function hookmgr.thread_open(enable)
 end
 
+---
+---@param co thread
+---@return thread
+---获取coroutine调用方
+---
+function hookmgr.coroutine_from(co)
+end
+
 return hookmgr

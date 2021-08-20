@@ -7,6 +7,7 @@
 #include <array>
 #include <chrono>
 #include <vector>
+#include <unordered_map>
 #include "rdebug_eventfree.h"
 #include "thunk/thunk.h"
 
@@ -336,6 +337,7 @@ struct hookmgr {
     // thread
     //
     int thread_mask = 0;
+    std::unordered_map<lua_State*, lua_State*> coroutine_tree;
 #if defined(LUA_HOOKTHREAD)
     void thread_hookmask(lua_State* hL, int mask) {
         if (thread_mask != mask) {
@@ -346,22 +348,25 @@ struct hookmgr {
     void thread_open(lua_State* hL, int enable) {
         thread_hookmask(hL, enable? LUA_MASKTHREAD: 0);
     }
-    void thread_hook(lua_State* hL, lua_Debug* ar) {
-        if (rlua_rawgetp(cL, RLUA_REGISTRYINDEX, &HOOK_CALLBACK) != LUA_TFUNCTION) {
-            rlua_pop(cL, 1);
-            return;
+    void thread_hook(lua_State* co, lua_Debug* ar) {
+        lua_State* from = (lua_State*)lua_touserdata(co, -1);
+        if (from) {
+            int type = ar->currentline;
+            if (type == 0) {
+                coroutine_tree[co] = from;
+            }
+            else if (type == 1) {
+                coroutine_tree.erase(from);
+            }
         }
-        set_host(cL, hL);
-        rlua_pushstring(cL, "thread");
-        void* L = lua_touserdata(hL, -1);
-        L   ? rlua_pushlightuserdata(cL, L)
-            : rlua_pushnil(cL)
-            ;
-        rlua_pushinteger(cL, ar->currentline);
-        if (rlua_pcall(cL, 3, 0, 0) != LUA_OK) {
-            rlua_pop(cL, 1);
-            return;
+        updatehookmask(co);
+    }
+    lua_State* coroutine_from(lua_State* co) {
+        auto it = coroutine_tree.find(co);
+        if (it == coroutine_tree.end()) {
+            return nullptr;
         }
+        return it->second;
     }
 #endif
 
@@ -731,6 +736,15 @@ static int thread_open(rlua_State* L) {
     hookmgr::get_self(L)->thread_open(get_host(L), rlua_toboolean(L, 1));
     return 0;
 }
+static int coroutine_from(rlua_State* L) {
+    rluaL_checktype(L, 1, LUA_TLIGHTUSERDATA);
+    lua_State* from = hookmgr::get_self(L)->coroutine_from((lua_State*)rlua_touserdata(L, 1));
+    if (!from) {
+        return 0;
+    }
+    rlua_pushlightuserdata(L, from);
+    return 1;
+}
 #endif
 
 RLUA_FUNC
@@ -773,6 +787,7 @@ int luaopen_remotedebug_hookmgr(rlua_State* L) {
 #endif
 #if defined(LUA_HOOKTHREAD)
         { "thread_open", thread_open },
+        { "coroutine_from", coroutine_from },
 #endif
         { NULL, NULL },
     };

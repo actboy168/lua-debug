@@ -209,6 +209,10 @@ local function skipCFunction(res)
     end
 end
 
+local function coroutineFrom(L)
+    return coroutineTree[L] or hookmgr.coroutine_from(L)
+end
+
 function CMD.stackTrace(pkg)
     local start = pkg.startFrame and pkg.startFrame or 0
     local levels = (pkg.levels and pkg.levels ~= 0) and pkg.levels or 200
@@ -228,7 +232,7 @@ function CMD.stackTrace(pkg)
     repeat
         hookmgr.sethost(L)
         local curL = L
-        L = coroutineTree[curL]
+        L = coroutineFrom(curL)
         if stackFrame[curL] == nil then
             local finsh, n = stackTrace(res, coroutineId, start, levels)
             if not finsh then
@@ -273,7 +277,7 @@ local function findFrame(id)
         if not L then
             return
         end
-        L = coroutineTree[L]
+        L = coroutineFrom(L)
     end
     return L
 end
