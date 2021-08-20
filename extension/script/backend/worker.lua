@@ -24,7 +24,7 @@ local currentException = {
 }
 local outputCapture = {}
 local noDebug = false
-local openUpdate = true
+local autoUpdate = true
 local coroutineTree = {}
 local stackFrame = {}
 local skipFrame = 0
@@ -566,9 +566,9 @@ function event.update()
     workerThreadUpdate()
 end
 
-function event.enable_update(flag)
-    openUpdate = flag
-    hookmgr.update_open(not noDebug and openUpdate)
+function event.autoUpdate(flag)
+    autoUpdate = flag
+    hookmgr.update_open(not noDebug and autoUpdate)
 end
 
 function event.print(...)
@@ -747,7 +747,7 @@ end
 
 ev.on('initializing', function(config)
     noDebug = config.noDebug
-    hookmgr.update_open(not noDebug and openUpdate)
+    hookmgr.update_open(not noDebug and autoUpdate)
     if hookmgr.thread_open then
         hookmgr.thread_open(true)
     end
