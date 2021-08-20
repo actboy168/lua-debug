@@ -102,26 +102,47 @@ local function pushfuncname(f)
     end
 end
 
-local function replacewhere(error)
+local function getwhere(error)
+    local message = tostring(rdebug.value(error))
+    local f, l = message:find ':[-%d]+: '
+    if f and l then
+        local where_path = message:sub(1, f - 1)
+        local where_line = tonumber(message:sub(f + 1, l - 2))
+        local where_src = source.create("@"..where_path)
+        message = message:sub(l + 1)
+        return message, where_src, where_line
+    end
+    return message
+end
+
+local function findfirstlua(message)
     local depth = 0
     while true do
         if not rdebug.getinfo(depth, "Sl", info) then
             return -1
         end
         if info.what ~= 'C' then
-            local src = source.create(info.source)
-            local message = tostring(rdebug.value(error))
-            local f, l = message:find ':[-%d]+: '
-            if f and l then
-                local where_path = message:sub(1, f - 1)
-                local where_line = tonumber(message:sub(f + 1, l - 2))
-                local where_src = source.create("@"..where_path)
-                message = message:sub(l + 1)
-                if src ~= where_src or where_line ~= info.currentline then
-                    return depth, ('%s:%d: %s'):format(getshortsrc(where_src), source.line(src, where_line), message)
-                end
-            end
             return depth, message
+        end
+        depth = depth + 1
+    end
+end
+
+local function replacewhere(error)
+    local message, where_src, where_line = getwhere(error)
+    if not where_src then
+        return findfirstlua(message)
+    end
+    local depth = 0
+    while true do
+        if not rdebug.getinfo(depth, "Sl", info) then
+            return findfirstlua(message)
+        end
+        if info.what ~= 'C' then
+            local src = source.create(info.source)
+            if src == where_src and where_line == info.currentline then
+                return depth, ('%s:%d: %s'):format(getshortsrc(where_src), source.line(src, where_line), message)
+            end
         end
         depth = depth + 1
     end
