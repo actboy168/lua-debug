@@ -47,10 +47,10 @@ end
 local function copy_directory(from, to, filter)
     fs.create_directories(to)
     for fromfile in from:list_directory() do
-        if fs.is_directory(fromfile) then
-            copy_directory(fromfile, to / fromfile:filename(), filter)
-        else
-            if (not filter) or filter(fromfile) then
+        if (not filter) or filter(fromfile) then
+            if fs.is_directory(fromfile) then
+                copy_directory(fromfile, to / fromfile:filename(), filter)
+            else
                 local filename = fromfile:filename()
                 if not crtdll(filename:string():lower()) then
                     print('copy', fromfile, to / filename)
@@ -69,6 +69,9 @@ if not fs.exists(extensionDir) then
     error("`" .. extensionDir:string() .. "` is not installed.")
 end
 
-copy_directory(sourceDir, extensionDir)
+copy_directory(sourceDir, extensionDir, function (path)
+    local ext = path:extension():string():lower()
+    return ext ~= '.log' and path ~= sourceDir / "tmp"
+end)
 
 print 'ok'

@@ -6,6 +6,7 @@ local OS = require 'bee.platform'.OS:lower()
 
 local exe = OS == 'windows' and ".exe" or ""
 local dll = OS == 'windows' and ".dll" or ".so"
+local OVERWRITE <const> = fs.copy_options.overwrite_existing
 
 local ArchAlias = {
     x86_64 = "x64",
@@ -25,15 +26,16 @@ do
     fs.create_directories(output)
     if LuaDebugArch[OS] == arch then
         fs.create_directories(output)
-        fs.copy_file(input / ('bee'..dll),       output / ('bee'..dll),        fs.copy_options.overwrite_existing)
-        fs.copy_file(input / ('lua'..exe),       output / ('lua-debug'..exe),  fs.copy_options.overwrite_existing)
+        fs.copy_file(input / ('bee'..dll), output / ('bee'..dll), OVERWRITE)
+        fs.copy_file(input / ('bootstrap'..exe), output / ('lua-debug'..exe), OVERWRITE)
+        fs.copy_file(CWD / "extension" / "script" / "bootstrap.lua", output / 'main.lua', OVERWRITE)
         if OS == 'windows' then
-            fs.copy_file(input / 'inject.dll',  output / 'inject.dll', fs.copy_options.overwrite_existing)
-            fs.copy_file(input / 'lua54.dll',   output / 'lua54.dll',  fs.copy_options.overwrite_existing)
+            fs.copy_file(input / 'inject.dll',  output / 'inject.dll', OVERWRITE)
+            fs.copy_file(input / 'lua54.dll',   output / 'lua54.dll',  OVERWRITE)
         end
     end
     if OS == 'windows' then
-        fs.copy_file(input / 'launcher.dll', output / ('launcher.'..ArchAlias[arch]..'.dll'), fs.copy_options.overwrite_existing)
+        fs.copy_file(input / 'launcher.dll', output / ('launcher.'..ArchAlias[arch]..'.dll'), OVERWRITE)
     end
 end
 
@@ -43,10 +45,10 @@ do
         local input = fs.path(bindir) / 'runtime' / luaver
         local output = CWD / 'publish' / 'runtime' / OS / arch / luaver
         fs.create_directories(output)
-        fs.copy_file(input / ('lua'..exe),         output / ('lua'..exe),         fs.copy_options.overwrite_existing)
-        fs.copy_file(input / ('remotedebug'..dll), output / ('remotedebug'..dll), fs.copy_options.overwrite_existing)
+        fs.copy_file(input / ('lua'..exe),         output / ('lua'..exe),         OVERWRITE)
+        fs.copy_file(input / ('remotedebug'..dll), output / ('remotedebug'..dll), OVERWRITE)
         if OS == 'windows' then
-            fs.copy_file(input / (luaver..'.dll'), output / (luaver..'.dll'), fs.copy_options.overwrite_existing)
+            fs.copy_file(input / (luaver..'.dll'), output / (luaver..'.dll'), OVERWRITE)
         end
     end
 end
