@@ -5,7 +5,7 @@ local root; do
 end
 package.path = root .. "/script/?.lua"
 
-for i = 1, #arg-1 do
+for i = 1, #arg do
     if arg[i] == '-e' then
         i = i + 1
         local expr = assert(arg[i], "'-e' needs argument")
