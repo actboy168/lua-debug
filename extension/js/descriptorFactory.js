@@ -23,17 +23,8 @@ function createDebugAdapterDescriptor(session, executable) {
     let OS = getPlatformOS()
     let ROOT = extension.extensionDirectory
     let EXE = OS == "windows" ? ".exe" : ""
-    let DLL = OS == "windows" ? ".dll" : ".so"
     let runtime = path.join(ROOT, 'bin/' + OS + '/lua-debug' + EXE)
-    let runtimeArgs = [
-        "-E",
-        "-e",
-        "package.path=[[" + path.join(ROOT, 'script/?.lua') + "]]",
-        "-e",
-        "package.cpath=[[" + path.join(ROOT, 'bin/' + OS + '/?' + DLL) + "]]",
-        path.join(ROOT, 'script/frontend/main.lua')
-    ]
-    return new vscode.DebugAdapterExecutable(runtime, runtimeArgs, { cwd : ROOT });
+    return new vscode.DebugAdapterExecutable(runtime);
 }
 
 exports.createDebugAdapterDescriptor = createDebugAdapterDescriptor;
