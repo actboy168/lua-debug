@@ -18,8 +18,9 @@
             },
             "outputCapture": [
             ],
-            "program": "${workspaceFolder}/extension/script/frontend/main.lua",
-            "path": "${workspaceFolder}/extension/script/?.lua",
+            "program": "",
+            "path": null,
+            "cpath": null,
             "arg": [
                 "4711"
             ]

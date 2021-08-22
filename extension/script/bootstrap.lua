@@ -4,4 +4,14 @@ local root; do
     root = package.cpath:match("(.+)"..pattern..pattern..pattern.."$")
 end
 package.path = root .. "/script/?.lua"
+
+for i = 1, #arg-1 do
+    if arg[i] == '-e' then
+        i = i + 1
+        local expr = assert(arg[i], "'-e' needs argument")
+        assert(load(expr, "=(command line)"))()
+        break
+    end
+end
+
 dofile(root .. "/script/frontend/main.lua")
