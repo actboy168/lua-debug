@@ -50,19 +50,23 @@ local function getLuaExe(args, dbg)
     local OS = platform_os():lower()
     local ARCH = args.luaArch
     if OS == "windows" then
+        ARCH = ARCH or "x86_64"
         if ARCH == "x86_64" and not Is64BitWindows() then
             ARCH = "x86"
         end
     elseif OS == "linux" then
-        ARCH = "x86_64"
+        ARCH = ARCH or "x86_64"
     elseif OS == "macos" then
         if IsArm64Macos() then
+            ARCH = ARCH or "x86_64"
             if ARCH == "x86" then
                 ARCH = "x86_64"
             end
         else
             ARCH = "x86_64"
         end
+    elseif OS == "android" then
+        ARCH = "arm64"
     end
     local luaexe = dbg / "runtime"
         / OS
