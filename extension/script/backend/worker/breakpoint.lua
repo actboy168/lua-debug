@@ -201,22 +201,35 @@ local function calcLineInfo(src, content)
     return src.lineinfo
 end
 
+local function cantVerifyBreakpoints(breakpoints)
+    for _, bp in ipairs(breakpoints) do
+        ev.emit('breakpoint', 'changed', {
+            id = bp.id,
+            message = "The source file has no line information.",
+            verified = false,
+        })
+    end
+end
+
 function m.set_bp(clientsrc, breakpoints, content)
     local srcarray = source.c2s(clientsrc)
     if srcarray then
+        local ok = false
         for _, src in ipairs(srcarray) do
             if calcLineInfo(src, content) then
                 verifyBreakpoint(src, breakpoints)
+                ok = true
             end
         end
-    else
-        if content then
-            waitverify[bpClientKey(clientsrc)] = {
-                breakpoints = breakpoints,
-                content = content,
-            }
-            updateHook()
+        if not ok then
+            cantVerifyBreakpoints(breakpoints)
         end
+    else
+        waitverify[bpClientKey(clientsrc)] = {
+            breakpoints = breakpoints,
+            content = content,
+        }
+        updateHook()
     end
 end
 
@@ -258,13 +271,11 @@ function m.newproto(proto, src, key)
     local bpkey = bpClientKey(src)
     local wv = waitverify[bpkey]
     if wv then
-        if src.content then
-            src.lineinfo = parserInlineLineinfo(src)
+        waitverify[bpkey] = nil
+        if calcLineInfo(src, wv.content) then
             verifyBreakpoint(src, wv.breakpoints)
         else
-            waitverify[bpkey] = nil
-            src.lineinfo = parser(wv.content)
-            verifyBreakpoint(src, wv.breakpoints)
+            cantVerifyBreakpoints(wv.breakpoint)
         end
         return
     end
