@@ -26,7 +26,7 @@
 | supportsLoadedSourcesRequest       |    🟩    |
 | supportsLogPoints                  |    🟩    |
 | supportsTerminateThreadsRequest    |    🟩    |
-| supportsSetExpression              |    🟥    |
+| supportsSetExpression              |    🟩    |
 | supportsTerminateRequest           |    🟩    |
 | supportsDataBreakpoints            |    🟨    |
 | supportsReadMemoryRequest          |    🟥    |
@@ -38,6 +38,7 @@
 | supportsSteppingGranularity        |    🟥    |
 | supportsInstructionBreakpoints     |    🟨    |
 | supportsExceptionFilterOptions     |    🟩    |
+| supportsMemoryEvent                |    🟥    |
 
 | Capabilities (Client)              | Available |
 |------------------------------------|-----------|
