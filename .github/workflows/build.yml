@@ -11,7 +11,7 @@ jobs:
           arch: x86
         - os: windows-latest
           arch: x86_64
-        - os: ubuntu-16.04
+        - os: ubuntu-18.04
           arch: x86_64
         - os: macos-latest
           arch: x86_64
