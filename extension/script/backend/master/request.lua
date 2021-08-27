@@ -516,6 +516,23 @@ function request.setVariable(req)
     })
 end
 
+function request.setExpression(req)
+    local args = req.arguments
+    local threadId = args.frameId >> 24
+    local frameId = args.frameId & 0x00FFFFFF
+    if not checkThreadId(req, threadId) then
+        return
+    end
+    mgr.sendToWorker(threadId, {
+        cmd = 'setExpression',
+        command = req.command,
+        seq = req.seq,
+        frameId = frameId,
+        expression = args.expression,
+        value = args.value,
+    })
+end
+
 function request.loadedSources(req)
     response.success(req, {
         sources = {}

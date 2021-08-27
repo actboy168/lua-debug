@@ -338,6 +338,26 @@ function CMD.setVariable(pkg)
     }
 end
 
+function CMD.setExpression(pkg)
+    local depth = pkg.frameId & 0xFFFF
+    local ok, result = evaluate.set(depth, pkg.expression, pkg.value)
+    if not ok then
+        sendToMaster 'setExpression' {
+            command = pkg.command,
+            seq = pkg.seq,
+            success = false,
+            message = result,
+        }
+        return
+    end
+    sendToMaster 'setExpression' {
+        command = pkg.command,
+        seq = pkg.seq,
+        success = true,
+        body = result
+    }
+end
+
 function CMD.evaluate(pkg)
     local depth = pkg.frameId & 0xFFFF
     local ok, result = evaluate.run(depth, pkg.expression, pkg.context)

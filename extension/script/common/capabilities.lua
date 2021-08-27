@@ -12,6 +12,7 @@ return {
     supportsLoadedSourcesRequest = true,
     supportsLogPoints = true,
     supportsTerminateRequest = true,
+    supportsSetExpression = true,
     supportsClipboardContext = true,
     supportsExceptionFilterOptions = true,
     supportTerminateDebuggee = true,

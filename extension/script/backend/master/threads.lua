@@ -129,6 +129,14 @@ function CMD.setVariable(_, req)
     response.success(req, req.body)
 end
 
+function CMD.setExpression(_, req)
+    if not req.success then
+        response.error(req, req.message)
+        return
+    end
+    response.success(req, req.body)
+end
+
 function CMD.setThreadName(w, name)
     mgr.setThreadName(w, name)
 end
