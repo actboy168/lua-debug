@@ -539,8 +539,10 @@ local function varCreateScopes(frameId, scopes, name, expensive)
     end
 end
 
-local function varCreate(vars, varRef, kind, name, nameidx, value, evaluateName, calcValue)
-    local extand = varRef.extand
+local function varCreate(t)
+    local vars = t.vars
+    local name = t.name
+    local extand = t.varRef.extand
     if extand[name] then
         local index = extand[name][3]
         local nameidx = extand[name][4]
@@ -565,15 +567,15 @@ local function varCreate(vars, varRef, kind, name, nameidx, value, evaluateName,
         extand[newname][2] = nil
         extand[name] = nil
     end
-    if type(evaluateName) ~= "string" then
-        evaluateName = nil
+    if type(t.evaluateName) ~= "string" then
+        t.evaluateName = nil
     end
-    local var = varCreateReference(value, evaluateName, "variables")
+    local var = varCreateReference(t.value, t.evaluateName, "variables")
     var.name = name
-    var.evaluateName = evaluateName
-    var.presentationHint = kind and { kind = kind } or nil
+    var.evaluateName = t.evaluateName
+    var.presentationHint = t.kind and { kind = t.kind } or nil
     vars[#vars + 1] = var
-    extand[name] = { calcValue, evaluateName, #vars, nameidx }
+    extand[name] = { t.calcValue, t.evaluateName, #vars, t.nameidx }
 end
 
 local function getTabelKey(key)
@@ -609,11 +611,14 @@ local function extandTableIndexed(varRef, start, count)
         local value = rdebug.indexv(t, key)
         if value ~= nil then
             local name = (key > 0 and key < 1000) and ('[%03d]'):format(key) or ('%d'):format(key)
-            varCreate(vars, varRef, nil
-                , name, nil
-                , value, evaluateName and ('%s[%d]'):format(evaluateName, key)
-                , function() return rdebug.index(t, key) end
-            )
+            varCreate {
+                vars = vars,
+                varRef = varRef,
+                name = name,
+                value = value,
+                evaluateName = evaluateName and ('%s[%d]'):format(evaluateName, key),
+                calcValue = function() return rdebug.index(t, key) end,
+            }
         end
     end
     return vars
@@ -627,20 +632,27 @@ local function extandTableNamed(varRef)
     local loct = rdebug.tablehash(t,MAX_TABLE_FIELD)
     for i = 1, #loct, 3 do
         local key, value, valueref = loct[i], loct[i+1], loct[i+2]
-        varCreate(vars, varRef, nil
-            , varGetName(key), nil
-            , value, evaluateTabelKey(evaluateName, key)
-            , function() return valueref end
-        )
+        varCreate {
+            vars = vars,
+            varRef = varRef,
+            name = varGetName(key),
+            value = value,
+            evaluateName = evaluateTabelKey(evaluateName, key),
+            calcValue = function() return valueref end,
+        }
     end
     table.sort(vars, function(a, b) return a.name < b.name end)
     local meta = rdebug.getmetatablev(t)
     if meta ~= nil then
-        varCreate(vars, varRef, "virtual"
-            , '[metatable]', nil
-            , meta, evaluateName and ('debug.getmetatable(%s)'):format(evaluateName)
-            , function() return rdebug.getmetatable(t) end
-        )
+        varCreate {
+            vars = vars,
+            varRef = varRef,
+            name = '[metatable]',
+            value = meta,
+            evaluateName = evaluateName and ('debug.getmetatable(%s)'):format(evaluateName),
+            calcValue = function() return rdebug.getmetatable(t) end,
+            kind = "virtual",
+        }
         table.insert(vars, 1, vars[#vars])
         vars[#vars] = nil
     end
@@ -670,11 +682,15 @@ local function extandFunction(varRef)
         end
         local displayName = isCFunction and ("[upvalue %d]"):format(i) or name
         local fi = i
-        varCreate(vars, varRef, "virtual"
-            , displayName, nil
-            , value, evaluateName and ('select(2, debug.getupvalue(%s,%d))'):format(evaluateName, i)
-            , function() local _, r = rdebug.getupvalue(f, fi) return r end
-        )
+        varCreate {
+            vars = vars,
+            varRef = varRef,
+            name = displayName,
+            value = value,
+            evaluateName = evaluateName and ('select(2, debug.getupvalue(%s,%d))'):format(evaluateName, i),
+            calcValue = function() local _, r = rdebug.getupvalue(f, fi) return r end,
+            kind = "virtual",
+        }
         i = i + 1
     end
     return vars
@@ -688,11 +704,15 @@ local function extandUserdata(varRef)
 
     local meta = rdebug.getmetatablev(u)
     if meta ~= nil then
-        varCreate(vars, varRef, "virtual"
-            , '[metatable]', nil
-            , meta, evaluateName and ('debug.getmetatable(%s)'):format(evaluateName)
-            , function() return rdebug.getmetatable(u) end
-        )
+        varCreate {
+            vars = vars,
+            varRef = varRef,
+            name = '[metatable]',
+            value = meta,
+            evaluateName = evaluateName and ('debug.getmetatable(%s)'):format(evaluateName),
+            calcValue = function() return rdebug.getmetatable(u) end,
+            kind = "virtual",
+        }
     end
 
     if LUAVERSION >= 54 then
@@ -704,23 +724,31 @@ local function extandUserdata(varRef)
             end
             if uv ~= nil then
                 local fi = i
-                varCreate(vars, varRef, "virtual"
-                    , ('[uservalue %d]'):format(i), nil
-                    , uv, evaluateName and ('debug.getuservalue(%s,%d)'):format(evaluateName,i)
-                    , function() return rdebug.getuservalue(u, fi) end
-                )
+                varCreate {
+                    vars = vars,
+                    varRef = varRef,
+                    name = ('[uservalue %d]'):format(i),
+                    value = uv,
+                    evaluateName = evaluateName and ('debug.getuservalue(%s,%d)'):format(evaluateName,i),
+                    calcValue = function() return rdebug.getuservalue(u, fi) end,
+                    kind = "virtual",
+                }
             end
             i = i + 1
         end
     else
         local uv = rdebug.getuservaluev(u)
         if uv ~= nil then
-            varCreate(vars, varRef, "virtual"
-                , '[uservalue]', nil
-                , uv, evaluateName and ('debug.getuservalue(%s)'):format(evaluateName)
-                , function() return rdebug.getuservalue(u) end
-            )
-    end
+            varCreate {
+                vars = vars,
+                varRef = varRef,
+                name = '[uservalue]',
+                value = uv,
+                evaluateName = evaluateName and ('debug.getuservalue(%s)'):format(evaluateName),
+                calcValue = function() return rdebug.getuservalue(u) end,
+                kind = "virtual",
+            }
+        end
     end
     return vars
 end
@@ -750,11 +778,14 @@ function special_extand.Local(varRef)
                 name = ("(%s #%d)"):format(name:sub(2,-2), tempVar[name])
             end
             local fi = i
-            varCreate(vars, varRef, nil
-                , name, i
-                , value, name
-                , function() local _, r = rdebug.getlocal(frameId, fi) return r end
-            )
+            varCreate {
+                vars = vars,
+                varRef = varRef,
+                name = name,
+                value = value,
+                evaluateName = name,
+                calcValue = function() local _, r = rdebug.getlocal(frameId, fi) return r end,
+            }
         end
         i = i + 1
     end
@@ -774,11 +805,14 @@ function special_extand.Upvalue(varRef)
             break
         end
         local fi = i
-        varCreate(vars, varRef, nil
-            , name, nil
-            , value, name
-            , function() local _, r = rdebug.getupvalue(f, fi) return r end
-        )
+        varCreate {
+            vars = vars,
+            varRef = varRef,
+            name = name,
+            value = value,
+            evaluateName = name,
+            calcValue = function() local _, r = rdebug.getupvalue(f, fi) return r end,
+        }
         i = i + 1
     end
     return vars
@@ -796,11 +830,15 @@ function special_extand.Parameter(varRef)
                 local name, value = rdebug.getlocalv(frameId, i)
                 if name ~= nil then
                     local fi = i
-                    varCreate(vars, varRef, nil
-                        , name, i
-                        , value, name
-                        , function() local _, r = rdebug.getlocal(frameId, fi) return r end
-                    )
+                    varCreate {
+                        vars = vars,
+                        varRef = varRef,
+                        name = name,
+                        nameidx = i,
+                        value = value,
+                        evaluateName = name,
+                        calcValue = function() local _, r = rdebug.getlocal(frameId, fi) return r end,
+                    }
                 end
             end
         end
@@ -813,11 +851,14 @@ function special_extand.Parameter(varRef)
             break
         end
         local fi = i
-        varCreate(vars, varRef, nil
-            , ('[vararg %d]'):format(-i), nil
-            , value, ('select(%d,...)'):format(-i)
-            , function() local _, r = rdebug.getlocal(frameId, fi) return r end
-        )
+        varCreate {
+            vars = vars,
+            varRef = varRef,
+            name = ('[vararg %d]'):format(-i),
+            value = value,
+            evaluateName = ('select(%d,...)'):format(-i),
+            calcValue = function() local _, r = rdebug.getlocal(frameId, fi) return r end,
+        }
         i = i - 1
     end
 
@@ -834,11 +875,14 @@ function special_extand.Return(varRef)
             local name, value = rdebug.getlocalv(frameId, i)
             if name ~= nil then
                 local fi = i
-                varCreate(vars, varRef, nil
-                    , ('[%d]'):format(i - info.ftransfer + 1), nil
-                    , value, nil
-                    , function() local _, r = rdebug.getlocal(frameId, fi) return r end
-                )
+                varCreate {
+                    vars = vars,
+                    varRef = varRef,
+                    name = ('[%d]'):format(i - info.ftransfer + 1),
+                    value = value,
+                    evaluateName = nil,
+                    calcValue = function() local _, r = rdebug.getlocal(frameId, fi) return r end,
+                }
             end
         end
     end
@@ -856,11 +900,14 @@ local function extandGlobalNamed(varRef)
     for i = 1, #loct, 3 do
         local key, value, valueref = loct[i], loct[i+1], loct[i+2]
         if not isStandardName(key) then
-            varCreate(vars, varRef, nil
-                , varGetName(key), nil
-                , value, evaluateTabelKey("_G", key)
-                , function() return valueref end
-            )
+            varCreate {
+                vars = vars,
+                varRef = varRef,
+                name = varGetName(key),
+                value = value,
+                evaluateName = evaluateTabelKey("_G", key),
+                calcValue = function() return valueref end,
+            }
         end
     end
     table.sort(vars, function(a, b) return a.name < b.name end)
@@ -882,11 +929,14 @@ function special_extand.Standard(varRef)
     for name in pairs(standard) do
         local value = rdebug.fieldv(rdebug._G, name)
         if value ~= nil then
-            varCreate(vars, varRef, nil
-                , name, nil
-                , value, ("_G.%s"):format(name)
-                , function() return rdebug.field(rdebug._G, name) end
-            )
+            varCreate {
+                vars = vars,
+                varRef = varRef,
+                name = name,
+                value = value,
+                evaluateName = ("_G.%s"):format(name),
+                calcValue = function() return rdebug.field(rdebug._G, name) end,
+            }
         end
     end
     table.sort(vars, function(a, b) return a.name < b.name end)
