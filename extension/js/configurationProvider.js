@@ -96,21 +96,6 @@ function mergeConfigurations(config) {
     return platname
 }
 
-function resolveWorkspaceFolder(folder, config) {
-    if (typeof config.workspaceFolder == 'string') {
-        return;
-    }
-    if (folder) {
-        config.workspaceFolder = folder.uri.fsPath;
-        return;
-    }
-    if (typeof config.cwd == 'string') {
-        config.workspaceFolder = config.cwd;
-        return;
-    }
-    throw new Error('The `cwd` can not be resolved in a multi folder workspace.\n\tSolution: "cwd" : "${workspaceFolder:name}" ');
-}
-
 function resolveConfig(folder, config) {
     const settings = vscode.workspace.getConfiguration("lua.debug.settings");
     const plat = mergeConfigurations(config)
@@ -121,8 +106,11 @@ function resolveConfig(folder, config) {
     if (typeof config.name != 'string') {
         config.name = 'Not specified';
     }
-    resolveWorkspaceFolder(folder, config)
+    config.workspaceFolder = folder? folder.uri.fsPath: undefined;
     if (typeof config.cwd != 'string') {
+        if (!config.workspaceFolder) {
+            throw new Error('The `cwd` can not be resolved in a multi folder workspace.\n\tSolution: "cwd" : "${workspaceFolder:name}" ');
+        }
         config.cwd = config.workspaceFolder;
     }
     if (typeof config.stopOnEntry != 'boolean') {
