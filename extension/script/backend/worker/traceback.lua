@@ -38,14 +38,22 @@ local function shortsrc(source, maxlen)
     end
 end
 
+local function shortpath(path)
+    local clientpath = source.clientPath(path)
+    if clientpath:sub(1,2) == "./" and #clientpath > 2 then
+        clientpath = clientpath:sub(3)
+    end
+    return shortsrc('@' .. clientpath)
+end
+
 local function getshortsrc(src)
     if src.sourceReference then
         local code = source.getCode(src.sourceReference)
         return shortsrc(code)
     elseif src.path then
-        return shortsrc('@' .. source.clientPath(src.path))
+        return shortpath(src.path)
     elseif src.skippath then
-        return shortsrc('@' .. source.clientPath(src.skippath))
+        return shortpath(src.skippath)
     elseif info.source:sub(1,1) == '=' then
         return shortsrc(info.source)
     else
