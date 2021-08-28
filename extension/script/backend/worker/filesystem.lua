@@ -115,6 +115,9 @@ function m.path_relative(path, base)
         or (function(a, b) return a == b end)
     local rpath = normalize(path)
     local rbase = normalize(base)
+    if pathFormat == "path" and not equal(rpath[1], rbase[1]) then
+        return table.concat(rpath, '/')
+    end
     while #rpath > 0 and #rbase > 0 and equal(rpath[1], rbase[1]) do
         table.remove(rpath, 1)
         table.remove(rbase, 1)
@@ -125,6 +128,9 @@ function m.path_relative(path, base)
     local s = {}
     for _ in ipairs(rbase) do
         s[#s+1] = '..'
+    end
+    if #s == 0 then
+        s[#s+1] = '.'
     end
     for _, e in ipairs(rpath) do
         s[#s+1] = e
