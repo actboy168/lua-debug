@@ -96,6 +96,21 @@ function mergeConfigurations(config) {
     return platname
 }
 
+function resolveWorkspaceFolder(folder, config) {
+    if (typeof config.workspaceFolder == 'string') {
+        return;
+    }
+    if (folder) {
+        config.workspaceFolder = folder.uri.fsPath;
+        return;
+    }
+    if (typeof config.cwd == 'string') {
+        config.workspaceFolder = config.cwd;
+        return;
+    }
+    throw new Error('The `cwd` can not be resolved in a multi folder workspace.\n\tSolution: "cwd" : "${workspaceFolder:name}" ');
+}
+
 function resolveConfig(folder, config) {
     const settings = vscode.workspace.getConfiguration("lua.debug.settings");
     const plat = mergeConfigurations(config)
@@ -106,9 +121,9 @@ function resolveConfig(folder, config) {
     if (typeof config.name != 'string') {
         config.name = 'Not specified';
     }
-    config.workspaceFolder = folder? folder.uri.fsPath: undefined;
+    resolveWorkspaceFolder(folder, config)
     if (typeof config.cwd != 'string') {
-        config.cwd = '${cwd}';
+        config.cwd = config.workspaceFolder;
     }
     if (typeof config.stopOnEntry != 'boolean') {
         config.stopOnEntry = true;
@@ -209,11 +224,19 @@ function resolveConfig(folder, config) {
 
 exports.resolve = {
     type: "resolver",
-    resolveDebugConfiguration: function (folder, config) {
+    resolveDebugConfiguration: async function (folder, config) {
         try {
             return resolveConfig(folder, config);
-        } catch (err) {
-            return vscode.window.showErrorMessage(err.message, { modal: true }).then(_ => undefined);
+        } catch (err) { 
+            let action = await vscode.window.showErrorMessage(
+                err.message,
+                { modal: true },
+                { title: "Open launch.json" },
+            );
+            if (action) {
+                await vscode.commands.executeCommand('workbench.action.debug.configure');
+            }
+            return;
         }
     }
 };
