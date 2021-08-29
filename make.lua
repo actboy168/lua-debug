@@ -20,6 +20,10 @@ else
     end
 end
 
+lm.macos = {
+    sys = "macos10.12"
+}
+
 lm.EXE_RESOURCE = "../../make/lua-debug.rc"
 lm:import "3rd/bee.lua/make.lua"
 
