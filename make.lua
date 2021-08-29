@@ -89,10 +89,9 @@ for _, luaver in ipairs {"lua51","lua52","lua53","lua54","lua-latest"} do
         runtimes[#runtimes+1] = "runtime/"..luaver.."/"..luaver
     end
 
-    lm.rootdir = '3rd/lua/'..luaver
-
     if platform.OS == "Windows" then
         lm:shared_library ('runtime/'..luaver..'/'..luaver) {
+            rootdir = '3rd/lua/'..luaver,
             includes = {
                 '..',
             },
@@ -108,6 +107,7 @@ for _, luaver in ipairs {"lua51","lua52","lua53","lua54","lua-latest"} do
             }
         }
         lm:executable ('runtime/'..luaver..'/lua') {
+            rootdir = '3rd/lua/'..luaver,
             output = "lua",
             deps = ('runtime/'..luaver..'/'..luaver),
             includes = {
@@ -124,6 +124,7 @@ for _, luaver in ipairs {"lua51","lua52","lua53","lua54","lua-latest"} do
         }
     else
         lm:executable ('runtime/'..luaver..'/lua') {
+            rootdir = '3rd/lua/'..luaver,
             includes = {
                 '.',
                 '..',
@@ -154,8 +155,6 @@ for _, luaver in ipairs {"lua51","lua52","lua53","lua54","lua-latest"} do
             }
         }
     end
-
-    lm.rootdir = ''
 
     local lua_version_num
     if luaver == "lua-latest" then
