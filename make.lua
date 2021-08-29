@@ -20,9 +20,8 @@ else
     end
 end
 
-lm:import("3rd/bee.lua/make.lua", {
-    EXE_RESOURCE = "../../make/lua-debug.rc"
-})
+lm.EXE_RESOURCE = "../../make/lua-debug.rc"
+lm:import "3rd/bee.lua/make.lua"
 
 lm.builddir = ("build/%s/%s/%s"):format(lm.os, lm.arch, lm.mode)
 local bindir = fs.path(lm.builddir) / 'bin'
