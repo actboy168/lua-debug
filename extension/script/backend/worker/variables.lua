@@ -547,7 +547,7 @@ local function varCreate(t)
         local index = extand[name][3]
         local nameidx = extand[name][4]
         local var = vars[index]
-        if not nameidx or var.presentationHint then
+        if not nameidx or (var.presentationHint and var.presentationHint.kind == "virtual") then
             local log = require 'common.log'
             log.error("same name variables: "..name)
             return {}
@@ -573,7 +573,7 @@ local function varCreate(t)
     local var = varCreateReference(t.value, t.evaluateName, "variables")
     var.name = name
     var.evaluateName = t.evaluateName
-    var.presentationHint = t.kind and { kind = t.kind } or nil
+    var.presentationHint = t.presentationHint
     vars[#vars + 1] = var
     extand[name] = { t.calcValue, t.evaluateName, #vars, t.nameidx }
 end
@@ -651,7 +651,9 @@ local function extandTableNamed(varRef)
             value = meta,
             evaluateName = evaluateName and ('debug.getmetatable(%s)'):format(evaluateName),
             calcValue = function() return rdebug.getmetatable(t) end,
-            kind = "virtual",
+            presentationHint = {
+                kind = "virtual"
+            }
         }
         table.insert(vars, 1, vars[#vars])
         vars[#vars] = nil
@@ -689,7 +691,9 @@ local function extandFunction(varRef)
             value = value,
             evaluateName = evaluateName and ('select(2, debug.getupvalue(%s,%d))'):format(evaluateName, i),
             calcValue = function() local _, r = rdebug.getupvalue(f, fi) return r end,
-            kind = "virtual",
+            presentationHint = {
+                kind = "virtual"
+            }
         }
         i = i + 1
     end
@@ -711,7 +715,9 @@ local function extandUserdata(varRef)
             value = meta,
             evaluateName = evaluateName and ('debug.getmetatable(%s)'):format(evaluateName),
             calcValue = function() return rdebug.getmetatable(u) end,
-            kind = "virtual",
+            presentationHint = {
+                kind = "virtual"
+            }
         }
     end
 
@@ -731,7 +737,9 @@ local function extandUserdata(varRef)
                     value = uv,
                     evaluateName = evaluateName and ('debug.getuservalue(%s,%d)'):format(evaluateName,i),
                     calcValue = function() return rdebug.getuservalue(u, fi) end,
-                    kind = "virtual",
+                    presentationHint = {
+                        kind = "virtual"
+                    }
                 }
             end
             i = i + 1
@@ -746,7 +754,9 @@ local function extandUserdata(varRef)
                 value = uv,
                 evaluateName = evaluateName and ('debug.getuservalue(%s)'):format(evaluateName),
                 calcValue = function() return rdebug.getuservalue(u) end,
-                kind = "virtual",
+                presentationHint = {
+                    kind = "virtual"
+                }
             }
         end
     end
