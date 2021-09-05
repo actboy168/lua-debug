@@ -181,6 +181,8 @@ for _, luaver in ipairs {"lua51","lua52","lua53","lua54","lua-latest"} do
         },
         sources = {
             "src/remotedebug/*.cpp",
+            "src/remotedebug/thunk/*.cpp",
+            "src/remotedebug/bee/*.cpp",
             "3rd/bee.lua/bee/error.cpp",
             "3rd/bee.lua/bee/net/*.cpp",
             "3rd/bee.lua/bee/nonstd/fmt/*.cc",
