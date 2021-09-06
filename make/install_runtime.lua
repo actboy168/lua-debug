@@ -26,8 +26,7 @@ do
     fs.create_directories(output)
     if LuaDebugArch[OS] == arch then
         fs.create_directories(output)
-        fs.copy_file(input / ('bee'..dll), output / ('bee'..dll), OVERWRITE)
-        fs.copy_file(input / ('bootstrap'..exe), output / ('lua-debug'..exe), OVERWRITE)
+        fs.copy_file(input / ('lua-debug'..exe), output / ('lua-debug'..exe), OVERWRITE)
         fs.copy_file(CWD / "extension" / "script" / "bootstrap.lua", output / 'main.lua', OVERWRITE)
         if OS == 'windows' then
             fs.copy_file(input / 'inject.dll',  output / 'inject.dll', OVERWRITE)

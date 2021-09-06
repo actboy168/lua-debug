@@ -24,6 +24,7 @@ lm.macos = {
     sys = "macos10.12"
 }
 
+lm.EXE_NAME = "lua-debug"
 lm.EXE_RESOURCE = "../../make/lua-debug.rc"
 lm:import "3rd/bee.lua/make.lua"
 
@@ -234,8 +235,7 @@ if platform.OS == "Windows" and lm.arch == "x86_64" then
     lm:build 'install' {
         '$luamake', 'lua', 'make/install_runtime.lua', bindir, lm.arch,
         deps = {
-            'bee',
-            'bootstrap',
+            'lua-debug',
             'copy_extension',
             'update_version',
             "launcher",
@@ -244,11 +244,8 @@ if platform.OS == "Windows" and lm.arch == "x86_64" then
     }
 else
     if platform.OS == "Windows" then
-        lm:shared_library 'inject' {
-            deps = {
-                "bee",
-                "lua54"
-            },
+        lm:lua_dll 'inject' {
+            deps = "lua54",
             defines = {
                 "BEE_INLINE",
             },
@@ -274,11 +271,8 @@ else
         deps = {
             'copy_extension',
             'update_version',
-            "bee",
-            "lua",
-            "bootstrap",
+            "lua-debug",
             platform.OS == "Windows" and "inject",
-            platform.OS == "Windows" and "lua54",
             platform.OS == "Windows" and "launcher",
             runtimes,
         }

@@ -118,6 +118,7 @@ void  (rluaL_buffinit) (rlua_State *L, rluaL_Buffer *B);
 char *(rluaL_prepbuffsize) (rluaL_Buffer *B, size_t sz);
 void  (rluaL_pushresultsize) (rluaL_Buffer *B, size_t sz);
 void  (rluaL_requiref) (rlua_State *L, const char *modname, rlua_CFunction openf, int glb);
+int   (rluaL_getsubtable) (rlua_State *L, int idx, const char *fname);
 
 #define rlua_pop(L,n) rlua_settop(L, -(n)-1)
 #define rlua_pushcfunction(L,f) rlua_pushcclosure(L, (f), 0)
@@ -190,6 +191,7 @@ void  (rluaL_requiref) (rlua_State *L, const char *modname, rlua_CFunction openf
 #define luaL_pushresultsize rluaL_pushresultsize
 #define luaL_ref rluaL_ref
 #define luaL_requiref rluaL_requiref
+#define luaL_getsubtable rluaL_getsubtable
 #define luaL_setfuncs rluaL_setfuncs
 #define luaL_setmetatable rluaL_setmetatable
 #define luaL_testudata rluaL_testudata
@@ -399,6 +401,7 @@ void  (rluaL_requiref) (rlua_State *L, const char *modname, rlua_CFunction openf
 #define rluaL_pushresultsize luaL_pushresultsize
 #define rluaL_ref luaL_ref
 #define rluaL_requiref luaL_requiref
+#define rluaL_getsubtable luaL_getsubtable
 #define rluaL_setfuncs luaL_setfuncs
 #define rluaL_setmetatable luaL_setmetatable
 #define rluaL_testudata luaL_testudata
