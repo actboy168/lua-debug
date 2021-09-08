@@ -90,6 +90,15 @@ local function isTemporary(name)
     return name == "(*temporary)"
 end
 
+local function getGlobal(frameId)
+    rdebug.getinfo(frameId, "f", info)
+    local name, value = rdebug.getupvaluev(info.func, 1)
+    if name == "_ENV" then
+        return value, "_ENV"
+    end
+    return rdebug._G, "_G"
+end
+
 local special_has = {}
 
 function special_has.Parameter(frameId)
@@ -130,8 +139,8 @@ function special_has.Return(frameId)
     return info.ftransfer > 0 and info.ntransfer > 0
 end
 
-function special_has.Global()
-    local global = rdebug._G
+function special_has.Global(frameId)
+    local global = getGlobal(frameId)
     local asize, hsize = rdebug.tablesize(global)
     if asize ~= 0 then
         return true
@@ -528,14 +537,15 @@ local function varCreateScopes(frameId, scopes, name, expensive)
         expensive = expensive,
     }
     if name == "Global" then
+        local global, eval = getGlobal(frameId)
         local scope = scopes[#scopes]
-        local asize, hsize = rdebug.tablesize(rdebug._G)
+        local asize, hsize = rdebug.tablesize(global)
         scope.indexedVariables = asize + 1
         scope.namedVariables = hsize
 
         local var = varPool[#varPool]
-        var.v = rdebug._G
-        var.eval = "_G"
+        var.v = global
+        var.eval = eval
     end
 end
 
@@ -905,8 +915,10 @@ end
 
 local function extandGlobalNamed(varRef)
     varRef.extand = varRef.extand or {}
+    local frameId = varRef.frameId
     local vars = {}
-    local loct = rdebug.tablehash(rdebug._G,MAX_TABLE_FIELD)
+    local global, eval = getGlobal(frameId)
+    local loct = rdebug.tablehash(global,MAX_TABLE_FIELD)
     for i = 1, #loct, 3 do
         local key, value, valueref = loct[i], loct[i+1], loct[i+2]
         if not isStandardName(key) then
@@ -915,7 +927,7 @@ local function extandGlobalNamed(varRef)
                 varRef = varRef,
                 name = varGetName(key),
                 value = value,
-                evaluateName = evaluateTabelKey("_G", key),
+                evaluateName = evaluateTabelKey(eval, key),
                 calcValue = function() return valueref end,
             }
         end
@@ -935,17 +947,19 @@ end
 
 function special_extand.Standard(varRef)
     varRef.extand = varRef.extand or {}
+    local frameId = varRef.frameId
     local vars = {}
+    local global, eval = getGlobal(frameId)
     for name in pairs(standard) do
-        local value = rdebug.fieldv(rdebug._G, name)
+        local value = rdebug.fieldv(global, name)
         if value ~= nil then
             varCreate {
                 vars = vars,
                 varRef = varRef,
                 name = name,
                 value = value,
-                evaluateName = ("_G.%s"):format(name),
-                calcValue = function() return rdebug.field(rdebug._G, name) end,
+                evaluateName = ("%s.%s"):format(eval, name),
+                calcValue = function() return rdebug.field(global, name) end,
             }
         end
     end

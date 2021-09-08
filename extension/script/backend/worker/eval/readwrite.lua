@@ -15,6 +15,7 @@ local f = assert(debug.getinfo(level,"f").func, "can't find function")
 local args_name = {}
 local args_value = {}
 local updates = {}
+local env
 do
 	local i = 1
 	while true do
@@ -22,10 +23,14 @@ do
 		if name == nil then
 			break
 		end
-		if #name > 0 and name ~= "_ENV" then
-			args_name[#args_name+1] = name
-			args_value[name] = value
-			updates[#updates+1] = ("{'u',name=%q,idx=%d,val=%s}"):format(name, i, name)
+		if #name > 0 then
+			if name == "_ENV" then
+				env = value
+			else
+				args_name[#args_name+1] = name
+				args_value[name] = value
+				updates[#updates+1] = ("{'u',name=%q,idx=%d,val=%s}"):format(name, i, name)
+			end
 		end
 		i = i + 1
 	end
@@ -75,7 +80,7 @@ end
 })
 end
 
-local func, update = assert(load(full_source, '=(EVAL)'))()
+local func, update = assert(load(full_source, '=(EVAL)', "t", env))()
 local found = {}
 do
 	local i = 1

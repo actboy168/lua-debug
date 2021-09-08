@@ -14,6 +14,7 @@ end
 local f = assert(debug.getinfo(level,"f").func, "can't find function")
 local args_name = {}
 local args_value = {}
+local env
 do
 	local i = 1
 	while true do
@@ -21,9 +22,13 @@ do
 		if name == nil then
 			break
 		end
-		if #name > 0 and name ~= "_ENV" then
-			args_name[#args_name+1] = name
-			args_value[name] = value
+		if #name > 0 then
+			if name == "_ENV" then
+				env = value
+			else
+				args_name[#args_name+1] = name
+				args_value[name] = value
+			end
 		end
 		i = i + 1
 	end
@@ -68,7 +73,7 @@ end]]):gsub("%$(%w+)", {
 	SOURCE = source,
 })
 end
-local func = assert(load(full_source, '=(EVAL)'))()
+local func = assert(load(full_source, '=(EVAL)', "t", env))()
 do
 	local i = 1
 	while true do
