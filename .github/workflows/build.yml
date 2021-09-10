@@ -22,7 +22,7 @@ jobs:
         name: lua-debug
         path: publish
   publish:
-    runs-on: linux-latest
+    runs-on: ubuntu-latest
     needs: compile
     steps:
       - run: npm install -g vsce

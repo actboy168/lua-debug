@@ -14,31 +14,6 @@ local ArchAlias = {
 }
 
 do
-    local LuaDebugArch <const> = {
-        windows = "x86",
-        linux = "x86_64",
-        macos = "x86_64",
-        android = "aarch64",
-    }
-    --copy lua-debug
-    local input = fs.path(bindir)
-    local output = CWD / 'publish' / 'bin' / OS
-    fs.create_directories(output)
-    if LuaDebugArch[OS] == arch then
-        fs.create_directories(output)
-        fs.copy_file(input / ('lua-debug'..exe), output / ('lua-debug'..exe), OVERWRITE)
-        fs.copy_file(CWD / "extension" / "script" / "bootstrap.lua", output / 'main.lua', OVERWRITE)
-        if OS == 'windows' then
-            fs.copy_file(input / 'inject.dll',  output / 'inject.dll', OVERWRITE)
-            fs.copy_file(input / 'lua54.dll',   output / 'lua54.dll',  OVERWRITE)
-        end
-    end
-    if OS == 'windows' then
-        fs.copy_file(input / 'launcher.dll', output / ('launcher.'..ArchAlias[arch]..'.dll'), OVERWRITE)
-    end
-end
-
-do
     --copy runtime
     for _, luaver in ipairs {"lua51","lua52","lua53","lua54","lua-latest"} do
         local input = fs.path(bindir) / 'runtime' / luaver
