@@ -1,2 +1,2 @@
 #include "Windows.h"
-10086 ICON "make/lua-debug.ico"
+10086 ICON "compile/lua-debug.ico"
