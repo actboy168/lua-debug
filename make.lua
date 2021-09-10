@@ -25,7 +25,7 @@ lm.macos = {
 }
 
 lm.EXE_NAME = "lua-debug"
-lm.EXE_RESOURCE = "../../make/lua-debug.rc"
+lm.EXE_RESOURCE = "../../compile/lua-debug.rc"
 lm:import "3rd/bee.lua/make.lua"
 
 lm.builddir = ("build/%s/%s/%s"):format(lm.os, lm.arch, lm.mode)
@@ -119,7 +119,7 @@ for _, luaver in ipairs {"lua51","lua52","lua53","lua54","lua-latest"} do
             },
             sources = {
                 "lua.c",
-                "../../../make/lua-debug.rc",
+                "../../../compile/lua-debug.rc",
             },
             defines = {
                 luaver == "lua51" and "_CRT_SECURE_NO_WARNINGS",
@@ -224,16 +224,16 @@ for _, luaver in ipairs {"lua51","lua52","lua53","lua54","lua-latest"} do
 end
 
 lm:build 'copy_extension' {
-    '$luamake', 'lua', 'make/copy_extension.lua',
+    '$luamake', 'lua', 'compile/copy_extension.lua',
 }
 
 lm:build 'update_version' {
-    '$luamake', 'lua', 'make/update_version.lua',
+    '$luamake', 'lua', 'compile/update_version.lua',
 }
 
 if platform.OS == "Windows" and lm.arch == "x86_64" then
     lm:build 'install' {
-        '$luamake', 'lua', 'make/install_runtime.lua', bindir, lm.arch,
+        '$luamake', 'lua', 'compile/install_runtime.lua', bindir, lm.arch,
         deps = {
             'lua-debug',
             'copy_extension',
@@ -267,7 +267,7 @@ else
     end
 
     lm:build 'install' {
-        '$luamake', 'lua', 'make/install_runtime.lua', bindir, lm.arch,
+        '$luamake', 'lua', 'compile/install_runtime.lua', bindir, lm.arch,
         deps = {
             'copy_extension',
             'update_version',

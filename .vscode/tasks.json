@@ -29,7 +29,7 @@
             "command": "luamake",
             "args": [
                 "lua",
-                "make/update_version.lua",
+                "compile/update_version.lua",
             ]
         },
         {
@@ -37,7 +37,7 @@
             "command": "luamake",
             "args": [
                 "lua",
-                "make/copy.lua",
+                "compile/copy.lua",
                 "extension",
                 "extension",
                 "${command:extensionPath}"
@@ -48,7 +48,7 @@
             "command": "luamake",
             "args": [
                 "lua",
-                "make/copy.lua",
+                "compile/copy.lua",
                 "publish",
                 "publish",
                 "${command:extensionPath}"
