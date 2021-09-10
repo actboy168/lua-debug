@@ -8,26 +8,21 @@ jobs:
       matrix:
         include:
         - os: windows-latest
-          arch: x86
-        - os: windows-latest
-          arch: x86_64
         - os: ubuntu-18.04
-          arch: x86_64
-        - os: macos-latest
-          arch: x86_64
+        - os: macos-11
     steps:
     - uses: actions/checkout@v1
       with:
         ref: refs/heads/master
         submodules : recursive
     - uses: actboy168/setup-luamake@master
-    - run: luamake -arch ${{ matrix.arch }}
+    - run: luamake
     - uses: actions/upload-artifact@v1.0.0
       with:
         name: lua-debug
         path: publish
   publish:
-    runs-on: macos-latest
+    runs-on: linux-latest
     needs: compile
     steps:
       - run: npm install -g vsce

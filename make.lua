@@ -1,4 +1,9 @@
 local lm = require "luamake"
+if lm.os == "windows" then
+    require "compile.windows.make"
+    return
+end
+
 local platform = require "bee.platform"
 local fs = require "bee.filesystem"
 
@@ -25,7 +30,7 @@ lm.macos = {
 }
 
 lm.EXE_NAME = "lua-debug"
-lm.EXE_RESOURCE = "../../compile/lua-debug.rc"
+lm.EXE_RESOURCE = "../../compile/windows/lua-debug.rc"
 lm:import "3rd/bee.lua/make.lua"
 
 lm.builddir = ("build/%s/%s/%s"):format(lm.os, lm.arch, lm.mode)
@@ -119,7 +124,7 @@ for _, luaver in ipairs {"lua51","lua52","lua53","lua54","lua-latest"} do
             },
             sources = {
                 "lua.c",
-                "../../../compile/lua-debug.rc",
+                "../../../compile/windows/lua-debug.rc",
             },
             defines = {
                 luaver == "lua51" and "_CRT_SECURE_NO_WARNINGS",
