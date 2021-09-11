@@ -18,17 +18,21 @@ if lm.target_arch == nil then
     lm:build 'update_version' {
         '$luamake', 'lua', 'compile/update_version.lua',
     }
-    lm:build 'install-lua-debug' {
-        '$luamake', 'lua', 'compile/install_lua-debug.lua', ("build/windows/x86/%s/bin"):format(lm.mode),
-        deps = "x86"
+    lm:copy 'copy_bootstrap' {
+        input = "extension/script/bootstrap.lua",
+        output = "publish/bin/macos/main.lua",
+    }
+    lm:build "copy_vcredist" {
+        "$luamake", "lua", "compile/windows/copy_vcredist.lua"
     }
     return
 end
 
 lm.arch = lm.target_arch
 lm.defines = "_WIN32_WINNT=0x0601"
-lm:import "3rd/bee.lua/make.lua"
 lm.builddir = ("build/%s/%s/%s"):format(lm.os, lm.arch, lm.mode)
+
+require "compile.common.runtime"
 
 do
     lm:source_set 'detours' {
@@ -38,7 +42,12 @@ do
             "!uimports.cpp"
         }
     }
-    lm:lua_library 'launcher' {
+    local ArchAlias = {
+        x86_64 = "x64",
+        x86 = "x86",
+    }
+    lm:lua_library ('launcher.'..ArchAlias[lm.arch]) {
+        bindir = "publish/bin/windows",
         export_luaopen = "off",
         deps = {
             "detours",
@@ -68,22 +77,18 @@ do
         },
         ldflags = '/DELAYLOAD:lua54.dll',
     }
-    local ArchAlias = {
-        x86_64 = "x64",
-        x86 = "x86",
-    }
-    lm:copy "copy_launcher" {
-        input = '$bin/launcher.dll',
-        output = 'publish/bin/windows/launcher.'..ArchAlias[lm.arch]..'.dll',
+    lm:phony "launcher" {
+        deps = 'launcher.'..ArchAlias[lm.arch]
     }
 end
 
-require "compile.common.runtime"
-
 if lm.arch == "x86" then
+    lm.EXE_DIR = "publish/bin/windows"
     lm.EXE_NAME = "lua-debug"
     lm.EXE_RESOURCE = "../../compile/windows/lua-debug.rc"
+    lm:import "3rd/bee.lua/make.lua"
     lm:lua_dll 'inject' {
+        bindir = "publish/bin/windows",
         deps = "lua54",
         defines = {
             "BEE_INLINE",
@@ -105,13 +110,9 @@ if lm.arch == "x86" then
     }
 end
 
-lm:build "copy_vcredist" {
-    "$luamake", "lua", "compile/windows/copy_vcredist.lua"
-}
-
 lm:default {
     lm.arch == "x86" and "lua-debug",
     lm.arch == "x86" and "inject",
-    "copy_launcher",
+    "launcher",
     "copy_vcredist",
 }

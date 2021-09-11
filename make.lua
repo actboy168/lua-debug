@@ -18,6 +18,7 @@ if not lm.arch then
 end
 
 lm.builddir = ("build/%s/%s/%s"):format(lm.os, lm.arch, lm.mode)
+lm.EXE_DIR = "publish/bin/"..lm.os
 lm.EXE_NAME = "lua-debug"
 lm:import "3rd/bee.lua/make.lua"
 
@@ -31,19 +32,15 @@ lm:build 'update_version' {
     '$luamake', 'lua', 'compile/update_version.lua',
 }
 
-lm:build 'install-lua-debug' {
-    '$luamake', 'lua', 'compile/install_lua-debug.lua', lm.builddir..'/bin',
-    deps = "lua-debug"
-}
-
-lm:build 'install-runtime' {
-    '$luamake', 'lua', 'compile/install_runtime.lua', lm.builddir..'/bin', lm.arch,
-    deps = "runtime",
+lm:copy 'copy_bootstrap' {
+    input = "extension/script/bootstrap.lua",
+    output = "publish/bin/"..lm.os.."/main.lua",
 }
 
 lm:default {
     'copy_extension',
     'update_version',
-    "install-lua-debug",
-    'install-runtime',
+    "copy_bootstrap",
+    "lua-debug",
+    "runtime",
 }
