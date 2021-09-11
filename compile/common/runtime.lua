@@ -58,6 +58,7 @@ for _, luaver in ipairs {"lua51","lua52","lua53","lua54","lua-latest"} do
     else
         lm:executable ('runtime/'..luaver..'/lua') {
             rootdir = '3rd/lua/'..luaver,
+            bindir = "publish",
             includes = {
                 '.',
                 '..',
@@ -97,6 +98,7 @@ for _, luaver in ipairs {"lua51","lua52","lua53","lua54","lua-latest"} do
     end
 
     lm:shared_library ('runtime/'..luaver..'/remotedebug') {
+        bindir = "publish",
         deps = "runtime/onelua",
         defines = {
             "BEE_STATIC",

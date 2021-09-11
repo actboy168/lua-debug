@@ -78,13 +78,7 @@ do
     }
 end
 
-do
-    require "compile.common.runtime"
-    lm:build 'install-runtime' {
-        '$luamake', 'lua', 'compile/install_runtime.lua', ("build/windows/%s/%s/bin"):format(lm.arch, lm.mode), lm.arch,
-        deps = "runtime"
-    }
-end
+require "compile.common.runtime"
 
 if lm.arch == "x86" then
     lm.EXE_NAME = "lua-debug"
@@ -111,9 +105,13 @@ if lm.arch == "x86" then
     }
 end
 
+lm:build "copy_vcredist" {
+    "$luamake", "lua", "compile/windows/copy_vcredist.lua"
+}
+
 lm:default {
     lm.arch == "x86" and "lua-debug",
     lm.arch == "x86" and "inject",
     "copy_launcher",
-    "install-runtime",
+    "copy_vcredist",
 }

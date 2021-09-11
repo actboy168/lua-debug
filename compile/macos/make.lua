@@ -24,7 +24,3 @@ end
 local arch = lm.target:match "^([^-]*)-"
 lm.builddir = ("build/macos/%s/%s"):format(lm.mode, arch)
 require "compile.common.runtime"
-lm:build 'install-runtime' {
-    '$luamake', 'lua', 'compile/install_runtime.lua', ("build/macos/%s/%s/bin"):format(lm.mode, arch), arch,
-    deps = "runtime"
-}

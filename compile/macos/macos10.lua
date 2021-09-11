@@ -10,10 +10,6 @@ lm:build 'install_lua-debug' {
     '$luamake', 'lua', 'compile/install_lua-debug.lua', lm.builddir.."/bin",
     deps = "lua-debug"
 }
-lm:build 'install_runtime' {
-    '$luamake', 'lua', 'compile/install_runtime.lua', lm.builddir.."/bin", "x86_64",
-    deps = "runtime",
-}
 lm:build 'copy_extension' {
     '$luamake', 'lua', 'compile/copy_extension.lua',
 }
@@ -23,5 +19,4 @@ lm:build 'update_version' {
 lm:default {
     'copy_extension',
     'update_version',
-    "install_runtime",
 }
