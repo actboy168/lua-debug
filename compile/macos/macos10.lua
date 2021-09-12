@@ -4,6 +4,7 @@ lm.EXE_DIR = "publish/bin/macos"
 lm.EXE_NAME = "lua-debug"
 lm:import "3rd/bee.lua/make.lua"
 
+lm.arch = lm.arch or "x86_64"
 require "compile.common.runtime"
 
 lm:copy 'copy_bootstrap' {

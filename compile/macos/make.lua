@@ -21,6 +21,6 @@ if lm.target == nil then
     return
 end
 
-local arch = lm.target:match "^([^-]*)-"
-lm.builddir = ("build/macos/%s/%s"):format(lm.mode, arch)
+lm.arch = lm.target:match "^([^-]*)-"
+lm.builddir = ("build/macos/%s/%s"):format(lm.mode, lm.arch)
 require "compile.common.runtime"

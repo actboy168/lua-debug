@@ -16,15 +16,16 @@ lm:source_set 'runtime/onelua' {
 }
 
 for _, luaver in ipairs {"lua51","lua52","lua53","lua54","lua-latest"} do
-    runtimes[#runtimes+1] = "runtime/"..luaver.."/lua"
-    runtimes[#runtimes+1] = "runtime/"..luaver.."/remotedebug"
+    runtimes[#runtimes+1] = luaver.."/lua"
+    runtimes[#runtimes+1] = luaver.."/remotedebug"
     if platform.OS == "Windows" then
-        runtimes[#runtimes+1] = "runtime/"..luaver.."/"..luaver
+        runtimes[#runtimes+1] = luaver.."/"..luaver
     end
 
     if platform.OS == "Windows" then
-        lm:shared_library ('runtime/'..luaver..'/'..luaver) {
+        lm:shared_library (luaver..'/'..luaver) {
             rootdir = '3rd/lua/'..luaver,
+            bindir = "publish/runtime/"..lm.os.."/"..lm.arch,
             includes = {
                 '..',
             },
@@ -39,8 +40,9 @@ for _, luaver in ipairs {"lua51","lua52","lua53","lua54","lua-latest"} do
                 luaver == "lua52" and "_CRT_SECURE_NO_WARNINGS",
             }
         }
-        lm:executable ('runtime/'..luaver..'/lua') {
+        lm:executable (luaver..'/lua') {
             rootdir = '3rd/lua/'..luaver,
+            bindir = "publish/runtime/"..lm.os.."/"..lm.arch,
             output = "lua",
             deps = ('runtime/'..luaver..'/'..luaver),
             includes = {
@@ -56,9 +58,9 @@ for _, luaver in ipairs {"lua51","lua52","lua53","lua54","lua-latest"} do
             }
         }
     else
-        lm:executable ('runtime/'..luaver..'/lua') {
+        lm:executable (luaver..'/lua') {
             rootdir = '3rd/lua/'..luaver,
-            bindir = "publish",
+            bindir = "publish/runtime/"..lm.os.."/"..lm.arch,
             includes = {
                 '.',
                 '..',
@@ -97,8 +99,8 @@ for _, luaver in ipairs {"lua51","lua52","lua53","lua54","lua-latest"} do
         lua_version_num = 100 * math.tointeger(luaver:sub(4,4)) + math.tointeger(luaver:sub(5,5))
     end
 
-    lm:shared_library ('runtime/'..luaver..'/remotedebug') {
-        bindir = "publish",
+    lm:shared_library (luaver..'/remotedebug') {
+        bindir = "publish/runtime/"..lm.os.."/"..lm.arch,
         deps = "runtime/onelua",
         defines = {
             "BEE_STATIC",
