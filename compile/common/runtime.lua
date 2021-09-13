@@ -44,7 +44,7 @@ for _, luaver in ipairs {"lua51","lua52","lua53","lua54","lua-latest"} do
             rootdir = '3rd/lua/'..luaver,
             bindir = "publish/runtime/"..lm.os.."/"..lm.arch,
             output = "lua",
-            deps = ('runtime/'..luaver..'/'..luaver),
+            deps = (luaver..'/'..luaver),
             includes = {
                 '..',
             },
@@ -123,7 +123,7 @@ for _, luaver in ipairs {"lua51","lua52","lua53","lua54","lua-latest"} do
         },
         windows = {
             deps = {
-                'runtime/'..luaver..'/'..luaver,
+                luaver..'/'..luaver,
             },
             defines = {
                 "_CRT_SECURE_NO_WARNINGS",
@@ -139,6 +139,8 @@ for _, luaver in ipairs {"lua51","lua52","lua53","lua54","lua-latest"} do
                 "version",
                 "ws2_32",
                 "user32",
+                "shell32",
+                "ole32",
                 "delayimp",
             },
             ldflags = {

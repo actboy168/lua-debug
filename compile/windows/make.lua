@@ -73,6 +73,8 @@ do
         links = {
             "ws2_32",
             "user32",
+            "shell32",
+            "ole32",
             "delayimp",
         },
         ldflags = '/DELAYLOAD:lua54.dll',
@@ -114,5 +116,5 @@ lm:default {
     lm.arch == "x86" and "lua-debug",
     lm.arch == "x86" and "inject",
     "launcher",
-    "copy_vcredist",
+    "runtime",
 }
