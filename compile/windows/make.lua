@@ -3,13 +3,11 @@ local lm = require "luamake"
 if lm.target_arch == nil then
     lm.builddir = ("build/%s/_/%s"):format(lm.os, lm.mode)
     lm:build "x86" {
-        "$luamake",
-        "-target_arch", "x86",
+        "$luamake", "-target_arch", "x86",
         pool = "console",
     }
     lm:build "x86_64" {
-        "$luamake",
-        "-target_arch", "x86_64",
+        "$luamake", "-target_arch", "x86_64",
         pool = "console",
     }
     lm:build 'copy_extension' {
@@ -49,9 +47,7 @@ do
     lm:lua_library ('launcher.'..ArchAlias[lm.arch]) {
         bindir = "publish/bin/windows",
         export_luaopen = "off",
-        deps = {
-            "detours",
-        },
+        deps = "detours",
         includes = {
             "3rd/bee.lua",
             "3rd/bee.lua/3rd/lua",
@@ -92,9 +88,7 @@ if lm.arch == "x86" then
     lm:lua_dll 'inject' {
         bindir = "publish/bin/windows",
         deps = "lua54",
-        defines = {
-            "BEE_INLINE",
-        },
+        defines = "BEE_INLINE",
         includes = {
             "3rd/bee.lua",
             "3rd/bee.lua/3rd/lua",
@@ -106,9 +100,7 @@ if lm.arch == "x86" then
             "3rd/wow64ext/src/wow64ext.cpp",
             "3rd/bee.lua/bee/utility/unicode_win.cpp",
         },
-        links = {
-            "advapi32",
-        }
+        links = "advapi32",
     }
 end
 

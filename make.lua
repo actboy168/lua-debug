@@ -9,10 +9,8 @@ end
 
 if not lm.arch then
     local function shell(command)
-        local f = assert(io.popen(command, 'r'))
-        local r = f:read '*l'
-        f:close()
-        return r:lower()
+        local f <close> = assert(io.popen(command, 'r'))
+        return f:read 'l':lower()
     end
     lm.arch = shell "uname -m"
 end
@@ -38,8 +36,8 @@ lm:copy 'copy_bootstrap' {
 }
 
 lm:default {
-    'copy_extension',
-    'update_version',
+    "copy_extension",
+    "update_version",
     "copy_bootstrap",
     "lua-debug",
     "runtime",
