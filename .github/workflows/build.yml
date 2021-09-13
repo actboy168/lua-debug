@@ -6,10 +6,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        include:
-        - os: windows-latest
-        - os: ubuntu-18.04
-        - os: macos-11
+        os: [windows-latest, ubuntu-18.04, macos-11]
     steps:
     - uses: actions/checkout@v1
       with:
