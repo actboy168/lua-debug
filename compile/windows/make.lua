@@ -20,7 +20,7 @@ if lm.target_arch == nil then
     }
     lm:copy 'copy_bootstrap' {
         input = "extension/script/bootstrap.lua",
-        output = "publish/bin/macos/main.lua",
+        output = "publish/bin/windows/main.lua",
     }
     lm:build "copy_vcredist" {
         "$luamake", "lua", "compile/windows/copy_vcredist.lua"
