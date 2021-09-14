@@ -80,7 +80,10 @@ end
 })
 end
 
-local func, update = assert(load(full_source, '=(EVAL)', "t", env))()
+local compiled = env
+	and assert(load(full_source, '=(EVAL)', "t", env))
+	or  assert(load(full_source, '=(EVAL)'))
+local func, update = compiled()
 local found = {}
 do
 	local i = 1

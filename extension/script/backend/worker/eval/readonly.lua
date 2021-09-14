@@ -73,7 +73,10 @@ end]]):gsub("%$(%w+)", {
 	SOURCE = source,
 })
 end
-local func = assert(load(full_source, '=(EVAL)', "t", env))()
+local compiled = env
+	and assert(load(full_source, '=(EVAL)', "t", env))
+	or  assert(load(full_source, '=(EVAL)'))
+local func = compiled()
 do
 	local i = 1
 	while true do
