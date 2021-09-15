@@ -57,7 +57,7 @@ function xpcall(f, msgh, ...)
 end
 ```
 
-## 使用你的lua重写编译remotedebug
+## 使用你的lua重新编译remotedebug
 
 remotedebug引用了非公开的lua头文件lstate.h，如果你的lua有修改过它，则需要重新编译remotedebug。
 
