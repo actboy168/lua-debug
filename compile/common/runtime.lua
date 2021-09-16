@@ -83,6 +83,9 @@ for _, luaver in ipairs {"lua51","lua52","lua53","lua54","lua-latest"} do
                 links = "pthread",
                 ldflags = "-Wl,-E",
             },
+            android = {
+                defines = "LUA_USE_LINUX",
+            },
             macos = {
                 defines = {
                     "LUA_USE_MACOSX",
