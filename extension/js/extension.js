@@ -63,7 +63,7 @@ async function activate(context) {
         vscode.debug.registerDebugAdapterTrackerFactory('lua', trackerFactory),
         vscode.commands.registerCommand("extension.lua-debug.pickProcess", pickProcess.pick),
         vscode.commands.registerCommand("extension.lua-debug.runEditorContents", (uri) => {
-            vscode.debug.startDebugging(undefined, {
+            vscode.debug.startDebugging(vscode.workspace.getWorkspaceFolder(uri), {
                 type: 'lua',
                 name: 'Run Editor Contents',
                 request: 'launch',
@@ -72,7 +72,7 @@ async function activate(context) {
             });
         }),
         vscode.commands.registerCommand("extension.lua-debug.debugEditorContents", (uri) => {
-            vscode.debug.startDebugging(undefined, {
+            vscode.debug.startDebugging(vscode.workspace.getWorkspaceFolder(uri), {
                 type: 'lua',
                 name: 'Debug Editor Contents',
                 request: 'launch',
