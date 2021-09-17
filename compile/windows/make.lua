@@ -30,7 +30,7 @@ lm.arch = lm.target_arch
 lm.defines = "_WIN32_WINNT=0x0601"
 lm.builddir = ("build/%s/%s/%s"):format(lm.os, lm.arch, lm.mode)
 
-require "compile.common.runtime"
+assert(loadfile("compile/common/runtime.lua"))(lm.os.."/"..lm.arch)
 
 do
     lm:source_set 'detours' {
@@ -108,5 +108,5 @@ lm:default {
     lm.arch == "x86" and "lua-debug",
     lm.arch == "x86" and "inject",
     "launcher",
-    "runtime",
+    "runtime/"..lm.os.."/"..lm.arch,
 }

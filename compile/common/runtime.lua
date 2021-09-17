@@ -1,31 +1,19 @@
-local lm = require "luamake"
-local platform = require "bee.platform"
+local platform = ...
 
+local lm = require "luamake"
 local runtimes = {}
 
-lm:source_set 'runtime/onelua' {
-    includes = {
-        "3rd/bee.lua/3rd/lua",
-    },
-    sources = {
-        "src/remotedebug/onelua.c",
-    },
-    linux = {
-        flags = "-fPIC"
-    }
-}
+require "compile.common.onelua"
 
 for _, luaver in ipairs {"lua51","lua52","lua53","lua54","lua-latest"} do
-    runtimes[#runtimes+1] = luaver.."/lua"
-    runtimes[#runtimes+1] = luaver.."/remotedebug"
-    if platform.OS == "Windows" then
-        runtimes[#runtimes+1] = luaver.."/"..luaver
-    end
+    runtimes[#runtimes+1] = platform..'/'..luaver.."/lua"
+    runtimes[#runtimes+1] = platform..'/'..luaver.."/remotedebug"
 
-    if platform.OS == "Windows" then
-        lm:shared_library (luaver..'/'..luaver) {
+    if lm.os == "windows" then
+        runtimes[#runtimes+1] = platform..'/'..luaver.."/"..luaver
+        lm:shared_library (platform..'/'..luaver..'/'..luaver) {
             rootdir = '3rd/lua/'..luaver,
-            bindir = "publish/runtime/"..lm.os.."/"..lm.arch,
+            bindir = "publish/runtime/",
             includes = {
                 '..',
             },
@@ -40,11 +28,12 @@ for _, luaver in ipairs {"lua51","lua52","lua53","lua54","lua-latest"} do
                 luaver == "lua52" and "_CRT_SECURE_NO_WARNINGS",
             }
         }
-        lm:executable (luaver..'/lua') {
+
+        lm:executable (platform..'/'..luaver..'/lua') {
             rootdir = '3rd/lua/'..luaver,
-            bindir = "publish/runtime/"..lm.os.."/"..lm.arch,
+            bindir = "publish/runtime/",
             output = "lua",
-            deps = (luaver..'/'..luaver),
+            deps = platform..'/'..luaver..'/'..luaver,
             includes = {
                 '..',
             },
@@ -58,9 +47,9 @@ for _, luaver in ipairs {"lua51","lua52","lua53","lua54","lua-latest"} do
             }
         }
     else
-        lm:executable (luaver..'/lua') {
+        lm:executable (platform..'/'..luaver..'/lua') {
             rootdir = '3rd/lua/'..luaver,
-            bindir = "publish/runtime/"..lm.os.."/"..lm.arch,
+            bindir = "publish/runtime/",
             includes = {
                 '.',
                 '..',
@@ -74,10 +63,7 @@ for _, luaver in ipairs {"lua51","lua52","lua53","lua54","lua-latest"} do
                 luaver == "lua52" and "_XOPEN_SOURCE=600",
             },
             visibility = "default",
-            links = {
-                "m",
-                "dl",
-            },
+            links = { "m", "dl", },
             linux = {
                 defines = "LUA_USE_LINUX",
                 links = "pthread",
@@ -102,8 +88,8 @@ for _, luaver in ipairs {"lua51","lua52","lua53","lua54","lua-latest"} do
         lua_version_num = 100 * math.tointeger(luaver:sub(4,4)) + math.tointeger(luaver:sub(5,5))
     end
 
-    lm:shared_library (luaver..'/remotedebug') {
-        bindir = "publish/runtime/"..lm.os.."/"..lm.arch,
+    lm:shared_library (platform..'/'..luaver..'/remotedebug') {
+        bindir = "publish/runtime/",
         deps = "runtime/onelua",
         defines = {
             "BEE_STATIC",
@@ -125,9 +111,7 @@ for _, luaver in ipairs {"lua51","lua52","lua53","lua54","lua-latest"} do
             "3rd/bee.lua/bee/nonstd/fmt/*.cc",
         },
         windows = {
-            deps = {
-                luaver..'/'..luaver,
-            },
+            deps = platform..'/'..luaver..'/'..luaver,
             defines = {
                 "_CRT_SECURE_NO_WARNINGS",
                 "_WIN32_WINNT=0x0601",
@@ -160,6 +144,6 @@ for _, luaver in ipairs {"lua51","lua52","lua53","lua54","lua-latest"} do
     }
 end
 
-lm:phony "runtime" {
+lm:phony("runtime/"..platform) {
     input = runtimes
 }

@@ -5,7 +5,7 @@ lm.EXE_NAME = "lua-debug"
 lm:import "3rd/bee.lua/make.lua"
 
 lm.arch = lm.arch or "x86_64"
-require "compile.common.runtime"
+assert(loadfile("compile/common/runtime.lua"))(lm.os.."/"..lm.arch)
 
 lm:copy 'copy_bootstrap' {
     input = "extension/script/bootstrap.lua",

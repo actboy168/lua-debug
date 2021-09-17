@@ -20,7 +20,7 @@ lm.EXE_DIR = "publish/bin/"..lm.os
 lm.EXE_NAME = "lua-debug"
 lm:import "3rd/bee.lua/make.lua"
 
-require "compile.common.runtime"
+assert(loadfile("compile/common/runtime.lua"))(lm.os.."/"..lm.arch)
 
 lm:build 'copy_extension' {
     '$luamake', 'lua', 'compile/copy_extension.lua',
@@ -40,5 +40,5 @@ lm:default {
     "update_version",
     "copy_bootstrap",
     "lua-debug",
-    "runtime",
+    "runtime/"..lm.os.."/"..lm.arch,
 }

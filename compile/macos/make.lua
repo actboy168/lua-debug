@@ -23,4 +23,4 @@ end
 
 lm.arch = lm.target:match "^([^-]*)-"
 lm.builddir = ("build/macos/%s/%s"):format(lm.mode, lm.arch)
-require "compile.common.runtime"
+loadfile("compile/common/runtime.lua")(lm.os.."/"..lm.arch)
