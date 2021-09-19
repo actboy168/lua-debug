@@ -46,6 +46,16 @@ local function IsArm64Macos()
     end
 end
 
+local PLATFORM = {
+    ["windows-x86"]    = "win32-ia32",
+    ["windows-x86_64"] = "win32-x64",
+    ["linux-x86_64"]   = "linux-x64",
+    ["linux-arm64"]    = "linux-arm64",
+    ["android-arm64"]  = "linux-arm64",
+    ["macos-x86_64"]   = "darwin-x64",
+    ["macos-arm64"]    = "darwin-arm64",
+}
+
 local function getLuaExe(args, dbg)
     local OS = platform_os():lower()
     local ARCH = args.luaArch
@@ -68,13 +78,15 @@ local function getLuaExe(args, dbg)
     elseif OS == "android" then
         ARCH = "arm64"
     end
-    local luaexe = dbg / "runtime"
-        / OS
-        / ARCH
-        / getLuaVersion(args)
-        / (OS == "windows" and "lua.exe" or "lua")
-    if fs.exists(luaexe) then
-        return luaexe
+    local platform = PLATFORM[OS.."-"..ARCH]
+    if platform then
+        local luaexe = dbg / "runtime"
+            / platform
+            / getLuaVersion(args)
+            / (OS == "windows" and "lua.exe" or "lua")
+        if fs.exists(luaexe) then
+            return luaexe
+        end
     end
     return nil, ("No runtime (OS: %s, ARCH: %s) is found, you need to compile it yourself."):format(OS, ARCH)
 end

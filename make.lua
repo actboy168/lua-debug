@@ -1,4 +1,6 @@
 local lm = require "luamake"
+require "compile.common.detect_platform"
+
 if lm.os == "windows" then
     require "compile.windows.make"
     return
@@ -7,20 +9,13 @@ elseif lm.os == "macos" then
     return
 end
 
-if not lm.arch then
-    local function shell(command)
-        local f <close> = assert(io.popen(command, 'r'))
-        return f:read 'l':lower()
-    end
-    lm.arch = shell "uname -m"
-end
-
-lm.builddir = ("build/%s/%s/%s"):format(lm.os, lm.arch, lm.mode)
+lm.builddir = ("build/%s/%s"):format(lm.platform, lm.mode)
 lm.EXE_DIR = "publish/bin/"..lm.os
 lm.EXE_NAME = "lua-debug"
 lm:import "3rd/bee.lua/make.lua"
 
-assert(loadfile("compile/common/runtime.lua"))(lm.os.."/"..lm.arch)
+lm.runtime_platform = lm.platform
+require "compile.common.runtime"
 
 lm:build 'copy_extension' {
     '$luamake', 'lua', 'compile/copy_extension.lua',
@@ -40,5 +35,5 @@ lm:default {
     "update_version",
     "copy_bootstrap",
     "lua-debug",
-    "runtime/"..lm.os.."/"..lm.arch,
+    "runtime",
 }
