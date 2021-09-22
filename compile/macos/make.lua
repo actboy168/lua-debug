@@ -1,26 +1,47 @@
 local lm = require "luamake"
 
-if lm.target == nil then
-    local function getMacosVersion()
-        local f = io.popen("sw_vers", "r")
-        if f then
-            for line in f:lines() do
-                local major, minor, patch = line:match "ProductVersion:%s*(%d+)%.(%d+)%.(%d+)"
-                if major and minor and patch then
-                    return tonumber(major)*10000 + tonumber(minor)*100 + tonumber(patch)
-                end
-            end
-        end
-        return 0
-    end
-    if getMacosVersion() >= 110000 then
-        require "compile.macos.macos11"
-        return
-    end
-    require "compile.macos.macos10"
-    return
+if lm.platform == "darwin-arm64" then
+    lm.target = "arm64-apple-macos11"
+else
+    lm.target = "x86_64-apple-macos10.12"
 end
 
-lm.arch = lm.target:match "^([^-]*)-"
-lm.builddir = ("build/macos/%s/%s"):format(lm.mode, lm.arch)
-loadfile("compile/common/runtime.lua")(lm.os.."/"..lm.arch)
+lm.builddir = ("build/%s/%s"):format(lm.platform, lm.mode)
+lm.EXE_DIR = "publish/bin/macos"
+lm.EXE_NAME = "lua-debug"
+lm:import "3rd/bee.lua/make.lua"
+
+lm.runtime_platform = lm.platform
+require "compile.common.runtime"
+
+if lm.platform == "darwin-arm64" then
+    lm:build "x86_64" {
+        "$luamake",
+        "-C", lm.workdir,
+        "-f", "compile/common/runtime.lua",
+        "-target", "x86_64-apple-macos10.12",
+        "-runtime_platform", "darwin-x64",
+        pool = "console",
+    }
+end
+
+lm:build 'copy_extension' {
+    '$luamake', 'lua', 'compile/copy_extension.lua',
+}
+
+lm:build 'update_version' {
+    '$luamake', 'lua', 'compile/update_version.lua',
+}
+
+lm:copy 'copy_bootstrap' {
+    input = "extension/script/bootstrap.lua",
+    output = "publish/bin/macos/main.lua",
+}
+
+lm:default {
+    "copy_extension",
+    "update_version",
+    "copy_bootstrap",
+    "lua-debug",
+    "runtime",
+}
