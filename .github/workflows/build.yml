@@ -6,14 +6,20 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-latest, ubuntu-18.04, macos-11]
+        include:
+          - os: windows-latest
+            platform: win32-x64
+          - os: ubuntu-18.04
+            platform: linux-x64
+          - os: macos-11
+            platform: darwin-x64
     steps:
     - uses: actions/checkout@v1
       with:
         ref: refs/heads/master
         submodules : recursive
     - uses: actboy168/setup-luamake@master
-    - run: luamake
+    - run: luamake -platform ${{ matrix.platform }}
     - uses: actions/upload-artifact@v1.0.0
       with:
         name: lua-debug
