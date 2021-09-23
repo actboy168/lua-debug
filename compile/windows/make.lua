@@ -23,7 +23,7 @@ if lm.platform == "win32-x64" then
         "$luamake",
         "-C", lm.workdir,
         "-f", "compile/windows/runtime.lua",
-        "-builddir", "build/darwin-x64/"..lm.mode,
+        "-builddir", "build/win32-x64/"..lm.mode,
         "-arch", "x86_64",
         "-runtime_platform", "win32-x64",
         pool = "console",
