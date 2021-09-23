@@ -22,8 +22,10 @@ if debug.getregistry()["lua-debug"] then
 end
 
 local function detectLuaDebugPath(cfg)
-    local OS
-    local ARCH
+    local PLATFORM
+    local function isWindows()
+        return package.config:sub(1,1) == "\\"
+    end
     do
         local function shell(command)
             --NOTICE: io.popen可能会多线程不安全
@@ -33,29 +35,28 @@ local function detectLuaDebugPath(cfg)
             return r:lower()
         end
         local function detect_windows()
-            OS = "windows"
             if os.getenv "PROCESSOR_ARCHITECTURE" == "AMD64" then
-                ARCH = "x86_64"
+                PLATFORM = "win32-x64"
             else
-                ARCH = "x86"
+                PLATFORM = "win32-ia32"
             end
         end
         local function detect_linux()
-            OS = "linux"
-            ARCH = "x86_64"
+            PLATFORM = "linux-x64"
             local machine = shell "uname -m"
             assert(machine:match "x86_64" or machine:match "amd64", "unknown ARCH")
         end
         local function detect_android()
-            OS = "android"
-            ARCH = shell "uname -m"
+            PLATFORM = "linux-arm64"
         end
         local function detect_macos()
-            OS = "macos"
-            ARCH = shell "uname -m"
-            assert(ARCH == "x86_64" or ARCH == "arm64", "unknown ARCH")
+            if shell "uname -m" == "arm64" then
+                PLATFORM = "darwin-x64"
+            else
+                PLATFORM = "darwin-arm64"
+            end
         end
-        if package.config:sub(1,1) == "\\" then
+        if isWindows() then
             detect_windows()
         else
             local name = shell 'uname -s'
@@ -73,7 +74,7 @@ local function detectLuaDebugPath(cfg)
         end
     end
 
-    local rt = "/runtime/" .. OS .. "/" .. ARCH
+    local rt = "/runtime/" .. PLATFORM
     if cfg.latest then
         rt = rt .. "/lua-latest"
     elseif _VERSION == "Lua 5.4" then
@@ -88,7 +89,7 @@ local function detectLuaDebugPath(cfg)
         error(_VERSION .. " is not supported.")
     end
 
-    local ext = OS == "windows" and "dll" or "so"
+    local ext = isWindows() and "dll" or "so"
     return root..rt..'/remotedebug.'..ext
 end
 
