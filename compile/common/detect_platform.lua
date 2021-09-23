@@ -14,9 +14,9 @@ local function macos_support_arm64()
     local f = io.popen("sw_vers", "r")
     if f then
         for line in f:lines() do
-            local major, minor, patch = line:match "ProductVersion:%s*(%d+)%.(%d+)%.(%d+)"
-            if major and minor and patch then
-                return major >= 11
+            local major, minor = line:match "ProductVersion:%s*(%d+)%.(%d+)"
+            if major and minor then
+                return tonumber(major) >= 11
             end
         end
     end
