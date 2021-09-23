@@ -19,6 +19,7 @@ if lm.platform == "darwin-arm64" then
         "$luamake",
         "-C", lm.workdir,
         "-f", "compile/common/runtime.lua",
+        "-builddir", "build/darwin-x64/"..lm.mode,
         "-target", "x86_64-apple-macos10.12",
         "-runtime_platform", "darwin-x64",
         pool = "console",
@@ -44,4 +45,5 @@ lm:default {
     "copy_bootstrap",
     "lua-debug",
     "runtime",
+    lm.platform == "darwin-arm64" and "x86_64"
 }

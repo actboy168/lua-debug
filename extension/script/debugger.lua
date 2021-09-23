@@ -51,9 +51,9 @@ local function detectLuaDebugPath(cfg)
         end
         local function detect_macos()
             if shell "uname -m" == "arm64" then
-                PLATFORM = "darwin-x64"
-            else
                 PLATFORM = "darwin-arm64"
+            else
+                PLATFORM = "darwin-x64"
             end
         end
         if isWindows() then
