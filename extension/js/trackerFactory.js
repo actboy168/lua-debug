@@ -1,7 +1,7 @@
 const vscode = require("vscode");
 const fs = require('fs');
 
-function onWillReceiveMessage(m) {
+async function onWillReceiveMessage(m) {
     if (m.type == "request"
         && m.command == "setBreakpoints"
         && typeof m.arguments.source == 'object'
@@ -13,9 +13,11 @@ function onWillReceiveMessage(m) {
                 return;
             }
         }
-        // TODO: use vscode api?
         try {
-            m.arguments.sourceContent = fs.readFileSync(m.arguments.source.path, 'utf8')
+            let uri = vscode.Uri.file(m.arguments.source.path);
+            m.arguments.sourceContent = await vscode.workspace.fs.readFile(uri).then((bytes) => {
+                return new TextDecoder("utf-8").decode(bytes);
+            });
         } catch (error) {
         }
     }
