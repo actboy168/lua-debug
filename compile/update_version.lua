@@ -13,7 +13,7 @@ end)()
 
 local function copy_directory(from, to, filter)
     fs.create_directories(to)
-    for fromfile in from:list_directory() do
+    for fromfile in fs.pairs(from) do
         if fs.is_directory(fromfile) then
             copy_directory(fromfile, to / fromfile:filename(), filter)
         else

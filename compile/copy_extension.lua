@@ -5,7 +5,7 @@ local OVERWRITE <const> = fs.copy_options.overwrite_existing
 
 local function copy_directory(from, to)
     fs.create_directories(to)
-    for fromfile in from:list_directory() do
+    for fromfile in fs.pairs(from) do
         if fs.is_directory(fromfile) then
             copy_directory(fromfile, to / fromfile:filename())
         else
