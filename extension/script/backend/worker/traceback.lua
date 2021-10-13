@@ -110,8 +110,7 @@ local function pushfuncname(f)
     end
 end
 
-local function getwhere(error)
-    local message = tostring(rdebug.value(error))
+local function getwhere(message)
     local f, l = message:find ':[-%d]+: '
     if f and l then
         local where_path = message:sub(1, f - 1)
@@ -136,8 +135,12 @@ local function findfirstlua(message)
     end
 end
 
-local function replacewhere(error)
-    local message, where_src, where_line = getwhere(error)
+local function replacewhere(flags, error)
+    local errormessage = tostring(rdebug.value(error))
+    if flags[1] == "syntax" then
+        return findfirstlua(errormessage)
+    end
+    local message, where_src, where_line = getwhere(errormessage)
     if not where_src then
         return findfirstlua(message)
     end
@@ -156,9 +159,9 @@ local function replacewhere(error)
     end
 end
 
-local function traceback(error)
+local function traceback(flags, error)
     local s = {}
-    local level, message = replacewhere(error)
+    local level, message = replacewhere(flags, error)
     if level < 0 then
         return -1
     end

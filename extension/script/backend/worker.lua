@@ -689,7 +689,7 @@ end
 
 local function runException(flags, errobj)
     local errmsg = variables.tostring(errobj)
-    local level, message, trace = traceback.traceback(errmsg)
+    local level, message, trace = traceback.traceback(flags, errmsg)
     if level < 0 then
         return
     end
