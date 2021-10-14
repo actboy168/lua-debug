@@ -1,5 +1,5 @@
-local ok, ls = pcall(require, 'bee.socket')
-if not ok then ls = require 'remotedebug.socket' end
+local ok, socket = pcall(require, 'bee.socket')
+if not ok then socket = require 'remotedebug.socket' end
 
 local listens = {}
 local connects = {}
@@ -136,9 +136,17 @@ function m.cleanup(fd)
 end
 
 function m.listen(t)
-    local fd, err = ls.bind(t.protocol, t.address, t.port)
+    local fd, err = socket(t.protocol)
     if not fd then
-        return fd, err
+        return nil, err
+    end
+    ok, err = fd:bind(t.address, t.port)
+    if not ok then
+        return nil, err
+    end
+    ok, err = fd:listen()
+    if not ok then
+        return nil, err
     end
     listens[#listens+1] = fd
     event[fd] = t.event
@@ -146,9 +154,13 @@ function m.listen(t)
 end
 
 function m.connect(t)
-    local fd, err = ls.connect(t.protocol, t.address, t.port)
+    local fd, err = socket(t.protocol)
     if not fd then
-        return fd, err
+        return nil, err
+    end
+    ok, err = fd:connect(t.address, t.port)
+    if ok == nil then
+        return nil, err
     end
     connects[#connects+1] = fd
     event[fd] = t.event
@@ -172,8 +184,10 @@ end
 
 local function updateLC()
     for idx, wc in pairs(wantconnects) do
+        print "connect"
         local fd = m.connect(wc)
         if fd then
+            print "dontwantconnect"
             m.dontwantconnect(idx)
             event[fd]('connect start', fd)
             break
@@ -182,7 +196,7 @@ local function updateLC()
     if #listens == 0 and #connects == 0 then
         return
     end
-    local rd, wr = ls.select(listens, connects, 0)
+    local rd, wr = socket.select(listens, connects, 0)
     if not rd then
         return
     end
@@ -190,8 +204,10 @@ local function updateLC()
         local newfd = fd:accept()
         if newfd:status() then
             event[fd]('accept', newfd)
-            event[newfd] = event[fd]
-            attach(newfd)
+            if newfd:status() then
+                event[newfd] = event[fd]
+                attach(newfd)
+            end
         end
     end
     for _, fd in ipairs(wr) do
@@ -209,7 +225,7 @@ end
 
 function m.update(timeout)
     updateLC()
-    local rd, wr = ls.select(rds, wds, timeout)
+    local rd, wr = socket.select(rds, wds, timeout)
     if not rd then
         return
     end
