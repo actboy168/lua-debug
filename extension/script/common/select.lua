@@ -142,10 +142,12 @@ function m.listen(t)
     end
     ok, err = fd:bind(t.address, t.port)
     if not ok then
+        fd:close()
         return nil, err
     end
     ok, err = fd:listen()
     if not ok then
+        fd:close()
         return nil, err
     end
     listens[#listens+1] = fd
@@ -160,6 +162,7 @@ function m.connect(t)
     end
     ok, err = fd:connect(t.address, t.port)
     if ok == nil then
+        fd:close()
         return nil, err
     end
     connects[#connects+1] = fd
