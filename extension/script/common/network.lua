@@ -21,7 +21,7 @@ local function parseAddress(address, client)
     local ipv6, port = address:match("%[([%d:a-fA-F]+)%]:(%d+)")
     if ipv6 then
         return {
-            protocol = 'tcp',
+            protocol = 'tcp6',
             address = ipv6,
             port = tonumber(port),
             client = client,
