@@ -1,4 +1,6 @@
+#define RLUA_REPLACE
 #include "rdebug_cmodule.h"
+#include <bee/lua/binding.h>
 
 extern "C" int luaopen_remotedebug_hookmgr(rlua_State* L);
 extern "C" int luaopen_remotedebug_socket(rlua_State* L);
@@ -18,32 +20,14 @@ static rluaL_Reg cmodule[] = {
 };
 
 namespace remotedebug {
-    const rluaL_Reg* get_cmodule() {
-        return cmodule;
-    }
-    static int require_cmodule(rlua_State *L) {
-        const char* name = (const char*)rlua_touserdata(L, 1);
-        rlua_CFunction f = (rlua_CFunction)rlua_touserdata(L, 2);
-        rluaL_requiref(L, name, f, 0);
-        return 0;
-    }
-    static int require_function(rlua_State* L, const char* name, rlua_CFunction f) {
-        rlua_pushcfunction(L, require_cmodule);
-        rlua_pushlightuserdata(L, (void*)name);
-        rlua_pushlightuserdata(L, (void*)f);
-        if (rlua_pcall(L, 2, 0, 0) != LUA_OK) {
-            rlua_pop(L, 1);
-            return 1;
+    static void require_cmodule() {
+        for (const rluaL_Reg* l = cmodule; l->name != NULL; l++) {
+            ::bee::lua::register_module(l->name, l->func);
         }
-        return 0;
     }
-    static int require_all(rlua_State* L, const rluaL_Reg* l) {
-        for (; l->name != NULL; l++) {
-            require_function(L, l->name, l->func);
-        }
-        return 0;
-    }
+    static ::bee::lua::callfunc _init(require_cmodule);
     int require_all(rlua_State* L) {
-        return require_all(L, get_cmodule());
+        ::bee::lua::preload_module(L);
+        return 0;
     }
 }

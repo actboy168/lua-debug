@@ -153,11 +153,17 @@ lhost_event(lua_State *L) {
 
 #if defined(_WIN32) && !defined(RLUA_DISABLE)
 #include <bee/utility/unicode_win.h>
-#include <bee/lua/binding.h>
+
+static std::string_view
+to_strview(lua_State* L, int idx) {
+    size_t len = 0;
+    const char* buf = luaL_checklstring(L, idx, &len);
+    return std::string_view(buf, len);
+}
 
 static int
 la2u(lua_State *L) {
-    std::string r = bee::a2u(bee::lua::to_strview(L, 1));
+    std::string r = bee::a2u(to_strview(L, 1));
     lua_pushlstring(L, r.data(), r.size());
     return 1;
 }

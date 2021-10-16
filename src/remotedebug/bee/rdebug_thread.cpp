@@ -1,7 +1,6 @@
 #define RLUA_REPLACE
 #include "../rlua.h"
 #include "../rdebug_cmodule.h"
-#define BEE_THREAD_MODULE (::remotedebug::get_cmodule())
 #include <binding/lua_thread.cpp>
 
 #if defined(_WIN32)
