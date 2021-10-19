@@ -270,22 +270,25 @@ end
 
 function m.newproto(proto, src, key)
     src.protos[proto] = key
-    local bpkey = bpClientKey(src)
-    local wv = waitverify[bpkey]
-    if wv then
-        if not src.content then
-            waitverify[bpkey] = nil
+    do
+        local bpkey = bpClientKey(src)
+        local wv = waitverify[bpkey]
+        if wv then
+            if not src.content then
+                waitverify[bpkey] = nil
+            end
+            if calcLineInfo(src, wv.content) then
+                verifyBreakpoint(src, wv.breakpoints)
+            else
+                cantVerifyBreakpoints(wv.breakpoint)
+            end
+            return
         end
-        if calcLineInfo(src, wv.content) then
-            verifyBreakpoint(src, wv.breakpoints)
-        else
-            cantVerifyBreakpoints(wv.breakpoint)
-        end
-        return
     end
-    local bps = currentactive[bpKey(src)]
+    local bpkey = bpKey(src)
+    local bps = currentactive[bpkey]
     if bps and src.lineinfo then
-        updateBreakpoint(key, src, bps)
+        updateBreakpoint(bpkey, src, bps)
         return
     end
 end
