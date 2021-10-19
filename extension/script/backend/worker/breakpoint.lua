@@ -123,11 +123,13 @@ local function verifyBreakpoint(src, breakpoints)
         end
         local activeline = lineinfo[bp.line]
         if not activeline then
-            ev.emit('breakpoint', 'changed', {
-                id = bp.id,
-                message = "The breakpoint didn't hit a valid line.",
-                verified = false,
-            })
+            if not src.startline then
+                ev.emit('breakpoint', 'changed', {
+                    id = bp.id,
+                    message = "The breakpoint didn't hit a valid line.",
+                    verified = false,
+                })
+            end
             goto continue
         end
         bp.source = src
@@ -271,7 +273,9 @@ function m.newproto(proto, src, key)
     local bpkey = bpClientKey(src)
     local wv = waitverify[bpkey]
     if wv then
-        waitverify[bpkey] = nil
+        if not src.content then
+            waitverify[bpkey] = nil
+        end
         if calcLineInfo(src, wv.content) then
             verifyBreakpoint(src, wv.breakpoints)
         else
