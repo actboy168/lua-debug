@@ -187,10 +187,8 @@ end
 
 local function updateLC()
     for idx, wc in pairs(wantconnects) do
-        print "connect"
         local fd = m.connect(wc)
         if fd then
-            print "dontwantconnect"
             m.dontwantconnect(idx)
             event[fd]('connect start', fd)
             break
