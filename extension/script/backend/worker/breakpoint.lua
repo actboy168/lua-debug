@@ -280,7 +280,7 @@ function m.newproto(proto, src, key)
             if calcLineInfo(src, wv.content) then
                 verifyBreakpoint(src, wv.breakpoints)
             else
-                cantVerifyBreakpoints(wv.breakpoint)
+                cantVerifyBreakpoints(wv.breakpoints)
             end
             return
         end
