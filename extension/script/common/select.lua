@@ -140,6 +140,9 @@ function m.listen(t)
     if not fd then
         return nil, err
     end
+    if t.protocol == "unix" then
+        os.remove(t.address)
+    end
     ok, err = fd:bind(t.address, t.port)
     if not ok then
         fd:close()
