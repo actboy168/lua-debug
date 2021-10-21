@@ -15,14 +15,17 @@ function getExtensionDirectory(context) {
     return process.env.VSCODE_EXTENSION_PATH
 }
 
+async function fsExists(file) {
+    return !! await fs.stat(file).catch(e => false);
+}
+
 async function copyDirectory(src, dst) {
+    if (!await fsExists(src) || !await fsExists(dst)) {
+        return
+    }
     for (const filename of await fs.readdir(src)) {
         await fs.copyFile(path.join(src, filename), path.join(dst, filename));
     }
-}
-
-async function fsExists(file) {
-    return !! await fs.stat(file).catch(e => false);
 }
 
 async function install() {
@@ -46,7 +49,9 @@ async function install() {
 async function activate(context) {
     exports.extensionDirectory = getExtensionDirectory(context)
 
-    await install();
+    await install().catch(error => {
+        console.log(error.stack)
+    });
 
     for (const i in configurationProvider) {
         let provider = configurationProvider[i];
