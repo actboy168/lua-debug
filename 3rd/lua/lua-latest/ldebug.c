@@ -64,7 +64,7 @@ static int getbaseline (const Proto *f, int pc, int *basepc) {
   }
   else {
     int i = cast_uint(pc) / MAXIWTHABS - 1;  /* get an estimate */
-    /* estimate must be a lower bond of the correct base */
+    /* estimate must be a lower bound of the correct base */
     lua_assert(i < 0 ||
               (i < f->sizeabslineinfo && f->abslineinfo[i].pc <= pc));
     while (i + 1 < f->sizeabslineinfo && pc >= f->abslineinfo[i + 1].pc)
@@ -301,7 +301,14 @@ static void collectvalidlines (lua_State *L, Closure *f) {
     sethvalue2s(L, L->top, t);  /* push it on stack */
     api_incr_top(L);
     setbtvalue(&v);  /* boolean 'true' to be the value of all indices */
-    for (i = 0; i < p->sizelineinfo; i++) {  /* for all instructions */
+    if (!p->is_vararg)  /* regular function? */
+      i = 0;  /* consider all instructions */
+    else {  /* vararg function */
+      lua_assert(p->code[0] == OP_VARARGPREP);
+      currentline = nextline(p, currentline, 0);
+      i = 1;  /* skip first instruction (OP_VARARGPREP) */
+    }
+    for (; i < p->sizelineinfo; i++) {  /* for each instruction */
       currentline = nextline(p, currentline, i);  /* get its line */
       luaH_setint(L, t, currentline, &v);  /* table[line] = true */
     }
