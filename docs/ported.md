@@ -12,21 +12,29 @@ local rdebug = require "remotedebug"
 
 local rawcoroutineresume = coroutine.resume
 local rawcoroutinewrap   = coroutine.wrap
+local rawcoroutineclose  = coroutine.close
 local function coreturn(co, ...)
     rdebug.event("thread", co, 1)
     return ...
 end
-function coroutine.resume(co, ...)
+local function cocall(co, f, ...)
+    --TODO: 处理f抛出错误的情况
     rdebug.event("thread", co, 0)
-    return coreturn(co, rawcoroutineresume(co, ...))
+    return coreturn(co, f(...))
+end
+function coroutine.resume(co, ...)
+    return cocall(co, rawcoroutineresume, co, ...)
 end
 function coroutine.wrap(f)
+    --TODO: coroutine.wrap可以回调用coroutine.close,这里没法hook
     local wf = rawcoroutinewrap(f)
     local _, co = debug.getupvalue(wf, 1)
     return function(...)
-        rdebug.event("thread", co, 0)
-        return coreturn(co, wf(...))
+        return cocall(co, wf, ...)
     end
+end
+function coroutine.close(co)
+    return cocall(co, rawcoroutineclose, co)
 end
 ```
 
