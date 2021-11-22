@@ -1,4 +1,6 @@
 #include "lua.h"
+#include "lstate.h"
+#include "ldo.h"
 
 #if LUA_VERSION_NUM >= 504
 #define LUA_CALLHOOK(L,event, type) luaD_hook(L, event, type, 0, 0)
