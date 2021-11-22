@@ -16,6 +16,8 @@
 
 #include "lauxlib.h"
 #include "lualib.h"
+#include "lstate.h"
+#include "ldo.h"
 
 
 static lua_State *getco (lua_State *L) {
