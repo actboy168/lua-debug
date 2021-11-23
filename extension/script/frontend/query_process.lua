@@ -4,7 +4,7 @@ local SKIP = 0
 if platform.OS == "Windows" then
     local pwsh = require "powershell"()
     if pwsh then
-        COMMAND = "powershell -NoProfile -Command \"Get-CimInstance Win32_Process | Select-Object Name,ProcessId\""
+        COMMAND = pwsh .. " -NoProfile -Command \"Get-CimInstance Win32_Process | Select-Object Name,ProcessId\""
         SKIP = 3
     else
         COMMAND = "wmic process get name,processid"
