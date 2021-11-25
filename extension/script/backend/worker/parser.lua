@@ -31,8 +31,8 @@ local function getactivelines(proto)
             abs[line.pc] = line.line
         end
         local start = 1
-        if proto.linedefined == 0 and proto.is_vararg > 0 then
-            assert(proto.code[1] == 81) -- OP_VARARGPREP
+        if proto.is_vararg > 0 then
+            assert(proto.code[1] & 0x7F == 81) -- OP_VARARGPREP
             currentline = nextline(proto, abs, currentline, 1)
             start = 2
         end
