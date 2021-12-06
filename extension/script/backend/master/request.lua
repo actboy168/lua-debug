@@ -422,16 +422,11 @@ function request.pause(req)
 end
 
 function request.continue(req)
-    local args = req.arguments
-    local threadId = args.threadId
-    if not checkThreadId(req, threadId) then
-        return
-    end
-    mgr.workerSend(threadId, {
-        cmd = 'run',
-    })
+    mgr.workerBroadcast {
+        cmd = 'run'
+    }
     response.success(req, {
-        allThreadsContinued = false,
+        allThreadsContinued = true,
     })
 end
 
@@ -444,6 +439,12 @@ function request.next(req)
     mgr.workerSend(threadId, {
         cmd = 'stepOver',
     })
+    mgr.workerBroadcastExclude(threadId, {
+        cmd = 'run'
+    })
+    event.continued {
+        allThreadsContinued = true,
+    }
     response.success(req)
 end
 
@@ -456,6 +457,12 @@ function request.stepOut(req)
     mgr.workerSend(threadId, {
         cmd = 'stepOut',
     })
+    mgr.workerBroadcastExclude(threadId, {
+        cmd = 'run'
+    })
+    event.continued {
+        allThreadsContinued = true,
+    }
     response.success(req)
 end
 
@@ -468,6 +475,12 @@ function request.stepIn(req)
     mgr.workerSend(threadId, {
         cmd = 'stepIn',
     })
+    mgr.workerBroadcastExclude(threadId, {
+        cmd = 'run'
+    })
+    event.continued {
+        allThreadsContinued = true,
+    }
     response.success(req)
 end
 

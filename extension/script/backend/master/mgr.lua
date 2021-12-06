@@ -113,6 +113,15 @@ function mgr.workerBroadcast(pkg)
     end
 end
 
+function mgr.workerBroadcastExclude(exclude, pkg)
+    local msg = json.encode(pkg)
+    for w, channel in pairs(threadChannel) do
+        if w ~= exclude then
+            channel:push(msg)
+        end
+    end
+end
+
 function mgr.setThreadName(w, name)
     if name == json.null then
         threadName[w] = nil

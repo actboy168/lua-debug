@@ -88,4 +88,13 @@ function event.invalidated(body)
     }
 end
 
+function event.continued(body)
+    mgr.clientSend {
+        type = 'event',
+        seq = mgr.newSeq(),
+        event = 'continued',
+        body = body
+    }
+end
+
 return event
