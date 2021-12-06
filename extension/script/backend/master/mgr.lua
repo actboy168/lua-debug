@@ -42,7 +42,7 @@ local function event_close()
     if not initialized then
         return
     end
-    mgr.broadcastToWorker {
+    mgr.workerBroadcast {
         cmd = 'terminated',
     }
     ev.emit('close')
@@ -98,15 +98,15 @@ function mgr.initConfig(config)
     end
 end
 
-function mgr.sendToClient(pkg)
+function mgr.clientSend(pkg)
     network.send(proto.send(pkg, stat))
 end
 
-function mgr.sendToWorker(w, pkg)
+function mgr.workerSend(w, pkg)
     return threadChannel[w]:push(json.encode(pkg))
 end
 
-function mgr.broadcastToWorker(pkg)
+function mgr.workerBroadcast(pkg)
     local msg = json.encode(pkg)
     for _, channel in pairs(threadChannel) do
         channel:push(msg)

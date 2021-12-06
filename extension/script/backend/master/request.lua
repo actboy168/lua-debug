@@ -60,7 +60,7 @@ end
 local function tryStop(w)
     if firstWorker then
         if not not config.initialize.stopOnEntry then
-            mgr.sendToWorker(w, {
+            mgr.workerSend(w, {
                 cmd = 'stop',
                 reason = 'entry',
             })
@@ -68,7 +68,7 @@ local function tryStop(w)
         end
     end
     if not not config.initialize.stopOnThreadEntry then
-        mgr.sendToWorker(w, {
+        mgr.workerSend(w, {
             cmd = 'stop',
             reason = 'entry',
         })
@@ -76,7 +76,7 @@ local function tryStop(w)
 end
 
 local function initializeWorkerBreakpoints(w, source, breakpoints, content)
-    mgr.sendToWorker(w, {
+    mgr.workerSend(w, {
         cmd = 'setBreakpoints',
         source = source,
         breakpoints = breakpoints,
@@ -85,7 +85,7 @@ local function initializeWorkerBreakpoints(w, source, breakpoints, content)
 end
 
 local function initializeWorker(w)
-    mgr.sendToWorker(w, {
+    mgr.workerSend(w, {
         cmd = 'initializing',
         config = config.initialize,
     })
@@ -94,23 +94,23 @@ local function initializeWorker(w)
             initializeWorkerBreakpoints(w, bp[1], bp[2], bp[3])
         end
     end
-    mgr.sendToWorker(w, {
+    mgr.workerSend(w, {
         cmd = 'setFunctionBreakpoints',
         breakpoints = config.function_breakpoints,
     })
-    mgr.sendToWorker(w, {
+    mgr.workerSend(w, {
         cmd = 'setExceptionBreakpoints',
         arguments = config.exception_breakpoints,
     })
     if firstWorker and config.launch then
-        mgr.sendToWorker(w, {
+        mgr.workerSend(w, {
             cmd = 'setSearchPath',
             path = config.initialize.path,
             cpath = config.initialize.cpath,
         })
     end
     tryStop(w)
-    mgr.sendToWorker(w, {
+    mgr.workerSend(w, {
         cmd = 'initialized',
     })
     firstWorker = false
@@ -212,7 +212,7 @@ function request.setFunctionBreakpoints(req)
     })
     config.function_breakpoints = args.breakpoints
     if state == "initialized" then
-        mgr.broadcastToWorker {
+        mgr.workerBroadcast {
             cmd = 'setFunctionBreakpoints',
             breakpoints = args.breakpoints,
         }
@@ -251,7 +251,7 @@ function request.setExceptionBreakpoints(req)
     })
     config.exception_breakpoints = filter
     if state == "initialized" then
-        mgr.broadcastToWorker {
+        mgr.workerBroadcast {
             cmd = 'setExceptionBreakpoints',
             arguments = filter,
         }
@@ -264,7 +264,7 @@ function request.stackTrace(req)
     if not checkThreadId(req, threadId) then
         return
     end
-    mgr.sendToWorker(threadId, {
+    mgr.workerSend(threadId, {
         cmd = 'stackTrace',
         command = req.command,
         seq = req.seq,
@@ -286,7 +286,7 @@ function request.scopes(req)
         return
     end
 
-    mgr.sendToWorker(threadId, {
+    mgr.workerSend(threadId, {
         cmd = 'scopes',
         command = req.command,
         seq = req.seq,
@@ -301,7 +301,7 @@ function request.variables(req)
     if not checkThreadId(req, threadId) then
         return
     end
-    mgr.sendToWorker(threadId, {
+    mgr.workerSend(threadId, {
         cmd = 'variables',
         command = req.command,
         seq = req.seq,
@@ -327,7 +327,7 @@ function request.evaluate(req)
     if not checkThreadId(req, threadId) then
         return
     end
-    mgr.sendToWorker(threadId, {
+    mgr.workerSend(threadId, {
         cmd = 'evaluate',
         command = req.command,
         seq = req.seq,
@@ -347,7 +347,7 @@ function request.disconnect(req)
     if args.terminateDebuggee == nil then
         args.terminateDebuggee = not not config.launch
     end
-    mgr.broadcastToWorker {
+    mgr.workerBroadcast {
         cmd = 'disconnect',
     }
     if args.terminateDebuggee then
@@ -371,7 +371,7 @@ function request.terminate(req)
     --  现在调试器激活是会屏蔽SIGINT，导致closeprocess无法生效，所以需要先将调试器关闭，再调用closeprocess。
     --  或许需要让调试器和SIGINT不再冲突。
     --
-    mgr.broadcastToWorker {
+    mgr.workerBroadcast {
         cmd = 'disconnect',
     }
     mgr.setTerminateDebuggeeCallback(function()
@@ -384,7 +384,7 @@ end
 function request.restart(req)
     local args = req.arguments.arguments
     response.success(req)
-    mgr.broadcastToWorker {
+    mgr.workerBroadcast {
         cmd = 'disconnect',
     }
     mgr.setTerminateDebuggeeCallback(function()
@@ -402,7 +402,7 @@ function request.terminateThreads(req)
     local args = req.arguments
     response.success(req)
     for _, w in ipairs(args.threadIds) do
-        mgr.sendToWorker(w, {
+        mgr.workerSend(w, {
             cmd = 'disconnect',
         })
     end
@@ -414,7 +414,7 @@ function request.pause(req)
     if not checkThreadId(req, threadId) then
         return
     end
-    mgr.sendToWorker(threadId, {
+    mgr.workerSend(threadId, {
         cmd = 'stop',
         reason = 'pause',
     })
@@ -427,7 +427,7 @@ function request.continue(req)
     if not checkThreadId(req, threadId) then
         return
     end
-    mgr.sendToWorker(threadId, {
+    mgr.workerSend(threadId, {
         cmd = 'run',
     })
     response.success(req, {
@@ -441,7 +441,7 @@ function request.next(req)
     if not checkThreadId(req, threadId) then
         return
     end
-    mgr.sendToWorker(threadId, {
+    mgr.workerSend(threadId, {
         cmd = 'stepOver',
     })
     response.success(req)
@@ -453,7 +453,7 @@ function request.stepOut(req)
     if not checkThreadId(req, threadId) then
         return
     end
-    mgr.sendToWorker(threadId, {
+    mgr.workerSend(threadId, {
         cmd = 'stepOut',
     })
     response.success(req)
@@ -465,7 +465,7 @@ function request.stepIn(req)
     if not checkThreadId(req, threadId) then
         return
     end
-    mgr.sendToWorker(threadId, {
+    mgr.workerSend(threadId, {
         cmd = 'stepIn',
     })
     response.success(req)
@@ -478,7 +478,7 @@ function request.source(req)
     if not checkThreadId(req, threadId) then
         return
     end
-    mgr.sendToWorker(threadId, {
+    mgr.workerSend(threadId, {
         cmd = 'source',
         command = req.command,
         seq = req.seq,
@@ -492,7 +492,7 @@ function request.exceptionInfo(req)
     if not checkThreadId(req, threadId) then
         return
     end
-    mgr.sendToWorker(threadId, {
+    mgr.workerSend(threadId, {
         cmd = 'exceptionInfo',
         command = req.command,
         seq = req.seq,
@@ -506,7 +506,7 @@ function request.setVariable(req)
     if not checkThreadId(req, threadId) then
         return
     end
-    mgr.sendToWorker(threadId, {
+    mgr.workerSend(threadId, {
         cmd = 'setVariable',
         command = req.command,
         seq = req.seq,
@@ -523,7 +523,7 @@ function request.setExpression(req)
     if not checkThreadId(req, threadId) then
         return
     end
-    mgr.sendToWorker(threadId, {
+    mgr.workerSend(threadId, {
         cmd = 'setExpression',
         command = req.command,
         seq = req.seq,
@@ -537,7 +537,7 @@ function request.loadedSources(req)
     response.success(req, {
         sources = {}
     })
-    mgr.broadcastToWorker {
+    mgr.workerBroadcast {
         cmd = 'loadedSources'
     }
 end
@@ -550,7 +550,7 @@ function request.restartFrame(req)
         return
     end
     response.success(req)
-    mgr.sendToWorker(threadId, {
+    mgr.workerSend(threadId, {
         cmd = 'restartFrame',
         frameId = frameId,
     })
@@ -558,14 +558,14 @@ end
 
 function request.customRequestShowIntegerAsDec(req)
     response.success(req)
-    mgr.broadcastToWorker {
+    mgr.workerBroadcast {
         cmd = 'customRequestShowIntegerAsDec'
     }
 end
 
 function request.customRequestShowIntegerAsHex(req)
     response.success(req)
-    mgr.broadcastToWorker {
+    mgr.workerBroadcast {
         cmd = 'customRequestShowIntegerAsHex'
     }
 end

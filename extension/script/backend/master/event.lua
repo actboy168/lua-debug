@@ -2,7 +2,7 @@ local mgr = require 'backend.master.mgr'
 local event = {}
 
 function event.initialized()
-    mgr.sendToClient {
+    mgr.clientSend {
         type = 'event',
         seq = mgr.newSeq(),
         event = 'initialized',
@@ -10,7 +10,7 @@ function event.initialized()
 end
 
 function event.capabilities()
-    mgr.sendToClient {
+    mgr.clientSend {
         type = 'event',
         seq = mgr.newSeq(),
         event = 'capabilities',
@@ -21,7 +21,7 @@ function event.capabilities()
 end
 
 function event.stopped(body)
-    mgr.sendToClient {
+    mgr.clientSend {
         type = 'event',
         seq = mgr.newSeq(),
         event = 'stopped',
@@ -30,7 +30,7 @@ function event.stopped(body)
 end
 
 function event.breakpoint(body)
-    mgr.sendToClient {
+    mgr.clientSend {
         type = 'event',
         seq = mgr.newSeq(),
         event = 'breakpoint',
@@ -39,7 +39,7 @@ function event.breakpoint(body)
 end
 
 function event.output(body)
-    mgr.sendToClient {
+    mgr.clientSend {
         type = 'event',
         seq = mgr.newSeq(),
         event = 'output',
@@ -48,7 +48,7 @@ function event.output(body)
 end
 
 function event.terminated()
-    mgr.sendToClient {
+    mgr.clientSend {
         type = 'event',
         seq = mgr.newSeq(),
         event = 'terminated',
@@ -59,7 +59,7 @@ function event.terminated()
 end
 
 function event.loadedSource(body)
-    mgr.sendToClient {
+    mgr.clientSend {
         type = 'event',
         seq = mgr.newSeq(),
         event = 'loadedSource',
@@ -68,7 +68,7 @@ function event.loadedSource(body)
 end
 
 function event.thread(body)
-    mgr.sendToClient {
+    mgr.clientSend {
         type = 'event',
         seq = mgr.newSeq(),
         event = 'thread',
@@ -80,7 +80,7 @@ function event.invalidated(body)
     if not mgr.getClient().supportsInvalidatedEvent then
         return
     end
-    mgr.sendToClient {
+    mgr.clientSend {
         type = 'event',
         seq = mgr.newSeq(),
         event = 'invalidated',

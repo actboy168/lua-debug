@@ -3,7 +3,7 @@ local mgr = require 'backend.master.mgr'
 local response = {}
 
 function response.error(req, msg)
-    mgr.sendToClient {
+    mgr.clientSend {
         type = 'response',
         seq = mgr.newSeq(),
         command = req.command,
@@ -14,7 +14,7 @@ function response.error(req, msg)
 end
 
 function response.success(req, body)
-    mgr.sendToClient {
+    mgr.clientSend {
         type = 'response',
         seq = mgr.newSeq(),
         command = req.command,
@@ -29,7 +29,7 @@ function response.initialize(req)
         mgr.newSeq()
         return
     end
-    mgr.sendToClient {
+    mgr.clientSend {
         type = 'response',
         seq = mgr.newSeq(),
         command = req.command,
@@ -40,7 +40,7 @@ function response.initialize(req)
 end
 
 function response.threads(req, threads)
-    mgr.sendToClient {
+    mgr.clientSend {
         type = 'response',
         seq = mgr.newSeq(),
         command = req.command,
