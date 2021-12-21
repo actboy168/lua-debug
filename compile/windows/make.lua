@@ -24,6 +24,7 @@ if lm.platform == "win32-x64" then
         "-C", lm.workdir,
         "-f", "compile/windows/runtime.lua",
         "-builddir", "build/win32-x64/"..lm.mode,
+        "-mode", lm.mode,
         "-arch", "x86_64",
         "-runtime_platform", "win32-x64",
         pool = "console",

@@ -20,6 +20,7 @@ if lm.platform == "darwin-arm64" then
         "-C", lm.workdir,
         "-f", "compile/common/runtime.lua",
         "-builddir", "build/darwin-x64/"..lm.mode,
+        "-mode", lm.mode,
         "-target", "x86_64-apple-macos10.12",
         "-runtime_platform", "darwin-x64",
         pool = "console",
