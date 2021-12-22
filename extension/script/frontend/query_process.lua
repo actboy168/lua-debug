@@ -2,7 +2,7 @@ local platform = require "bee.platform"
 local COMMAND
 local SKIP = 0
 if platform.OS == "Windows" then
-    local pwsh = require "powershell"()
+    local pwsh = require "frontend.powershell"()
     if pwsh then
         COMMAND = pwsh .. " -NoProfile -Command \"Get-CimInstance Win32_Process | Select-Object Name,ProcessId\""
         SKIP = 3
