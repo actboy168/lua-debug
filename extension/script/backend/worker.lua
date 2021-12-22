@@ -210,7 +210,10 @@ local function skipCFunction(res)
 end
 
 local function coroutineFrom(L)
-    return coroutineTree[L] or hookmgr.coroutine_from(L)
+    if hookmgr.coroutine_from then
+        return coroutineTree[L] or hookmgr.coroutine_from(L)
+    end
+    return coroutineTree[L]
 end
 
 function CMD.stackTrace(pkg)
