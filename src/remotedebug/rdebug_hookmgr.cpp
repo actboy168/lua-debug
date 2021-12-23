@@ -179,6 +179,9 @@ struct hookmgr {
         if (!lua_getstack(hL, 1, ar)) {
             return;
         }
+        if (ar->i_ci == 0) {
+            return;
+        }
         break_update(hL, hL->base_ci + ar->i_ci, ar->event);
 #endif
     }
