@@ -14,10 +14,11 @@ async function onWillReceiveMessage(m) {
             }
         }
         try {
-            let uri = vscode.Uri.file(m.arguments.source.path);
-            m.arguments.sourceContent = await vscode.workspace.fs.readFile(uri).then((bytes) => {
-                return new TextDecoder("utf-8").decode(bytes);
-            });
+            //let uri = vscode.Uri.file(m.arguments.source.path);
+            //m.arguments.sourceContent = await vscode.workspace.fs.readFile(uri).then((bytes) => {
+            //    return new TextDecoder("utf-8").decode(bytes);
+            //});
+            m.arguments.sourceContent = fs.readFileSync(m.arguments.source.path, 'utf8');
         } catch (error) {
         }
     }
