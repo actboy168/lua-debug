@@ -3,5 +3,8 @@
     "Lua.diagnostics.globals": [
         "loadstring",
         "unpack"
+    ],
+    "Lua.diagnostics.disable": [
+        "discard-returns"
     ]
 }
