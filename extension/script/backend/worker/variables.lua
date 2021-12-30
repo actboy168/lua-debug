@@ -107,8 +107,8 @@ function special_has.Parameter(frameId)
         if info.nparams > 0 then
             return true
         end
+        return rdebug.getlocalv(frameId, -1) ~= nil
     end
-    return rdebug.getlocalv(frameId, -1) ~= nil
 end
 
 function special_has.Local(frameId)
@@ -843,23 +843,22 @@ function special_extand.Parameter(varRef)
     local frameId = varRef.frameId
     local vars = {}
 
-    if LUAVERSION >= 52 then
-        rdebug.getinfo(frameId, "u", info)
-        if info.nparams > 0 then
-            for i = 1, info.nparams do
-                local name, value = rdebug.getlocalv(frameId, i)
-                if name ~= nil then
-                    local fi = i
-                    varCreate {
-                        vars = vars,
-                        varRef = varRef,
-                        name = name,
-                        nameidx = i,
-                        value = value,
-                        evaluateName = name,
-                        calcValue = function() local _, r = rdebug.getlocal(frameId, fi) return r end,
-                    }
-                end
+    assert(LUAVERSION >= 52)
+    rdebug.getinfo(frameId, "u", info)
+    if info.nparams > 0 then
+        for i = 1, info.nparams do
+            local name, value = rdebug.getlocalv(frameId, i)
+            if name ~= nil then
+                local fi = i
+                varCreate {
+                    vars = vars,
+                    varRef = varRef,
+                    name = name,
+                    nameidx = i,
+                    value = value,
+                    evaluateName = name,
+                    calcValue = function() local _, r = rdebug.getlocal(frameId, fi) return r end,
+                }
             end
         end
     end
