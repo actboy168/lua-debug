@@ -8,6 +8,9 @@
 #include <limits>
 #include "rdebug_table.h"
 
+#ifdef LUAJIT_VERSION
+#include "rluaobject.h"
+#endif
 int debug_pcall(lua_State* L, int nargs, int nresults, int errfunc);
 
 lua_State* get_host(rlua_State *L);
@@ -892,7 +895,11 @@ tablehash(rlua_State *L, int ref) {
 		lua_pop(cL, 1);
 		return 0;
 	}
-	const void* t = lua_topointer(cL, -1);
+#ifdef LUAJIT_VERSION
+	const GCtab* t = &((const GCobj*)lua_topointer(cL, -1))->tab;
+#else
+	const void* t = lua_topointer(cL,-1);
+#endif
 	if (!t) {
 		lua_pop(cL, 1);
 		return 0;
@@ -936,7 +943,11 @@ lclient_tablesize(rlua_State *L) {
 		lua_pop(cL, 1);
 		return 0;
 	}
-	const void* t = lua_topointer(cL, -1);
+#ifdef LUAJIT_VERSION
+	const GCtab* t = &((const GCobj*)lua_topointer(cL, -1))->tab;
+#else
+	const void* t = lua_topointer(cL,-1);
+#endif
 	if (!t) {
 		lua_pop(cL, 1);
 		return 0;
@@ -959,7 +970,11 @@ lclient_tablekey(rlua_State *L) {
 		lua_pop(cL, 1);
 		return 0;
 	}
-	const void* t = lua_topointer(cL, -1);
+#ifdef LUAJIT_VERSION
+	const GCtab* t = &((const GCobj*)lua_topointer(cL, -1))->tab;
+#else
+	const void* t = lua_topointer(cL,-1);
+#endif
 	if (!t) {
 		lua_pop(cL, 1);
 		return 0;

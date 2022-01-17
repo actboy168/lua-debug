@@ -218,7 +218,8 @@
                                 "default": "x86_64",
                                 "enum": [
                                     "x86",
-                                    "x86_64"
+                                    "x86_64",
+                                    "arm64"
                                 ]
                             },
                             "luaexe": {
@@ -527,7 +528,8 @@
                         "5.2",
                         "5.3",
                         "5.4",
-                        "latest"
+                        "latest",
+                        "luajit"
                     ]
                 },
                 "lua.debug.settings.luaArch": {
