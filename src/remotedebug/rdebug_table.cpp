@@ -32,8 +32,8 @@ static unsigned int array_limit(const Table* t) {
 #endif
 }
 
-unsigned int array_size(const Table* tv) {
-	const Table* t = tv;
+unsigned int array_size(const myTable* tv) {
+	const Table* t = (const Table*)tv;
 	unsigned int alimit = array_limit(t);
 	if (alimit) {
 		for (unsigned int i = alimit; i > 0; --i) {
@@ -50,8 +50,8 @@ unsigned int array_size(const Table* tv) {
 	return 0;
 }
 
-unsigned int hash_size(const Table* tv) {
-	const Table* t = tv;
+unsigned int hash_size(const myTable* tv) {
+	const Table* t = (const Table*)tv;
 #ifdef LUAJIT_VERSION
 	return t->hmask;
 #else
@@ -59,8 +59,8 @@ unsigned int hash_size(const Table* tv) {
 #endif
 }
 
-int get_kv(lua_State* L, const Table* tv, unsigned int i) {
-	const Table* t = tv;
+int get_kv(lua_State* L, const myTable* tv, unsigned int i) {
+	const Table* t = (const Table*) tv;
 
 #ifdef LUAJIT_VERSION
 	Node* node = noderef(t->node);
@@ -93,7 +93,7 @@ int get_kv(lua_State* L, const Table* tv, unsigned int i) {
 	return 1;
 }
 
-int get_k(lua_State* L, const Table* t, unsigned int i) {
+int get_k(lua_State* L, const myTable* t, unsigned int i) {
 	if (i >= hash_size(t)) {
 		return 0;
 	}

@@ -1234,6 +1234,14 @@ lclient_getinfo(rlua_State *L) {
 	default:
 		return rluaL_error(L, "Need stack level (integer) or function ref, It's %s", rlua_typename(L, rlua_type(L, 1)));
 	}
+#ifdef LUAJIT_VERSION
+if (ar.what == "main")
+{
+	//carzy bug,luajit is real linedefined in main file,but in lua it's zero
+	//maybe fix it is a new bug
+	ar.lastlinedefined = 0;
+}
+#endif
 
 	for (const char* what = options; *what; what++) {
 		switch (*what) {
