@@ -29,8 +29,8 @@
 | supportsSetExpression                 |    🟩    |
 | supportsTerminateRequest              |    🟩    |
 | supportsDataBreakpoints               |    🟨    |
-| supportsReadMemoryRequest             |    🟥    |
-| supportsWriteMemoryRequest            |    🟥    |
+| supportsReadMemoryRequest             |    🟩    |
+| supportsWriteMemoryRequest            |    🟩    |
 | supportsDisassembleRequest            |    🟨    |
 | supportsCancelRequest                 |    🟨    |
 | supportsBreakpointLocationsRequest    |    🟨    |
@@ -45,7 +45,7 @@
 | supportsVariableType               |    🟩    |
 | supportsVariablePaging             |    🟩    |
 | supportsRunInTerminalRequest       |    🟩    |
-| supportsMemoryReferences           |    🟥    |
+| supportsMemoryReferences           |    🟩    |
 | supportsProgressReporting          |    🟨    |
 | supportsInvalidatedEvent           |    🟩    |
 | supportsMemoryEvent                |    🟥    |

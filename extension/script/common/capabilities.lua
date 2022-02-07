@@ -15,6 +15,8 @@ return {
     supportsTerminateThreadsRequest = true,
     supportsSetExpression = true,
     supportsTerminateRequest = true,
+    supportsReadMemoryRequest = true,
+    supportsWriteMemoryRequest = true,
     supportsClipboardContext = true,
     supportsExceptionFilterOptions = true,
     exceptionBreakpointFilters = {

@@ -97,4 +97,13 @@ function event.continued(body)
     }
 end
 
+function event.memory(body)
+    mgr.clientSend {
+        type = 'event',
+        seq = mgr.newSeq(),
+        event = 'memory',
+        body = body
+    }
+end
+
 return event
