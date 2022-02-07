@@ -8,15 +8,15 @@ return {
     supportsRestartFrame = true,
     supportsRestartRequest = true,
     supportsExceptionInfoRequest = true,
+    supportTerminateDebuggee = true,
     supportsDelayedStackTraceLoading = true,
     supportsLoadedSourcesRequest = true,
     supportsLogPoints = true,
-    supportsTerminateRequest = true,
+    supportsTerminateThreadsRequest = true,
     supportsSetExpression = true,
+    supportsTerminateRequest = true,
     supportsClipboardContext = true,
     supportsExceptionFilterOptions = true,
-    supportTerminateDebuggee = true,
-    supportsTerminateThreadsRequest = true,
     exceptionBreakpointFilters = {
         {
             default = false,
