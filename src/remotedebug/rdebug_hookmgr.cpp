@@ -1,5 +1,4 @@
 #include "rlua.h"
-#include <lstate.h>
 #include <assert.h>
 #include <stdint.h>
 #include <new>

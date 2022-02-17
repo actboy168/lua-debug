@@ -30,7 +30,7 @@ local function getLuaVersion(args)
         return "lua52"
     elseif args.luaVersion == "5.1" then
         return "lua51"
-    elseif args.luaVersion == "luajit" then
+    elseif args.luaVersion == "jit" then
         return "luajit"
     end
     return "lua54"
