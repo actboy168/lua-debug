@@ -569,6 +569,53 @@ function request.restartFrame(req)
     })
 end
 
+function request.readMemory(req)
+    local args = req.arguments
+    local memoryReference = args.memoryReference
+    local threadId, refId = memoryReference:match "memory_(%d+)x(%d+)"
+    threadId = tonumber(threadId)
+    refId = tonumber(refId)
+    if not threadId or not refId then
+        response.error(req, "Error memoryReference")
+        return
+    end
+    if not checkThreadId(req, threadId) then
+        return
+    end
+    mgr.workerSend(threadId, {
+        cmd = 'readMemory',
+        command = req.command,
+        seq = req.seq,
+        memoryReference = refId,
+        offset = args.offset,
+        count = args.count,
+    })
+end
+
+function request.writeMemory(req)
+    local args = req.arguments
+    local memoryReference = args.memoryReference
+    local threadId, refId = memoryReference:match "memory_(%d+)x(%d+)"
+    threadId = tonumber(threadId)
+    refId = tonumber(refId)
+    if not threadId or not refId then
+        response.error(req, "Error memoryReference")
+        return
+    end
+    if not checkThreadId(req, threadId) then
+        return
+    end
+    mgr.workerSend(threadId, {
+        cmd = 'writeMemory',
+        command = req.command,
+        seq = req.seq,
+        memoryReference = refId,
+        offset = args.offset,
+        data = args.data,
+        allowPartial = args.allowPartial,
+    })
+end
+
 function request.customRequestShowIntegerAsDec(req)
     response.success(req)
     mgr.workerBroadcast {

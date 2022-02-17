@@ -78,6 +78,10 @@ inline const char* luaL_tolstring(lua_State *L, int idx, size_t *len) {
     return lua_tolstring(L, -1, len);
 }
 
+inline size_t lua_rawlen(lua_State *L, int idx) {
+    return lua_objlen(L, idx);
+}
+
 #endif
 
 namespace lua {

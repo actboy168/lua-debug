@@ -82,6 +82,14 @@ ev.on('loadedSource', function(reason, s)
     }
 end)
 
+ev.on('memory', function(memoryReference, offset, count)
+    sendToMaster 'eventMemory' {
+        memoryReference = memoryReference,
+        offset = offset,
+        count = count,
+    }
+end)
+
 --function print(...)
 --    local n = select('#', ...)
 --    local t = {}
@@ -338,6 +346,44 @@ function CMD.setVariable(pkg)
             value = var.value,
             type = var.type,
         }
+    }
+end
+
+function CMD.readMemory(pkg)
+    local res, err = variables.readMemory(pkg.memoryReference, pkg.offset, pkg.count)
+    if not res then
+        sendToMaster 'readMemory' {
+            command = pkg.command,
+            seq = pkg.seq,
+            success = false,
+            message = err,
+        }
+        return
+    end
+    sendToMaster 'readMemory' {
+        command = pkg.command,
+        seq = pkg.seq,
+        success = true,
+        body = res
+    }
+end
+
+function CMD.writeMemory(pkg)
+    local res, err = variables.writeMemory(pkg.memoryReference, pkg.offset, pkg.data, pkg.allowPartial)
+    if not res then
+        sendToMaster 'writeMemory' {
+            command = pkg.command,
+            seq = pkg.seq,
+            success = false,
+            message = err,
+        }
+        return
+    end
+    sendToMaster 'writeMemory' {
+        command = pkg.command,
+        seq = pkg.seq,
+        success = true,
+        body = res
     }
 end
 
