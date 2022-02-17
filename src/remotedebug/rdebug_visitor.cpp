@@ -6,6 +6,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <limits>
+#include <algorithm>
 #include "rdebug_table.h"
 
 #ifdef LUAJIT_VERSION
@@ -998,6 +999,75 @@ lclient_tablekey(rlua_State *L) {
 }
 
 static int
+lclient_udread(rlua_State *L) {
+	lua_State *cL = get_host(L);
+	rlua_Integer offset = rluaL_checkinteger(L, 2);
+	rlua_Integer count = rluaL_checkinteger(L, 3);
+	rlua_settop(L, 1);
+	if (copy_fromR(L, cL) == LUA_TNONE) {
+		return rluaL_error(L, "Need userdata");
+	}
+	if (lua_type(cL, -1) != LUA_TUSERDATA) {
+		lua_pop(cL, 1);
+		return rluaL_error(L, "Need userdata");
+	}
+	const char* memory = (const char*)lua_touserdata(cL, -1);
+	size_t len = (size_t)lua_rawlen(cL, -1);
+	if (offset < 0 || (size_t)offset >= len || count <= 0) {
+		lua_pop(cL, 1);
+		return 0;
+	}
+	if ((size_t)(offset+count) > len) {
+		count = (rlua_Integer)len - offset;
+	}
+	rlua_pushlstring(L, memory + offset, (size_t)count);
+	lua_pop(cL, 1);
+	return 1;
+}
+
+static int
+lclient_udwrite(rlua_State *L) {
+	lua_State *cL = get_host(L);
+	rlua_Integer offset = rluaL_checkinteger(L, 2);
+	size_t count = 0;
+	const char* data = rluaL_checklstring(L, 3, &count);
+	int allowPartial = rlua_toboolean(L, 4);
+	rlua_settop(L, 1);
+	if (copy_fromR(L, cL) == LUA_TNONE) {
+		return rluaL_error(L, "Need userdata");
+	}
+	if (lua_type(cL, -1) != LUA_TUSERDATA) {
+		lua_pop(cL, 1);
+		return rluaL_error(L, "Need userdata");
+	}
+	const char* memory = (const char*)lua_touserdata(cL, -1);
+	size_t len = (size_t)lua_rawlen(cL, -1);
+	if (allowPartial) {
+		if (offset < 0 || (size_t)offset >= len) {
+			lua_pop(cL, 1);
+			rlua_pushinteger(L, 0);
+			return 1;
+		}
+		size_t bytesWritten = std::min(count, (size_t)(len - offset));
+		memcpy((void*)(memory + offset), data, bytesWritten);
+		lua_pop(cL, 1);
+		rlua_pushinteger(L, bytesWritten);
+		return 1;
+	}
+	else {
+		if (offset < 0 || (size_t)offset + count > len) {
+			lua_pop(cL, 1);
+			rlua_pushboolean(L, 0);
+			return 0;
+		}
+		memcpy((void*)(memory + offset), data, count);
+		lua_pop(cL, 1);
+		rlua_pushboolean(L, 1);
+		return 1;
+	}
+}
+
+static int
 lclient_value(rlua_State *L) {
 	lua_State *cL = get_host(L);
 	rlua_settop(L, 1);
@@ -1496,6 +1566,8 @@ init_visitor(rlua_State *L) {
 		{ "tablehashv", lclient_tablehashv },
 		{ "tablesize", lclient_tablesize },
 		{ "tablekey", lclient_tablekey },
+		{ "udread", lclient_udread },
+		{ "udwrite", lclient_udwrite },
 		{ "value", lclient_value },
 		{ "assign", lclient_assign },
 		{ "type", lclient_type },

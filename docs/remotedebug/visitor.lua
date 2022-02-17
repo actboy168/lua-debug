@@ -116,6 +116,27 @@ function visitor.tablekey(t, i)
 end
 
 ---
+---@param ud refvalue
+---@param offset integer
+---@param count integer
+---@return string | nil
+---读取userdata的内存。
+---
+function visitor.udread(ud, offset, count)
+end
+
+---
+---@param ud refvalue
+---@param offset integer
+---@param data string
+---@param allowPartial boolean
+---@return number | boolean
+---写入userdata的内存。
+---
+function visitor.udwrite(ud, offset, data, allowPartial)
+end
+
+---
 ---@param v refvalue
 ---@return string | integer | number | boolean | nil
 ---复制v引用的值到调试器VM中，如果v引用的值无法复制，则返回一个"type: lua_topointer(v)"形式的字符串。

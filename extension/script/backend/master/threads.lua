@@ -113,6 +113,9 @@ function CMD.variables(w, req)
         else
             var.variablesReference = 0
         end
+        if var.memoryReference then
+            var.memoryReference = "memory_" .. w .. "x" .. var.memoryReference
+        end
     end
     response.success(req, req.body)
 end
@@ -127,6 +130,27 @@ function CMD.setVariable(_, req)
         return
     end
     response.success(req, req.body)
+end
+
+function CMD.readMemory(_, req)
+    if not req.success then
+        response.error(req, req.message)
+        return
+    end
+    response.success(req, req.body)
+end
+
+function CMD.writeMemory(_, req)
+    if not req.success then
+        response.error(req, req.message)
+        return
+    end
+    response.success(req, req.body)
+end
+
+function CMD.eventMemory(w, req)
+    req.memoryReference = "memory_" .. w .. "x" .. req.memoryReference
+    event.memory(req)
 end
 
 function CMD.setExpression(_, req)

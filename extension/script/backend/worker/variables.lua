@@ -3,6 +3,7 @@ local source = require 'backend.worker.source'
 local luaver = require 'backend.worker.luaver'
 local serialize = require 'backend.worker.serialize'
 local ev = require 'backend.event'
+local base64 = require 'common.base64'
 
 local SHORT_TABLE_FIELD <const> = 100
 local MAX_TABLE_FIELD <const> = 1000
@@ -11,6 +12,7 @@ local LUAVERSION = 54
 
 local info = {}
 local varPool = {}
+local memoryRefPool = {}
 local standard = {}
 
 local showIntegerAsHex = false
@@ -507,6 +509,13 @@ local function varCreateReference(value, evaluateName, context)
     if type == "integer" then
         result.__vscodeVariableMenuContext = showIntegerAsHex and "integer/hex" or "integer/dec"
     end
+    if type == "string" or type == "userdata" then
+        memoryRefPool[#memoryRefPool+1] = {
+            type = type,
+            value = value,
+        }
+        result.memoryReference = #memoryRefPool
+    end
     if varCanExtand(type, value) then
         varPool[#varPool + 1] = {
             v = value,
@@ -554,8 +563,8 @@ local function varCreate(t)
     local name = t.name
     local extand = t.varRef.extand
     if extand[name] then
-        local index = extand[name][3]
-        local nameidx = extand[name][4]
+        local index = extand[name].index
+        local nameidx = extand[name].nameidx
         local var = vars[index]
         if not nameidx or (var.presentationHint and var.presentationHint.kind == "virtual") then
             local log = require 'common.log'
@@ -574,7 +583,7 @@ local function varCreate(t)
         }
         var.evaluateName = nil
         extand[newname] = extand[name]
-        extand[newname][2] = nil
+        extand[newname].evaluateName = nil
         extand[name] = nil
     end
     if type(t.evaluateName) ~= "string" then
@@ -585,7 +594,13 @@ local function varCreate(t)
     var.evaluateName = t.evaluateName
     var.presentationHint = t.presentationHint
     vars[#vars + 1] = var
-    extand[name] = { t.calcValue, t.evaluateName, #vars, t.nameidx }
+    extand[name] = {
+        calcValue = t.calcValue,
+        evaluateName = t.evaluateName,
+        index = #vars,
+        nameidx = t.nameidx,
+        memoryReference = var.memoryReference,
+    }
 end
 
 local function getTabelKey(key)
@@ -1003,10 +1018,21 @@ local function setValue(varRef, name, value)
     else
         newvalue = value
     end
-    local calcValue, evaluateName = varRef.extand[name][1], varRef.extand[name][2]
+    local extand = varRef.extand[name]
+    local calcValue, evaluateName = extand.calcValue, extand.evaluateName
     local rvalue = calcValue()
     if not rdebug.assign(rvalue, newvalue) then
         return nil, 'Failed set variable'
+    end
+    if extand.memoryReference then
+        local memoryRef = memoryRefPool[extand.memoryReference]
+        if memoryRef then
+            memoryRef.value = rvalue
+            if memoryRef.range then
+                local s, e = memoryRef.range[1], memoryRef.range[2]
+                ev.emit('memory', extand.memoryReference, s, e - s)
+            end
+        end
     end
     return varCreateReference(rvalue, evaluateName, "variables")
 end
@@ -1042,8 +1068,82 @@ function m.set(valueId, name, value)
     return setValue(varRef, name, value)
 end
 
+local function updateRange(ref, offset, count)
+    local s, e = offset, offset+count
+    if not ref.range then
+        ref.range = {s, e}
+        return
+    end
+    ref.range[1] = math.min(ref.range[1], s)
+    ref.range[2] = math.max(ref.range[2], e)
+end
+
+function m.readMemory(memoryReference, offset, count)
+    local memoryRef = memoryRefPool[memoryReference]
+    if not memoryRef then
+        return nil, 'Error memoryReference'
+    end
+    offset = offset or 0
+    if memoryRef.type == "string" then
+        local str = rdebug.value(memoryRef.value)
+        local slice = str:sub(offset + 1, offset + count)
+        if not slice then
+            return {
+                address = tostring(offset),
+                unreadableBytes = count,
+            }
+        end
+        updateRange(memoryRef, offset, #slice)
+        return {
+            address = tostring(offset),
+            unreadableBytes = count - #slice,
+            data = base64.encode(slice),
+        }
+    elseif memoryRef.type == "userdata" then
+        local slice = rdebug.udread(memoryRef.value, offset, count)
+        if not slice then
+            return {
+                address = tostring(offset),
+                unreadableBytes = count,
+            }
+        end
+        updateRange(memoryRef, offset, #slice)
+        return {
+            address = tostring(offset),
+            unreadableBytes = count - #slice,
+            data = base64.encode(slice),
+        }
+    else
+        return nil, "Unknown memory type"
+    end
+end
+
+function m.writeMemory(memoryReference, offset, data, allowPartial)
+    local memoryRef = memoryRefPool[memoryReference]
+    if not memoryRef then
+        return nil, 'Error memoryReference'
+    end
+    offset = offset or 0
+    if memoryRef.type == "string" then
+        return nil, "Readonly memory"
+    elseif memoryRef.type == "userdata" then
+        data = base64.decode(data)
+        local res = rdebug.udwrite(memoryRef.value, offset, data, allowPartial)
+        if allowPartial then
+            return { bytesWritten = res }
+        end
+        if not res then
+            return nil, 'Write failed'
+        end
+        return {}
+    else
+        return nil, "Unknown memory type"
+    end
+end
+
 function m.clean()
     varPool = {}
+    memoryRefPool = {}
     rdebug.cleanwatch()
 end
 
