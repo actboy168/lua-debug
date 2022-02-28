@@ -224,6 +224,11 @@ struct hookmgr {
         }
     }
     void break_hook_call(lua_State* hL, lua_Debug* ar) {
+#if LUA_VERSION_NUM < 502
+        if (ar->i_ci == 0) {
+            return;
+        }
+#endif
         break_update(hL, debug2ci(hL, ar), ar->event);
     }
     void break_hook_return(lua_State* hL, lua_Debug* ar) {
