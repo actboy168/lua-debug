@@ -895,11 +895,11 @@ int debug_pcall(lua_State *L, int nargs, int nresults, int errfunc)
 {
 #ifdef LUAJIT_VERSION
     global_State *g = G(L);
-    bool ishook = hook_active(g);
-    hook_leave(g);
+    bool needClean = !hook_active(g);
+    hook_enter(g);
     int ok = lua_pcall(L, nargs, nresults, errfunc);
-    if (ishook)
-        hook_enter(g);
+    if (needClean)
+        hook_leave(g);
 #else
     lu_byte oldah = L->allowhook;
     L->allowhook = 0;

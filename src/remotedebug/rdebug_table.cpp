@@ -53,7 +53,7 @@ unsigned int array_size(const myTable* tv) {
 unsigned int hash_size(const myTable* tv) {
 	const Table* t = (const Table*)tv;
 #ifdef LUAJIT_VERSION
-	return t->hmask;
+	return t->hmask + 1;
 #else
 	return (unsigned int)(1<<t->lsizenode);
 #endif
