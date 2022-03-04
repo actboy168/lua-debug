@@ -525,6 +525,12 @@ struct hookmgr {
             }
             if (stepL == hL) {
                 if (step_mask & LUA_MASKCALL) {
+                    #ifdef LUAJIT_VERSION
+                    // because luajit enter the hook when call c function but not enter hook when return c funtion,so skip c function
+                    if (lua_getinfo(hL,"S",ar) == 1 && strcmp(ar->what,"C")  == 0){
+                        return;
+                    }
+                    #endif
                     step_hook_call(hL, ar);
                 }
             }
