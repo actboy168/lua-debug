@@ -59,7 +59,7 @@ static int redirect_gc(rlua_State* L) {
 }
 
 static int redirect(rlua_State* L) {
-    const char* lst[] = {"stdin", "stdout", "stderr"};
+    const char* lst[] = {"stdin", "stdout", "stderr", NULL};
     remotedebug::std_fd type = (remotedebug::std_fd)(rluaL_checkoption(L, 1, "stdout", lst));
     switch (type) {
     case remotedebug::std_fd::STDIN:
