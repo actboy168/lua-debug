@@ -2,6 +2,7 @@
 	"recommendations": [
 		"actboy168.tasks",
 		"actboy168.extension-path",
-		"actboy168.lua-debug"
+		"actboy168.lua-debug",
+		"hediet.vscode-drawio",
 	]
 }

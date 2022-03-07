@@ -6,4 +6,4 @@
 	url = https://github.com/microsoft/Detours
 [submodule "3rd/lua/luajit"]
 	path = 3rd/lua/luajit
-	url = https://github.com/openresty/luajit2
+	url = https://github.com/fesily/luajit2

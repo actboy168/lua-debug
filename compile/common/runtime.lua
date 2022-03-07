@@ -12,9 +12,7 @@ lm:source_set 'onelua' {
 }
 
 for _, luaver in ipairs {"lua51","lua52","lua53","lua54","lua-latest","luajit"} do
-    if luaver ~= "luajit" then
-        runtimes[#runtimes+1] = luaver.."/lua"
-    end
+    runtimes[#runtimes+1] = luaver.."/lua"
     runtimes[#runtimes+1] = luaver.."/remotedebug"
 
     if luaver ~= "luajit" then
@@ -85,9 +83,15 @@ for _, luaver in ipairs {"lua51","lua52","lua53","lua54","lua-latest","luajit"} 
                     defines = {
                         "LUA_USE_MACOSX",
                         luaver == "lua51" and "LUA_USE_DLOPEN",
-                    }
+                    },
                 }
             }
+        end
+    else
+        if lm.os == "windows" then
+            require "compile.luajit.make_windows"
+        else
+            require "compile.luajit.make"
         end
     end
 
@@ -100,6 +104,10 @@ for _, luaver in ipairs {"lua51","lua52","lua53","lua54","lua-latest","luajit"} 
         lua_version_num = 100 * math.tointeger(luaver:sub(4,4)) + math.tointeger(luaver:sub(5,5))
     end
 
+    local luaSrcDir = "3rd/lua/"..luaver;
+    if luaver == "luajit" then
+        luaSrcDir = luaSrcDir.."/src";
+    end
     lm:shared_library (luaver..'/remotedebug') {
         bindir = bindir,
         deps = "onelua",
@@ -109,7 +117,7 @@ for _, luaver in ipairs {"lua51","lua52","lua53","lua54","lua-latest","luajit"} 
             ("DBG_LUA_VERSION=%d"):format(lua_version_num),
         },
         includes = {
-            "3rd/lua/"..luaver,
+            luaSrcDir,
             "3rd/bee.lua/",
             "3rd/bee.lua/3rd/lua-seri",
             "3rd/bee.lua/bee/nonstd",
