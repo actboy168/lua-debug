@@ -1,23 +1,34 @@
 local lm = require "luamake"
 
+local luaver = "luajit"
+local luajitDir = '3rd/lua/' .. luaver
+local bindir = "publish/runtime/"..lm.runtime_platform
+
 lm:exe "minilua" {
+    rootdir= luajitDir,
     defines = "_CRT_SECURE_NO_WARNINGS",
     sources = {
         "src/host/minilua.c"
     }
 }
 
+local arch = lm.arch
+if arch == "x86_64" then
+    arch = "x64"
+else
+    assert(arch == "x86")
+end
+
 local dynasm_flags = {
-    "-D", "P64",
     "-D", "JIT",
     "-D", "FFI",
     "-D", "WIN",
 }
-
-local arch = "x64"
-if lm.platform == "win32-ia32" then
-    arch = "x86"
+if arch =="x64" then
+    table.insert(dynasm_flags,"-D")
+    table.insert(dynasm_flags,"P64")
 end
+
 
 local buildvm_arch_input = "src/vm_x64.dasc"
 if arch == "x86" then
@@ -26,18 +37,21 @@ end
 
 lm:build "buildvm_arch" {
     deps = "minilua",
-    lm.bindir .. "/minilua", "dynasm/dynasm.lua",
+    lm.bindir .. "/minilua", luajitDir.."/dynasm/dynasm.lua",
     dynasm_flags,
     "-o", "$out", "$in",
-    input = buildvm_arch_input,
-    output = "src/host/buildvm_arch.h",
+    input = luajitDir.."/"..buildvm_arch_input,
+    output =  lm.bindir .."/buildvm_arch.h",
 }
 
 lm:exe "buildvm" {
+    rootdir= luajitDir,
     deps = "buildvm_arch",
-    defines = "_CRT_SECURE_NO_WARNINGS",
+    objdeps={"buildvm_arch"},
+    defines = {"_CRT_SECURE_NO_WARNINGS"},
     includes = {
-        "src"
+        "src",
+        "../../../"..lm.bindir
     },
     sources = {
         "src/host/*.c",
@@ -65,42 +79,46 @@ lm:build "lj_peobj" {
     lm.bindir .. "/buildvm",
     "-m", "peobj",
     "-o", "$out",
-    output = "src/lj_vm.obj",
+    output = lm.bindir.."/lj_vm.obj",
 }
 
 lm:build "lj_bcdef" {
+    rootdir=luajitDir,
     deps = "buildvm",
     lm.bindir .. "/buildvm",
     "-m", "bcdef",
     "-o", "$out", "$in",
-    output = "src/lj_bcdef.h",
+    output = lm.bindir.."/lj_bcdef.h",
     input = LJLIB,
 }
 
 lm:build "lj_ffdef" {
+    rootdir=luajitDir,
     deps = "buildvm",
     lm.bindir .. "/buildvm",
     "-m", "ffdef",
     "-o", "$out", "$in",
-    output = "src/lj_ffdef.h",
+    output = lm.bindir.."/lj_ffdef.h",
     input = LJLIB,
 }
 
 lm:build "lj_libdef" {
+    rootdir=luajitDir,
     deps = "buildvm",
     lm.bindir .. "/buildvm",
     "-m", "libdef",
     "-o", "$out", "$in",
-    output = "src/lj_libdef.h",
+    output = lm.bindir.."/lj_libdef.h",
     input = LJLIB,
 }
 
 lm:build "lj_recdef" {
+    rootdir=luajitDir,
     deps = "buildvm",
     lm.bindir .. "/buildvm",
     "-m", "recdef",
     "-o", "$out", "$in",
-    output = "src/lj_recdef.h",
+    output = lm.bindir.."/lj_recdef.h",
     input = LJLIB,
 }
 
@@ -118,14 +136,17 @@ lm:build "lj_folddef" {
     lm.bindir .. "/buildvm",
     "-m", "folddef",
     "-o", "$out", "$in",
-    output = "src/lj_folddef.h",
+    output = lm.bindir.."/lj_folddef.h",
     input = {
-        "src/lj_opt_fold.c",
+        luajitDir.."/src/lj_opt_fold.c",
     }
 }
 
-lm:exe "luajit" {
+lm:exe "luajit/lua" {
+    rootdir= luajitDir,
+    bindir = bindir,
     objdeps = {
+        "lj_peobj",
         "lj_bcdef",
         "lj_ffdef",
         "lj_libdef",
@@ -140,6 +161,37 @@ lm:exe "luajit" {
         "src/luajit.c",
         "src/lj_*.c",
         "src/lib_*.c",
-        "src/lj_vm.obj",
+         "../../../".. lm.bindir.."/lj_vm.obj",
+    },
+    includes={
+        ".",
+        "../../../"..lm.bindir
+    }
+}
+
+
+lm:shared_library "luajit/luajit" {
+    rootdir= luajitDir,
+    bindir = bindir,
+    objdeps = {
+        "lj_bcdef",
+        "lj_ffdef",
+        "lj_libdef",
+        "lj_recdef",
+        --"lj_vmdef",
+        "lj_folddef",
+    },
+    defines = {
+        "_CRT_SECURE_NO_WARNINGS",
+    },
+    sources = {
+        "!src/luajit.c",
+        "src/lj_*.c",
+        "src/lib_*.c",
+        "../../../".. lm.bindir.."/lj_vm.obj",
+    },
+    includes={
+        ".",
+        "../../../"..lm.bindir
     }
 }
