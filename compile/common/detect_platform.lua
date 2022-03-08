@@ -62,11 +62,14 @@ local function detect_macos()
 end
 
 local function detect_linux()
-    assert(posix_arch() == "x86_64")
     if lm.platform then
         assert(lm.platform == "linux-x64")
     else
-        lm.platform = "linux-x64"
+        if posix_arch()  == "aarch64" then
+            lm.platform = "linux-arm64"
+        else
+            lm.platform = "linux-x64"
+        end
     end
 end
 

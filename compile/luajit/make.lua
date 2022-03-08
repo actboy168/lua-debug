@@ -1,14 +1,13 @@
 local lm = require "luamake"
 
-local bindir = "publish/runtime/"..lm.runtime_platform
+local bindir = "publish/runtime/" .. lm.runtime_platform
 
 --the generated file must store into different directory
 local arch = "x64"
-if lm.platform == "windows-ia32" then
-    arch = "x86"
-    error("never test now")
-elseif lm.platform == "linux-arm64" or lm.platform == "darwin-arm64" then
+if lm.runtime_platform == "linux-arm64" or lm.runtime_platform == "darwin-arm64" then
     arch = "arm64"
+else
+    assert(lm.runtime_platform == "darwin-x64", "unknown runtime platform: " .. lm.runtime_platform)
 end
 
 local luaver = "luajit"
@@ -24,10 +23,9 @@ lm:executable("minilua") {
         LJ_ARCH_HASFPU,
         LJ_ABI_SOFTFP
     },
-    sources = { "host/minilua.c" }
+    sources = { "host/minilua.c" },
+    links = { "m" }
 }
-
-local binPath = lm.builddir.."/bin/"
 
 local arch_flags
 if arch == "arm64" then
@@ -39,6 +37,7 @@ if arch == "arm64" then
         "-D", "FPU",
         "-D", "HFABI",
         "-D", "VER=80",
+        "-D", "DUALNUM"
     }
 elseif arch == "x64" then
     arch_flags = {
@@ -50,23 +49,23 @@ elseif arch == "x64" then
         "-D", "HFABI",
     }
 else
-    error("unsupported architecture:"..arch)
+    error("unsupported architecture:" .. arch)
 end
 
 lm:build("builvm_arch.h") {
     deps = "minilua",
-    binPath .. "minilua",
+    lm.bindir .. "/minilua",
     luajitDir .. "/../dynasm/dynasm.lua",
     arch_flags,
     "-o", "$out", "$in",
     input = luajitDir .. string.format("/vm_%s.dasc", arch),
-    output = binPath .. "/buildvm_arch.h"
+    output = lm.bindir .. "/buildvm_arch.h"
 }
 
 lm:executable("buildvm") {
     rootdir = luajitDir,
     deps = "builvm_arch.h",
-    objdeps = { binPath .. "/buildvm_arch.h"},
+    objdeps = { lm.bindir .. "/buildvm_arch.h" },
     defines = {
         LUAJIT_TARGET,
         LJ_ARCH_HASFPU,
@@ -78,8 +77,9 @@ lm:executable("buildvm") {
     },
     includes = {
         ".",
-        "../../../../" .. binPath
-    }
+        "../../../../" .. lm.bindir
+    },
+    links = { "m" }
 }
 local LJLIB_C = {
     luajitDir .. "/lib_base.c ",
@@ -100,9 +100,9 @@ local function buildvmX(value)
     local fileName = string.format("lj_%s.h", value)
     lm:build(fileName) {
         deps = { "buildvm" },
-        binPath .. "buildvm",
+        lm.bindir .. "/buildvm",
         string.format(" -m %s -o ", value), "$out",
-        output = binPath .. fileName,
+        output = lm.bindir .. "/" .. fileName,
         LJLIB_C,
     }
 end
@@ -116,11 +116,11 @@ end
 
 lm:build("lj_vm.S") {
     deps = "buildvm",
-    binPath .. "buildvm",
+    lm.bindir .. "/buildvm",
     "-m",
     LJVM_MODE,
     "-o", "$out",
-    output = binPath .. "lj_vm.S",
+    output = lm.bindir .. "/lj_vm.S",
 }
 
 buildvmX("bcdef")
@@ -140,9 +140,9 @@ lm:build("luajit/vmdef.lua") {
 
 lm:build("lj_folddef.h") {
     deps = "buildvm",
-    binPath .. "buildvm",
+    lm.bindir .. "/buildvm",
     " -m folddef -o ", "$out", "$in",
-    output = binPath .. "lj_folddef.h",
+    output = lm.bindir .. "/lj_folddef.h",
     input = luajitDir .. "/lj_opt_fold.c",
 }
 
@@ -163,10 +163,10 @@ lm:build("lj_vm.obj") {
     "-D" .. LUA_MULTILIB,
     "-fno-stack-protector",
     "-D" .. LUAJIT_UNWIND_EXTERNAL,
-    "-target",lm.target,
+    lm.os ~= "linux" and "-target " .. lm.target,
     "-c -o", "$out", "$in",
-    output = binPath .. "lj_vm.obj",
-    input = binPath .. "lj_vm.S",
+    output = lm.bindir .. "/lj_vm.obj",
+    input = lm.bindir .. "/lj_vm.S",
 }
 
 local lj_str_hash_flags = {
@@ -176,13 +176,13 @@ local lj_str_hash_flags = {
 }
 
 if arch == "x64" then
-    table.insert(lj_str_hash_flags,"-msse4.2")
+    table.insert(lj_str_hash_flags, "-msse4.2")
 end
 
-lm:source_set("lj_str_hash.c"){
+lm:source_set("lj_str_hash.c") {
     rootdir = luajitDir,
-    sources={"lj_str_hash.c"},
-    includes = {'.'},
+    sources = { "lj_str_hash.c" },
+    includes = { '.' },
     defines = {
         LUAJIT_UNWIND_EXTERNAL,
         _FILE_OFFSET_BITS,
@@ -203,20 +203,21 @@ lm:executable("luajit/lua") {
         "lj_libdef.h",
         "lj_recdef.h",
     },
-    deps="lj_str_hash.c",
+    deps = "lj_str_hash.c",
     sources = {
         "luajit.c",
         "lj_*.c",
         "lib_*.c",
         "!lj_str_hash.c",
-        "../../../../" .. binPath .. "lj_vm.obj",
+        "../../../../" .. lm.bindir .. "/lj_vm.obj",
     },
     includes = {
         ".",
-        "../../../../" .. binPath
+        "../../../../" .. lm.bindir
     },
     links = {
         "m",
+        "dl",
     },
     defines = {
         LUAJIT_UNWIND_EXTERNAL,

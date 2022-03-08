@@ -142,33 +142,6 @@ lm:build "lj_folddef" {
     }
 }
 
-lm:exe "luajit/lua" {
-    rootdir= luajitDir,
-    bindir = bindir,
-    objdeps = {
-        "lj_peobj",
-        "lj_bcdef",
-        "lj_ffdef",
-        "lj_libdef",
-        "lj_recdef",
-        --"lj_vmdef",
-        "lj_folddef",
-    },
-    defines = {
-        "_CRT_SECURE_NO_WARNINGS",
-    },
-    sources = {
-        "src/luajit.c",
-        "src/lj_*.c",
-        "src/lib_*.c",
-         "../../../".. lm.bindir.."/lj_vm.obj",
-    },
-    includes={
-        ".",
-        "../../../"..lm.bindir
-    }
-}
-
 
 lm:shared_library "luajit/luajit" {
     rootdir= luajitDir,
@@ -183,12 +156,31 @@ lm:shared_library "luajit/luajit" {
     },
     defines = {
         "_CRT_SECURE_NO_WARNINGS",
+        "LUA_BUILD_AS_DLL"
     },
     sources = {
         "!src/luajit.c",
+        "!src/lj_init.c",
         "src/lj_*.c",
         "src/lib_*.c",
         "../../../".. lm.bindir.."/lj_vm.obj",
+    },
+    includes={
+        ".",
+        "../../../"..lm.bindir
+    }
+}
+
+lm:exe "luajit/lua" {
+    rootdir= luajitDir,
+    bindir = bindir,
+   deps="luajit/luajit",
+    defines = {
+        "_CRT_SECURE_NO_WARNINGS",
+    },
+    sources = {
+        "src/luajit.c",
+        "src/lj_init.c",
     },
     includes={
         ".",
