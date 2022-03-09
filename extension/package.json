@@ -42,7 +42,7 @@
     "capabilities": {
         "untrustedWorkspaces": {
             "supported": false,
-            "description" : "Debugging is disabled in Restricted Mode."
+            "description": "Debugging is disabled in Restricted Mode."
         }
     },
     "contributes": {
@@ -76,7 +76,7 @@
                     "when": "debugConfigurationType == 'lua' && debugProtocolVariableMenuContext == 'integer/dec'",
                     "group": "1_view"
                 }
-              ]
+            ]
         },
         "commands": [
             {
@@ -209,7 +209,8 @@
                                     "5.2",
                                     "5.3",
                                     "5.4",
-                                    "latest"
+                                    "latest",
+                                    "jit"
                                 ]
                             },
                             "luaArch": {
@@ -489,7 +490,8 @@
                                     "5.2",
                                     "5.3",
                                     "5.4",
-                                    "latest"
+                                    "latest",
+                                    "jit"
                                 ]
                             }
                         }
@@ -529,7 +531,7 @@
                         "5.3",
                         "5.4",
                         "latest",
-                        "luajit"
+                        "jit"
                     ]
                 },
                 "lua.debug.settings.luaArch": {
