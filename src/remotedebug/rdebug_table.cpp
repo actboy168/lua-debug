@@ -9,7 +9,7 @@ namespace remotedebug::table {
 #endif
 
 
-static unsigned int array_limit(const Table* t) {
+static unsigned int array_limit(const void* t) {
 #if LUA_VERSION_NUM >= 504
     if ((!(t->marked & BITRAS) || (t->alimit & (t->alimit - 1)) == 0)) {
         return t->alimit;
@@ -32,7 +32,7 @@ static unsigned int array_limit(const Table* t) {
 #endif
 }
 
-unsigned int array_size(const myTable* tv) {
+unsigned int array_size(const void* tv) {
 	const Table* t = (const Table*)tv;
 	unsigned int alimit = array_limit(t);
 	if (alimit) {
@@ -50,7 +50,7 @@ unsigned int array_size(const myTable* tv) {
 	return 0;
 }
 
-unsigned int hash_size(const myTable* tv) {
+unsigned int hash_size(const void* tv) {
 	const Table* t = (const Table*)tv;
 #ifdef LUAJIT_VERSION
 	return t->hmask + 1;
@@ -59,7 +59,7 @@ unsigned int hash_size(const myTable* tv) {
 #endif
 }
 
-int get_kv(lua_State* L, const myTable* tv, unsigned int i) {
+int get_kv(lua_State* L, const void* tv, unsigned int i) {
 	const Table* t = (const Table*) tv;
 
 #ifdef LUAJIT_VERSION
@@ -93,7 +93,7 @@ int get_kv(lua_State* L, const myTable* tv, unsigned int i) {
 	return 1;
 }
 
-int get_k(lua_State* L, const myTable* t, unsigned int i) {
+int get_k(lua_State* L, const void* t, unsigned int i) {
 	if (i >= hash_size(t)) {
 		return 0;
 	}
