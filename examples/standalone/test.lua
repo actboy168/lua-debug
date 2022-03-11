@@ -1,2 +1,5 @@
-require "debugger":start "0.0.0.0:12306":event "wait"
-print "ok"
+local co =coroutine.create(function()
+    coroutine.yield()
+end)
+coroutine.resume(co)
+coroutine.resume(co)

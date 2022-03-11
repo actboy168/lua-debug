@@ -37,6 +37,25 @@
             "env": {
                 "VSCODE_EXTENSION_PATH" : "${command:extensionPath}actboy168.lua-debug-1.53.0"
             }
+        },
+        {
+            "name": "test launch",
+            "type": "lua",
+            "request": "launch",
+            "stopOnEntry": true,
+            "program": "${workspaceFolder}/examples/standalone/test.lua",
+            "cwd": "${workspaceFolder}",
+            "path": "${workspaceFolder}/?.lua",
+            "cpath": "${workspaceFolder}/?.dll",
+            "arg": [],
+            "consoleCoding": "utf8",
+            "luaArch": "x86_64"
+        },
+        {
+            "name": "Launch",
+            "type": "cppvsdbg",
+            "request": "attach",
+            "processId":"${command:pickProcess}",
         }
     ]
 }
