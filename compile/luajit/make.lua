@@ -7,7 +7,7 @@ local arch = "x64"
 if lm.runtime_platform == "linux-arm64" or lm.runtime_platform == "darwin-arm64" then
     arch = "arm64"
 else
-    assert(lm.runtime_platform == "darwin-x64", "unknown runtime platform: " .. lm.runtime_platform)
+    assert(lm.runtime_platform == "darwin-x64" | lm.runtime_platform == "linux-x64", "unknown runtime platform: " .. lm.runtime_platform)
 end
 
 local luaver = "luajit"
