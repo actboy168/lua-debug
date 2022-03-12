@@ -27,7 +27,9 @@ static unsigned int array_limit(const void* tv) {
     size++;
     return size;
 #elif defined(LUAJIT_VERSION)
-	return t->asize;
+	unsigned int result = t->asize;
+	if(result) result--;
+	return result;
 #else
     return t->sizearray;
 #endif
