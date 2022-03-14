@@ -76,7 +76,7 @@ static Proto* ci2proto(CallInfo* ci) {
 #ifdef LUAJIT_VERSION
     GCfunc *func = frame_func(ci);
 
-    if (iscfunc(func))
+    if (!isluafunc(func))
         return 0;
     return funcproto(func);
 #else
@@ -186,7 +186,12 @@ struct hookmgr {
     }
     bool break_has(lua_State* hL, Proto* p, int event) {
         if (!p) {
+#ifdef LUAJIT_VERSION
+            //enable hookline enter c function
+            return true;
+#else
             return false;
+#endif
         }
         size_t key = break_hash(p);
         switch (break_map[key]) {
@@ -356,6 +361,11 @@ struct hookmgr {
         step_hookmask(hL, 0);
     }
     void step_hook_call(lua_State* hL, lua_Debug* ar) {
+#ifdef LUAJIT_VERSION
+        // because luajit enter the hook when call c function but not enter hook when return c funtion,so skip c function
+        if(!isluafunc(frame_func(debug2ci(hL, ar))))
+            return;
+#endif
         step_current_level++;
         if (step_current_level > step_target_level) {
             step_hookmask(hL, LUA_MASKCALL | LUA_MASKRET);
@@ -520,12 +530,6 @@ struct hookmgr {
             if (funcbp_mask) {
                 funcbp_hook(hL, ar);
             }
-#ifdef LUAJIT_VERSION
-                    // because luajit enter the hook when call c function but not enter hook when return c funtion,so skip c function
-                    if (lua_getinfo(hL,"S",ar) == 1 && strcmp(ar->what,"C")  == 0){
-                        return;
-                    }
-#endif
             if (break_mask & LUA_MASKCALL) {
                 break_hook_call(hL, ar);
             }
