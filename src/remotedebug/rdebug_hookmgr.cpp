@@ -383,6 +383,17 @@ struct hookmgr {
             step_hookmask(hL, LUA_MASKCALL | LUA_MASKRET | LUA_MASKLINE);
         }
     }
+#ifdef LUAJIT_VERSION
+    void step_hook_line(lua_State* hL, lua_Debug* ar) {
+        step_current_level = stacklevel(hL);
+        if (step_current_level > step_target_level) {
+            step_hookmask(hL, LUA_MASKCALL | LUA_MASKRET);
+        }
+        else {
+            step_hookmask(hL, LUA_MASKCALL | LUA_MASKRET | LUA_MASKLINE);
+        }
+    }
+#endif
     void step_hookmask(lua_State* hL, int mask) {
         if (step_mask != mask) {
             step_mask = mask;
@@ -520,6 +531,13 @@ struct hookmgr {
     void full_hook(lua_State* hL, lua_Debug* ar) {
         switch (ar->event) {
         case LUA_HOOKLINE:
+#ifdef LUAJIT_VERSION
+            if (stepL == hL) {
+                if (step_mask & LUA_MASKRET) {
+                    step_hook_line(hL, ar);
+                }
+            }
+#endif
             break;
         case LUA_HOOKCALL:
 #if LUA_VERSION_NUM >= 502
