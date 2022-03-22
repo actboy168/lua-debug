@@ -556,6 +556,11 @@ struct hookmgr {
                     step_hook_call(hL, ar);
                 }
             }
+#ifdef LUAJIT_VERSION
+            if (update_mask) {
+                update_hook(hL);
+            }
+#endif
             return;
         case LUA_HOOKRET:
             if (update_mask) {
