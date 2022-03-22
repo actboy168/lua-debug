@@ -9,8 +9,7 @@ namespace remotedebug::table {
 #endif
 
 
-static unsigned int array_limit(const void* tv) {
-	const Table* t = (const Table*)tv;
+static unsigned int array_limit(const Table* t) {
 #if LUA_VERSION_NUM >= 504
     if ((!(t->marked & BITRAS) || (t->alimit & (t->alimit - 1)) == 0)) {
         return t->alimit;
