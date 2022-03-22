@@ -33,12 +33,8 @@ ev.on('initializing', function(config)
             sm[1] = ('^%s$'):format(fs.source_native(fs.source_normalize(pattern[1])):gsub('[%^%$%(%)%%%.%[%]%+%-%?]', '%%%0'))
             if sm[1]:find '%*' then
                 sm[1] = sm[1]:gsub('%*', '(.*)')
-                local r = {}
-                fs.path_normalize(pattern[2]):gsub('[^%*]+', function (w) r[#r+1] = w end)
-                sm[2] = r
-            else
-                sm[2] = fs.path_normalize(pattern[2])
             end
+            sm[2] = fs.path_normalize(pattern[2])
             sourceMaps[#sourceMaps + 1] = sm
         end
     end
@@ -59,15 +55,7 @@ local function glob_replace(pattern, target)
     if res[1] == nil then
         return false
     end
-    if type(pattern[2]) == 'string' then
-        return pattern[2]
-    end
-    local s = {}
-    for _, p in ipairs(pattern[2]) do
-        s[#s + 1] = p
-        s[#s + 1] = res[1]
-    end
-    return table.concat(s)
+    return pattern[2]:gsub("%*", res[1])
 end
 
 local function covertPath(p)
