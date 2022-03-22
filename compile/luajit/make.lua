@@ -14,6 +14,7 @@ local luaver = "luajit"
 local LUAJIT_TARGET = string.format("LUAJIT_TARGET=LUAJIT_ARCH_%s", string.upper(arch))
 local LJ_ARCH_HASFPU = "LJ_ARCH_HASFPU=1"
 local LJ_ABI_SOFTFP = "LJ_ABI_SOFTFP=0"
+local LUAJIT_ENABLE_LUA52COMPAT = "LUAJIT_ENABLE_LUA52COMPAT"
 local luajitDir = '3rd/lua/' .. luaver .. "/src"
 
 lm:executable("minilua") {
@@ -21,7 +22,8 @@ lm:executable("minilua") {
     defines = {
         LUAJIT_TARGET,
         LJ_ARCH_HASFPU,
-        LJ_ABI_SOFTFP
+        LJ_ABI_SOFTFP,
+        LUAJIT_ENABLE_LUA52COMPAT
     },
     sources = { "host/minilua.c" },
     links = { "m" }
@@ -69,7 +71,8 @@ lm:executable("buildvm") {
     defines = {
         LUAJIT_TARGET,
         LJ_ARCH_HASFPU,
-        LJ_ABI_SOFTFP
+        LJ_ABI_SOFTFP,
+        LUAJIT_ENABLE_LUA52COMPAT
     },
     sources = {
         "host/*.c",
@@ -161,6 +164,7 @@ lm:build("lj_vm.obj") {
     "-D" .. _LARGEFILE_SOURCE,
     U_FORTIFY_SOURCE,
     "-D" .. LUA_MULTILIB,
+    "-D" .. LUAJIT_ENABLE_LUA52COMPAT,
     "-fno-stack-protector",
     "-D" .. LUAJIT_UNWIND_EXTERNAL,
     lm.os ~= "linux" and "-target " .. lm.target,
@@ -187,7 +191,8 @@ lm:source_set("lj_str_hash.c") {
         LUAJIT_UNWIND_EXTERNAL,
         _FILE_OFFSET_BITS,
         _LARGEFILE_SOURCE,
-        LUA_MULTILIB
+        LUA_MULTILIB,
+        LUAJIT_ENABLE_LUA52COMPAT
     },
     flags = lj_str_hash_flags
 }
@@ -223,7 +228,8 @@ lm:executable("luajit/lua") {
         LUAJIT_UNWIND_EXTERNAL,
         _FILE_OFFSET_BITS,
         _LARGEFILE_SOURCE,
-        LUA_MULTILIB
+        LUA_MULTILIB,
+        LUAJIT_ENABLE_LUA52COMPAT
     },
     flags = {
         "-fno-stack-protector",
