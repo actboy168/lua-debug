@@ -1248,9 +1248,10 @@ lclient_getinfo(rlua_State *L) {
 	bool hasf = false;
 	int frame = 0;
 	int size = 0;
+	bool hasSFlag = false;
 	for (const char* what = options; *what; what++) {
 		switch (*what) {
-		case 'S': size += 5; break;
+		case 'S': size += 5; hasSFlag = true; break;
 		case 'l': size += 1; break;
 		case 'n': size += 2; break;
 		case 'f': size += 1; hasf = true; break;
@@ -1270,7 +1271,7 @@ lclient_getinfo(rlua_State *L) {
 	}
 
 	lua_State *cL = get_host(L);
-	lua_Debug ar{};
+	lua_Debug ar;
 
 	switch (rlua_type(L, 1)) {
 	case LUA_TNUMBER:
@@ -1305,7 +1306,7 @@ lclient_getinfo(rlua_State *L) {
 		return rluaL_error(L, "Need stack level (integer) or function ref, It's %s", rlua_typename(L, rlua_type(L, 1)));
 	}
 #ifdef LUAJIT_VERSION
-if (ar.what != nullptr && strcmp(ar.what,"main") ==  0)
+if (hasSFlag && strcmp(ar.what,"main") ==  0)
 {
 	//carzy bug,luajit is real linedefined in main file,but in lua it's zero
 	//maybe fix it is a new bug
