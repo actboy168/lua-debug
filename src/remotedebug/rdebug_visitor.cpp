@@ -1248,10 +1248,17 @@ lclient_getinfo(rlua_State *L) {
 	bool hasf = false;
 	int frame = 0;
 	int size = 0;
+#ifdef LUAJIT_VERSION
 	bool hasSFlag = false;
+#endif
 	for (const char* what = options; *what; what++) {
 		switch (*what) {
-		case 'S': size += 5; hasSFlag = true; break;
+		case 'S':
+			size += 5;
+#ifdef LUAJIT_VERSION
+			hasSFlag = true;
+#endif
+			break;
 		case 'l': size += 1; break;
 		case 'n': size += 2; break;
 		case 'f': size += 1; hasf = true; break;
