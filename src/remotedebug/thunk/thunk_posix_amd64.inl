@@ -1,27 +1,6 @@
-#include "thunk.h"
+#include "thunk_jit.h"
 #include <memory>
-#include <sys/mman.h>
 #include <memory.h>
-
-bool thunk::create(size_t s) {
-	data = mmap(NULL, s, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
-	if (!data) {
-		size = 0;
-		return false;
-	}
-	size = s;
-	return true;
-}
-
-bool thunk::write(void* buf) {
-	memcpy(data, buf, size);
-	return true;
-}
-
-thunk::~thunk() {
-	if (!data) return;
-	munmap(data, size);
-}
 
 thunk* thunk_create_hook(intptr_t dbg, intptr_t hook)
 {
