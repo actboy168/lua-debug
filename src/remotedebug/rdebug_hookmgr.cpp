@@ -557,7 +557,7 @@ struct hookmgr {
                 }
             }
 #ifdef LUAJIT_VERSION
-            if (update_mask) {
+            if (update_mask && !isluafunc(frame_func(debug2ci(hL, ar)))) {
                 update_hook(hL);
             }
 #endif
