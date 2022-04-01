@@ -1,6 +1,61 @@
 #include "rdebug_table.h"
 #include "rluaobject.h"
 
+#ifdef LUAJIT_VERSION
+#include "lj_tab.h"
+cTValue * LJ_FASTCALL lj_tab_getinth(GCtab *t, int32_t key)
+{
+  TValue k;
+  Node *n;
+  k.n = (lua_Number)key;
+  n = hashnum(t, &k);
+  do {
+    if (tvisnum(&n->key) && n->key.n == k.n)
+      return &n->val;
+  } while ((n = nextnode(n)));
+  return NULL;
+}
+LJ_NOINLINE static MSize tab_len_slow(GCtab *t, size_t hi)
+{
+  cTValue *tv;
+  size_t lo = hi;
+  hi++;
+  /* Widening search for an upper bound. */
+  while ((tv = lj_tab_getint(t, (int32_t)hi)) && !tvisnil(tv)) {
+    lo = hi;
+    hi += hi;
+    if (hi > (size_t)(INT_MAX-2)) {  /* Punt and do a linear search. */
+      lo = 1;
+      while ((tv = lj_tab_getint(t, (int32_t)lo)) && !tvisnil(tv)) lo++;
+      return (MSize)(lo - 1);
+    }
+  }
+  /* Binary search to find a non-nil to nil transition. */
+  while (hi - lo > 1) {
+    size_t mid = (lo+hi) >> 1;
+    cTValue *tvb = lj_tab_getint(t, (int32_t)mid);
+    if (tvb && !tvisnil(tvb)) lo = mid; else hi = mid;
+  }
+  return (MSize)lo;
+}
+MSize LJ_FASTCALL lj_tab_len(GCtab *t)
+{
+  size_t hi = (size_t)t->asize;
+  if (hi) hi--;
+  /* In a growing array the last array element is very likely nil. */
+  if (hi > 0 && LJ_LIKELY(tvisnil(arrayslot(t, hi)))) {
+    /* Binary search to find a non-nil to nil transition in the array. */
+    size_t lo = 0;
+    while (hi - lo > 1) {
+      size_t mid = (lo+hi) >> 1;
+      if (tvisnil(arrayslot(t, mid))) hi = mid; else lo = mid;
+    }
+    return (MSize)lo;
+  }
+  /* Without a hash part, there's an implicit nil after the last element. */
+  return t->hmask ? tab_len_slow(t, hi) : (MSize)hi;
+}
+#endif
 
 namespace remotedebug::table {
 
@@ -35,21 +90,20 @@ static unsigned int array_limit(const Table* t) {
 }
 
 unsigned int array_size(const void* tv) {
+#ifdef LUAJIT_VERSION
+	return lj_tab_len((Table*)tv);
+#else 
 	const Table* t = (const Table*)tv;
 	unsigned int alimit = array_limit(t);
 	if (alimit) {
 		for (unsigned int i = alimit; i > 0; --i) {
-#ifdef LUAJIT_VERSION
-			TValue* arr = tvref(t->array);
-			if (!tvisnil(&arr[i-1])) {
-#else
 			if (!ttisnil(&t->array[i-1])) {
-#endif
 				return i;
 			}
 		}
 	}
 	return 0;
+#endif
 }
 
 unsigned int hash_size(const void* tv) {
