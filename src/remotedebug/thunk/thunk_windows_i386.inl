@@ -1,4 +1,4 @@
-#include "thunk.h"
+#include "thunk_jit.h"
 #include <memory>
 
 thunk* thunk_create_hook(intptr_t dbg, intptr_t hook)
