@@ -18,9 +18,8 @@ jobs:
           - os: macos-11
             platform: darwin-arm64
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v3
       with:
-        ref: refs/heads/master
         submodules : recursive
     - uses: actboy168/setup-luamake@master
     - run: luamake -platform ${{ matrix.platform }}
