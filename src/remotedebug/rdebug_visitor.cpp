@@ -99,7 +99,7 @@ copy_toR(lua_State *from, rlua_State *to) {
 		rlua_pushboolean(to, lua_toboolean(from,-1));
 		break;
 	case LUA_TNUMBER:
-#if LUA_VERSION_NUM >= 503
+#if LUA_VERSION_NUM >= 503 || defined(LUAJIT_VERSION)
 		if (lua_isinteger(from, -1)) {
 			rlua_pushinteger(to, lua_tointeger(from, -1));
 		} else {
@@ -842,7 +842,11 @@ client_index(rlua_State *L, int getref) {
 		return rluaL_error(L, "need table key");
 	}
 	rlua_Integer i = rluaL_checkinteger(L, 2);
+#ifdef LUAJIT_VERSION
+	if (i < 0 || i > (std::numeric_limits<int>::max)()) {
+#else
 	if (i <= 0 || i > (std::numeric_limits<int>::max)()) {
+#endif
 		return rluaL_error(L, "must be `unsigned int`");
 	}
 	if (get_index(L, cL, getref)) {
@@ -954,7 +958,7 @@ lclient_tablesize(rlua_State *L) {
 		return 0;
 	}
 	rlua_pushinteger(L, remotedebug::table::array_size(t));
-	rlua_pushinteger(L, remotedebug::table::hash_size(t));
+	rlua_pushinteger(L, remotedebug::table::hash_size(t) + remotedebug::table::has_zero_table(t) ? 1 : 0);
 	lua_pop(cL, 1);
 	return 2;
 }
@@ -1115,7 +1119,7 @@ lclient_type(rlua_State *L) {
 	case LUA_TSTRING:        rlua_pushstring(L, "string");        return 1;
 	case LUA_TLIGHTUSERDATA: rlua_pushstring(L, "lightuserdata"); return 1;
 	case LUA_TNUMBER:
-#if LUA_VERSION_NUM >= 503
+#if LUA_VERSION_NUM >= 503 || defined(LUAJIT_VERSION)
 		if (rlua_isinteger(L, 1)) {
 			rlua_pushstring(L, "integer");
 		} else {
@@ -1148,7 +1152,7 @@ lclient_type(rlua_State *L) {
 		}
 		break;
 	case LUA_TNUMBER:
-#if LUA_VERSION_NUM >= 503
+#if LUA_VERSION_NUM >= 503 || defined(LUAJIT_VERSION)
 		if (lua_isinteger(cL, -1)) {
 			rlua_pushstring(L, "integer");
 		} else {

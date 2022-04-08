@@ -9,6 +9,9 @@ function m.init()
         ver = ver * 10 + (math.tointeger(n) or 0)
     end
     m.LUAVERSION = ver
+    if ver == 51 then
+        m.isjit = rdebug.fieldv(rdebug._G,"jit") ~= nil
+    end
 end
 
 return m

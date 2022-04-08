@@ -9,6 +9,7 @@ local SHORT_TABLE_FIELD <const> = 100
 local MAX_TABLE_FIELD <const> = 1000
 local TABLE_VALUE_MAXLEN <const> = 32
 local LUAVERSION = 54
+local isjit = false
 
 local info = {}
 local varPool = {}
@@ -73,6 +74,10 @@ local function init_standard()
         table.insert(lstandard, "utf8")
         table.insert(lstandard, "warn")
     end
+    if isjit then
+        table.insert(lstandard, "jit")
+        table.insert(lstandard, "bit")
+    end
     standard = {}
     for _, v in ipairs(lstandard) do
         standard[v] = true
@@ -82,6 +87,7 @@ end
 ev.on('initializing', function(config)
     showIntegerAsHex = config.configuration.variables.showIntegerAsHex
     LUAVERSION = luaver.LUAVERSION
+    isjit = luaver.isjit
     init_standard()
 end)
 
