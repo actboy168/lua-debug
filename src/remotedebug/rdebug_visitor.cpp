@@ -912,7 +912,8 @@ tablehash(rlua_State *L, int ref) {
 	rlua_newtable(L);
 	rlua_Integer n = 0;
 	unsigned int hsize = remotedebug::table::hash_size(t);
-	for (unsigned int i = 0; i < hsize; ++i) {
+	unsigned int i = 0;
+	for (; i < hsize; ++i) {
 		if (remotedebug::table::get_kv(cL, t, i)) {
 			if (--maxn < 0) {
 				lua_pop(cL, 3);
@@ -926,6 +927,19 @@ tablehash(rlua_State *L, int ref) {
 			}
 			rlua_rawseti(L, -2, ++n);
 		}
+	}
+	if (remotedebug::table::get_zero(cL, t)) {
+		if (--maxn < 0) {
+			lua_pop(cL, 3);
+			return 1;
+		}
+		combine_key(L, cL, 1, i);
+		rlua_rawseti(L, -2, ++n);
+		combine_val(L, cL, 1, i, ref);
+		if (ref) {
+			rlua_rawseti(L, -3, ++n);
+		}
+		rlua_rawseti(L, -2, ++n);
 	}
 	lua_pop(cL, 1);
 	return 1;
@@ -958,7 +972,7 @@ lclient_tablesize(rlua_State *L) {
 		return 0;
 	}
 	rlua_pushinteger(L, remotedebug::table::array_size(t));
-	rlua_pushinteger(L, remotedebug::table::hash_size(t) + remotedebug::table::has_zero_table(t) ? 1 : 0);
+	rlua_pushinteger(L, remotedebug::table::hash_size(t) + (remotedebug::table::has_zero(t) ? 1 : 0));
 	lua_pop(cL, 1);
 	return 2;
 }

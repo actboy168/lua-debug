@@ -41,11 +41,13 @@ unsigned int array_size(const void* tv) {
 			TValue* arr = tvref(t->array);
 			if (!tvisnil(&arr[i-1])) {
 				return i-1;
+			}
 #else
 			if (!ttisnil(&t->array[i-1])) {
 				return i;
-#endif
 			}
+#endif
+
 		}
 	}
 	return 0;
@@ -54,10 +56,40 @@ unsigned int array_size(const void* tv) {
 unsigned int hash_size(const void* tv) {
 	const Table* t = (const Table*)tv;
 #ifdef LUAJIT_VERSION
+	if (t->hmask <= 0) return 0;
 	return t->hmask + 1;
 #else
 	return (unsigned int)(1<<t->lsizenode);
 #endif
+}
+
+ bool has_zero(const void* tv) {
+#ifdef LUAJIT_VERSION
+	const Table* t = (const Table*)tv;
+	return t->asize > 0 && !tvisnil(arrayslot(t, 0));
+#else
+	return false;
+#endif
+ }
+
+int get_zero(lua_State* L, const void* tv) {
+#ifdef LUAJIT_VERSION
+	const Table* t = (const Table*)tv;
+	if (t->asize == 0){
+		return 0;
+	}
+	TValue* v = arrayslot(t, 0);
+	if (tvisnil(v)) {
+		return 0;
+	}
+	L->top += 2;
+	StkId key = L->top - 1;
+	StkId val = L->top - 2;
+	setintptrV(key, 0);
+	copyTV(L,val, v);
+	return 1;
+#endif
+	return 0;
 }
 
 int get_kv(lua_State* L, const void* tv, unsigned int i) {
