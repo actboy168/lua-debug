@@ -1,6 +1,8 @@
 local lm = require "luamake"
 require "compile.common.detect_platform"
 
+lm.cxx = "c++17"
+
 if lm.os == "windows" then
     require "compile.windows.make"
     return
