@@ -58,8 +58,6 @@ lua_State* get_host(rlua_State *L);
 int copy_value(lua_State* from, rlua_State* to, bool ref);
 void unref_value(lua_State* from, int ref);
 
-#define BPMAP_SIZE (1 << 16)
-
 #define LOG(...) do { \
     FILE* f = fopen("dbg.log", "a"); \
     fprintf(f, __VA_ARGS__); \
@@ -133,7 +131,6 @@ struct timer {
 
 struct hookmgr {
     enum class BP : uint8_t {
-        None = 0,
         Break,
         Ignore,
     };
@@ -141,36 +138,17 @@ struct hookmgr {
     // 
     // break
     //
-    std::array<BP, BPMAP_SIZE>     break_map;
-    std::array<Proto*, BPMAP_SIZE> break_proto;
+    std::unordered_map<Proto*, BP> break_proto;
     int    break_mask = 0;
 
-    size_t break_hash(Proto* p) {
-        return uintptr_t(p) % BPMAP_SIZE;
-    }
     void break_add(lua_State* hL, Proto* p) {
-        size_t key = break_hash(p);
-        if (break_map[key] == BP::None) {
-            break_map[key] = BP::Break;
-            break_proto[key] = p;
-        }
-        else if (break_proto[key] == p) {
-            break_map[key] = BP::Break;
-        }
+        break_proto[p] = BP::Break;
     }
     void break_del(lua_State* hL, Proto* p) {
-        size_t key = break_hash(p);
-        if (break_map[key] != BP::Ignore) {
-            break_map[key] = BP::Ignore;
-            break_proto[key] = p;
-        }
+        break_proto[p] = BP::Ignore;
     }
     void break_freeobj(Proto* p) {
-        size_t key = break_hash(p);
-        if (break_proto[key] == p) {
-            break_map[key] = BP::None;
-            break_proto[key] = 0;
-        }
+        break_proto.erase(p);
     }
     void break_open(lua_State* hL, bool enable) {
         if (enable)
@@ -184,6 +162,24 @@ struct hookmgr {
     void break_closeline(lua_State* hL) {
         break_hookmask(hL, LUA_MASKCALL | LUA_MASKRET);
     }
+    bool break_new(lua_State* hL, Proto* p, int event) {
+        break_del(hL, p);
+
+        rluaL_checkstack(cL, 4, NULL);
+        if (rlua_rawgetp(cL, RLUA_REGISTRYINDEX, &HOOK_CALLBACK) != LUA_TFUNCTION) {
+            rlua_pop(cL, 1);
+            return false;
+        }
+        set_host(cL, hL);
+        rlua_pushstring(cL, "newproto");
+        rlua_pushlightuserdata(cL, p);
+        rlua_pushinteger(cL, event != LUA_HOOKRET? 0: 1);
+        if (rlua_pcall(cL, 3, 0, 0) != LUA_OK) {
+            rlua_pop(cL, 1);
+            return false;
+        }
+        return break_has(hL, p, event);
+    }
     bool break_has(lua_State* hL, Proto* p, int event) {
         if (!p) {
 #ifdef LUAJIT_VERSION
@@ -193,32 +189,11 @@ struct hookmgr {
             return false;
 #endif
         }
-        size_t key = break_hash(p);
-        switch (break_map[key]) {
-        case BP::None: {
-            break_map[key] = BP::Ignore;
-            break_proto[key] = p;
-            rluaL_checkstack(cL, 4, NULL);
-            if (rlua_rawgetp(cL, RLUA_REGISTRYINDEX, &HOOK_CALLBACK) != LUA_TFUNCTION) {
-                rlua_pop(cL, 1);
-                return false;
-            }
-            set_host(cL, hL);
-            rlua_pushstring(cL, "newproto");
-            rlua_pushlightuserdata(cL, p);
-            rlua_pushinteger(cL, event != LUA_HOOKRET? 0: 1);
-            if (rlua_pcall(cL, 3, 0, 0) != LUA_OK) {
-                rlua_pop(cL, 1);
-                return false;
-            }
-            return break_has(hL, p, event);
+        auto iter = break_proto.find(p);
+        if (iter == break_proto.end()) {
+            return break_new(hL, p, event);
         }
-        case BP::Break:
-            return true;
-        default:
-        case BP::Ignore:
-            return break_proto[key] != p;
-        }
+        return iter->second == BP::Break;
     }
     void break_update(lua_State* hL, CallInfo* ci, int event) {
         if (break_has(hL, ci2proto(ci), event)) {
@@ -485,10 +460,7 @@ struct hookmgr {
 
     hookmgr(rlua_State* L)
         : cL(L)
-    {
-        break_map.fill(BP::None);
-        break_proto.fill(0);
-    }
+    { }
 
     int call_event(int nargs) {
         if (rlua_pcall(cL, 1 + nargs, 1, 0) != LUA_OK) {

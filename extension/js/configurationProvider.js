@@ -135,11 +135,7 @@ function resolveConfig(folder, config) {
         config.sourceCoding = settings.sourceCoding
     }
     if (typeof config.outputCapture != 'object') {
-        config.outputCapture = [
-            "print",
-            "io.write",
-            "stderr"
-        ]
+        config.outputCapture = []
     }
     if (typeof config.pathFormat != 'string') {
         if (plat == "Linux" && !config.useWSL) {
@@ -156,7 +152,10 @@ function resolveConfig(folder, config) {
         config.client = true
     }
     if (config.request == 'launch') {
-        if (typeof config.runtimeExecutable != 'string') {
+        if (typeof config.runtimeExecutable == 'string') {
+            config.console = "internalConsole";
+        }
+        else {
             if (typeof config.program != 'string') {
                 config.program = createDefaultProgram(folder);
                 if (typeof config.program != 'string') {

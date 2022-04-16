@@ -359,9 +359,6 @@
                                 },
                                 "markdownDescription": "From where to capture output messages: print or stdout/stderr streams.",
                                 "default": [
-                                    "print",
-                                    "io.write",
-                                    "stderr"
                                 ]
                             },
                             "useWSL": {
@@ -471,9 +468,6 @@
                                 },
                                 "markdownDescription": "From where to capture output messages: print or stdout/stderr streams.",
                                 "default": [
-                                    "print",
-                                    "io.write",
-                                    "stderr"
                                 ]
                             },
                             "useWSL": {
@@ -519,7 +513,7 @@
                         "%lua.debug.launch.console.externalTerminal.description%"
                     ],
                     "description": "%lua.debug.launch.console.description%",
-                    "default": "internalConsole"
+                    "default": "integratedTerminal"
                 },
                 "lua.debug.settings.luaVersion": {
                     "type": "string",

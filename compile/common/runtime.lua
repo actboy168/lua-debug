@@ -1,6 +1,8 @@
 local lm = require "luamake"
 local runtimes = {}
 
+lm.cxx = "c++17"
+
 local bindir = "publish/runtime/"..lm.runtime_platform
 
 lm:source_set 'onelua' {

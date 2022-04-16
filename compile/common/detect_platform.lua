@@ -63,7 +63,13 @@ end
 
 local function detect_linux()
     if lm.platform then
-        assert(lm.platform == "linux-x64")
+        if lm.platform == "linux-arm64" then
+            if posix_arch() ~= "aarch64" then
+                lm.cc = "aarch64-linux-gnu-gcc"
+            end
+        else
+            assert(lm.platform == "linux-x64")
+        end
     else
         if posix_arch()  == "aarch64" then
             lm.platform = "linux-arm64"
