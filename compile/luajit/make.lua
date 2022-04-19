@@ -80,7 +80,7 @@ lm:executable("buildvm") {
     },
     includes = {
         ".",
-        "../../../../" .. lm.bindir
+        lm.bindir
     },
     links = { "m" }
 }
@@ -218,7 +218,7 @@ lm:executable("luajit/lua") {
     },
     includes = {
         ".",
-        "../../../../" .. lm.bindir
+        lm.bindir
     },
     links = {
         "m",
