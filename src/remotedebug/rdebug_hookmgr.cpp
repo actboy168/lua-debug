@@ -231,12 +231,7 @@ struct hookmgr {
     }
     bool break_has(lua_State* hL, Proto* p, int event) {
         if (!p) {
-#ifdef LUAJIT_VERSION
-            //enable hookline enter c function
-            return true;
-#else
             return false;
-#endif
         }
         auto status = break_proto.get(p);
         if (status == bpmap::status::None) {
@@ -548,11 +543,18 @@ struct hookmgr {
         }
         return nres;
     }
-
+#ifdef LUAJIT_VERSION
+	bool last_hook_call_in_c = false;
+#endif
     void full_hook(lua_State* hL, lua_Debug* ar) {
         switch (ar->event) {
         case LUA_HOOKLINE:
 #ifdef LUAJIT_VERSION
+			if (last_hook_call_in_c){
+				thread_mask &= (~LUA_MASKTHREAD);
+				updatehookmask(hL);
+				last_hook_call_in_c = false;
+			}
             if (stepL == hL) {
                 if (step_mask & LUA_MASKRET) {
                     step_hook_line(hL, ar);
@@ -578,9 +580,14 @@ struct hookmgr {
                 }
             }
 #ifdef LUAJIT_VERSION
-            if (update_mask && !isluafunc(frame_func(debug2ci(hL, ar)))) {
+			last_hook_call_in_c = !isluafunc(frame_func(debug2ci(hL, ar)));
+			if (last_hook_call_in_c) {
+				thread_mask |= LUA_MASKLINE; 
+				updatehookmask(hL);
+
+				if (update_mask)
                 update_hook(hL);
-            }
+			}
 #endif
             return;
         case LUA_HOOKRET:
@@ -677,10 +684,12 @@ struct hookmgr {
 
     void sethook(lua_State* L, lua_Hook func, int mask, int count) {
         lua_sethook(L, func, mask, count);
+#ifndef LUAJIT_VERSION  //luajit hook info in global_state
         lua_State* mainL = getmainthread(L);
         if (mainL != L) {
             lua_sethook(mainL, func, mask, count);
         }
+#endif
     }
 
     void updatehookmask(lua_State* hL) {
