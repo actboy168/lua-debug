@@ -229,13 +229,18 @@ private:
             return;
         }
 
+        free_bucket guard { oldbuckets };
         for (size_t i = 0; i < oldmaxsize; ++i) {
             if (oldbuckets[i].dib != 0) {
                 internal_insert<0>(std::move(oldbuckets[i]));
             }
         }
-        std::free(oldbuckets);
     }
+
+    struct free_bucket {
+        ~free_bucket() { std::free(b); }
+        bucket* b;
+    };
 
     static bucket* alloc_bucket(size_t n) {
         void* t = std::malloc(n * sizeof(bucket));
