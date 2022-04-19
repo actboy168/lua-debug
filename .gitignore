@@ -2,3 +2,4 @@
 /.vs/
 /publish/
 /build/
+/.vscode/c_cpp_properties.json

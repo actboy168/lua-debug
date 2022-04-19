@@ -11,6 +11,61 @@
 #include "rdebug_eventfree.h"
 #include "thunk/thunk.h"
 
+#if !defined(RDEBUG_USE_STDMAP)
+#include "rdebug_flatmap.h"
+#endif
+
+class bpmap {
+public:
+    enum class status {
+        None,
+        Break,
+        Ignore,
+    };
+
+    void set(void* proto, status status) {
+        switch (status) {
+        case status::None:
+            m_flatmap.erase(tokey(proto));
+            break;
+        case status::Break:
+            m_flatmap.insert_or_assign(tokey(proto), true);
+            break;
+        case status::Ignore:
+            m_flatmap.insert_or_assign(tokey(proto), false);
+            break;
+        }
+    }
+
+    status get(void* proto) const noexcept {
+#if defined(RDEBUG_USE_STDMAP)
+        auto v = m_flatmap.find(tokey(proto));
+        if (v != m_flatmap.end()) {
+            return v->second? status::Break: status::Ignore;
+        }
+        return status::None;
+#else
+        const bool* v = m_flatmap.find(tokey(proto));
+        if (v) {
+            return *v? status::Break: status::Ignore;
+        }
+        return status::None;
+#endif
+    }
+
+private:
+    intptr_t tokey(void* proto) const noexcept {
+        return reinterpret_cast<intptr_t>(proto);
+    }
+
+#if defined(RDEBUG_USE_STDMAP)
+    std::unordered_map<intptr_t, bool> m_flatmap;
+#else
+    // TODO: bullet size可以压缩到一个int64_t
+    remotedebug::flatmap<intptr_t, bool> m_flatmap;
+#endif
+};
+
 #if LUA_VERSION_NUM < 504
 #define s2v(o) (o)
 #endif
@@ -76,25 +131,20 @@ struct timer {
 };
 
 struct hookmgr {
-    enum class BP : uint8_t {
-        Break,
-        Ignore,
-    };
-
     // 
     // break
     //
-    std::unordered_map<Proto*, BP> break_proto;
-    int    break_mask = 0;
+    bpmap break_proto;
+    int   break_mask = 0;
 
     void break_add(lua_State* hL, Proto* p) {
-        break_proto[p] = BP::Break;
+        break_proto.set(p, bpmap::status::Break);
     }
     void break_del(lua_State* hL, Proto* p) {
-        break_proto[p] = BP::Ignore;
+        break_proto.set(p, bpmap::status::Ignore);
     }
     void break_freeobj(Proto* p) {
-        break_proto.erase(p);
+        break_proto.set(p, bpmap::status::None);
     }
     void break_open(lua_State* hL, bool enable) {
         if (enable)
@@ -130,11 +180,11 @@ struct hookmgr {
         if (!p) {
             return false;
         }
-        auto iter = break_proto.find(p);
-        if (iter == break_proto.end()) {
+        auto status = break_proto.get(p);
+        if (status == bpmap::status::None) {
             return break_new(hL, p, event);
         }
-        return iter->second == BP::Break;
+        return status == bpmap::status::Break;
     }
     void break_update(lua_State* hL, CallInfo* ci, int event) {
         if (break_has(hL, ci2proto(ci), event)) {
