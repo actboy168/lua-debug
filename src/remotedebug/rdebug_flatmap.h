@@ -73,34 +73,28 @@ public:
     }
 
     void insert_or_assign(const key_type& key, mapped_type&& obj) {
-        bucket tmp { key, std::move(obj), 1 };
-        size_t tryn = 0;
         if (m_size >= m_maxsize) {
-            label_rehash:
-            rehash((m_mask + 1) * 2);
+            increase_size();
         }
-        size_t slot = KeyHash::operator()(tmp.key) & m_mask;
+        uint8_t dib = 1;
+        size_t slot = KeyHash::operator()(key) & m_mask;
         for (;;) {
             if (m_buckets[slot].dib == 0) {
-                new (&m_buckets[slot]) bucket(std::move(tmp));
+                new (&m_buckets[slot]) bucket { key, std::forward<mapped_type>(obj), dib };
                 ++m_size;
                 return;
             }
-            if (KeyEqual::operator()(m_buckets[slot].key, tmp.key)) {
-                m_buckets[slot].obj = std::move(obj);
+            if (KeyEqual::operator()(m_buckets[slot].key, key)) {
+                m_buckets[slot].obj = std::forward<mapped_type>(obj);
                 return;
             }
-            if (tmp.dib > m_buckets[slot].dib) {
+            if (m_buckets[slot].dib < dib) {
+                bucket tmp { key, std::forward<mapped_type>(obj), dib };
                 std::swap(tmp, m_buckets[slot]);
+                ++tmp.dib;
+                return internal_insert<kMaxTryRehash>((slot + 1) & m_mask, std::move(tmp));
             }
-            if (tmp.dib >= kMaxDistance) {
-                if (++tryn > kMaxTryRehash) {
-                    throw_overflow();
-                }
-                tmp.dib = 1;
-                goto label_rehash;
-            }
-            ++tmp.dib;
+            ++dib;
             slot = (slot + 1) & m_mask;
         }
     }
@@ -177,24 +171,38 @@ private:
         return (maxsize / 100) * kMaxLoadFactor;
     }
 
-    void rehash_insert(bucket&& tmp) {
-        size_t slot = KeyHash::operator()(tmp.key) & m_mask;
-        tmp.dib = 1;
+    template <size_t REHASH>
+    void internal_insert(size_t slot, bucket&& tmp) {
         for (;;) {
             if (m_buckets[slot].dib == 0) {
-                new (&m_buckets[slot]) bucket(std::move(tmp));
+                new (&m_buckets[slot]) bucket(std::forward<bucket>(tmp));
                 ++m_size;
                 return;
             }
-            if (tmp.dib > m_buckets[slot].dib) {
+            if (m_buckets[slot].dib < tmp.dib) {
                 std::swap(tmp, m_buckets[slot]);
             }
-            if (tmp.dib >= kMaxDistance) {
+            if (tmp.dib >= kMaxDistance - 1) {
+                if constexpr (REHASH > 0) {
+                    increase_size();
+                    return internal_insert<REHASH-1>(std::forward<bucket>(tmp));
+                }
                 throw_overflow();
             }
             ++tmp.dib;
             slot = (slot + 1) & m_mask;
         }
+    }
+
+    template <size_t REHASH>
+    void internal_insert(bucket&& b) {
+        size_t slot = KeyHash::operator()(b.key) & m_mask;
+        b.dib = 1;
+        return internal_insert<REHASH>(slot, std::forward<bucket>(b));
+    }
+
+    void increase_size() {
+        rehash((m_mask + 1) * 2, true);
     }
 
     void rehash(size_t c, bool force) {
@@ -209,7 +217,7 @@ private:
         if (!force && newmaxsize <= m_mask + 1) {
             return;
         }
-        
+
         bucket* oldbuckets = m_buckets;
         size_t oldmaxsize = m_mask + 1;
 
@@ -220,10 +228,10 @@ private:
         if (oldmaxsize <= 1) {
             return;
         }
-        
+
         for (size_t i = 0; i < oldmaxsize; ++i) {
             if (oldbuckets[i].dib != 0) {
-                rehash_insert(std::move(oldbuckets[i]));
+                internal_insert<0>(std::move(oldbuckets[i]));
             }
         }
         std::free(oldbuckets);
