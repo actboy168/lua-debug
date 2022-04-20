@@ -1,7 +1,13 @@
 ---
 ---@class refvalue
----指向调试目标的某一个值的指针或者是一个立即值(string/number/boolean/nil)
+---指向调试目标的某一个值的引用
 ---
+
+---
+---@alias light-refvalue refvalue | string | number | boolean | nil
+---如果需要指向的调试目标的值是一个立即值，则它也是一个立即值，否则是指向它的一个引用
+---
+
 
 ---
 ---@class RemoteDebugVisitor
@@ -31,28 +37,42 @@ visitor._REGISTRY = nil
 ---@return refvalue
 ---局部变量。等同于debug.getlocal(frame, index)。
 ---
-function visitor.getlocal(frame, index)
-end
-visitor.getlocalv = visitor.getlocal
+function visitor.getlocal(frame, index) end
+---
+---@param frame integer
+---@param index integer
+---@return light-refvalue
+---局部变量。等同于debug.getlocal(frame, index)。
+---
+function visitor.getlocalv(frame, index) end
 
 ---
 ---@param f refvalue
 ---@param index integer
----@return refvalue
+---@return light-refvalue
 ---上值。等同于debug.getupvalue(f, index)。
 ---
-function visitor.getupvalue(f, index)
-end
-visitor.getupvaluev = visitor.getupvalue
+function visitor.getupvalue(f, index) end
+---
+---@param f refvalue
+---@param index integer
+---@return light-refvalue
+---上值。等同于debug.getupvalue(f, index)。
+---
+function visitor.getupvaluev(f, index) end
 
 ---
 ---@param value refvalue
 ---@return refvalue
 ---元表。等同于debug.getmetatable(value)。
 ---
-function visitor.getmetatable(value)
-end
-visitor.getmetatablev = visitor.getmetatable
+function visitor.getmetatable(value) end
+---
+---@param value refvalue
+---@return light-refvalue
+---元表。等同于debug.getmetatable(value)。
+---
+function visitor.getmetatablev(value) end
 
 ---
 ---@param ud refvalue
@@ -60,9 +80,14 @@ visitor.getmetatablev = visitor.getmetatable
 ---@return refvalue
 ---自定义值。等同于debug.getuservalue(ud, index)。
 ---
-function visitor.getuservalue(ud, index)
-end
-visitor.getuservaluev = visitor.getuservalue
+function visitor.getuservalue(ud, index) end
+---
+---@param ud refvalue
+---@param index integer | nil
+---@return light-refvalue
+---自定义值。等同于debug.getuservalue(ud, index)。
+---
+function visitor.getuservaluev(ud, index) end
 
 ---
 ---@param t refvalue
@@ -70,9 +95,14 @@ visitor.getuservaluev = visitor.getuservalue
 ---@return refvalue
 ---访问表，key的类型必须是整数。等同于t[key]。
 ---
-function visitor.index(t, key)
-end
-visitor.indexv = visitor.index
+function visitor.index(t, key) end
+---
+---@param t refvalue
+---@param key integer
+---@return light-refvalue
+---访问表，key的类型必须是整数。等同于t[key]。
+---
+function visitor.indexv(t, key) end
 
 ---
 ---@param t refvalue
@@ -80,9 +110,14 @@ visitor.indexv = visitor.index
 ---@return refvalue
 ---访问表，key的类型必须是字符串。等同于t[key]。
 ---
-function visitor.field(t, key)
-end
-visitor.fieldv = visitor.field
+function visitor.field(t, key) end
+---
+---@param t refvalue
+---@param key string
+---@return light-refvalue
+---访问表，key的类型必须是字符串。等同于t[key]。
+---
+function visitor.fieldv(t, key) end
 
 ---
 ---@param t refvalue
@@ -91,9 +126,15 @@ visitor.fieldv = visitor.field
 ---返回table哈希部分的值，返回最多limit个，如果没有limit则返回所有的值。
 ---返回值是一个数组，tablehash每三个值分别为key/value/value(ref)；tablehashv每两个值分别为key/value。
 ---
-function visitor.tablehash(t, limit)
-end
-visitor.tablehashv = visitor.tablehash
+function visitor.tablehash(t, limit) end
+---
+---@param t refvalue
+---@param limit integer | nil
+---@return light-refvalue[]
+---返回table哈希部分的值，返回最多limit个，如果没有limit则返回所有的值。
+---返回值是一个数组，tablehash每三个值分别为key/value/value(ref)；tablehashv每两个值分别为key/value。
+---
+function visitor.tablehashv(t, limit) end
 
 
 ---
