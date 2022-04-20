@@ -15,7 +15,7 @@ lm.runtime_platform = lm.platform
 require "compile.common.runtime"
 
 if lm.platform == "darwin-arm64" then
-    lm:build "x86_64" {
+    lm:rule "luamake" {
         "$luamake",
         "-C", lm.workdir,
         "-f", "compile/common/runtime.lua",
@@ -24,6 +24,10 @@ if lm.platform == "darwin-arm64" then
         "-target", "x86_64-apple-macos10.12",
         "-runtime_platform", "darwin-x64",
         pool = "console",
+
+    }
+    lm:build "x86_64" {
+        rule = "luamake",
     }
 end
 
