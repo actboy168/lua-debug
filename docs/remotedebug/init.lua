@@ -1,3 +1,5 @@
+---@meta
+
 ---
 ---@class RemoteDebug
 ---在调试目标中管理调试器VM。

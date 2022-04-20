@@ -1,3 +1,5 @@
+---@meta
+
 ---
 ---@class RemoteDebugStdio
 ---用于截获调试目标中的输出。
