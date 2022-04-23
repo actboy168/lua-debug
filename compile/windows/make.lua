@@ -14,9 +14,6 @@ lm:copy 'copy_bootstrap' {
     input = "extension/script/bootstrap.lua",
     output = "publish/bin/windows/main.lua",
 }
-lm:build "copy_vcredist" {
-    "$luamake", "lua", "compile/windows/copy_vcredist.lua"
-}
 
 if lm.platform == "win32-x64" then
     lm:rule "luamake" {
