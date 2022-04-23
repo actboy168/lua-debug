@@ -19,7 +19,7 @@ lm:build "copy_vcredist" {
 }
 
 if lm.platform == "win32-x64" then
-    lm:build "x86_64" {
+    lm:rule "luamake" {
         "$luamake",
         "-C", lm.workdir,
         "-f", "compile/windows/runtime.lua",
@@ -28,6 +28,9 @@ if lm.platform == "win32-x64" then
         "-arch", "x86_64",
         "-runtime_platform", "win32-x64",
         pool = "console",
+    }
+    lm:build "x86_64" {
+        rule = "luamake"
     }
 end
 

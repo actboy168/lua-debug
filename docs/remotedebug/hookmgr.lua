@@ -1,3 +1,5 @@
+---@meta
+
 ---
 ---@class RemoteDebugHookmgr
 ---在调试器VM提供了一个hook管理器。理论上它可以用visitor提供的API，完全由Lua实现。但出于对性能的考虑，所以将hook的管理有C++实现，这也是remotedebug中唯一考虑了性能的一个模块。
