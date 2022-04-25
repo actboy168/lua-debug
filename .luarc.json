@@ -6,7 +6,8 @@
             "unpack"
         ],
         "disable": [
-            "discard-returns"
+            "discard-returns",
+            "need-check-nil"
         ]
     }
 }
