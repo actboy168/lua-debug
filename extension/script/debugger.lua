@@ -9,10 +9,10 @@ if debug.getregistry()["lua-debug"] then
     function empty:start()
         return self
     end
-    function empty:event(...)
+    function empty:event()
         return self
     end
-    function empty:set_wait(...)
+    function empty:set_wait()
         return self
     end
     function empty:setup_patch()

@@ -63,9 +63,10 @@ function hookmgr.break_del(proto)
 end
 
 ---
+---@param enable boolean
 ---启用`bp`事件。
 ---
-function hookmgr.break_open()
+function hookmgr.break_open(enable)
 end
 
 ---

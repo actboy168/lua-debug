@@ -9,6 +9,26 @@
             "discard-returns",
             "undefined-field",
             "need-check-nil"
-        ]
+        ],
+        "neededFileStatus": {
+            "redefined-local": "Any",
+            "unused-vararg": "Any",
+            "unused-function": "Any",
+            "unused-local": "Any",
+            "unused-label": "Any",
+            "code-after-break": "Any",
+            "empty-block": "Any",
+            "trailing-space": "Any"
+        },
+        "severity": {
+            "redefined-local": "Hint",
+            "unused-vararg": "Warning",
+            "unused-function": "Warning",
+            "unused-local": "Warning",
+            "unused-label": "Warning",
+            "code-after-break": "Warning",
+            "empty-block": "Warning",
+            "trailing-space": "Warning"
+        }
     }
 }

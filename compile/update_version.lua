@@ -11,19 +11,6 @@ local version = (function()
     error 'Cannot found version in package.json.'
 end)()
 
-local function copy_directory(from, to, filter)
-    fs.create_directories(to)
-    for fromfile in fs.pairs(from) do
-        if fs.is_directory(fromfile) then
-            copy_directory(fromfile, to / fromfile:filename(), filter)
-        else
-            if (not filter) or filter(fromfile) then
-                fs.copy_file(fromfile, to / fromfile:filename(), fs.copy_options.overwrite_existing)
-            end
-        end
-    end
-end
-
 local function io_load(filepath)
     local f = assert(io.open(filepath:string(), 'rb'))
     local buf = f:read 'a'
