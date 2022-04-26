@@ -31,7 +31,7 @@ end
 ---@return thread
 ---获取当前调试的协程。
 ---
-function hookmgr.gethost(co)
+function hookmgr.gethost()
 end
 
 ---
@@ -65,13 +65,13 @@ end
 ---
 ---启用`bp`事件。
 ---
-function hookmgr.break_open(proto)
+function hookmgr.break_open()
 end
 
 ---
 ---仅在本次函数调用中关闭`bp`事件。
 ---
-function hookmgr.break_closeline(proto)
+function hookmgr.break_closeline()
 end
 
 ---

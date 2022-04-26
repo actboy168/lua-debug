@@ -33,16 +33,6 @@ local function response_initialize(req)
     }
 end
 
-local function response_restart(req)
-    client.sendmsg {
-        type = 'response',
-        seq = 0,
-        command = 'restart',
-        request_seq = req.seq,
-        success = true,
-    }
-end
-
 local function response_error(req, msg)
     client.sendmsg {
         type = 'response',
