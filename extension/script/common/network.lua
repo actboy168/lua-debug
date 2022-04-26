@@ -95,7 +95,9 @@ local function open(address, client)
     end
     function m.send(data)
         if not session then
-            write = write .. data
+            if t.client then
+                write = write .. data
+            end
             return
         end
         select.send(session, data)
