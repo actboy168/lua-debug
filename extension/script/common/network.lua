@@ -53,12 +53,12 @@ local function open(address, client)
         end
         if status == 'close' then
             if session == fd then
-                session = nil
                 if t.client then
                     srvfd = nil
                     select.wantconnect(t)
                 end
                 e_close()
+                session = nil
             end
             return
         end
@@ -95,9 +95,7 @@ local function open(address, client)
     end
     function m.send(data)
         if not session then
-            if t.client then
-                write = write .. data
-            end
+            write = write .. data
             return
         end
         select.send(session, data)

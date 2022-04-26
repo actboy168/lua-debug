@@ -46,8 +46,8 @@ local function event_close()
         cmd = 'terminated',
     }
     ev.emit('close')
-    seq = 0
     initialized = false
+    seq = 0
     stat = {}
     queue = {}
 end
@@ -99,6 +99,9 @@ function mgr.initConfig(config)
 end
 
 function mgr.clientSend(pkg)
+    if not initialized then
+        return
+    end
     network.send(proto.send(pkg, stat))
 end
 
