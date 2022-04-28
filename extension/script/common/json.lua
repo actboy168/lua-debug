@@ -41,7 +41,7 @@ if _VERSION == "Lua 5.1" or _VERSION == "Lua 5.2" then
                 c % 64 + 128
             )
         end
-        error(string.format("invalid UTF-8 code '%x'", c))
+        error(string_format("invalid UTF-8 code '%x'", c))
     end
     function math_type(v)
         if v >= -2147483648 and v <= 2147483647 and math_floor(v) == v then
@@ -55,6 +55,7 @@ else
 end
 
 local json = {}
+
 json.supportSparseArray = true
 
 local objectMt = {}
@@ -68,6 +69,13 @@ function json.isObject(t)
         return false
     end
     return next(t) ~= nil or getmetatable(t) == objectMt
+end
+
+if debug and debug.upvalueid then
+    -- Generate a lightuserdata
+    json.null = debug.upvalueid(json.createEmptyObject, 1)
+else
+    json.null = function() end
 end
 
 -- json.encode --
@@ -531,13 +539,6 @@ function json.decode(str)
         decode_error "trailing garbage"
     end
     return res
-end
-
-if debug and debug.upvalueid then
-    -- Generate a lightuserdata
-    json.null = debug.upvalueid(decode, 1)
-else
-    json.null = function() end
 end
 
 return json
