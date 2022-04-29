@@ -15,6 +15,7 @@ local LUAJIT_TARGET = string.format("LUAJIT_TARGET=LUAJIT_ARCH_%s", string.upper
 local LJ_ARCH_HASFPU = "LJ_ARCH_HASFPU=1"
 local LJ_ABI_SOFTFP = "LJ_ABI_SOFTFP=0"
 local LUAJIT_ENABLE_LUA52COMPAT = "LUAJIT_ENABLE_LUA52COMPAT"
+local LUAJIT_NUMMODE = "LUAJIT_NUMMODE=2"
 local luajitDir = '3rd/lua/' .. luaver .. "/src"
 
 lm:executable("minilua") {
@@ -23,36 +24,23 @@ lm:executable("minilua") {
         LUAJIT_TARGET,
         LJ_ARCH_HASFPU,
         LJ_ABI_SOFTFP,
-        LUAJIT_ENABLE_LUA52COMPAT
+        LUAJIT_ENABLE_LUA52COMPAT,
+        LUAJIT_NUMMODE
     },
     sources = { "host/minilua.c" },
     links = { "m" }
 }
 
-local arch_flags
-if arch == "arm64" then
-    arch_flags = {
-        "-D", "ENDIAN_LE",
-        "-D", "P64",
-        "-D", "JIT",
-        "-D", "FFI",
-        "-D", "FPU",
-        "-D", "HFABI",
-        "-D", "VER=80",
-        "-D", "DUALNUM"
-    }
-elseif arch == "x64" then
-    arch_flags = {
-        "-D", "ENDIAN_LE",
-        "-D", "P64",
-        "-D", "JIT",
-        "-D", "FFI",
-        "-D", "FPU",
-        "-D", "HFABI",
-    }
-else
-    error("unsupported architecture:" .. arch)
-end
+local arch_flags = {
+    "-D", "ENDIAN_LE",
+    "-D", "P64",
+    "-D", "JIT",
+    "-D", "FFI",
+    "-D", "FPU",
+    "-D", "HFABI",
+    "-D", "VER=80",
+    "-D", "DUALNUM"
+}
 
 lm:build("builvm_arch.h") {
     deps = "minilua",
@@ -72,7 +60,8 @@ lm:executable("buildvm") {
         LUAJIT_TARGET,
         LJ_ARCH_HASFPU,
         LJ_ABI_SOFTFP,
-        LUAJIT_ENABLE_LUA52COMPAT
+        LUAJIT_ENABLE_LUA52COMPAT,
+        LUAJIT_NUMMODE
     },
     sources = {
         "host/*.c",
@@ -165,6 +154,7 @@ lm:build("lj_vm.obj") {
     U_FORTIFY_SOURCE,
     "-D" .. LUA_MULTILIB,
     "-D" .. LUAJIT_ENABLE_LUA52COMPAT,
+    "-D" .. LUAJIT_NUMMODE,
     "-fno-stack-protector",
     "-D" .. LUAJIT_UNWIND_EXTERNAL,
     lm.os ~= "linux" and "-target " .. lm.target,
@@ -192,7 +182,8 @@ lm:source_set("lj_str_hash.c") {
         _FILE_OFFSET_BITS,
         _LARGEFILE_SOURCE,
         LUA_MULTILIB,
-        LUAJIT_ENABLE_LUA52COMPAT
+        LUAJIT_ENABLE_LUA52COMPAT,
+        LUAJIT_NUMMODE
     },
     flags = lj_str_hash_flags
 }
@@ -229,7 +220,8 @@ lm:executable("luajit/lua") {
         _FILE_OFFSET_BITS,
         _LARGEFILE_SOURCE,
         LUA_MULTILIB,
-        LUAJIT_ENABLE_LUA52COMPAT
+        LUAJIT_ENABLE_LUA52COMPAT,
+        LUAJIT_NUMMODE
     },
     flags = {
         "-fno-stack-protector",
