@@ -84,7 +84,12 @@ local function detectLuaDebugPath(cfg)
     elseif _VERSION == "Lua 5.2" then
         rt = rt .. "/lua52"
     elseif _VERSION == "Lua 5.1" then
-        rt = rt .. "/lua51"
+        if jit ~= nil then
+            rt = rt .. "/luajit"
+            jit.off()
+        else
+            rt = rt .. "/lua51"
+        end
     else
         error(_VERSION .. " is not supported.")
     end

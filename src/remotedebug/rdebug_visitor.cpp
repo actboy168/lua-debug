@@ -9,6 +9,9 @@
 #include <algorithm>
 #include "rdebug_table.h"
 
+#ifdef LUAJIT_VERSION
+#include "rluaobject.h"
+#endif
 int debug_pcall(lua_State* L, int nargs, int nresults, int errfunc);
 
 lua_State* get_host(rlua_State *L);
@@ -96,7 +99,7 @@ copy_toR(lua_State *from, rlua_State *to) {
 		rlua_pushboolean(to, lua_toboolean(from,-1));
 		break;
 	case LUA_TNUMBER:
-#if LUA_VERSION_NUM >= 503
+#if LUA_VERSION_NUM >= 503 || defined(LUAJIT_VERSION)
 		if (lua_isinteger(from, -1)) {
 			rlua_pushinteger(to, lua_tointeger(from, -1));
 		} else {
@@ -839,7 +842,11 @@ client_index(rlua_State *L, int getref) {
 		return rluaL_error(L, "need table key");
 	}
 	rlua_Integer i = rluaL_checkinteger(L, 2);
+#ifdef LUAJIT_VERSION
+	if (i < 0 || i > (std::numeric_limits<int>::max)()) {
+#else
 	if (i <= 0 || i > (std::numeric_limits<int>::max)()) {
+#endif
 		return rluaL_error(L, "must be `unsigned int`");
 	}
 	if (get_index(L, cL, getref)) {
@@ -893,7 +900,11 @@ tablehash(rlua_State *L, int ref) {
 		lua_pop(cL, 1);
 		return 0;
 	}
-	const void* t = lua_topointer(cL, -1);
+#ifdef LUAJIT_VERSION
+	const GCtab* t = &((const GCobj*)lua_topointer(cL, -1))->tab;
+#else
+	const void* t = lua_topointer(cL,-1);
+#endif
 	if (!t) {
 		lua_pop(cL, 1);
 		return 0;
@@ -901,7 +912,8 @@ tablehash(rlua_State *L, int ref) {
 	rlua_newtable(L);
 	rlua_Integer n = 0;
 	unsigned int hsize = remotedebug::table::hash_size(t);
-	for (unsigned int i = 0; i < hsize; ++i) {
+	unsigned int i = 0;
+	for (; i < hsize; ++i) {
 		if (remotedebug::table::get_kv(cL, t, i)) {
 			if (--maxn < 0) {
 				lua_pop(cL, 3);
@@ -915,6 +927,19 @@ tablehash(rlua_State *L, int ref) {
 			}
 			rlua_rawseti(L, -2, ++n);
 		}
+	}
+	if (remotedebug::table::get_zero(cL, t)) {
+		if (--maxn < 0) {
+			lua_pop(cL, 3);
+			return 1;
+		}
+		combine_key(L, cL, 1, i);
+		rlua_rawseti(L, -2, ++n);
+		combine_val(L, cL, 1, i, ref);
+		if (ref) {
+			rlua_rawseti(L, -3, ++n);
+		}
+		rlua_rawseti(L, -2, ++n);
 	}
 	lua_pop(cL, 1);
 	return 1;
@@ -937,13 +962,17 @@ lclient_tablesize(rlua_State *L) {
 		lua_pop(cL, 1);
 		return 0;
 	}
-	const void* t = lua_topointer(cL, -1);
+#ifdef LUAJIT_VERSION
+	const GCtab* t = &((const GCobj*)lua_topointer(cL, -1))->tab;
+#else
+	const void* t = lua_topointer(cL,-1);
+#endif
 	if (!t) {
 		lua_pop(cL, 1);
 		return 0;
 	}
 	rlua_pushinteger(L, remotedebug::table::array_size(t));
-	rlua_pushinteger(L, remotedebug::table::hash_size(t));
+	rlua_pushinteger(L, remotedebug::table::hash_size(t) + (remotedebug::table::has_zero(t) ? 1 : 0));
 	lua_pop(cL, 1);
 	return 2;
 }
@@ -960,7 +989,11 @@ lclient_tablekey(rlua_State *L) {
 		lua_pop(cL, 1);
 		return 0;
 	}
-	const void* t = lua_topointer(cL, -1);
+#ifdef LUAJIT_VERSION
+	const GCtab* t = &((const GCobj*)lua_topointer(cL, -1))->tab;
+#else
+	const void* t = lua_topointer(cL,-1);
+#endif
 	if (!t) {
 		lua_pop(cL, 1);
 		return 0;
@@ -1100,7 +1133,7 @@ lclient_type(rlua_State *L) {
 	case LUA_TSTRING:        rlua_pushstring(L, "string");        return 1;
 	case LUA_TLIGHTUSERDATA: rlua_pushstring(L, "lightuserdata"); return 1;
 	case LUA_TNUMBER:
-#if LUA_VERSION_NUM >= 503
+#if LUA_VERSION_NUM >= 503 || defined(LUAJIT_VERSION)
 		if (rlua_isinteger(L, 1)) {
 			rlua_pushstring(L, "integer");
 		} else {
@@ -1133,7 +1166,7 @@ lclient_type(rlua_State *L) {
 		}
 		break;
 	case LUA_TNUMBER:
-#if LUA_VERSION_NUM >= 503
+#if LUA_VERSION_NUM >= 503 || defined(LUAJIT_VERSION)
 		if (lua_isinteger(cL, -1)) {
 			rlua_pushstring(L, "integer");
 		} else {
@@ -1233,9 +1266,17 @@ lclient_getinfo(rlua_State *L) {
 	bool hasf = false;
 	int frame = 0;
 	int size = 0;
+#ifdef LUAJIT_VERSION
+	bool hasSFlag = false;
+#endif
 	for (const char* what = options; *what; what++) {
 		switch (*what) {
-		case 'S': size += 5; break;
+		case 'S':
+			size += 5;
+#ifdef LUAJIT_VERSION
+			hasSFlag = true;
+#endif
+			break;
 		case 'l': size += 1; break;
 		case 'n': size += 2; break;
 		case 'f': size += 1; hasf = true; break;
@@ -1289,6 +1330,14 @@ lclient_getinfo(rlua_State *L) {
 	default:
 		return rluaL_error(L, "Need stack level (integer) or function ref, It's %s", rlua_typename(L, rlua_type(L, 1)));
 	}
+#ifdef LUAJIT_VERSION
+if (hasSFlag && strcmp(ar.what,"main") ==  0)
+{
+	//carzy bug,luajit is real linedefined in main file,but in lua it's zero
+	//maybe fix it is a new bug
+	ar.lastlinedefined = 0;
+}
+#endif
 
 	for (const char* what = options; *what; what++) {
 		switch (*what) {
