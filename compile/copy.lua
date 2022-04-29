@@ -1,4 +1,5 @@
 local fs = require 'bee.filesystem'
+local OS = require 'bee.platform'.OS:lower()
 
 local function getExtensionDirName(packageDir)
     local publisher,name,version
@@ -61,14 +62,57 @@ local function copy_directory(from, to, filter)
     end
 end
 
-local packageDir,sourceDir,extensionPath = ...
-local extensionDirName = getExtensionDirName(packageDir)
-local extensionDir = fs.path(extensionPath) / extensionDirName
-sourceDir = fs.path(sourceDir)
-if not fs.exists(extensionDir) then
-    error("`" .. extensionDir:string() .. "` is not installed.")
+local function what_arch()
+    if OS == "windows" then
+        if os.getenv "PROCESSOR_ARCHITECTURE" == "ARM64" then
+            return "arm64"
+        end
+        if os.getenv "PROCESSOR_ARCHITECTURE" == "AMD64" or os.getenv "PROCESSOR_ARCHITEW6432" == "AMD64" then
+            return "x64"
+        end
+        return "ia32"
+    end
+    local f <close> = assert(io.popen("uname -m", 'r'))
+    return f:read 'l':lower()
 end
 
+local function detectPlatform(extensionPath, extensionDirName)
+    local extensionDirPrefix = fs.path(extensionPath) / extensionDirName
+    local function guess(platform)
+        local extensionDir = extensionDirPrefix..platform
+        if fs.exists(extensionDir / "package.json") then
+            return extensionDir
+        end
+    end
+    local arch = what_arch()
+    if OS == "windows" then
+        local r = guess('-win32-'..arch)
+        if r then return r end
+        if arch == "x64" then
+            r = guess('-win32-ia32')
+            if r then return r end
+        end
+    elseif OS == "linux" then
+        local r = guess('-linux-'..arch)
+        if r then return r end
+    elseif OS == "macos" then
+        local r = guess('-darwin-'..arch)
+        if r then return r end
+        if arch == "arm64" then
+            r = guess('-darwin-x64')
+            if r then return r end
+        end
+    end
+    local r = guess ''
+    if r then return r end
+    error("`" .. extensionDirPrefix:string() .. "` is not installed.")
+end
+
+local packageDir,sourceDir,extensionPath = ...
+local extensionDirName = getExtensionDirName(packageDir)
+local extensionDir = detectPlatform(extensionPath, extensionDirName)
+
+local sourceDir = fs.path(sourceDir)
 copy_directory(sourceDir, extensionDir, function (path)
     local ext = path:extension():string():lower()
     return ext ~= '.log' and path ~= sourceDir / "tmp"
