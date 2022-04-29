@@ -26,7 +26,7 @@ local ArchAlias = {
 }
 
 lm:lua_library ('launcher.'..ArchAlias[platform]) {
-    bindir = "publish/bin/windows",
+    bindir = "publish/bin/",
     export_luaopen = "off",
     deps = "detours",
     includes = {

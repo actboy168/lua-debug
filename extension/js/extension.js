@@ -42,7 +42,7 @@ async function install() {
             await copyDirectory(path.join(extensionDir, "vcredist", arch), path.join(extensionDir, "runtime", arch, luaversion))
         }
     }
-    await copyDirectory(path.join(extensionDir, "vcredist", "win32-ia32"), path.join(extensionDir, "bin", "windows"))
+    await copyDirectory(path.join(extensionDir, "vcredist", "win32-ia32"), path.join(extensionDir, "bin"))
     await fs.writeFile(installedFile, '', 'utf8');
 }
 

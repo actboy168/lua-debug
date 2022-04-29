@@ -8,13 +8,13 @@
             "console": "integratedTerminal",
             "luaVersion": "latest",
             "windows": {
-                "luaexe": "${command:extensionPath}actboy168.lua-debug-1.54.0-win32-x64/bin/windows/lua-debug"
+                "luaexe": "${command:extensionPath}actboy168.lua-debug-1.54.0-win32-x64/bin/lua-debug"
             },
             "linux": {
-                "luaexe": "${command:extensionPath}actboy168.lua-debug-1.54.0-linux-x64/bin/linux/lua-debug",
+                "luaexe": "${command:extensionPath}actboy168.lua-debug-1.54.0-linux-x64/bin/lua-debug",
             },
             "osx": {
-                "luaexe": "${command:extensionPath}actboy168.lua-debug-1.54.0-darwin-arm64/bin/macos/lua-debug",
+                "luaexe": "${command:extensionPath}actboy168.lua-debug-1.54.0-darwin-arm64/bin/lua-debug",
             },
             "outputCapture": [
             ],
@@ -34,9 +34,21 @@
             "args": [
                 "--extensionDevelopmentPath=${workspaceFolder}/extension/"
             ],
-            "env": {
-                "VSCODE_EXTENSION_PATH" : "${command:extensionPath}actboy168.lua-debug-1.54.0"
-            }
+            "windows": {
+                "env": {
+                    "VSCODE_EXTENSION_PATH" : "${command:extensionPath}actboy168.lua-debug-1.54.0-win32-x64"
+                }
+            },
+            "linux": {
+                "env": {
+                    "VSCODE_EXTENSION_PATH" : "${command:extensionPath}actboy168.lua-debug-1.54.0-linux-x64"
+                }
+            },
+            "osx": {
+                "env": {
+                    "VSCODE_EXTENSION_PATH" : "${command:extensionPath}actboy168.lua-debug-1.54.0-darwin-arm64"
+                }
+            },
         }
     ]
 }

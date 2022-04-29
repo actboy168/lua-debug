@@ -1,7 +1,7 @@
 local lm = require "luamake"
 
 lm.builddir = ("build/%s/%s"):format(lm.platform, lm.mode)
-lm.EXE_DIR = "publish/bin/"..lm.os
+lm.EXE_DIR = "publish/bin/"
 lm.EXE_NAME = "lua-debug"
 lm:import "3rd/bee.lua/make.lua"
 
@@ -18,7 +18,7 @@ lm:build 'update_version' {
 
 lm:copy 'copy_bootstrap' {
     input = "extension/script/bootstrap.lua",
-    output = "publish/bin/"..lm.os.."/main.lua",
+    output = "publish/bin/main.lua",
 }
 
 lm:default {

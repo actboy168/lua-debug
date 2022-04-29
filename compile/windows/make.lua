@@ -12,7 +12,7 @@ lm:build 'update_version' {
 }
 lm:copy 'copy_bootstrap' {
     input = "extension/script/bootstrap.lua",
-    output = "publish/bin/windows/main.lua",
+    output = "publish/bin/main.lua",
 }
 
 if lm.platform == "win32-x64" then
@@ -31,12 +31,12 @@ if lm.platform == "win32-x64" then
     }
 end
 
-lm.EXE_DIR = "publish/bin/windows"
+lm.EXE_DIR = "publish/bin/"
 lm.EXE_NAME = "lua-debug"
 lm.EXE_RESOURCE = "../../compile/windows/lua-debug.rc"
 lm:import "3rd/bee.lua/make.lua"
 lm:lua_dll 'inject' {
-    bindir = "publish/bin/windows",
+    bindir = "publish/bin/",
     deps = "lua54",
     defines = "BEE_INLINE",
     includes = {
