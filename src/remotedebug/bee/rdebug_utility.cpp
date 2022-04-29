@@ -10,28 +10,27 @@
 #include <bee/filesystem.h>
 #include <bee/utility/path_helper.h>
 #include <bee/utility/path_helper.cpp>
-#include <bee/platform.h>
 #include <signal.h>
 
 namespace rdebug_utility {
     static int fs_current_path(lua_State* L) {
-        try {
-            auto res = fs::current_path().generic_u8string();
-            lua_pushlstring(L, res.data(), res.size());
-            return 1;
-        } catch (const std::exception& e) {
-            return bee::lua::push_error(L, e);
+        std::error_code ec;
+        auto res = fs::current_path(ec).generic_u8string();
+        if (ec) {
+            return luaL_error(L, "current_path()");
         }
+        lua_pushlstring(L, res.data(), res.size());
+        return 1;
     }
 
     static int fs_program_path(lua_State* L) {
-        try {
-            auto res = bee::path_helper::exe_path().remove_filename().generic_u8string();
-            lua_pushlstring(L, res.data(), res.size());
-            return 1;
-        } catch (const std::exception& e) {
-            return bee::lua::push_error(L, e);
+        auto r = bee::path_helper::exe_path();
+        if (!r) {
+            return luaL_error(L, "exe_path()");
         }
+        auto res = r.value().remove_filename().generic_u8string();
+        lua_pushlstring(L, res.data(), res.size());
+        return 1;
     }
 
 #if defined(_WIN32)
