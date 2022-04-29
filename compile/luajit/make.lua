@@ -136,7 +136,7 @@ lm:build("luajit/vmdef.lua") {
     deps = "buildvm",
     binPath .. "buildvm",
     " -m vmdef -o ", "$out", "$in",
-    output = binPath .. "/vmdef.lua", 
+    output = binPath .. "/vmdef.lua",
     input = LJLIB_C,
 }
 ]]

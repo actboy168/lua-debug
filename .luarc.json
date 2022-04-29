@@ -3,7 +3,8 @@
     "diagnostics": {
         "globals": [
             "loadstring",
-            "unpack"
+            "unpack",
+            "jit"
         ],
         "disable": [
             "discard-returns",
