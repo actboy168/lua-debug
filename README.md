@@ -4,7 +4,7 @@
 
 ## Requirements
 
-* Lua 5.1 - 5.4 or luajit (thanks [@fesil](https://github.com/fesil))
+* Lua 5.1 - 5.4 or luajit (thanks [@fesily](https://github.com/fesily))
 * Platform: Windows, macOS, Linux, Android
 
 ## Feature
