@@ -10,6 +10,9 @@ lm:source_set 'onelua' {
     sources = "src/remotedebug/onelua.c",
     linux = {
         flags = "-fPIC"
+    },
+    gcc = {
+        flags = "-Wno-maybe-uninitialized"
     }
 }
 

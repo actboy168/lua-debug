@@ -19,7 +19,11 @@ std::string readfile(const fs::path& filename) {
 }
 
 static void attach(lua_State* L) {
-	auto root = bee::path_helper::dll_path().parent_path().parent_path().parent_path();
+	auto r = bee::path_helper::dll_path();
+	if (!r) {
+		return;
+	}
+	auto root = r.value().parent_path().parent_path().parent_path();
 	auto buf = readfile(root / "script" / "attach.lua");
 	if (luaL_loadbuffer(L, buf.data(), buf.size(), "=(attach.lua)")) {
 		fprintf(stderr, "%s\n", lua_tostring(L, -1));

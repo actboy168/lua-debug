@@ -27,3 +27,9 @@
 3. Open [repo](https://github.com/actboy168/lua-debug) in VSCode
 4. Run task：Rebuild
 5. Run task：Copy Publish
+
+## Todo
+
+* `thunk` support arm64.
+* Use [lua-epoll](https://github.com/actboy168/lua-epoll) instead of select.
+* iOS example.
