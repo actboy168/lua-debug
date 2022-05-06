@@ -24,6 +24,7 @@ if lm.platform == "win32-x64" then
         "-mode", lm.mode,
         "-arch", "x86_64",
         "-runtime_platform", "win32-x64",
+        "-luajit", lm.luajit,
         pool = "console",
     }
     lm:build "x86_64" {

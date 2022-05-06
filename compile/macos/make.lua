@@ -23,6 +23,7 @@ if lm.platform == "darwin-arm64" then
         "-mode", lm.mode,
         "-target", "x86_64-apple-macos10.12",
         "-runtime_platform", "darwin-x64",
+        "-luajit", lm.luajit,
         pool = "console",
 
     }
