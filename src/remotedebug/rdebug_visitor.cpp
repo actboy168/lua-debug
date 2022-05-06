@@ -328,7 +328,7 @@ eval_value_(lua_State *cL, struct value *v) {
 			lua_pop(cL, 1);
 			break;
 		}
-		t = lua::getuservalue(cL, -1);
+		t = lua_getiuservalue(cL, -1, v->index);
 		lua_replace(cL, -2);
 		return t;
 	}
@@ -506,7 +506,7 @@ assign_value(struct value * v, lua_State *cL) {
 			break;
 		}
 		lua_insert(cL, -2);
-		lua_setuservalue(cL, -2);
+		lua_setiuservalue(cL, -2, v->index);
 		lua_pop(cL, 1);
 		return 1;
 	}
@@ -742,19 +742,11 @@ get_uservalue(rlua_State *L, lua_State *cL, int index, int getref) {
 	}
 
 	if (!getref) {
-#if LUA_VERSION_NUM >= 504
 		if (lua_getiuservalue(cL, -1, index) == LUA_TNONE) {
 			lua_pop(cL, 1);
 			rlua_pop(L, 1);
 			return 0;
 		}
-#else
-		if (index > 1) {
-			rlua_pop(L, 1);
-			return 0;
-		}
-		lua_getuservalue(cL, -1);
-#endif
 		if (copy_toR(cL, L) != LUA_TNONE) {
 			lua_pop(cL, 2);	// pop userdata / uservalue
 			rlua_replace(L, -2);
