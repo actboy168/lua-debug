@@ -28,7 +28,7 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
-    - run: luamake -platform ${{ matrix.platform }}
+    - run: luamake -platform ${{ matrix.platform }} -luajit off
     - run: npm install -g vsce
     - run: cd publish && vsce publish --target ${{ matrix.platform }} -p ${{ secrets.VSCE_KEY }}
       continue-on-error: true
