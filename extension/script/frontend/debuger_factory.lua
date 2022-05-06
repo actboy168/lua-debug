@@ -203,25 +203,13 @@ end
 
 local function create_process_in_console(args, callback)
     initialize(args)
-    local application = args.runtimeExecutable
-    local option = {
-        application,
+    local process, err = sp.spawn {
+        args.runtimeExecutable, args.runtimeArgs,
         env = args.env,
         console = 'new',
-        cwd = args.cwd or fs.path(application):parent_path(),
+        cwd = args.cwd or fs.path(args.runtimeExecutable):parent_path(),
         suspended = true,
     }
-    local process, err
-    if type(args.runtimeArgs) == 'string' then
-        option.argsStyle = 'string'
-        option[2] = args.runtimeArgs
-        process, err = sp.spawn(option)
-    elseif type(args.runtimeArgs) == 'table' then
-        option[2] = args.runtimeArgs
-        process, err = sp.spawn(option)
-    else
-        process, err = sp.spawn(option)
-    end
     if not process then
         return nil, err
     end
