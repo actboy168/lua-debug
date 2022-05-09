@@ -23,7 +23,7 @@ static void attach(lua_State* L) {
 	if (!r) {
 		return;
 	}
-	auto root = r.value().parent_path().parent_path().parent_path();
+	auto root = r.value().parent_path().parent_path();
 	auto buf = readfile(root / "script" / "attach.lua");
 	if (luaL_loadbuffer(L, buf.data(), buf.size(), "=(attach.lua)")) {
 		fprintf(stderr, "%s\n", lua_tostring(L, -1));

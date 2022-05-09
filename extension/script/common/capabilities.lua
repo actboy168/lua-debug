@@ -9,6 +9,7 @@ return {
     supportsRestartRequest = true,
     supportsExceptionInfoRequest = true,
     supportTerminateDebuggee = true,
+    supportSuspendDebuggee = true,
     supportsDelayedStackTraceLoading = true,
     supportsLoadedSourcesRequest = true,
     supportsLogPoints = true,

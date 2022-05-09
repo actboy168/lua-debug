@@ -4,17 +4,6 @@ lm.arch = "x86"
 lm.runtime_platform = "win32-ia32"
 require "compile.windows.runtime"
 
-lm:build 'copy_extension' {
-    '$luamake', 'lua', 'compile/copy_extension.lua',
-}
-lm:build 'update_version' {
-    '$luamake', 'lua', 'compile/update_version.lua',
-}
-lm:copy 'copy_bootstrap' {
-    input = "extension/script/bootstrap.lua",
-    output = "publish/bin/main.lua",
-}
-
 if lm.platform == "win32-x64" then
     lm:rule "luamake" {
         "$luamake",
@@ -24,6 +13,7 @@ if lm.platform == "win32-x64" then
         "-mode", lm.mode,
         "-arch", "x86_64",
         "-runtime_platform", "win32-x64",
+        "-luajit", lm.luajit,
         pool = "console",
     }
     lm:build "x86_64" {
@@ -54,13 +44,11 @@ lm:lua_dll 'inject' {
 }
 
 lm:default {
-    "update_version",
-    "copy_extension",
-    "copy_bootstrap",
+    "common",
     "copy_vcredist",
     "lua-debug",
     "inject",
     "launcher",
     "runtime",
-    lm.platform == "win32-x64" and "x86_64",
+    lm.platform == "win32-x64" and "x86_64"
 }

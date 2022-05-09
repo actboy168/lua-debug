@@ -15,6 +15,7 @@ local fs = require 'backend.worker.filesystem'
 local err = thread.channel 'errlog'
 
 local initialized = false
+local suspend = false
 local info = {}
 local state = 'running'
 local stopReason = 'step'
@@ -117,6 +118,7 @@ end
 
 function CMD.initialized()
     initialized = true
+    suspend = false
     sendToMaster 'eventThread' {
         reason = 'started',
     }
@@ -131,6 +133,10 @@ function CMD.disconnect()
             reason = 'exited'
         }
     end
+end
+
+function CMD.suspend()
+    suspend = true
 end
 
 local function getFuncName(depth)
@@ -577,15 +583,24 @@ local function event_breakpoint(src, line)
     end
 end
 
+local function debuggeeReady()
+    while suspend do
+        workerThreadUpdate(0.01)
+    end
+    if initialized then
+        return true
+    end
+end
+
 function event.bp(line)
-    if not initialized then return end
+    if not debuggeeReady() then return end
     rdebug.getinfo(0, "S", info)
     local src = source.create(info.source)
     event_breakpoint(src, line)
 end
 
 function event.funcbp(func)
-    if not initialized then return end
+    if not debuggeeReady() then return end
     local bp = breakpoint.hit_funcbp(func)
     if bp then
         state = 'stopped'
@@ -597,7 +612,7 @@ function event.funcbp(func)
 end
 
 function event.step(line)
-    if not initialized then return end
+    if not debuggeeReady() then return end
     rdebug.getinfo(0, "S", info)
     local src = source.create(info.source)
     if event_breakpoint(src, line) then
@@ -622,7 +637,7 @@ function event.step(line)
 end
 
 function event.newproto(proto, level)
-    if not initialized then return end
+    if not debuggeeReady() then return end
     rdebug.getinfo(level, "S", info)
     local src = source.create(info.source)
     if not source.valid(src) then
@@ -632,6 +647,7 @@ function event.newproto(proto, level)
 end
 
 function event.update()
+    debuggeeReady()
     workerThreadUpdate()
 end
 
@@ -641,7 +657,7 @@ function event.autoUpdate(flag)
 end
 
 function event.print(...)
-    if not initialized then return end
+    if not debuggeeReady() then return end
     local res = {}
     local args = table.pack(...)
     for i = 1, args.n do
@@ -654,7 +670,7 @@ function event.print(...)
 end
 
 function event.iowrite(...)
-    if not initialized then return end
+    if not debuggeeReady() then return end
     local res = {}
     local args = table.pack(...)
     for i = 1, args.n do
@@ -759,7 +775,7 @@ local function runException(flags, errobj)
 end
 
 function event.exception(errobj, errcode)
-    if not initialized then return end
+    if not debuggeeReady() then return end
     if errcode == nil or errcode == -1 then
         --TODO:暂时兼容旧版本
         errcode = ERREVENT_ERRRUN
@@ -768,6 +784,7 @@ function event.exception(errobj, errcode)
 end
 
 function event.thread(co, type)
+    if not debuggeeReady() then return end
     local L = hookmgr.gethost()
     if co then
         if type == 0 then
@@ -780,9 +797,8 @@ function event.thread(co, type)
 end
 
 function event.wait()
-    while not initialized do
-        workerThreadUpdate(0.01)
-    end
+    suspend = true
+    debuggeeReady()
 end
 
 function event.setThreadName(name)

@@ -7,3 +7,6 @@
 [submodule "3rd/lua/luajit"]
 	path = 3rd/lua/luajit
 	url = https://github.com/fesily/luajit2
+[submodule "3rd/json.lua"]
+	path = 3rd/json.lua
+	url = https://github.com/actboy168/json.lua

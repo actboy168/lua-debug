@@ -350,7 +350,11 @@ function request.disconnect(req)
     mgr.workerBroadcast {
         cmd = 'disconnect',
     }
-    if args.terminateDebuggee then
+    if args.suspendDebuggee then
+        mgr.workerBroadcast {
+            cmd = 'suspend',
+        }
+    elseif args.terminateDebuggee then
         if closeProcess then
             mgr.setTerminateDebuggeeCallback(function()
                 os.exit(true, true)

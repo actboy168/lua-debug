@@ -23,6 +23,7 @@ if lm.platform == "darwin-arm64" then
         "-mode", lm.mode,
         "-target", "x86_64-apple-macos10.12",
         "-runtime_platform", "darwin-x64",
+        "-luajit", lm.luajit,
         pool = "console",
 
     }
@@ -31,23 +32,8 @@ if lm.platform == "darwin-arm64" then
     }
 end
 
-lm:build 'copy_extension' {
-    '$luamake', 'lua', 'compile/copy_extension.lua',
-}
-
-lm:build 'update_version' {
-    '$luamake', 'lua', 'compile/update_version.lua',
-}
-
-lm:copy 'copy_bootstrap' {
-    input = "extension/script/bootstrap.lua",
-    output = "publish/bin/main.lua",
-}
-
 lm:default {
-    "copy_extension",
-    "update_version",
-    "copy_bootstrap",
+    "common",
     "lua-debug",
     "runtime",
     lm.platform == "darwin-arm64" and "x86_64"

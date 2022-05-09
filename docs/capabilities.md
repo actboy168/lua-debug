@@ -21,7 +21,7 @@
 | supportsValueFormattingOptions        |    🟥    |
 | supportsExceptionInfoRequest          |    🟩    |
 | supportTerminateDebuggee              |    🟩    |
-| supportSuspendDebuggee                |    🟥    |
+| supportSuspendDebuggee                |    🟩    |
 | supportsDelayedStackTraceLoading      |    🟩    |
 | supportsLoadedSourcesRequest          |    🟩    |
 | supportsLogPoints                     |    🟩    |
