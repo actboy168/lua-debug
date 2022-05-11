@@ -30,25 +30,12 @@
             "request": "launch",
             "name": "Test Extension",
             "runtimeExecutable": "${execPath}",
-            "sourceMaps": false,
             "args": [
                 "--extensionDevelopmentPath=${workspaceFolder}/extension/"
             ],
-            "windows": {
-                "env": {
-                    "VSCODE_EXTENSION_PATH" : "${command:extensionPath}actboy168.lua-debug-1.55.1-win32-x64"
-                }
-            },
-            "linux": {
-                "env": {
-                    "VSCODE_EXTENSION_PATH" : "${command:extensionPath}actboy168.lua-debug-1.55.1-linux-x64"
-                }
-            },
-            "osx": {
-                "env": {
-                    "VSCODE_EXTENSION_PATH" : "${command:extensionPath}actboy168.lua-debug-1.55.1-darwin-arm64"
-                }
-            },
+            "env": {
+                "VSCODE_EXTENSION_PATH" : "${command:extensionPath}actboy168.lua-debug-1.55.1"
+            }
         }
     ]
 }

@@ -12,7 +12,24 @@ function getExtensionDirectory(context) {
     if (path.basename(extensionPath) != 'extension') {
         return extensionPath
     }
-    return process.env.VSCODE_EXTENSION_PATH
+    if (os.platform() == "win32") {
+        if (os.arch() == "x64") {
+            return process.env.VSCODE_EXTENSION_PATH + "-win32-x64"
+        }
+        return process.env.VSCODE_EXTENSION_PATH + "-win32-ia32"
+    }
+    else if (os.platform() == "darwin") {
+        if (os.arch() == "arm64") {
+            return process.env.VSCODE_EXTENSION_PATH + "-darwin-arm64"
+        }
+        return process.env.VSCODE_EXTENSION_PATH + "-darwin-x64"
+    }
+    else if (os.platform() == "linux") {
+        if (os.arch() == "arm64") {
+            return process.env.VSCODE_EXTENSION_PATH + "-linux-arm64"
+        }
+        return process.env.VSCODE_EXTENSION_PATH + "-linux-x64"
+    }
 }
 
 async function fsExists(file) {

@@ -21,7 +21,7 @@ lm:build 'update_version' {
 lm:build 'package_json' {
     '$luamake', 'lua', 'compile/common/write_json.lua', '$in', '$out', lm.platform,
     input = "compile/common/package_json.lua",
-    output = "publish/package.json",
+    output = "extension/package.json",
 }
 
 lm:phony 'common' {
