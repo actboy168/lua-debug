@@ -1,3 +1,8 @@
+local platform = ...
+platform = platform or "unknown-unknown"
+
+local os, arch = platform:match "^([^-]+)-([^-]+)$"
+
 local json = {
     name = "lua-debug",
     version = "1.55.1",
@@ -368,16 +373,6 @@ Debugger address.
         markdownDescription = "Choose whether to `connect` or `listen`.",
         type = "boolean",
     },
-    processId = {
-        default = "${command:pickProcess}",
-        markdownDescription = "Id of process to attach to.",
-        type = "string",
-    },
-    processName = {
-        default = "lua.exe",
-        markdownDescription = "Name of process to attach to.",
-        type = "string",
-    },
 }
 
 attributes.launch = {
@@ -434,23 +429,6 @@ attributes.launch = {
         markdownDescription = "%lua.debug.launch.luaArch.description%",
         type = "string",
     },
-    runtimeExecutable = {
-        default = "${workspaceFolder}/lua.exe",
-        markdownDescription = "Runtime to use. Either an absolute path or the name of a runtime availableon the PATH.",
-        type = {
-            "string",
-            "null",
-        },
-    },
-    runtimeArgs = {
-        default = "${workspaceFolder}/main.lua",
-        markdownDescription = "Arguments passed to the runtime executable.",
-        type = {
-            "string",
-            "array",
-            "null",
-        },
-    },
     cwd = {
         default = "${workspaceFolder}",
         markdownDescription = "Working directory at program startup",
@@ -489,11 +467,50 @@ attributes.launch = {
     },
 }
 
+if os == "win32" then
+    attributes.launch.luaArch.enum = {
+        "x86",
+        "x86_64",
+    }
+    attributes.attach.processId = {
+        default = "${command:pickProcess}",
+        markdownDescription = "Id of process to attach to.",
+        type = "string",
+    }
+    attributes.attach.processName = {
+        default = "lua.exe",
+        markdownDescription = "Name of process to attach to.",
+        type = "string",
+    }
+    attributes.launch.runtimeExecutable = {
+        default = "${workspaceFolder}/lua.exe",
+        markdownDescription = "Runtime to use. Either an absolute path or the name of a runtime availableon the PATH.",
+        type = {
+            "string",
+            "null",
+        },
+    }
+    attributes.launch.runtimeArgs = {
+        default = "${workspaceFolder}/main.lua",
+        markdownDescription = "Arguments passed to the runtime executable.",
+        type = {
+            "string",
+            "array",
+            "null",
+        },
+    }
+else
+    attributes.launch.luaArch.enum = {
+        "x86_64",
+        "arm64",
+    }
+end
+
 for k, v in pairs(attributes.common) do
     attributes.attach[k] = v
     attributes.launch[k] = v
 end
-json.contributes.debuggers.configurationAttributes = {
+json.contributes.debuggers[1].configurationAttributes = {
     launch = {properties=attributes.launch},
     attach = {properties=attributes.attach},
 }
