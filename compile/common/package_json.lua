@@ -95,7 +95,6 @@ local json = {
                         body = {
                             arg = {
                             },
-                            consoleCoding = "utf8",
                             cpath = "^\"\\${workspaceFolder}/?.dll\"",
                             cwd = "^\"\\${workspaceFolder}\"",
                             name = "${1:launch}",
@@ -110,7 +109,6 @@ local json = {
                     },
                     {
                         body = {
-                            consoleCoding = "utf8",
                             name = "${1:launch process}",
                             request = "launch",
                             runtimeArgs = "^\"\\${workspaceFolder}/${2:main.lua}\"",
@@ -184,16 +182,6 @@ local json = {
 local attributes = {}
 
 attributes.common = {
-    consoleCoding = {
-        default = "utf8",
-        enum = {
-            "utf8",
-            "ansi",
-            "none",
-        },
-        markdownDescription = "%lua.debug.launch.consoleCoding.description%",
-        type = "string",
-    },
     luaVersion = {
         default = "5.4",
         enum = {
@@ -456,19 +444,21 @@ json.contributes.debuggers[1].configurationAttributes = {
 }
 
 local configuration = json.contributes.configuration.properties
-for _, name in ipairs {"luaArch", "luaVersion","sourceCoding","consoleCoding", "path", "cpath","console"} do
-    local cfg = {}
+for _, name in ipairs {"luaArch", "luaVersion", "sourceCoding", "path", "cpath","console"} do
     local attr = attributes.launch[name] or attributes.attach[name]
-    for k, v in pairs(attr) do
-        if k == 'markdownDescription' then
-            k = 'description'
+    if attr then
+        local cfg = {}
+        for k, v in pairs(attr) do
+            if k == 'markdownDescription' then
+                k = 'description'
+            end
+            if k == 'enummarkdownDescriptions' then
+                k = 'enumDescriptions'
+            end
+            cfg[k] = v
         end
-        if k == 'enummarkdownDescriptions' then
-            k = 'enumDescriptions'
-        end
-        cfg[k] = v
+        configuration["lua.debug.settings."..name] = cfg
     end
-    configuration["lua.debug.settings."..name] = cfg
 end
 
 return json

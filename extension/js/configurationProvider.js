@@ -128,9 +128,6 @@ function resolveConfig(folder, config) {
     if (typeof config.console != 'string') {
         config.console = settings.console
     }
-    if (typeof config.consoleCoding != 'string') {
-        config.consoleCoding = settings.consoleCoding
-    }
     if (typeof config.sourceCoding != 'string') {
         config.sourceCoding = settings.sourceCoding
     }
