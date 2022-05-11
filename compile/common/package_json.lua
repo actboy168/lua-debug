@@ -1,7 +1,7 @@
 local platform = ...
 platform = platform or "unknown-unknown"
 
-local os, arch = platform:match "^([^-]+)-([^-]+)$"
+local OS, ARCH = platform:match "^([^-]+)-([^-]+)$"
 
 local json = {
     name = "lua-debug",
@@ -81,80 +81,6 @@ local json = {
         },
         configuration = {
             properties = {
-                ["lua.debug.settings.console"] = {
-                    default = "integratedTerminal",
-                    description = "%lua.debug.launch.console.description%",
-                    enum = {
-                        "internalConsole",
-                        "integratedTerminal",
-                        "externalTerminal",
-                    },
-                    enumDescriptions = {
-                        "%lua.debug.launch.console.internalConsole.description%",
-                        "%lua.debug.launch.console.integratedTerminal.description%",
-                        "%lua.debug.launch.console.externalTerminal.description%",
-                    },
-                    type = "string",
-                },
-                ["lua.debug.settings.consoleCoding"] = {
-                    default = "utf8",
-                    description = "%lua.debug.launch.consoleCoding.description%",
-                    enum = {
-                        "utf8",
-                        "ansi",
-                        "none",
-                    },
-                    type = "string",
-                },
-                ["lua.debug.settings.cpath"] = {
-                    default = {
-                    },
-                    description = "%lua.debug.launch.cpath.description%",
-                    items = {
-                        type = "string",
-                    },
-                    type = "array",
-                },
-                ["lua.debug.settings.luaArch"] = {
-                    default = "x86_64",
-                    description = "%lua.debug.launch.luaArch.description%",
-                    enum = {
-                        "x86",
-                        "x86_64",
-                        "arm64",
-                    },
-                    type = "string",
-                },
-                ["lua.debug.settings.luaVersion"] = {
-                    default = "5.4",
-                    description = "%lua.debug.launch.luaVersion.description%",
-                    enum = {
-                        "5.1",
-                        "5.2",
-                        "5.3",
-                        "5.4",
-                        "latest",
-                    },
-                    type = "string",
-                },
-                ["lua.debug.settings.path"] = {
-                    default = {
-                    },
-                    description = "%lua.debug.launch.path.description%",
-                    items = {
-                        type = "string",
-                    },
-                    type = "array",
-                },
-                ["lua.debug.settings.sourceCoding"] = {
-                    default = "utf8",
-                    description = "%lua.debug.launch.sourceCoding.description%",
-                    enum = {
-                        "utf8",
-                        "ansi",
-                    },
-                    type = "string",
-                },
                 ["lua.debug.variables.showIntegerAsHex"] = {
                     default = false,
                     description = "Show integer as hex.",
@@ -403,7 +329,7 @@ attributes.launch = {
     },
     path = {
         default = "${workspaceFolder}/?.lua",
-        markdownDescription = "Search path for Lua programs",
+        markdownDescription = "%lua.debug.launch.path.description%",
         type = {
             "string",
             "array",
@@ -412,7 +338,7 @@ attributes.launch = {
     },
     cpath = {
         default = "${workspaceFolder}/?.dll",
-        markdownDescription = "Search path for native libraries",
+        markdownDescription = "%lua.debug.launch.cpath.description%",
         type = {
             "string",
             "array",
@@ -422,9 +348,6 @@ attributes.launch = {
     luaArch = {
         default = "x86_64",
         enum = {
-            "x86",
-            "x86_64",
-            "arm64",
         },
         markdownDescription = "%lua.debug.launch.luaArch.description%",
         type = "string",
@@ -467,11 +390,7 @@ attributes.launch = {
     },
 }
 
-if os == "win32" then
-    attributes.launch.luaArch.enum = {
-        "x86",
-        "x86_64",
-    }
+if OS == "win32" then
     attributes.attach.processId = {
         default = "${command:pickProcess}",
         markdownDescription = "Id of process to attach to.",
@@ -499,12 +418,31 @@ if os == "win32" then
             "null",
         },
     }
-else
-    attributes.launch.luaArch.enum = {
-        "x86_64",
-        "arm64",
-    }
 end
+
+local function SupportedArchs()
+    if OS == "win32" then
+        if ARCH == "x64" then
+            return "x86", "x86_64"
+        else
+            return "x86"
+        end
+    elseif OS == "darwin" then
+        if ARCH == "arm64" then
+            return "x86_64", "arm64"
+        else
+            return "x86_64"
+        end
+    elseif OS == "linux" then
+        if ARCH == "arm64" then
+            return "arm64"
+        else
+            return "x86_64"
+        end
+    end
+end
+
+attributes.launch.luaArch.enum = {SupportedArchs()}
 
 for k, v in pairs(attributes.common) do
     attributes.attach[k] = v
@@ -514,5 +452,21 @@ json.contributes.debuggers[1].configurationAttributes = {
     launch = {properties=attributes.launch},
     attach = {properties=attributes.attach},
 }
+
+local configuration = json.contributes.configuration.properties
+for _, name in ipairs {"luaArch", "luaVersion","sourceCoding","consoleCoding", "path", "cpath","console"} do
+    local cfg = {}
+    local attr = attributes.launch[name] or attributes.attach[name]
+    for k, v in pairs(attr) do
+        if k == 'markdownDescription' then
+            k = 'description'
+        end
+        if k == 'enummarkdownDescriptions' then
+            k = 'enumDescriptions'
+        end
+        cfg[k] = v
+    end
+    configuration["lua.debug.settings."..name] = cfg
+end
 
 return json
