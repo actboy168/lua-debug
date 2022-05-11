@@ -217,15 +217,6 @@ attributes.common = {
         markdownDescription = "Path format",
         type = "string",
     },
-    skipFiles = {
-        default = {
-        },
-        items = {
-            type = "string",
-        },
-        markdownDescription = "An array of glob patterns for files to skip when debugging.",
-        type = "array",
-    },
     sourceFormat = {
         default = "path",
         enum = {
@@ -246,6 +237,15 @@ attributes.common = {
         markdownDescription = "The source path of the remote host and the source path of local.",
         type = "array",
     },
+    skipFiles = {
+        default = {
+        },
+        items = {
+            type = "string",
+        },
+        markdownDescription = "An array of glob patterns for files to skip when debugging.",
+        type = "array",
+    },
     stopOnEntry = {
         default = false,
         markdownDescription = "Automatically stop after entry.",
@@ -254,11 +254,6 @@ attributes.common = {
     stopOnThreadEntry = {
         default = true,
         markdownDescription = "Automatically stop after thread entry.",
-        type = "boolean",
-    },
-    useWSL = {
-        default = true,
-        description = "Use Windows Subsystem for Linux.",
         type = "boolean",
     },
 }
@@ -400,6 +395,11 @@ if OS == "win32" then
         },
         markdownDescription = "%lua.debug.launch.sourceCoding.description%",
         type = "string",
+    }
+    attributes.common.useWSL = {
+        default = true,
+        description = "Use Windows Subsystem for Linux.",
+        type = "boolean",
     }
     attributes.launch.luaexe.default = "${workspaceFolder}/lua.exe"
     attributes.launch.cpath.default = "${workspaceFolder}/?.dll"
