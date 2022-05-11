@@ -18,11 +18,18 @@ lm:build 'update_version' {
     '$luamake', 'lua', 'compile/update_version.lua',
 }
 
+lm:build 'package_json' {
+    '$luamake', 'lua', 'compile/common/write_json.lua', '$in', '$out',
+    input = "compile/common/package_json.lua",
+    output = "publish/package.json",
+}
+
 lm:phony 'common' {
     deps = {
         'copy_json',
         'copy_bootstrap',
         'copy_extension',
         'update_version',
+        'package_json',
     }
 }

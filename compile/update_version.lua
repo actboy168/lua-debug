@@ -1,15 +1,7 @@
 local fs = require 'bee.filesystem'
 local root = fs.absolute(fs.path '.')
 
-local version = (function()
-    for line in io.lines((root / 'extension' / 'package.json'):string()) do
-        local ver = line:match('"version": "(%d+%.%d+%.%d+)"')
-        if ver then
-            return ver
-        end
-    end
-    error 'Cannot found version in package.json.'
-end)()
+local version = dofile "compile/common/package_json.lua".version
 
 local function io_load(filepath)
     local f = assert(io.open(filepath:string(), 'rb'))
