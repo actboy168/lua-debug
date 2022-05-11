@@ -238,15 +238,6 @@ attributes.common = {
         markdownDescription = "An array of glob patterns for files to skip when debugging.",
         type = "array",
     },
-    sourceCoding = {
-        default = "utf8",
-        enum = {
-            "utf8",
-            "ansi",
-        },
-        markdownDescription = "%lua.debug.launch.sourceCoding.description%",
-        type = "string",
-    },
     sourceFormat = {
         default = "path",
         enum = {
@@ -303,7 +294,6 @@ Debugger address.
 
 attributes.launch = {
     luaexe = {
-        default = "${workspaceFolder}/lua.exe",
         markdownDescription = "Absolute path to the lua exe.",
         type = "string",
     },
@@ -337,7 +327,6 @@ attributes.launch = {
         },
     },
     cpath = {
-        default = "${workspaceFolder}/?.dll",
         markdownDescription = "%lua.debug.launch.cpath.description%",
         type = {
             "string",
@@ -346,9 +335,6 @@ attributes.launch = {
         },
     },
     luaArch = {
-        default = "x86_64",
-        enum = {
-        },
         markdownDescription = "%lua.debug.launch.luaArch.description%",
         type = "string",
     },
@@ -418,18 +404,32 @@ if OS == "win32" then
             "null",
         },
     }
+    attributes.common.sourceCoding = {
+        default = "utf8",
+        enum = {
+            "utf8",
+            "ansi",
+        },
+        markdownDescription = "%lua.debug.launch.sourceCoding.description%",
+        type = "string",
+    }
+    attributes.launch.luaexe.default = "${workspaceFolder}/lua.exe"
+    attributes.launch.cpath.default = "${workspaceFolder}/?.dll"
+else
+    attributes.launch.luaexe.default = "${workspaceFolder}/lua"
+    attributes.launch.cpath.default = "${workspaceFolder}/?.so"
 end
 
 local function SupportedArchs()
     if OS == "win32" then
         if ARCH == "x64" then
-            return "x86", "x86_64"
+            return "x86_64", "x86"
         else
             return "x86"
         end
     elseif OS == "darwin" then
         if ARCH == "arm64" then
-            return "x86_64", "arm64"
+            return "arm64", "x86_64"
         else
             return "x86_64"
         end
@@ -442,7 +442,9 @@ local function SupportedArchs()
     end
 end
 
-attributes.launch.luaArch.enum = {SupportedArchs()}
+local Archs = {SupportedArchs()}
+attributes.launch.luaArch.default = Archs[1]
+attributes.launch.luaArch.enum = Archs
 
 for k, v in pairs(attributes.common) do
     attributes.attach[k] = v
