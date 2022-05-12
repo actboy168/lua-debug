@@ -39,7 +39,6 @@ local json = {
     activationEvents = {
         "onCommand:extension.lua-debug.runEditorContents",
         "onCommand:extension.lua-debug.debugEditorContents",
-        "onCommand:extension.lua-debug.pickProcess",
         "onDebugInitialConfigurations",
         "onDebugDynamicConfigurations",
         "onDebugResolve:lua",
@@ -90,67 +89,38 @@ local json = {
         },
         debuggers = {
             {
-                configurationSnippets = {
-                    {
-                        body = {
-                            arg = {
-                            },
-                            cpath = "^\"\\${workspaceFolder}/?.dll\"",
-                            cwd = "^\"\\${workspaceFolder}\"",
-                            name = "${1:launch}",
-                            path = "^\"\\${workspaceFolder}/?.lua\"",
-                            program = "^\"\\${workspaceFolder}/${2:main.lua}\"",
-                            request = "launch",
-                            stopOnEntry = true,
-                            type = "lua",
-                        },
-                        description = "A new configuration for launching a lua debug program",
-                        label = "Lua Debug: Launch Script",
-                    },
-                    {
-                        body = {
-                            name = "${1:launch process}",
-                            request = "launch",
-                            runtimeArgs = "^\"\\${workspaceFolder}/${2:main.lua}\"",
-                            runtimeExecutable = "^\"\\${workspaceFolder}/lua.exe\"",
-                            stopOnEntry = true,
-                            type = "lua",
-                        },
-                        description = "A new configuration for launching a lua process",
-                        label = "Lua Debug: Launch Process",
-                    },
-                    {
-                        body = {
-                            address = "127.0.0.1:4278",
-                            name = "${1:attach}",
-                            request = "attach",
-                            stopOnEntry = true,
-                            type = "lua",
-                        },
-                        description = "A new configuration for attaching a lua debug program",
-                        label = "Lua Debug: Attach",
-                    },
-                    {
-                        body = {
-                            name = "${1:attach}",
-                            processId = "^\"\\${command:pickProcess}\"",
-                            request = "attach",
-                            stopOnEntry = true,
-                            type = "lua",
-                        },
-                        description = "A new configuration for attaching a lua debug program",
-                        label = "Lua Debug: Attach Process",
-                    },
-                },
-                label = "Lua Debug",
+                type = "lua",
                 languages = {
                     "lua",
                 },
-                type = "lua",
-                variables = {
-                    pickProcess = "extension.lua-debug.pickProcess",
-                },
-            },
+                label = "Lua Debug",
+                configurationSnippets = {
+                    {
+                        label = "Lua Debug: Launch Script",
+                        description = "A new configuration for launching a lua debug program",
+                        body = {
+                            type = "lua",
+                            request = "launch",
+                            name = "${1:launch}",
+                            stopOnEntry = true,
+                            program = "^\"\\${workspaceFolder}/${2:main.lua}\"",
+                            arg = {
+                            },
+                        },
+                    },
+                    {
+                        label = "Lua Debug: Attach",
+                        description = "A new configuration for attaching a lua debug program",
+                        body = {
+                            type = "lua",
+                            request = "attach",
+                            name = "${1:attach}",
+                            stopOnEntry = true,
+                            address = "127.0.0.1:4278",
+                        }
+                    }
+                }
+            }
         },
         menus = {
             ["debug/variables/context"] = {
@@ -403,6 +373,36 @@ if OS == "win32" then
     }
     attributes.launch.luaexe.default = "${workspaceFolder}/lua.exe"
     attributes.launch.cpath.default = "${workspaceFolder}/?.dll"
+
+    json.activationEvents[#json.activationEvents+1] = "onCommand:extension.lua-debug.pickProcess"
+    json.contributes.debuggers[1].variables = {
+        pickProcess = "extension.lua-debug.pickProcess",
+    }
+
+    local snippets = json.contributes.debuggers[1].configurationSnippets
+    snippets[#snippets+1] = {
+        label = "Lua Debug: Launch Process",
+        description = "A new configuration for launching a lua process",
+        body = {
+            type = "lua",
+            request = "launch",
+            name = "${1:launch process}",
+            stopOnEntry = true,
+            runtimeExecutable = "^\"\\${workspaceFolder}/lua.exe\"",
+            runtimeArgs = "^\"\\${workspaceFolder}/${2:main.lua}\"",
+        }
+    }
+    snippets[#snippets+1] = {
+        label = "Lua Debug: Attach Process",
+        description = "A new configuration for attaching a lua debug program",
+        body = {
+            type = "lua",
+            request = "attach",
+            name = "${1:attach}",
+            stopOnEntry = true,
+            processId = "^\"\\${command:pickProcess}\"",
+        }
+    }
 else
     attributes.launch.luaexe.default = "${workspaceFolder}/lua"
     attributes.launch.cpath.default = "${workspaceFolder}/?.so"
