@@ -1,5 +1,5 @@
 local fs = require 'bee.filesystem'
-local OS = require 'bee.platform'.OS:lower()
+local OS = require 'bee.platform'.os
 
 local function getExtensionDirName(packageDir)
     local publisher,name,version
