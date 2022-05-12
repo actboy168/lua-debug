@@ -1,19 +1,19 @@
+package.path = package.path ..";3rd/json.lua/?.lua"
+
 local fs = require 'bee.filesystem'
 local OS = require 'bee.platform'.os
+local json = require "json"
+
+local function readall(filename)
+    local f <close> = assert(io.open(filename, 'rb'))
+    return f:read 'a'
+end
 
 local function getExtensionDirName(packageDir)
-    local publisher,name,version
-    for line in io.lines(packageDir .. '/package.json') do
-        if not publisher then
-            publisher = line:match('"publisher": "([^"]+)"')
-        end
-        if not name then
-            name = line:match('"name": "([^"]+)"')
-        end
-        if not version then
-            version = line:match('"version": "(%d+%.%d+%.%d+)"')
-        end
-    end
+    local package = assert(json.decode(readall(packageDir .. '/package.json')))
+    local publisher = package.publisher
+    local name = package.name
+    local version = package.version
     if not publisher then
         error 'Cannot found `publisher` in package.json.'
     end
