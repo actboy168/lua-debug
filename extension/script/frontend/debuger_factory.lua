@@ -111,10 +111,15 @@ local function installBootstrap2(c, luaexe, args, pid, dbg)
     if args.luaVersion == "latest" then
         params[#params+1] = '[[latest]]'
     end
-    c[#c+1] = ("dofile[[%s]];DBG{%s}"):format(
+    local script = ("dofile[[%s]];DBG{%s}"):format(
         (dbg / "script" / "launch.lua"):string(),
         table.concat(params, ",")
     )
+    local bash = platform_os():lower() ~= "windows"
+    if bash then
+        script = script:gsub('%[%[', '"'):gsub('%]%]', '"')
+    end
+    c[#c+1] = script
 end
 
 local function installBootstrap3(c, args)

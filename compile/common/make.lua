@@ -10,12 +10,19 @@ lm:copy 'copy_bootstrap' {
     output = 'publish/bin/main.lua',
 }
 
-lm:build 'copy_extension' {
-    '$luamake', 'lua', 'compile/copy_extension.lua',
+lm:runlua 'copy_extension' {
+    script = 'compile/copy_extension.lua',
 }
 
-lm:build 'update_version' {
-    '$luamake', 'lua', 'compile/update_version.lua',
+lm:runlua 'update_version' {
+    script = 'compile/update_version.lua',
+}
+
+lm:runlua 'package_json' {
+    script = 'compile/common/write_json.lua',
+    args = {'$in', '$out', lm.platform},
+    input = "compile/common/package_json.lua",
+    output = "extension/package.json",
 }
 
 lm:phony 'common' {
@@ -24,5 +31,6 @@ lm:phony 'common' {
         'copy_bootstrap',
         'copy_extension',
         'update_version',
+        'package_json',
     }
 }

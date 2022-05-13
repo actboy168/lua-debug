@@ -128,14 +128,21 @@ function resolveConfig(folder, config) {
     if (typeof config.console != 'string') {
         config.console = settings.console
     }
-    if (typeof config.consoleCoding != 'string') {
-        config.consoleCoding = settings.consoleCoding
-    }
     if (typeof config.sourceCoding != 'string') {
         config.sourceCoding = settings.sourceCoding
     }
     if (typeof config.outputCapture != 'object') {
-        config.outputCapture = []
+        if (config.console == "internalConsole") {
+            config.outputCapture = [
+                "print",
+                "io.write",
+                "stdout",
+                "stderr"
+            ]
+        }
+        else {
+            config.outputCapture = []
+        }
     }
     if (typeof config.pathFormat != 'string') {
         if (plat == "Linux" && !config.useWSL) {
