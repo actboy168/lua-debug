@@ -15,9 +15,9 @@ jobs:
             platform: linux-x64
           - os: ubuntu-18.04
             platform: linux-arm64
-          - os: macos-11
+          - os: macos-latest
             platform: darwin-x64
-          - os: macos-11
+          - os: macos-latest
             platform: darwin-arm64
     steps:
     - uses: actions/checkout@v3
