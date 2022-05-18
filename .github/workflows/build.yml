@@ -35,7 +35,7 @@ jobs:
     - run: luamake -platform ${{ matrix.platform }} -luajit off
     - run: npm install -g vsce
     - if: matrix.platform != 'win32-x64'
-    - run: cd publish && vsce publish --target ${{ matrix.platform }} -p ${{ secrets.VSCE_KEY }}
+      run: cd publish && vsce publish --target ${{ matrix.platform }} -p ${{ secrets.VSCE_KEY }}
       continue-on-error: true
     - if: matrix.platform == 'win32-x64'
       run: |
