@@ -3,76 +3,13 @@ local lm = require "luamake"
 local bindir = "publish/runtime/" .. lm.runtime_platform
 
 --the generated file must store into different directory
-local arch = "x64"
-if lm.runtime_platform == "linux-arm64" or lm.runtime_platform == "darwin-arm64" then
-    arch = "arm64"
-else
-    assert(lm.runtime_platform == "darwin-x64" or lm.runtime_platform == "linux-x64", "unknown runtime platform: " .. lm.runtime_platform)
-end
+local defined = require "compile.luajit.defined"
 
-local luaver = "luajit"
-local LUAJIT_TARGET = string.format("LUAJIT_TARGET=LUAJIT_ARCH_%s", string.upper(arch))
-local LJ_ARCH_HASFPU = "LJ_ARCH_HASFPU=1"
-local LJ_ABI_SOFTFP = "LJ_ABI_SOFTFP=0"
-local LUAJIT_ENABLE_LUA52COMPAT = "LUAJIT_ENABLE_LUA52COMPAT"
-local LUAJIT_NUMMODE = "LUAJIT_NUMMODE=2"
-local luajitDir = '3rd/lua/' .. luaver .. "/src"
+local arch = defined.arch
+local LUAJIT_ENABLE_LUA52COMPAT = defined.LUAJIT_ENABLE_LUA52COMPAT
+local LUAJIT_NUMMODE = defined.LUAJIT_NUMMODE
+local luajitDir = defined.luajitDir
 
-lm:executable("minilua") {
-    rootdir = luajitDir,
-    defines = {
-        LUAJIT_TARGET,
-        LJ_ARCH_HASFPU,
-        LJ_ABI_SOFTFP,
-        LUAJIT_ENABLE_LUA52COMPAT,
-        LUAJIT_NUMMODE
-    },
-    sources = { "host/minilua.c" },
-    links = { "m" }
-}
-
-local arch_flags = {
-    "-D", "ENDIAN_LE",
-    "-D", "P64",
-    "-D", "JIT",
-    "-D", "FFI",
-    "-D", "FPU",
-    "-D", "HFABI",
-    "-D", "VER=80",
-    "-D", "DUALNUM"
-}
-
-lm:build("builvm_arch.h") {
-    deps = "minilua",
-    lm.bindir .. "/minilua",
-    luajitDir .. "/../dynasm/dynasm.lua",
-    arch_flags,
-    "-o", "$out", "$in",
-    input = luajitDir .. string.format("/vm_%s.dasc", arch),
-    output = lm.bindir .. "/buildvm_arch.h"
-}
-
-lm:executable("buildvm") {
-    rootdir = luajitDir,
-    deps = "builvm_arch.h",
-    objdeps = { lm.bindir .. "/buildvm_arch.h" },
-    defines = {
-        LUAJIT_TARGET,
-        LJ_ARCH_HASFPU,
-        LJ_ABI_SOFTFP,
-        LUAJIT_ENABLE_LUA52COMPAT,
-        LUAJIT_NUMMODE
-    },
-    sources = {
-        "host/*.c",
-        "!host/minilua.c"
-    },
-    includes = {
-        ".",
-        lm.bindir
-    },
-    links = { "m" }
-}
 local LJLIB_C = {
     luajitDir .. "/lib_base.c ",
     luajitDir .. "/lib_math.c ",

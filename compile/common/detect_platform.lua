@@ -1,4 +1,5 @@
 local lm = require "luamake"
+lm.cross_compiler = false
 
 local function windows_arch()
     if os.getenv "PROCESSOR_ARCHITECTURE" == "ARM64" then
@@ -51,6 +52,9 @@ local function detect_macos()
             assert(macos_support_arm64())
         else
             assert(lm.platform == "darwin-x64")
+            if posix_arch() == "arm64" then
+                lm.cross_compiler = true
+            end
         end
     else
         if posix_arch() == "arm64" then
@@ -66,6 +70,7 @@ local function detect_linux()
         if lm.platform == "linux-arm64" then
             if posix_arch() ~= "aarch64" then
                 lm.cc = "aarch64-linux-gnu-gcc"
+                lm.cross_compiler = true
             end
         else
             assert(lm.platform == "linux-x64")
