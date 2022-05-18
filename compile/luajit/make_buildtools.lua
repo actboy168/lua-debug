@@ -1,5 +1,5 @@
 local lm = require "luamake"
-require "compile.common.detect_platform"
+
 --the generated file must store into different directory
 local defined = require "compile.luajit.defined"
 

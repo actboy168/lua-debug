@@ -1,5 +1,4 @@
 local lm = require "luamake"
-lm.cross_compiler = false
 
 local function windows_arch()
     if os.getenv "PROCESSOR_ARCHITECTURE" == "ARM64" then
@@ -29,7 +28,7 @@ local function posix_arch()
 end
 
 local function detect_windows()
-    local arch = windows_arch()
+    local arch = lm.arch
     assert(arch ~= "arm64")
     if arch == "ia32" then
         if lm.platform then
@@ -52,12 +51,9 @@ local function detect_macos()
             assert(macos_support_arm64())
         else
             assert(lm.platform == "darwin-x64")
-            if posix_arch() == "arm64" then
-                lm.cross_compiler = true
-            end
         end
     else
-        if posix_arch() == "arm64" then
+        if lm.arch == "arm64" then
             lm.platform = "darwin-arm64"
         else
             lm.platform = "darwin-x64"
@@ -68,15 +64,14 @@ end
 local function detect_linux()
     if lm.platform then
         if lm.platform == "linux-arm64" then
-            if posix_arch() ~= "aarch64" then
+            if lm.arch ~= "aarch64" then
                 lm.cc = "aarch64-linux-gnu-gcc"
-                lm.cross_compiler = true
             end
         else
             assert(lm.platform == "linux-x64")
         end
     else
-        if posix_arch()  == "aarch64" then
+        if lm.arch  == "aarch64" then
             lm.platform = "linux-arm64"
         else
             lm.platform = "linux-x64"
@@ -92,6 +87,13 @@ local function detect_android()
     end
 end
 
+
+if lm.os == "windows" then
+	lm.arch = windows_arch()
+else
+	lm.arch = posix_arch()
+end
+
 if lm.os == "windows" then
     detect_windows()
 elseif lm.os == "macos" then
@@ -104,3 +106,11 @@ else
     error("unknown OS:"..lm.os)
 end
 
+local function detect_target_arch(platform)
+	local index = platform:find("-")
+	return platform:sub(index + 1)
+end
+
+return {
+	detect_target_arch = detect_target_arch
+}
