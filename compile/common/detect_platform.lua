@@ -111,6 +111,6 @@ local function detect_target_arch(platform)
 	return platform:sub(index + 1)
 end
 
-return {
-	detect_target_arch = detect_target_arch
-}
+lm.target_arch = lm.target_arch or detect_target_arch(lm.platform)
+
+lm.cross_compile = lm.target_arch ~= lm.arch
