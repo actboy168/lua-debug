@@ -103,7 +103,7 @@ for _, luaver in ipairs {"lua51","lua52","lua53","lua54","lua-latest",lm.luajit 
 					"$luamake",
 					"-C", lm.workdir,
 					"-f", "compile/luajit/make_buildtools.lua",
-					"-platform",lm.platform,
+					"-runtime_platform",lm.runtime_platform,
 					"-bindir",lm.bindir,
 					pool = "console",
 				}

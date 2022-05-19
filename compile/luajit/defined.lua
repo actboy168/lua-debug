@@ -1,7 +1,6 @@
 local lm = require "luamake"
-require "compile.common.detect_platform"
 
-local arch = lm.target_arch
+local arch = lm.runtime_platform:sub(lm.runtime_platform:find("-") + 1)
 if arch == "ia32" then
 	arch = "x86"
 end
