@@ -48,6 +48,9 @@ end
 local function detect_macos()
     if lm.platform then
         if lm.platform == "darwin-arm64" then
+			if posix_arch() ~= "arm64" then
+				lm.cross_compile = true
+			end
             assert(macos_support_arm64())
         else
             assert(lm.platform == "darwin-x64")
