@@ -28,7 +28,7 @@ local function posix_arch()
 end
 
 local function detect_windows()
-    local arch = lm.arch
+    local arch = windows_arch()
     assert(arch ~= "arm64")
     if arch == "ia32" then
         if lm.platform then
@@ -53,7 +53,7 @@ local function detect_macos()
             assert(lm.platform == "darwin-x64")
         end
     else
-        if lm.arch == "arm64" then
+        if posix_arch() == "arm64" then
             lm.platform = "darwin-arm64"
         else
             lm.platform = "darwin-x64"
@@ -64,14 +64,15 @@ end
 local function detect_linux()
     if lm.platform then
         if lm.platform == "linux-arm64" then
-            if lm.arch ~= "aarch64" then
+            if posix_arch() ~= "aarch64" then
+				lm.cross_compile = true
                 lm.cc = "aarch64-linux-gnu-gcc"
             end
         else
             assert(lm.platform == "linux-x64")
         end
     else
-        if lm.arch  == "aarch64" then
+        if posix_arch()  == "aarch64" then
             lm.platform = "linux-arm64"
         else
             lm.platform = "linux-x64"
@@ -87,13 +88,6 @@ local function detect_android()
     end
 end
 
-
-if lm.os == "windows" then
-	lm.arch = windows_arch()
-else
-	lm.arch = posix_arch()
-end
-
 if lm.os == "windows" then
     detect_windows()
 elseif lm.os == "macos" then
@@ -105,10 +99,3 @@ elseif lm.os == "android" then
 else
     error("unknown OS:"..lm.os)
 end
-
-local function detect_target_arch(platform)
-	local index = platform:find("-")
-	return platform:sub(index + 1)
-end
-
-lm.cross_compile = detect_target_arch(lm.platform) ~= lm.arch

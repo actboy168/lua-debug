@@ -64,11 +64,10 @@ lm:executable("buildvm") {
     includes = {
         ".",
         "../../../../" .. lm.bindir
-    },
-    links = { "m" }
+    }
 }
 
-if lm.cross_arch then
+if lm.cross then
     lm:default {
         "buildvm"
     }
