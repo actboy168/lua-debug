@@ -66,9 +66,3 @@ lm:executable("buildvm") {
         "../../../../" .. lm.bindir
     }
 }
-
-if lm.cross then
-    lm:default {
-        "buildvm"
-    }
-end
