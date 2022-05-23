@@ -12,7 +12,6 @@ lm:rule "build_x86_64" {
     "-mode", lm.mode,
     "-arch", "x86_64",
     "-runtime_platform", "win32-x64",
-    "-luajit", lm.luajit,
     pool = "console",
 }
 

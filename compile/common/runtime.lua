@@ -18,7 +18,7 @@ lm:source_set 'onelua' {
     }
 }
 
-for _, luaver in ipairs {"lua51","lua52","lua53","lua54","lua-latest",lm.luajit == "on" and "luajit" or nil} do
+for _, luaver in ipairs {"lua51","lua52","lua53","lua54","lua-latest","luajit"} do
     runtimes[#runtimes+1] = luaver.."/lua"
     runtimes[#runtimes+1] = luaver.."/remotedebug"
 

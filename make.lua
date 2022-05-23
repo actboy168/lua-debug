@@ -4,7 +4,6 @@ require "compile.common.detect_platform"
 
 lm.compile_commands = "build"
 lm.cxx = "c++17"
-lm.luajit = "on"
 
 require "compile.common.make"
 
