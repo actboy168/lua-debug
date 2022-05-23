@@ -160,6 +160,7 @@ attributes.common = {
             "5.3",
             "5.4",
             "latest",
+			"jit",
         },
         markdownDescription = "%lua.debug.launch.luaVersion.description%",
         type = "string",

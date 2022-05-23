@@ -1,4 +1,6 @@
 local lm = require "luamake"
+require "compile.common.detect_platform"
+
 local runtimes = {}
 
 lm.cxx = "c++17"
@@ -96,6 +98,18 @@ for _, luaver in ipairs {"lua51","lua52","lua53","lua54","lua-latest",lm.luajit 
         if lm.os == "windows" then
             require "compile.luajit.make_windows"
         else
+			if lm.cross_compile then
+				lm:build "buildvm" {
+					"$luamake",
+					"-C", lm.workdir,
+					"-f", "compile/luajit/make_buildtools.lua",
+					"-runtime_platform",lm.runtime_platform,
+					"-bindir",lm.bindir,
+					pool = "console",
+				}
+			else
+				require "compile.luajit.make_buildtools"
+			end
             require "compile.luajit.make"
         end
     end
