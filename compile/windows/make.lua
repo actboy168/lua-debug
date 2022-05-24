@@ -4,22 +4,20 @@ lm.arch = "x86"
 lm.runtime_platform = "win32-ia32"
 require "compile.windows.runtime"
 
-if lm.platform == "win32-x64" then
-    lm:rule "luamake" {
-        "$luamake",
-        "-C", lm.workdir,
-        "-f", "compile/windows/runtime.lua",
-        "-builddir", "build/win32-x64/"..lm.mode,
-        "-mode", lm.mode,
-        "-arch", "x86_64",
-        "-runtime_platform", "win32-x64",
-        "-luajit", lm.luajit,
-        pool = "console",
-    }
-    lm:build "x86_64" {
-        rule = "luamake"
-    }
-end
+lm:rule "build_x86_64" {
+    "$luamake",
+    "-C", lm.workdir,
+    "-f", "compile/windows/runtime.lua",
+    "-builddir", "build/win32-x64/"..lm.mode,
+    "-mode", lm.mode,
+    "-arch", "x86_64",
+    "-runtime_platform", "win32-x64",
+    pool = "console",
+}
+
+lm:build "x86_64" {
+    rule = "build_x86_64"
+}
 
 lm.EXE_DIR = "publish/bin/"
 lm.EXE_NAME = "lua-debug"
@@ -50,5 +48,5 @@ lm:default {
     "inject",
     "launcher",
     "runtime",
-    lm.platform == "win32-x64" and "x86_64"
+    "x86_64"
 }

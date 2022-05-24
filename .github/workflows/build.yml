@@ -1,5 +1,11 @@
 name: build
-on: push
+on:
+  push:
+    branches:
+    - master
+  pull_request:
+    branches:
+    - master
 jobs:
   compile:
     runs-on: ${{ matrix.os }}
@@ -7,8 +13,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: windows-latest
-            platform: win32-ia32
           - os: windows-latest
             platform: win32-x64
           - os: ubuntu-18.04
@@ -24,11 +28,18 @@ jobs:
       with:
         submodules : recursive
     - uses: actboy168/setup-luamake@master
-    - if: ${{ matrix.platform == 'linux-arm64' }}
+    - if: matrix.platform == 'linux-arm64'
       run: |
         sudo apt-get update
         sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
     - run: luamake -platform ${{ matrix.platform }} -luajit on
     - run: npm install -g vsce
-    - run: cd publish && vsce publish --target ${{ matrix.platform }} -p ${{ secrets.VSCE_KEY }}
+    - if: matrix.platform != 'win32-x64'
+      run: cd publish && vsce publish --target ${{ matrix.platform }} -p ${{ secrets.VSCE_KEY }}
+      continue-on-error: true
+    - if: matrix.platform == 'win32-x64'
+      run: |
+        cd publish
+        vsce publish --target win32-x64 -p ${{ secrets.VSCE_KEY }}
+        vsce publish --target win32-ia32 -p ${{ secrets.VSCE_KEY }}
       continue-on-error: true

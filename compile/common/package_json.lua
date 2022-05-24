@@ -5,7 +5,7 @@ local OS, ARCH = platform:match "^([^-]+)-([^-]+)$"
 
 local json = {
     name = "lua-debug",
-    version = "1.56.0",
+    version = "1.57.0",
     publisher = "actboy168",
     displayName = "Lua Debug",
     description = "VSCode debugger extension for Lua",
@@ -411,11 +411,7 @@ end
 
 local function SupportedArchs()
     if OS == "win32" then
-        if ARCH == "x64" then
-            return "x86_64", "x86"
-        else
-            return "x86"
-        end
+        return "x86_64", "x86"
     elseif OS == "darwin" then
         if ARCH == "arm64" then
             return "arm64", "x86_64"
