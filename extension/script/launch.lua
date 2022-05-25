@@ -11,8 +11,14 @@ local function dofile(filename, ...)
 end
 local dbg = dofile(path.."/script/debugger.lua", path)
 dbg:set_wait("DBG", function(params)
-    local pid = params[1]
-    local cfg = { address = ("@%s/tmp/pid_%s"):format(path, pid) }
+    local cfg
+    if type(params[1]) == "string" then
+        local client, address = params[1]:match "^([sc]):(.*)$"
+        cfg = { address = address, client = (client == "c") }
+    else
+        local pid = params[1]
+        cfg = { address = ("@%s/tmp/pid_%s"):format(path, pid) }
+    end
     for i = 2, #params do
         local param = params[i]
         cfg[param] = true

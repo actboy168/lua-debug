@@ -227,9 +227,6 @@ attributes.common = {
         markdownDescription = "Automatically stop after thread entry.",
         type = "boolean",
     },
-}
-
-attributes.attach = {
     address = {
         default = "127.0.0.1:4278",
         markdownDescription = [[
@@ -237,13 +234,19 @@ Debugger address.
 1. IPv4 e.g. `127.0.0.1:4278`
 2. IPv6 e.g. `[::1]:4278`
 3. Unix domain socket e.g. `@c:\\unix.sock`]],
-        type = "string",
+        type = {
+            "string",
+            "null",
+        },
     },
     client = {
         default = true,
         markdownDescription = "Choose whether to `connect` or `listen`.",
         type = "boolean",
     },
+}
+
+attributes.attach = {
 }
 
 attributes.launch = {

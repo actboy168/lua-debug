@@ -152,12 +152,6 @@ function resolveConfig(folder, config) {
             config.pathFormat = "path"
         }
     }
-    if (typeof config.address != 'string') {
-        config.address = "127.0.0.1:4278"
-    }
-    if (typeof config.client != 'boolean') {
-        config.client = true
-    }
     if (config.request == 'launch') {
         if (typeof config.runtimeExecutable == 'string') {
             config.console = "internalConsole";

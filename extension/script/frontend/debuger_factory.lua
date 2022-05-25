@@ -100,11 +100,11 @@ local function installBootstrap1(option, luaexe, args)
     end
 end
 
-local function installBootstrap2(c, luaexe, args, pid, dbg)
+local function installBootstrap2(c, luaexe, args, address, dbg)
     c[#c+1] = towsl(luaexe:string())
     c[#c+1] = "-e"
     local params = {}
-    params[#params+1] = pid
+    params[#params+1] = address
     if not useUtf8 then
         params[#params+1] = '[[ansi]]'
     end
@@ -166,7 +166,7 @@ local function checkLuaExe(args, dbg)
     return getLuaExe(args, dbg)
 end
 
-local function create_luaexe_in_terminal(args, dbg, pid)
+local function create_luaexe_in_terminal(args, dbg, address)
     initialize(args)
     local luaexe, err = checkLuaExe(args, dbg)
     if not luaexe then
@@ -181,12 +181,12 @@ local function create_luaexe_in_terminal(args, dbg, pid)
         option.args[1] = "wsl"
     end
     installBootstrap1(option, luaexe, args)
-    installBootstrap2(option.args, luaexe, args, pid, dbg)
+    installBootstrap2(option.args, luaexe, args, address, dbg)
     installBootstrap3(option.args, args)
     return option
 end
 
-local function create_luaexe_in_console(args, dbg, pid)
+local function create_luaexe_in_console(args, dbg, address)
     initialize(args)
     local luaexe, err = checkLuaExe(args, dbg)
     if not luaexe then
@@ -201,7 +201,7 @@ local function create_luaexe_in_console(args, dbg, pid)
     end
     option.searchPath = true
     installBootstrap1(option, luaexe, args)
-    installBootstrap2(option, luaexe, args, pid, dbg)
+    installBootstrap2(option, luaexe, args, address, dbg)
     installBootstrap3(option, args)
     return sp.spawn(option)
 end
