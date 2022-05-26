@@ -108,6 +108,19 @@ local function proxy_attach(pkg)
     attach_tcp(pkg, args)
 end
 
+local function create_server(args)
+    local s, address
+    if args.address ~= nil then
+        s = network(args.address, args.client)
+        address = "[["..(args.client and "s:" or "c:") .. args.address.."]]"
+    else
+        local pid = sp.get_id()
+        s = network(getUnixAddress(pid), true)
+        address = pid
+    end
+    return s, address
+end
+
 local function proxy_launch_terminal(pkg)
     local args = pkg.arguments
     if args.runtimeExecutable then
@@ -115,9 +128,9 @@ local function proxy_launch_terminal(pkg)
         response_error(pkg, "`runtimeExecutable` is not supported in `"..args.console.."`.")
         return
     end
-    local pid = sp.get_id()
-    server = network(getUnixAddress(pid), true)
-    local arguments, err = debuger_factory.create_luaexe_in_terminal(args, WORKDIR, pid)
+    local address
+    server, address = create_server(args)
+    local arguments, err = debuger_factory.create_luaexe_in_terminal(args, WORKDIR, address)
     if not arguments then
         response_error(pkg, err)
         return
@@ -145,9 +158,9 @@ local function proxy_launch_console(pkg)
             return
         end
     else
-        local pid = sp.get_id()
-        server = network(getUnixAddress(pid), true)
-        local ok, err = debuger_factory.create_luaexe_in_console(args, WORKDIR, pid)
+        local address
+        server, address = create_server(args)
+        local ok, err = debuger_factory.create_luaexe_in_console(args, WORKDIR, address)
         if not ok then
             response_error(pkg, err)
             return
