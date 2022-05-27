@@ -331,9 +331,36 @@ attributes.launch = {
         markdownDescription = "%lua.debug.launch.console.description%",
         type = "string",
     },
+    runtimeExecutable = {
+        default = OS == "win32" and "${workspaceFolder}/lua.exe" or "${workspaceFolder}/lua",
+        markdownDescription = "Runtime to use. Either an absolute path or the name of a runtime availableon the PATH.",
+        type = {
+            "string",
+            "null",
+        },
+    },
+    runtimeArgs = {
+        default = "${workspaceFolder}/main.lua",
+        markdownDescription = "Arguments passed to the runtime executable.",
+        type = {
+            "string",
+            "array",
+            "null",
+        },
+    },
+    inject = {
+        default = "${workspaceFolder}/main.lua",
+        markdownDescription = "How to inject debugger.",
+        enum = {
+            "none",
+        },
+        type = "string",
+    }
 }
 
 if OS == "win32" then
+    table.insert(attributes.launch.inject.enum, "hook")
+
     attributes.attach.processId = {
         default = "${command:pickProcess}",
         markdownDescription = "Id of process to attach to.",
@@ -343,23 +370,6 @@ if OS == "win32" then
         default = "lua.exe",
         markdownDescription = "Name of process to attach to.",
         type = "string",
-    }
-    attributes.launch.runtimeExecutable = {
-        default = "${workspaceFolder}/lua.exe",
-        markdownDescription = "Runtime to use. Either an absolute path or the name of a runtime availableon the PATH.",
-        type = {
-            "string",
-            "null",
-        },
-    }
-    attributes.launch.runtimeArgs = {
-        default = "${workspaceFolder}/main.lua",
-        markdownDescription = "Arguments passed to the runtime executable.",
-        type = {
-            "string",
-            "array",
-            "null",
-        },
     }
     attributes.common.sourceCoding = {
         default = "utf8",

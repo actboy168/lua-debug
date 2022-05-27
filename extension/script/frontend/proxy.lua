@@ -108,13 +108,13 @@ local function proxy_attach(pkg)
     attach_tcp(pkg, args)
 end
 
-local function create_server(args)
+local function create_server(args, pid)
     local s, address
     if args.address ~= nil then
         s = network(args.address, args.client)
         address = "[["..(args.client and "s:" or "c:") .. args.address.."]]"
     else
-        local pid = sp.get_id()
+        pid = pid or sp.get_id()
         s = network(getUnixAddress(pid), true)
         address = pid
     end
@@ -123,34 +123,45 @@ end
 
 local function proxy_launch_terminal(pkg)
     local args = pkg.arguments
+    if args.inject ~= "none" then
+        --TODO: support inject's integratedTerminal/externalTerminal
+        response_error(pkg, "`inject` is not supported in `"..args.console.."`.")
+        return
+    end
     if args.runtimeExecutable then
-        --TODO: support runtimeExecutable's integratedTerminal/externalTerminal
-        response_error(pkg, "`runtimeExecutable` is not supported in `"..args.console.."`.")
-        return
+        server = create_server(args)
+        local arguments, err = debuger_factory.create_process_in_terminal(args)
+        if not arguments then
+            response_error(pkg, err)
+            return
+        end
+        request_runinterminal(arguments)
+        return true
+    else
+        local address
+        server, address = create_server(args)
+        local arguments, err = debuger_factory.create_luaexe_in_terminal(args, WORKDIR, address)
+        if not arguments then
+            response_error(pkg, err)
+            return
+        end
+        request_runinterminal(arguments)
+        return true
     end
-    local address
-    server, address = create_server(args)
-    local arguments, err = debuger_factory.create_luaexe_in_terminal(args, WORKDIR, address)
-    if not arguments then
-        response_error(pkg, err)
-        return
-    end
-    request_runinterminal(arguments)
-    return true
 end
 
 local function proxy_launch_console(pkg)
     local args = pkg.arguments
     if args.runtimeExecutable then
-        if platform_os() ~= "Windows" then
-            response_error(pkg, "`runtimeExecutable` is not supported.")
+        if args.inject == "none" and args.address == nil then
+            response_error(pkg, "`runtimeExecutable` need specify `inject` or `address`.")
             return
         end
         local process, err = debuger_factory.create_process_in_console(args, function (process)
-            local pid = process:get_id()
-            server = network(getUnixAddress(pid), true)
-            if args.luaVersion == "latest" then
-                ipc_send_latest(pid)
+            local address
+            server, address = create_server(args, process:get_id())
+            if args.luaVersion == "latest" and type(address) == "number" then
+                ipc_send_latest(address)
             end
         end)
         if not process then
