@@ -106,12 +106,12 @@ local function installBootstrap2(c, luaexe, args, address, dbg)
     local params = {}
     params[#params+1] = address
     if not useUtf8 then
-        params[#params+1] = '[[ansi]]'
+        params[#params+1] = 'ansi'
     end
     if args.luaVersion == "latest" then
-        params[#params+1] = '[[latest]]'
+        params[#params+1] = 'latest'
     end
-    local script = ("dofile[[%s]];DBG{%s}"):format(
+    local script = ("dofile[[%s]];DBG[[%s]]"):format(
         (dbg / "script" / "launch.lua"):string(),
         table.concat(params, ",")
     )

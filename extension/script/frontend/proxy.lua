@@ -112,7 +112,7 @@ local function create_server(args, pid)
     local s, address
     if args.address ~= nil then
         s = network(args.address, args.client)
-        address = "[["..(args.client and "s:" or "c:") .. args.address.."]]"
+        address = (args.client and "s:" or "c:") .. args.address
     else
         pid = pid or sp.get_id()
         s = network(getUnixAddress(pid), true)
