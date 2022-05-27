@@ -123,12 +123,12 @@ end
 
 local function proxy_launch_terminal(pkg)
     local args = pkg.arguments
-    if args.inject ~= "none" then
-        --TODO: support inject's integratedTerminal/externalTerminal
-        response_error(pkg, "`inject` is not supported in `"..args.console.."`.")
-        return
-    end
     if args.runtimeExecutable then
+        if args.inject ~= "none" then
+            --TODO: support inject's integratedTerminal/externalTerminal
+            response_error(pkg, "`inject` is not supported in `"..args.console.."`.")
+            return
+        end
         server = create_server(args)
         local arguments, err = debuger_factory.create_process_in_terminal(args)
         if not arguments then
