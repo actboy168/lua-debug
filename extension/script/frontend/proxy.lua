@@ -183,6 +183,9 @@ end
 local function proxy_launch(pkg)
     local args = pkg.arguments
     platform_os.init(args)
+    if args.runtimeExecutable and args.inject ~= "none" then
+        args.console = "internalConsole"
+    end
     if args.console == 'integratedTerminal' or args.console == 'externalTerminal' then
         if not proxy_launch_terminal(pkg) then
             return
