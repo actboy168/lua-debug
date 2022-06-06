@@ -157,21 +157,21 @@ function resolveConfig(folder, config) {
     }
     if (config.request == 'launch') {
         if (typeof config.runtimeExecutable == 'string') {
-            if (config.console == "internalConsole") {
-                if (typeof config.inject != 'string') {
+            if (typeof config.inject != 'string') {
+                if (config.console == "internalConsole") {
                     if (typeof config.address == 'string') {
-                        config.injec = "none";
+                        config.inject = "none";
                     }
                     else if (plat == "Windows") {
-                        config.injec = "hook";
+                        config.inject = "hook";
                     }
                     else {
-                        config.injec = "none";
+                        config.inject = "none";
                     }
                 }
-            }
-            else {
-                config.injec = "none";
+                else {
+                    config.inject = "none";
+                }
             }
         }
         else {
