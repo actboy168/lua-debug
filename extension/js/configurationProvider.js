@@ -175,6 +175,9 @@ function resolveConfig(folder, config) {
     }
     if (config.request == 'launch') {
         if (typeof config.runtimeExecutable == 'string') {
+            if (config.inject !== 'hook' && typeof config.address != 'string') {
+                config.console = "internalConsole";
+            }
             if (typeof config.inject != 'string') {
                 if (config.console == "internalConsole") {
                     if (typeof config.address == 'string') {
