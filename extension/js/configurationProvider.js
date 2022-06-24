@@ -1,6 +1,7 @@
 const vscode = require("vscode");
 const path = require("path");
 const os = require('os');
+const fs = require('fs');
 
 const TriggerKindInitial = 1;
 const TriggerKindDynamic = 2;
@@ -17,6 +18,23 @@ function createDefaultProgram(folder) {
             return program;
         }
     }
+    let files = {}
+    for (const filename of fs.readdirSync(folder.uri.fsPath)) {
+        if (path.extname(filename) == ".lua") {
+            files[filename] = true;
+        }
+    }
+    let keys = Object.keys(files);
+    if (keys.length == 0) {
+        return;
+    }
+    if ("main.lua" in files) {
+        return '${workspaceFolder}/main.lua';
+    }
+    if ("test.lua" in files) {
+        return '${workspaceFolder}/test.lua';
+    }
+    return '${workspaceFolder}/' + keys[0];
 }
 
 exports.initial = {
@@ -152,9 +170,30 @@ function resolveConfig(folder, config) {
             config.pathFormat = "path"
         }
     }
+    if (typeof config.address == 'string' && typeof config.client != 'boolean') {
+        config.client = true;
+    }
     if (config.request == 'launch') {
         if (typeof config.runtimeExecutable == 'string') {
-            config.console = "internalConsole";
+            if (config.inject !== 'hook' && typeof config.address != 'string') {
+                config.console = "internalConsole";
+            }
+            if (typeof config.inject != 'string') {
+                if (config.console == "internalConsole") {
+                    if (typeof config.address == 'string') {
+                        config.inject = "none";
+                    }
+                    else if (plat == "Windows") {
+                        config.inject = "hook";
+                    }
+                    else {
+                        config.inject = "none";
+                    }
+                }
+                else {
+                    config.inject = "none";
+                }
+            }
         }
         else {
             if (typeof config.program != 'string') {

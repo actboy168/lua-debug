@@ -10,9 +10,12 @@ local function dofile(filename, ...)
     return assert(load(str, "=(debugger.lua)"))(...)
 end
 local dbg = dofile(path.."/script/debugger.lua", path)
-dbg:set_wait("DBG", function(params)
+dbg:set_wait("DBG", function(str)
+    local params = {}
+    str:gsub('[^,]+', function (w) params[#params+1] = w end)
+
     local cfg
-    if type(params[1]) == "string" then
+    if  not params[1]:match "^%d+$" then
         local client, address = params[1]:match "^([sc]):(.*)$"
         cfg = { address = address, client = (client == "c") }
     else

@@ -106,12 +106,12 @@ local function installBootstrap2(c, luaexe, args, address, dbg)
     local params = {}
     params[#params+1] = address
     if not useUtf8 then
-        params[#params+1] = '[[ansi]]'
+        params[#params+1] = 'ansi'
     end
     if args.luaVersion == "latest" then
-        params[#params+1] = '[[latest]]'
+        params[#params+1] = 'latest'
     end
-    local script = ("dofile[[%s]];DBG{%s}"):format(
+    local script = ("dofile[[%s]];DBG[[%s]]"):format(
         (dbg / "script" / "launch.lua"):string(),
         table.concat(params, ",")
     )
@@ -218,12 +218,14 @@ local function create_process_in_console(args, callback)
     if not process then
         return nil, err
     end
-    local inject = require 'inject'
-    inject.injectdll(process
-        , (WORKDIR / "bin" / "launcher.x86.dll"):string()
-        , (WORKDIR / "bin" / "launcher.x64.dll"):string()
-        , "launch"
-    )
+    if args.inject == "hook" then
+        local inject = require 'inject'
+        inject.injectdll(process
+            , (WORKDIR / "bin" / "launcher.x86.dll"):string()
+            , (WORKDIR / "bin" / "launcher.x64.dll"):string()
+            , "launch"
+        )
+    end
     if callback then
         callback(process)
     end
@@ -231,8 +233,28 @@ local function create_process_in_console(args, callback)
     return process
 end
 
+local function create_process_in_terminal(args)
+    initialize(args)
+    local arguments = {}
+    if useWSL then
+        arguments[#arguments+1] = "wsl"
+    end
+    arguments[#arguments+1] = args.runtimeExecutable
+    for _, v in ipairs(args.runtimeArgs) do
+        arguments[#arguments+1] = v
+    end
+    return {
+        kind = (args.console == "integratedTerminal") and "integrated" or "external",
+        title = args.name,
+        args = arguments,
+        env = args.env,
+        cwd = args.cwd or fs.path(args.runtimeExecutable):parent_path(),
+    }
+end
+
 return {
     create_luaexe_in_console   = create_luaexe_in_console,
     create_luaexe_in_terminal  = create_luaexe_in_terminal,
     create_process_in_console  = create_process_in_console,
+    create_process_in_terminal  = create_process_in_terminal,
 }

@@ -8,7 +8,8 @@ lm.builddir = ("build/%s/%s"):format(platform, lm.mode)
 
 require "compile.common.runtime"
 
-lm:msvc_copy_vcrt "copy_vcredist" {
+lm:msvc_copydll "copy_vcredist" {
+    type = "vcrt",
     output = 'publish/vcredist/'..platform
 }
 
