@@ -165,4 +165,5 @@ lm:executable("luajit/lua") {
         U_FORTIFY_SOURCE,
         "-fPIC"
     },
+	visibility = "default",
 }
