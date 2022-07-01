@@ -145,8 +145,10 @@ local function skipBOM(s)
         s = s:sub(4)
     end
     if s:sub(1,1) == "#" then
-        local pos = s:find('\r\n', 2, true)
-        s = pos and s:sub(pos+1) or s
+        local pos = s:find('\n', 2)
+        if pos then
+            s = s:sub(pos+1)
+        end
     end
     return s
 end
