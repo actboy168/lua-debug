@@ -83,10 +83,10 @@ for _, luaver in ipairs {"lua51","lua52","lua53","lua54","lua-latest","luajit"} 
                     luaver == "lua52" and "_XOPEN_SOURCE=600",
                 },
                 visibility = "default",
-                links = { "m", "dl", },
+                links = "m",
                 linux = {
                     defines = "LUA_USE_LINUX",
-                    links = "pthread",
+                    links = { "pthread", "dl" },
                     ldflags = "-Wl,-E",
                 },
                 netbsd = {
@@ -101,6 +101,7 @@ for _, luaver in ipairs {"lua51","lua52","lua53","lua54","lua-latest","luajit"} 
                 },
                 android = {
                     defines = "LUA_USE_LINUX",
+                    links = "dl",
                 },
                 macos = {
                     defines = {
