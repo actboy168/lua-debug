@@ -3,6 +3,7 @@ local lm = require "luamake"
 require "compile.common.detect_platform"
 
 lm.compile_commands = "build"
+lm.c = "c11"
 lm.cxx = "c++17"
 
 require "compile.common.make"
