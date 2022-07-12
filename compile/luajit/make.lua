@@ -94,7 +94,7 @@ lm:build("lj_vm.obj") {
     "-D" .. LUAJIT_NUMMODE,
     "-fno-stack-protector",
     "-D" .. LUAJIT_UNWIND_EXTERNAL,
-    lm.os ~= "linux" and "-target " .. lm.target,
+    lm.os == "macos" and "-target " .. lm.target,
     "-c -o", "$out", "$in",
     output = lm.bindir .. "/lj_vm.obj",
     input = lm.bindir .. "/lj_vm.S",

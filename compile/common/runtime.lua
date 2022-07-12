@@ -24,12 +24,7 @@ lm:source_set 'onelua' {
     }
 }
 
-local ALLOW = {"lua51","lua52","lua53","lua54","lua-latest"}
-if not lm.runtime_platform:match "^bsd" then
-    ALLOW[#ALLOW+1] = "luajit"
-end
-
-for _, luaver in ipairs(ALLOW) do
+for _, luaver in ipairs {"lua51","lua52","lua53","lua54","lua-latest","luajit"} do
     runtimes[#runtimes+1] = luaver.."/lua"
     runtimes[#runtimes+1] = luaver.."/remotedebug"
 
