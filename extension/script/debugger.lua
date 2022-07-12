@@ -56,6 +56,11 @@ local function detectLuaDebugPath(cfg)
                 PLATFORM = "darwin-x64"
             end
         end
+        local function detect_bsd()
+            PLATFORM = "bsd-x64"
+            local machine = shell "uname -m"
+            assert(machine:match "x86_64" or machine:match "amd64", "unknown ARCH")
+        end
         if isWindows() then
             detect_windows()
         else
@@ -68,6 +73,8 @@ local function detectLuaDebugPath(cfg)
                 end
             elseif name == "darwin" then
                 detect_macos()
+            elseif name == "netbsd" or name == "freebsd" then
+                detect_bsd()
             else
                 error "unknown OS"
             end
