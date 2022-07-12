@@ -91,6 +91,11 @@ local function detect_android()
     end
 end
 
+local function detect_bsd()
+    assert(posix_arch() == "amd64")
+    lm.platform = "bsd-x64"
+end
+
 if lm.os == "windows" then
     detect_windows()
 elseif lm.os == "macos" then
@@ -99,6 +104,10 @@ elseif lm.os == "linux" then
     detect_linux()
 elseif lm.os == "android" then
     detect_android()
+elseif lm.os == "netbsd" then
+    detect_bsd()
+elseif lm.os == "freebsd" then
+    detect_bsd()
 else
     error("unknown OS:"..lm.os)
 end

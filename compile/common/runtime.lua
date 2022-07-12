@@ -13,12 +13,23 @@ lm:source_set 'onelua' {
     linux = {
         flags = "-fPIC"
     },
+    netbsd = {
+        flags = "-fPIC"
+    },
+    freebsd = {
+        flags = "-fPIC"
+    },
     gcc = {
         flags = "-Wno-maybe-uninitialized"
     }
 }
 
-for _, luaver in ipairs {"lua51","lua52","lua53","lua54","lua-latest","luajit"} do
+local ALLOW = {"lua51","lua52","lua53","lua54","lua-latest"}
+if not lm.runtime_platform:match "^bsd" then
+    ALLOW[#ALLOW+1] = "luajit"
+end
+
+for _, luaver in ipairs(ALLOW) do
     runtimes[#runtimes+1] = luaver.."/lua"
     runtimes[#runtimes+1] = luaver.."/remotedebug"
 
@@ -79,6 +90,16 @@ for _, luaver in ipairs {"lua51","lua52","lua53","lua54","lua-latest","luajit"} 
                 visibility = "default",
                 links = { "m", "dl", },
                 linux = {
+                    defines = "LUA_USE_LINUX",
+                    links = "pthread",
+                    ldflags = "-Wl,-E",
+                },
+                netbsd = {
+                    defines = "LUA_USE_LINUX",
+                    links = "pthread",
+                    ldflags = "-Wl,-E",
+                },
+                freebsd = {
                     defines = "LUA_USE_LINUX",
                     links = "pthread",
                     ldflags = "-Wl,-E",
@@ -174,6 +195,14 @@ for _, luaver in ipairs {"lua51","lua52","lua53","lua54","lua-latest","luajit"} 
             },
         },
         linux = {
+            links = "pthread",
+            crt = "static",
+        },
+        netbsd = {
+            links = "pthread",
+            crt = "static",
+        },
+        freebsd = {
             links = "pthread",
             crt = "static",
         },
