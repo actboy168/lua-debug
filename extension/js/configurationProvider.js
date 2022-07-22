@@ -197,10 +197,7 @@ function resolveConfig(folder, config) {
         }
         else {
             if (typeof config.program != 'string') {
-                config.program = createDefaultProgram(folder);
-                if (typeof config.program != 'string') {
-                    throw new Error('Missing `program` to debug');
-                }
+                throw new Error('Missing `program` to debug');
             }
             if (typeof config.luaexe != 'string') {
                 config.sourceCoding = plat == "Windows" ? "ansi" : "utf8";
