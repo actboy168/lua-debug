@@ -93,14 +93,14 @@ local function getLuaExe(args, dbg)
     return nil, ("No runtime (OS: %s, ARCH: %s) is found, you need to compile it yourself."):format(OS, ARCH)
 end
 
-local function installBootstrap1(option, luaexe, args)
+local function bootstrapOption(option, luaexe, args)
     option.cwd = (type(args.cwd) == "string") and args.cwd or luaexe:parent_path():string()
     if type(args.env) == "table" then
         option.env = args.env
     end
 end
 
-local function installBootstrap2(c, luaexe, args, address, dbg)
+local function bootstrapMakeExe(c, luaexe, args, address, dbg)
     c[#c+1] = towsl(luaexe:string())
     c[#c+1] = "-e"
     local params = {}
@@ -113,7 +113,7 @@ local function installBootstrap2(c, luaexe, args, address, dbg)
     end
     local script = ("dofile[[%s]];DBG[[%s]]"):format(
         (dbg / "script" / "launch.lua"):string(),
-        table.concat(params, ",")
+        table.concat(params, "-")
     )
     local bash = platform_os():lower() ~= "windows"
     if bash then
@@ -122,7 +122,7 @@ local function installBootstrap2(c, luaexe, args, address, dbg)
     c[#c+1] = script
 end
 
-local function installBootstrap3(c, args)
+local function bootstrapMakeArgs(c, args)
     if type(args.arg0) == "string" then
         c[#c+1] = args.arg0
     elseif type(args.arg0) == "table" then
@@ -166,7 +166,7 @@ local function checkLuaExe(args, dbg)
     return getLuaExe(args, dbg)
 end
 
-local function create_luaexe_in_terminal(args, dbg, address)
+local function create_luaexe_in_terminal(_, args, dbg, address)
     initialize(args)
     local luaexe, err = checkLuaExe(args, dbg)
     if not luaexe then
@@ -176,13 +176,14 @@ local function create_luaexe_in_terminal(args, dbg, address)
         kind = (args.console == "integratedTerminal") and "integrated" or "external",
         title = args.name,
         args = {},
+        --TODO: support argsCanBeInterpretedByShell
     }
     if useWSL then
         option.args[1] = "wsl"
     end
-    installBootstrap1(option, luaexe, args)
-    installBootstrap2(option.args, luaexe, args, address, dbg)
-    installBootstrap3(option.args, args)
+    bootstrapOption(option, luaexe, args)
+    bootstrapMakeExe(option.args, luaexe, args, address, dbg)
+    bootstrapMakeArgs(option.args, args)
     return option
 end
 
@@ -193,16 +194,16 @@ local function create_luaexe_in_console(args, dbg, address)
         return nil, err
     end
     local option = {
-        console = 'hide'
+        console = 'hide',
+        searchPath = true,
     }
     if useWSL then
         local SystemRoot = (os.getenv "SystemRoot") or "C:\\WINDOWS"
         option[1] = SystemRoot .. "\\sysnative\\wsl.exe"
     end
-    option.searchPath = true
-    installBootstrap1(option, luaexe, args)
-    installBootstrap2(option, luaexe, args, address, dbg)
-    installBootstrap3(option, args)
+    bootstrapOption(option, luaexe, args)
+    bootstrapMakeExe(option, luaexe, args, address, dbg)
+    bootstrapMakeArgs(option, args)
     return sp.spawn(option)
 end
 
@@ -233,23 +234,29 @@ local function create_process_in_console(args, callback)
     return process
 end
 
-local function create_process_in_terminal(args)
+local function create_process_in_terminal(client, args)
     initialize(args)
     local arguments = {}
     if useWSL then
         arguments[#arguments+1] = "wsl"
     end
     arguments[#arguments+1] = args.runtimeExecutable
-    for _, v in ipairs(args.runtimeArgs) do
-        arguments[#arguments+1] = v
+    if type(args.runtimeArgs) == "string" then
+        arguments[#arguments+1] = args.runtimeArgs
+    elseif type(args.runtimeArgs) == "table" then
+        for _, v in ipairs(args.runtimeArgs) do
+            arguments[#arguments+1] = v
+        end
     end
-    return {
+    local option = {
         kind = (args.console == "integratedTerminal") and "integrated" or "external",
         title = args.name,
-        args = arguments,
         env = args.env,
         cwd = args.cwd or fs.path(args.runtimeExecutable):parent_path(),
+        args = arguments,
+        argsCanBeInterpretedByShell = client.arguments.supportsArgsCanBeInterpretedByShell and type(args.runtimeArgs) == "string",
     }
+    return option
 end
 
 return {

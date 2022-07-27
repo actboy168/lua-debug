@@ -12,7 +12,7 @@ end
 local dbg = dofile(path.."/script/debugger.lua", path)
 dbg:set_wait("DBG", function(str)
     local params = {}
-    str:gsub('[^,]+', function (w) params[#params+1] = w end)
+    str:gsub('[^-]+', function (w) params[#params+1] = w end)
 
     local cfg
     if  not params[1]:match "^%d+$" then

@@ -130,7 +130,7 @@ local function proxy_launch_terminal(pkg)
             return
         end
         server = create_server(args)
-        local arguments, err = debuger_factory.create_process_in_terminal(args)
+        local arguments, err = debuger_factory.create_process_in_terminal(initReq, args)
         if not arguments then
             response_error(pkg, err)
             return
@@ -140,7 +140,7 @@ local function proxy_launch_terminal(pkg)
     else
         local address
         server, address = create_server(args)
-        local arguments, err = debuger_factory.create_luaexe_in_terminal(args, WORKDIR, address)
+        local arguments, err = debuger_factory.create_luaexe_in_terminal(initReq, args, WORKDIR, address)
         if not arguments then
             response_error(pkg, err)
             return
@@ -181,6 +181,7 @@ local function proxy_launch_console(pkg)
 end
 
 local function proxy_launch(pkg)
+    print('proxy_launch')
     local args = pkg.arguments
     platform_os.init(args)
     if args.runtimeExecutable and args.inject ~= "none" then

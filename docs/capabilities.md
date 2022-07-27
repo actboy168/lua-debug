@@ -40,15 +40,16 @@
 | supportsExceptionFilterOptions        |    🟩    |
 | supportsSingleThreadExecutionRequests |    🟥    |
 
-| Capabilities (Client)              | Available |
-|------------------------------------|-----------|
-| supportsVariableType               |    🟩    |
-| supportsVariablePaging             |    🟩    |
-| supportsRunInTerminalRequest       |    🟩    |
-| supportsMemoryReferences           |    🟩    |
-| supportsProgressReporting          |    🟨    |
-| supportsInvalidatedEvent           |    🟩    |
-| supportsMemoryEvent                |    🟥    |
+| Capabilities (Client)               | Available |
+|-------------------------------------|-----------|
+| supportsVariableType                |    🟩    |
+| supportsVariablePaging              |    🟩    |
+| supportsRunInTerminalRequest        |    🟩    |
+| supportsMemoryReferences            |    🟩    |
+| supportsProgressReporting           |    🟨    |
+| supportsInvalidatedEvent            |    🟩    |
+| supportsMemoryEvent                 |    🟥    |
+| supportsArgsCanBeInterpretedByShell |    🟩    |
 
 * 🟩 Already supported.
 * 🟨 LuaDebug is not implemented.
