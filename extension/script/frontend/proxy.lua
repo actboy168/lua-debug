@@ -181,7 +181,6 @@ local function proxy_launch_console(pkg)
 end
 
 local function proxy_launch(pkg)
-    print('proxy_launch')
     local args = pkg.arguments
     platform_os.init(args)
     if args.runtimeExecutable and args.inject ~= "none" then
