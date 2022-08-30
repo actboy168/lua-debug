@@ -35,19 +35,22 @@ local function detectLuaDebugPath(cfg)
             return r:lower()
         end
         local function detect_windows()
-            if os.getenv "PROCESSOR_ARCHITECTURE" == "AMD64" then
+            if os.getenv "PROCESSOR_ARCHITECTURE" == "AMD64" or os.getenv "PROCESSOR_ARCHITEW6432" == "AMD64" then
                 PLATFORM = "win32-x64"
             else
                 PLATFORM = "win32-ia32"
             end
         end
         local function detect_linux()
-            if shell "uname -m" == "aarch64" then
+            local machine = shell "uname -m"
+            if machine == "x86_64" or machine == "amd64" then
+                PLATFORM = "linux-x64"
+            elseif machine == "aarch64" then
                 PLATFORM = "linux-arm64"
             else
-                PLATFORM = "linux-x64"
+                error "unknown ARCH"
             end
-		end
+        end
         local function detect_android()
             PLATFORM = "linux-arm64"
         end
@@ -59,9 +62,12 @@ local function detectLuaDebugPath(cfg)
             end
         end
         local function detect_bsd()
-            PLATFORM = "bsd-x64"
             local machine = shell "uname -m"
-            assert(machine:match "x86_64" or machine:match "amd64", "unknown ARCH")
+            if machine == "x86_64" or machine == "amd64" then
+                PLATFORM = "bsd-x64"
+            else
+                error "unknown ARCH"
+            end
         end
         if isWindows() then
             detect_windows()
