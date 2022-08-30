@@ -42,10 +42,12 @@ local function detectLuaDebugPath(cfg)
             end
         end
         local function detect_linux()
-            PLATFORM = "linux-x64"
-            local machine = shell "uname -m"
-            assert(machine:match "x86_64" or machine:match "amd64", "unknown ARCH")
-        end
+            if shell "uname -m" == "aarch64" then
+                PLATFORM = "linux-arm64"
+            else
+                PLATFORM = "linux-x64"
+            end
+		end
         local function detect_android()
             PLATFORM = "linux-arm64"
         end
