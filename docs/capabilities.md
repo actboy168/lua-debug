@@ -50,6 +50,7 @@
 | supportsInvalidatedEvent            |    🟩    |
 | supportsMemoryEvent                 |    🟥    |
 | supportsArgsCanBeInterpretedByShell |    🟩    |
+| supportsStartDebuggingRequest       |    🟥    |
 
 * 🟩 Already supported.
 * 🟨 LuaDebug is not implemented.

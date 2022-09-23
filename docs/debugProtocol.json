@@ -129,7 +129,7 @@
 		"CancelRequest": {
 			"allOf": [ { "$ref": "#/definitions/Request" }, {
 				"type": "object",
-				"description": "The `cancel` request is used by the client in two situations:\n- to indicate that it is no longer interested in the result produced by a specific request issued earlier\n- to cancel a progress sequence. Clients should only call this request if the corresponding capability `supportsCancelRequest` is true.\nThis request has a hint characteristic: a debug adapter can only be expected to make a 'best effort' in honouring this request but there are no guarantees.\nThe `cancel` request may return an error if it could not cancel an operation but a client should refrain from presenting this error to end users.\nThe request that got cancelled still needs to send a response back. This can either be a normal result (`success` attribute true) or an error response (`success` attribute false and the `message` set to `cancelled`).\nReturning partial results from a cancelled request is possible but please note that a client has no generic way for detecting that a response is partial or not.\nThe progress that got cancelled still needs to send a `progressEnd` event back.\n A client should not assume that progress just got cancelled after sending the `cancel` request.",
+				"description": "The `cancel` request is used by the client in two situations:\n- to indicate that it is no longer interested in the result produced by a specific request issued earlier\n- to cancel a progress sequence. Clients should only call this request if the corresponding capability `supportsCancelRequest` is true.\nThis request has a hint characteristic: a debug adapter can only be expected to make a 'best effort' in honoring this request but there are no guarantees.\nThe `cancel` request may return an error if it could not cancel an operation but a client should refrain from presenting this error to end users.\nThe request that got cancelled still needs to send a response back. This can either be a normal result (`success` attribute true) or an error response (`success` attribute false and the `message` set to `cancelled`).\nReturning partial results from a cancelled request is possible but please note that a client has no generic way for detecting that a response is partial or not.\nThe progress that got cancelled still needs to send a `progressEnd` event back.\n A client should not assume that progress just got cancelled after sending the `cancel` request.",
 				"properties": {
 					"command": {
 						"type": "string",
@@ -539,7 +539,7 @@
 		"CapabilitiesEvent": {
 			"allOf": [ { "$ref": "#/definitions/Event" }, {
 				"type": "object",
-				"description": "The event indicates that one or more capabilities have changed.\nSince the capabilities are dependent on the client and its UI, it might not be possible to change that at random times (or too late).\nConsequently this event has a hint characteristic: a client can only be expected to make a 'best effort' in honouring individual capabilities but there are no guarantees.\nOnly changed capabilities need to be included, all other capabilities keep their values.",
+				"description": "The event indicates that one or more capabilities have changed.\nSince the capabilities are dependent on the client and its UI, it might not be possible to change that at random times (or too late).\nConsequently this event has a hint characteristic: a client can only be expected to make a 'best effort' in honoring individual capabilities but there are no guarantees.\nOnly changed capabilities need to be included, all other capabilities keep their values.",
 				"properties": {
 					"event": {
 						"type": "string",
@@ -563,7 +563,7 @@
 		"ProgressStartEvent": {
 			"allOf": [ { "$ref": "#/definitions/Event" }, {
 				"type": "object",
-				"description": "The event signals that a long running operation is about to start and provides additional information for the client to set up a corresponding progress and cancellation UI.\nThe client is free to delay the showing of the UI in order to reduce flicker.\nThis event should only be sent if the corresponding capability `supportsProgressReporting` is true",
+				"description": "The event signals that a long running operation is about to start and provides additional information for the client to set up a corresponding progress and cancellation UI.\nThe client is free to delay the showing of the UI in order to reduce flicker.\nThis event should only be sent if the corresponding capability `supportsProgressReporting` is true.",
 				"properties": {
 					"event": {
 						"type": "string",
@@ -678,7 +678,7 @@
 						"properties": {
 							"areas": {
 								"type": "array",
-								"description": "Set of logical areas that got invalidated. This property has a hint characteristic: a client can only be expected to make a 'best effort' in honouring the areas but there are no guarantees. If this property is missing, empty, or if values are not understood, the client should assume a single value `all`.",
+								"description": "Set of logical areas that got invalidated. This property has a hint characteristic: a client can only be expected to make a 'best effort' in honoring the areas but there are no guarantees. If this property is missing, empty, or if values are not understood, the client should assume a single value `all`.",
 								"items": {
 									"$ref": "#/definitions/InvalidatedAreas"
 								}
@@ -734,7 +734,7 @@
 			"allOf": [ { "$ref": "#/definitions/Request" }, {
 				"type": "object",
 				"title": "Reverse Requests",
-				"description": "This request is sent from the debug adapter to the client to run a command in a terminal.\nThis is typically used to launch the debuggee in a terminal provided by the client.\nThis request should only be called if the corresponding capability `supportsRunInTerminalRequest` is true.\nClient implementations of `runInTerminal` are free to run the command however they choose including issuing the command to a command line interpreter (aka 'shell'). Argument strings passed to the `runInTerminal` request must arrive verbatim in the command to be run. As a consequence, clients which use a shell are responsible for escaping any special shell characters in the argument strings to prevent them from being interpreted (and modified) by the shell.\nSome users may wish to take advantage of shell processing in the argument strings. For clients which implement `runInTerminal` using an intermediary shell, the `argsCanBeInterpretedByShell` property can be set to true. In this case the client is requested not to escape any special shell characters in the argument strings.",
+				"description": "This request is sent from the debug adapter to the client to run a command in a terminal.\nThis is typically used to launch the debuggee in a terminal provided by the client.\nThis request should only be called if the corresponding client capability `supportsRunInTerminalRequest` is true.\nClient implementations of `runInTerminal` are free to run the command however they choose including issuing the command to a command line interpreter (aka 'shell'). Argument strings passed to the `runInTerminal` request must arrive verbatim in the command to be run. As a consequence, clients which use a shell are responsible for escaping any special shell characters in the argument strings to prevent them from being interpreted (and modified) by the shell.\nSome users may wish to take advantage of shell processing in the argument strings. For clients which implement `runInTerminal` using an intermediary shell, the `argsCanBeInterpretedByShell` property can be set to true. In this case the client is requested not to escape any special shell characters in the argument strings.",
 				"properties": {
 					"command": {
 						"type": "string",
@@ -806,6 +806,43 @@
 					}
 				},
 				"required": [ "body" ]
+			}]
+		},
+
+		"StartDebuggingRequest": {
+			"allOf": [ { "$ref": "#/definitions/Request" }, {
+				"type": "object",
+				"description": "This request is sent from the debug adapter to the client to start a new debug session of the same type as the caller.\nThis event should only be sent if the corresponding client capability `supportsStartDebuggingRequest` is true.\nA client implementation of `startDebugging` should start a new debug session (of the same type as the caller) in the same way that the caller's session was started. If the client supports hierarchical debug sessions, the newly created session can be treated as a child of the caller session.",
+				"properties": {
+					"command": {
+						"type": "string",
+						"enum": [ "startDebugging" ]
+					},
+					"arguments": {
+						"$ref": "#/definitions/StartDebuggingRequestArguments"
+					}
+				},
+				"required": [ "command", "arguments" ]
+			}]
+		},
+		"StartDebuggingRequestArguments": {
+			"type": "object",
+			"description": "Arguments for `startDebugging` request.",
+			"properties": {
+				"configuration": {
+					"oneOf": [
+						{ "$ref": "#/definitions/LaunchRequestArguments" },
+						{ "$ref": "#/definitions/AttachRequestArguments" }
+					],
+					"description": "Arguments passed to the new debug session. The arguments must only contain properties understood by the `launch` or `attach` requests of the debug adapter and they must not contain any client-specific properties (e.g. `type`) or client-specific features (e.g. substitutable 'variables')."
+				}
+			},
+			"required": [ "configuration" ]
+		},
+		"StartDebuggingResponse": {
+			"allOf": [ { "$ref": "#/definitions/Response" }, {
+				"type": "object",
+				"description": "Response to `startDebugging` request. This is just an acknowledgement, so no body field is required."
 			}]
 		},
 
@@ -890,6 +927,10 @@
 				"supportsArgsCanBeInterpretedByShell": {
 					"type": "boolean",
 					"description": "Client supports the `argsCanBeInterpretedByShell` attribute on the `runInTerminal` request."
+				},
+				"supportsStartDebuggingRequest": {
+					"type": "boolean",
+					"description": "Client supports the `startDebugging` request."
 				}
 			},
 			"required": [ "adapterID" ]
