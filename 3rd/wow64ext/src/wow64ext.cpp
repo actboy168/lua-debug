@@ -38,7 +38,7 @@ DWORD64 __cdecl X64Call(DWORD64 func, int argC, ...)
     reg64 _r9 = { (argC > 0) ? argC--, va_arg(args, DWORD64) : 0 };
     reg64 _rax = { 0 };
 
-    reg64 restArgs = { (DWORD64)&va_arg(args, DWORD64) };
+    reg64 restArgs = { PTR_TO_DWORD64(&va_arg(args, DWORD64)) };
     
     // conversion to QWORD for easier use in inline assembly
     reg64 _argC = { (DWORD64)argC };
@@ -370,11 +370,11 @@ DWORD64 __cdecl GetProcAddress64(DWORD64 hModule, const char* funcName)
     }
 
     _UNICODE_STRING_T<DWORD64> fName = { 0 };
-    fName.Buffer = (DWORD64)funcName;
+    fName.Buffer = PTR_TO_DWORD64(funcName);
     fName.Length = (WORD)strlen(funcName);
     fName.MaximumLength = fName.Length + 1;
     DWORD64 funcRet = 0;
-    X64Call(_LdrGetProcedureAddress, 4, (DWORD64)hModule, (DWORD64)&fName, (DWORD64)0, (DWORD64)&funcRet);
+    X64Call(_LdrGetProcedureAddress, 4, hModule, PTR_TO_DWORD64(&fName), (DWORD64)0, PTR_TO_DWORD64(&funcRet));
     return funcRet;
 }
 
@@ -388,7 +388,7 @@ SIZE_T __cdecl VirtualQueryEx64(HANDLE hProcess, DWORD64 lpAddress, MEMORY_BASIC
             return 0;
     }
     DWORD64 ret = 0;
-    DWORD64 status = X64Call(ntqvm, 6, (DWORD64)hProcess, lpAddress, (DWORD64)0, (DWORD64)lpBuffer, (DWORD64)dwLength, (DWORD64)&ret);
+    DWORD64 status = X64Call(ntqvm, 6, HANDLE_TO_DWORD64(hProcess), lpAddress, (DWORD64)0, PTR_TO_DWORD64(lpBuffer), (DWORD64)dwLength, PTR_TO_DWORD64(&ret));
 	if (STATUS_SUCCESS != status)
 		SetLastErrorFromX64Call(status);
 	return (SIZE_T)ret;
@@ -406,7 +406,7 @@ DWORD64 __cdecl VirtualAllocEx64(HANDLE hProcess, DWORD64 lpAddress, SIZE_T dwSi
 
     DWORD64 tmpAddr = lpAddress;
     DWORD64 tmpSize = dwSize;
-    DWORD64 ret = X64Call(ntavm, 6, (DWORD64)hProcess, (DWORD64)&tmpAddr, (DWORD64)0, (DWORD64)&tmpSize, (DWORD64)flAllocationType, (DWORD64)flProtect);
+    DWORD64 ret = X64Call(ntavm, 6, HANDLE_TO_DWORD64(hProcess), PTR_TO_DWORD64(&tmpAddr), (DWORD64)0, PTR_TO_DWORD64(&tmpSize), (DWORD64)flAllocationType, (DWORD64)flProtect);
 	if (STATUS_SUCCESS != ret)
 	{
 		SetLastErrorFromX64Call(ret);
@@ -428,7 +428,7 @@ BOOL __cdecl VirtualFreeEx64(HANDLE hProcess, DWORD64 lpAddress, SIZE_T dwSize, 
 
     DWORD64 tmpAddr = lpAddress;
     DWORD64 tmpSize = dwSize;
-    DWORD64 ret = X64Call(ntfvm, 4, (DWORD64)hProcess, (DWORD64)&tmpAddr, (DWORD64)&tmpSize, (DWORD64)dwFreeType);
+    DWORD64 ret = X64Call(ntfvm, 4, HANDLE_TO_DWORD64(hProcess), PTR_TO_DWORD64(&tmpAddr), PTR_TO_DWORD64(&tmpSize), (DWORD64)dwFreeType);
 	if (STATUS_SUCCESS != ret)
 	{
 		SetLastErrorFromX64Call(ret);
@@ -450,7 +450,7 @@ BOOL __cdecl VirtualProtectEx64(HANDLE hProcess, DWORD64 lpAddress, SIZE_T dwSiz
 
     DWORD64 tmpAddr = lpAddress;
     DWORD64 tmpSize = dwSize;
-    DWORD64 ret = X64Call(ntpvm, 5, (DWORD64)hProcess, (DWORD64)&tmpAddr, (DWORD64)&tmpSize, (DWORD64)flNewProtect, (DWORD64)lpflOldProtect);
+    DWORD64 ret = X64Call(ntpvm, 5, HANDLE_TO_DWORD64(hProcess), PTR_TO_DWORD64(&tmpAddr), PTR_TO_DWORD64(&tmpSize), (DWORD64)flNewProtect, PTR_TO_DWORD64(lpflOldProtect));
 	if (STATUS_SUCCESS != ret)
 	{
 		SetLastErrorFromX64Call(ret);
@@ -470,7 +470,7 @@ BOOL __cdecl ReadProcessMemory64(HANDLE hProcess, DWORD64 lpBaseAddress, LPVOID 
             return 0;
     }
     DWORD64 numOfBytes = lpNumberOfBytesRead ? *lpNumberOfBytesRead : 0;
-    DWORD64 ret = X64Call(nrvm, 5, (DWORD64)hProcess, lpBaseAddress, (DWORD64)lpBuffer, (DWORD64)nSize, (DWORD64)&numOfBytes);
+    DWORD64 ret = X64Call(nrvm, 5, HANDLE_TO_DWORD64(hProcess), lpBaseAddress, PTR_TO_DWORD64(lpBuffer), (DWORD64)nSize, PTR_TO_DWORD64(&numOfBytes));
 	if (STATUS_SUCCESS != ret)
 	{
 		SetLastErrorFromX64Call(ret);
@@ -494,7 +494,7 @@ BOOL __cdecl WriteProcessMemory64(HANDLE hProcess, DWORD64 lpBaseAddress, LPVOID
             return 0;
     }
     DWORD64 numOfBytes = lpNumberOfBytesWritten ? *lpNumberOfBytesWritten : 0;
-    DWORD64 ret = X64Call(nrvm, 5, (DWORD64)hProcess, lpBaseAddress, (DWORD64)lpBuffer, (DWORD64)nSize, (DWORD64)&numOfBytes);
+    DWORD64 ret = X64Call(nrvm, 5, HANDLE_TO_DWORD64(hProcess), lpBaseAddress, PTR_TO_DWORD64(lpBuffer), (DWORD64)nSize, PTR_TO_DWORD64(&numOfBytes));
 	if (STATUS_SUCCESS != ret)
 	{
 		SetLastErrorFromX64Call(ret);
@@ -517,7 +517,7 @@ BOOL __cdecl GetThreadContext64(HANDLE hThread, _CONTEXT64* lpContext)
         if (0 == gtc)
             return 0;
     }
-    DWORD64 ret = X64Call(gtc, 2, (DWORD64)hThread, (DWORD64)lpContext);
+    DWORD64 ret = X64Call(gtc, 2, HANDLE_TO_DWORD64(hThread), PTR_TO_DWORD64(lpContext));
 	if(STATUS_SUCCESS != ret)
 	{
 		SetLastErrorFromX64Call(ret);
@@ -536,7 +536,7 @@ BOOL __cdecl SetThreadContext64(HANDLE hThread, _CONTEXT64* lpContext)
         if (0 == stc)
             return 0;
     }
-    DWORD64 ret = X64Call(stc, 2, (DWORD64)hThread, (DWORD64)lpContext);
+    DWORD64 ret = X64Call(stc, 2, HANDLE_TO_DWORD64(hThread), PTR_TO_DWORD64(lpContext));
 	if (STATUS_SUCCESS != ret)
 	{
 		SetLastErrorFromX64Call(ret);

@@ -351,6 +351,18 @@ struct _CONTEXT64
 
 #pragma pack(pop)
 
+// Without the double casting, the pointer is sign extended, not zero extended,
+// which leads to invalid addresses with /LARGEADDRESSAWARE.
+#define PTR_TO_DWORD64(p) ((DWORD64)(ULONG_PTR)(p))
+
+// Sign-extension is required for pseudo handles such as the handle returned
+// from GetCurrentProcess().
+// "64-bit versions of Windows use 32-bit handles for interoperability [...] it
+// is safe to [...] sign-extend the handle (when passing it from 32-bit to
+// 64-bit)."
+// https://docs.microsoft.com/en-us/windows/win32/winprog64/interprocess-communication
+#define HANDLE_TO_DWORD64(p) ((DWORD64)(LONG_PTR)(p))
+
 #ifdef WOW64EXT_DLL
 #ifdef WOW64EXT_EXPORTS
 #	define WOW_EXPORT __declspec(dllexport)
