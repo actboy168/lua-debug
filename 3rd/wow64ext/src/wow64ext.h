@@ -383,8 +383,8 @@ extern "C"
 	WOW_EXPORT BOOL __cdecl VirtualFreeEx64(HANDLE hProcess, DWORD64 lpAddress, SIZE_T dwSize, DWORD dwFreeType);
 	WOW_EXPORT BOOL __cdecl VirtualProtectEx64(HANDLE hProcess, DWORD64 lpAddress, SIZE_T dwSize, DWORD flNewProtect, DWORD* lpflOldProtect);
 	WOW_EXPORT BOOL __cdecl ReadProcessMemory64(HANDLE hProcess, DWORD64 lpBaseAddress, LPVOID lpBuffer, SIZE_T nSize, SIZE_T *lpNumberOfBytesRead);
-	WOW_EXPORT BOOL __cdecl WriteProcessMemory64(HANDLE hProcess, DWORD64 lpBaseAddress, LPVOID lpBuffer, SIZE_T nSize, SIZE_T *lpNumberOfBytesWritten);
+	WOW_EXPORT BOOL __cdecl WriteProcessMemory64(HANDLE hProcess, DWORD64 lpBaseAddress, LPCVOID lpBuffer, SIZE_T nSize, SIZE_T *lpNumberOfBytesWritten);
 	WOW_EXPORT BOOL __cdecl GetThreadContext64(HANDLE hThread, _CONTEXT64* lpContext);
-	WOW_EXPORT BOOL __cdecl SetThreadContext64(HANDLE hThread, _CONTEXT64* lpContext);
+	WOW_EXPORT BOOL __cdecl SetThreadContext64(HANDLE hThread, const _CONTEXT64* lpContext);
 	WOW_EXPORT VOID __cdecl SetLastErrorFromX64Call(DWORD64 status);
 }

@@ -484,7 +484,7 @@ BOOL __cdecl ReadProcessMemory64(HANDLE hProcess, DWORD64 lpBaseAddress, LPVOID 
     }
 }
 
-BOOL __cdecl WriteProcessMemory64(HANDLE hProcess, DWORD64 lpBaseAddress, LPVOID lpBuffer, SIZE_T nSize, SIZE_T *lpNumberOfBytesWritten)
+BOOL __cdecl WriteProcessMemory64(HANDLE hProcess, DWORD64 lpBaseAddress, LPCVOID lpBuffer, SIZE_T nSize, SIZE_T *lpNumberOfBytesWritten)
 {
     static DWORD64 nrvm = 0;
     if (0 == nrvm)
@@ -527,7 +527,7 @@ BOOL __cdecl GetThreadContext64(HANDLE hThread, _CONTEXT64* lpContext)
         return TRUE;
 }
 
-BOOL __cdecl SetThreadContext64(HANDLE hThread, _CONTEXT64* lpContext)
+BOOL __cdecl SetThreadContext64(HANDLE hThread, const _CONTEXT64* lpContext)
 {
     static DWORD64 stc = 0;
     if (0 == stc)
