@@ -150,8 +150,13 @@ lm:executable("luajit/lua") {
         lm.bindir
     },
     links = "m",
-    linux = { links = "dl" },
-    android = { links = "dl" },
+    linux = {
+        links = "dl",
+        ldflags = "-Wl,-E",
+    },
+    android = {
+        links = "dl"
+    },
     defines = {
         LUAJIT_UNWIND_EXTERNAL,
         _FILE_OFFSET_BITS,
