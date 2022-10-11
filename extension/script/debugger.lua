@@ -35,7 +35,7 @@ local function detectLuaDebugPath(cfg)
             return r:lower()
         end
         local function detect_windows()
-            if os.getenv "PROCESSOR_ARCHITECTURE" == "AMD64" or os.getenv "PROCESSOR_ARCHITEW6432" == "AMD64" then
+            if os.getenv "PROCESSOR_ARCHITECTURE" == "AMD64" then
                 PLATFORM = "win32-x64"
             else
                 PLATFORM = "win32-ia32"
