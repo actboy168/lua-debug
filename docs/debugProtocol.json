@@ -93,9 +93,10 @@
 					"message": {
 						"type": "string",
 						"description": "Contains the raw error in short form if `success` is false.\nThis raw error might be interpreted by the client and is not shown in the UI.\nSome predefined values exist.",
-						"_enum": [ "cancelled" ],
+						"_enum": [ "cancelled", "notStopped" ],
 						"enumDescriptions": [
-							"request was cancelled."
+							"the request was cancelled.",
+							"the request may be retried once the adapter is in a 'stopped' state."
 						]
 					},
 					"body": {
@@ -808,42 +809,65 @@
 				"required": [ "body" ]
 			}]
 		},
-
 		"StartDebuggingRequest": {
-			"allOf": [ { "$ref": "#/definitions/Request" }, {
-				"type": "object",
-				"description": "This request is sent from the debug adapter to the client to start a new debug session of the same type as the caller.\nThis event should only be sent if the corresponding client capability `supportsStartDebuggingRequest` is true.\nA client implementation of `startDebugging` should start a new debug session (of the same type as the caller) in the same way that the caller's session was started. If the client supports hierarchical debug sessions, the newly created session can be treated as a child of the caller session.",
-				"properties": {
-					"command": {
-						"type": "string",
-						"enum": [ "startDebugging" ]
-					},
-					"arguments": {
-						"$ref": "#/definitions/StartDebuggingRequestArguments"
-					}
+			"allOf": [
+				{
+					"$ref": "#/definitions/Request"
 				},
-				"required": [ "command", "arguments" ]
-			}]
+				{
+					"type": "object",
+					"description": "This request is sent from the debug adapter to the client to start a new debug session of the same type as the caller.\nThis request should only be sent if the corresponding client capability `supportsStartDebuggingRequest` is true.\nA client implementation of `startDebugging` should start a new debug session (of the same type as the caller) in the same way that the caller's session was started. If the client supports hierarchical debug sessions, the newly created session can be treated as a child of the caller session.",
+					"properties": {
+						"command": {
+							"type": "string",
+							"enum": [
+								"startDebugging"
+							]
+						},
+						"arguments": {
+							"$ref": "#/definitions/StartDebuggingRequestArguments"
+						}
+					},
+					"required": [
+						"command",
+						"arguments"
+					]
+				}
+			]
 		},
 		"StartDebuggingRequestArguments": {
 			"type": "object",
 			"description": "Arguments for `startDebugging` request.",
 			"properties": {
 				"configuration": {
-					"oneOf": [
-						{ "$ref": "#/definitions/LaunchRequestArguments" },
-						{ "$ref": "#/definitions/AttachRequestArguments" }
-					],
+					"type": "object",
+					"additionalProperties": true,
 					"description": "Arguments passed to the new debug session. The arguments must only contain properties understood by the `launch` or `attach` requests of the debug adapter and they must not contain any client-specific properties (e.g. `type`) or client-specific features (e.g. substitutable 'variables')."
+				},
+				"request": {
+					"type": "string",
+					"enum": [
+						"launch",
+						"attach"
+					],
+					"description": "Indicates whether the new debug session should be started with a `launch` or `attach` request."
 				}
 			},
-			"required": [ "configuration" ]
+			"required": [
+				"configuration",
+				"request"
+			]
 		},
 		"StartDebuggingResponse": {
-			"allOf": [ { "$ref": "#/definitions/Response" }, {
-				"type": "object",
-				"description": "Response to `startDebugging` request. This is just an acknowledgement, so no body field is required."
-			}]
+			"allOf": [
+				{
+					"$ref": "#/definitions/Response"
+				},
+				{
+					"type": "object",
+					"description": "Response to `startDebugging` request. This is just an acknowledgement, so no body field is required."
+				}
+			]
 		},
 
 		"InitializeRequest": {
