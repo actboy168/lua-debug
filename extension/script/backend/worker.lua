@@ -563,6 +563,7 @@ local function runLoop(reason, level)
             break
         end
     end
+	ev.emit('updateVmState', reason)
 end
 
 local event = {}
