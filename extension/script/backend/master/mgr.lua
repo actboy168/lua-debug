@@ -1,4 +1,3 @@
-local json = require 'common.json'
 local proto = require 'common.protocol'
 local ev = require 'backend.event'
 local thread = require 'remotedebug.thread'
@@ -105,19 +104,17 @@ function mgr.clientSend(pkg)
     network.send(proto.send(pkg, stat))
 end
 
-function mgr.workerSend(w, pkg)
-    return threadChannel[w]:push(json.encode(pkg))
+function mgr.workerSend(w, msg)
+    return threadChannel[w]:push(msg)
 end
 
-function mgr.workerBroadcast(pkg)
-    local msg = json.encode(pkg)
+function mgr.workerBroadcast(msg)
     for _, channel in pairs(threadChannel) do
         channel:push(msg)
     end
 end
 
-function mgr.workerBroadcastExclude(exclude, pkg)
-    local msg = json.encode(pkg)
+function mgr.workerBroadcastExclude(exclude, msg)
     for w, channel in pairs(threadChannel) do
         if w ~= exclude then
             channel:push(msg)
@@ -126,11 +123,7 @@ function mgr.workerBroadcastExclude(exclude, pkg)
 end
 
 function mgr.setThreadName(w, name)
-    if name == json.null then
-        threadName[w] = nil
-    else
-        threadName[w] = name
-    end
+    threadName[w] = name
 end
 
 function mgr.workers()
@@ -239,8 +232,7 @@ local function update_once()
             return
         end
         if threadCMD[cmd] then
-            local pkg = json.decode(msg)
-            threadCMD[cmd](threadCatalog[w] or w, pkg)
+            threadCMD[cmd](threadCatalog[w] or w, msg)
         end
     end
     update_redirect()

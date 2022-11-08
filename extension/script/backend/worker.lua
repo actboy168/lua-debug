@@ -1,5 +1,4 @@
 local rdebug = require 'remotedebug.visitor'
-local json = require 'common.json'
 local variables = require 'backend.worker.variables'
 local source = require 'backend.worker.source'
 local breakpoint = require 'backend.worker.breakpoint'
@@ -47,10 +46,9 @@ local function workerThreadUpdate(timeout)
             break
         end
         local ok, err = xpcall(function()
-            local pkg = json.decode(msg)
-            local f = CMD[pkg.cmd]
+            local f = CMD[msg.cmd]
             if f then
-                f(pkg)
+                f(msg)
             end
         end, debug.traceback)
         if not ok then
@@ -60,8 +58,8 @@ local function workerThreadUpdate(timeout)
 end
 
 local function sendToMaster(cmd)
-    return function (pkg)
-        masterThread:push(WorkerIdent, cmd, json.encode(pkg))
+    return function (msg)
+        masterThread:push(WorkerIdent, cmd, msg)
     end
 end
 
@@ -512,7 +510,7 @@ end
 
 function CMD.setSearchPath(pkg)
     local function set_search_path(name)
-        if not pkg[name] or pkg[name] == json.null then
+        if not pkg[name] then
             return
         end
         local value = pkg[name]
