@@ -46,7 +46,7 @@ local function workerThreadUpdate(timeout)
         if not ok then
             break
         end
-        local ok, e = xpcall(function()
+        local ok, err = xpcall(function()
             local pkg = json.decode(msg)
             local f = CMD[pkg.cmd]
             if f then
@@ -54,7 +54,7 @@ local function workerThreadUpdate(timeout)
             end
         end, debug.traceback)
         if not ok then
-            log.error(tostring(e))
+            log.error("ERROR:" .. err)
         end
     end
 end
@@ -809,16 +809,16 @@ function event.exit()
 end
 
 hookmgr.init(function(name, ...)
-    local ok, e = xpcall(function(...)
+    local ok, err = xpcall(function(...)
         if event[name] then
             return event[name](...)
         end
     end, debug.traceback, ...)
     if not ok then
-        log.error(tostring(e))
+        log.error("ERROR:" .. tostring(err))
         return
     end
-    return e
+    return err
 end)
 
 local function lst2map(t)
