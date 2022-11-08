@@ -202,18 +202,7 @@ function mgr.exitWorker(w)
     threadName[w] = nil
 end
 
-local function updateOnce()
-    local threadCMD = require 'backend.master.threads'
-    while true do
-        local ok, w, cmd, msg = masterThread:pop()
-        if not ok then
-            break
-        end
-        if threadCMD[cmd] then
-            local pkg = json.decode(msg)
-            threadCMD[cmd](threadCatalog[w] or w, pkg)
-        end
-    end
+local function update_redirect()
     if redirect.stderr then
         local res = redirect.stderr:read(redirect.stderr:peek())
         if res then
@@ -234,6 +223,27 @@ local function updateOnce()
             }
         end
     end
+end
+
+local quit = false
+
+local function update_once()
+    local threadCMD = require 'backend.master.threads'
+    while true do
+        local ok, w, cmd, msg = masterThread:pop()
+        if not ok then
+            break
+        end
+        if cmd == "EXIT" then
+            quit = true
+            return
+        end
+        if threadCMD[cmd] then
+            local pkg = json.decode(msg)
+            threadCMD[cmd](threadCatalog[w] or w, pkg)
+        end
+    end
+    update_redirect()
     if not network.update() then
         return true
     end
@@ -268,10 +278,9 @@ local function updateOnce()
 end
 
 function mgr.update()
-    while true do
-        if updateOnce() then
+    while not quit do
+        if update_once() then
             thread.sleep(0.01)
-            return
         end
     end
 end
