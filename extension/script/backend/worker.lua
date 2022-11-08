@@ -12,7 +12,7 @@ local hookmgr = require 'remotedebug.hookmgr'
 local stdio = require 'remotedebug.stdio'
 local thread = require 'remotedebug.thread'
 local fs = require 'backend.worker.filesystem'
-local err = thread.channel 'errlog'
+local log = require 'common.log'
 
 local initialized = false
 local suspend = false
@@ -54,7 +54,7 @@ local function workerThreadUpdate(timeout)
             end
         end, debug.traceback)
         if not ok then
-            err:push(e)
+            log.error(tostring(e))
         end
     end
 end
@@ -103,7 +103,6 @@ end)
 --    })
 --end
 
---local log = require 'common.log'
 --print = log.info
 
 local function cleanFrame()
@@ -816,7 +815,7 @@ hookmgr.init(function(name, ...)
         end
     end, debug.traceback, ...)
     if not ok then
-        err:push(e)
+        log.error(tostring(e))
         return
     end
     return e

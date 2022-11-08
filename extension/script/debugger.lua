@@ -163,7 +163,7 @@ function dbg:start(cfg)
         local logpath = %q
         local log = require 'common.log'
         log.file = logpath..'/worker.log'
-        require 'backend.master' .init(logpath, %q, true)
+        require 'backend.master' .init(logpath, %q)
         require 'backend.worker'
     ]]):format(
           self.root

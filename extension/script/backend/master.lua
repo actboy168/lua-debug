@@ -35,33 +35,24 @@ local function hasMaster()
     return hasChannel "DbgMaster"
 end
 
-local function initMaster(logpath, address, errthread)
+local function initMaster(logpath, address)
     if createChannel "DbgMaster" then
         return
     end
 
-    if errthread then
-        createThread(([[
-            local err = thread.channel "errlog"
-            local log = require "common.log"
-            log.file = %q..'/error.log'
-            while true do
-                local ok, msg = err:pop(0.05)
-                if ok then
-                    log.error("ERROR:" .. msg)
-                end
-            end
-        ]]):format(logpath))
-    end
-
     master_thread = createThread(([[
-        local network = require "common.network"(%s)
-        local master = require "backend.master.mgr"
         local log = require "common.log"
         log.file = %q..'/master.log'
-        master.init(network)
-        master.update()
-    ]]):format(address, logpath))
+        local ok, err = xpcall(function()
+            local network = require "common.network"(%s)
+            local master = require "backend.master.mgr"
+            master.init(network)
+            master.update()
+        end, debug.traceback)
+        if not ok then
+            log.error("ERROR:" .. err)
+        end
+    ]]):format(logpath, address))
 end
 
 return {
