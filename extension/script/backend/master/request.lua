@@ -84,6 +84,14 @@ local function initializeWorkerBreakpoints(w, source, breakpoints, content)
     })
 end
 
+local function jsonvalue(v)
+    local json = require "common.json"
+    if json.null == v then
+        return
+    end
+    return v
+end
+
 local function initializeWorker(w)
     mgr.workerSend(w, {
         cmd = 'initializing',
@@ -105,8 +113,8 @@ local function initializeWorker(w)
     if firstWorker and config.launch then
         mgr.workerSend(w, {
             cmd = 'setSearchPath',
-            path = config.initialize.path,
-            cpath = config.initialize.cpath,
+            path = jsonvalue(config.initialize.path),
+            cpath = jsonvalue(config.initialize.cpath),
         })
     end
     tryStop(w)
