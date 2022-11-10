@@ -1,6 +1,6 @@
 local proto = require 'common.protocol'
 local ev = require 'backend.event'
-local thread = require 'remotedebug.thread'
+local thread = require 'bee.thread'
 local stdio = require 'remotedebug.stdio'
 
 local redirect = {}

@@ -1,38 +1,11 @@
-#define RLUA_REPLACE
-#include "../rlua.h"
+#include "rlua.h"
 #if defined(_WIN32)
-#include <binding/lua_unicode.cpp>
 #include <Windows.h>
 #include <tlhelp32.h>
-#else
-#include <bee/lua/binding.h>
 #endif
-#include <bee/filesystem.h>
-#include <bee/utility/path_helper.h>
-#include <bee/utility/path_helper.cpp>
 #include <signal.h>
 
 namespace rdebug_utility {
-    static int fs_current_path(lua_State* L) {
-        std::error_code ec;
-        auto res = fs::current_path(ec).generic_u8string();
-        if (ec) {
-            return luaL_error(L, "current_path()");
-        }
-        lua_pushlstring(L, res.data(), res.size());
-        return 1;
-    }
-
-    static int fs_program_path(lua_State* L) {
-        auto r = bee::path_helper::exe_path();
-        if (!r) {
-            return luaL_error(L, "exe_path()");
-        }
-        auto res = r.value().remove_filename().generic_u8string();
-        lua_pushlstring(L, res.data(), res.size());
-        return 1;
-    }
-
 #if defined(_WIN32)
     static bool closeWindow() {
         bool ok = false;
@@ -77,34 +50,28 @@ namespace rdebug_utility {
     }
 #endif
 
-    static int closewindow(lua_State* L) {
+    static int closewindow(rlua_State* L) {
         bool ok = false;
 #if defined(_WIN32)
         ok = closeWindow();
 #endif
-        lua_pushboolean(L, ok);
+        rlua_pushboolean(L, ok);
         return 1;
     }
 
-    static int closeprocess(lua_State* L) {
+    static int closeprocess(rlua_State* L) {
         raise(SIGINT);
         return 0;
     }
 }
 
 RLUA_FUNC
-int luaopen_remotedebug_utility(lua_State* L) {
-#if defined(_WIN32)
-    luaopen_bee_unicode(L);
-#else
-    lua_newtable(L);
-#endif
-    luaL_Reg lib[] = {
-        {"fs_current_path", rdebug_utility::fs_current_path},
-        {"fs_program_path", rdebug_utility::fs_program_path},
+int luaopen_remotedebug_utility(rlua_State* L) {
+    rlua_newtable(L);
+    rluaL_Reg lib[] = {
         {"closewindow", rdebug_utility::closewindow},
         {"closeprocess", rdebug_utility::closeprocess},
         {NULL, NULL}};
-    luaL_setfuncs(L, lib, 0);
+    rluaL_setfuncs(L, lib, 0);
     return 1;
 }

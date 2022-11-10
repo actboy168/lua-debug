@@ -9,7 +9,7 @@ local luaver = require 'backend.worker.luaver'
 local ev = require 'backend.event'
 local hookmgr = require 'remotedebug.hookmgr'
 local stdio = require 'remotedebug.stdio'
-local thread = require 'remotedebug.thread'
+local thread = require 'bee.thread'
 local fs = require 'backend.worker.filesystem'
 local log = require 'common.log'
 

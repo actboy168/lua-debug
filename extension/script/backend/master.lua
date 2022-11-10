@@ -1,4 +1,4 @@
-local thread = require "remotedebug.thread"
+local thread = require "bee.thread"
 
 local function createChannel(name)
     local ok, err = pcall(thread.newchannel, name)
