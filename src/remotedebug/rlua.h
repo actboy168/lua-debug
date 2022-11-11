@@ -94,6 +94,7 @@ rlua_Integer  (rlua_tointegerx) (rlua_State *L, int idx, int *isnum);
 int           (rlua_isinteger) (rlua_State *L, int idx);
 int           (rlua_iscfunction) (rlua_State *L, int idx);
 int           (rlua_isstring) (rlua_State *L, int idx);
+const char *  (rluaL_optlstring) (rlua_State *L, int arg, const char *def, size_t *l);
 
 void (rlua_createtable) (rlua_State *L, int narr, int nrec);
 void (rlua_rawsetp) (rlua_State *L, int idx, const void *p);
@@ -119,6 +120,9 @@ char *(rluaL_prepbuffsize) (rluaL_Buffer *B, size_t sz);
 void  (rluaL_pushresultsize) (rluaL_Buffer *B, size_t sz);
 void  (rluaL_requiref) (rlua_State *L, const char *modname, rlua_CFunction openf, int glb);
 int   (rluaL_getsubtable) (rlua_State *L, int idx, const char *fname);
+
+void  (rluaL_pushresult) (rluaL_Buffer *B);
+int   (rluaL_fileresult) (rlua_State *L, int stat, const char *fname);
 
 #define rlua_pop(L,n) rlua_settop(L, -(n)-1)
 #define rlua_pushcfunction(L,f) rlua_pushcclosure(L, (f), 0)

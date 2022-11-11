@@ -1,9 +1,8 @@
-local utility = require 'remotedebug.utility'
+local fs = require 'bee.filesystem'
+local has_unicode, unicode = pcall(require, 'bee.unicode')
 local ev = require 'backend.event'
-local fs_current_path = utility.fs_current_path
-local fs_program_path = utility.fs_program_path
-local u2a = utility.u2a or function (...) return ... end
-local a2u = utility.a2u or function (...) return ... end
+local u2a = has_unicode and unicode.u2a or function (...) return ... end
+local a2u = has_unicode and unicode.a2u or function (...) return ... end
 
 local isWindows = package.config:sub(1,1) == "\\"
 local sourceFormat = isWindows and "path" or "linuxpath"
@@ -92,7 +91,7 @@ local function fs_absolute(path)
     if is_absolute(path) then
         return path
     end
-    return fs_current_path() .. "/" .. path
+    return fs.current_path():string() .. "/" .. path
 end
 
 function m.source_normalize(path)
@@ -144,7 +143,10 @@ function m.path_filename(path)
     return paths[#paths]
 end
 
-m.program_path = fs_program_path
+function m.program_path()
+    return fs.exe_path():string()
+end
+
 m.nativepath = nativepath
 m.a2u = a2u
 

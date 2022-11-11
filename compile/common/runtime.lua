@@ -148,7 +148,6 @@ for _, luaver in ipairs {"lua51","lua52","lua53","lua54","lua-latest","luajit"} 
         bindir = bindir,
         deps = "onelua",
         defines = {
-            "BEE_STATIC",
             "BEE_INLINE",
             ("DBG_LUA_VERSION=%d"):format(lua_version_num),
         },
@@ -161,7 +160,6 @@ for _, luaver in ipairs {"lua51","lua52","lua53","lua54","lua-latest","luajit"} 
         sources = {
             "src/remotedebug/*.cpp",
             "src/remotedebug/thunk/*.cpp",
-            "src/remotedebug/bee/*.cpp",
             "3rd/bee.lua/bee/error.cpp",
             "3rd/bee.lua/bee/net/*.cpp",
             "3rd/bee.lua/bee/nonstd/fmt/*.cc",
@@ -175,7 +173,6 @@ for _, luaver in ipairs {"lua51","lua52","lua53","lua54","lua-latest","luajit"} 
             },
             sources = {
                 "3rd/bee.lua/bee/platform/version_win.cpp",
-                "3rd/bee.lua/bee/utility/module_version_win.cpp",
                 "3rd/bee.lua/bee/utility/unicode_win.cpp",
             },
             links = {

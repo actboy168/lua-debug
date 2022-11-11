@@ -1,42 +1,33 @@
-local nt = require "backend.master.named_thread"
-
-local function initMaster(logpath, address, errthread)
-    if not nt.init() then
-        return
-    end
-
-    nt.createChannel "DbgMaster"
-
-    if errthread then
-        nt.createThread("error", ([[
-            local err = thread.channel "errlog"
-            local log = require "common.log"
-            log.file = %q..'/error.log'
-            while true do
-                local ok, msg = err:pop(0.05)
-                if ok then
-                    log.error("ERROR:" .. msg)
-                end
-                MgrUpdate()
-            end
-        ]]):format(logpath))
-    end
-
-    nt.createThread("master", ([[
-        local network = require "common.network"(%s)
-        local master = require "backend.master.mgr"
-        local log = require "common.log"
-        log.file = %q..'/master.log'
-        master.init(network)
-        while true do
-            master.update()
-            MgrUpdate()
-        end
-    ]]):format(address, logpath))
-end
+local thread = require "bee.thread"
 
 local function hasMaster()
-    return nt.hasChannel "DbgMaster"
+    local ok = pcall(thread.channel, "DbgMaster")
+    return ok
+end
+
+local function initMaster(logpath, address)
+    if hasMaster() then
+        return
+    end
+    thread.newchannel "DbgMaster"
+    local mt = thread.thread(thread.bootstrap_lua .. ([[
+        local log = require "common.log"
+        log.file = %q..'/master.log'
+        local ok, err = xpcall(function()
+            local network = require "common.network"(%s)
+            local master = require "backend.master.mgr"
+            master.init(network)
+            master.update()
+        end, debug.traceback)
+        if not ok then
+            log.error("ERROR:" .. err)
+        end
+    ]]):format(logpath, address), thread.bootstrap_c)
+    ExitGuard = setmetatable({}, {__gc=function()
+        local c = thread.channel "DbgMaster"
+        c:push(nil, "EXIT")
+        thread.wait(mt)
+    end})
 end
 
 return {

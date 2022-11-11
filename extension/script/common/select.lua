@@ -1,5 +1,4 @@
-local ok, socket = pcall(require, 'bee.socket')
-if not ok then socket = require 'remotedebug.socket' end
+local socket = require 'bee.socket'
 
 local listens = {}
 local connects = {}

@@ -1,6 +1,5 @@
 local root; do
-    local sep = package.config:sub(1,1)
-    local pattern = "["..sep.."][^"..sep.."]+"
+    local pattern = "[/][^/]+"
     root = package.cpath:match("(.+)"..pattern..pattern.."$")
 end
 package.path = root .. "/script/?.lua"

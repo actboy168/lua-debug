@@ -3,19 +3,27 @@
 #include <bee/lua/binding.h>
 
 extern "C" int luaopen_remotedebug_hookmgr(rlua_State* L);
-extern "C" int luaopen_remotedebug_socket(rlua_State* L);
 extern "C" int luaopen_remotedebug_stdio(rlua_State* L);
-extern "C" int luaopen_remotedebug_thread(rlua_State* L);
 extern "C" int luaopen_remotedebug_utility(rlua_State* L);
 extern "C" int luaopen_remotedebug_visitor(rlua_State* L);
+extern "C" int luaopen_bee_socket(rlua_State* L);
+extern "C" int luaopen_bee_thread(rlua_State* L);
+extern "C" int luaopen_bee_filesystem(rlua_State* L);
+#if defined(_WIN32)
+extern "C" int luaopen_bee_unicode(rlua_State* L);
+#endif
 
 static rluaL_Reg cmodule[] = {
     {"remotedebug.hookmgr", luaopen_remotedebug_hookmgr},
-    {"remotedebug.socket", luaopen_remotedebug_socket},
     {"remotedebug.stdio", luaopen_remotedebug_stdio},
-    {"remotedebug.thread", luaopen_remotedebug_thread},
     {"remotedebug.utility", luaopen_remotedebug_utility},
     {"remotedebug.visitor", luaopen_remotedebug_visitor},
+    {"bee.socket", luaopen_bee_socket},
+    {"bee.thread", luaopen_bee_thread},
+    {"bee.filesystem", luaopen_bee_filesystem},
+#if defined(_WIN32)
+    {"bee.unicode", luaopen_bee_unicode},
+#endif
     {NULL, NULL},
 };
 

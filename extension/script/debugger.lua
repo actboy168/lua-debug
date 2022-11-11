@@ -155,7 +155,7 @@ function dbg:start(cfg)
 
     local bootstrap_lua = ([[
         package.path = %q
-        require "remotedebug.thread".bootstrap_lua = debug.getinfo(1, "S").source
+        require "bee.thread".bootstrap_lua = debug.getinfo(1, "S").source
     ]]):format(
           self.root..'/script/?.lua'
     )
@@ -163,7 +163,7 @@ function dbg:start(cfg)
         local logpath = %q
         local log = require 'common.log'
         log.file = logpath..'/worker.log'
-        require 'backend.master' .init(logpath, %q, true)
+        require 'backend.master' .init(logpath, %q)
         require 'backend.worker'
     ]]):format(
           self.root
@@ -177,7 +177,7 @@ function dbg:attach(cfg)
 
     local bootstrap_lua = ([[
         package.path = %q
-        require "remotedebug.thread".bootstrap_lua = debug.getinfo(1, "S").source
+        require "bee.thread".bootstrap_lua = debug.getinfo(1, "S").source
     ]]):format(
           self.root..'/script/?.lua'
     )

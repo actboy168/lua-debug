@@ -1,5 +1,4 @@
 local rdebug = require 'remotedebug.visitor'
-local json = require 'common.json'
 local variables = require 'backend.worker.variables'
 local source = require 'backend.worker.source'
 local breakpoint = require 'backend.worker.breakpoint'
@@ -10,9 +9,9 @@ local luaver = require 'backend.worker.luaver'
 local ev = require 'backend.event'
 local hookmgr = require 'remotedebug.hookmgr'
 local stdio = require 'remotedebug.stdio'
-local thread = require 'remotedebug.thread'
+local thread = require 'bee.thread'
 local fs = require 'backend.worker.filesystem'
-local err = thread.channel 'errlog'
+local log = require 'common.log'
 
 local initialized = false
 local suspend = false
@@ -46,22 +45,21 @@ local function workerThreadUpdate(timeout)
         if not ok then
             break
         end
-        local ok, e = xpcall(function()
-            local pkg = json.decode(msg)
-            local f = CMD[pkg.cmd]
+        local ok, err = xpcall(function()
+            local f = CMD[msg.cmd]
             if f then
-                f(pkg)
+                f(msg)
             end
         end, debug.traceback)
         if not ok then
-            err:push(e)
+            log.error("ERROR:" .. err)
         end
     end
 end
 
 local function sendToMaster(cmd)
-    return function (pkg)
-        masterThread:push(WorkerIdent, cmd, json.encode(pkg))
+    return function (msg)
+        masterThread:push(WorkerIdent, cmd, msg)
     end
 end
 
@@ -103,7 +101,6 @@ end)
 --    })
 --end
 
---local log = require 'common.log'
 --print = log.info
 
 local function cleanFrame()
@@ -513,7 +510,7 @@ end
 
 function CMD.setSearchPath(pkg)
     local function set_search_path(name)
-        if not pkg[name] or pkg[name] == json.null then
+        if not pkg[name] then
             return
         end
         local value = pkg[name]
@@ -811,16 +808,16 @@ function event.exit()
 end
 
 hookmgr.init(function(name, ...)
-    local ok, e = xpcall(function(...)
+    local ok, err = xpcall(function(...)
         if event[name] then
             return event[name](...)
         end
     end, debug.traceback, ...)
     if not ok then
-        err:push(e)
+        log.error("ERROR:" .. tostring(err))
         return
     end
-    return e
+    return err
 end)
 
 local function lst2map(t)

@@ -1,7 +1,6 @@
-local json = require 'common.json'
 local proto = require 'common.protocol'
 local ev = require 'backend.event'
-local thread = require 'remotedebug.thread'
+local thread = require 'bee.thread'
 local stdio = require 'remotedebug.stdio'
 
 local redirect = {}
@@ -105,19 +104,17 @@ function mgr.clientSend(pkg)
     network.send(proto.send(pkg, stat))
 end
 
-function mgr.workerSend(w, pkg)
-    return threadChannel[w]:push(json.encode(pkg))
+function mgr.workerSend(w, msg)
+    return threadChannel[w]:push(msg)
 end
 
-function mgr.workerBroadcast(pkg)
-    local msg = json.encode(pkg)
+function mgr.workerBroadcast(msg)
     for _, channel in pairs(threadChannel) do
         channel:push(msg)
     end
 end
 
-function mgr.workerBroadcastExclude(exclude, pkg)
-    local msg = json.encode(pkg)
+function mgr.workerBroadcastExclude(exclude, msg)
     for w, channel in pairs(threadChannel) do
         if w ~= exclude then
             channel:push(msg)
@@ -126,11 +123,7 @@ function mgr.workerBroadcastExclude(exclude, pkg)
 end
 
 function mgr.setThreadName(w, name)
-    if name == json.null then
-        threadName[w] = nil
-    else
-        threadName[w] = name
-    end
+    threadName[w] = name
 end
 
 function mgr.workers()
@@ -202,18 +195,7 @@ function mgr.exitWorker(w)
     threadName[w] = nil
 end
 
-local function updateOnce()
-    local threadCMD = require 'backend.master.threads'
-    while true do
-        local ok, w, cmd, msg = masterThread:pop()
-        if not ok then
-            break
-        end
-        if threadCMD[cmd] then
-            local pkg = json.decode(msg)
-            threadCMD[cmd](threadCatalog[w] or w, pkg)
-        end
-    end
+local function update_redirect()
     if redirect.stderr then
         local res = redirect.stderr:read(redirect.stderr:peek())
         if res then
@@ -234,6 +216,26 @@ local function updateOnce()
             }
         end
     end
+end
+
+local quit = false
+
+local function update_once()
+    local threadCMD = require 'backend.master.threads'
+    while true do
+        local ok, w, cmd, msg = masterThread:pop()
+        if not ok then
+            break
+        end
+        if cmd == "EXIT" then
+            quit = true
+            return
+        end
+        if threadCMD[cmd] then
+            threadCMD[cmd](threadCatalog[w] or w, msg)
+        end
+    end
+    update_redirect()
     if not network.update() then
         return true
     end
@@ -268,10 +270,9 @@ local function updateOnce()
 end
 
 function mgr.update()
-    while true do
-        if updateOnce() then
+    while not quit do
+        if update_once() then
             thread.sleep(0.01)
-            return
         end
     end
 end
