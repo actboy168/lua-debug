@@ -75,10 +75,13 @@ ev.on('output', function(body)
 end)
 
 ev.on('loadedSource', function(reason, s)
-    sendToMaster 'eventLoadedSource' {
-        reason = reason,
-        source = source.output(s)
-    }
+    local src = source.output(s)
+    if src then
+        sendToMaster 'eventLoadedSource' {
+            reason = reason,
+            source = src
+        }
+    end
 end)
 
 ev.on('memory', function(memoryReference, offset, count)
