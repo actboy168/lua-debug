@@ -656,7 +656,4 @@ end
 --    }
 --end
 
---local log = require 'common.log'
---print = log.info
-
 return request

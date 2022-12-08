@@ -104,8 +104,6 @@ end)
 --    })
 --end
 
---print = log.info
-
 local function cleanFrame()
     variables.clean()
     stackFrame = {}

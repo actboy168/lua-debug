@@ -36,7 +36,6 @@ end
 local log = require 'common.log'
 log.root = (WORKDIR / "script"):string()
 log.file = (WORKDIR / "client.log"):string()
-print = log.info
 
 local ok, errmsg = xpcall(run, debug.traceback)
 if not ok then
