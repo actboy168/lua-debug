@@ -187,6 +187,10 @@ for _, luaver in ipairs {"lua51","lua52","lua53","lua54","lua-latest","luajit"} 
                 ("/DELAYLOAD:%s.dll"):format(luaver),
             },
         },
+        macos = {
+            sources = "3rd/bee.lua/bee/utility/path_helper.mm",
+            frameworks = "Foundation"
+        },
         linux = {
             links = "pthread",
             crt = "static",
