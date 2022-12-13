@@ -228,6 +228,21 @@ local function coroutineFrom(L)
     return coroutineTree[L]
 end
 
+local function nextTotalFrames(finish, n)
+    if finish then
+        return
+    end
+    n = n + 0x10
+    if n >= 0x10000 then
+        return
+    end
+    local p = 64
+    while p < n do
+        p = p * 2
+    end
+    return p
+end
+
 function CMD.stackTrace(pkg)
     local start = pkg.startFrame and pkg.startFrame or 0
     local levels = (pkg.levels and pkg.levels ~= 0) and pkg.levels or 200
@@ -244,13 +259,14 @@ function CMD.stackTrace(pkg)
     start = start + skipFrame
     local L = baseL
     local coroutineId = 0
+    local finish
     repeat
         hookmgr.sethost(L)
         local curL = L
         L = coroutineFrom(curL)
         if stackFrame[curL] == nil then
-            local finsh, n = stackTrace(res, coroutineId, start, levels)
-            if not finsh then
+            local n; finish, n = stackTrace(res, coroutineId, start, levels)
+            if not finish then
                 break
             end
             if not L then
@@ -267,13 +283,14 @@ function CMD.stackTrace(pkg)
     until (not L or levels <= 0)
     hookmgr.sethost(baseL)
 
+    -- TODO 当frames很多时，跳过中间的部分
     sendToMaster 'stackTrace' {
         command = pkg.command,
         seq = pkg.seq,
         success = true,
         body = {
             stackFrames = res,
-            totalFrames = 0x10000,
+            totalFrames = nextTotalFrames(finish, start + levels),
         }
     }
 end
