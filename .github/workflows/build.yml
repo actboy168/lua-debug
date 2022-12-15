@@ -34,17 +34,17 @@ jobs:
         sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
     - run: luamake -platform ${{ matrix.platform }} -luajit on
     - run: npm install -g vsce ovsx
-    - if: matrix.platform != 'win32-x64'
-      run: |
-        cd publish
-        npx vsce publish --target ${{ matrix.platform }} -p ${{ secrets.VSCE_KEY }}
-        npx ovsx publish --target ${{ matrix.platform }} -p ${{ secrets.OVSX_KEY }}
+    - run: npx vsce publish --target ${{ matrix.platform }} -p ${{ secrets.VSCE_KEY }}
+      working-directory: publish
+      continue-on-error: true
+    - run: npx ovsx publish --target ${{ matrix.platform }} -p ${{ secrets.OVSX_KEY }}
+      working-directory: publish
       continue-on-error: true
     - if: matrix.platform == 'win32-x64'
-      run: |
-        cd publish
-        npx vsce publish --target win32-x64 -p ${{ secrets.VSCE_KEY }}
-        npx vsce publish --target win32-ia32 -p ${{ secrets.VSCE_KEY }}
-        npx ovsx publish --target win32-x64 -p ${{ secrets.OVSX_KEY }}
-        npx ovsx publish --target win32-ia32 -p ${{ secrets.OVSX_KEY }}
+      run: npx vsce publish --target win32-ia32 -p ${{ secrets.VSCE_KEY }}
+      working-directory: publish
+      continue-on-error: true
+    - if: matrix.platform == 'win32-x64'
+      run: npx ovsx publish --target win32-ia32 -p ${{ secrets.OVSX_KEY }}
+      working-directory: publish
       continue-on-error: true
