@@ -9,7 +9,13 @@ if debug.getregistry()["lua-debug"] then
     function empty:start()
         return self
     end
-    function empty:event()
+    function empty:attach()
+        return self
+    end
+    function empty:event(what, ...)
+        if what == "setThreadName" then
+            dbg:event(what, ...)
+        end
         return self
     end
     function empty:set_wait()
