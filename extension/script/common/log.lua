@@ -76,6 +76,7 @@ for i, name in ipairs(modes) do
     end
 end
 
+log.print = print
 print = log.info
 
 return log

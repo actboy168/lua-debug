@@ -18,6 +18,8 @@ local threadCatalog = {}
 local threadStatus = {}
 local threadName = {}
 local terminateDebuggeeCallback
+local exitMaster = false
+local quit = false
 
 local function genThreadId()
     maxThreadId = maxThreadId + 1
@@ -193,6 +195,11 @@ function mgr.exitWorker(w)
     end
     threadStatus[w] = nil
     threadName[w] = nil
+    if exitMaster then
+        if next(threadChannel) == nil then
+            quit = true
+        end
+    end
 end
 
 local function update_redirect()
@@ -218,8 +225,6 @@ local function update_redirect()
     end
 end
 
-local quit = false
-
 local function update_once()
     local threadCMD = require 'backend.master.threads'
     while true do
@@ -228,7 +233,10 @@ local function update_once()
             break
         end
         if cmd == "EXIT" then
-            quit = true
+            exitMaster = true
+            if next(threadChannel) == nil then
+                quit = true
+            end
             return
         end
         if threadCMD[cmd] then
@@ -275,6 +283,9 @@ function mgr.update()
             thread.sleep(0.01)
         end
     end
+    local event = require 'backend.master.event'
+    event.terminated()
+    network.closeall()
 end
 
 function mgr.setClient(c)

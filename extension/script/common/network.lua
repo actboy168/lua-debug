@@ -119,6 +119,9 @@ local function open(address, client)
     function m.recvmsg()
         return proto.recv(m.recv(), stat)
     end
+    function m.closeall()
+        select.closeall()
+    end
     return m
 end
 
