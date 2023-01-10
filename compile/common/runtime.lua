@@ -46,6 +46,7 @@ for _, luaver in ipairs {"lua51","lua52","lua53","lua54","lua-latest","luajit"} 
                     "LUA_BUILD_AS_DLL",
                     luaver == "lua51" and "_CRT_SECURE_NO_WARNINGS",
                     luaver == "lua52" and "_CRT_SECURE_NO_WARNINGS",
+                    luaver == "lua-latest" and "LUA_VERSION_LATEST",
                 }
             }
 
@@ -64,6 +65,7 @@ for _, luaver in ipairs {"lua51","lua52","lua53","lua54","lua-latest","luajit"} 
                 defines = {
                     luaver == "lua51" and "_CRT_SECURE_NO_WARNINGS",
                     luaver == "lua52" and "_CRT_SECURE_NO_WARNINGS",
+                    luaver == "lua-latest" and "LUA_VERSION_LATEST",
                 }
             }
         else
@@ -81,6 +83,7 @@ for _, luaver in ipairs {"lua51","lua52","lua53","lua54","lua-latest","luajit"} 
                 defines = {
                     luaver == "lua51" and "_XOPEN_SOURCE=600",
                     luaver == "lua52" and "_XOPEN_SOURCE=600",
+                    luaver == "lua-latest" and "LUA_VERSION_LATEST",
                 },
                 visibility = "default",
                 links = "m",
@@ -150,6 +153,7 @@ for _, luaver in ipairs {"lua51","lua52","lua53","lua54","lua-latest","luajit"} 
         defines = {
             "BEE_INLINE",
             ("DBG_LUA_VERSION=%d"):format(lua_version_num),
+            luaver == "lua-latest" and "LUA_VERSION_LATEST",
         },
         includes = {
             luaSrcDir,

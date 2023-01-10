@@ -101,6 +101,12 @@ cTValue *lj_debug_frame(lua_State *L, int level, int *size)
 #define s2v(o) (o)
 #endif
 
+#if defined(LUA_VERSION_LATEST)
+#define LUA_STKID(s) s.p
+#else
+#define LUA_STKID(s) s
+#endif
+
 static int HOOK_MGR = 0;
 static int HOOK_CALLBACK = 0;
 #if defined(RDEBUG_DISABLE_THUNK)
@@ -132,7 +138,7 @@ static Proto* ci2proto(CallInfo* ci) {
         return 0;
     return funcproto(func);
 #else
-    StkId func = ci->func;
+    StkId func = LUA_STKID(ci->func);
 #if LUA_VERSION_NUM >= 502
     if (!ttisLclosure(s2v(func))) {
         return 0;
@@ -443,7 +449,7 @@ struct hookmgr {
         set_host(cL, hL);
         rlua_pushstring(cL, "exception");
 #if LUA_VERSION_NUM >= 504
-		hL->top = hL->stack + ar->currentline;
+		LUA_STKID(hL->top) = LUA_STKID(hL->stack) + ar->currentline;
 		errcode = ar->i_ci->u2.transferinfo.ntransfer;
 #else
 		errcode = ar->currentline;

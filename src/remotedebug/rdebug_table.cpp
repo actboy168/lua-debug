@@ -8,6 +8,11 @@ namespace remotedebug::table {
 #define s2v(o) (o)
 #endif
 
+#if defined(LUA_VERSION_LATEST)
+#define LUA_STKID(s) s.p
+#else
+#define LUA_STKID(s) s
+#endif
 
 static unsigned int array_limit(const Table* t) {
 #if LUA_VERSION_NUM >= 504
@@ -113,9 +118,9 @@ int get_kv(lua_State* L, const void* tv, unsigned int i) {
 		return 0;
 	}
 
-	L->top += 2;
-	StkId key = L->top - 1;
-	StkId val = L->top - 2;
+	LUA_STKID(L->top) += 2;
+	StkId key = LUA_STKID(L->top) - 1;
+	StkId val = LUA_STKID(L->top) - 2;
 #if LUA_VERSION_NUM >= 504
 	getnodekey(L, s2v(key), n);
 #else
@@ -145,14 +150,14 @@ int get_k(lua_State* L, const void* t, unsigned int i) {
 	if (ttisnil(gval(n))) {
 		return 0;
 	}
-	StkId key = L->top;
+	StkId key = LUA_STKID(L->top);
 #if LUA_VERSION_NUM >= 504
 	getnodekey(L, s2v(key), n);
 #else
 	setobj2s(L, key, &n->i_key.tvk);
 #endif
 #endif
-	L->top++;
+	LUA_STKID(L->top)++;
 	return 1;
 }
 
@@ -193,9 +198,9 @@ int get_v(lua_State* L, int idx, unsigned int i) {
 	if (ttisnil(gval(n))) {
 		return 0;
 	}
-	setobj2s(L, L->top, gval(n));
+	setobj2s(L, LUA_STKID(L->top), gval(n));
 #endif
-	L->top++;
+	LUA_STKID(L->top)++;
 	return 1;
 }
 
@@ -225,9 +230,9 @@ int set_v(lua_State* L, int idx, unsigned int i) {
 	if (ttisnil(gval(n))) {
 		return 0;
 	}
-	setobj2t(L, gval(n), s2v(L->top - 1));
+	setobj2t(L, gval(n), s2v(LUA_STKID(L->top) - 1));
 #endif
-	L->top--;
+	LUA_STKID(L->top)--;
 	return 1;
 }
 

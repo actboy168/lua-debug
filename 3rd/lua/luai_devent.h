@@ -10,6 +10,12 @@
 #error unknown lua version
 #endif
 
+#if defined(LUA_VERSION_LATEST)
+#define LUA_STKID(s) s.p
+#else
+#define LUA_STKID(s) s
+#endif
+
 #if LUA_VERSION_NUM >= 504
 #define LUA_S2V(s) s2v(s)
 #else
@@ -18,10 +24,10 @@
 
 #define luai_threadevent(L, from, type)         \
     if (L && (L->l_G->mainthread->hookmask & LUA_MASKTHREAD)) {  \
-        setpvalue(LUA_S2V(L->top), from);       \
-        L->top++;                               \
+        setpvalue(LUA_S2V(LUA_STKID(L->top)), from);       \
+        LUA_STKID(L->top)++;                               \
         LUA_CALLHOOK(L, LUA_HOOKTHREAD, type);  \
-        L->top--;                               \
+        LUA_STKID(L->top)--;                               \
     }
 
 #define luai_threadcall(L, from) luai_threadevent(L, from, 0)
@@ -30,7 +36,7 @@
 #define LUA_ERREVENT_PANIC 0x10
 
 #if LUA_VERSION_NUM >= 504
-#define luai_errevent_(L, errcode) luaD_hook(L, LUA_HOOKEXCEPTION, cast_int(L->top - L->stack), 0, errcode)
+#define luai_errevent_(L, errcode) luaD_hook(L, LUA_HOOKEXCEPTION, cast_int(LUA_STKID(L->top) - LUA_STKID(L->stack)), 0, errcode)
 #else
 #define luai_errevent_(L, errcode) LUA_CALLHOOK(L, LUA_HOOKEXCEPTION, errcode)
 #endif
