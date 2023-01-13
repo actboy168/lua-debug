@@ -51,6 +51,7 @@ function visitor.getlocalv(frame, index) end
 ---
 ---@param f refvalue
 ---@param index integer
+---@return string | nil
 ---@return light-refvalue
 ---上值。等同于debug.getupvalue(f, index)。
 ---
@@ -58,6 +59,7 @@ function visitor.getupvalue(f, index) end
 ---
 ---@param f refvalue
 ---@param index integer
+---@return string | nil
 ---@return light-refvalue
 ---上值。等同于debug.getupvalue(f, index)。
 ---
