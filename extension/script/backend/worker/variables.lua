@@ -102,6 +102,9 @@ local function getGlobal(frameId)
     rdebug.getinfo(frameId, "f", info)
     local name, value = rdebug.getupvaluev(info.func, 1)
     if name == "_ENV" then
+        if type(value) ~= "userdara" then
+            return
+        end
         return value, "_ENV"
     end
     return rdebug._G, "_G"
@@ -149,6 +152,9 @@ end
 
 function special_has.Global(frameId)
     local global = getGlobal(frameId)
+    if not global then
+        return false
+    end
     local asize, hsize = rdebug.tablesize(global)
     if asize ~= 0 then
         return true
@@ -553,15 +559,32 @@ local function varCreateScopes(frameId, scopes, name, expensive)
     }
     if name == "Global" then
         local global, eval = getGlobal(frameId)
-        local scope = scopes[#scopes]
-        local asize, hsize = rdebug.tablesize(global)
-        scope.indexedVariables = asize + 1
-        scope.namedVariables = hsize
-
-        local var = varPool[#varPool]
-        var.v = global
-        var.eval = eval
+        if global then
+            local scope = scopes[#scopes]
+            local asize, hsize = rdebug.tablesize(global)
+            scope.indexedVariables = asize + 1
+            scope.namedVariables = hsize
+            local var = varPool[#varPool]
+            var.v = global
+            var.eval = eval
+        end
     end
+end
+
+local function varCreateTableKV(key, value, context)
+	varPool[#varPool+1] = {
+		v = {key, value},
+		special = "TableKV",
+	}
+	local type = rdebug.type(value)
+	local var = {
+		type = 'TableKV',
+		name = string.format("[%s]",  rdebug.type(key)),
+		value = varGetValue(context, type, value),
+		variablesReference = #varPool,
+		presentationHint = 'virtual'
+	}
+	return var
 end
 
 local function varCreate(t)
@@ -663,14 +686,19 @@ local function extandTableNamed(varRef)
     local loct = rdebug.tablehash(t,MAX_TABLE_FIELD)
     for i = 1, #loct, 3 do
         local key, value, valueref = loct[i], loct[i+1], loct[i+2]
-        varCreate {
-            vars = vars,
-            varRef = varRef,
-            name = varGetName(key),
-            value = value,
-            evaluateName = evaluateTabelKey(evaluateName, key),
-            calcValue = function() return valueref end,
-        }
+		local key_type = rdebug.type(key)
+		if varCanExtand(key_type, key) then
+			vars[#vars + 1] = varCreateTableKV(key, value, "variables")
+		else
+			varCreate {
+				vars = vars,
+				varRef = varRef,
+				name = varGetName(key),
+				value = value,
+				evaluateName = evaluateTabelKey(evaluateName, key),
+				calcValue = function() return valueref end,
+			}
+		end
     end
     table.sort(vars, function(a, b) return a.name < b.name end)
     local meta = rdebug.getmetatablev(t)
@@ -953,6 +981,9 @@ local function extandGlobalNamed(varRef)
     local frameId = varRef.frameId
     local vars = {}
     local global, eval = getGlobal(frameId)
+    if not global then
+        return vars
+    end
     local loct = rdebug.tablehash(global,MAX_TABLE_FIELD)
     for i = 1, #loct, 3 do
         local key, value, valueref = loct[i], loct[i+1], loct[i+2]
@@ -985,6 +1016,9 @@ function special_extand.Standard(varRef)
     local frameId = varRef.frameId
     local vars = {}
     local global, eval = getGlobal(frameId)
+    if not global then
+        return vars
+    end
     for name in pairs(standard) do
         local value = rdebug.fieldv(global, name)
         if value ~= nil then
@@ -1000,6 +1034,27 @@ function special_extand.Standard(varRef)
     end
     table.sort(vars, function(a, b) return a.name < b.name end)
     return vars
+end
+
+function special_extand.TableKV(varRef)
+    varRef.extand = varRef.extand or {}
+	local key, value = table.unpack(varRef.v)
+	local vars = {}
+	varCreate({
+		vars = vars,
+		varRef = varRef,
+		name = "key",
+		value = key,
+		calcValue = function() return key end,
+	})
+	varCreate({
+		vars = vars,
+		varRef = varRef,
+		name = "value",
+		value = value,
+		calcValue = function() return value end,
+	})
+	return vars
 end
 
 local function extandValue(varRef, filter, start, count)
