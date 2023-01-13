@@ -233,7 +233,7 @@ local function varCanExtand(type, value)
     if type == 'function' then
         return rdebug.getupvaluev(value, 1) ~= nil
     elseif type == 'c function' then
-        return rdebug.getupvaluev(value, 1) ~= nil
+        return true
     elseif type == 'table' then
         local asize, hsize = rdebug.tablesize(value)
         if asize ~= 0 or hsize ~= 0 then
@@ -708,26 +708,41 @@ local function extandFunction(varRef)
     local vars = {}
     local i = 1
     local isCFunction = rdebug.type(f) == "c function"
-    while true do
-        local name, value = rdebug.getupvaluev(f, i)
-        if name == nil then
-            break
-        end
-        local displayName = isCFunction and ("[upvalue %d]"):format(i) or name
-        local fi = i
-        varCreate {
-            vars = vars,
-            varRef = varRef,
-            name = displayName,
-            value = value,
-            evaluateName = evaluateName and ('select(2, debug.getupvalue(%s,%d))'):format(evaluateName, i),
-            calcValue = function() local _, r = rdebug.getupvalue(f, fi) return r end,
-            presentationHint = {
-                kind = "virtual"
+	if not isCFunction or rdebug.getupvaluev(f, 1) ~= nil then
+		while true do
+			local name, value = rdebug.getupvaluev(f, i)
+			if name == nil then
+				break
+			end
+			local displayName = isCFunction and ("[upvalue %d]"):format(i) or name
+			local fi = i
+			varCreate {
+				vars = vars,
+				varRef = varRef,
+				name = displayName,
+				value = value,
+				evaluateName = evaluateName and ('select(2, debug.getupvalue(%s,%d))'):format(evaluateName, i),
+				calcValue = function() local _, r = rdebug.getupvalue(f, fi) return r end,
+				presentationHint = {
+					kind = "virtual"
+				}
+			}
+			i = i + 1
+		end
+	end
+
+	if isCFunction then
+		local var = {
+			type = 'native',
+			name = '[native]',
+			value = rdebug.cfunctioninfo(f),
+			presentationHint = {
+                kind = "virtual",
+				attributes = "readOnly",
             }
-        }
-        i = i + 1
-    end
+		}
+		vars[#vars + 1] = var
+	end
     return vars
 end
 

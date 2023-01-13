@@ -12,6 +12,7 @@
 #ifdef LUAJIT_VERSION
 #include "rluaobject.h"
 #endif
+#include "cfunctioninfo.h"
 int debug_pcall(lua_State* L, int nargs, int nresults, int errfunc);
 
 lua_State* get_host(rlua_State *L);
@@ -1565,6 +1566,39 @@ lclient_gccount(rlua_State *L) {
 	return 1;
 }
 
+
+static int lclient_cfunctioninfo(rlua_State *L) {
+	lua_State *cL = get_host(L);
+	if (copy_fromR(L, cL) == LUA_TNONE) {
+		rlua_pushnil(L);
+		return 1;
+	}
+	if (lua_type(cL, -1) != LUA_TFUNCTION) {
+		lua_pop(cL, 1);
+		rlua_pushnil(L);
+		return 1;
+	}
+#ifdef LUAJIT_VERSION
+	GCfunc *fn = funcV(index2adr(cL, -1));
+	
+	lua_CFunction cfn = isluafunc(fn) ? NULL : fn->c.f;
+#else 
+	lua_CFunction cfn = lua_tocfunction(cL, -1);
+#endif
+
+	lua_pop(cL, 1);
+	static LuaCFunctionInfo infos;
+
+	auto info = infos[(void*)cfn];
+	if (info == nullptr) {
+		rlua_pushnil(L);
+		return 1;
+	}
+	rlua_pushlstring(L, info->c_str(), info->size());
+	return 1;
+}
+
+
 int
 init_visitor(rlua_State *L) {
 	rluaL_Reg l[] = {
@@ -1596,6 +1630,7 @@ init_visitor(rlua_State *L) {
 		{ "cleanwatch", lclient_cleanwatch },
 		{ "costatus", lclient_costatus },
 		{ "gccount", lclient_gccount },
+		{ "cfunctioninfo", lclient_cfunctioninfo},
 		{ NULL, NULL },
 	};
 	rlua_newtable(L);

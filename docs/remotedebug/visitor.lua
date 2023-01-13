@@ -261,4 +261,12 @@ end
 function visitor.costatus(co)
 end
 
+---
+---尝试将C function的转换成具体的符号
+---@param fun refvalue
+---@return string?
+---
+function visitor.cfunctioninfo(fun)
+end
+
 return visitor
