@@ -102,6 +102,9 @@ local function getGlobal(frameId)
     rdebug.getinfo(frameId, "f", info)
     local name, value = rdebug.getupvaluev(info.func, 1)
     if name == "_ENV" then
+        if type(value) ~= "userdara" then
+            return
+        end
         return value, "_ENV"
     end
     return rdebug._G, "_G"
@@ -149,6 +152,9 @@ end
 
 function special_has.Global(frameId)
     local global = getGlobal(frameId)
+    if not global then
+        return false
+    end
     local asize, hsize = rdebug.tablesize(global)
     if asize ~= 0 then
         return true
@@ -553,14 +559,15 @@ local function varCreateScopes(frameId, scopes, name, expensive)
     }
     if name == "Global" then
         local global, eval = getGlobal(frameId)
-        local scope = scopes[#scopes]
-        local asize, hsize = rdebug.tablesize(global)
-        scope.indexedVariables = asize + 1
-        scope.namedVariables = hsize
-
-        local var = varPool[#varPool]
-        var.v = global
-        var.eval = eval
+        if global then
+            local scope = scopes[#scopes]
+            local asize, hsize = rdebug.tablesize(global)
+            scope.indexedVariables = asize + 1
+            scope.namedVariables = hsize
+            local var = varPool[#varPool]
+            var.v = global
+            var.eval = eval
+        end
     end
 end
 
@@ -959,6 +966,9 @@ local function extandGlobalNamed(varRef)
     local frameId = varRef.frameId
     local vars = {}
     local global, eval = getGlobal(frameId)
+    if not global then
+        return vars
+    end
     local loct = rdebug.tablehash(global,MAX_TABLE_FIELD)
     for i = 1, #loct, 3 do
         local key, value, valueref = loct[i], loct[i+1], loct[i+2]
@@ -991,6 +1001,9 @@ function special_extand.Standard(varRef)
     local frameId = varRef.frameId
     local vars = {}
     local global, eval = getGlobal(frameId)
+    if not global then
+        return vars
+    end
     for name in pairs(standard) do
         local value = rdebug.fieldv(global, name)
         if value ~= nil then
