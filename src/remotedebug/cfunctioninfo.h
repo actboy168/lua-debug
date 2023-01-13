@@ -63,9 +63,14 @@ static inline std::string shellcommand(const std::string& cmd){
 	return {};
 }
 static inline bool which_proc(const char* shell){
+#ifdef __linux__
+	return system(shell) == 0;
+#else
 	FILE* pipe = popen(shell, "r");
-	if (!pipe) return false;
+	if (!pipe)
+		return false;
 	return pclose(pipe) == 0;
+#endif
 }
 
 #if USE_ATOS
@@ -90,12 +95,11 @@ static std::string get_function_atos(void* ptr){
 #endif
 
 #if USE_ADDR2LINE
-static std::string get_function_addr2line(const Dl_info& info){
-	static bool has_address2line = which_proc("which addr2line");
+static std::string get_function_addr2line(const char* fname, intptr_t offset){
+	static bool has_address2line = which_proc("which addr2line > /dev/null");
 	if (has_address2line){
-		auto offset = info.dli_saddr - info.dli_fbase;
-		auto funcinfo = shellcommand(std::format("addr2line {} -e {} -f -p -C -s", offset, info.dli_fname));
-		if (!funcinfo.empty() && funcinfo != "??:0"){
+		auto funcinfo = shellcommand(std::format("addr2line -e {} -f -p -C -s -i {:#x}", fname, offset));
+		if (!funcinfo.empty() && funcinfo[0] != '?' && funcinfo[1] != '?'){
 			return funcinfo;
 		}
 	}
@@ -109,20 +113,27 @@ static std::string get_functioninfo(void* ptr){
 	return {};
 #else
 	Dl_info info = {};
-	if (dladdr(ptr, &info) == 0 || info.dli_saddr != ptr) {
+	if (dladdr(ptr, &info) == 0) {
 		return {};
 	}
 
-	std::string funcinfo = 
+	if (ptr > info.dli_fbase) {
+		void* calc_address = info.dli_saddr == ptr ? info.dli_saddr : ptr;
+		std::string funcinfo = 
 #if USE_ATOS
-		get_function_atos(info.dli_saddr);
+			get_function_atos(calc_address);
 #elif USE_ADDR2LINE
-		get_function_addr2line(info);
+			get_function_addr2line(info.dli_fname, (intptr_t)calc_address - (intptr_t)info.dli_fbase);
 #else
-		{}
+			{}
 #endif
-	if (!funcinfo.empty()){
-		return funcinfo;
+		if (!funcinfo.empty()){
+			return funcinfo;
+		}
+	}
+
+	if (info.dli_saddr != ptr){
+		return {};
 	}
 
 	std::string filename = fs::path(info.dli_fname).filename();
