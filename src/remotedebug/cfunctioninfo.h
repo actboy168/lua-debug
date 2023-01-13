@@ -1,5 +1,5 @@
 #pragma once
-#ifdef WIN32
+#ifdef _WIN32
 #else
 #include <dlfcn.h>
 #include <execinfo.h>
@@ -108,7 +108,7 @@ static std::string get_function_addr2line(const char* fname, intptr_t offset){
 #endif
 
 static std::string get_functioninfo(void* ptr){
-#ifdef WIN32
+#ifdef _WIN32
 	// TODO: support Windows
 	return {};
 #else
