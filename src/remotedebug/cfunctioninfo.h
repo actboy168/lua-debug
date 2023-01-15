@@ -261,7 +261,7 @@ namespace NativeInfo {
 	}
 
 #if USE_ATOS
-	static std::string get_function_atos(void* ptr) {
+	static std::optional<std::string> get_function_atos(void* ptr) {
 		struct AtosInfo {
 			pid_t pid;
 			bool has_atos;
@@ -277,12 +277,12 @@ namespace NativeInfo {
 				return funcinfo;
 			}
 		}
-		return {};
+		return std::nullopt;
 	}
 #endif
 
 #if USE_ADDR2LINE
-	static std::string get_function_addr2line(const char* fname, intptr_t offset) {
+	static std::optional<std::string> get_function_addr2line(const char* fname, intptr_t offset) {
 		static bool has_address2line = which_proc("which addr2line > /dev/null");
 		if (has_address2line) {
 			auto funcinfo = shellcommand(std::format("addr2line -e {} -f -p -C -s -i {:#x}", fname, offset));
@@ -290,19 +290,22 @@ namespace NativeInfo {
 				return funcinfo;
 			}
 		}
-		return {};
+		return std::nullopt;
 	}
 #endif
 #endif // _WIN32
 
-	static std::string get_functioninfo(void* ptr) {
+	static std::optional<std::string> get_functioninfo(void* ptr) {
 #ifdef _WIN32
 		auto sym = NativeInfo::Addr2Symbol(ptr);
-		return sym ? std::format("{} in {} ({}:{})",sym->name,sym->module_name,sym->file_name,sym->line_no) : "";
+		if (sym){
+			return std::format("{} in {} ({}:{})",sym->name,sym->module_name,sym->file_name,sym->line_no);
+		}
+		return std::nullopt;
 #else
 		Dl_info info = {};
 		if (dladdr(ptr, &info) == 0) {
-			return {};
+			return std::nullopt;
 		}
 
 		if (ptr > info.dli_fbase) {
@@ -321,7 +324,7 @@ namespace NativeInfo {
 		}
 
 		if (info.dli_saddr != ptr) {
-			return {};
+			return std::nullopt;
 		}
 
 		std::string filename = fs::path(info.dli_fname).filename();
@@ -333,7 +336,7 @@ namespace NativeInfo {
 	}
 
 	struct LuaCFunctionInfo {
-		const std::string* const operator[] (void* ptr) {
+		const std::optional<std::string>* const operator[] (void* ptr) {
 			if (ptr == nullptr) return nullptr;
 			std::lock_guard guard(mtx);
 			{
@@ -355,7 +358,7 @@ namespace NativeInfo {
 			}
 		}
 
-		std::unordered_map<void*, std::string> infos;
+		std::unordered_map<void*, std::optional<std::string>> infos;
 		std::mutex mtx;
 	};
 }

@@ -1589,11 +1589,12 @@ static int lclient_cfunctioninfo(rlua_State *L) {
 	lua_pop(cL, 1);
 	static NativeInfo::LuaCFunctionInfo infos;
 
-	auto info = infos[(void*)cfn];
-	if (info == nullptr) {
+	auto info_ptr = infos[(void*)cfn];
+	if (info_ptr == nullptr || !info_ptr->has_value()) {
 		rlua_pushnil(L);
 		return 1;
 	}
+	auto& info = *info_ptr;
 	rlua_pushlstring(L, info->c_str(), info->size());
 	return 1;
 }
