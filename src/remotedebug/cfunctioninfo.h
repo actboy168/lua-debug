@@ -310,15 +310,15 @@ namespace NativeInfo {
 
 		if (ptr > info.dli_fbase) {
 			void* calc_address = info.dli_saddr == ptr ? info.dli_saddr : ptr;
-			std::string funcinfo =
+			std::optional<std::string> funcinfo
 #if USE_ATOS
-				get_function_atos(calc_address);
+				= get_function_atos(calc_address);
 #elif USE_ADDR2LINE
-				get_function_addr2line(info.dli_fname, (intptr_t)calc_address - (intptr_t)info.dli_fbase);
+				= get_function_addr2line(info.dli_fname, (intptr_t)calc_address - (intptr_t)info.dli_fbase);
 #else
-			{}
+				;
 #endif
-			if (!funcinfo.empty()) {
+			if (funcinfo.has_value()) {
 				return funcinfo;
 			}
 		}
