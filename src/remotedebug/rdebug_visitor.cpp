@@ -1587,7 +1587,7 @@ static int lclient_cfunctioninfo(rlua_State *L) {
 #endif
 
 	lua_pop(cL, 1);
-	static LuaCFunctionInfo infos;
+	static NativeInfo::LuaCFunctionInfo infos;
 
 	auto info = infos[(void*)cfn];
 	if (info == nullptr) {
