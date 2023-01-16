@@ -25,8 +25,6 @@
 #include <bee/filesystem.h>
 #include <bee/format.h>
 #include <memory>
-#include <unordered_map>
-#include <mutex>
 
 
 #if defined(TARGET_OS_MAC)
@@ -334,31 +332,4 @@ namespace NativeInfo {
 		return std::format("`{}`{} {}", filename, realname, addr);
 #endif
 	}
-
-	struct LuaCFunctionInfo {
-		const std::optional<std::string>* const operator[] (void* ptr) {
-			if (ptr == nullptr) return nullptr;
-			std::lock_guard guard(mtx);
-			{
-				auto iter = infos.find(ptr);
-				if (iter != infos.end()) {
-					return &(iter->second);
-				}
-			}
-			try
-			{
-				auto [iter, success] = infos.emplace(ptr, get_functioninfo(ptr));
-				if (!success)
-					return nullptr;
-				return &(iter->second);
-			}
-			catch (const std::bad_alloc&)
-			{
-				return nullptr;
-			}
-		}
-
-		std::unordered_map<void*, std::optional<std::string>> infos;
-		std::mutex mtx;
-	};
 }
