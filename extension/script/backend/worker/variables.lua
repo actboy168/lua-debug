@@ -230,19 +230,19 @@ local function formatInteger(v)
 end
 
 local escape_char = {
-    ["\\" .. string.byte "\a"] = "\\" .. "a",
-    ["\\" .. string.byte "\b"] = "\\" .. "b",
-    ["\\" .. string.byte "\f"] = "\\" .. "f",
-    ["\\" .. string.byte "\n"] = "\\" .. "n",
-    ["\\" .. string.byte "\r"] = "\\" .. "r",
-    ["\\" .. string.byte "\t"] = "\\" .. "t",
-    ["\\" .. string.byte "\v"] = "\\" .. "v",
-    ["\\" .. string.byte "\\"] = "\\" .. "\\",
-    ["\\" .. string.byte "\""] = "\\" .. "\"",
+    [ "\\" .. string.byte "\a" ] = "\\".."a",
+    [ "\\" .. string.byte "\b" ] = "\\".."b",
+    [ "\\" .. string.byte "\f" ] = "\\".."f",
+    [ "\\" .. string.byte "\n" ] = "\\".."n",
+    [ "\\" .. string.byte "\r" ] = "\\".."r",
+    [ "\\" .. string.byte "\t" ] = "\\".."t",
+    [ "\\" .. string.byte "\v" ] = "\\".."v",
+    [ "\\" .. string.byte "\\" ] = "\\".."\\",
+    [ "\\" .. string.byte "\"" ] = "\\".."\"",
 }
 
 local function quotedString(s)
-    return ("%q"):format(s):sub(2, -2):gsub("\\[1-9][0-9]?", escape_char):gsub("\\\n", "\\n")
+    return ("%q"):format(s):sub(2,-2):gsub("\\[1-9][0-9]?", escape_char):gsub("\\\n", "\\n")
 end
 
 local function varCanExtand(type, value)
@@ -271,10 +271,10 @@ local function varCanExtand(type, value)
         if rdebug.getmetatablev(value) ~= nil then
             return true
         end
-        return false
-    elseif type == 'cdata' then
-        return cdata_visitor.canextand(value)
-    end
+		return false
+	elseif type == 'cdata' then
+		return cdata_visitor.canextand(value)
+	end
     return false
 end
 
@@ -308,8 +308,8 @@ local function varGetShortName(value)
         return ('%d'):format(rvalue)
     elseif type == 'float' then
         return floatToShortString(rdebug.value(value))
-    elseif type == 'cdata' or type == 'ctype' then
-        return cdata_visitor.shorttypename(value) or type
+	elseif type == 'cdata' or type == 'ctype' then
+		return cdata_visitor.shorttypename(value) or type
     end
     return tostring(rdebug.value(value))
 end
@@ -332,14 +332,14 @@ local function varGetName(value)
         return floatToString(rdebug.value(value))
     elseif type == 'string' then
         return quotedString(rdebug.value(value))
-    elseif type == 'cdata' then
-        return cdata_visitor.shorttypename(value) or "cdata"
-    elseif type == 'ctype' then
-        local tt = cdata_visitor.shorttypename(value)
-        if not tt then
-            return type
-        end
-        return "ctype(" .. tt .. ")"
+	elseif type == 'cdata' then
+		return cdata_visitor.shorttypename(value) or "cdata"
+	elseif type == 'ctype' then
+		local tt = cdata_visitor.shorttypename(value)
+		if not tt then
+			return type
+		end
+		return "ctype(" .. tt .. ")"
     end
     return tostring(rdebug.value(value))
 end
@@ -373,8 +373,8 @@ local function varGetShortValue(value)
             return "..."
         end
         return '{}'
-    elseif type == 'cdata' then
-        return cdata_visitor.shortvalue(value)
+	elseif type == 'cdata' then
+		return cdata_visitor.shortvalue(value)
     end
     return type
 end
@@ -394,10 +394,10 @@ local function varGetTableValue(t)
         end
     end
 
-    local loct = rdebug.tablehashv(t, SHORT_TABLE_FIELD)
+    local loct = rdebug.tablehashv(t,SHORT_TABLE_FIELD)
     local kvs = {}
     for i = 1, #loct, 2 do
-        local key, value = loct[i], loct[i + 1]
+        local key, value = loct[i], loct[i+1]
         local kn = varGetShortName(key)
         kvs[#kvs + 1] = { kn, value }
     end
@@ -532,20 +532,20 @@ local function varGetValue(context, type, value)
         return 'light' .. tostring(rdebug.value(value))
     elseif type == 'thread' then
         return ('thread (%s)'):format(rdebug.costatus(value))
-    elseif type == 'cdata' then
-        local t = cdata_visitor.shorttypename(value)
-        if not t then
-            return "cdata"
-        end
-        local v = cdata_visitor.shortvalue(value)
-        if not v then
-            return t
-        end
-        return tostring(v) .. " (" .. t .. ")"
-    elseif type == 'ctype' then
-        local name = cdata_visitor.shorttypename(value)
-        return "ctype(" .. (name or "unknown") .. ")"
-    end
+	elseif type == 'cdata' then
+		local t = cdata_visitor.shorttypename(value)
+		if not t then
+			return "cdata"
+		end
+		local v = cdata_visitor.shortvalue(value)
+		if not v then
+			return t
+		end
+		return tostring(v) .. " (" .. t .. ")"
+	elseif type == 'ctype' then
+		local name = cdata_visitor.shorttypename(value)
+		return "ctype(" .. (name or "unknown") .. ")"
+	end
     return tostring(rdebug.value(value))
 end
 
@@ -559,7 +559,7 @@ local function varCreateReference(value, evaluateName, context)
         result.__vscodeVariableMenuContext = showIntegerAsHex and "integer/hex" or "integer/dec"
     end
     if type == "string" or type == "userdata" then
-        memoryRefPool[#memoryRefPool + 1] = {
+        memoryRefPool[#memoryRefPool+1] = {
             type = type,
             value = value,
         }
@@ -609,19 +609,19 @@ local function varCreateScopes(frameId, scopes, name, expensive)
 end
 
 local function varCreateTableKV(key, value, context)
-    varPool[#varPool + 1] = {
-        v = { key, value },
-        special = "TableKV",
-    }
-    local type = rdebug.type(value)
-    local var = {
-        type = 'TableKV',
-        name = string.format("[%s]", rdebug.type(key)),
-        value = varGetValue(context, type, value),
-        variablesReference = #varPool,
-        presentationHint = 'virtual'
-    }
-    return var
+	varPool[#varPool+1] = {
+		v = {key, value},
+		special = "TableKV",
+	}
+	local type = rdebug.type(value)
+	local var = {
+		type = 'TableKV',
+		name = string.format("[%s]",  rdebug.type(key)),
+		value = varGetValue(context, type, value),
+		variablesReference = #varPool,
+		presentationHint = 'virtual'
+	}
+	return var
 end
 
 local function varCreate(t)
@@ -634,13 +634,13 @@ local function varCreate(t)
         local var = vars[index]
         if not nameidx or (var.presentationHint and var.presentationHint.kind == "virtual") then
             local log = require 'common.log'
-            log.error("same name variables: " .. name)
+            log.error("same name variables: "..name)
             return {}
         end
         local newname = ("%s #%d"):format(name, nameidx)
         if extand[newname] then
             local log = require 'common.log'
-            log.error("same name variables: " .. name)
+            log.error("same name variables: "..name)
             return {}
         end
         var.name = newname
@@ -720,22 +720,22 @@ local function extandTableNamed(varRef)
     local t = varRef.v
     local evaluateName = varRef.eval
     local vars = {}
-    local loct = rdebug.tablehash(t, MAX_TABLE_FIELD)
+    local loct = rdebug.tablehash(t,MAX_TABLE_FIELD)
     for i = 1, #loct, 3 do
-        local key, value, valueref = loct[i], loct[i + 1], loct[i + 2]
-        local key_type = rdebug.type(key)
-        if varCanExtand(key_type, key) then
-            vars[#vars + 1] = varCreateTableKV(key, value, "variables")
-        else
-            varCreate {
-                vars = vars,
-                varRef = varRef,
-                name = varGetName(key),
-                value = value,
-                evaluateName = evaluateTabelKey(evaluateName, key),
-                calcValue = function() return valueref end,
-            }
-        end
+        local key, value, valueref = loct[i], loct[i+1], loct[i+2]
+		local key_type = rdebug.type(key)
+		if varCanExtand(key_type, key) then
+			vars[#vars + 1] = varCreateTableKV(key, value, "variables")
+		else
+			varCreate {
+				vars = vars,
+				varRef = varRef,
+				name = varGetName(key),
+				value = value,
+				evaluateName = evaluateTabelKey(evaluateName, key),
+				calcValue = function() return valueref end,
+			}
+		end
     end
     table.sort(vars, function(a, b) return a.name < b.name end)
     local meta = rdebug.getmetatablev(t)
@@ -831,7 +831,7 @@ local function extandUserdata(varRef)
                     varRef = varRef,
                     name = ('[uservalue %d]'):format(i),
                     value = uv,
-                    evaluateName = evaluateName and ('debug.getuservalue(%s,%d)'):format(evaluateName, i),
+                    evaluateName = evaluateName and ('debug.getuservalue(%s,%d)'):format(evaluateName,i),
                     calcValue = function() return rdebug.getuservalue(u, fi) end,
                     presentationHint = {
                         kind = "virtual"
@@ -879,9 +879,9 @@ function special_extand.Local(varRef)
             break
         end
         if not isTemporary(name) then
-            if name:sub(1, 1) == "(" then
+            if name:sub(1,1) == "(" then
                 tempVar[name] = tempVar[name] and (tempVar[name] + 1) or 1
-                name = ("(%s #%d)"):format(name:sub(2, -2), tempVar[name])
+                name = ("(%s #%d)"):format(name:sub(2,-2), tempVar[name])
             end
             local fi = i
             varCreate {
@@ -1006,9 +1006,9 @@ local function extandGlobalNamed(varRef)
     if not global then
         return vars
     end
-    local loct = rdebug.tablehash(global, MAX_TABLE_FIELD)
+    local loct = rdebug.tablehash(global,MAX_TABLE_FIELD)
     for i = 1, #loct, 3 do
-        local key, value, valueref = loct[i], loct[i + 1], loct[i + 2]
+        local key, value, valueref = loct[i], loct[i+1], loct[i+2]
         if not isStandardName(key) then
             varCreate {
                 vars = vars,
@@ -1060,116 +1060,116 @@ end
 
 function special_extand.TableKV(varRef)
     varRef.extand = varRef.extand or {}
-    local key, value = table.unpack(varRef.v)
-    local vars = {}
-    varCreate({
-        vars = vars,
-        varRef = varRef,
-        name = "key",
-        value = key,
-        calcValue = function() return key end,
-    })
-    varCreate({
-        vars = vars,
-        varRef = varRef,
-        name = "value",
-        value = value,
-        calcValue = function() return value end,
-    })
-    return vars
+	local key, value = table.unpack(varRef.v)
+	local vars = {}
+	varCreate({
+		vars = vars,
+		varRef = varRef,
+		name = "key",
+		value = key,
+		calcValue = function() return key end,
+	})
+	varCreate({
+		vars = vars,
+		varRef = varRef,
+		name = "value",
+		value = value,
+		calcValue = function() return value end,
+	})
+	return vars
 end
 
 local function VarCreateCData(varRef, vars, reflct, member, value)
-    if rdebug.type(member) ~= 'nil' then
-        local name = rdebug.fieldv(reflct, "name");
-        varCreate({
-            vars = vars,
-            varRef = varRef,
-            name = name,
-            value = member,
-            calcValue = function() return member end,
-            presentationHint = {
-                kind = "virtual",
-                attributes = "readOnly",
-            }
-        })
-    else
-        local what = rdebug.fieldv(reflct, "what")
-        varPool[#varPool + 1] = {
-            v = { reflct, value },
-            special = 'CData'
-        }
-        vars[#vars + 1] = {
-            type = "string",
-            name = "[anonymous]",
-            value = what,
-            presentationHint = {
-                kind = "virtual",
-                attributes = "readOnly",
-            },
-            variablesReference = #varPool
-        }
-    end
+	if rdebug.type(member) ~= 'nil'  then
+		local name = rdebug.fieldv(reflct, "name");
+		varCreate({
+			vars = vars,
+			varRef = varRef,
+			name = name,
+			value = member,
+			calcValue = function() return member end,
+			presentationHint = {
+				kind = "virtual",
+				attributes = "readOnly",
+			}
+		})
+	else
+		local what = rdebug.fieldv(reflct, "what")
+		varPool[#varPool + 1] = {
+			v = { reflct, value },
+			special = 'CData'
+		}
+		vars[#vars + 1] = {
+			type = "string",
+			name = "[anonymous]",
+			value = what,
+			presentationHint = {
+				kind = "virtual",
+				attributes = "readOnly",
+			},
+			variablesReference = #varPool
+		}
+	end
 end
 
 function special_extand.CData(varRef)
     varRef.extand = varRef.extand or {}
-    local typeinfo, value = table.unpack(varRef.v)
-    local vars = {}
-    local index = 1
-    while true do
-        local reflct, member = cdata_visitor.annotated_member(typeinfo, index, value)
-        if not reflct then
-            break
-        end
-        VarCreateCData(varRef, vars, reflct, member, value)
-        index = index + 1
-    end
-    return vars
+	local typeinfo, value = table.unpack(varRef.v)
+	local vars = {}
+	local index = 1
+	while true do
+		local reflct, member = cdata_visitor.annotated_member(typeinfo, index, value)
+		if not reflct then
+			break
+		end
+		VarCreateCData(varRef, vars, reflct, member, value)
+		index = index + 1
+	end
+	return vars
 end
 
 local function extandCData(varRef)
-    varRef.extand = varRef.extand or {}
-    local value = varRef.v
-    local what = cdata_visitor.what(value)
-    local type = cdata_visitor.typename(value)
-    if not type then
-        return {}
-    end
-    local vars = {}
-    if what == "func" then
-        --TODO call rdebug.cfuntioninfo
-        vars[1] = {
-            type = "string",
-            name = "type",
-            value = type or "unknown type",
-            presentationHint = {
-                kind = "virtual",
-                attributes = "readOnly",
-            }
-        }
-        vars[2] = {
-            type = "integer",
-            name = "value",
-            value = cdata_visitor.shortvalue(value),
-            presentationHint = {
-                kind = "virtual",
-                attributes = "readOnly",
-            }
-        }
-    else
-        local index = 1
-        while true do
-            local reflct, member = cdata_visitor.member(value, index)
-            if not reflct then
-                break
-            end
-            VarCreateCData(varRef, vars, reflct, member, value)
-            index = index + 1
-        end
-    end
+	varRef.extand = varRef.extand or {}
+	local value = varRef.v
+	local what = cdata_visitor.what(value)
+	local type = cdata_visitor.typename(value)
+	if not type then
+		return {}
+	end
+	local vars = {}
+	if what == "func" then
+		--TODO call rdebug.cfuntioninfo
+		vars[1] = {
+			type = "string",
+			name = "type",
+			value = type or "unknown type",
+			presentationHint = {
+				kind = "virtual",
+				attributes = "readOnly",
+			}
+		}
+		vars[2] = {
+			type = "integer",
+			name = "value",
+			value = cdata_visitor.shortvalue(value),
+			presentationHint = {
+				kind = "virtual",
+				attributes = "readOnly",
+			}
+		}
+	else
+		local index = 1
+		while true do
+			local reflct, member = cdata_visitor.member(value, index)
+			if not reflct then
+				break
+			end
+			VarCreateCData(varRef, vars, reflct, member, value)
+			index = index + 1
+		end
+	end
 
-    return vars
+	return vars
 end
 
 local function extandValue(varRef, filter, start, count)
@@ -1185,8 +1185,8 @@ local function extandValue(varRef, filter, start, count)
         return extandFunction(varRef)
     elseif type == 'userdata' then
         return extandUserdata(varRef)
-    elseif type == 'cdata' then
-        return extandCData(varRef)
+	elseif type == 'cdata' then
+		return extandCData(varRef)
     end
     return {}
 end
@@ -1202,10 +1202,10 @@ local function setValue(varRef, name, value)
         newvalue = false
     elseif value == 'true' then
         newvalue = true
-    elseif value:sub(1, 1) == "'" and value:sub(-1, -1) == "'" then
-        newvalue = value:sub(2, -2)
-    elseif value:sub(1, 1) == '"' and value:sub(-1, -1) == '"' then
-        newvalue = value:sub(2, -2)
+    elseif value:sub(1,1) == "'" and value:sub(-1,-1) == "'" then
+        newvalue = value:sub(2,-2)
+    elseif value:sub(1,1) == '"' and value:sub(-1,-1) == '"' then
+        newvalue = value:sub(2,-2)
     elseif tonumber(value) then
         newvalue = tonumber(value)
     else
@@ -1262,9 +1262,9 @@ function m.set(valueId, name, value)
 end
 
 local function updateRange(ref, offset, count)
-    local s, e = offset, offset + count
+    local s, e = offset, offset+count
     if not ref.range then
-        ref.range = { s, e }
+        ref.range = {s, e}
         return
     end
     ref.range[1] = math.min(ref.range[1], s)
