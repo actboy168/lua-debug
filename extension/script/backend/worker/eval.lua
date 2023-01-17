@@ -34,20 +34,30 @@ function m.verify(expression)
     return rdebug.eval(eval_verify, expression, 0)
 end
 
-if luaver.LUAVERSION <= 52 then
-    local compat_dump = assert(load(readfile 'backend.worker.eval.dump'))
-    function m.dump(content)
-        local res, err = compat_dump(content)
-        if res then
-            return true, res
-        end
-        return false, err
-    end
-else
-    local eval_dump = assert(rdebug.load(readfile 'backend.worker.eval.dump'))
-    function m.dump(content)
-        return rdebug.eval(eval_dump, content, 0)
+local function generate(name, init)
+    m[name] = function (...)
+        local f = init()
+        m[name] = f
+        return f(...)
     end
 end
+
+generate("dump", function ()
+    if luaver.LUAVERSION <= 52 then
+        local compat_dump = assert(load(readfile 'backend.worker.eval.dump'))
+        return function (content)
+            local res, err = compat_dump(content)
+            if res then
+                return true, res
+            end
+            return false, err
+        end
+    else
+        local eval_dump = assert(rdebug.load(readfile 'backend.worker.eval.dump'))
+        return function (content)
+            return rdebug.eval(eval_dump, content, 0)
+        end
+    end
+end)
 
 return m
