@@ -102,7 +102,7 @@ local function getGlobal(frameId)
     rdebug.getinfo(frameId, "f", info)
     local name, value = rdebug.getupvaluev(info.func, 1)
     if name == "_ENV" then
-        if type(value) ~= "userdara" then
+        if type(value) ~= "userdata" then
             return
         end
         return value, "_ENV"
