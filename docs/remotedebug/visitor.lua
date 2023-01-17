@@ -182,7 +182,7 @@ function visitor.udwrite(ud, offset, data, allowPartial)
 end
 
 ---
----@param v refvalue
+---@param v refvalue | light-refvalue
 ---@return string | integer | number | boolean | nil
 ---复制v引用的值到调试器VM中，如果v引用的值无法复制，则返回一个"type: lua_topointer(v)"形式的字符串。
 ---
@@ -199,7 +199,7 @@ function visitor.assign(v, new)
 end
 
 ---
----@param v refvalue
+---@param v refvalue | light-refvalue
 ---@return string
 ---返回v引用的值的类型，和type(v)略有不同。
 ---  * 如果type(v)=="number", 则会返回math.type(v)，如果调试目标低于5.3则返回"float"。
