@@ -102,7 +102,7 @@ local function getGlobal(frameId)
     rdebug.getinfo(frameId, "f", info)
     local name, value = rdebug.getupvaluev(info.func, 1)
     if name == "_ENV" then
-        if type(value) ~= "userdara" then
+        if rdebug.type(value) ~= "table" then
             return
         end
         return value, "_ENV"
@@ -1234,7 +1234,7 @@ end
 
 function m.tostring(v)
     local meta = rdebug.getmetatablev(v)
-    if meta ~= nil then
+    if rdebug.type(meta) == "table" then
         local fn = rdebug.fieldv(meta, '__tostring')
         if fn ~= nil and (rdebug.type(fn) == 'function' or rdebug.type(fn) == 'c function') then
             local ok, res = rdebug.eval(fn, v)
@@ -1252,7 +1252,7 @@ function m.tostring(v)
     then
         return tostring(rdebug.value(v))
     end
-    if meta ~= nil then
+    if rdebug.type(meta) == "table" then
         local name = rdebug.fieldv(meta, '__name')
         if name ~= nil then
             type = tostring(rdebug.value(name))

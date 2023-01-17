@@ -595,15 +595,6 @@ combine_index(rlua_State *L, lua_State *cL, int getref) {
 	rlua_pop(L, 1);
 }
 
-static int
-get_index(rlua_State *L, lua_State *cL, int getref) {
-	if (table_key(L, cL) == 0)
-		return 0;
-	lua_rawget(cL, -2);	// cL : table value
-	combine_index(L, cL, getref);
-	return 1;
-}
-
 // table key
 static void
 new_field(rlua_State *L) {
@@ -633,15 +624,6 @@ combine_field(rlua_State *L, lua_State *cL, int getref) {
 	// L : t, k, v
 	rlua_replace(L, -3);
 	rlua_pop(L, 1);
-}
-
-static int
-get_field(rlua_State *L, lua_State *cL, int getref) {
-	if (table_key(L, cL) == 0)
-		return 0;
-	lua_rawget(cL, -2);	// cL : table value
-	combine_field(L, cL, getref);
-	return 1;
 }
 
 static const char *
@@ -834,6 +816,7 @@ client_index(rlua_State *L, int getref) {
 	if (rlua_gettop(L) != 2) {
 		return rluaL_error(L, "need table key");
 	}
+	rluaL_checktype(L, 1, LUA_TTABLE);
 	rlua_Integer i = rluaL_checkinteger(L, 2);
 #ifdef LUAJIT_VERSION
 	if (i < 0 || i > (std::numeric_limits<int>::max)()) {
@@ -842,10 +825,11 @@ client_index(rlua_State *L, int getref) {
 #endif
 		return rluaL_error(L, "must be `unsigned int`");
 	}
-	if (get_index(L, cL, getref)) {
-		return 1;
-	}
-	return 0;
+	if (table_key(L, cL) == 0)
+		return 0;
+	lua_rawget(cL, -2);	// cL : table value
+	combine_index(L, cL, getref);
+	return 1;
 }
 
 static int
@@ -864,11 +848,13 @@ client_field(rlua_State *L, int getref) {
 	if (rlua_gettop(L) != 2) {
 		return rluaL_error(L, "need table key");
 	}
+	rluaL_checktype(L, 1, LUA_TTABLE);
 	rluaL_checktype(L, 2, LUA_TSTRING);
-	if (get_field(L, cL, getref)) {
-		return 1;
-	}
-	return 0;
+	if (table_key(L, cL) == 0)
+		return 0;
+	lua_rawget(cL, -2);	// cL : table value
+	combine_field(L, cL, getref);
+	return 1;
 }
 
 static int
