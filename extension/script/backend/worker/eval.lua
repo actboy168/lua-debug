@@ -15,8 +15,6 @@ end
 local eval_readwrite = assert(rdebug.load(readfile 'backend.worker.eval.readwrite'))
 local eval_readonly  = assert(rdebug.load(readfile 'backend.worker.eval.readonly'))
 local eval_verify    = assert(rdebug.load(readfile 'backend.worker.eval.verify'))
-local eval_dump      = assert(rdebug.load(readfile 'backend.worker.eval.dump'))
-local compat_dump    = assert(load(readfile 'backend.worker.eval.dump'))
 
 local m = {}
 
@@ -36,15 +34,20 @@ function m.verify(expression)
     return rdebug.eval(eval_verify, expression, 0)
 end
 
-function m.dump(content)
-    if luaver.LUAVERSION <= 52 then
+if luaver.LUAVERSION <= 52 then
+    local compat_dump = assert(load(readfile 'backend.worker.eval.dump'))
+    function m.dump(content)
         local res, err = compat_dump(content)
         if res then
             return true, res
         end
         return false, err
     end
-    return rdebug.eval(eval_dump, content, 0)
+else
+    local eval_dump = assert(rdebug.load(readfile 'backend.worker.eval.dump'))
+    function m.dump(content)
+        return rdebug.eval(eval_dump, content, 0)
+    end
 end
 
 return m
