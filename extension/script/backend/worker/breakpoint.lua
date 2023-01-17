@@ -1,7 +1,7 @@
 local rdebug = require 'remotedebug.visitor'
 local fs = require 'backend.worker.filesystem'
 local source = require 'backend.worker.source'
-local evaluate = require 'backend.worker.evaluate'
+local eval = require 'backend.worker.eval'
 local ev = require 'backend.event'
 local hookmgr = require 'remotedebug.hookmgr'
 local parser = require 'backend.worker.parser'
@@ -82,7 +82,7 @@ end
 
 local function valid(bp)
     if bp.condition then
-        local ok, err = evaluate.verify(bp.condition)
+        local ok, err = eval.verify(bp.condition)
         if not ok then
             ev.emit('breakpoint', 'changed', {
                 id = bp.id,
@@ -93,7 +93,7 @@ local function valid(bp)
         end
     end
     if bp.hitCondition then
-        local ok, err = evaluate.verify('0 ' .. bp.hitCondition)
+        local ok, err = eval.verify('0 ' .. bp.hitCondition)
         if not ok then
             ev.emit('breakpoint', 'changed', {
                 id = bp.id,
@@ -237,14 +237,14 @@ end
 
 function m.exec(bp)
     if bp.condition then
-        local ok, res = evaluate.eval(bp.condition)
+        local ok, res = eval.eval(bp.condition)
         if not ok or not res then
             return false
         end
     end
     bp.statHit = bp.statHit + 1
     if bp.hitCondition then
-        local ok, res = evaluate.eval(bp.statHit .. ' ' .. bp.hitCondition)
+        local ok, res = eval.eval(bp.statHit .. ' ' .. bp.hitCondition)
         if not ok or res ~= true then
             return false
         end
@@ -255,7 +255,7 @@ function m.exec(bp)
             if not info then
                 return key
             end
-            local ok, res = evaluate.eval(info)
+            local ok, res = eval.eval(info)
             if not ok then
                 return '{'..info..'}'
             end
@@ -297,7 +297,7 @@ local funcs = {}
 function m.set_funcbp(breakpoints)
     funcs = {}
     for _, bp in ipairs(breakpoints) do
-        local ok, err = evaluate.verify(bp.name)
+        local ok, err = eval.verify(bp.name)
         if not ok then
             ev.emit('breakpoint', 'changed', {
                 id = bp.id,
@@ -327,7 +327,7 @@ end
 
 function m.hit_funcbp(func)
     for _, bp in ipairs(funcs) do
-        local ok, res = evaluate.eval(bp.name, 1)
+        local ok, res = eval.eval(bp.name, 1)
         if ok and res == func and m.exec(bp) then
             return bp
         end
@@ -343,7 +343,7 @@ function m.hitExceptionBreakpoint(flags, level, error)
             if not bp.condition then
                 return bp
             end
-            local ok, res = evaluate.eval(bp.condition, level, { error = error })
+            local ok, res = eval.eval(bp.condition, level, { error = error })
             if ok and res then
                 return bp
             end
@@ -364,7 +364,7 @@ function m.setExceptionBreakpoints(breakpoints)
             })
             goto continue
         end
-        local ok, err = evaluate.verify(filter.condition)
+        local ok, err = eval.verify(filter.condition)
         if not ok then
             ev.emit('breakpoint', 'changed', {
                 id = filter.id,
