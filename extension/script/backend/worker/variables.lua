@@ -4,7 +4,10 @@ local luaver = require 'backend.worker.luaver'
 local serialize = require 'backend.worker.serialize'
 local ev = require 'backend.event'
 local base64 = require 'common.base64'
-local cdata_visitor = require 'backend.worker.cdata_visitor'
+local cdata_visitor
+if luaver.isjit then
+    cdata_visitor = require 'backend.worker.cdata_visitor'
+end
 
 local SHORT_TABLE_FIELD <const> = 100
 local MAX_TABLE_FIELD <const> = 1000

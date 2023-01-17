@@ -37,7 +37,7 @@ end
 
 function visitor.member(v, index)
     local ok, v1, v2 = rdebug.watch(handler, "member", v, index)
-    if not ok then print("member error") return end
+    if not ok then return end
     return v1, v2
 end
 
