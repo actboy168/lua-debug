@@ -2,6 +2,8 @@
 #ifdef LUAJIT_VERSION
 #include <lj_obj.h>
 #include <lj_tab.h>
+#include <lj_cdata.h>
+#include <lj_ctype.h>
 using Table= GCtab;
 using Closure = GCfunc;
 using UpVal = GCupval;
@@ -10,7 +12,7 @@ using UDate = GCudata;
 using TString = GCstr;
 using StkId = TValue*;
 
-static TValue *index2adr(lua_State *L, int idx)
+inline TValue *index2adr(lua_State *L, int idx)
 {
   if (idx > 0) {
     TValue *o = L->base + (idx - 1);
@@ -39,7 +41,7 @@ static TValue *index2adr(lua_State *L, int idx)
     }
   }
 }
-static int lua_isinteger (lua_State *L, int idx) {
+inline int lua_isinteger (lua_State *L, int idx) {
   cTValue *o = index2adr(L, idx);
   return tvisint(o);
 }
