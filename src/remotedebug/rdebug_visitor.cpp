@@ -1158,6 +1158,19 @@ lclient_type(rlua_State *L) {
 	case LUA_TLIGHTUSERDATA:
 		rlua_pushstring(L, "lightuserdata");
 		break;
+#ifdef LUAJIT_VERSION
+	case LUA_TCDATA:
+		{
+			cTValue* o = index2adr(cL, -1);
+			GCcdata* cd = cdataV(o);
+			if (cd->ctypeid == CTID_CTYPEID){
+				rlua_pushstring(L, "ctype");
+			}else{
+				rlua_pushstring(L, "cdata");
+			}
+		}
+		break;
+#endif
 	default:
 		rlua_pushstring(L, lua_typename(cL, t));
 		break;

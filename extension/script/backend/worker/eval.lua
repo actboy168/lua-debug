@@ -60,4 +60,32 @@ generate("dump", function ()
     end
 end)
 
+function m.create_cdata_visitor()
+    if not luaver.isjit then
+        return
+    end
+
+    local handler = assert(rdebug.load(readfile "backend.worker.eval.ffi_reflection"))
+
+    local function factory(name, ref)
+        return function(...)
+            local res = table.pack(rdebug[ref and "watch" or "eval"](handler, name, ...))
+            if not res[1] then
+                return
+            end
+            return table.unpack(res, 2)
+        end
+    end
+
+    return {
+        shorttypename = factory("shorttypename"),
+        shortvalue = factory("shortvalue"),
+        canextand = factory("canextand"),
+        typename = factory("typename"),
+        what = factory("what"),
+        member = factory("member", true),
+        annotated_member = factory("annotated_member", true),
+    }
+end
+
 return m
