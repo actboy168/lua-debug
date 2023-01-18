@@ -25,7 +25,12 @@
 #include <bee/filesystem.h>
 #include <bee/format.h>
 #include <memory>
-
+#ifdef __linux__
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <signal.h>
+#include <unistd.h>
+#endif
 
 #if defined(TARGET_OS_MAC)
 #include <unistd.h>
@@ -227,20 +232,54 @@ namespace NativeInfo {
 #endif
 		return name;
 	}
-	static inline std::string shellcommand(const std::string& cmd) {
+	static inline std::optional<std::string> shellcommand(const char* prog_name, const char* argp[]) {
 		try
 		{
-			std::string result;
-			FILE* pipe = popen(cmd.c_str(), "r");
-			if (pipe) {
-				char buffer[256];
-				fgets(buffer, 256, pipe);
-				result.append(buffer);
-				if (pclose(pipe) != 0) {
-					return {};
+			int pdes[2] = {};
+			if (::pipe(pdes) < 0) {
+         		return std::nullopt;
+       		}
+
+			pid_t pid = ::fork();
+			switch (pid) {
+			case -1:
+				// Failed...
+				::close(pdes[0]);
+				::close(pdes[1]);
+				return std::nullopt;
+
+			case 0:
+				// We are the child.
+				::close(STDERR_FILENO);
+				::close(pdes[0]);
+				if (pdes[1] != STDOUT_FILENO) {
+					::dup2(pdes[1], STDOUT_FILENO);
 				}
-				return result;
+
+				// Do not use `execlp()`, `execvp()`, and `execvpe()` here!
+				// `exec*p*` functions are vulnerable to PATH variable evaluation attacks.
+				::execv(prog_name, (char *const *) argp);
+				::_exit(127);
 			}
+
+			::FILE* p = ::fdopen(pdes[0], "r");
+			::close(pdes[1]);
+			if (!p) {
+				return std::nullopt;
+			}
+			std::string res;
+			char buffer[256];
+			fgets(buffer, 256, p);
+			res.append(buffer);
+			fclose(p);
+			int pstat = 0;
+			::kill(pid, SIGKILL);
+			::waitpid(pid, &pstat, 0);
+
+			while (!res.empty() && (res[res.size() - 1] == '\n' || res[res.size() - 1] == '\r')) {
+				res.erase(res.size() - 1);
+			}
+			return res;
 		}
 		catch (const std::bad_alloc& e)
 		{
@@ -261,16 +300,23 @@ namespace NativeInfo {
 #if USE_ATOS
 	static std::optional<std::string> get_function_atos(void* ptr) {
 		struct AtosInfo {
-			pid_t pid;
+			std::string pid;
 			bool has_atos;
 			AtosInfo() {
-				pid = getpid();
+				pid = std::format("{}", getpid())
 				has_atos = which_proc("which atos");
 			}
 		};
 		static AtosInfo atos_info;
 		if (atos_info.has_atos) {
-			auto funcinfo = shellcommand(std::format("atos -p {} {}", atos_info.pid, ptr));
+			auto ptr_s = std::format("{}", ptr);
+			const char* args[] = {
+				"-p",
+				atos_info.pid.c_str(),
+				ptr_s.c_str(),
+				nullptr,
+			};
+			auto funcinfo = shellcommand("atos", args).value_or("");
 			if (!(funcinfo[0] == '0' && funcinfo[1] == 'x')) {
 				return funcinfo;
 			}
@@ -283,7 +329,18 @@ namespace NativeInfo {
 	static std::optional<std::string> get_function_addr2line(const char* fname, intptr_t offset) {
 		static bool has_address2line = which_proc("which addr2line > /dev/null");
 		if (has_address2line) {
-			auto funcinfo = shellcommand(std::format("addr2line -e {} -f -p -C -s -i {:#x}", fname, offset));
+			auto offset_x = std::format("{:#x}", offset);
+			const char* args[] = {
+				"-e",
+				fname,
+				"-fpCsi",
+				offset_x.c_str(),
+				nullptr,
+			};
+			auto res = shellcommand("addr2line", args);
+			if (!res)
+				return std::nullopt;
+			auto funcinfo = *res;
 			if (!funcinfo.empty() && funcinfo[0] != '?' && funcinfo[1] != '?') {
 				return funcinfo;
 			}
