@@ -13,12 +13,14 @@
 #else
 #include <dlfcn.h>
 #include <execinfo.h>
+#include <signal.h>
 #endif
 #ifdef __GNUC__
 #include <cxxabi.h>
 #endif
 #ifdef __APPLE__
 #include <TargetConditionals.h>
+#include <unistd.h>
 #endif
 #include <optional>
 #include <string>
@@ -303,7 +305,7 @@ namespace NativeInfo {
 			std::string pid;
 			bool has_atos;
 			AtosInfo() {
-				pid = std::format("{}", getpid())
+				pid = std::format("{}", getpid());
 				has_atos = which_proc("which atos");
 			}
 		};
