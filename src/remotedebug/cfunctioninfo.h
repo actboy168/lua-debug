@@ -270,10 +270,16 @@ namespace NativeInfo {
 				return std::nullopt;
 			}
 			std::string res;
-			char buffer[256];
-			fgets(buffer, 256, p);
-			res.append(buffer);
+			char data[32];
+            while (!::feof(p)) {
+                if (::fgets(data, sizeof(data), p)) {
+                    res += data;
+                } else {
+                    break;
+                }
+            }
 			fclose(p);
+
 			int pstat = 0;
 			::kill(pid, SIGKILL);
 			::waitpid(pid, &pstat, 0);
