@@ -1153,7 +1153,6 @@ local function extandCData(varRef)
 	end
 	local vars = {}
 	if what == "func" then
-		--TODO call rdebug.cfuntioninfo
 		vars[1] = {
 			type = "string",
 			name = "type",
@@ -1172,6 +1171,18 @@ local function extandCData(varRef)
 				attributes = "readOnly",
 			}
 		}
+        local cfunctioninfo = rdebug.cfunctioninfo(value)
+        if cfunctioninfo then
+            vars[3] = {
+                type = "string",
+                name = "[native]",
+                value = rdebug.cfunctioninfo(value),
+                presentationHint = {
+                    kind = "virtual",
+                    attributes = "readOnly",
+                }
+            }
+        end
 	else
 		local index = 1
 		while true do

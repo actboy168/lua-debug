@@ -1572,16 +1572,37 @@ static int lclient_cfunctioninfo(rlua_State *L) {
 		rlua_pushnil(L);
 		return 1;
 	}
+#ifdef LUAJIT_VERSION
+    cTValue* o = index2adr(cL, -1);
+    void* cfn = nullptr;
+    if (tvisfunc(o)) {
+	    GCfunc *fn = funcV(o);
+        cfn = (void*)(isluafunc(fn) ? NULL : fn->c.f);
+    }else if (tviscdata(o)) {
+        GCcdata* cd = cdataV(o);
+        CTState* cts = ctype_cts(cL); 
+        if (cd->ctypeid != CTID_CTYPEID) {
+            cfn = cdataptr(cd);
+            if (cfn) {
+                CType* ct = ctype_get(cts, cd->ctypeid);
+                if (ctype_isref(ct->info) || ctype_isptr(ct->info)) {
+                    cfn = cdata_getptr(cfn, ct->size);
+                    ct = ctype_rawchild(cts, ct);
+                }
+                if (!ctype_isfunc(ct->info)) {
+                    cfn = nullptr;
+                } else if (cfn) {
+                    cfn = cdata_getptr(cfn, ct->size);
+                }
+            }
+        }
+    }
+#else 
 	if (lua_type(cL, -1) != LUA_TFUNCTION) {
 		lua_pop(cL, 1);
 		rlua_pushnil(L);
 		return 1;
 	}
-#ifdef LUAJIT_VERSION
-	GCfunc *fn = funcV(index2adr(cL, -1));
-	
-	lua_CFunction cfn = isluafunc(fn) ? NULL : fn->c.f;
-#else 
 	lua_CFunction cfn = lua_tocfunction(cL, -1);
 #endif
 
