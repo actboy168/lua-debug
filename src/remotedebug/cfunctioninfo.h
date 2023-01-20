@@ -319,12 +319,13 @@ namespace NativeInfo {
 		if (atos_info.has_atos) {
 			auto ptr_s = std::format("{}", ptr);
 			const char* args[] = {
+                "atos",
 				"-p",
 				atos_info.pid.c_str(),
 				ptr_s.c_str(),
 				nullptr,
 			};
-			auto funcinfo = shellcommand("atos", args).value_or("");
+			auto funcinfo = shellcommand("/usr/bin/atos", args).value_or("");
 			if (!(funcinfo[0] == '0' && funcinfo[1] == 'x')) {
 				return funcinfo;
 			}
@@ -339,13 +340,14 @@ namespace NativeInfo {
 		if (has_address2line) {
 			auto offset_x = std::format("{:#x}", offset);
 			const char* args[] = {
+                "addr2line",
 				"-e",
 				fname,
 				"-fpCsi",
 				offset_x.c_str(),
 				nullptr,
 			};
-			auto res = shellcommand("addr2line", args);
+			auto res = shellcommand("/usr/bin/addr2line", args);
 			if (!res)
 				return std::nullopt;
 			auto funcinfo = *res;
@@ -359,6 +361,9 @@ namespace NativeInfo {
 #endif // _WIN32
 
 	static std::optional<std::string> get_functioninfo(void* ptr) {
+        if (!ptr) {
+            return std::nullopt;
+        }
 #ifdef _WIN32
 		auto sym = NativeInfo::Addr2Symbol(ptr);
 		if (sym){
