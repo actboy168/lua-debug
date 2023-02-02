@@ -815,7 +815,6 @@ client_index(rlua_State *L, int getref) {
 	if (rlua_gettop(L) != 2) {
 		return rluaL_error(L, "need table key");
 	}
-	rluaL_checktype(L, 1, LUA_TTABLE);
 	rlua_Integer i = rluaL_checkinteger(L, 2);
 #ifdef LUAJIT_VERSION
 	if (i < 0 || i > (std::numeric_limits<int>::max)()) {
@@ -826,6 +825,10 @@ client_index(rlua_State *L, int getref) {
 	}
 	if (table_key(L, cL) == 0)
 		return 0;
+	if (lua_type(cL, -2) != LUA_TTABLE) {
+		lua_pop(cL, 2);
+		return rluaL_error(L, "#1 is not a table");
+	}
 	lua_rawget(cL, -2);	// cL : table value
 	combine_index(L, cL, getref);
 	return 1;
@@ -847,10 +850,13 @@ client_field(rlua_State *L, int getref) {
 	if (rlua_gettop(L) != 2) {
 		return rluaL_error(L, "need table key");
 	}
-	rluaL_checktype(L, 1, LUA_TTABLE);
 	rluaL_checktype(L, 2, LUA_TSTRING);
 	if (table_key(L, cL) == 0)
 		return 0;
+	if (lua_type(cL, -2) != LUA_TTABLE) {
+		lua_pop(cL, 2);
+		return rluaL_error(L, "#1 is not a table");
+	}
 	lua_rawget(cL, -2);	// cL : table value
 	combine_field(L, cL, getref);
 	return 1;
