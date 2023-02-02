@@ -4,16 +4,7 @@ local luaver = require 'backend.worker.luaver'
 local serialize = require 'backend.worker.serialize'
 local ev = require 'backend.event'
 local base64 = require 'common.base64'
-
-local cdata_visitor
-do
-    cdata_visitor = setmetatable({}, {
-        __index = function(self, key)
-            cdata_visitor = require 'backend.worker.eval'.create_cdata_visitor()
-            return cdata_visitor[key]
-        end
-    })
-end
+local eval = require 'backend.worker.eval'
 
 local SHORT_TABLE_FIELD <const> = 100
 local MAX_TABLE_FIELD <const> = 1000
@@ -273,7 +264,7 @@ local function varCanExtand(type, value)
         end
         return false
     elseif type == 'cdata' then
-        return cdata_visitor.canextand(value)
+        return eval.ffi_reflect("canextand", value)
     end
     return false
 end
@@ -309,7 +300,7 @@ local function varGetShortName(value)
     elseif type == 'float' then
         return floatToShortString(rdebug.value(value))
     elseif type == 'cdata' or type == 'ctype' then
-        return cdata_visitor.shorttypename(value) or type
+        return eval.ffi_reflect("shorttypename", value) or type
     end
     return tostring(rdebug.value(value))
 end
@@ -333,9 +324,9 @@ local function varGetName(value)
     elseif type == 'string' then
         return quotedString(rdebug.value(value))
     elseif type == 'cdata' then
-        return cdata_visitor.shorttypename(value) or "cdata"
+        return eval.ffi_reflect("shorttypename", value) or "cdata"
     elseif type == 'ctype' then
-        local tt = cdata_visitor.shorttypename(value)
+        local tt = eval.ffi_reflect("shorttypename", value)
         if not tt then
             return type
         end
@@ -374,7 +365,7 @@ local function varGetShortValue(value)
         end
         return '{}'
     elseif type == 'cdata' then
-        return cdata_visitor.shortvalue(value)
+        return eval.ffi_reflect("shortvalue", value)
     end
     return type
 end
@@ -533,17 +524,17 @@ local function varGetValue(context, type, value)
     elseif type == 'thread' then
         return ('thread (%s)'):format(rdebug.costatus(value))
     elseif type == 'cdata' then
-        local t = cdata_visitor.shorttypename(value)
+        local t = eval.ffi_reflect("shorttypename", value)
         if not t then
             return "cdata"
         end
-        local v = cdata_visitor.shortvalue(value)
+        local v = eval.ffi_reflect("shortvalue", value)
         if not v then
             return t
         end
         return tostring(v) .. " (" .. t .. ")"
     elseif type == 'ctype' then
-        local name = cdata_visitor.shorttypename(value)
+        local name = eval.ffi_reflect("shorttypename", value)
         return "ctype(" .. (name or "unknown") .. ")"
     end
     return tostring(rdebug.value(value))
@@ -1118,7 +1109,7 @@ function special_extand.CData(varRef)
     local vars = {}
     local index = 1
     while true do
-        local reflct, member = cdata_visitor.annotated_member(typeinfo, index, value)
+        local reflct, member = eval.ffi_reflect("annotated_member", typeinfo, index, value)
         if not reflct then
             break
         end
@@ -1131,8 +1122,8 @@ end
 local function extandCData(varRef)
     varRef.extand = varRef.extand or {}
     local value = varRef.v
-    local what = cdata_visitor.what(value)
-    local type = cdata_visitor.typename(value)
+    local what = eval.ffi_reflect("what", value)
+    local type = eval.ffi_reflect("typename", value)
     if not type then
         return {}
     end
@@ -1151,7 +1142,7 @@ local function extandCData(varRef)
         vars[2] = {
             type = "integer",
             name = "value",
-            value = cdata_visitor.shortvalue(value),
+            value = eval.ffi_reflect("shortvalue", value),
             presentationHint = {
                 kind = "virtual",
                 attributes = "readOnly",
@@ -1160,7 +1151,7 @@ local function extandCData(varRef)
     else
         local index = 1
         while true do
-            local reflct, member = cdata_visitor.member(value, index)
+            local reflct, member = eval.ffi_reflect("member", value, index)
             if not reflct then
                 break
             end
