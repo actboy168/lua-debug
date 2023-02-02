@@ -2,9 +2,21 @@
 #include <lua.hpp>
 #include <bee/filesystem.h>
 #include <bee/utility/path_helper.h>
+#ifndef _WIN32
+#include <unistd.h>
+#define DLLEXPORT __attribute__((visibility("default")))
+#define DLLEXPORT_DECLARATION
+#else
+#define DLLEXPORT __declspec(dllexport)
+#define DLLEXPORT_DECLARATION __cdecl
+#endif
 
 std::string readfile(const fs::path& filename) {
+#ifdef _WIN32
 	FILE* f = _wfopen(filename.c_str(), L"rb");
+#else
+	FILE* f = fopen(filename.c_str(), "rb");
+#endif
 	if (!f) {
 		return std::string();
 	}
@@ -31,8 +43,13 @@ static void attach(lua_State* L) {
 		return;
 	}
 	lua_pushstring(L, root.generic_u8string().c_str());
+#ifdef _WIN32
 	lua_pushinteger(L, GetCurrentProcessId());
 	lua_pushlightuserdata(L, (void*)autoattach::luaapi);
+#else
+	lua_pushinteger(L, getpid());
+	lua_pushnil(L);
+#endif
 	if (lua_pcall(L, 3, 0, 0)) {
 		fprintf(stderr, "%s\n", lua_tostring(L, -1));
 		lua_pop(L, 1);
@@ -43,12 +60,17 @@ static void initialize(bool ap) {
 	autoattach::initialize(attach, ap);
 }
 
-extern "C" __declspec(dllexport)
-void __cdecl launch() {
+extern "C" {
+DLLEXPORT void DLLEXPORT_DECLARATION launch() {
 	initialize(false);
 }
 
-extern "C" __declspec(dllexport)
-void __cdecl attach() {
+DLLEXPORT void DLLEXPORT_DECLARATION attach() {
 	initialize(true);
+}
+#ifndef _WIN32
+DLLEXPORT void inject_entry() {
+    attach();
+}
+#endif
 }
