@@ -271,10 +271,10 @@ local function varCanExtand(type, value)
         if rdebug.getmetatablev(value) ~= nil then
             return true
         end
-		return false
-	elseif type == 'cdata' then
-		return cdata_visitor.canextand(value)
-	end
+        return false
+    elseif type == 'cdata' then
+        return cdata_visitor.canextand(value)
+    end
     return false
 end
 
@@ -308,8 +308,8 @@ local function varGetShortName(value)
         return ('%d'):format(rvalue)
     elseif type == 'float' then
         return floatToShortString(rdebug.value(value))
-	elseif type == 'cdata' or type == 'ctype' then
-		return cdata_visitor.shorttypename(value) or type
+    elseif type == 'cdata' or type == 'ctype' then
+        return cdata_visitor.shorttypename(value) or type
     end
     return tostring(rdebug.value(value))
 end
@@ -332,14 +332,14 @@ local function varGetName(value)
         return floatToString(rdebug.value(value))
     elseif type == 'string' then
         return quotedString(rdebug.value(value))
-	elseif type == 'cdata' then
-		return cdata_visitor.shorttypename(value) or "cdata"
-	elseif type == 'ctype' then
-		local tt = cdata_visitor.shorttypename(value)
-		if not tt then
-			return type
-		end
-		return "ctype(" .. tt .. ")"
+    elseif type == 'cdata' then
+        return cdata_visitor.shorttypename(value) or "cdata"
+    elseif type == 'ctype' then
+        local tt = cdata_visitor.shorttypename(value)
+        if not tt then
+            return type
+        end
+        return "ctype(" .. tt .. ")"
     end
     return tostring(rdebug.value(value))
 end
@@ -373,8 +373,8 @@ local function varGetShortValue(value)
             return "..."
         end
         return '{}'
-	elseif type == 'cdata' then
-		return cdata_visitor.shortvalue(value)
+    elseif type == 'cdata' then
+        return cdata_visitor.shortvalue(value)
     end
     return type
 end
@@ -532,20 +532,20 @@ local function varGetValue(context, type, value)
         return 'light' .. tostring(rdebug.value(value))
     elseif type == 'thread' then
         return ('thread (%s)'):format(rdebug.costatus(value))
-	elseif type == 'cdata' then
-		local t = cdata_visitor.shorttypename(value)
-		if not t then
-			return "cdata"
-		end
-		local v = cdata_visitor.shortvalue(value)
-		if not v then
-			return t
-		end
-		return tostring(v) .. " (" .. t .. ")"
-	elseif type == 'ctype' then
-		local name = cdata_visitor.shorttypename(value)
-		return "ctype(" .. (name or "unknown") .. ")"
-	end
+    elseif type == 'cdata' then
+        local t = cdata_visitor.shorttypename(value)
+        if not t then
+            return "cdata"
+        end
+        local v = cdata_visitor.shortvalue(value)
+        if not v then
+            return t
+        end
+        return tostring(v) .. " (" .. t .. ")"
+    elseif type == 'ctype' then
+        local name = cdata_visitor.shorttypename(value)
+        return "ctype(" .. (name or "unknown") .. ")"
+    end
     return tostring(rdebug.value(value))
 end
 
@@ -609,19 +609,19 @@ local function varCreateScopes(frameId, scopes, name, expensive)
 end
 
 local function varCreateTableKV(key, value, context)
-	varPool[#varPool+1] = {
-		v = {key, value},
-		special = "TableKV",
-	}
-	local type = rdebug.type(value)
-	local var = {
-		type = 'TableKV',
-		name = string.format("[%s]",  rdebug.type(key)),
-		value = varGetValue(context, type, value),
-		variablesReference = #varPool,
-		presentationHint = 'virtual'
-	}
-	return var
+    varPool[#varPool+1] = {
+        v = {key, value},
+        special = "TableKV",
+    }
+    local type = rdebug.type(value)
+    local var = {
+        type = 'TableKV',
+        name = string.format("[%s]",  rdebug.type(key)),
+        value = varGetValue(context, type, value),
+        variablesReference = #varPool,
+        presentationHint = 'virtual'
+    }
+    return var
 end
 
 local function varCreate(t)
@@ -723,19 +723,19 @@ local function extandTableNamed(varRef)
     local loct = rdebug.tablehash(t,MAX_TABLE_FIELD)
     for i = 1, #loct, 3 do
         local key, value, valueref = loct[i], loct[i+1], loct[i+2]
-		local key_type = rdebug.type(key)
-		if varCanExtand(key_type, key) then
-			vars[#vars + 1] = varCreateTableKV(key, value, "variables")
-		else
-			varCreate {
-				vars = vars,
-				varRef = varRef,
-				name = varGetName(key),
-				value = value,
-				evaluateName = evaluateTabelKey(evaluateName, key),
-				calcValue = function() return valueref end,
-			}
-		end
+        local key_type = rdebug.type(key)
+        if varCanExtand(key_type, key) then
+            vars[#vars + 1] = varCreateTableKV(key, value, "variables")
+        else
+            varCreate {
+                vars = vars,
+                varRef = varRef,
+                name = varGetName(key),
+                value = value,
+                evaluateName = evaluateTabelKey(evaluateName, key),
+                calcValue = function() return valueref end,
+            }
+        end
     end
     table.sort(vars, function(a, b) return a.name < b.name end)
     local meta = rdebug.getmetatablev(t)
@@ -1060,116 +1060,116 @@ end
 
 function special_extand.TableKV(varRef)
     varRef.extand = varRef.extand or {}
-	local key, value = table.unpack(varRef.v)
-	local vars = {}
-	varCreate({
-		vars = vars,
-		varRef = varRef,
-		name = "key",
-		value = key,
-		calcValue = function() return key end,
-	})
-	varCreate({
-		vars = vars,
-		varRef = varRef,
-		name = "value",
-		value = value,
-		calcValue = function() return value end,
-	})
-	return vars
+    local key, value = table.unpack(varRef.v)
+    local vars = {}
+    varCreate({
+        vars = vars,
+        varRef = varRef,
+        name = "key",
+        value = key,
+        calcValue = function() return key end,
+    })
+    varCreate({
+        vars = vars,
+        varRef = varRef,
+        name = "value",
+        value = value,
+        calcValue = function() return value end,
+    })
+    return vars
 end
 
 local function VarCreateCData(varRef, vars, reflct, member, value)
-	if rdebug.type(member) ~= 'nil'  then
-		local name = rdebug.fieldv(reflct, "name");
-		varCreate({
-			vars = vars,
-			varRef = varRef,
-			name = name,
-			value = member,
-			calcValue = function() return member end,
-			presentationHint = {
-				kind = "virtual",
-				attributes = "readOnly",
-			}
-		})
-	else
-		local what = rdebug.fieldv(reflct, "what")
-		varPool[#varPool + 1] = {
-			v = { reflct, value },
-			special = 'CData'
-		}
-		vars[#vars + 1] = {
-			type = "string",
-			name = "[anonymous]",
-			value = what,
-			presentationHint = {
-				kind = "virtual",
-				attributes = "readOnly",
-			},
-			variablesReference = #varPool
-		}
-	end
+    if rdebug.type(member) ~= 'nil'  then
+        local name = rdebug.fieldv(reflct, "name");
+        varCreate({
+            vars = vars,
+            varRef = varRef,
+            name = name,
+            value = member,
+            calcValue = function() return member end,
+            presentationHint = {
+                kind = "virtual",
+                attributes = "readOnly",
+            }
+        })
+    else
+        local what = rdebug.fieldv(reflct, "what")
+        varPool[#varPool + 1] = {
+            v = { reflct, value },
+            special = 'CData'
+        }
+        vars[#vars + 1] = {
+            type = "string",
+            name = "[anonymous]",
+            value = what,
+            presentationHint = {
+                kind = "virtual",
+                attributes = "readOnly",
+            },
+            variablesReference = #varPool
+        }
+    end
 end
 
 function special_extand.CData(varRef)
     varRef.extand = varRef.extand or {}
-	local typeinfo, value = table.unpack(varRef.v)
-	local vars = {}
-	local index = 1
-	while true do
-		local reflct, member = cdata_visitor.annotated_member(typeinfo, index, value)
-		if not reflct then
-			break
-		end
-		VarCreateCData(varRef, vars, reflct, member, value)
-		index = index + 1
-	end
-	return vars
+    local typeinfo, value = table.unpack(varRef.v)
+    local vars = {}
+    local index = 1
+    while true do
+        local reflct, member = cdata_visitor.annotated_member(typeinfo, index, value)
+        if not reflct then
+            break
+        end
+        VarCreateCData(varRef, vars, reflct, member, value)
+        index = index + 1
+    end
+    return vars
 end
 
 local function extandCData(varRef)
-	varRef.extand = varRef.extand or {}
-	local value = varRef.v
-	local what = cdata_visitor.what(value)
-	local type = cdata_visitor.typename(value)
-	if not type then
-		return {}
-	end
-	local vars = {}
-	if what == "func" then
-		--TODO call rdebug.cfuntioninfo
-		vars[1] = {
-			type = "string",
-			name = "type",
-			value = type or "unknown type",
-			presentationHint = {
-				kind = "virtual",
-				attributes = "readOnly",
-			}
-		}
-		vars[2] = {
-			type = "integer",
-			name = "value",
-			value = cdata_visitor.shortvalue(value),
-			presentationHint = {
-				kind = "virtual",
-				attributes = "readOnly",
-			}
-		}
-	else
-		local index = 1
-		while true do
-			local reflct, member = cdata_visitor.member(value, index)
-			if not reflct then
-				break
-			end
-			VarCreateCData(varRef, vars, reflct, member, value)
-			index = index + 1
-		end
-	end
+    varRef.extand = varRef.extand or {}
+    local value = varRef.v
+    local what = cdata_visitor.what(value)
+    local type = cdata_visitor.typename(value)
+    if not type then
+        return {}
+    end
+    local vars = {}
+    if what == "func" then
+        --TODO call rdebug.cfuntioninfo
+        vars[1] = {
+            type = "string",
+            name = "type",
+            value = type or "unknown type",
+            presentationHint = {
+                kind = "virtual",
+                attributes = "readOnly",
+            }
+        }
+        vars[2] = {
+            type = "integer",
+            name = "value",
+            value = cdata_visitor.shortvalue(value),
+            presentationHint = {
+                kind = "virtual",
+                attributes = "readOnly",
+            }
+        }
+    else
+        local index = 1
+        while true do
+            local reflct, member = cdata_visitor.member(value, index)
+            if not reflct then
+                break
+            end
+            VarCreateCData(varRef, vars, reflct, member, value)
+            index = index + 1
+        end
+    end
 
-	return vars
+    return vars
 end
 
 local function extandValue(varRef, filter, start, count)
@@ -1185,8 +1185,8 @@ local function extandValue(varRef, filter, start, count)
         return extandFunction(varRef)
     elseif type == 'userdata' then
         return extandUserdata(varRef)
-	elseif type == 'cdata' then
-		return extandCData(varRef)
+    elseif type == 'cdata' then
+        return extandCData(varRef)
     end
     return {}
 end
