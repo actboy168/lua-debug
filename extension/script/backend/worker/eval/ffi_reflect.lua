@@ -383,14 +383,8 @@ metatables.struct.__index.member = find_sibling
 metatables.func.__index.argument = find_sibling
 metatables.enum.__index.value = find_sibling
 
-local cache = {}
 local function typeof(id)
-	if cache[id] then
-		return cache[id]
-	end
-	local ret = refct_from_id(id)
-	cache[id] = ret
-	return ret
+	return refct_from_id(id)
 end
 
 function reflect.typeof(x) -- refct = reflect.typeof(ct)
@@ -402,11 +396,7 @@ function reflect.getmetatable(x) -- mt = reflect.getmetatable(ct)
 	return (miscmap or init_miscmap())[-tonumber(ffi.typeof(x))]
 end
 
-local linker_id = {}
 local function get_typedef_linker(typeinfo)
-	if linker_id[typeinfo.typeid] then
-		return typeof(linker_id[typeinfo.typeid])
-	end
 	for id = 96, 65536, 1 do
 		local ti = typeof(id)
 		if not ti then
@@ -414,7 +404,6 @@ local function get_typedef_linker(typeinfo)
 		end
 		if ti.what == 'typedef' then
 			if ti.element_type.typeid == typeinfo.typeid then
-				linker_id[typeinfo.typeid] = ti.typeid
 				return ti
 			end
 		end
