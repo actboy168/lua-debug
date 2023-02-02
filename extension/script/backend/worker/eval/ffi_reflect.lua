@@ -383,14 +383,8 @@ metatables.struct.__index.member = find_sibling
 metatables.func.__index.argument = find_sibling
 metatables.enum.__index.value = find_sibling
 
-local cache = {}
 local function typeof(id)
-	if cache[id] then
-		return cache[id]
-	end
-	local ret = refct_from_id(id)
-	cache[id] = ret
-	return ret
+	return refct_from_id(id)
 end
 
 function reflect.typeof(x) -- refct = reflect.typeof(ct)
