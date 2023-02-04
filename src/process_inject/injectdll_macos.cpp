@@ -49,39 +49,7 @@ vm_address_t get_symbol_address(void *ptr) {
     }
     return 0;
 }
-
-static bool is_same_arch(mach_port_t remoteTask) {
-    auto target_arch =
-#ifdef __x86_64__
-    CPU_TYPE_X86_64;
-#elif defined(__aarch64__)
-    CPU_TYPE_ARM64;
-#endif
-    processor_info_array_t info_array = NULL;
-    mach_msg_type_number_t info_count = 0;
-    natural_t processor_count = 0;
-
-    host_t host = mach_host_self();
-    auto err = host_processor_info(host, PROCESSOR_BASIC_INFO, &processor_count,
-                                   &info_array, &info_count);
-    if (err != KERN_SUCCESS) return false;
-
-    bool result = false;
-    processor_basic_info_t basic_info_array = (processor_basic_info_t) info_array;
-    for (natural_t i = 0; i < processor_count; i++) {
-        struct processor_basic_info *processor_info = &basic_info_array[i];
-        if (!processor_info->is_main) continue;
-
-        if (processor_info->cpu_type & target_arch)
-            result = true;
-        break;
-    }
-    vm_deallocate(mach_task_self(), (vm_address_t) info_array, info_count);
-    mach_port_deallocate(mach_task_self(), host);
-    return result;
-}
-
-
+extern bool is_same_arch();
 bool
 mach_inject(
         pid_t targetProcess, const char *dylibPath, size_t len) {
@@ -92,15 +60,15 @@ mach_inject(
         return false;
     }
 
-    if (!is_same_arch(remoteTask)) {
-        mach_port_deallocate(mach_task_self(), remoteTask);
-        LOG("%s", "diff arch processor");
-        return false;
-    }
-
     if (!get_all_images(remoteTask)) {
         mach_port_deallocate(mach_task_self(), remoteTask);
         LOG("%s", "remote can't read all images");
+        return false;
+    }
+
+    if (!is_same_arch()) {
+        mach_port_deallocate(mach_task_self(), remoteTask);
+        LOG("%s", "diff arch processor");
         return false;
     }
 
