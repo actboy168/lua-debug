@@ -357,20 +357,50 @@ attributes.launch = {
         type = "string",
     }
 }
+table.insert(attributes.launch.inject.enum, "hook")
+
+attributes.attach.processId = {
+	default = "${command:pickProcess}",
+	markdownDescription = "Id of process to attach to.",
+	type = "string",
+}
+attributes.attach.processName = {
+	default = "lua.exe",
+	markdownDescription = "Name of process to attach to.",
+	type = "string",
+}
+
+json.activationEvents[#json.activationEvents+1] = "onCommand:extension.lua-debug.pickProcess"
+json.contributes.debuggers[1].variables = {
+	pickProcess = "extension.lua-debug.pickProcess",
+}
+
+local snippets = json.contributes.debuggers[1].configurationSnippets
+snippets[#snippets+1] = {
+	label = "Lua Debug: Launch Process",
+	description = "A new configuration for launching a lua process",
+	body = {
+		type = "lua",
+		request = "launch",
+		name = "${1:launch process}",
+		stopOnEntry = true,
+		runtimeExecutable = "^\"\\${workspaceFolder}/lua.exe\"",
+		runtimeArgs = "^\"\\${workspaceFolder}/${2:main.lua}\"",
+	}
+}
+snippets[#snippets+1] = {
+	label = "Lua Debug: Attach Process",
+	description = "A new configuration for attaching a lua debug program",
+	body = {
+		type = "lua",
+		request = "attach",
+		name = "${1:attach}",
+		stopOnEntry = true,
+		processId = "^\"\\${command:pickProcess}\"",
+	}
+}
 
 if OS == "win32" then
-    table.insert(attributes.launch.inject.enum, "hook")
-
-    attributes.attach.processId = {
-        default = "${command:pickProcess}",
-        markdownDescription = "Id of process to attach to.",
-        type = "string",
-    }
-    attributes.attach.processName = {
-        default = "lua.exe",
-        markdownDescription = "Name of process to attach to.",
-        type = "string",
-    }
     attributes.common.sourceCoding = {
         default = "utf8",
         enum = {
@@ -387,36 +417,6 @@ if OS == "win32" then
     }
     attributes.launch.luaexe.default = "${workspaceFolder}/lua.exe"
     attributes.launch.cpath.default = "${workspaceFolder}/?.dll"
-
-    json.activationEvents[#json.activationEvents+1] = "onCommand:extension.lua-debug.pickProcess"
-    json.contributes.debuggers[1].variables = {
-        pickProcess = "extension.lua-debug.pickProcess",
-    }
-
-    local snippets = json.contributes.debuggers[1].configurationSnippets
-    snippets[#snippets+1] = {
-        label = "Lua Debug: Launch Process",
-        description = "A new configuration for launching a lua process",
-        body = {
-            type = "lua",
-            request = "launch",
-            name = "${1:launch process}",
-            stopOnEntry = true,
-            runtimeExecutable = "^\"\\${workspaceFolder}/lua.exe\"",
-            runtimeArgs = "^\"\\${workspaceFolder}/${2:main.lua}\"",
-        }
-    }
-    snippets[#snippets+1] = {
-        label = "Lua Debug: Attach Process",
-        description = "A new configuration for attaching a lua debug program",
-        body = {
-            type = "lua",
-            request = "attach",
-            name = "${1:attach}",
-            stopOnEntry = true,
-            processId = "^\"\\${command:pickProcess}\"",
-        }
-    }
 else
     attributes.launch.luaexe.default = "${workspaceFolder}/lua"
     attributes.launch.cpath.default = "${workspaceFolder}/?.so"
