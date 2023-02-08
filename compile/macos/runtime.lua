@@ -34,6 +34,8 @@ if not lm.no_inject then
             "3rd/bee.lua/bee/utility/path_helper.cpp",
             "3rd/bee.lua/bee/utility/file_handle.cpp",
             "src/launcher/*.cpp",
+            "src/launcher/hook/*.cpp",
+            "src/launcher/symbol_resolver/*.cpp",
         },
         defines = {
             "BEE_INLINE",

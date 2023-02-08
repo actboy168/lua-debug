@@ -12,21 +12,28 @@
 #else
 #include <dobby.h>
 #include <dlfcn.h>
-using HMODULE = void*;
-#define __cdecl 
-typedef struct _RuntimeModule {
-char path[1024];
-void *load_address;
-} RuntimeModule;
+#include <string>
+#include <string_view>
+#include <memory>
+#include <charconv>
+#include "common.hpp"
+#include "hook/hook_common.h"
+#include "symbol_resolver/symbol_resolver.h"
+
+class ProcessRuntimeUtility {
+public:
+    static const std::vector<RuntimeModule> &GetProcessModuleMap();
+};
 #endif
 
 namespace autoattach {
 	std::mutex lockLoadDll;
-	std::set<lua_State*> hookLuaStates;
 	fn_attach debuggerAttach;
 	bool      attachProcess = false;
-	HMODULE   hookDll = NULL;
 #ifdef _WIN32
+	HMODULE   hookDll = NULL;
+	std::set<std::wstring> loadedModules;
+	std::set<lua_State*> hookLuaStates;
 	static bool hook_install(uintptr_t* pointer_ptr, uintptr_t detour) {
 		LONG status;
 		if ((status = DetourTransactionBegin()) == NO_ERROR) {
@@ -58,14 +65,13 @@ namespace autoattach {
 		::SetLastError(status);
 		return false;
 	}
-#endif
+
 	namespace lua {
 		namespace real {
 			uintptr_t luaL_openlibs = 0;
 			uintptr_t lua_close = 0;
 			uintptr_t lua_settop = 0;
 		}
-#ifdef _WIN32
 		namespace fake_launch {
 			static void __cdecl luaL_openlibs(lua_State* L) {
 				base::c_call<void>(real::luaL_openlibs, L);
@@ -125,74 +131,7 @@ namespace autoattach {
 			}
 			return true;
 		}
-
-#else
-        namespace original {
-			uintptr_t luaL_openlibs = 0;
-			uintptr_t lua_close = 0;
-			uintptr_t lua_settop = 0;  
-        }
-        namespace fake_launch {
-			static void luaL_openlibs(lua_State* L) {
-                ((decltype(&::luaL_openlibs))real::luaL_openlibs)(L);
-				debuggerAttach(L);
-			}
-		}
-		namespace fake_attach {
-			static void luaL_openlibs(lua_State* L) {
-                ((decltype(&::luaL_openlibs))real::luaL_openlibs)(L);
-				if (hookLuaStates.insert(L).second) {
-					debuggerAttach(L);
-				}
-			}
-			static void lua_settop(lua_State *L, int index) {
-				if (hookLuaStates.insert(L).second) {
-					debuggerAttach(L);
-				}
-                
-                return ((decltype(&::lua_settop))real::lua_settop)(L, index);
-			}
-			static void lua_close(lua_State* L) {
-                ((decltype(&::lua_close))real::lua_close)(L);
-				hookLuaStates.erase(L);
-			}
-		}
-
-		bool hook(const RuntimeModule& module){
-			intptr_t luaL_openlibs_ptr = (intptr_t)DobbySymbolResolver(module.path, "luaL_openlibs");
-            intptr_t lua_settop_ptr = (intptr_t)DobbySymbolResolver(module.path, "lua_settop");
-            intptr_t lua_close_ptr = (intptr_t)DobbySymbolResolver(module.path, "lua_close");
-            if (!(luaL_openlibs_ptr && lua_settop_ptr && lua_close_ptr))
-				return false;
-            do {
-				if (attachProcess) {
-					if (DobbyHook((void*)luaL_openlibs_ptr, (dobby_dummy_func_t)&lua::fake_attach::luaL_openlibs, (dobby_dummy_func_t*)&lua::real::luaL_openlibs) != 0)
-						break;
-					if (DobbyHook((void*)lua_settop_ptr, (dobby_dummy_func_t)&lua::fake_attach::lua_settop, (dobby_dummy_func_t*)&lua::real::lua_settop) != 0)
-						break;
-					if (DobbyHook((void*)lua_close_ptr, (dobby_dummy_func_t)&lua::fake_attach::lua_close, (dobby_dummy_func_t*)&lua::real::lua_close) != 0)
-						break;
-				} else {
-					if (DobbyHook((void*)luaL_openlibs_ptr, (dobby_dummy_func_t)&lua::fake_launch::luaL_openlibs, (dobby_dummy_func_t*)&lua::real::luaL_openlibs) != 0)
-						break;
-				}
-
-				lua::original::luaL_openlibs = luaL_openlibs_ptr;
-				lua::original::lua_settop = lua_settop_ptr;
-				lua::original::lua_close = lua_close_ptr;
-				return true;
-			} while (0);
-			DobbyDestroy((void*)luaL_openlibs_ptr);
-			DobbyDestroy((void*)lua_settop_ptr);
-			DobbyDestroy((void*)lua_close_ptr);
-			return false;
-		}
-#endif
     }
-
-
-#ifdef _WIN32
-	std::set<std::wstring> loadedModules;
 
 	static HMODULE enumerateModules(HANDLE hProcess, HMODULE hModuleLast, PIMAGE_NT_HEADERS32 pNtHeader) {
 		MEMORY_BASIC_INFORMATION mbi = { 0 };
@@ -311,41 +250,131 @@ namespace autoattach {
 #undef  FIND
 	}
 #else
-	std::vector<RuntimeModule> GetProcessModuleMap(){
-		static decltype(&GetProcessModuleMap) _GetProcessModuleMap = []()->decltype(&GetProcessModuleMap){
-			Dl_info info;
-			if (dladdr((void*)&DobbyHook, &info) == 0){
-				return nullptr;
-			}
 
-			auto _GetProcessModuleMap = (decltype(&GetProcessModuleMap)) DobbySymbolResolver(info.dli_fname, "__ZN21ProcessRuntimeUtility19GetProcessModuleMapEv");
-			if (!_GetProcessModuleMap)
-				return nullptr;
-			return _GetProcessModuleMap;
-		}();
-        
-        auto modulemap = _GetProcessModuleMap();
-#ifdef __linux__        
+    static std::vector <RuntimeModule> GetProcessModuleMap() {
+        auto modulemap = ProcessRuntimeUtility::GetProcessModuleMap();
+#ifdef __linux__
         // add exec module
         modulemap.push_back({{0},NULL});
 #endif
-		return modulemap;
-	}
-    void initialize(fn_attach attach, bool ap) {
-		/*if (debuggerAttach) {
-			if (!attachProcess && ap && hookDll) {
-				attachProcess = ap;
-				lua::hook(hookDll);
-			}
-			return;
-		}*/
-		debuggerAttach = attach;
-		attachProcess  = ap;
+        return modulemap;
+    }
 
-        for (const auto &module : GetProcessModuleMap()) {  
-			if (lua::hook(module))
-				return;
+    bool iequals(const std::string_view &a, const std::string_view &b) {
+        return std::equal(a.begin(), a.end(),
+                          b.begin(), b.end(),
+                          [](char a, char b) {
+                              return tolower(a) == tolower(b);
+                          });
+    }
+
+    lua_version get_lua_version_from_env() {
+        const char *env_version = getenv("LUA_DEBUG_VERSION");
+        if (env_version) {
+            auto env = std::string_view(env_version);
+            if (iequals(env, "jit"))
+                return lua_version::luajit;
+            if (iequals(env, "5.1"))
+                return lua_version::lua51;
+            if (iequals(env, "5.2"))
+                return lua_version::lua52;
+            if (iequals(env, "5.3"))
+                return lua_version::lua53;
+            if (iequals(env, "5.4") || iequals(env, "latest"))
+                return lua_version::lua54;
         }
+        return lua_version::unknown;
+    }
+	lua_version get_lua_version_from_ident(const char* lua_ident){
+		auto id = std::string_view(lua_ident);
+        using namespace std::string_view_literals;
+        constexpr auto key = "$Lua"sv;
+        if (id.substr(0, key.length()) == key) {
+            if (id[key.length()] == ':') {
+                //$Lua: Lua 5.1.*
+                return lua_version::lua51;
+            }
+            constexpr auto key = "$LuaVersion: Lua 5."sv;
+            id = id.substr(key.length());
+            int patch;
+            auto res = std::from_chars(id.data(), id.data() + 3, patch, 10);
+            if (res.ec != std::errc()) {
+                return lua_version::unknown;
+            }
+            return (lua_version) ((int) lua_version::luajit + patch);
+        }
+        return lua_version::unknown;
 	}
+    lua_version get_lua_version(const char *path) {
+        if (DobbySymbolResolver(path, "luaJIT_version_2_1_0_beta3")) {
+            return lua_version::luajit;
+        }
+        if (DobbySymbolResolver(path, "luaJIT_version_2_1_0_beta2")) {
+            return lua_version::luajit;
+        }
+        if (DobbySymbolResolver(path, "luaJIT_version_2_1_0_beta1")) {
+            return lua_version::luajit;
+        }
+        if (DobbySymbolResolver(path, "luaJIT_version_2_1_0_alpha")) {
+            return lua_version::luajit;
+        }
+		auto p = DobbySymbolResolver(path, "lua_ident");;
+        const char *lua_ident = (const char *) p;
+        if (!lua_ident)
+            return lua_version::unknown;
+		return get_lua_version_from_ident(lua_ident);
+    }
+
+    bool is_lua_module(const RuntimeModule &module, bool signature) {
+        if (signature) {
+            //TODO:
+        }
+        return DobbySymbolResolver(module.path, "luaL_newstate");
+    }
+
+    static attach_args args;
+
+    void attach_lua_vm(lua_State *L) {
+        debuggerAttach(L, &args);
+    }
+
+    void initialize(fn_attach attach, bool ap) {
+        debuggerAttach = attach;
+        attachProcess = ap;
+
+        auto modulemap = GetProcessModuleMap();
+        bool signature = getenv("LUA_DEBUG_SIGNATURE") != nullptr;
+        RuntimeModule rm = {};
+
+        for (const auto &module: modulemap) {
+            if (is_lua_module(module, signature)) {
+                //check lua version
+                rm = module;
+                break;
+            }
+        }
+        if (!rm.load_address) {
+            LOG("%s", "can't find lua module");
+            return;
+        }
+		auto symbol_resolver = symbol_resolver::symbol_resolver_factory_create(rm);
+        if (!args.get_symbols(symbol_resolver.get())) {
+            LOG("%s", "can't load args symbols");
+            return;
+        }
+
+        auto luaversion = get_lua_version_from_env();
+        if (luaversion == lua_version::unknown) {
+            luaversion = get_lua_version(rm.path);
+        }
+
+
+        auto vmhook = create_vmhook(luaversion);
+        if (!vmhook->get_symbols(symbol_resolver)) {
+            LOG("%s", "get_symbols failed");
+            return;
+        }
+        vmhook->hook();
+    }
 #endif
 }
