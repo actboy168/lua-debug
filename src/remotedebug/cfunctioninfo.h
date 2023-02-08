@@ -145,11 +145,15 @@ namespace NativeInfo {
 		return handler;
 	}
 
-	struct Symbol {
+	struct SymbolFileInfo {
 		std::string name;
-		int32_t line_no;
-		std::string file_name;
+		uint32_t lineno = 0;
+	};
+
+	struct Symbol {
 		std::string module_name;
+		std::string function_name;
+		std::optional<SymbolFileInfo> file;
 	};
 
 	inline std::optional<Symbol> Addr2Symbol(void* pObject)
@@ -200,9 +204,9 @@ namespace NativeInfo {
 		{
 			char buffer[256];
 			if (UnDecorateSymbolName(sym.Name, buffer, 256, UNDNAME_COMPLETE) != 0)
-				sb.name = buffer;
+				sb.function_name = buffer;
 			else
-				sb.name = sym.Name;
+				sb.function_name = sym.Name;
 		}
 		IMAGEHLP_MODULE md = {};
 		md.SizeOfStruct = sizeof(IMAGEHLP_MODULE);
@@ -211,10 +215,10 @@ namespace NativeInfo {
 			if (md.LineNumbers) {
 #endif
 				IMAGEHLP_LINE line = {};
+				line.SizeOfStruct = sizeof(IMAGEHLP_LINE);
 				DWORD lineDisplacement = 0;
 				if (SymGetLineFromAddr(handler.hProcess, dwAddress, &lineDisplacement, &line)) {
-					sb.line_no = line.LineNumber;
-					sb.file_name = line.FileName;
+					sb.file = {line.FileName, line.LineNumber};
 				}
 #if defined(_WIN64)
 			}
@@ -366,8 +370,13 @@ namespace NativeInfo {
         }
 #ifdef _WIN32
 		auto sym = NativeInfo::Addr2Symbol(ptr);
-		if (sym){
-			return std::format("{} in {} ({}:{})",sym->name,sym->module_name,sym->file_name,sym->line_no);
+		if (sym) {
+			if (sym->file) {
+				return std::format("{}!{} ({}:{})", sym->module_name, sym->function_name, sym->file->name, sym->file->lineno);
+			}
+			else {
+				return std::format("{}!{}", sym->module_name, sym->function_name);
+			}
 		}
 		return std::nullopt;
 #else
