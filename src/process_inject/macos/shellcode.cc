@@ -9,6 +9,7 @@ struct rmain_arg {           // dealloc
     const char *name;       // dealloc
     thread_t injectThread; // kill this tread
     decltype(&dlsym) dlsym;
+	char entrypoint[256];
 
     void *get_func(const char *func_name) {
         return this->dlsym(RTLD_DEFAULT, func_name);
@@ -37,7 +38,7 @@ static void *rmain(void *ptr) {
     }
     if (handler) {
         void (*func)();
-        func = (decltype(func)) arg.dlsym(handler, "inject_entry");
+        func = (decltype(func)) arg.dlsym(handler, arg.entrypoint);
         if (func)
             func();
     }

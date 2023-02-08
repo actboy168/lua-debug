@@ -1,6 +1,7 @@
 local fs = require 'bee.filesystem'
 local sp = require 'bee.subprocess'
 local platform_os = require 'frontend.platform_os'
+local process_inject = require 'frontend.process_inject'
 
 local useWSL = false
 local useUtf8 = false
@@ -220,12 +221,7 @@ local function create_process_in_console(args, callback)
         return nil, err
     end
     if args.inject == "hook" then
-        local inject = require 'inject'
-        inject.injectdll(process
-            , (WORKDIR / "bin" / "launcher.x86.dll"):string()
-            , (WORKDIR / "bin" / "launcher.x64.dll"):string()
-            , "launch"
-        )
+		process_inject(process, "launch")
     end
     if callback then
         callback(process)

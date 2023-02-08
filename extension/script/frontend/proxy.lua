@@ -3,7 +3,7 @@ local debuger_factory = require 'frontend.debuger_factory'
 local fs = require 'bee.filesystem'
 local sp = require 'bee.subprocess'
 local platform_os = require 'frontend.platform_os'
-local log = require 'common.log'
+local process_inject = require 'frontend.process_inject'
 local server
 local client
 local initReq
@@ -58,42 +58,9 @@ local function attach_process(pkg, pid)
     if pkg.arguments.luaVersion == "latest" then
         ipc_send_latest(pid)
     end
-    if platform_os() == 'macOS' then
-        local helper = (WORKDIR / "bin" / "process_inject_helper"):string()
-        local dylib = (WORKDIR / "bin" / "launcher" .. ".so"):string()
-        if not fs.exists(dylib) then
-            return false
-        end
-        local shell = ([["do shell script \"%s %d %s inject_entry\" with administrator privileges with prompt \"lua-debug\""]]):format(helper, pid, dylib)
-        local helper_proc = sp.spawn({
-            "/usr/bin/osascript",
-            "-e",
-            shell,
-            stderr = true
-        })
-        if not helper_proc then
-            return false
-        end
-        local ec = helper_proc.wait()
-        if ec ~= 0 then
-            local err =  helper_proc.stderr:read("a")
-            log.error(err)
-            return false
-        end
-    else
-        local inject = require 'inject'
-        if platform_os() == 'Windows' then
-            if not inject.injectdll(pid
-            , (WORKDIR / "bin" / "launcher.x86.dll"):string()
-            , (WORKDIR / "bin" / "launcher.x64.dll"):string()
-            , "attach"
-        ) then
-            return false
-        end
-        else
-
-        end
-    end
+    if not process_inject(pid, "attach") then
+		return false
+	end
 
     server = network(getUnixAddress(pid), true)
     server.sendmsg(initReq)
