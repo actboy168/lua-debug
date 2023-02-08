@@ -10,6 +10,8 @@
 #define DLLEXPORT __declspec(dllexport)
 #define DLLEXPORT_DECLARATION __cdecl
 #endif
+#include <string>
+#include <atomic>
 
 std::string readfile(const fs::path& filename) {
 #ifdef _WIN32
@@ -29,35 +31,56 @@ std::string readfile(const fs::path& filename) {
 	fclose(f);
 	return std::move(tmp);
 }
+struct attach_ctx : autoattach::attach_args {
+	inline void print_error(lua_State* L)const {
+		if (lua_tolstring){
+			fprintf(stderr, "%s\n", lua_tostring(L, -1));
+		}
+		lua_pop(L, 1);
+	}
 
-static void attach(lua_State* L) {
+	void attach(lua_State* L) const;
+
+	static void attach(lua_State* L, autoattach::attach_args* args) {
+		static_cast<attach_ctx*>(args)->attach(L);
+	}
+};
+
+void attach_ctx::attach(lua_State* L) const{
+	LOG("%s", "attach lua vm entry");
 	auto r = bee::path_helper::dll_path();
 	if (!r) {
 		return;
 	}
 	auto root = r.value().parent_path().parent_path();
 	auto buf = readfile(root / "script" / "attach.lua");
-	if (luaL_loadbuffer(L, buf.data(), buf.size(), "=(attach.lua)")) {
-		fprintf(stderr, "%s\n", lua_tostring(L, -1));
-		lua_pop(L, 1);
+	if (_luaL_loadbuffer(L, buf.data(), buf.size(), "=(attach.lua)")) {
+		print_error(L);
 		return;
 	}
 	lua_pushstring(L, root.generic_u8string().c_str());
+	
 #ifdef _WIN32
-	lua_pushinteger(L, GetCurrentProcessId());
-	lua_pushlightuserdata(L, (void*)autoattach::luaapi);
+	lua_pushstring(L, std::to_string(GetCurrentProcessId()).c_str());
+	lua_pushlstring(L, (const char*)(void**)&autoattach::luaapi, sizeof(void*));
 #else
-	lua_pushinteger(L, getpid());
-	lua_pushnil(L);
+	lua_pushstring(L, std::to_string(getpid()).c_str());
+	lua_pushstring(L, "0");
 #endif
-	if (lua_pcall(L, 3, 0, 0)) {
-		fprintf(stderr, "%s\n", lua_tostring(L, -1));
-		lua_pop(L, 1);
+	if (_lua_pcall(L, 3, 0, 0)) {
+		print_error(L);
 	}
 }
 
+
 static void initialize(bool ap) {
-	autoattach::initialize(attach, ap);
+	static std::atomic_bool injected;
+	if (!injected.load(std::memory_order_acquire)){
+		injected.store(true, std::memory_order_release);
+		LOG("%s", "initialize");
+		autoattach::initialize(attach_ctx::attach, ap);
+		injected.store(false, std::memory_order_release);
+	}
 }
 
 extern "C" {
@@ -68,9 +91,4 @@ DLLEXPORT void DLLEXPORT_DECLARATION launch() {
 DLLEXPORT void DLLEXPORT_DECLARATION attach() {
 	initialize(true);
 }
-#ifndef _WIN32
-DLLEXPORT void inject_entry() {
-    attach();
-}
-#endif
 }
