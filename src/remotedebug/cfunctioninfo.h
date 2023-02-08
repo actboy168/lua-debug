@@ -140,7 +140,7 @@ namespace NativeInfo {
 		return proc;
 	}
 
-	inline SymHandler GetSymHandler() {
+	inline SymHandler& GetSymHandler() {
 		static SymHandler handler{ createSymHandler(true, true) };
 		return handler;
 	}
@@ -165,7 +165,7 @@ namespace NativeInfo {
 			char name_buffer[MAX_SYM_NAME];
 		};
 
-		auto handler = GetSymHandler();
+		auto& handler = GetSymHandler();
 		if (!handler) {
 			return std::nullopt;
 		}

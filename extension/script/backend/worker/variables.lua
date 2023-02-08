@@ -787,11 +787,12 @@ local function extandFunction(varRef)
 		end
 	end
 
-	if isCFunction then
+    local info = rdebug.cfunctioninfo(f)
+	if isCFunction and info then
 		local var = {
 			type = 'native',
 			name = '[native]',
-			value = rdebug.cfunctioninfo(f),
+			value = info,
 			presentationHint = {
                 kind = "virtual",
 				attributes = "readOnly",
@@ -1167,7 +1168,7 @@ local function extandCData(varRef)
             vars[3] = {
                 type = "string",
                 name = "[native]",
-                value = rdebug.cfunctioninfo(value),
+                value = cfunctioninfo,
                 presentationHint = {
                     kind = "virtual",
                     attributes = "readOnly",
