@@ -15,8 +15,10 @@ return function(bindir)
         "cmake", "-S3rd/dobby", "-B" .. bindir,
         FullFloatingPointRegisterPack, "-DPlugin.SymbolResolver=ON", "-DPlugin.ImportTableReplace=ON",
         "-DCMAKE_BUILD_TYPE=Release",
+		"-DDOBBY_GENERATE_SHARED=OFF",
         "-G",
-        "Ninja"
+        "Ninja",
+        output = bindir .. "/libdobby.a",
     }
     if lm.runtime_platform:find("darwin") then
         table.insert(option, "-DBUILDING_SILICON=" .. "ON")

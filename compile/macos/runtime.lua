@@ -4,18 +4,8 @@ require "compile.common.runtime"
 
 if not lm.no_inject then
     require 'compile.common.dobby' (lm.bindir)
-    local ext = ".so"
-    local output = "libdobby"
-    if lm.os == 'macos' then
-        ext = '.dylib'
-    end
-    output = output .. ext
-    lm:build 'libdobby' {
+    lm:phony 'libdobby' {
         deps = "build_dobby",
-        "cp",
-        lm.bindir .. "/" .. output,
-        "$out",
-        output = "publish/bin/" .. output,
     }
 
     lm:executable('process_inject_helper') {
@@ -37,7 +27,6 @@ if not lm.no_inject then
         deps = "libdobby",
         includes = {
             "3rd/bee.lua",
-            "3rd/bee.lua/3rd/lua",
             "3rd/dobby/include",
         },
         sources = {
@@ -48,7 +37,8 @@ if not lm.no_inject then
         },
         defines = {
             "BEE_INLINE",
-            "LUA_DLL_VERSION=lua54"
         },
+		links = "dobby",
+		linkdirs = lm.bindir,
     }
 end
