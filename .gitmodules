@@ -13,6 +13,3 @@
 [submodule "3rd/Dobby"]
 	path = 3rd/Dobby
 	url = https://github.com/fesily/Dobby.git
-[submodule "tools/ShellcodeCompiler"]
-	path = tools/ShellcodeCompiler
-	url = https://github.com/fesily/ShellcodeCompiler

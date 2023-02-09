@@ -16,19 +16,11 @@
 #include <string_view>
 
 #include "injectdll.h"
+#include "macos/shellcode.inl"
 
 #define LOG(fmt, ...) fprintf(stderr, fmt, __VA_ARGS__)
 #define LOG_MACH(msg, err) mach_error(msg,err)
 
-const char inject_code[] = {
-#ifdef __aarch64__
-       #include "macos/shellcode_arm64.h"
-#elif defined(__x86_64__)
-       #include "macos/shellcode_x64.h"
-#else
-#error "Unsupported architecture"
-#endif
-};
 struct rmain_arg {           // dealloc
     size_t sizeofstruct;
     const char *name;       // dealloc

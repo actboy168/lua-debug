@@ -4,6 +4,7 @@ require "compile.common.runtime"
 
 if not lm.no_inject then
     require 'compile.common.dobby'
+    require 'compile.macos.shellcode'
 
     lm:executable('process_inject_helper') {
         bindir = "publish/bin/",
