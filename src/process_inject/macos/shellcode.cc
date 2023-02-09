@@ -20,7 +20,7 @@ static void *rmain(void *ptr) {
     if (!ptr) {
         return 0;
     }
-    rmain_arg arg = *(rmain_arg *) ptr;
+    rmain_arg& arg = *(rmain_arg *) ptr;
     //terminate inject thread
     if (arg.injectThread) {
         auto _thread_suspend = (decltype(&thread_suspend)) arg.get_func("thread_suspend");

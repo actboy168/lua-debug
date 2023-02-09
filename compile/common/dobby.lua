@@ -48,9 +48,23 @@ lm:source_set "dobbyImportTableReplace" {
     sources = "builtin-plugin/ImportTableReplace/dobby_import_replace.cc",
 }
 
+
+lm:source_set "dobbyLogger" {
+    rootdir = "3rd/Dobby",
+    includes = {
+        Includes,
+        "builtin-plugin/ImportTableReplace",
+    },
+    sources = {
+		"external/logging/logging.c",
+		"external/logging/cxxlogging.cc",
+	}
+}
+
 lm:source_set "dobby" {
     rootdir = "3rd/Dobby",
     deps = {
+		"dobbyLogger",
         "dobbySymbolResolver",
         "dobbyImportTableReplace",
     },

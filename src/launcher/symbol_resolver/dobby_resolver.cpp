@@ -5,7 +5,7 @@
 namespace autoattach::symbol_resolver {
     struct dobby_resolver : interface {
 		dobby_resolver(const RuntimeModule& module):image_name{module.path}{}
-        ~dobby_resolver() override;
+        ~dobby_resolver() override = default;
 
         const char *image_name;
 
