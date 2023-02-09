@@ -16,7 +16,7 @@ namespace autoattach {
         lua_sethook(L, fn, LUA_HOOKCALL | LUA_HOOKRET | LUA_HOOKLINE, 0);
     }
 
-    bool unknown_vmhook::get_symbols(const std::unique_ptr<symbol_resolver::interface> &resolver) {
+    bool unknown_vmhook::get_symbols(const std::unique_ptr <symbol_resolver::interface> &resolver) {
         SymbolResolverWithCheck(lua_sethook);
         SymbolResolverWithCheck(lua_gethook);
         SymbolResolverWithCheck(lua_gethookmask);
@@ -28,7 +28,7 @@ namespace autoattach {
         static vmhook_template _vmhook;
         return _vmhook;
     }
-	
+
     std::vector <std::string_view> get_hook_entry_points(lua_version version) {
         const char *list = getenv("LUA_DEBUG_HOOK_ENTRY");
         if (list) {
@@ -36,20 +36,47 @@ namespace autoattach {
         }
         switch (version) {
             case lua_version::luajit:
-                return {"lj_dispatch_call", "lj_dispatch_stitch", "lj_vm_call", "lj_vm_pcall", "lj_vm_cpcall",
-                        "lj_vm_resume", "lj_meta_tget", "lj_cf_ffi_abi"};
+                return {
+                        "luajit.lj_dispatch_call",
+                        "luajit.lj_dispatch_stitch",
+                        "luajit.lj_vm_call",
+                        "luajit.lj_vm_pcall",
+                        "luajit.lj_vm_cpcall",
+                        "luajit.lj_vm_resume",
+                        "luajit.lj_meta_tget",
+                        "luajit.lj_cf_ffi_abi"
+                };
             case lua_version::lua51:
-                return {"luaD_precall", "luaV_gettable", "luaV_settable"};
+                return {
+                        "lua51.luaD_precall",
+                        "lua51.luaV_gettable",
+                        "lua51.luaV_settable"
+                };
             case lua_version::lua54:
-                return {"luaD_poscall", "luaH_getint", "luaH_getshortstr", "luaH_getstr", "luaH_get"};
+                return {
+                        "lua54.luaD_poscall",
+                        "lua54.luaH_getint",
+                        "lua54.luaH_getshortstr",
+                        "lua54.luaH_getstr",
+                        "lua54.luaH_get"
+                };
             default:
-                return {"lua_settop", "luaL_openlibs", "lua_newthread", "lua_close", "lua_type", "lua_pushnil",
-                        "lua_pushnumber", "lua_pushlstring", "lua_pushboolean"};
+                return {
+                        "lua_settop",
+                        "luaL_openlibs",
+                        "lua_newthread",
+                        "lua_close",
+                        "lua_type",
+                        "lua_pushnil",
+                        "lua_pushnumber",
+                        "lua_pushlstring",
+                        "lua_pushboolean"
+                };
         }
     }
 
     vmhook *create_vmhook(lua_version version) {
-        vmhook_template& hk = vmhook_template::get_this();
+        vmhook_template &hk = vmhook_template::get_this();
         hk.wather_points.clear();
         auto entry = get_hook_entry_points(version);
         for (auto &&e: entry) {

@@ -7,23 +7,26 @@
 #include <mutex>
 #include <set>
 
-#include <unistd.h>
+#ifdef _WIN32
+	
+#elif defined(__linux__)
+#include <elf.h>
+#elif defined(__APPLE__)
+#include <mach-o/dyld_images.h>
+#include <mach-o/loader.h>
+#include <mach-o/nlist.h>
+#else
+#error "unsupported platform"
+#endif
 
 #include "signatures.hpp"
 #include "../utility/string_helper.hpp"
 #include "symbol_resolver.h"
 
+
 using namespace std;
 namespace autoattach::symbol_resolver {
-#ifdef _WIN32
-	
-#elif defined(__linux__)
 
-#elif defined(__APPLE__)
-
-#else
-#error "unsupported platform"
-#endif
 
     struct PatternScanResult {
         /// <summary>
@@ -246,50 +249,37 @@ namespace autoattach::symbol_resolver {
         }
     };
 
-    struct IScanner {
-        virtual ~IScanner() = default;
-
-        virtual PatternScanResult FindPattern(string pattern) = 0;
-
-        virtual PatternScanResult FindPattern(string pattern, int offset) = 0;
-
-        virtual vector <PatternScanResult> FindPatterns(const set <string> &patterns) = 0;
-
-        virtual PatternScanResult FindPattern_Compiled(std::string pattern) = 0;
-
-        virtual PatternScanResult FindPattern_Simple(std::string pattern) = 0;
-    };
-
-    struct Scanner : IScanner {
+    struct Scanner {
         byte *_dataPtr;
         int _dataLength;
 
-        PatternScanResult FindPattern(string pattern) override{
+        PatternScanResult FindPattern(string pattern) const{
             return FindPatternCompiled(_dataPtr, _dataLength, std::move(pattern));
         }
 
-        PatternScanResult FindPattern(string pattern, int offset) override{
+        PatternScanResult FindPattern(string pattern, int offset){
             return FindPatternCompiled(_dataPtr + offset, _dataLength - offset, std::move(pattern));
 		}
 
-        vector <PatternScanResult> FindPatterns(const std::set <string> &patterns) override {
+        vector <PatternScanResult> FindPatterns(const std::set <string> &patterns) const {
 			vector<PatternScanResult> res;
 			res.reserve(patterns.size());
-			for (auto &&pattern : patterns) 			{
+			for (auto &&pattern : patterns){
 				res.emplace_back(FindPattern(pattern));
 			}
+			return res;
 		}
 
 
-        PatternScanResult FindPattern_Compiled(std::string pattern) override{
+        PatternScanResult FindPattern_Compiled(std::string pattern) const{
 			return FindPatternCompiled(_dataPtr, _dataLength, std::move(pattern));
 		}
 
-        PatternScanResult FindPattern_Simple(std::string pattern) override {
+        PatternScanResult FindPattern_Simple(std::string pattern)  const{
 			return FindPatternSimple(_dataPtr, _dataLength, std::move(pattern));
 		}
 
-        PatternScanResult FindPatternCompiled(byte *data, int dataLength, CompiledScanPattern pattern) {
+        static PatternScanResult FindPatternCompiled(byte *data, int dataLength, CompiledScanPattern pattern) {
             const int numberOfUnrolls = 8;
             int numberOfInstructions = pattern.NumberOfInstructions;
             int lastIndex = dataLength - std::max(pattern.Length, sizeof(intptr_t)) - numberOfUnrolls;
@@ -346,14 +336,13 @@ namespace autoattach::symbol_resolver {
                 dataCurPointer += 1;
                 end:;
 
-                // Check last few bytes in cases pattern was not found and long overflows into possibly unallocated memory.
+            }
+			// Check last few bytes in cases pattern was not found and long overflows into possibly unallocated memory.
                 return FindPatternSimple(data + lastIndex, dataLength - lastIndex, pattern.Pattern).AddOffset(
                         lastIndex);
-
-            }
         }
 
-        bool TestRemainingMasks(int numberOfInstructions, byte *currentDataPointer, GenericInstruction *instructions) {
+        static bool TestRemainingMasks(int numberOfInstructions, byte *currentDataPointer, GenericInstruction *instructions) {
             /* When NumberOfInstructions > 1 */
             currentDataPointer += sizeof(intptr_t);
 
@@ -370,7 +359,7 @@ namespace autoattach::symbol_resolver {
             return true;
         }
 
-        PatternScanResult FindPatternSimple(byte *data, int dataLength, SimplePatternScanData pattern) {
+        static PatternScanResult FindPatternSimple(byte *data, int dataLength, SimplePatternScanData pattern) {
             const auto &patternData = pattern.Bytes;
             const auto &patternMask = pattern.Mask;
 
@@ -411,9 +400,10 @@ namespace autoattach::symbol_resolver {
 
     struct signature_rsesolver : interface {
 		Scanner scanner;
-        signature_rsesolver(const RuntimeModule &module) {
+		signatures symbol_signatures;
+        signature_rsesolver(const RuntimeModule &module, signatures&& data):symbol_signatures{std::move(data)} {
 			scanner._dataPtr = (byte *)module.load_address;
-			scanner._dataLength = 0;
+			scanner._dataLength = get_lib_memory_size((uintptr_t)module.load_address);
         }
 
         ~signature_rsesolver() override {
@@ -421,13 +411,102 @@ namespace autoattach::symbol_resolver {
         }
 
         void *getsymbol(const char *name) const override {
-			return nullptr;
+			auto pattern = symbol_signatures[name];
+			auto res = scanner.FindPattern(std::string(pattern));
+			if (!res.Found())
+				return nullptr;
+			return scanner._dataPtr + res.Offset;
         }
+
+		size_t get_lib_memory_size(uintptr_t baseAddr);
     };
 
-    std::unique_ptr <interface> create_signature_resolver(const RuntimeModule &module, const signatures &data) {
-        auto p = std::make_unique<signature_rsesolver>(module.path);
+    std::unique_ptr <interface> create_signature_resolver(const RuntimeModule &module, signatures&& data) {
+        auto p = std::make_unique<signature_rsesolver>(module, std::move(data));
 
 		return p;
     }
+
+	size_t signature_rsesolver::get_lib_memory_size(uintptr_t baseAddr) {
+		size_t memorySize = 0;
+
+#ifdef _WIN32
+		IMAGE_DOS_HEADER *dos = reinterpret_cast<IMAGE_DOS_HEADER *>( baseAddr );
+		IMAGE_NT_HEADERS *pe = reinterpret_cast<IMAGE_NT_HEADERS *>( baseAddr + dos->e_lfanew );
+		IMAGE_FILE_HEADER *file = &pe->FileHeader;
+		IMAGE_OPTIONAL_HEADER *opt = &pe->OptionalHeader;
+
+		if( dos->e_magic != IMAGE_DOS_SIGNATURE || pe->Signature != IMAGE_NT_SIGNATURE || opt->Magic != IMAGE_NT_OPTIONAL_HDR_MAGIC )
+			return memorySize;
+
+		memorySize = opt->SizeOfImage;
+#elif defined(__linux__)
+#if defined (__x86_64__) || defined(__aarch64__)
+		typedef Elf64_Ehdr Elf_Ehdr;
+		typedef Elf64_Phdr Elf_Phdr;
+		const unsigned char ELFCLASS = ELFCLASS64;
+#ifdef __aarch64__
+		const uint16_t EM = EM_AARCH64;
+#else
+		const uint16_t EM = EM_X86_64;
+#endif
+#else
+		typedef Elf32_Ehdr Elf_Ehdr;
+		typedef Elf32_Phdr Elf_Phdr;
+		const unsigned char ELFCLASS = ELFCLASS32;
+		const uint16_t EM = EM_386;
+#endif
+		Elf_Ehdr *file = reinterpret_cast<Elf_Ehdr *>( baseAddr );
+		if( memcmp( ELFMAG, file->e_ident, SELFMAG ) != 0 )
+			return false;
+
+		if( file->e_ident[EI_VERSION] != EV_CURRENT )
+			return false;
+
+		if( file->e_ident[EI_CLASS] != ELFCLASS || file->e_machine != EM || file->e_ident[EI_DATA] != ELFDATA2LSB )
+			return false;
+
+		uint16_t phdrCount = file->e_phnum;
+		Elf_Phdr *phdr = reinterpret_cast<Elf_Phdr *>( baseAddr + file->e_phoff );
+		for( uint16_t i = 0; i < phdrCount; ++i )
+		{
+			Elf_Phdr &hdr = phdr[i];
+			if( hdr.p_type == PT_LOAD && hdr.p_flags == ( PF_X | PF_R ) )
+			{
+				memorySize = PAGE_ALIGN_UP( hdr.p_filesz );
+				break;
+			}
+		}
+
+#elif defined(__APPLE__)
+#if defined (__x86_64__) || defined(__aarch64__)
+		using mach_header_t = struct mach_header_64;
+		using segment_command_t = struct segment_command_64;
+		constexpr auto MH_MAGIC_VALUE = MH_MAGIC_64;
+		constexpr auto LC_SEGMENT_VALUE = LC_SEGMENT_64;
+#else
+		using mach_header_t = struct mach_header;
+		using segment_command_t = struct segment_command;
+		constexpr auto MH_MAGIC_VALUE = MH_MAGIC;
+		constexpr auto LC_SEGMENT_VALUE = LC_SEGMENT;
+#endif
+		mach_header_t *file = reinterpret_cast<mach_header_t *>( baseAddr );
+		if( file->magic != MH_MAGIC_VALUE )
+			return false;
+
+		uint32_t cmd_count = file->ncmds;
+		segment_command_t *seg = reinterpret_cast<segment_command_t *>( baseAddr + sizeof( mach_header_t ) );
+		for( uint32_t i = 0; i < cmd_count; ++i )
+		{
+			if( seg->cmd == LC_SEGMENT_VALUE )
+				memorySize += seg->vmsize;
+
+			seg = reinterpret_cast<segment_command_t *>( reinterpret_cast<uintptr_t>( seg ) + seg->cmdsize );
+		}
+
+#else
+#error "unsupported platform"
+#endif
+		return memorySize;
+	}
 }
