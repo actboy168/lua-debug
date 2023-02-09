@@ -10,17 +10,21 @@ namespace autoattach {
     }
 
     void unknown_vmhook::call_lua_hook(lua_State *L, lua_Hook fn) {
-        origin_lua_hook = lua_gethook(L);
-        origin_hookmask = lua_gethookmask(L);
-        origin_hookcount = lua_gethookcount(L);
+		if (lua_gethook) {
+			origin_lua_hook = lua_gethook(L);
+			if (lua_gethookmask)
+				origin_hookmask = lua_gethookmask(L);
+			if (lua_gethookcount)
+				origin_hookcount = lua_gethookcount(L);
+		}
         lua_sethook(L, fn, LUA_HOOKCALL | LUA_HOOKRET | LUA_HOOKLINE, 0);
     }
 
     bool unknown_vmhook::get_symbols(const std::unique_ptr <symbol_resolver::interface> &resolver) {
         SymbolResolverWithCheck(lua_sethook);
-        SymbolResolverWithCheck(lua_gethook);
-        SymbolResolverWithCheck(lua_gethookmask);
-        SymbolResolverWithCheck(lua_gethookcount);
+        SymbolResolver(lua_gethook);
+        SymbolResolver(lua_gethookmask);
+        SymbolResolver(lua_gethookcount);
         return true;
     }
 
