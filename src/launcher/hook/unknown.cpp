@@ -2,14 +2,14 @@
 #include "../utility/string_helper.hpp"
 
 namespace autoattach {
-    void unknown_vmhook::attach_lua_Hook(lua_State *L, lua_Debug *ar) {
+    void vmhooker::attach_lua_Hooker(lua_State *L, lua_Debug *ar) {
         if (origin_lua_hook) {
             lua_sethook(L, origin_lua_hook, origin_hookmask, origin_hookcount);
             origin_lua_hook(L, ar);
         }
     }
 
-    void unknown_vmhook::call_lua_hook(lua_State *L, lua_Hook fn) {
+    void vmhooker::call_lua_sethook(lua_State *L, lua_Hook fn) {
 		if (lua_gethook) {
 			origin_lua_hook = lua_gethook(L);
 			if (lua_gethookmask)
@@ -20,7 +20,7 @@ namespace autoattach {
         lua_sethook(L, fn, LUA_HOOKCALL | LUA_HOOKRET | LUA_HOOKLINE, 0);
     }
 
-    bool unknown_vmhook::get_symbols(const std::unique_ptr <symbol_resolver::interface> &resolver) {
+    bool vmhooker::get_symbols(const std::unique_ptr <symbol_resolver::interface> &resolver) {
         SymbolResolverWithCheck(lua_sethook);
         SymbolResolver(lua_gethook);
         SymbolResolver(lua_gethookmask);

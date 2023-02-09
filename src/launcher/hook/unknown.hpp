@@ -43,7 +43,7 @@ namespace autoattach {
 
     void attach_lua_vm(lua_State *L);
 
-    struct unknown_vmhook : vmhook {
+    struct vmhooker {
         using lua_sethook_t = decltype(&
         ::lua_sethook);
         using lua_gethook_t = decltype(&
@@ -64,10 +64,10 @@ namespace autoattach {
         int origin_hookmask;
         int origin_hookcount;
 
-        void attach_lua_Hook(lua_State *L, lua_Debug *ar);
+        void attach_lua_Hooker(lua_State *L, lua_Debug *ar);
 
-        void call_lua_hook(lua_State *L, lua_Hook fn);
+        void call_lua_sethook(lua_State *L, lua_Hook fn);
 
-        bool get_symbols(const std::unique_ptr<symbol_resolver::interface> &resolver) override;
+        bool get_symbols(const std::unique_ptr<symbol_resolver::interface> &resolver);
     };
 }

@@ -29,7 +29,7 @@ std::string readfile(const fs::path& filename) {
 	tmp.resize(length);
 	fread(tmp.data(), 1, length, f);
 	fclose(f);
-	return std::move(tmp);
+	return tmp;
 }
 struct attach_ctx : autoattach::attach_args {
 	inline void print_error(lua_State* L)const {
@@ -75,8 +75,8 @@ void attach_ctx::attach(lua_State* L) const{
 
 static void initialize(bool ap) {
 	static std::atomic_bool injected;
-	if (!injected.load(std::memory_order_acquire)){
-		injected.store(true, std::memory_order_release);
+	bool test = false;
+	if (injected.compare_exchange_strong(test, true, std::memory_order_acquire)){
 		LOG("%s", "initialize");
 		autoattach::initialize(attach_ctx::attach, ap);
 		injected.store(false, std::memory_order_release);
