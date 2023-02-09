@@ -18,8 +18,10 @@
 #include "injectdll.h"
 #include "macos/shellcode.inl"
 
-#define LOG(fmt, ...) fprintf(stderr, fmt, __VA_ARGS__)
-#define LOG_MACH(msg, err) mach_error(msg,err)
+#include <bee/format.h>
+
+#define LOG(msg) fprintf(stderr, "%s\n", msg)
+#define LOG_MACH(msg, err) mach_error(msg, err)
 
 struct rmain_arg {           // dealloc
     size_t sizeofstruct;
@@ -56,13 +58,13 @@ mach_inject(
 
     if (!get_all_images(remoteTask)) {
         mach_port_deallocate(mach_task_self(), remoteTask);
-        LOG("%s", "remote can't read all images");
+        LOG("remote can't read all images");
         return false;
     }
 
     if (!is_same_arch()) {
         mach_port_deallocate(mach_task_self(), remoteTask);
-        LOG("%s", "diff arch processor");
+        LOG("diff arch processor");
         return false;
     }
 
@@ -206,7 +208,7 @@ freeport:
 bool injectdll(pid_t pid, const std::string &dll, const char *entry) {
 	std::string_view v(entry?entry:"");
 	if (v.size() >= sizeof(rmain_arg::entrypoint)){
-		LOG("entrypoint name[%s] is too long", entry);
+		LOG(std::format("entrypoint name[{}] is too long", entry).c_str());
 		return false;
 	}
 #if defined(__aarch64__) || defined(__x86_64__)

@@ -349,12 +349,12 @@ namespace autoattach {
             }
         }
         if (!rm.load_address) {
-            LOG("%s", "can't find lua module");
+            LOG("can't find lua module");
             return;
         }
 		auto symbol_resolver = symbol_resolver::symbol_resolver_factory_create(rm);
         if (!args.get_symbols(symbol_resolver.get())) {
-            LOG("%s", "can't load args symbols");
+            LOG("can't load args symbols");
             return;
         }
 
@@ -366,7 +366,7 @@ namespace autoattach {
 
         auto vmhook = create_vmhook(luaversion);
         if (!vmhook->get_symbols(symbol_resolver)) {
-            LOG("%s", "get_symbols failed");
+            LOG("get_symbols failed");
             return;
         }
         vmhook->hook();

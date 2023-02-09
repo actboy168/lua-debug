@@ -34,7 +34,7 @@ std::string readfile(const fs::path& filename) {
 struct attach_ctx : autoattach::attach_args {
 	inline void print_error(lua_State* L)const {
 		if (lua_tolstring){
-			fprintf(stderr, "%s\n", lua_tostring(L, -1));
+			LOG(lua_tostring(L, -1));
 		}
 		lua_pop(L, 1);
 	}
@@ -47,7 +47,7 @@ struct attach_ctx : autoattach::attach_args {
 };
 
 void attach_ctx::attach(lua_State* L) const{
-	LOG("%s", "attach lua vm entry");
+	LOG("attach lua vm entry");
 	auto r = bee::path_helper::dll_path();
 	if (!r) {
 		return;
@@ -77,7 +77,7 @@ static void initialize(bool ap) {
 	static std::atomic_bool injected;
 	bool test = false;
 	if (injected.compare_exchange_strong(test, true, std::memory_order_acquire)){
-		LOG("%s", "initialize");
+		LOG("initialize");
 		autoattach::initialize(attach_ctx::attach, ap);
 		injected.store(false, std::memory_order_release);
 	}

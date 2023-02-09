@@ -1,5 +1,14 @@
 #pragma once
 #include <string_view>
+#include <bee/format.h>
+
+#ifndef NDEBUG
+#include <stdio.h>
+#define LOG(msg) fprintf(stderr, "[lua-debug][launcher]%s\n", msg)
+#else
+#define LOG(...)
+#endif
+
 typedef struct _RuntimeModule {
     char path[1024];
     void *load_address;
