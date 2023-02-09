@@ -15,6 +15,9 @@ namespace autoattach {
         typedef int (*luaL_loadbuffer_t)(lua_State *L, const char *buff, size_t sz,
                                          const char *name);
 
+        typedef int (*luaL_loadbufferx_t)(lua_State *L, const char *buff, size_t sz,
+                                          const char *name, const char *mode);
+										  
         typedef const char *(*lua_tolstring_t)(lua_State *L, int idx, size_t *len);
 
         typedef void  (*lua_pushlstring_t)(lua_State *L, const char *s, size_t l);
@@ -26,8 +29,6 @@ namespace autoattach {
 
         typedef int   (*lua_pcall_t)(lua_State *L, int nargs, int nresults, int errfunc);
 
-        typedef int (*luaL_loadbufferx_t)(lua_State *L, const char *buff, size_t sz,
-                                          const char *name, const char *mode);
 										  
 #define attach_args_funcs(_, ...)\
                     _(luaL_loadbuffer, __VAR_ARGS__)\

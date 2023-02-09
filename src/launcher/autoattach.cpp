@@ -252,12 +252,7 @@ namespace autoattach {
 #else
 
     static std::vector <RuntimeModule> GetProcessModuleMap() {
-        auto modulemap = ProcessRuntimeUtility::GetProcessModuleMap();
-#ifdef __linux__
-        // add exec module
-        modulemap.push_back({{0},NULL});
-#endif
-        return modulemap;
+        return ProcessRuntimeUtility::GetProcessModuleMap();
     }
 
     bool iequals(const std::string_view &a, const std::string_view &b) {
