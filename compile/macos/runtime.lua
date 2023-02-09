@@ -3,10 +3,7 @@ local lm = require 'luamake'
 require "compile.common.runtime"
 
 if not lm.no_inject then
-    require 'compile.common.dobby' (lm.bindir)
-    lm:phony 'libdobby' {
-        deps = "build_dobby",
-    }
+    require 'compile.common.dobby'
 
     lm:executable('process_inject_helper') {
         bindir = "publish/bin/",
@@ -24,7 +21,7 @@ if not lm.no_inject then
     lm:lua_library('launcher') {
         bindir = "publish/bin/",
         export_luaopen = "off",
-        deps = "libdobby",
+        deps = "dobby",
         includes = {
             "3rd/bee.lua",
             "3rd/dobby/include",
@@ -40,7 +37,5 @@ if not lm.no_inject then
         defines = {
             "BEE_INLINE",
         },
-		links = "dobby",
-		linkdirs = lm.bindir,
     }
 end
