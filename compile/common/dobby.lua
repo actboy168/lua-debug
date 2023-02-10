@@ -3,7 +3,7 @@ local lm = require "luamake"
 require 'compile.common.detect_platform'
 
 local ARCH = lm.runtime_platform:match "[%w]+-([%w]+)"
-local NearBranch = ARCH ~= "arm64"
+local NearBranch = ARCH == "arm64"
 
 local Includes = {
     ".",
