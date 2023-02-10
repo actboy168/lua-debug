@@ -620,7 +620,7 @@ local function varCreateTableKV(key, value, context)
         name = string.format("[%s]",  rdebug.type(key)),
         value = varGetValue(context, type, value),
         variablesReference = #varPool,
-        presentationHint = 'virtual'
+        presentationHint = { kind = 'virtual' }
     }
     return var
 end
