@@ -72,6 +72,7 @@ lm:source_set "dobby" {
     defines = {
         "__DOBBY_BUILD_VERSION__=\\\"unknown\\\"",
         ARCH == "arm64" and "FULL_FLOATING_POINT_REGISTER_PACK",
+        lm.mode == "debug" and "LOGGING_DEBUG",
     },
     sources = {
         -- cpu
