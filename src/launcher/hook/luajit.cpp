@@ -14,9 +14,9 @@ namespace autoattach{
         virtual bool get_symbols(const std::unique_ptr<symbol_resolver::interface> &resolver) override{
             if (!vmhook_template::get_symbols(resolver))
                 return false;
-            return true;
             get_watch_symbol(lj_dispatch_update, resolver);
             get_watch_symbol(lj_dispatch_stitch, resolver);
+            return true;
         }
 
         virtual bool hook() override{
