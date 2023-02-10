@@ -30,7 +30,11 @@ if lm.platform == "darwin-arm64" then
     lm:build "x86_64" {
         rule = "luamake",
     }
+    lm:phony "wait_x86_64" {
+        deps = {"process_inject_helper", "x86_64"}
+    }
 end
+
 
 lm:default {
     "common",
@@ -38,5 +42,5 @@ lm:default {
     "runtime",
     not lm.no_inject and "launcher",
     not lm.no_inject and "process_inject_helper",
-    lm.platform == "darwin-arm64" and "x86_64"
+    lm.platform == "darwin-arm64" and "wait_x86_64"
 }
