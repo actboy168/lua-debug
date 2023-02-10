@@ -43,6 +43,7 @@ lm:lua_library ('launcher.'..ArchAlias[platform]) {
         "3rd/bee.lua/bee/utility/file_handle_win.cpp",
         "src/remotedebug/rdebug_delayload.cpp",
         "src/launcher/*.cpp",
+        "!src/launcher/attach_args.cpp",
     },
     defines = {
         "BEE_INLINE",
