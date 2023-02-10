@@ -3,6 +3,7 @@ local debuger_factory = require 'frontend.debuger_factory'
 local fs = require 'bee.filesystem'
 local sp = require 'bee.subprocess'
 local platform_os = require 'frontend.platform_os'
+local process_inject = require 'frontend.process_inject'
 local server
 local client
 local initReq
@@ -57,14 +58,10 @@ local function attach_process(pkg, pid)
     if pkg.arguments.luaVersion == "latest" then
         ipc_send_latest(pid)
     end
-    local inject = require 'inject'
-    if not inject.injectdll(pid
-        , (WORKDIR / "bin" / "launcher.x86.dll"):string()
-        , (WORKDIR / "bin" / "launcher.x64.dll"):string()
-        , "attach"
-    ) then
-        return false
-    end
+    if not process_inject(pid, "attach") then
+		return false
+	end
+
     server = network(getUnixAddress(pid), true)
     server.sendmsg(initReq)
     server.sendmsg(pkg)
@@ -80,9 +77,9 @@ end
 local function proxy_attach(pkg)
     local args = pkg.arguments
     platform_os.init(args)
-    if platform_os() ~= "Windows" then
-        attach_tcp(pkg, args)
-        return
+    if platform_os() ~= "Windows" and platform_os() ~= "macOS" then
+		attach_tcp(pkg, args)
+		return
     end
     if args.processId then
         local processId = tonumber(args.processId)
