@@ -13,10 +13,13 @@ namespace autoattach {
 		vmhook_template(const vmhook_template&) = delete;
         std::vector <watch_point> wather_points;
 		vmhooker hooker;
+        std::atomic_bool inwatch = false;
         bool hook() override {
             for (auto &&watch: wather_points) {
-                if (watch.address)
-                    DobbyInstrument(watch.address, default_watch);
+                if (watch.address) {
+                    int ec = DobbyInstrument(watch.address, default_watch);
+					LOG(std::format("DobbyInstrument:{}[{}] {}",watch.address, watch.funcname, ec).c_str());
+				}
             }
 			return true;
         }
@@ -34,7 +37,7 @@ namespace autoattach {
 				return false;
 			}
             for (auto &&watch: wather_points) {
-                watch.address = resolver->getsymbol(watch.funcname.c_str());
+                get_watch_symbol(watch, resolver);
             }
             for (auto &&watch: wather_points) {
                 if (watch.address)
@@ -43,28 +46,29 @@ namespace autoattach {
             return false;
         }
 
+        static inline void get_watch_symbol(watch_point& watch,const std::unique_ptr<symbol_resolver::interface> &resolver){
+            watch.address = resolver->getsymbol(watch.funcname.c_str());
+        }
+
         static void attach_lua_Hooker(lua_State *L, lua_Debug *ar) {
             attach_lua_vm(L);
             auto &_self = get_this();
-            _self.hooker.attach_lua_Hooker(L, ar);
+            _self.hooker.call_origin_hook(L, ar);
             //inject success disable hook
             _self.unhook();
         }
 
-        void call_lua_sethook(lua_State *L) {
-            hooker.call_lua_sethook(L, attach_lua_Hooker);
+        void watch_entry(lua_State *L) {
+            bool test = false;
+            if (inwatch.compare_exchange_strong(test, true, std::memory_order_acquire)) {
+                hooker.call_lua_sethook(L, attach_lua_Hooker);
+            }
         }
 
         static void default_watch(void *address, DobbyRegisterContext *ctx) {
             auto L = (lua_State *) getfirstarg(ctx);
             auto &_self = get_this();
-            //make sure no stackoverflow
-            thread_local std::atomic_bool inwatch = false;
-			bool test = false;
-            if (inwatch.compare_exchange_strong(test, true, std::memory_order_acquire)) {
-                _self.call_lua_sethook(L);
-				inwatch.store(false, std::memory_order_release);
-            }
+            _self.watch_entry(L);           
         }
 
         static vmhook_template &get_this();

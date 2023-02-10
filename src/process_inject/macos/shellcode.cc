@@ -2,6 +2,8 @@
 #include <pthread_spis.h>
 #include <mach/mach.h>
 #include <dlfcn.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 extern "C" {
 struct rmain_arg {           // dealloc
@@ -31,12 +33,20 @@ static void *rmain(void *ptr) {
         }
     }
     void *handler = nullptr;
+    auto _dlerror = (decltype(&dlerror)) arg.get_func("dlerror");
     //load lib
     {
         auto _dlopen = (decltype(&dlopen)) arg.get_func("dlopen");
         handler = _dlopen((const char *) arg.name, RTLD_NOW | RTLD_LOCAL);
     }
-    if (handler) {
+    if (!handler) {
+        auto ec = (const char*)_dlerror();
+        auto _fprintf = (decltype(&fprintf)) arg.get_func("fprintf");
+        auto _stderr = *(FILE**) arg.get_func("__stderrp");
+        _fprintf(_stderr, "%s\n", ec);
+        auto _exit = (decltype(&exit)) arg.get_func("exit");
+        _exit(1);
+    } else {
         void (*func)();
         func = (decltype(func)) arg.dlsym(handler, arg.entrypoint);
         if (func)

@@ -2,7 +2,7 @@
 #include "../utility/string_helper.hpp"
 
 namespace autoattach {
-    void vmhooker::attach_lua_Hooker(lua_State *L, lua_Debug *ar) {
+    void vmhooker::call_origin_hook(lua_State *L, lua_Debug *ar) {
         if (origin_lua_hook) {
             lua_sethook(L, origin_lua_hook, origin_hookmask, origin_hookcount);
             origin_lua_hook(L, ar);
@@ -28,11 +28,6 @@ namespace autoattach {
         return true;
     }
 
-    vmhook_template &vmhook_template::get_this() {
-        static vmhook_template _vmhook;
-        return _vmhook;
-    }
-
     std::vector <std::string_view> get_hook_entry_points(lua_version version) {
         const char *list = getenv("LUA_DEBUG_HOOK_ENTRY");
         if (list) {
@@ -41,14 +36,13 @@ namespace autoattach {
         switch (version) {
             case lua_version::luajit:
                 return {
+                        "luajit.lj_dispatch_ins",
                         "luajit.lj_dispatch_call",
-                        "luajit.lj_dispatch_stitch",
                         "luajit.lj_vm_call",
                         "luajit.lj_vm_pcall",
                         "luajit.lj_vm_cpcall",
                         "luajit.lj_vm_resume",
                         "luajit.lj_meta_tget",
-                        "luajit.lj_cf_ffi_abi"
                 };
             case lua_version::lua51:
                 return {
@@ -59,10 +53,8 @@ namespace autoattach {
             case lua_version::lua54:
                 return {
                         "lua54.luaD_poscall",
-                        "lua54.luaH_getint",
-                        "lua54.luaH_getshortstr",
-                        "lua54.luaH_getstr",
-                        "lua54.luaH_get"
+                        "lua54.luaH_finishset",
+                        "lua54.luaV_finishget",
                 };
             default:
                 return {
@@ -79,7 +71,19 @@ namespace autoattach {
         }
     }
 
+    static std::unique_ptr<vmhook_template> _vmhook;
+    vmhook_template &vmhook_template::get_this() {
+        return *_vmhook;
+    }
+    
+    std::unique_ptr<vmhook_template> create_luajit_vmhook();
     vmhook *create_vmhook(lua_version version) {
+        if (version == lua_version::luajit){
+            _vmhook = create_luajit_vmhook();
+        }else{
+            _vmhook = std::make_unique<vmhook_template>();
+        }
+        
         vmhook_template &hk = vmhook_template::get_this();
         hk.wather_points.clear();
         auto entry = get_hook_entry_points(version);

@@ -16,10 +16,12 @@
 #include <string_view>
 #include <memory>
 #include <charconv>
+
+
 #include "common.hpp"
 #include "hook/hook_common.h"
 #include "symbol_resolver/symbol_resolver.h"
-
+#include "thread/threads.hpp"
 class ProcessRuntimeUtility {
 public:
     static const std::vector<RuntimeModule> &GetProcessModuleMap();
@@ -334,6 +336,9 @@ namespace autoattach {
     }
 
     void initialize(fn_attach attach, bool ap) {
+#ifndef NDEBUG
+        log_set_level(0);
+#endif
         debuggerAttach = attach;
         attachProcess = ap;
 
@@ -363,13 +368,18 @@ namespace autoattach {
             luaversion = get_lua_version(rm.path);
         }
 
-
         auto vmhook = create_vmhook(luaversion);
         if (!vmhook->get_symbols(symbol_resolver)) {
             LOG("get_symbols failed");
             return;
         }
+		auto threads_snapshot = thread::create_threads_snapshot();
+		// stop other threads
+		threads_snapshot->suspend();
+        dobby_enable_near_branch_trampoline();
         vmhook->hook();
+        dobby_disable_near_branch_trampoline();
+		threads_snapshot->resume();
     }
 #endif
 }

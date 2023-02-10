@@ -64,7 +64,7 @@ namespace autoattach {
         int origin_hookmask;
         int origin_hookcount;
 
-        void attach_lua_Hooker(lua_State *L, lua_Debug *ar);
+        void call_origin_hook(lua_State *L, lua_Debug *ar);
 
         void call_lua_sethook(lua_State *L, lua_Hook fn);
 
