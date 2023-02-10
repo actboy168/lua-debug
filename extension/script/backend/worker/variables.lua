@@ -17,7 +17,9 @@ local varPool = {}
 local memoryRefPool = {}
 local standard = {}
 
+local isWindows = package.config:sub(1,1) == "\\"
 local showIntegerAsHex = false
+local lazyShowCFunction = not isWindows
 
 local function init_standard()
     local lstandard = {
@@ -511,7 +513,7 @@ local function varGetValue(context, type, value)
     elseif type == 'function' then
         return varGetFunctionCode(value)
     elseif type == 'c function' then
-        return 'C function'
+        return rdebug.cfunctioninfo(value) or 'C function'
     elseif type == 'table' then
         if context == "clipboard" then
             return serialize(value)
@@ -540,12 +542,18 @@ local function varGetValue(context, type, value)
     return tostring(rdebug.value(value))
 end
 
-local function varCreateReference(value, evaluateName, context)
+local function varCreateReference(value, evaluateName, presentationHint, context)
     local type = rdebug.type(value)
     local result = {
         type = type,
-        value = varGetValue(context, type, value),
+        presentationHint = presentationHint,
     }
+    if lazyShowCFunction and type == 'c function' then
+        result.value = "C function"
+        result.presentationHint.lazy = true
+    else
+        result.value = varGetValue(context, type, value)
+    end
     if type == "integer" then
         result.__vscodeVariableMenuContext = showIntegerAsHex and "integer/hex" or "integer/dec"
     end
@@ -556,10 +564,12 @@ local function varCreateReference(value, evaluateName, context)
         }
         result.memoryReference = #memoryRefPool
     end
-    if varCanExtand(type, value) then
+    if varCanExtand(type, value) or result.presentationHint.lazy then
         varPool[#varPool + 1] = {
             v = value,
             eval = evaluateName,
+            lazy = result.presentationHint.lazy,
+            context = context,
         }
         result.variablesReference = #varPool
         if type == "table" then
@@ -610,7 +620,7 @@ local function varCreateTableKV(key, value, context)
         name = string.format("[%s]",  rdebug.type(key)),
         value = varGetValue(context, type, value),
         variablesReference = #varPool,
-        presentationHint = 'virtual'
+        presentationHint = { kind = 'virtual' }
     }
     return var
 end
@@ -646,10 +656,9 @@ local function varCreate(t)
     if type(t.evaluateName) ~= "string" then
         t.evaluateName = nil
     end
-    local var = varCreateReference(t.value, t.evaluateName, "variables")
+    local var = varCreateReference(t.value, t.evaluateName, t.presentationHint or {}, "variables")
     var.name = name
     var.evaluateName = t.evaluateName
-    var.presentationHint = t.presentationHint
     vars[#vars + 1] = var
     extand[name] = {
         calcValue = t.calcValue,
@@ -1129,7 +1138,6 @@ local function extandCData(varRef)
     end
     local vars = {}
     if what == "func" then
-        --TODO call rdebug.cfuntioninfo
         vars[1] = {
             type = "string",
             name = "type",
@@ -1148,6 +1156,18 @@ local function extandCData(varRef)
                 attributes = "readOnly",
             }
         }
+		local cfunctioninfo = rdebug.cfunctioninfo(value)
+        if cfunctioninfo then
+            vars[3] = {
+                type = "string",
+                name = "[native]",
+                value = cfunctioninfo,
+                presentationHint = {
+                    kind = "virtual",
+                    attributes = "readOnly",
+                }
+            }
+        end
     else
         local index = 1
         while true do
@@ -1218,7 +1238,7 @@ local function setValue(varRef, name, value)
             end
         end
     end
-    return varCreateReference(rvalue, evaluateName, "variables")
+    return varCreateReference(rvalue, evaluateName, {}, "variables")
 end
 
 local m = {}
@@ -1241,7 +1261,17 @@ function m.extand(valueId, filter, start, count)
     if not varRef then
         return nil, 'Error variablesReference'
     end
-    return extandValue(varRef, filter, start, count)
+    local vars = extandValue(varRef, filter, start, count)
+    if varRef.lazy then
+        --TODO: fuck VSCode
+        local type = rdebug.type(varRef.v)
+        table.insert(vars, 1, {
+            name = "",
+            type = type,
+            value = varGetValue(varRef.context, type, varRef.v),
+        })
+    end
+    return vars
 end
 
 function m.set(valueId, name, value)
@@ -1337,7 +1367,7 @@ function m.createText(value, context)
 end
 
 function m.createRef(value, evaluateName, context)
-    return varCreateReference(value, evaluateName, context)
+    return varCreateReference(value, evaluateName, {}, context)
 end
 
 function m.tostring(v)

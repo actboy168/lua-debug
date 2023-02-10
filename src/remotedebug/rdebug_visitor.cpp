@@ -12,6 +12,7 @@
 #ifdef LUAJIT_VERSION
 #include "rluaobject.h"
 #endif
+#include "rdebug_cfunctioninfo.h"
 int debug_pcall(lua_State* L, int nargs, int nresults, int errfunc);
 
 lua_State* get_host(rlua_State *L);
@@ -1570,6 +1571,59 @@ lclient_gccount(rlua_State *L) {
 	return 1;
 }
 
+
+static int lclient_cfunctioninfo(rlua_State *L) {
+	lua_State *cL = get_host(L);
+	if (copy_fromR(L, cL) == LUA_TNONE) {
+		rlua_pushnil(L);
+		return 1;
+	}
+#ifdef LUAJIT_VERSION
+    cTValue* o = index2adr(cL, -1);
+    void* cfn = nullptr;
+    if (tvisfunc(o)) {
+	    GCfunc *fn = funcV(o);
+        cfn = (void*)(isluafunc(fn) ? NULL : fn->c.f);
+    }else if (tviscdata(o)) {
+        GCcdata* cd = cdataV(o);
+        CTState* cts = ctype_cts(cL); 
+        if (cd->ctypeid != CTID_CTYPEID) {
+            cfn = cdataptr(cd);
+            if (cfn) {
+                CType* ct = ctype_get(cts, cd->ctypeid);
+                if (ctype_isref(ct->info) || ctype_isptr(ct->info)) {
+                    cfn = cdata_getptr(cfn, ct->size);
+                    ct = ctype_rawchild(cts, ct);
+                }
+                if (!ctype_isfunc(ct->info)) {
+                    cfn = nullptr;
+                } else if (cfn) {
+                    cfn = cdata_getptr(cfn, ct->size);
+                }
+            }
+        }
+    }
+#else 
+	if (lua_type(cL, -1) != LUA_TFUNCTION) {
+		lua_pop(cL, 1);
+		rlua_pushnil(L);
+		return 1;
+	}
+	lua_CFunction cfn = lua_tocfunction(cL, -1);
+#endif
+
+	lua_pop(cL, 1);
+
+	auto info = remotedebug::get_functioninfo((void*)cfn);
+	if (!info.has_value()) {
+		rlua_pushnil(L);
+		return 1;
+	}
+	rlua_pushlstring(L, info->c_str(), info->size());
+	return 1;
+}
+
+
 int
 init_visitor(rlua_State *L) {
 	rluaL_Reg l[] = {
@@ -1601,6 +1655,7 @@ init_visitor(rlua_State *L) {
 		{ "cleanwatch", lclient_cleanwatch },
 		{ "costatus", lclient_costatus },
 		{ "gccount", lclient_gccount },
+		{ "cfunctioninfo", lclient_cfunctioninfo},
 		{ NULL, NULL },
 	};
 	rlua_newtable(L);
