@@ -45,3 +45,7 @@
 #endif
 
 #include <binding/lua_filesystem.cpp>
+
+#if !defined(_WIN32)
+#include <bee/subprocess/subprocess_posix.cpp>
+#endif
