@@ -3,9 +3,6 @@
 #if defined(_WIN32)
 #   include <windows.h>
 #   include <DbgHelp.h>
-#   include <Psapi.h>
-#   pragma comment(lib, "dbghelp.lib")
-#   pragma comment(lib, "psapi.lib")
 #else
 #   include <dlfcn.h>
 #   include <unistd.h>
@@ -293,7 +290,7 @@ namespace remotedebug {
             return std::nullopt;
         }
 #if defined(_WIN32)
-        auto sym = NativeInfo::Addr2Symbol(ptr);
+        auto sym = Addr2Symbol(ptr);
         if (sym) {
             if (sym->file) {
                 return std::format("{}!{} ({}:{})", sym->module_name, sym->function_name, sym->file->name, sym->file->lineno);
