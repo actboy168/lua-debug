@@ -12,7 +12,7 @@
 #ifdef LUAJIT_VERSION
 #include "rluaobject.h"
 #endif
-#include "cfunctioninfo.h"
+#include "rdebug_cfunctioninfo.h"
 int debug_pcall(lua_State* L, int nargs, int nresults, int errfunc);
 
 lua_State* get_host(rlua_State *L);
@@ -1614,7 +1614,7 @@ static int lclient_cfunctioninfo(rlua_State *L) {
 
 	lua_pop(cL, 1);
 
-	auto info = NativeInfo::get_functioninfo((void*)cfn);
+	auto info = remotedebug::get_functioninfo((void*)cfn);
 	if (!info.has_value()) {
 		rlua_pushnil(L);
 		return 1;
