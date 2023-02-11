@@ -16,7 +16,7 @@
 #include <string_view>
 
 #include "injectdll.h"
-#include "macos/shellcode.inl"
+#include "shellcode.inl"
 
 #include <bee/format.h>
 
