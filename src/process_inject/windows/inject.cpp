@@ -30,12 +30,7 @@ static int injectdll(lua_State* L) {
 #endif
     return 0;
 }
-#ifdef _WIN32
-#define DLLEXPORT __declspec(dllexport)
-#else
-#define DLLEXPORT __attribute__((visibility("default")))
-#endif
-extern "C" DLLEXPORT
+extern "C" _declspec(dllexport)
 int luaopen_inject(lua_State* L) {
     luaL_Reg lib[] = {
         {"injectdll", injectdll},

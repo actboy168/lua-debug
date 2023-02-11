@@ -10,33 +10,15 @@ if not lm.no_inject then
     }
 
     lm:executable('process_inject_helper') {
-        bindir = "publish/bin/",
+        bindir = "publish/bin/macos",
         deps = "std_fmt",
         includes = {
             "src/process_inject",
             "3rd/bee.lua",
         },
         sources = {
-            "src/process_inject/macos/main.cc",
+            "src/process_inject/macos/*.cc",
             "src/process_inject/macos/process_helper.mm",
-            "src/process_inject/injectdll_macos.cpp",
         },
     }
-	lm:source_set "launcher_threads" {
-		windows = {
-			sources = {
-				"src/launcher/thread/threads_windows.cpp",
-			}
-		},
-		linux = {
-			sources = {
-				"src/launcher/thread/threads_linux.cpp",
-			}
-		},
-		macos = {
-			sources = {
-				"src/launcher/thread/threads_macos.cpp",
-			}
-		}
-	}
 end
