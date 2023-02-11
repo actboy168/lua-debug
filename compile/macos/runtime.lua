@@ -4,14 +4,14 @@ require "compile.common.runtime"
 
 if not lm.no_inject then
     require 'compile.macos.shellcode'
-    lm:source_set "std_fmt"{
+    lm:source_set "std_fmt" {
         includes = "3rd/bee.lua/bee/nonstd",
         sources = "3rd/bee.lua/bee/nonstd/fmt/*.cc"
     }
 
     lm:executable('process_inject_helper') {
         bindir = "publish/bin/macos",
-        deps = "std_fmt",
+        deps = { "std_fmt", "shellcode" },
         includes = {
             "src/process_inject",
             "3rd/bee.lua",
