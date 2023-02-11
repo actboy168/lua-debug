@@ -46,7 +46,7 @@ lm:executable 'process_inject_helper' {
         "3rd/bee.lua",
     },
     sources = {
-        "src/process_inject/macos/*.cc",
+        "src/process_inject/macos/*.cpp",
         "src/process_inject/macos/process_helper.mm",
     },
 }

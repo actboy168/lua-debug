@@ -2,7 +2,7 @@ local lm = require "luamake"
 
 lm:build "shellcode_compile" {
     "clang", "$in", "-shared", "-fpic", "-o", "$out", "-std=c++17", "-O3", lm.target and "--target="..lm.target,
-    input = "src/process_inject/macos/shellcode.cc",
+    input = "src/process_inject/macos/shellcode.cpp",
     output = "$builddir/shellcode/shellcode.so",
 }
 
