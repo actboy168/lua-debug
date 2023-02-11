@@ -21,7 +21,7 @@
 #include <bee/format.h>
 
 #define LOG(msg) fprintf(stderr, "%s\n", msg)
-#define LOG_MACH(msg, err) mach_error(msg, err)
+#define LOG_MACH(msg, err) fprintf(stderr, "%s: %s\n", msg, mach_error_string(err))
 
 struct rmain_arg {           // dealloc
     size_t sizeofstruct;

@@ -1,6 +1,7 @@
 local platform_os = require 'frontend.platform_os'
 local log = require 'common.log'
 local fs = require 'bee.filesystem'
+local sp = require 'bee.subprocess'
 
 return function(process, entry)
 	if platform_os() == 'macOS' then
@@ -12,15 +13,18 @@ return function(process, entry)
         if not fs.exists(dylib) then
             return false
         end
-		local shell = ([[/usr/bin/osascript -e "do shell script \"%s %d %s %s\" with administrator privileges with prompt \"lua-debug\""]]):format(helper, process, dylib, entry)
-		local helper_proc, err = io.popen(shell, "r")
-		if not helper_proc then
-			log.error(err)
-			return false
-		end
-		err = helper_proc:read("a")
-		if err ~= '\n' then
-			log.error(err)
+        local p, err = sp.spawn {
+            "/usr/bin/osascript",
+            "-e",
+            ([[do shell script "%s %d %s %s" with administrator privileges with prompt "lua-debug"]]):format(helper, process, dylib, entry),
+            stderr = true,
+        }
+        if not p then
+            log.error("spawn osascript failed", err)
+            return false
+        end
+		if p:wait() ~= 0 then
+			log.error(p.stderr:read "a")
 			return false
 		end
 		return true
