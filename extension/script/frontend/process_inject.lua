@@ -2,14 +2,17 @@ local platform_os = require 'frontend.platform_os'
 local log = require 'common.log'
 local fs = require 'bee.filesystem'
 
-return function(pid, entry)
+return function(process, entry)
 	if platform_os() == 'macOS' then
-        local helper = (WORKDIR / "bin" / "macos" / "process_inject_helper"):string()
-        local dylib = (WORKDIR / "bin" / "macos" / "launcher" .. ".so"):string()
+        if type(process) == "userdata" then
+            process = process:get_id()
+        end
+        local helper = (WORKDIR / "bin" / "process_inject_helper"):string()
+        local dylib = (WORKDIR / "bin" / "launcher.so"):string()
         if not fs.exists(dylib) then
             return false
         end
-		local shell = ([[/usr/bin/osascript -e "do shell script \"%s %d %s %s\" with administrator privileges with prompt \"lua-debug\""]]):format(helper, pid, dylib, entry)
+		local shell = ([[/usr/bin/osascript -e "do shell script \"%s %d %s %s\" with administrator privileges with prompt \"lua-debug\""]]):format(helper, process, dylib, entry)
 		local helper_proc, err = io.popen(shell, "r")
 		if not helper_proc then
 			log.error(err)
@@ -24,7 +27,7 @@ return function(pid, entry)
     else
         local inject = require 'inject'
         if platform_os() == 'Windows' then
-            if not inject.injectdll(pid
+            if not inject.injectdll(process
             , (WORKDIR / "bin" / "windows" / "launcher.x86.dll"):string()
             , (WORKDIR / "bin" / "windows" / "launcher.x64.dll"):string()
             , entry
