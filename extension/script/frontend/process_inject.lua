@@ -4,8 +4,8 @@ local fs = require 'bee.filesystem'
 
 return function(pid, entry)
 	if platform_os() == 'macOS' then
-        local helper = (WORKDIR / "bin" / "process_inject_helper"):string()
-        local dylib = (WORKDIR / "bin" / "launcher" .. ".so"):string()
+        local helper = (WORKDIR / "bin" / "macos" / "process_inject_helper"):string()
+        local dylib = (WORKDIR / "bin" / "macos" / "launcher" .. ".so"):string()
         if not fs.exists(dylib) then
             return false
         end
@@ -25,8 +25,8 @@ return function(pid, entry)
         local inject = require 'inject'
         if platform_os() == 'Windows' then
             if not inject.injectdll(pid
-            , (WORKDIR / "bin" / "launcher.x86.dll"):string()
-            , (WORKDIR / "bin" / "launcher.x64.dll"):string()
+            , (WORKDIR / "bin" / "windows" / "launcher.x86.dll"):string()
+            , (WORKDIR / "bin" / "windows" / "launcher.x64.dll"):string()
             , entry
         ) then
             return false

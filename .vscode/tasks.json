@@ -18,6 +18,13 @@
     },
     "tasks": [
         {
+            "label": "Test",
+            "command": "luamake",
+            "args": [
+                "test"
+            ]
+        },
+        {
             "label": "Rebuild",
             "command": "luamake",
             "args": [
