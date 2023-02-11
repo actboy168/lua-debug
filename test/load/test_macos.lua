@@ -1,12 +1,5 @@
 local fs = require "bee.filesystem"
-
-local arch = "x86_64"
-local f = io.popen("uname -m")
-if f then
-    arch = f:read("l")
-    f:close()
-end
-
+local arch = require "bee.platform".Arch
 local path = 'test/load/test'
 
 
