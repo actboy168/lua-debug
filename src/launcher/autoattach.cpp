@@ -128,7 +128,6 @@ namespace autoattach {
 			}
 			return true;
 		}
-	}
 
 #else
         namespace original {

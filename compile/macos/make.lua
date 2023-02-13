@@ -42,7 +42,6 @@ lm:executable 'process_inject_helper' {
     bindir = "publish/bin/",
     deps = { "std_fmt", "shellcode" },
     includes = {
-        "src/process_inject",
         "3rd/bee.lua",
     },
     sources = {
