@@ -29,8 +29,8 @@ return function(process, entry)
     elseif platform_os() == 'Windows' then
         local inject = require 'inject'
         if not inject.injectdll(process
-            , (WORKDIR / "bin" / "windows" / "launcher.x86.dll"):string()
-            , (WORKDIR / "bin" / "windows" / "launcher.x64.dll"):string()
+            , (WORKDIR / "bin" / "launcher.x86.dll"):string()
+            , (WORKDIR / "bin" / "launcher.x64.dll"):string()
             , entry
         ) then
             return false, "injectdll failed."
