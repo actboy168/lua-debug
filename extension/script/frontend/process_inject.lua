@@ -25,13 +25,14 @@ function _M.lldb_inject(pid, entry, injectdll, lldb_path)
         "-o",
         ('expression (void(*)()&%s)()'):format(entry),
         "-o",
-        "quit"
+        "quit",
+        stdout = true,
     }
     if not p then
         return false, "Spwan lldb failed:" .. err
     end
     if p:wait() ~= 0 then
-        return false, p.stderr:read "a"
+        return false, p.stdout:read "a"
     end
     return true
 end
