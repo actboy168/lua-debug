@@ -1,12 +1,60 @@
 local fs = require 'bee.filesystem'
 local sp = require 'bee.subprocess'
+local arch = require "bee.platform".Arch
 
 local _M = {}
 
+local macos = "macOS"
+local windows = "Windows"
+
+function _M.get_inject_library_path(platform_os)
+    if platform_os == macos then
+        return (WORKDIR / "bin" / "launcher.so"):string()
+    end
+end
+
+function _M.lldb_inject(pid, entry, injectdll, lldb_path)
+    lldb_path = lldb_path or "/usr/bin/lldb"
+    local p, err = sp.spawn {
+        lldb_path,
+        "-p", pid,
+        "--batch",
+        "-o",
+        -- 6 = RTDL_NOW|RTDL_LOCAL
+        ('expression (void*)dlopen("%s", 6)'):format(injectdll),
+        "-o",
+        ('expression (void(*)()&%s)()'):format(entry),
+        "-o",
+        "quit"
+    }
+    if not p then
+        return false, "Spwan lldb failed:" .. err
+    end
+    if p:wait() ~= 0 then
+        return false, p.stderr:read "a"
+    end
+    return true
+end
+
+function _M.macos_check_rosetta_process(process)
+    local rosetta_runtime = "/usr/libexec/rosetta/runtime"
+    if not fs.exists("rosetta_runtime") then
+        return false
+    end
+    local p ,err = sp.spawn({
+        "/usr/bin/fuser",
+        rosetta_runtime,
+        stdout = true
+    })
+    if not p then
+        return false
+    end
+    local l = p.stdout:read("a")
+    return l:find(tostring(process)) ~= nil
+end
 
 function _M.macos_inject(process, entry, dylib)
     local helper = (WORKDIR / "bin" / "process_inject_helper"):string()
-    dylib = dylib or (WORKDIR / "bin" / "launcher.so"):string()
     if not fs.exists(dylib) then
         return false, "Not found launcher.so."
     end
@@ -36,17 +84,26 @@ function _M.windows_inject(process, entry)
     end
 end
 
-function _M.inject(process, entry)
-    local platform_os = require 'frontend.platform_os'()
-    if platform_os == 'macOS' then
-        if type(process) == "userdata" then
-            process = process:get_id()
-        end
-        return _M.macos_inject(process, entry)
-    elseif platform_os == 'Windows' then
-        return _M.windows_inject(process, entry)
+function _M.inject(process, entry, args)
+    local platform_os = require 'frontend.platform_os' ()
+    if type(process) == "userdata" then
+        process = process:get_id()
+    end
+    if args.inject == 'lldb' then
+        return _M.lldb_inject(process, entry, _M.get_inject_library_path(platform_os), args.inject_executable)
     else
-        return false, "Inject unsupported."
+        if platform_os == macos then
+            if arch == "arm64" then
+                if _M.macos_check_rosetta_process(process) then
+                    return false, "please specify inject=lldb for inject Rosetta"
+                end
+            end
+            return _M.macos_inject(process, entry, _M.get_inject_library_path(platform_os))
+        elseif platform_os == windows then
+            return _M.windows_inject(process, entry)
+        else
+            return false, "Inject unsupported."
+        end
     end
 end
 
