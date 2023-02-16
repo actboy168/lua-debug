@@ -1,3 +1,5 @@
+package.path = "extension/script/?.lua;extension/script/?/init.lua;" .. package.path
+
 local arch = require "bee.platform".Arch
 if arch == "x86_64" then
     arch = "x64"
@@ -6,7 +8,7 @@ local fs = require "bee.filesystem"
 local dylib = tostring(fs.current_path() / "test/inject/launcher.so")
 print("mask so: " .. dylib)
 
-local function get_pid()
+local function get_pid(nokill)
     local ps = io.popen("ps awxx -o pid=,args= -c | grep 'while true'")
     if ps then
         while true do
@@ -18,7 +20,14 @@ local function get_pid()
             if l:find("%d+ lua %-e while true do end") then
                 local s, e = l:find("%d+")
                 if s and e then
-                    return l:sub(s, e)
+                    return setmetatable({ pid = l:sub(s, e) }, {
+                        __gc = not nokill and function(t)
+                            os.execute("kill -KILL " .. t.pid)
+                        end,
+                        __tostring = function(t)
+                            return tostring(t.pid)
+                        end
+                    })
                 end
             end
         end
@@ -28,10 +37,10 @@ end
 local function compile_mask_so()
     assert(os.execute("clang++ -shared -fPIC -g -O0 -std=c++17 test/inject/launcher.cpp -o " .. dylib))
     return setmetatable({}, {
-            __gc = function()
-                --os.execute("rm -rf " .. dylib)
-            end
-        })
+        __gc = function()
+            os.execute("rm -rf " .. dylib)
+        end
+    })
 end
 
 
@@ -43,16 +52,21 @@ local function create_test_lua()
 end
 
 local masker = compile_mask_so()
-local pid = create_test_lua()
+local pid_t = create_test_lua()
+local pid = pid_t.pid
 assert(pid)
-print("target pid:" .. pid)
+print("target pid:", pid)
 
-local function process_inject()
-    local helper = "publish/bin/macos/process_inject_helper"
+local function process_inject(process, entry)
+    local helper = "publish/bin/process_inject_helper"
     local shell = ([[/usr/bin/osascript -e "do shell script \"%s %d %s %s\" with administrator privileges with prompt \"lua-debug\""]])
-        :format(helper, pid, dylib, "attach")
+        :format(helper, process, dylib, entry)
 
     os.execute(shell)
+end
+
+if not process_inject then
+    process_inject = require("frontend.process_inject").macos_inject
 end
 
 local function wait_injected()
@@ -67,6 +81,7 @@ local function wait_injected()
     end
 end
 
-process_inject()
-print("process injecte: " .. pid)
+WORKDIR = fs.exe_path():parent_path():parent_path()
+process_inject(pid, "attach")
+print("process injecte: ", pid)
 assert(wait_injected())

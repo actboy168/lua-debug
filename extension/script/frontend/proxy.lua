@@ -58,7 +58,7 @@ local function attach_process(pkg, pid)
     if pkg.arguments.luaVersion == "latest" then
         ipc_send_latest(pid)
     end
-    local ok, errmsg = process_inject(pid, "attach")
+    local ok, errmsg = process_inject.inject(pid, "attach")
     if not ok then
 		return false, errmsg
 	end
