@@ -11,7 +11,6 @@ function _M.macos_inject(process, entry)
         return false, "Not found launcher.so."
     end
     local p, err = sp.spawn {
-        "/usr/bin/bash",
         "/usr/bin/osascript",
         "-e",
         ([[do shell script "%s %d %s %s" with administrator privileges with prompt "lua-debug"]]):format(helper, process, dylib, entry),
