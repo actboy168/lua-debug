@@ -4,9 +4,9 @@ local sp = require 'bee.subprocess'
 local _M = {}
 
 
-function _M.macos_inject(process, entry)
+function _M.macos_inject(process, entry, dylib)
     local helper = (WORKDIR / "bin" / "process_inject_helper"):string()
-    local dylib = (WORKDIR / "bin" / "launcher.so"):string()
+    dylib = dylib or (WORKDIR / "bin" / "launcher.so"):string()
     if not fs.exists(dylib) then
         return false, "Not found launcher.so."
     end

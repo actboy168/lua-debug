@@ -62,7 +62,7 @@ local function process_inject(process, entry)
     local shell = ([[/usr/bin/osascript -e "do shell script \"%s %d %s %s\" with administrator privileges with prompt \"lua-debug\""]])
         :format(helper, process, dylib, entry)
 
-    os.execute(shell)
+    return os.execute(shell)
 end
 
 if not process_inject then
@@ -81,7 +81,7 @@ local function wait_injected()
     end
 end
 
-WORKDIR = fs.exe_path():parent_path():parent_path()
-process_inject(pid, "attach")
+WORKDIR = fs.current_path() / "publish"
+assert(process_inject(pid, "attach", dylib))
 print("process injecte: ", pid)
-assert(wait_injected())
+assert(wait_injected(), "inject failed")
