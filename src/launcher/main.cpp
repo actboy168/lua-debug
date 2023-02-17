@@ -50,6 +50,10 @@ static void attach(lua_State* L, autoattach::attach_args* args) {
 }
 void attach_ctx::attach(lua_State* L) const {
 #else
+inline void print_error(lua_State * L) {
+	lua_tostring(L, -1);
+	lua_pop(L, 1);
+}
 void attach(lua_State* L) {
 #define _luaL_loadbuffer luaL_loadbuffer
 #define _lua_pcall lua_pcall
