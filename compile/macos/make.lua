@@ -63,7 +63,7 @@ else
     lm:build "launcher" {
         deps = "liblauncher",
         "cp",
-        lm.bindir.."liblauncher.so",
+        lm.bindir.."/liblauncher.so",
         "publish/bin/"
     }
 end
