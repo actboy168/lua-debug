@@ -1,6 +1,5 @@
 local lm = require "luamake"
 require "compile.common.detect_platform"
-require "compile.common.format"
 
 local runtimes = {}
 
@@ -148,11 +147,11 @@ for _, luaver in ipairs {"lua51","lua52","lua53","lua54","lua-latest","luajit"} 
     if luaver == "luajit" then
         luaSrcDir = luaSrcDir.."/src";
     end
+
     lm:shared_library (luaver..'/remotedebug') {
         bindir = bindir,
         deps = {
             "onelua",
-            "std_format",
         },
         defines = {
             "BEE_INLINE",
@@ -163,12 +162,15 @@ for _, luaver in ipairs {"lua51","lua52","lua53","lua54","lua-latest","luajit"} 
             luaSrcDir,
             "3rd/bee.lua/",
             "3rd/bee.lua/3rd/lua-seri",
+            "3rd/bee.lua/bee/nonstd/3rd/fmt/include",
         },
         sources = {
             "src/remotedebug/*.cpp",
             "src/remotedebug/thunk/*.cpp",
             "3rd/bee.lua/bee/error.cpp",
             "3rd/bee.lua/bee/net/*.cpp",
+            "3rd/bee.lua/bee/nonstd/3rd/fmt/src/format.cc",
+            "3rd/bee.lua/bee/nonstd/3rd/fmt/src/os.cc",
         },
         windows = {
             deps = luaver..'/'..luaver,
