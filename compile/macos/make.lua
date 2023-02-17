@@ -29,10 +29,9 @@ if lm.platform == "darwin-arm64" then
 end
 
 lm:source_set "std_format" {
-    includes = "3rd/bee.lua/bee/nonstd/3rd/fmt/include",
     sources = {
-        "3rd/bee.lua/bee/nonstd/3rd/fmt/src/format.cc",
-        "3rd/bee.lua/bee/nonstd/3rd/fmt/src/os.cc",
+        "3rd/bee.lua/bee/nonstd/3rd/format.cc",
+        "3rd/bee.lua/bee/nonstd/3rd/os.cc",
     }
 }
 

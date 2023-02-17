@@ -163,15 +163,9 @@ for _, luaver in ipairs {"lua51","lua52","lua53","lua54","lua-latest","luajit"} 
             luaSrcDir,
             "3rd/bee.lua/",
             "3rd/bee.lua/3rd/lua-seri",
-            "3rd/bee.lua/bee/nonstd/3rd/fmt/include",
         },
         sources = {
-            "src/remotedebug/*.cpp",
-            "src/remotedebug/thunk/*.cpp",
-            "3rd/bee.lua/bee/error.cpp",
-            "3rd/bee.lua/bee/net/*.cpp",
-            "3rd/bee.lua/bee/nonstd/3rd/fmt/src/format.cc",
-            "3rd/bee.lua/bee/nonstd/3rd/fmt/src/os.cc",
+            "src/remotedebug/**/*.cpp",
         },
         windows = {
             deps = luaver..'/'..luaver,
@@ -179,10 +173,6 @@ for _, luaver in ipairs {"lua51","lua52","lua53","lua54","lua-latest","luajit"} 
                 "_CRT_SECURE_NO_WARNINGS",
                 "_WIN32_WINNT=0x0601",
                 ("LUA_DLL_VERSION="..luaver)
-            },
-            sources = {
-                "3rd/bee.lua/bee/platform/win/version_win.cpp",
-                "3rd/bee.lua/bee/platform/win/unicode_win.cpp",
             },
             links = {
                 "version",
