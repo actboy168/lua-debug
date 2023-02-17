@@ -1,7 +1,7 @@
 #include <lua.hpp>
 #include <Windows.h>
 #include <bee/lua/binding.h>
-#include <bee/utility/unicode_win.h>
+#include <bee/platform/win/unicode.h>
 #include <bee/subprocess.h>
 #include <algorithm>
 #include "injectdll.h"

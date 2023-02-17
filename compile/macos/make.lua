@@ -13,6 +13,7 @@ lm:import "3rd/bee.lua/make.lua"
 
 lm.runtime_platform = lm.platform
 require "compile.macos.runtime"
+require "compile.common.format"
 require "compile.macos.shellcode"
 
 if lm.platform == "darwin-arm64" then
@@ -32,14 +33,9 @@ if lm.platform == "darwin-arm64" then
     }
 end
 
-lm:source_set "std_fmt" {
-    includes = "3rd/bee.lua/bee/nonstd",
-    sources = "3rd/bee.lua/bee/nonstd/fmt/*.cc"
-}
-
 lm:executable 'process_inject_helper' {
     bindir = "publish/bin/",
-    deps = { "std_fmt", "shellcode" },
+    deps = { "std_format", "shellcode" },
     includes = {
         "3rd/bee.lua",
     },

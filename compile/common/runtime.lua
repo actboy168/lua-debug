@@ -1,5 +1,6 @@
 local lm = require "luamake"
 require "compile.common.detect_platform"
+require "compile.common.format"
 
 local runtimes = {}
 
@@ -149,7 +150,10 @@ for _, luaver in ipairs {"lua51","lua52","lua53","lua54","lua-latest","luajit"} 
     end
     lm:shared_library (luaver..'/remotedebug') {
         bindir = bindir,
-        deps = "onelua",
+        deps = {
+            "onelua",
+            "std_format",
+        },
         defines = {
             "BEE_INLINE",
             ("DBG_LUA_VERSION=%d"):format(lua_version_num),
@@ -159,14 +163,12 @@ for _, luaver in ipairs {"lua51","lua52","lua53","lua54","lua-latest","luajit"} 
             luaSrcDir,
             "3rd/bee.lua/",
             "3rd/bee.lua/3rd/lua-seri",
-            "3rd/bee.lua/bee/nonstd",
         },
         sources = {
             "src/remotedebug/*.cpp",
             "src/remotedebug/thunk/*.cpp",
             "3rd/bee.lua/bee/error.cpp",
             "3rd/bee.lua/bee/net/*.cpp",
-            "3rd/bee.lua/bee/nonstd/fmt/*.cc",
         },
         windows = {
             deps = luaver..'/'..luaver,
@@ -176,8 +178,8 @@ for _, luaver in ipairs {"lua51","lua52","lua53","lua54","lua-latest","luajit"} 
                 ("LUA_DLL_VERSION="..luaver)
             },
             sources = {
-                "3rd/bee.lua/bee/platform/version_win.cpp",
-                "3rd/bee.lua/bee/utility/unicode_win.cpp",
+                "3rd/bee.lua/bee/platform/win/version_win.cpp",
+                "3rd/bee.lua/bee/platform/win/unicode_win.cpp",
             },
             links = {
                 "version",
