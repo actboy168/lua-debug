@@ -118,18 +118,19 @@ for _, luaver in ipairs {"lua51","lua52","lua53","lua54","lua-latest","luajit"} 
         if lm.os == "windows" then
             require "compile.luajit.make_windows"
         else
-			if lm.cross_compile then
-				lm:build "buildvm" {
-					"$luamake",
-					"-C", lm.workdir,
-					"-f", "compile/luajit/make_buildtools.lua",
-					"-runtime_platform",lm.runtime_platform,
-					"-bindir",lm.bindir,
-					pool = "console",
-				}
-			else
-				require "compile.luajit.make_buildtools"
-			end
+            if lm.cross_compile then
+                require "compile.common.run_luamake"
+                lm:build "buildvm" {
+                    rule = "run_luamake",
+                    inputs = "compile/luajit/make_buildtools.lua",
+                    args = {
+                        "-bindir", lm.bindir,
+                        "-runtime_platform", lm.runtime_platform,
+                    },
+                }
+            else
+                require "compile.luajit.make_buildtools"
+            end
             require "compile.luajit.make"
         end
     end

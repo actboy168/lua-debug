@@ -3,20 +3,16 @@ local lm = require "luamake"
 lm.arch = "x86"
 lm.runtime_platform = "win32-ia32"
 require "compile.windows.runtime"
-
-lm:rule "build_x86_64" {
-    "$luamake",
-    "-C", lm.workdir,
-    "-f", "compile/windows/runtime.lua",
-    "-builddir", "build/win32-x64/"..lm.mode,
-    "-mode", lm.mode,
-    "-arch", "x86_64",
-    "-runtime_platform", "win32-x64",
-    pool = "console",
-}
+require "compile.common.run_luamake"
 
 lm:build "x86_64" {
-    rule = "build_x86_64"
+    rule = "run_luamake",
+    inputs = "compile/windows/runtime.lua",
+    args = {
+        "-builddir", "build/win32-x64/"..lm.mode,
+        "-runtime_platform", "win32-x64",
+        "-arch", "x86_64"
+    },
 }
 
 lm.EXE_DIR = "publish/bin/"
