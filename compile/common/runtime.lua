@@ -151,11 +151,8 @@ for _, luaver in ipairs {"lua51","lua52","lua53","lua54","lua-latest","luajit"} 
 
     lm:shared_library (luaver..'/remotedebug') {
         bindir = bindir,
-        deps = {
-            "onelua",
-        },
+        deps = "onelua",
         defines = {
-            "BEE_INLINE",
             ("DBG_LUA_VERSION=%d"):format(lua_version_num),
             luaver == "lua-latest" and "LUA_VERSION_LATEST",
         },
