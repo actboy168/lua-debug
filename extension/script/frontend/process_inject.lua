@@ -15,7 +15,7 @@ function _M.get_inject_library_path()
 end
 
 function _M.lldb_inject(pid, entry, injectdll, lldb_path)
-    lldb_path = lldb_path or "/usr/bin/lldb"
+    lldb_path = lldb_path or "lldb"
     local p, err = sp.spawn {
         lldb_path,
         "-p", pid,
@@ -97,7 +97,7 @@ function _M.inject(process, entry, args)
         if platform_os == macos then
             if arch == "arm64" then
                 if _M.macos_check_rosetta_process(process) then
-                    return false, "please specify inject=lldb for inject Rosetta"
+                    return _M.lldb_inject(process, entry, _M.get_inject_library_path(), args.inject_executable)
                 end
             end
             return _M.macos_inject(process, entry, _M.get_inject_library_path())
