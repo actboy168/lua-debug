@@ -4,7 +4,7 @@
 #else
 #include "attach_args.h"
 #endif
-
+struct lua_State;
 namespace autoattach {
 #ifdef _WIN32
 	typedef void(*fn_attach)(lua_State* L);

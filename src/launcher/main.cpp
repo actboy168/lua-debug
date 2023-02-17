@@ -31,6 +31,7 @@ std::string readfile(const fs::path& filename) {
 	fclose(f);
 	return tmp;
 }
+#ifndef _WIN32
 struct attach_ctx : autoattach::attach_args {
 	inline void print_error(lua_State* L)const {
 		if (lua_tolstring){
@@ -41,12 +42,14 @@ struct attach_ctx : autoattach::attach_args {
 
 	void attach(lua_State* L) const;
 
-	static void attach(lua_State* L, autoattach::attach_args* args) {
-		static_cast<attach_ctx*>(args)->attach(L);
-	}
 };
-
-void attach_ctx::attach(lua_State* L) const{
+static void attach(lua_State* L, autoattach::attach_args* args) {
+    static_cast<attach_ctx*>(args)->attach(L);
+}
+void attach_ctx::attach(lua_State* L) const {
+#else
+void attach(lua_State* L) {
+#endif
 	LOG("attach lua vm entry");
 	auto r = bee::path_helper::dll_path();
 	if (!r) {
@@ -78,7 +81,7 @@ static void initialize(bool ap) {
 	bool test = false;
 	if (injected.compare_exchange_strong(test, true, std::memory_order_acquire)){
 		LOG("initialize");
-		autoattach::initialize(attach_ctx::attach, ap);
+		autoattach::initialize(attach, ap);
 		injected.store(false, std::memory_order_release);
 	}
 }
