@@ -24,7 +24,7 @@ lm.EXE_NAME = "lua-debug"
 lm.EXE_RESOURCE = "../../compile/windows/lua-debug.rc"
 lm:import "3rd/bee.lua/make.lua"
 lm:lua_dll 'inject' {
-    bindir = "publish/bin/",
+    bindir = "publish/bin",
     deps = "lua54",
     defines = "BEE_INLINE",
     includes = {
@@ -33,8 +33,7 @@ lm:lua_dll 'inject' {
         "3rd/wow64ext/src",
     },
     sources = {
-        "src/process_inject/injectdll.cpp",
-        "src/process_inject/inject.cpp",
+        "src/process_inject/windows/*.cpp",
         "3rd/wow64ext/src/wow64ext.cpp",
         "3rd/bee.lua/bee/utility/unicode_win.cpp",
     },

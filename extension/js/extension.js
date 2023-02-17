@@ -116,11 +116,9 @@ async function activate(context) {
         })
     );
 
-    if (os.platform() == "win32") {
-        context.subscriptions.push(
-            vscode.commands.registerCommand("extension.lua-debug.pickProcess", pickProcess.pick)
-        );
-    }
+    context.subscriptions.push(
+		vscode.commands.registerCommand("extension.lua-debug.pickProcess", pickProcess.pick)
+	);
 }
 
 exports.activate = activate;

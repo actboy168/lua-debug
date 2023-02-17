@@ -3,6 +3,7 @@ local debuger_factory = require 'frontend.debuger_factory'
 local fs = require 'bee.filesystem'
 local sp = require 'bee.subprocess'
 local platform_os = require 'frontend.platform_os'
+local process_inject = require 'frontend.process_inject'
 local server
 local client
 local initReq
@@ -57,14 +58,11 @@ local function attach_process(pkg, pid)
     if pkg.arguments.luaVersion == "latest" then
         ipc_send_latest(pid)
     end
-    local inject = require 'inject'
-    if not inject.injectdll(pid
-        , (WORKDIR / "bin" / "launcher.x86.dll"):string()
-        , (WORKDIR / "bin" / "launcher.x64.dll"):string()
-        , "attach"
-    ) then
-        return false
-    end
+    local ok, errmsg = process_inject.inject(pid, "attach")
+    if not ok then
+		return false, errmsg
+	end
+
     server = network(getUnixAddress(pid), true)
     server.sendmsg(initReq)
     server.sendmsg(pkg)
@@ -80,14 +78,15 @@ end
 local function proxy_attach(pkg)
     local args = pkg.arguments
     platform_os.init(args)
-    if platform_os() ~= "Windows" then
-        attach_tcp(pkg, args)
-        return
+    if platform_os() ~= "Windows" and platform_os() ~= "macOS" then
+		attach_tcp(pkg, args)
+		return
     end
     if args.processId then
         local processId = tonumber(args.processId)
-        if not attach_process(pkg, processId) then
-            response_error(pkg, ('Cannot attach process `%d`.'):format(processId))
+        local ok, errmsg = attach_process(pkg, processId)
+        if not ok then
+            response_error(pkg, ('Cannot attach process `%d`. %s'):format(processId, errmsg))
         end
         return
     end
@@ -100,8 +99,9 @@ local function proxy_attach(pkg)
             response_error(pkg, ('There are %d processes `%s`.'):format(#pids, args.processName))
             return
         end
-        if not attach_process(pkg, pids[1]) then
-            response_error(pkg, ('Cannot attach process `%s` `%d`.'):format(args.processName, pids[1]))
+        local ok, errmsg = attach_process(pkg, pids[1])
+        if not ok then
+            response_error(pkg, ('Cannot attach process `%s` `%d`. %s'):format(args.processName, pids[1], errmsg))
         end
         return
     end
