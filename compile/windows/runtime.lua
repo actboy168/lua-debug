@@ -37,7 +37,7 @@ lm:lua_library ('launcher.'..ArchAlias[platform]) {
     },
     sources = {
         "3rd/bee.lua/bee/error.cpp",
-        "3rd/bee.lua/bee/utility/unicode_win.cpp",
+        "3rd/bee.lua/bee/platform/win/unicode_win.cpp",
         "3rd/bee.lua/bee/utility/path_helper.cpp",
         "3rd/bee.lua/bee/utility/file_handle.cpp",
         "3rd/bee.lua/bee/utility/file_handle_win.cpp",

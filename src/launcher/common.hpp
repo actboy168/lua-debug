@@ -1,6 +1,6 @@
 #pragma once
 #include <string_view>
-#include <bee/format.h>
+#include <bee/nonstd/format.h>
 
 #ifndef NDEBUG
 #include <stdio.h>

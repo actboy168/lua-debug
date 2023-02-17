@@ -35,7 +35,7 @@ end
 
 lm:executable 'process_inject_helper' {
     bindir = "publish/bin/",
-    deps = { "std_fmt", "shellcode_export" },
+    deps = { "std_format", "shellcode" },
     includes = {
         "3rd/bee.lua",
     },
@@ -68,7 +68,6 @@ lm:default {
     "common",
     "lua-debug",
     "runtime",
-    "launcher",
     "process_inject_helper",
     "launcher",
     lm.platform == "darwin-arm64" and "x86_64"

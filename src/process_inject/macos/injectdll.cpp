@@ -19,7 +19,7 @@
 #include "injectdll.h"
 #include "shellcode.inl"
 
-#include <bee/format.h>
+#include <bee/nonstd/format.h>
 
 #define LOG(msg) fprintf(stderr, "%s\n", msg)
 #define LOG_MACH(msg, err) mach_error(msg, err)

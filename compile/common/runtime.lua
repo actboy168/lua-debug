@@ -147,9 +147,12 @@ for _, luaver in ipairs {"lua51","lua52","lua53","lua54","lua-latest","luajit"} 
     if luaver == "luajit" then
         luaSrcDir = luaSrcDir.."/src";
     end
+
     lm:shared_library (luaver..'/remotedebug') {
         bindir = bindir,
-        deps = "onelua",
+        deps = {
+            "onelua",
+        },
         defines = {
             "BEE_INLINE",
             ("DBG_LUA_VERSION=%d"):format(lua_version_num),
@@ -159,14 +162,15 @@ for _, luaver in ipairs {"lua51","lua52","lua53","lua54","lua-latest","luajit"} 
             luaSrcDir,
             "3rd/bee.lua/",
             "3rd/bee.lua/3rd/lua-seri",
-            "3rd/bee.lua/bee/nonstd",
+            "3rd/bee.lua/bee/nonstd/3rd/fmt/include",
         },
         sources = {
             "src/remotedebug/*.cpp",
             "src/remotedebug/thunk/*.cpp",
             "3rd/bee.lua/bee/error.cpp",
             "3rd/bee.lua/bee/net/*.cpp",
-            "3rd/bee.lua/bee/nonstd/fmt/*.cc",
+            "3rd/bee.lua/bee/nonstd/3rd/fmt/src/format.cc",
+            "3rd/bee.lua/bee/nonstd/3rd/fmt/src/os.cc",
         },
         windows = {
             deps = luaver..'/'..luaver,
@@ -176,8 +180,8 @@ for _, luaver in ipairs {"lua51","lua52","lua53","lua54","lua-latest","luajit"} 
                 ("LUA_DLL_VERSION="..luaver)
             },
             sources = {
-                "3rd/bee.lua/bee/platform/version_win.cpp",
-                "3rd/bee.lua/bee/utility/unicode_win.cpp",
+                "3rd/bee.lua/bee/platform/win/version_win.cpp",
+                "3rd/bee.lua/bee/platform/win/unicode_win.cpp",
             },
             links = {
                 "version",

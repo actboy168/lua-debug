@@ -152,7 +152,7 @@ lhost_event(lua_State *L) {
 }
 
 #if defined(_WIN32) && !defined(RLUA_DISABLE)
-#include <bee/utility/unicode_win.h>
+#include <bee/platform/win/unicode.h>
 
 static std::string_view
 to_strview(lua_State* L, int idx) {

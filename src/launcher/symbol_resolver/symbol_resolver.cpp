@@ -4,7 +4,7 @@
 #include <array>
 
 #include <bee/utility/file_handle.h>
-#include <bee/filesystem.h>
+#include <bee/nonstd/filesystem.h>
 
 #include "../common.hpp"
 #include "symbol_resolver.h"

@@ -1,6 +1,6 @@
 #include "autoattach.h"
 #include <lua.hpp>
-#include <bee/filesystem.h>
+#include <bee/nonstd/filesystem.h>
 #include <bee/utility/path_helper.h>
 #ifndef _WIN32
 #include <unistd.h>

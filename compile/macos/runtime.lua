@@ -3,9 +3,12 @@ local lm = require "luamake"
 require "compile.common.runtime"
 require "compile.common.dobby"
 
-lm:source_set "std_fmt" {
-    includes = "3rd/bee.lua/bee/nonstd",
-    sources = "3rd/bee.lua/bee/nonstd/fmt/*.cc"
+lm:source_set "std_format" {
+    includes = "3rd/bee.lua/bee/nonstd/3rd/fmt/include",
+    sources = {
+        "3rd/bee.lua/bee/nonstd/3rd/fmt/src/format.cc",
+        "3rd/bee.lua/bee/nonstd/3rd/fmt/src/os.cc",
+    }
 }
 
 lm:source_set "launcher_threads" {
@@ -31,7 +34,7 @@ lm:lua_library('liblauncher') {
     deps = {
         "dobby",
         "launcher_threads",
-        "std_fmt",
+        "std_format",
     },
     includes = {
         "3rd/bee.lua",

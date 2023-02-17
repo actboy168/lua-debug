@@ -18,3 +18,8 @@ lm:runlua "shellcode_export" {
     input = "$builddir/shellcode/shellcode.txt",
     output = "src/process_inject/macos/shellcode.inl",
 }
+
+lm:phony "shellcode" {
+    input = "src/process_inject/macos/shellcode.inl",
+    output = "src/process_inject/macos/injectdll.cpp",
+}
