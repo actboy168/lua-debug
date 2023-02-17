@@ -2,10 +2,20 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "test",
+            "name": "attach",
             "type": "lua",
             "request": "attach",
             "stopOnEntry": true,
+            "address": "127.0.0.1:12306"
+        },
+        {
+            "name": "launch",
+            "type": "lua",
+            "request": "launch",
+            "stopOnEntry": true,
+            "runtimeExecutable": "${workspaceFolder}/../../publish/runtime/win32-x64/lua-latest/lua.exe",
+            "runtimeArgs": "${workspaceFolder}/test.lua",
+            "inject": "none",
             "address": "127.0.0.1:12306"
         }
     ]

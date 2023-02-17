@@ -1,32 +1,10 @@
+#if defined _WIN32
+#   include <winsock2.h>
+#endif
+
 #define RLUA_REPLACE
 #include "rlua.h"
 #include "rdebug_cmodule.h"
-#include <binding/lua_socket.cpp>
-#include <binding/lua_thread.cpp>
-
-#if defined(_WIN32)
-#include <binding/lua_unicode.cpp>
-#include <bee/thread/simplethread_win.cpp>
-#else
-#include <bee/thread/simplethread_posix.cpp>
-#endif
-
-#include <bee/utility/path_helper.cpp>
-#include <bee/utility/file_handle.cpp>
-
-#if defined(_WIN32)
-#include <bee/utility/file_handle_win.cpp>
-#else
-#include <bee/utility/file_handle_posix.cpp>
-#endif
-
-#if defined(__APPLE__)
-#include <bee/utility/file_handle_osx.cpp>
-#elif defined(__linux__)
-#include <bee/utility/file_handle_linux.cpp>
-#elif defined(__NetBSD__) || defined(__FreeBSD__) || defined(__OpenBSD__)
-#include <bee/utility/file_handle_bsd.cpp>
-#endif
 
 #if !defined(LUAI_UACINT)
 #   if defined(_MSC_VER)
@@ -43,9 +21,35 @@
 #       define LUA_INTEGER_FMT "%lld"
 #   endif
 #endif
+#include <bee/lua/file.h>
 
+#include <bee/error.cpp>
+#include <bee/net/socket.cpp>
+#include <bee/net/endpoint.cpp>
+#include <bee/nonstd/3rd/format.cc>
+#include <bee/nonstd/3rd/os.cc>
+#include <bee/utility/path_helper.cpp>
+#include <bee/utility/file_handle.cpp>
+#include <binding/lua_socket.cpp>
+#include <binding/lua_thread.cpp>
 #include <binding/lua_filesystem.cpp>
 
-#if !defined(_WIN32)
+#if defined(_WIN32)
+#include <bee/platform/win/version_win.cpp>
+#include <bee/platform/win/unicode_win.cpp>
+#include <bee/utility/file_handle_win.cpp>
+#include <bee/thread/simplethread_win.cpp>
+#include <binding/lua_unicode.cpp>
+#else
+#include <bee/thread/simplethread_posix.cpp>
+#include <bee/utility/file_handle_posix.cpp>
 #include <bee/subprocess/subprocess_posix.cpp>
+#endif
+
+#if defined(__APPLE__)
+#include <bee/utility/file_handle_osx.cpp>
+#elif defined(__linux__)
+#include <bee/utility/file_handle_linux.cpp>
+#elif defined(__NetBSD__) || defined(__FreeBSD__) || defined(__OpenBSD__)
+#include <bee/utility/file_handle_bsd.cpp>
 #endif
