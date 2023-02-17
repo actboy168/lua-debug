@@ -124,6 +124,7 @@ for _, luaver in ipairs {"lua51","lua52","lua53","lua54","lua-latest","luajit"} 
                     rule = "run_luamake",
                     inputs = "compile/luajit/make_buildtools.lua",
                     args = {
+                        "-bindir", lm.bindir,
                         "-runtime_platform", lm.runtime_platform,
                     },
                 }
