@@ -24,7 +24,7 @@ lm.EXE_NAME = "lua-debug"
 lm.EXE_RESOURCE = "../../compile/windows/lua-debug.rc"
 lm:import "3rd/bee.lua/make.lua"
 lm:lua_dll 'inject' {
-    bindir = "publish/bin/windows",
+    bindir = "publish/bin",
     deps = "lua54",
     defines = "BEE_INLINE",
     includes = {

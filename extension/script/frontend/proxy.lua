@@ -58,8 +58,9 @@ local function attach_process(pkg, pid)
     if pkg.arguments.luaVersion == "latest" then
         ipc_send_latest(pid)
     end
-    if not process_inject(pid, "attach") then
-		return false
+    local ok, errmsg = process_inject.inject(pid, "attach")
+    if not ok then
+		return false, errmsg
 	end
 
     server = network(getUnixAddress(pid), true)
@@ -83,8 +84,9 @@ local function proxy_attach(pkg)
     end
     if args.processId then
         local processId = tonumber(args.processId)
-        if not attach_process(pkg, processId) then
-            response_error(pkg, ('Cannot attach process `%d`.'):format(processId))
+        local ok, errmsg = attach_process(pkg, processId)
+        if not ok then
+            response_error(pkg, ('Cannot attach process `%d`. %s'):format(processId, errmsg))
         end
         return
     end
@@ -97,8 +99,9 @@ local function proxy_attach(pkg)
             response_error(pkg, ('There are %d processes `%s`.'):format(#pids, args.processName))
             return
         end
-        if not attach_process(pkg, pids[1]) then
-            response_error(pkg, ('Cannot attach process `%s` `%d`.'):format(args.processName, pids[1]))
+        local ok, errmsg = attach_process(pkg, pids[1])
+        if not ok then
+            response_error(pkg, ('Cannot attach process `%s` `%d`. %s'):format(args.processName, pids[1], errmsg))
         end
         return
     end

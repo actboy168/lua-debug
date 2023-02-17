@@ -28,7 +28,7 @@
             "label": "Rebuild",
             "command": "luamake",
             "args": [
-                "remake"
+                "rebuild"
             ]
         },
         {

@@ -13,6 +13,7 @@ lm:import "3rd/bee.lua/make.lua"
 
 lm.runtime_platform = lm.platform
 require "compile.macos.runtime"
+require "compile.macos.shellcode"
 
 if lm.platform == "darwin-arm64" then
     lm:rule "luamake" {
@@ -23,24 +24,52 @@ if lm.platform == "darwin-arm64" then
         "-mode", lm.mode,
         "-target", "x86_64-apple-macos10.12",
         "-runtime_platform", "darwin-x64",
-        "-no_inject", true,
         pool = "console",
 
     }
     lm:build "x86_64" {
         rule = "luamake",
     }
-    lm:phony "wait_x86_64" {
-        deps = {"process_inject_helper", "x86_64"}
-    }
 end
 
+
+lm:executable 'process_inject_helper' {
+    bindir = "publish/bin/",
+    deps = { "std_fmt", "shellcode_export" },
+    includes = {
+        "3rd/bee.lua",
+    },
+    sources = {
+        "src/process_inject/macos/*.cpp",
+        "src/process_inject/macos/process_helper.mm",
+    },
+}
+
+if lm.platform == "darwin-arm64" then
+    lm:build "launcher" {
+        deps = { "x86_64", "liblauncher" },
+        "lipo",
+        "-create",
+        "-output",
+        "publish/bin/launcher.so",
+        "build/darwin-x64/"..lm.mode.."/bin/liblauncher.so",
+        lm.bindir .. "/liblauncher.so"
+    }
+else
+    lm:build "launcher" {
+        deps = "liblauncher",
+        "cp",
+        lm.bindir.."/liblauncher.so",
+        "publish/bin/"
+    }
+end
 
 lm:default {
     "common",
     "lua-debug",
     "runtime",
-    not lm.no_inject and "launcher",
-    not lm.no_inject and "process_inject_helper",
-    lm.platform == "darwin-arm64" and "wait_x86_64"
+    "launcher",
+    "process_inject_helper",
+    "launcher",
+    lm.platform == "darwin-arm64" and "x86_64"
 }

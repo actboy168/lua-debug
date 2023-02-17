@@ -12,4 +12,4 @@
 	url = https://github.com/actboy168/json.lua
 [submodule "3rd/Dobby"]
 	path = 3rd/Dobby
-	url = https://github.com/fesily/Dobby.git
+	url = https://github.com/fesily/Dobby

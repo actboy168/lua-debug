@@ -247,6 +247,22 @@ Debugger address.
 }
 
 attributes.attach = {
+    inject = {
+        default = "default",
+        markdownDescription = "How to attach debugger.",
+        enum = {
+            "default",
+            "lldb",
+        },
+        type = "string",
+    },
+    inject_executable = {
+        markdownDescription = "inject executable path",
+        type = {
+            "string",
+            "null",
+        },
+    }
 }
 
 attributes.launch = {

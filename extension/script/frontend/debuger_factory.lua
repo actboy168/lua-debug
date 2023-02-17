@@ -221,7 +221,10 @@ local function create_process_in_console(args, callback)
         return nil, err
     end
     if args.inject == "hook" then
-		process_inject(process, "launch")
+		local ok, errmsg = process_inject.inject(process, "launch")
+        if not ok then
+            return nil, errmsg
+        end
     end
     if callback then
         callback(process)
