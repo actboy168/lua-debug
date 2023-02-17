@@ -73,7 +73,8 @@ void attach(lua_State* L) {
 	
 #ifdef _WIN32
 	lua_pushstring(L, std::to_string(GetCurrentProcessId()).c_str());
-	lua_pushlstring(L, (const char*)(void**)&autoattach::luaapi, sizeof(void*));
+	void* luaapi = autoattach::luaapi;
+	lua_pushlstring(L, (const char*)&luaapi, sizeof(luaapi));
 #else
 	lua_pushstring(L, std::to_string(getpid()).c_str());
 	lua_pushstring(L, "0");
