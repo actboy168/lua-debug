@@ -16,19 +16,15 @@ require "compile.macos.runtime"
 require "compile.macos.shellcode"
 
 if lm.platform == "darwin-arm64" then
-    lm:rule "luamake" {
-        "$luamake",
-        "-C", lm.workdir,
-        "-f", "compile/macos/runtime.lua",
-        "-builddir", "build/darwin-x64/"..lm.mode,
-        "-mode", lm.mode,
-        "-target", "x86_64-apple-macos10.12",
-        "-runtime_platform", "darwin-x64",
-        pool = "console",
-
-    }
+    require "compile.common.run_luamake"
     lm:build "x86_64" {
-        rule = "luamake",
+        rule = "run_luamake",
+        inputs = "compile/macos/runtime.lua",
+        args = {
+            "-builddir", "build/darwin-x64/"..lm.mode,
+            "-runtime_platform", "darwin-x64",
+            "-target", "x86_64-apple-macos10.12",
+        },
     }
 end
 
