@@ -9,6 +9,7 @@
 #include <mach/processor_info.h>
 #include <mach-o/fat.h> // for fat structure decoding
 #include <fcntl.h> // for open/close
+#include <sys/sysctl.h>
 // for mmap()
 #include <dlfcn.h>
 #include <pthread_spis.h>
@@ -45,7 +46,57 @@ vm_address_t get_symbol_address(void *ptr) {
     }
     return 0;
 }
-extern bool is_same_arch();
+#ifndef CPU_TYPE_ARM64
+#define CPU_TYPE_ARM            ((cpu_type_t) 12)
+#define CPU_ARCH_ABI64          0x01000000
+#define CPU_TYPE_ARM64          (CPU_TYPE_ARM | CPU_ARCH_ABI64)
+#endif
+uint64_t injector__get_system_arch(){
+	size_t size;
+	cpu_type_t type = -1;
+	int mib[CTL_MAXNAME] = {0};
+	size_t length = CTL_MAXNAME;
+
+	if (sysctlnametomib("sysctl.proc_cputype", mib, &length) != 0){
+		return CPU_TYPE_ANY;
+	}
+
+	mib[length] = getpid();
+	length++;
+	size = sizeof(cpu_type_t);
+
+	if (sysctl(mib, (u_int)length, &type, &size, 0, 0) != 0){
+		return CPU_TYPE_ANY;
+	}
+	return type;
+}
+#ifndef P_TRANSLATED
+#define P_TRANSLATED    0x00020000
+#endif
+uint64_t injector__get_process_arch(pid_t pid){
+	int mib[CTL_MAXNAME] = {0};
+	mib[0] = CTL_KERN;
+	mib[1] = KERN_PROC;
+	mib[2] = KERN_PROC_PID;
+	mib[3] = pid;
+	size_t length = 4;
+	struct kinfo_proc proc_info = {};	
+	size_t size = sizeof(proc_info);
+		
+	if(sysctl(mib, (u_int)length, &proc_info, &size, NULL, 0) != 0) {
+		return CPU_TYPE_ANY; 
+	}
+
+	if(P_TRANSLATED == (P_TRANSLATED & proc_info.kp_proc.p_flag)){
+		if(P_LP64 == (P_LP64 & proc_info.kp_proc.p_flag)){
+			return CPU_TYPE_X86_64;
+		} else {
+			return CPU_TYPE_I386;
+		}
+	} else{
+		return injector__get_system_arch();
+	}
+}
 bool
 mach_inject(
         pid_t targetProcess, const char *dylibPath, size_t len, std::string_view entry) {
@@ -61,8 +112,8 @@ mach_inject(
         LOG("remote can't read all images");
         return false;
     }
-
-    if (!is_same_arch()) {
+    
+    if (injector__get_process_arch(targetProcess) != injector__get_process_arch(getpid())) {
         mach_port_deallocate(mach_task_self(), remoteTask);
         LOG("diff arch processor");
         return false;
