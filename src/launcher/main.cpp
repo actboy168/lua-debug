@@ -13,6 +13,8 @@
 #include <string>
 #include <atomic>
 
+#include "common.hpp"
+
 std::string readfile(const fs::path& filename) {
 #ifdef _WIN32
 	FILE* f = _wfopen(filename.c_str(), L"rb");
@@ -49,6 +51,8 @@ static void attach(lua_State* L, autoattach::attach_args* args) {
 void attach_ctx::attach(lua_State* L) const {
 #else
 void attach(lua_State* L) {
+#define _luaL_loadbuffer luaL_loadbuffer
+#define _lua_pcall lua_pcall
 #endif
 	LOG("attach lua vm entry");
 	auto r = bee::path_helper::dll_path();
