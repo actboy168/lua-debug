@@ -119,6 +119,7 @@ for _, luaver in ipairs {"lua51","lua52","lua53","lua54","lua-latest","luajit"} 
             require "compile.luajit.make_windows"
         else
             if lm.cross_compile then
+                require "compile.common.run_luamake"
                 lm:build "buildvm" {
                     rule = "run_luamake",
                     inputs = "compile/luajit/make_buildtools.lua",
