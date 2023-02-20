@@ -7,6 +7,8 @@
 #include "../remotedebug/rdebug_delayload.h"
 #ifdef _WIN32
 #include <intrin.h>
+#include <Windows.h>
+#include <winternl.h>
 #else
 #include <dlfcn.h>
 #endif
@@ -15,6 +17,7 @@
 #include <string_view>
 #include <memory>
 #include <charconv>
+#include <filesystem>
 
 #include "common.hpp"
 #include "hook/hook_common.h"
@@ -111,6 +114,86 @@ namespace autoattach {
         debuggerAttach(L, &args);
     }
 
+    bool is_signature_mode() {
+        return getenv("LUA_DEBUG_SIGNATURE") != nullptr;
+    }
+
+    void wait_lua_module() {
+        //TODO: support linux/macos
+#ifdef _WIN32
+        typedef struct _LDR_DLL_UNLOADED_NOTIFICATION_DATA {
+            ULONG Flags;                    //Reserved.
+            PCUNICODE_STRING FullDllName;   //The full path name of the DLL module.
+            PCUNICODE_STRING BaseDllName;   //The base file name of the DLL module.
+            PVOID DllBase;                  //A pointer to the base address for the DLL in memory.
+            ULONG SizeOfImage;              //The size of the DLL image, in bytes.
+        } LDR_DLL_UNLOADED_NOTIFICATION_DATA, *PLDR_DLL_UNLOADED_NOTIFICATION_DATA;
+        typedef struct _LDR_DLL_LOADED_NOTIFICATION_DATA {
+            ULONG Flags;                    //Reserved.
+            PCUNICODE_STRING FullDllName;   //The full path name of the DLL module.
+            PCUNICODE_STRING BaseDllName;   //The base file name of the DLL module.
+            PVOID DllBase;                  //A pointer to the base address for the DLL in memory.
+            ULONG SizeOfImage;              //The size of the DLL image, in bytes.
+        } LDR_DLL_LOADED_NOTIFICATION_DATA, *PLDR_DLL_LOADED_NOTIFICATION_DATA;
+        typedef union _LDR_DLL_NOTIFICATION_DATA {
+            LDR_DLL_LOADED_NOTIFICATION_DATA Loaded;
+            LDR_DLL_UNLOADED_NOTIFICATION_DATA Unloaded;
+        } LDR_DLL_NOTIFICATION_DATA, *PLDR_DLL_NOTIFICATION_DATA;
+        enum LdrDllNotificationReason : ULONG{
+            LDR_DLL_NOTIFICATION_REASON_LOADED = 1,
+            LDR_DLL_NOTIFICATION_REASON_UNLOADED
+        };
+        typedef VOID (CALLBACK *LdrDllNotification)(
+        _In_     LdrDllNotificationReason                       NotificationReason,
+        _In_     PLDR_DLL_NOTIFICATION_DATA const NotificationData,
+        _In_opt_ PVOID                       Context
+        );
+        typedef NTSTATUS (NTAPI *LdrRegisterDllNotification)(
+        _In_     ULONG                          Flags,
+        _In_     LdrDllNotification NotificationFunction,
+        _In_opt_ PVOID                          Context,
+        _Out_    PVOID                          *Cookie
+        );
+        typedef NTSTATUS (NTAPI *LdrUnregisterDllNotification)(
+        _In_ PVOID Cookie
+        );
+        struct DllNotification{
+            LdrRegisterDllNotification dllRegisterNotification;
+            LdrUnregisterDllNotification dllUnregisterNotification;
+            PVOID Cookie;
+            explicit operator bool() const {
+                return dllRegisterNotification && dllUnregisterNotification;
+            }
+        };
+        static DllNotification dllNotification = []()->DllNotification {
+            HMODULE hmodule;
+            if (!GetModuleHandleExA(GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, "ntdll.dll", &hmodule)) {
+                return {};
+            }
+            return {(LdrRegisterDllNotification)GetProcAddress(hmodule, "LdrRegisterDllNotification"), (LdrUnregisterDllNotification)GetProcAddress(hmodule, "LdrUnregisterDllNotification")} ;
+        }();
+        if (!dllNotification) {
+            return;
+        }
+        dllNotification.dllRegisterNotification(0, [](LdrDllNotificationReason NotificationReason, PLDR_DLL_NOTIFICATION_DATA const NotificationData, PVOID Context){
+            if (NotificationReason == LdrDllNotificationReason::LDR_DLL_NOTIFICATION_REASON_LOADED) {
+                RuntimeModule rm = {};
+                auto path = std::filesystem::path(std::wstring(NotificationData->Loaded.FullDllName->Buffer, NotificationData->Loaded.FullDllName->Length)).string();
+                memcpy_s(rm.path,sizeof(rm.path), path.c_str(), path.size());
+                if (is_lua_module(rm, is_signature_mode())){
+                    // find lua module lazy 
+                    std::thread([](){
+                        initialize(debuggerAttach, attachProcess);
+                        if (dllNotification.Cookie)
+                            dllNotification.dllUnregisterNotification(dllNotification.Cookie);
+                    }).detach();
+                }
+            }
+        }, NULL, &dllNotification.Cookie);
+#endif
+    }
+    
+
     void initialize(fn_attach attach, bool ap) {
 #ifndef NDEBUG
         log_set_level(0);
@@ -120,7 +203,7 @@ namespace autoattach {
 		DobbyUpdateModuleMap();
 
         const auto& modulemap = ProcessRuntimeUtility::GetProcessModuleMap();
-        bool signature = getenv("LUA_DEBUG_SIGNATURE") != nullptr;
+        bool signature = is_signature_mode();
         RuntimeModule rm = {};
 
         for (const auto &module: modulemap) {
@@ -131,7 +214,7 @@ namespace autoattach {
             }
         }
         if (!rm.load_address) {
-			//TODO: wait lua module loaded
+            wait_lua_module();
             LOG("can't find lua module");
             return;
         }
