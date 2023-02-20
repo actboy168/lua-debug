@@ -7,18 +7,11 @@ lm.defines = "_WIN32_WINNT=0x0601"
 lm.builddir = ("build/%s/%s"):format(platform, lm.mode)
 
 require "compile.common.runtime"
+require "compile.common.dobby"
 
 lm:msvc_copydll "copy_vcredist" {
     type = "vcrt",
     output = 'publish/vcredist/'..platform
-}
-
-lm:source_set 'detours' {
-    rootdir = "3rd/detours/src",
-    sources = {
-        "*.cpp",
-        "!uimports.cpp"
-    }
 }
 
 local ArchAlias = {
@@ -29,11 +22,11 @@ local ArchAlias = {
 lm:lua_library ('launcher.'..ArchAlias[platform]) {
     bindir = "publish/bin/",
     export_luaopen = "off",
-    deps = "detours",
+    deps = "dobby",
     includes = {
         "3rd/bee.lua",
-        "3rd/bee.lua/3rd/lua",
-        "3rd/detours/src",
+        "3rd/dobby/include",
+        "3rd/lua/luajit/src"
     },
     sources = {
         "3rd/bee.lua/bee/error.cpp",
@@ -43,7 +36,8 @@ lm:lua_library ('launcher.'..ArchAlias[platform]) {
         "3rd/bee.lua/bee/utility/file_handle_win.cpp",
         "src/remotedebug/rdebug_delayload.cpp",
         "src/launcher/*.cpp",
-        "!src/launcher/attach_args.cpp",
+        "src/launcher/hook/*.cpp",
+        "src/launcher/symbol_resolver/*.cpp",
     },
     defines = {
         "BEE_INLINE",
@@ -57,7 +51,6 @@ lm:lua_library ('launcher.'..ArchAlias[platform]) {
         "ole32",
         "delayimp",
     },
-    ldflags = '/DELAYLOAD:lua54.dll',
 }
 
 lm:phony "launcher" {

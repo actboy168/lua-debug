@@ -3,6 +3,10 @@
 #include "../common.hpp"
 #include <memory>
 
+#ifdef interface
+#undef interface
+#endif
+
 namespace autoattach {
 	namespace symbol_resolver {
 		struct interface;

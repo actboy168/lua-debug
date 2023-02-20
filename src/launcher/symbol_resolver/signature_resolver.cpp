@@ -1,6 +1,8 @@
-#include <dlfcn.h>
 #include <cstddef>
 #include <string>
+#include <string_view>
+#include <array>
+#include <vector>
 #include <list>
 #include <charconv>
 #include <bit>
@@ -8,13 +10,31 @@
 #include <set>
 
 #ifdef _WIN32
-	
+#define NOMINMAX
+#ifndef __wtypes_h__
+#include <wtypes.h>
+#endif
+
+#ifndef __WINDEF_
+#include <windef.h>
+#endif
+
+#ifndef _WINUSER_
+#include <winuser.h>
+#endif
+
+#ifndef __RPC_H__
+#include <rpc.h>
+#endif
+#include <winnt.h>
 #elif defined(__linux__)
 #include <elf.h>
+#include <dlfcn.h>
 #elif defined(__APPLE__)
 #include <mach-o/dyld_images.h>
 #include <mach-o/loader.h>
 #include <mach-o/nlist.h>
+#include <dlfcn.h>
 #else
 #error "unsupported platform"
 #endif
@@ -24,9 +44,7 @@
 #include "symbol_resolver.h"
 
 
-using namespace std;
 namespace autoattach::symbol_resolver {
-
 
     struct PatternScanResult {
         /// <summary>
@@ -97,12 +115,12 @@ namespace autoattach::symbol_resolver {
 		return t.a == 1;
 	}
     struct CompiledScanPattern {
-        const string MaskIgnore = "??";
+        const std::string MaskIgnore = "??";
 
         /// <summary>
         /// The pattern the instruction set was created from.
         /// </summary>
-        const string Pattern;
+        const std::string Pattern;
 
         /// <summary>
         /// The length of the original given pattern.
@@ -128,7 +146,7 @@ namespace autoattach::symbol_resolver {
         ///     Example: "11 22 33 ?? 55".
         ///     Key: ?? represents a byte that should be ignored, anything else if a hex byte. i.e. 11 represents 0x11, 1F represents 0x1F.
         /// </param>
-        CompiledScanPattern(string stringPattern)
+        CompiledScanPattern(std::string stringPattern)
                 : Pattern{std::move(stringPattern)} {
             auto entries = strings::spilt_string(Pattern, ' ');
             Length = entries.size();
@@ -140,7 +158,7 @@ namespace autoattach::symbol_resolver {
             // Optimization for short-medium patterns with masks.
             // Check if our pattern is 1-8 bytes and contains any skips.
             auto spanEntries = entries;
-            vector <string_view> spanEntries_tmp;
+            std::vector <std::string_view> spanEntries_tmp;
             while (spanEntries.size() > 0) {
                 int nextSliceLength = std::min(sizeof(intptr_t), spanEntries.size());
                 intptr_t mask, value;
@@ -163,7 +181,7 @@ namespace autoattach::symbol_resolver {
         /// <summary>
         /// Generates a mask given a pattern between size 0-8.
         /// </summary>
-        void GenerateMaskAndValue(vector <string_view> entries, intptr_t &mask, intptr_t &value) {
+        void GenerateMaskAndValue(std::vector <std::string_view> entries, intptr_t &mask, intptr_t &value) {
             mask = 0;
             value = 0;
             for (int x = 0; x < entries.size(); x++) {
@@ -172,7 +190,7 @@ namespace autoattach::symbol_resolver {
                 if (entries[x] != MaskIgnore) {
                     mask = mask | 0xFF;
                     uint8_t b;
-                    auto [p, ec] = std::from_chars(entries[x].begin(), entries[x].end(), b, 16);
+                    auto [p, ec] = std::from_chars(&*entries[x].begin(), &*entries[x].end(), b, 16);
                     if (ec != std::errc()) {
                         b = 0;
                     }
@@ -197,24 +215,24 @@ namespace autoattach::symbol_resolver {
     };
 
     struct SimplePatternScanData {
-        static constexpr array<char, 2>
+        static constexpr std::array<char, 2>
         _maskIgnore = {'?', '?'};
 
         /// <summary>
         /// The pattern of bytes to check for.
         /// </summary>
-        vector <byte> Bytes;
+        std::vector <std::byte> Bytes;
 
         /// <summary>
         /// The mask string to compare against. `x` represents check while `?` ignores.
         /// Each `x` and `?` represent 1 byte.
         /// </summary>
-        vector <byte> Mask;
+        std::vector <std::byte> Mask;
 
         /// <summary>
         /// The original string from which this pattern was created.
         /// </summary>
-        string Pattern;
+        std::string Pattern;
 
         /// <summary>
         /// Creates a new pattern scan target given a string representation of a pattern.
@@ -224,7 +242,7 @@ namespace autoattach::symbol_resolver {
         ///     Example: "11 22 33 ?? 55".
         ///     Key: ?? represents a byte that should be ignored, anything else if a hex byte. i.e. 11 represents 0x11, 1F represents 0x1F.
         /// </param>
-        SimplePatternScanData(string stringPattern) {
+        SimplePatternScanData(std::string stringPattern) {
             Pattern = std::move(stringPattern);
             auto patterns = strings::spilt_string(Pattern, ' ');
             auto enumerator = patterns.cbegin();
@@ -234,15 +252,15 @@ namespace autoattach::symbol_resolver {
             while (enumerator != patterns.cend()) {
                 auto current = *enumerator;
                 if (std::equal(current.cbegin(), current.cend(), questionMarkFlag.cbegin(), questionMarkFlag.cend())) {
-                    Mask.emplace_back((byte) 0x0);
+                    Mask.emplace_back((std::byte) 0x0);
                 } else {
                     uint8_t b;
-                    auto [p, ec] = std::from_chars(current.cbegin(), current.cend(), b, 16);
+                    auto [p, ec] = std::from_chars(&*current.cbegin(), &*current.cend(), b, 16);
                     if (ec != std::errc()) {
                         b = 0;
                     }
-                    Bytes.emplace_back((byte) 0);
-                    Mask.emplace_back((byte) 0x1);
+                    Bytes.emplace_back((std::byte) 0);
+                    Mask.emplace_back((std::byte) 0x1);
                 }
                 ++enumerator;
             }
@@ -250,19 +268,19 @@ namespace autoattach::symbol_resolver {
     };
 
     struct Scanner {
-        byte *_dataPtr;
+        std::byte *_dataPtr;
         int _dataLength;
 
-        PatternScanResult FindPattern(string pattern) const{
+        PatternScanResult FindPattern(std::string pattern) const{
             return FindPatternCompiled(_dataPtr, _dataLength, std::move(pattern));
         }
 
-        PatternScanResult FindPattern(string pattern, int offset){
+        PatternScanResult FindPattern(std::string pattern, int offset){
             return FindPatternCompiled(_dataPtr + offset, _dataLength - offset, std::move(pattern));
 		}
 
-        vector <PatternScanResult> FindPatterns(const std::set <string> &patterns) const {
-			vector<PatternScanResult> res;
+        std::vector <PatternScanResult> FindPatterns(const std::set <std::string> &patterns) const {
+			std::vector<PatternScanResult> res;
 			res.reserve(patterns.size());
 			for (auto &&pattern : patterns){
 				res.emplace_back(FindPattern(pattern));
@@ -279,7 +297,7 @@ namespace autoattach::symbol_resolver {
 			return FindPatternSimple(_dataPtr, _dataLength, std::move(pattern));
 		}
 
-        static PatternScanResult FindPatternCompiled(byte *data, int dataLength, CompiledScanPattern pattern) {
+        static PatternScanResult FindPatternCompiled(std::byte *data, int dataLength, CompiledScanPattern pattern) {
             const int numberOfUnrolls = 8;
             int numberOfInstructions = pattern.NumberOfInstructions;
             int lastIndex = dataLength - std::max(pattern.Length, sizeof(intptr_t)) - numberOfUnrolls;
@@ -342,7 +360,7 @@ namespace autoattach::symbol_resolver {
                         lastIndex);
         }
 
-        static bool TestRemainingMasks(int numberOfInstructions, byte *currentDataPointer, GenericInstruction *instructions) {
+        static bool TestRemainingMasks(int numberOfInstructions, std::byte *currentDataPointer, GenericInstruction *instructions) {
             /* When NumberOfInstructions > 1 */
             currentDataPointer += sizeof(intptr_t);
 
@@ -359,13 +377,13 @@ namespace autoattach::symbol_resolver {
             return true;
         }
 
-        static PatternScanResult FindPatternSimple(byte *data, int dataLength, SimplePatternScanData pattern) {
+        static PatternScanResult FindPatternSimple(std::byte *data, int dataLength, SimplePatternScanData pattern) {
             const auto &patternData = pattern.Bytes;
             const auto &patternMask = pattern.Mask;
 
             int lastIndex = (dataLength - patternMask.size()) + 1;
 
-            const byte *patternDataPtr = patternData.data();
+            const std::byte *patternDataPtr = patternData.data();
             {
                 for (int x = 0; x < lastIndex; x++) {
                     int patternDataOffset = 0;
@@ -402,7 +420,7 @@ namespace autoattach::symbol_resolver {
 		Scanner scanner;
 		signatures symbol_signatures;
         signature_rsesolver(const RuntimeModule &module, signatures&& data):symbol_signatures{std::move(data)} {
-			scanner._dataPtr = (byte *)module.load_address;
+			scanner._dataPtr = (std::byte *)module.load_address;
 			scanner._dataLength = get_lib_memory_size((uintptr_t)module.load_address);
         }
 

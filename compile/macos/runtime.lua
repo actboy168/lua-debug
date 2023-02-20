@@ -11,29 +11,10 @@ lm:source_set "std_format" {
     }
 }
 
-lm:source_set "launcher_threads" {
-    windows = {
-        sources = {
-            "src/launcher/thread/threads_windows.cpp",
-        }
-    },
-    linux = {
-        sources = {
-            "src/launcher/thread/threads_linux.cpp",
-        }
-    },
-    macos = {
-        sources = {
-            "src/launcher/thread/threads_macos.cpp",
-        }
-    }
-}
-
 lm:lua_library('liblauncher') {
     export_luaopen = "off",
     deps = {
         "dobby",
-        "launcher_threads",
         "std_format",
     },
     includes = {

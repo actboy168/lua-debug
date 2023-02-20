@@ -33,7 +33,6 @@ std::string readfile(const fs::path& filename) {
 	fclose(f);
 	return tmp;
 }
-#ifndef _WIN32
 struct attach_ctx : autoattach::attach_args {
 	inline void print_error(lua_State* L)const {
 		if (lua_tolstring){
@@ -45,19 +44,12 @@ struct attach_ctx : autoattach::attach_args {
 	void attach(lua_State* L) const;
 
 };
+
 static void attach(lua_State* L, autoattach::attach_args* args) {
     static_cast<attach_ctx*>(args)->attach(L);
 }
+
 void attach_ctx::attach(lua_State* L) const {
-#else
-inline void print_error(lua_State * L) {
-	lua_tostring(L, -1);
-	lua_pop(L, 1);
-}
-void attach(lua_State* L) {
-#define _luaL_loadbuffer luaL_loadbuffer
-#define _lua_pcall lua_pcall
-#endif
 	LOG("attach lua vm entry");
 	auto r = bee::path_helper::dll_path();
 	if (!r) {

@@ -38,16 +38,16 @@ lm:source_set "dobbySymbolResolver" {
         }
     }
 }
-
-lm:source_set "dobbyImportTableReplace" {
-    rootdir = "3rd/Dobby",
-    includes = {
-        Includes,
-        "builtin-plugin/ImportTableReplace",
-    },
-    sources = "builtin-plugin/ImportTableReplace/dobby_import_replace.cc",
-}
-
+if lm.os == "macos" then
+    lm:source_set "dobbyImportTableReplace" {
+        rootdir = "3rd/Dobby",
+        includes = {
+            Includes,
+            "builtin-plugin/ImportTableReplace",
+        },
+        sources = "builtin-plugin/ImportTableReplace/dobby_import_replace.cc",
+    }
+end
 
 lm:source_set "dobbyLogger" {
     rootdir = "3rd/Dobby",
@@ -66,7 +66,7 @@ lm:source_set "dobby" {
     deps = {
 		"dobbyLogger",
         "dobbySymbolResolver",
-        "dobbyImportTableReplace",
+        lm.os == "macos" and "dobbyImportTableReplace",
     },
     includes = Includes,
     defines = {
@@ -140,8 +140,8 @@ lm:source_set "dobby" {
         NearBranch and {
             "source/InterceptRouting/RoutingPlugin/NearBranchTrampoline/near_trampoline_arm64.cc",
             "source/InterceptRouting/RoutingPlugin/NearBranchTrampoline/NearBranchTrampoline.cc",
-            "source/MemoryAllocator/NearMemoryAllocator.cc",
-        }
+        },
+        "source/MemoryAllocator/NearMemoryAllocator.cc",
     },
     windows = {
         sources = {

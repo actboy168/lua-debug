@@ -3,6 +3,10 @@
 #include "../common.hpp"
 #include <memory>
 
+#ifdef interface
+#undef interface
+#endif
+
 namespace autoattach::symbol_resolver {
     struct interface {
         virtual ~interface() = default;
