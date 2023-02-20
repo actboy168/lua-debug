@@ -22,7 +22,7 @@
 #include "common.hpp"
 #include "hook/hook_common.h"
 #include "symbol_resolver/symbol_resolver.h"
-#include "thread/threads.hpp"
+
 class ProcessRuntimeUtility {
 public:
     static const std::vector<RuntimeModule> &GetProcessModuleMap();
@@ -110,7 +110,7 @@ namespace autoattach {
         return DobbySymbolResolver(module.path, "luaL_newstate");
     }
 
-    void attach_lua_vm(lua_State *L) {
+    void attach_lua_vm(state_t *L) {
         debuggerAttach(L, &args);
     }
 

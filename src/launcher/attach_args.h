@@ -4,40 +4,39 @@
 #include <string.h>
 #include "common.hpp"
 
-struct lua_State;
 namespace autoattach {
     struct attach_args {
-        typedef intptr_t lua_KContext;
+        typedef intptr_t KContext;
         typedef intptr_t lua_Integer;
 
-        typedef int (*lua_KFunction)(lua_State *L, int status, lua_KContext ctx);
+        typedef int (*KFunction_t)(state_t *L, int status, KContext ctx);
 
-        typedef int (*luaL_loadbuffer_t)(lua_State *L, const char *buff, size_t sz,
+        typedef int (*loadbuffer_t)(state_t *L, const char *buff, size_t sz,
                                          const char *name);
 
-        typedef int (*luaL_loadbufferx_t)(lua_State *L, const char *buff, size_t sz,
+        typedef int (*loadbufferx_t)(state_t *L, const char *buff, size_t sz,
                                           const char *name, const char *mode);
 										  
-        typedef const char *(*lua_tolstring_t)(lua_State *L, int idx, size_t *len);
+        typedef const char *(*tolstring_t)(state_t *L, int idx, size_t *len);
 
-        typedef void  (*lua_pushlstring_t)(lua_State *L, const char *s, size_t l);
+        typedef void  (*pushlstring_t)(state_t *L, const char *s, size_t l);
 
-        typedef void  (*lua_settop_t)(lua_State *L, int idx);
+        typedef void  (*settop_t)(state_t *L, int idx);
 
-        typedef int   (*lua_pcallk_t)(lua_State *L, int nargs, int nresults, int errfunc,
-                                      lua_KContext ctx, lua_KFunction k);
+        typedef int   (*pcallk_t)(state_t *L, int nargs, int nresults, int errfunc,
+                                      KContext ctx, KFunction_t k);
 
-        typedef int   (*lua_pcall_t)(lua_State *L, int nargs, int nresults, int errfunc);
+        typedef int   (*pcall_t)(state_t *L, int nargs, int nresults, int errfunc);
 
 										  
 #define attach_args_funcs(_, ...)\
-                    _(luaL_loadbuffer, __VAR_ARGS__)\
-                    _(luaL_loadbufferx, __VAR_ARGS__)\
-                    _(lua_tolstring, __VAR_ARGS__)\
-                    _(lua_pushlstring, __VAR_ARGS__)\
-                    _(lua_settop, __VAR_ARGS__)\
-                    _(lua_pcallk, __VAR_ARGS__)\
-                    _(lua_pcall, __VAR_ARGS__)
+                    _(loadbuffer, __VAR_ARGS__)\
+                    _(loadbufferx, __VAR_ARGS__)\
+                    _(tolstring, __VAR_ARGS__)\
+                    _(pushlstring, __VAR_ARGS__)\
+                    _(settop, __VAR_ARGS__)\
+                    _(pcallk, __VAR_ARGS__)\
+                    _(pcall, __VAR_ARGS__)
 #ifndef FILED_VAR
 #define FILED_VAR(name, ...)\
                     name##_t name;
@@ -45,27 +44,30 @@ namespace autoattach {
 
         attach_args_funcs(FILED_VAR);
 
-        inline void lua_pushstring(lua_State *L, const char *s) const {
-            lua_pushlstring(L, s, s == nullptr ? 0 : strlen(s));
+        inline void pushstring(state_t *L, const char *s) const {
+            pushlstring(L, s, s == nullptr ? 0 : strlen(s));
         }
 
         bool get_symbols(void*);
 
-        inline int _lua_pcall(lua_State *L, int nargs, int nresults, int errfunc) const {
-            if (lua_pcall) {
-                return lua_pcall(L, nargs, nresults, errfunc);
+        inline int _pcall(state_t *L, int nargs, int nresults, int errfunc) const {
+            if (pcall) {
+                return pcall(L, nargs, nresults, errfunc);
             }
-            return lua_pcallk(L, nargs, nresults, errfunc, 0, NULL);
+            return pcallk(L, nargs, nresults, errfunc, 0, NULL);
         }
 
-        inline int _luaL_loadbuffer(lua_State *L, const char *buff, size_t sz,
+        inline int _loadbuffer(state_t *L, const char *buff, size_t sz,
                                     const char *name) const {
-            if (luaL_loadbufferx) {
-                return luaL_loadbufferx(L, buff, sz, name, NULL);
+            if (loadbufferx) {
+                return loadbufferx(L, buff, sz, name, NULL);
             }
-            return luaL_loadbuffer(L, buff, sz, name);
+            return loadbuffer(L, buff, sz, name);
         }
 
+        inline void pop(state_t *L, int n) const {
+            settop(L, -(n)-1);
+        }
 #undef attach_args_funcs
     };
 } // namespace autoattach

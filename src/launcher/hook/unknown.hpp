@@ -40,8 +40,8 @@ namespace autoattach {
 #define UnWatch(name, ...) DobbyDestroy((void*)name);
 #define FILED_VAR(name, ...) name##_t name;
 
-
-    void attach_lua_vm(lua_State *L);
+    
+    void attach_lua_vm(state_t *L);
 
     struct vmhooker {
         using lua_sethook_t = decltype(&

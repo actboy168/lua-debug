@@ -51,7 +51,7 @@ namespace autoattach {
         }
 
         static void attach_lua_Hooker(lua_State *L, lua_Debug *ar) {
-            attach_lua_vm(L);
+            attach_lua_vm((state_t*)L);
             auto &_self = get_this();
             _self.hooker.call_origin_hook(L, ar);
             //inject success disable hook

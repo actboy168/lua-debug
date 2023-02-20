@@ -14,6 +14,7 @@ typedef struct _RuntimeModule {
     void *load_address;
 } RuntimeModule;
 namespace autoattach {
+    struct state_t;
     enum class lua_version {
         unknown,
         luajit,

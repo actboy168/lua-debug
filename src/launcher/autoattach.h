@@ -4,7 +4,7 @@
 #endif
 #include "attach_args.h"
 namespace autoattach {
-	typedef void(*fn_attach)(lua_State* L, attach_args* args);
+	typedef void(*fn_attach)(state_t* L, attach_args* args);
 	void    initialize(fn_attach attach, bool ap);
 #ifdef _WIN32
 	FARPROC luaapi(const char* name);
