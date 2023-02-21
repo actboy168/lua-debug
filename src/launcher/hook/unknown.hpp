@@ -1,7 +1,6 @@
 #pragma once
 
 #include <dobby.h>
-#include <lua.hpp>
 
 #include "hook_common.h"
 #include "../symbol_resolver/symbol_resolver.h"
@@ -30,11 +29,11 @@ namespace autoattach {
 #endif
     }
 
-#define SymbolResolver(name, ...) name = (name##_t)resolver->getsymbol(#name);
-
-#define SymbolResolverWithCheck(name, ...)\
-            SymbolResolver(name,)\
-            if (!name) return false;
+#define str(s) #s
+#define SymbolResolver_lua_(name, prefix) name = (name##_t)resolver->getsymbol(str(prefix##_##name))
+#define SymbolResolver_lua(name) SymbolResolver_lua_(name, lua)
+#define SymbolResolver_luaL(name) SymbolResolver_lua_(name, luaL)
+#define SymbolResolverWithCheck_lua(name) SymbolResolver_lua(name); if (!name) return false;
 
 #define Watch(name, func) DobbyInstrument((void*)name, func);
 #define UnWatch(name, ...) DobbyDestroy((void*)name);
@@ -43,30 +42,29 @@ namespace autoattach {
     
     void attach_lua_vm(state_t *L);
 
+    using debug_t = void;
+    using hook_t = void (*) (state_t *L, debug_t *ar);
+
     struct vmhooker {
-        using lua_sethook_t = decltype(&
-        ::lua_sethook);
-        using lua_gethook_t = decltype(&
-        ::lua_gethook);
-        using lua_gethookmask_t = decltype(&
-        ::lua_gethookmask);
-        using lua_gethookcount_t = decltype(&
-        ::lua_gethookcount);
+        using sethook_t = void (*)(state_t *L, hook_t func, int mask, int count);
+        using gethook_t = hook_t (*) (state_t *L);
+        using gethookmask_t = int (*) (state_t *L);
+        using gethookcount_t = int (*) (state_t *L);
 #define unknown_vmhook_func(_) \
-                _(lua_sethook) \
-                _(lua_gethook) \
-                _(lua_gethookmask) \
-                _(lua_gethookcount)
+                _(sethook) \
+                _(gethook) \
+                _(gethookmask) \
+                _(gethookcount)
 
         unknown_vmhook_func(FILED_VAR)
 
-        lua_Hook origin_lua_hook;
+        hook_t origin_lua_hook;
         int origin_hookmask;
         int origin_hookcount;
 
-        void call_origin_hook(lua_State *L, lua_Debug *ar);
+        void call_origin_hook(state_t *L, debug_t *ar);
 
-        void call_lua_sethook(lua_State *L, lua_Hook fn);
+        void call_lua_sethook(state_t *L, hook_t fn);
 
         bool get_symbols(const std::unique_ptr<symbol_resolver::interface> &resolver);
     };

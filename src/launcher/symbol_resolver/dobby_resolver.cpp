@@ -11,7 +11,9 @@ namespace autoattach::symbol_resolver {
 
         void *getsymbol(const char *name) const override {
 			auto keys = strings::spilt_string(name, '.');
-            return DobbySymbolResolver(image_name, keys.back().data());
+            auto ptr = DobbySymbolResolver(image_name, keys.back().data());
+            LOG(std::format("dobby resolver symbol {}:{}", name, ptr).c_str());
+            return ptr;
         }
     };
 	std::unique_ptr<interface> create_dobby_resolver(const RuntimeModule& module) {

@@ -1,5 +1,4 @@
 #include "autoattach.h"
-#include <lua.hpp>
 #include <mutex>
 #include <stack>
 #include <set>
@@ -218,6 +217,7 @@ namespace autoattach {
             LOG("can't find lua module");
             return;
         }
+        LOG(std::format("find lua module path:{}", rm.path).c_str());
 		auto symbol_resolver = symbol_resolver::symbol_resolver_factory_create(rm);
         if (!args.get_symbols(symbol_resolver.get())) {
             LOG("can't load args symbols");
@@ -228,6 +228,7 @@ namespace autoattach {
         if (luaversion == lua_version::unknown) {
             luaversion = get_lua_version(rm.path);
         }
+        LOG(std::format("current lua version: {}", lua_version_to_string(luaversion)).c_str());
 
         auto vmhook = create_vmhook(luaversion);
         if (!vmhook->get_symbols(symbol_resolver)) {

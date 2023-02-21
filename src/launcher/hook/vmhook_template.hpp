@@ -50,7 +50,7 @@ namespace autoattach {
             watch.address = resolver->getsymbol(watch.funcname.c_str());
         }
 
-        static void attach_lua_Hooker(lua_State *L, lua_Debug *ar) {
+        static void attach_lua_Hooker(state_t *L, debug_t *ar) {
             attach_lua_vm((state_t*)L);
             auto &_self = get_this();
             _self.hooker.call_origin_hook(L, ar);
@@ -58,7 +58,7 @@ namespace autoattach {
             _self.unhook();
         }
 
-        void watch_entry(lua_State *L) {
+        void watch_entry(state_t *L) {
             bool test = false;
             if (inwatch.compare_exchange_strong(test, true, std::memory_order_acquire)) {
                 hooker.call_lua_sethook(L, attach_lua_Hooker);
@@ -66,7 +66,7 @@ namespace autoattach {
         }
 
         static void default_watch(void *address, DobbyRegisterContext *ctx) {
-            auto L = (lua_State *) getfirstarg(ctx);
+            auto L = (state_t *) getfirstarg(ctx);
             auto &_self = get_this();
             _self.watch_entry(L);           
         }
