@@ -20,7 +20,8 @@ namespace autoattach {
 #endif
 #elif defined(TARGET_ARCH_IA32)
 #ifdef _WIN32
-        return (void*)ctx->general.regs.ecx;
+        void** stack_argument = (void**)((uint64_t)ctx->esp + 4);
+        return stack_argument[0];
 #else
         return (void*)ctx->general.regs.edi;
 #endif
