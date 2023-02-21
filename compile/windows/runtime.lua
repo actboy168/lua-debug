@@ -14,6 +14,14 @@ lm:msvc_copydll "copy_vcredist" {
     output = 'publish/vcredist/'..platform
 }
 
+lm:source_set "std_format" {
+    includes = "3rd/bee.lua/bee/nonstd/3rd/fmt",
+    sources = {
+        "3rd/bee.lua/bee/nonstd/3rd/format.cc",
+        "3rd/bee.lua/bee/nonstd/3rd/os.cc",
+    }
+}
+
 local ArchAlias = {
     ["win32-x64"] = "x64",
     ["win32-ia32"] = "x86",
@@ -22,7 +30,7 @@ local ArchAlias = {
 lm:lua_library ('launcher.'..ArchAlias[platform]) {
     bindir = "publish/bin/",
     export_luaopen = "off",
-    deps = "dobby",
+    deps = {"std_format", "dobby"},
     includes = {
         "3rd/bee.lua",
         "3rd/dobby/include",
