@@ -81,7 +81,7 @@ namespace autoattach {
 static void initialize(bool ap) {
 	static std::atomic_bool injected;
 	bool test = false;
-	if (injected.compare_exchange_strong(test, true, std::memory_order_acquire)){
+	if (injected.compare_exchange_strong(test, true, std::memory_order_acquire)) {
 		LOG("initialize");
 		autoattach::initialize(autoattach::attach, ap);
 		injected.store(false, std::memory_order_release);
