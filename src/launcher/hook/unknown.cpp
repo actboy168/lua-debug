@@ -2,29 +2,21 @@
 #include "../utility/string_helper.hpp"
 
 namespace autoattach {
-    void vmhooker::call_origin_hook(state_t *L, debug_t *ar) {
+    void vmhooker::call_origin_hook(lua::state L, lua::debug ar) {
         if (origin_lua_hook) {
-            sethook(L, origin_lua_hook, origin_hookmask, origin_hookcount);
+            lua::call<lua_sethook>(L, origin_lua_hook, origin_hookmask, origin_hookcount);
             origin_lua_hook(L, ar);
         }
     }
 
-    void vmhooker::call_lua_sethook(state_t *L, hook_t fn) {
-		if (gethook) {
-			origin_lua_hook = gethook(L);
-			if (gethookmask)
-				origin_hookmask = gethookmask(L);
-			if (gethookcount)
-				origin_hookcount = gethookcount(L);
-		}
-        sethook(L, fn, 0 | 1 | 2, 0);
+    void vmhooker::call_lua_sethook(lua::state L, lua::hook fn) {
+		origin_lua_hook = lua::call<lua_gethook>(L);
+		origin_hookmask = lua::call<lua_gethookmask>(L);
+		origin_hookcount = lua::call<lua_gethookcount>(L);
+        lua::call<lua_sethook>(L, fn, 0 | 1 | 2, 0);
     }
 
     bool vmhooker::get_symbols(const std::unique_ptr <symbol_resolver::interface> &resolver) {
-        SymbolResolverWithCheck_lua(sethook);
-        SymbolResolver_lua(gethook);
-        SymbolResolver_lua(gethookmask);
-        SymbolResolver_lua(gethookcount);
         return true;
     }
 
@@ -79,7 +71,7 @@ namespace autoattach {
     std::unique_ptr<vmhook_template> create_luajit_vmhook();
     vmhook *create_vmhook(lua_version version) {
         if (version == lua_version::luajit){
-            _vmhook = create_luajit_vmhook();
+            //_vmhook = create_luajit_vmhook();
         }else{
             _vmhook = std::make_unique<vmhook_template>();
         }

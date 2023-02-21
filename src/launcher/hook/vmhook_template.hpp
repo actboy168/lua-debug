@@ -1,7 +1,10 @@
+#pragma once
+
 #include "unknown.hpp"
 #include <vector>
 #include <string>
 #include <atomic>
+
 namespace autoattach {
     struct watch_point {
         std::string funcname;
@@ -50,15 +53,15 @@ namespace autoattach {
             watch.address = resolver->getsymbol(watch.funcname.c_str());
         }
 
-        static void attach_lua_Hooker(state_t *L, debug_t *ar) {
-            attach_lua_vm((state_t*)L);
+        static void attach_lua_Hooker(lua::state L, lua::debug ar) {
+            attach_lua_vm(L);
             auto &_self = get_this();
             _self.hooker.call_origin_hook(L, ar);
             //inject success disable hook
             _self.unhook();
         }
 
-        void watch_entry(state_t *L) {
+        void watch_entry(lua::state L) {
             bool test = false;
             if (inwatch.compare_exchange_strong(test, true, std::memory_order_acquire)) {
                 hooker.call_lua_sethook(L, attach_lua_Hooker);
@@ -66,7 +69,7 @@ namespace autoattach {
         }
 
         static void default_watch(void *address, DobbyRegisterContext *ctx) {
-            auto L = (state_t *) getfirstarg(ctx);
+            auto L = (lua::state) getfirstarg(ctx);
             auto &_self = get_this();
             _self.watch_entry(L);           
         }

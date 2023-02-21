@@ -39,13 +39,13 @@ namespace autoattach{
             _self.watch_entry(L);
         }
 
-        static state_t* jit2state(void* ctx) {
+        static lua::state jit2state(void* ctx) {
             auto j = (jit_State*)ctx;
-            return (state_t*)j->L;
+            return (lua::state)j->L;
         }
-        static state_t* global2state(void* ctx) {
+        static lua::state global2state(void* ctx) {
             auto g = (global_State*)ctx;
-            return (state_t*)gco2th(gcref(g->cur_L));
+            return (lua::state)gco2th(gcref(g->cur_L));
         }
     };
     

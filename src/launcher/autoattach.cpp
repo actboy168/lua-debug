@@ -21,16 +21,17 @@
 #include "common.hpp"
 #include "hook/hook_common.h"
 #include "symbol_resolver/symbol_resolver.h"
+#include "lua_resolver.h"
 
 class ProcessRuntimeUtility {
 public:
     static const std::vector<RuntimeModule> &GetProcessModuleMap();
 };
+
 namespace autoattach {
 	std::mutex lockLoadDll;
 	fn_attach debuggerAttach;
 	bool      attachProcess = false;
-    static attach_args args;
 
 #ifdef _WIN32
 	FARPROC luaapi(const char* name) {
@@ -109,8 +110,8 @@ namespace autoattach {
         return DobbySymbolResolver(module.path, "luaL_newstate");
     }
 
-    void attach_lua_vm(state_t *L) {
-        debuggerAttach(L, &args);
+    void attach_lua_vm(lua::state L) {
+        debuggerAttach(L);
     }
 
     bool is_signature_mode() {
@@ -218,11 +219,8 @@ namespace autoattach {
             return;
         }
         LOG(std::format("find lua module path:{}", rm.path).c_str());
-		auto symbol_resolver = symbol_resolver::symbol_resolver_factory_create(rm);
-        if (!args.get_symbols(symbol_resolver.get())) {
-            LOG("can't load args symbols");
-            return;
-        }
+        lua::lua_resolver r(rm);
+        lua::initialize(r);
 
         auto luaversion = get_lua_version_from_env();
         if (luaversion == lua_version::unknown) {
@@ -231,10 +229,10 @@ namespace autoattach {
         LOG(std::format("current lua version: {}", lua_version_to_string(luaversion)).c_str());
 
         auto vmhook = create_vmhook(luaversion);
-        if (!vmhook->get_symbols(symbol_resolver)) {
-            LOG("get_symbols failed");
-            return;
-        }
+        //if (!vmhook->get_symbols(symbol_resolver)) {
+        //    LOG("get_symbols failed");
+        //    return;
+        //}
         //TODO: fix other thread pc
 #if defined(TARGET_ARCH_ARM) || defined(TARGET_ARCH_ARM64)
         dobby_enable_near_branch_trampoline();

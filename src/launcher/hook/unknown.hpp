@@ -4,6 +4,7 @@
 
 #include "hook_common.h"
 #include "../symbol_resolver/symbol_resolver.h"
+#include "../lua_delayload.h"
 
 namespace autoattach {
     inline void *getfirstarg(DobbyRegisterContext *ctx) {
@@ -30,43 +31,19 @@ namespace autoattach {
 #endif
     }
 
-#define str(s) #s
-#define SymbolResolver_lua_(name, prefix) name = (name##_t)resolver->getsymbol(str(prefix##_##name))
-#define SymbolResolver_lua(name) SymbolResolver_lua_(name, lua)
-#define SymbolResolver_luaL(name) SymbolResolver_lua_(name, luaL)
-#define SymbolResolverWithCheck_lua(name) SymbolResolver_lua(name); if (!name) return false;
-
 #define Watch(name, func) DobbyInstrument((void*)name, func);
 #define UnWatch(name, ...) DobbyDestroy((void*)name);
 #define FILED_VAR(name, ...) name##_t name;
 
     
-    void attach_lua_vm(state_t *L);
-
-    using debug_t = void;
-    using hook_t = void (*) (state_t *L, debug_t *ar);
+    void attach_lua_vm(lua::state L);
 
     struct vmhooker {
-        using sethook_t = void (*)(state_t *L, hook_t func, int mask, int count);
-        using gethook_t = hook_t (*) (state_t *L);
-        using gethookmask_t = int (*) (state_t *L);
-        using gethookcount_t = int (*) (state_t *L);
-#define unknown_vmhook_func(_) \
-                _(sethook) \
-                _(gethook) \
-                _(gethookmask) \
-                _(gethookcount)
-
-        unknown_vmhook_func(FILED_VAR)
-
-        hook_t origin_lua_hook;
+        lua::hook origin_lua_hook;
         int origin_hookmask;
         int origin_hookcount;
-
-        void call_origin_hook(state_t *L, debug_t *ar);
-
-        void call_lua_sethook(state_t *L, hook_t fn);
-
+        void call_origin_hook(lua::state L, lua::debug ar);
+        void call_lua_sethook(lua::state L, lua::hook fn);
         bool get_symbols(const std::unique_ptr<symbol_resolver::interface> &resolver);
     };
 }
