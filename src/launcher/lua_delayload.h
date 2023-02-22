@@ -3,6 +3,8 @@
 #include <lua.hpp>
 #include <functional>
 #include <type_traits>
+#include <string_view>
+#include <stdint.h>
 
 namespace lua_delayload {
     using state = uintptr_t;
@@ -32,8 +34,73 @@ namespace lua_delayload::impl {
     struct invocable<R(*)(Args...)> {
         using type = conv_t<R>(*)(conv_t<Args>...);
     };
+
+    template <uint16_t N>
+    class static_string {
+    public:
+        constexpr explicit static_string(std::string_view str) noexcept : static_string{str, std::make_integer_sequence<std::uint16_t, N>{}} {}
+        constexpr const char* data() const noexcept { return chars_; }
+        constexpr std::uint16_t size() const noexcept { return N; }
+    private:
+        template <uint16_t... I>
+        constexpr static_string(std::string_view str, std::integer_sequence<std::uint16_t, I...>) noexcept : chars_{str[I]..., '\0'} {}
+        char chars_[static_cast<size_t>(N) + 1];
+    };
+    template <>
+    class static_string<0> {
+    public:
+        constexpr explicit static_string() = default;
+        constexpr explicit static_string(std::string_view) noexcept {}
+        constexpr const char* data() const noexcept { return nullptr; }
+        constexpr uint16_t size() const noexcept { return 0; }
+    };
+
     template <auto F>
-    struct symbol;
+    constexpr auto symbol() noexcept {
+        std::string_view name =
+#if defined(_MSC_VER)
+            {__FUNCSIG__, sizeof(__FUNCSIG__)}
+#else
+            {__PRETTY_FUNCTION__, sizeof(__PRETTY_FUNCTION__)}
+#endif
+        ;
+#define STRING_FIND(C)                         \
+        do {                                   \
+            i = name.find(C, i);               \
+            if (i == std::string_view::npos) { \
+                return std::string_view {};    \
+            }                                  \
+            ++i;                               \
+        } while (0)
+
+        std::size_t i = 0;
+#if defined(_MSC_VER)
+        STRING_FIND('<');
+        STRING_FIND("__");
+        STRING_FIND(' ');
+        name.remove_prefix(i);
+        i = name.find('(');
+#else
+        STRING_FIND('[');
+        STRING_FIND('=');
+        STRING_FIND(' ');
+        name.remove_prefix(i);
+        i = name.find(']');
+#endif
+        if (i == std::string_view::npos) {
+            return std::string_view {};
+        }
+        name.remove_suffix(name.size() - i);
+#undef STRING_FIND
+        return name;
+    }
+
+    template <auto F>
+    constexpr auto symbol_string() noexcept {
+        constexpr auto name = symbol<F>();
+        return static_string<name.size()>{name};
+    }
+
     template <typename T>
     struct global { static inline T v = T(); };
     using initfunc = global<std::vector<std::function<void(resolver&)>>>;
@@ -42,7 +109,7 @@ namespace lua_delayload::impl {
         static inline typename invocable<decltype(F)>::type invoke;
         static inline bool _ = ([](){
             initfunc::v.push_back([](resolver& r) {
-                invoke = reinterpret_cast<decltype(function<F>::invoke)>(r.find(symbol<F>::name));
+                invoke = reinterpret_cast<decltype(function<F>::invoke)>(r.find(symbol_string<F>().data()));
             });
             return true;
         })();
@@ -54,16 +121,6 @@ namespace lua_delayload::impl {
     template <> struct conv<lua_KFunction> { using type = kfunction; };
     template <> struct conv<lua_Debug*>    { using type = debug; };
     template <> struct conv<lua_Hook>      { using type = hook; };
-    template <> struct symbol<lua_settop>       { static inline const char name[] = "lua_settop"; };
-    template <> struct symbol<lua_pcallk>       { static inline const char name[] = "lua_pcallk"; };
-    template <> struct symbol<luaL_loadbufferx> { static inline const char name[] = "luaL_loadbufferx"; };
-    template <> struct symbol<lua_pushstring>   { static inline const char name[] = "lua_pushstring"; };
-    template <> struct symbol<lua_pushlstring>  { static inline const char name[] = "lua_pushlstring"; };
-    template <> struct symbol<lua_tolstring>    { static inline const char name[] = "lua_tolstring"; };
-    template <> struct symbol<lua_sethook>      { static inline const char name[] = "lua_sethook"; };
-    template <> struct symbol<lua_gethook>      { static inline const char name[] = "lua_gethook"; };
-    template <> struct symbol<lua_gethookmask>  { static inline const char name[] = "lua_gethookmask"; };
-    template <> struct symbol<lua_gethookcount> { static inline const char name[] = "lua_gethookcount"; };
     
 }
 
