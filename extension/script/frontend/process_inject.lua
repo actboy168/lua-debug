@@ -79,8 +79,8 @@ end
 function _M.windows_inject(process, entry)
     local inject = require 'inject'
     if not inject.injectdll(process
-            , (WORKDIR / "bin" / "launcher.x86.dll"):string()
-            , (WORKDIR / "bin" / "launcher.x64.dll"):string()
+            , (WORKDIR / "bin" / "x86" / "launcher.x86.dll"):string()
+            , (WORKDIR / "bin" / "x64" / "launcher.x64.dll"):string()
             , entry
         ) then
         return false, "injectdll failed."

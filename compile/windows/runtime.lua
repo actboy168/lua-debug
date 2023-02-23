@@ -1,4 +1,6 @@
 local lm = require "luamake"
+local fs = require "bee.filesystem"
+
 local platform = lm.runtime_platform
 
 lm.cxx = "c++17"
@@ -27,8 +29,10 @@ local ArchAlias = {
     ["win32-ia32"] = "x86",
 }
 
+local bindir = "publish/bin/"..ArchAlias[platform]
+
 lm:lua_library ('launcher.'..ArchAlias[platform]) {
-    bindir = "publish/bin/",
+    bindir = bindir,
     export_luaopen = "off",
     deps = {"std_format", "frida"},
     includes = {
@@ -62,6 +66,15 @@ lm:lua_library ('launcher.'..ArchAlias[platform]) {
         "delayimp",
     },
 }
+
+local DbghelpPath = {
+    ["win32-x64"] = "c:/windows/system32/",
+    ["win32-ia32"] = "c:/windows/syswow64/",
+}
+
+fs.create_directories(bindir)
+
+fs.copy_file(fs.path(DbghelpPath[platform]) / "dbghelp.dll", fs.current_path() / fs.path(bindir) / "dbghelp.dll", fs.copy_options.overwrite_existing)
 
 lm:phony "launcher" {
     deps = 'launcher.'..ArchAlias[platform]

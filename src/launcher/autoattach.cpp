@@ -94,11 +94,11 @@ namespace autoattach {
 		return get_lua_version_from_ident(lua_ident);
     }
 
-    bool is_lua_module(const RuntimeModule &module, bool signature) {
+    bool is_lua_module(const char* module_path, bool signature) {
         if (signature) {
             //TODO:
         }
-        return Gum::Process::module_find_symbol_by_name(module.path, "luaL_newstate");
+        return Gum::Process::module_find_symbol_by_name(module_path, "luaL_newstate");
     }
 
     void attach_lua_vm(lua::state L) {
@@ -168,10 +168,10 @@ namespace autoattach {
         }
         dllNotification.dllRegisterNotification(0, [](LdrDllNotificationReason NotificationReason, PLDR_DLL_NOTIFICATION_DATA const NotificationData, PVOID Context){
             if (NotificationReason == LdrDllNotificationReason::LDR_DLL_NOTIFICATION_REASON_LOADED) {
-                RuntimeModule rm = {};
                 auto path = std::filesystem::path(std::wstring(NotificationData->Loaded.FullDllName->Buffer, NotificationData->Loaded.FullDllName->Length)).string();
-                memcpy_s(rm.path,sizeof(rm.path), path.c_str(), path.size());
-                if (is_lua_module(rm, is_signature_mode())){
+                if (is_lua_module(path.c_str(), is_signature_mode())){
+                    RuntimeModule rm = {};
+                    memcpy_s(rm.path, sizeof(rm.path), path.c_str(), path.size());
                     // find lua module lazy 
                     std::thread([](){
                         initialize(debuggerAttach, attachProcess);
@@ -186,21 +186,25 @@ namespace autoattach {
     
 
     void initialize(fn_attach attach, bool ap) {
-
+        Gum::runtime_init();
+        auto gum_runtime = std::shared_ptr<void>(nullptr, [](auto){
+            Gum::runtime_deinit();
+        });
         debuggerAttach = attach;
         attachProcess = ap;
 
         bool signature = is_signature_mode();
         RuntimeModule rm = {};
         Gum::Process::enumerate_modules([&rm, signature](const Gum::ModuleDetails& details)->bool{
-            memcpy(rm.path, details.path(), strlen(details.path()));
-            if (is_lua_module(rm, signature)){
+            const char* path = details.path();
+            if (is_lua_module(path, signature)){
+                memcpy(rm.path, path, strlen(path));
                 auto range = details.range();
                 rm.load_address = range.base_address;
                 rm.size = range.size;
-                return true;
+                return false;
             }
-            return false;
+            return true;
         });
         if (!rm.load_address) {
             wait_lua_module();
@@ -208,6 +212,7 @@ namespace autoattach {
             return;
         }
         LOG(std::format("find lua module path:{}", rm.path).c_str());
+        
         lua::lua_resolver r(rm);
         lua::initialize(r);
 

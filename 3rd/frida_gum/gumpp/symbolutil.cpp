@@ -6,13 +6,6 @@
 #include <frida-gum.h>
 #include "string.hpp"
 
-#ifdef _WIN32
-#include <Windows.h>
-#include <DbgHelp.h>
-#include <pathcch.h>
-#pragma comment(lib, "dbghelp.lib")
-#endif
-
 namespace Gum
 {
   class SymbolPtrArray : public PodWrapper<SymbolPtrArray, PtrArray, GArray>

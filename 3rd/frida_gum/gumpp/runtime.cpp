@@ -59,4 +59,11 @@ namespace Gum
       deinit ();
   }
 #endif
+
+  void runtime_init(){
+    Runtime::ref();
+  }
+  void runtime_deinit(){
+    Runtime::unref();
+  }
 }

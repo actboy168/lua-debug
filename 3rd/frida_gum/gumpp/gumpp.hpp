@@ -277,6 +277,9 @@ namespace Gum
     static void enumerate_modules(const FoundModuleFunc& func);
     static void* module_find_symbol_by_name(const char* module_name, const char* symbol_name);
   };
+
+  void runtime_init();
+  void runtime_deinit();
 }
 
 #endif
