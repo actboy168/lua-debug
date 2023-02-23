@@ -35,6 +35,11 @@ lm:lua_dll 'inject' {
     },
     links = "advapi32",
 }
+if lm.mode == "debug" then
+    lm:phony "tests" {
+        deps = "test_frida"
+    }
+end
 
 lm:default {
     "common",
@@ -43,5 +48,6 @@ lm:default {
     "inject",
     "launcher",
     "runtime",
-    "x86_64"
+    "x86_64",
+    lm.mode == "debug" and "tests"
 }

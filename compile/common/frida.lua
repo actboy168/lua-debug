@@ -22,7 +22,7 @@ lm:source_set "frida" {
 
 if lm.mode == "debug" then
     lm:executable("test_frida") {
-        bindir = lm.bindir.."/../tests",
+        bindir = lm.builddir.."/tests",
         deps = "frida",
         includes = "3rd/frida_gum/gumpp",
         sources = "test/interceptor.cpp",

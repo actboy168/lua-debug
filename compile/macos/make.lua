@@ -60,11 +60,18 @@ else
     }
 end
 
+if lm.mode == "debug" then
+    lm:phony "tests" {
+        deps = "test_frida"
+    }
+end
+
 lm:default {
     "common",
     "lua-debug",
     "runtime",
     "process_inject_helper",
     "launcher",
-    lm.platform == "darwin-arm64" and "x86_64"
+    lm.platform == "darwin-arm64" and "x86_64",
+    lm.mode == "debug" and "tests"
 }
