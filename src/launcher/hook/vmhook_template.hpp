@@ -10,29 +10,25 @@ namespace autoattach {
         std::string funcname;
         void *address;
     };
-
-    struct vmhook_template : vmhook {
+    struct vmhook_template : vmhook ,Gum::NoLeaveInvocationListener{
 		vmhook_template() = default;
 		vmhook_template(const vmhook_template&) = delete;
         std::vector <watch_point> wather_points;
 		vmhooker hooker;
         std::atomic_bool inwatch = false;
+        Gum::RefPtr<Gum::Interceptor> interceptor;
         bool hook() override {
             for (auto &&watch: wather_points) {
                 if (watch.address) {
-                    int ec = DobbyInstrument(watch.address, default_watch);
-					LOG(std::format("DobbyInstrument:{}[{}] {}",watch.address, watch.funcname, ec).c_str());
+                    if (!interceptor->attach(watch.address, this, (void*)this))
+					    LOG(std::format("interceptor attach failed:{}[{}]",watch.address, watch.funcname).c_str());
 				}
             }
 			return true;
         }
 
         void unhook() override {
-            for (auto &&watch: wather_points) {
-                if (watch.address) {
-                    DobbyDestroy(watch.address);
-                }
-            }
+           interceptor->detach(this);
         }
 
         bool get_symbols(const std::unique_ptr<symbol_resolver::interface> &resolver) override {
@@ -68,10 +64,9 @@ namespace autoattach {
             }
         }
 
-        static void default_watch(void *address, DobbyRegisterContext *ctx) {
-            auto L = (lua::state) getfirstarg(ctx);
-            auto &_self = get_this();
-            _self.watch_entry(L);           
+        virtual void on_enter (Gum::InvocationContext * context) {
+            auto L = context->get_nth_argument<lua::state>(0);
+            watch_entry(L);
         }
 
         static vmhook_template &get_this();

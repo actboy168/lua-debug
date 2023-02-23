@@ -7,7 +7,7 @@ lm.defines = "_WIN32_WINNT=0x0601"
 lm.builddir = ("build/%s/%s"):format(platform, lm.mode)
 
 require "compile.common.runtime"
-require "compile.common.dobby"
+require "compile.common.frida"
 
 lm:msvc_copydll "copy_vcredist" {
     type = "vcrt",
@@ -30,11 +30,11 @@ local ArchAlias = {
 lm:lua_library ('launcher.'..ArchAlias[platform]) {
     bindir = "publish/bin/",
     export_luaopen = "off",
-    deps = {"std_format", "dobby"},
+    deps = {"std_format", "frida"},
     includes = {
         "3rd/bee.lua",
-        "3rd/dobby/include",
         "3rd/lua/lua54",
+        "3rd/frida_gum/gumpp",
         --"3rd/lua/luajit/src"
     },
     sources = {

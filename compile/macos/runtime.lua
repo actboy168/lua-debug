@@ -1,7 +1,7 @@
 local lm = require "luamake"
 
 require "compile.common.runtime"
-require "compile.common.dobby"
+require "compile.common.frida"
 
 lm:source_set "std_format" {
     includes = "3rd/bee.lua/bee/nonstd/3rd/fmt",
@@ -14,12 +14,12 @@ lm:source_set "std_format" {
 lm:lua_library('liblauncher') {
     export_luaopen = "off",
     deps = {
-        "dobby",
+        "frida",
         "std_format",
     },
     includes = {
         "3rd/bee.lua",
-        "3rd/dobby/include",
+        "3rd/frida_gum/gumpp",
         "3rd/lua/luajit/src",
     },
     sources = {

@@ -12,6 +12,7 @@
 typedef struct _RuntimeModule {
     char path[1024];
     void *load_address;
+	size_t size;
 } RuntimeModule;
 
 namespace autoattach {

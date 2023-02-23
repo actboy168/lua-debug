@@ -39,8 +39,8 @@ namespace autoattach {
             case lua_version::lua51:
                 return {
                         "lua51.luaD_precall",
-                        "lua51.luaV_gettable",
-                        "lua51.luaV_settable"
+                        //"lua51.luaV_gettable",
+                        //"lua51.luaV_settable"
                 };
             case lua_version::lua54:
                 return {

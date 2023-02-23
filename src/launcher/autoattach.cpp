@@ -11,7 +11,6 @@
 #else
 #include <dlfcn.h>
 #endif
-#include <dobby.h>
 #include <string>
 #include <string_view>
 #include <memory>
@@ -22,12 +21,7 @@
 #include "hook/hook_common.h"
 #include "symbol_resolver/symbol_resolver.h"
 #include "lua_resolver.h"
-
-class ProcessRuntimeUtility {
-public:
-    static const std::vector<RuntimeModule> &GetProcessModuleMap();
-};
-
+#include <gumpp.hpp>
 namespace autoattach {
 	std::mutex lockLoadDll;
 	fn_attach debuggerAttach;
@@ -84,19 +78,16 @@ namespace autoattach {
         return lua_version::unknown;
 	}
     lua_version get_lua_version(const char *path) {
-        if (DobbySymbolResolver(path, "luaJIT_version_2_1_0_beta3")) {
+        /*
+            luaJIT_version_2_1_0_beta3
+            luaJIT_version_2_1_0_beta2
+            luaJIT_version_2_1_0_beta1
+            luaJIT_version_2_1_0_alpha
+        */
+        if (!Gum::SymbolUtil::find_matching_functions("luaJIT_version_2_1_0*").empty()){
             return lua_version::luajit;
         }
-        if (DobbySymbolResolver(path, "luaJIT_version_2_1_0_beta2")) {
-            return lua_version::luajit;
-        }
-        if (DobbySymbolResolver(path, "luaJIT_version_2_1_0_beta1")) {
-            return lua_version::luajit;
-        }
-        if (DobbySymbolResolver(path, "luaJIT_version_2_1_0_alpha")) {
-            return lua_version::luajit;
-        }
-		auto p = DobbySymbolResolver(path, "lua_ident");;
+		auto p = Gum::Process::module_find_symbol_by_name(path, "lua_ident");;
         const char *lua_ident = (const char *) p;
         if (!lua_ident)
             return lua_version::unknown;
@@ -107,7 +98,7 @@ namespace autoattach {
         if (signature) {
             //TODO:
         }
-        return DobbySymbolResolver(module.path, "luaL_newstate");
+        return Gum::Process::module_find_symbol_by_name(module.path, "luaL_newstate");
     }
 
     void attach_lua_vm(lua::state L) {
@@ -195,24 +186,22 @@ namespace autoattach {
     
 
     void initialize(fn_attach attach, bool ap) {
-#ifndef NDEBUG
-        log_set_level(0);
-#endif
+
         debuggerAttach = attach;
         attachProcess = ap;
-		DobbyUpdateModuleMap();
 
-        const auto& modulemap = ProcessRuntimeUtility::GetProcessModuleMap();
         bool signature = is_signature_mode();
         RuntimeModule rm = {};
-
-        for (const auto &module: modulemap) {
-            if (is_lua_module(module, signature)) {
-                //check lua version
-                rm = module;
-                break;
+        Gum::Process::enumerate_modules([&rm, signature](const Gum::ModuleDetails& details)->bool{
+            memcpy(rm.path, details.path(), strlen(details.path()));
+            if (is_lua_module(rm, signature)){
+                auto range = details.range();
+                rm.load_address = range.base_address;
+                rm.size = range.size;
+                return true;
             }
-        }
+            return false;
+        });
         if (!rm.load_address) {
             wait_lua_module();
             LOG("can't find lua module");
@@ -229,17 +218,11 @@ namespace autoattach {
         LOG(std::format("current lua version: {}", lua_version_to_string(luaversion)).c_str());
 
         auto vmhook = create_vmhook(luaversion);
-        //if (!vmhook->get_symbols(symbol_resolver)) {
-        //    LOG("get_symbols failed");
-        //    return;
-        //}
+        if (!vmhook->get_symbols(r.context)) {
+           LOG("get_symbols failed");
+           return;
+        }
         //TODO: fix other thread pc
-#if defined(TARGET_ARCH_ARM) || defined(TARGET_ARCH_ARM64)
-        dobby_enable_near_branch_trampoline();
-#endif
         vmhook->hook();
-#if defined(TARGET_ARCH_ARM) || defined(TARGET_ARCH_ARM64)
-        dobby_disable_near_branch_trampoline();
-#endif
     }
 }

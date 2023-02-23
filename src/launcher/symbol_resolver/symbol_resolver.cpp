@@ -12,7 +12,7 @@
 #include "signatures.hpp"
 
 namespace autoattach::symbol_resolver {
-    std::unique_ptr<interface> create_dobby_resolver(const RuntimeModule &module);
+    std::unique_ptr<interface> create_gum_resolver(const RuntimeModule &module);
 
     std::unique_ptr<interface> create_signature_resolver(const RuntimeModule &module, signatures&& data);
 
@@ -21,7 +21,7 @@ namespace autoattach::symbol_resolver {
         if (signature) {
             return create_signature_resolver(module, signatures(signature));
         }
-        return create_dobby_resolver(module);
+        return create_gum_resolver(module);
     }
 
 }
