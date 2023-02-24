@@ -12,7 +12,9 @@ lm:build "download_frida_sdk" {
     "lua",
     "compile/update_frida_gum.lua"
 }
-
+if arch == "x64" then
+    arch = "x86_64"
+end
 local dir = "3rd/frida_gum/"..lm.os.."-"..arch
 lm:source_set "frida" {
     includes = dir,
@@ -25,9 +27,8 @@ lm:source_set "frida" {
     sources = {
         "3rd/frida_gum/gumpp/*.cpp",
     },
-    links = {
-        dir.."/frida-gum"
-    }
+    linkdirs = dir,
+    links = "frida-gum",
 }
 
 if lm.mode == "debug" then

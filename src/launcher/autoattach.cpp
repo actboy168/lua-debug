@@ -16,6 +16,7 @@
 #include <memory>
 #include <charconv>
 #include <filesystem>
+#include <cstring>
 
 #include "common.hpp"
 #include "hook/hook_common.h"
@@ -211,8 +212,8 @@ namespace autoattach {
             const char* name = details.name();
             auto range = details.range();
             if (range.base_address < addr && addr < (void*)((intptr_t)range.base_address + range.size)) {
-                strcpy_s(rm.path, sizeof(rm.path), path);
-                strcpy_s(rm.name, sizeof(rm.name), name);
+                strcpy(rm.path, path);
+                strcpy(rm.name, name);
                 rm.load_address = range.base_address;
                 rm.size = range.size;
                 return false;

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <lua.hpp>
+#include <vector>
 #include <functional>
 #include <type_traits>
 #include <string_view>

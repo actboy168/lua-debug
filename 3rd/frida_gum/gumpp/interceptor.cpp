@@ -21,13 +21,13 @@ namespace Gum
       assign_handle (gum_interceptor_obtain ());
     }
 
-    virtual ~InterceptorImpl ()
+    ~InterceptorImpl () override
     {
       g_mutex_clear (&mutex);
       Runtime::unref ();
     }
 
-    virtual bool attach (void * function_address, InvocationListener * listener, void * listener_function_data) override
+    bool attach (void * function_address, InvocationListener * listener, void * listener_function_data) override
     {
       RefPtr<InvocationListenerProxy> proxy;
 
@@ -48,7 +48,7 @@ namespace Gum
       return (attach_ret == GUM_ATTACH_OK);
     }
 
-    virtual void detach (InvocationListener * listener)
+    void detach (InvocationListener * listener) override
     {
       RefPtr<InvocationListenerProxy> proxy;
 
@@ -67,7 +67,7 @@ namespace Gum
       gum_interceptor_detach (handle, GUM_INVOCATION_LISTENER (proxy->get_handle ()));
     }
 
-    virtual bool attach (void * function_address, NoLeaveInvocationListener * listener, void * listener_function_data) override
+    bool attach (void * function_address, NoLeaveInvocationListener * listener, void * listener_function_data) override
     {
       RefPtr<NoLeaveInvocationListenerProxy> proxy;
 
@@ -88,7 +88,7 @@ namespace Gum
       return (attach_ret == GUM_ATTACH_OK);
     }
 
-    virtual void detach (NoLeaveInvocationListener * listener)
+    void detach (NoLeaveInvocationListener * listener) override
     {
       RefPtr<NoLeaveInvocationListenerProxy> proxy;
 
@@ -112,22 +112,22 @@ namespace Gum
       gum_interceptor_replace (handle, function_address, replacement_address, replacement_data, origin_function);
     }
 
-    virtual void revert (void * function_address)
+    void revert (void * function_address) override
     {
       gum_interceptor_revert (handle, function_address);
     }
 
-    virtual void begin_transaction ()
+    void begin_transaction () override
     {
       gum_interceptor_begin_transaction (handle);
     }
 
-    virtual void end_transaction ()
+    void end_transaction () override
     {
       gum_interceptor_end_transaction (handle);
     }
 
-    virtual InvocationContext * get_current_invocation ()
+    InvocationContext * get_current_invocation () override
     {
       GumInvocationContext * context = gum_interceptor_get_current_invocation ();
       if (context == NULL)
@@ -135,22 +135,22 @@ namespace Gum
       return new InvocationContextImpl (context);
     }
 
-    virtual void ignore_current_thread ()
+    void ignore_current_thread ()override
     {
       gum_interceptor_ignore_current_thread (handle);
     }
 
-    virtual void unignore_current_thread ()
+    void unignore_current_thread () override
     {
       gum_interceptor_unignore_current_thread (handle);
     }
 
-    virtual void ignore_other_threads ()
+    void ignore_other_threads () override
     {
       gum_interceptor_ignore_other_threads (handle);
     }
 
-    virtual void unignore_other_threads ()
+    void unignore_other_threads () override
     {
       gum_interceptor_unignore_other_threads (handle);
     }

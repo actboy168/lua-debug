@@ -64,7 +64,7 @@ namespace autoattach {
             }
         }
 
-        virtual void on_enter (Gum::InvocationContext * context) {
+        void on_enter (Gum::InvocationContext * context) override {
             auto L = context->get_nth_argument<lua::state>(0);
             watch_entry(L);
         }

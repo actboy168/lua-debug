@@ -20,7 +20,7 @@ lm:lua_library('liblauncher') {
     includes = {
         "3rd/bee.lua",
         "3rd/frida_gum/gumpp",
-        "3rd/lua/luajit/src",
+        "3rd/lua/lua54",
     },
     sources = {
         "3rd/bee.lua/bee/error.cpp",
@@ -28,6 +28,7 @@ lm:lua_library('liblauncher') {
         "3rd/bee.lua/bee/utility/file_handle.cpp",
         "src/launcher/*.cpp",
         "src/launcher/hook/*.cpp",
+        "!src/launcher/hook/luajit.cpp",
         "src/launcher/symbol_resolver/*.cpp",
     },
     defines = {

@@ -264,8 +264,8 @@ namespace Gum
       return result;
     }
     static bool is_public_code(void* addr) {
-      uint8_t* byte = (uint8_t*)addr;
 #ifdef _WIN32
+      uint8_t* byte = (uint8_t*)addr;
 #if defined(_M_AMD64)
       if (byte[0] == 0xE9 || byte[0] == 0xEB)
         return true;
