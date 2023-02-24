@@ -7,18 +7,12 @@ if not arch then
     arch = lm.runtime_platform:match "[%w]+-([%w]+)"
 end
 
-lm:build "download_frida_sdk" {
-    "$luamake",
-    "lua",
-    "compile/update_frida_gum.lua"
-}
 if arch == "x64" then
     arch = "x86_64"
 end
 local dir = "3rd/frida_gum/"..lm.os.."-"..arch
 lm:source_set "frida" {
     includes = dir,
-    deps = "download_frida_sdk",
     defines = {"GUMPP_STATIC"},
     windows = {
         defines = "HAVE_WINDOWS",
