@@ -80,11 +80,11 @@ uint64_t injector__get_process_arch(pid_t pid){
 	mib[2] = KERN_PROC_PID;
 	mib[3] = pid;
 	size_t length = 4;
-	struct kinfo_proc proc_info = {};	
+	struct kinfo_proc proc_info = {};
 	size_t size = sizeof(proc_info);
-		
+
 	if(sysctl(mib, (u_int)length, &proc_info, &size, NULL, 0) != 0) {
-		return CPU_TYPE_ANY; 
+		return CPU_TYPE_ANY;
 	}
 
 	if(P_TRANSLATED == (P_TRANSLATED & proc_info.kp_proc.p_flag)){
@@ -112,7 +112,6 @@ mach_inject(
         LOG("remote can't read all images");
         return false;
     }
-    
     if (injector__get_process_arch(targetProcess) != injector__get_process_arch(getpid())) {
         mach_port_deallocate(mach_task_self(), remoteTask);
         LOG("diff arch processor");
