@@ -1,16 +1,16 @@
 #include <memory>
 
-#include <lj_obj.h>
-#include <lj_jit.h>
-
+#include "luajit_listener.hpp"
 #include "vmhook_template.hpp"
-
+#include <gumpp.hpp>
 namespace autoattach{
     struct luajit_hook : vmhook_template {
         luajit_hook() = default;
         ~luajit_hook() = default;
         watch_point lj_dispatch_update{ "lj_dispatch_update"};
         watch_point lj_dispatch_stitch{ "lj_dispatch_stitch"};
+        luajit_global_listener global_listener;
+        luajit_jit_listener jit_listener;
         virtual bool get_symbols(const std::unique_ptr<symbol_resolver::interface> &resolver) override{
             if (!vmhook_template::get_symbols(resolver))
                 return false;
@@ -22,30 +22,9 @@ namespace autoattach{
         virtual bool hook() override{
             if (!vmhook_template::hook())
                 return false;
-            DobbyInstrument(lj_dispatch_update.address, watch_lj_dispatch_update);
-            DobbyInstrument(lj_dispatch_stitch.address, watch_lj_dispatch_stitch);
+            interceptor->attach(lj_dispatch_update.address, &global_listener);
+            interceptor->attach(lj_dispatch_stitch.address, &jit_listener);
             return true;
-        }
-
-        static void watch_lj_dispatch_update(void *address, DobbyRegisterContext *ctx) {
-            auto& _self = get_this();
-            auto L = global2state(getfirstarg(ctx));
-            _self.watch_entry(L);
-        }
-
-        static void watch_lj_dispatch_stitch(void *address, DobbyRegisterContext *ctx) {
-            auto& _self = get_this();
-            auto L = jit2state(getfirstarg(ctx));
-            _self.watch_entry(L);
-        }
-
-        static lua::state jit2state(void* ctx) {
-            auto j = (jit_State*)ctx;
-            return (lua::state)j->L;
-        }
-        static lua::state global2state(void* ctx) {
-            auto g = (global_State*)ctx;
-            return (lua::state)gco2th(gcref(g->cur_L));
         }
     };
     

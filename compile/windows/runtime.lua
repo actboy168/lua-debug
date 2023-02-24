@@ -31,15 +31,19 @@ local ArchAlias = {
 
 local bindir = "publish/bin/"..ArchAlias[platform]
 
+lm:source_set ("launcher_hook_luajit"){
+    includes = {"3rd/lua/luajit/src", "3rd/frida_gum/gumpp"},
+    sources = "src/launcher/hook/luajit_listener.cpp",
+}
+
 lm:lua_library ('launcher.'..ArchAlias[platform]) {
     bindir = bindir,
     export_luaopen = "off",
-    deps = {"std_format", "frida"},
+    deps = {"std_format", "frida", "launcher_hook_luajit"},
     includes = {
         "3rd/bee.lua",
         "3rd/lua/lua54",
         "3rd/frida_gum/gumpp",
-        --"3rd/lua/luajit/src"
     },
     sources = {
         "3rd/bee.lua/bee/error.cpp",
@@ -50,7 +54,7 @@ lm:lua_library ('launcher.'..ArchAlias[platform]) {
         "src/remotedebug/rdebug_delayload.cpp",
         "src/launcher/*.cpp",
         "src/launcher/hook/*.cpp",
-        "!src/launcher/hook/luajit.cpp",
+        "!src/launcher/hook/luajit_listener.cpp",
         "src/launcher/symbol_resolver/*.cpp",
     },
     defines = {

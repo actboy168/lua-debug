@@ -71,7 +71,7 @@ namespace autoattach {
     std::unique_ptr<vmhook_template> create_luajit_vmhook();
     vmhook *create_vmhook(lua_version version) {
         if (version == lua_version::luajit){
-            //_vmhook = create_luajit_vmhook();
+            _vmhook = create_luajit_vmhook();
         }else{
             _vmhook = std::make_unique<vmhook_template>();
         }
