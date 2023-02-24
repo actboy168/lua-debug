@@ -1,4 +1,7 @@
 local path, pid, luaapi = ...
+if type(pid) == "string" then
+	pid = tonumber(pid)
+end
 
 local function dofile(filename, ...)
     local load = _VERSION == "Lua 5.1" and loadstring or load

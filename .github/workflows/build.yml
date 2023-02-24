@@ -32,6 +32,7 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
+    - run: luamake lua compile/update_frida_gum.lua
     - run: luamake -platform ${{ matrix.platform }}
     - run: npm install -g vsce ovsx
     - run: npx vsce publish --target ${{ matrix.platform }} -p ${{ secrets.VSCE_KEY }}

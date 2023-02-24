@@ -28,12 +28,6 @@ if lm.platform == "darwin-arm64" then
     }
 end
 
-lm:source_set "std_format" {
-    sources = {
-        "3rd/bee.lua/bee/nonstd/3rd/format.cc",
-        "3rd/bee.lua/bee/nonstd/3rd/os.cc",
-    }
-}
 
 lm:executable 'process_inject_helper' {
     bindir = "publish/bin/",
@@ -66,11 +60,22 @@ else
     }
 end
 
+if lm.mode == "debug" then
+    lm:executable "test_delayload" {
+        sources = "test/delayload.cpp",
+        includes = {"src/launcher","3rd/lua/lua54/"},
+    }
+    lm:phony "tests" {
+        deps = {"test_frida", "test_delayload"}
+    }
+end
+
 lm:default {
     "common",
     "lua-debug",
     "runtime",
     "process_inject_helper",
     "launcher",
-    lm.platform == "darwin-arm64" and "x86_64"
+    lm.platform == "darwin-arm64" and "x86_64",
+    lm.mode == "debug" and "tests"
 }
