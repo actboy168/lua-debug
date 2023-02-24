@@ -241,7 +241,7 @@ namespace Gum
   private:
     T * ptr;
   };
-
+  struct ModuleDetails;
   class SymbolUtil
   {
   public:
@@ -250,13 +250,39 @@ namespace Gum
       return find_function_ptr (name);
     }
 
-    static std::vector<void *> find_matching_functions (const char * str)
+    static std::vector<void *> find_matching_functions (const char * str, bool skip_public_code)
     {
       RefPtr<PtrArray> functions = RefPtr<PtrArray> (find_matching_functions_array (str));
       std::vector<void *> result;
-      for (int i = functions->length () - 1; i >= 0; i--)
-        result.push_back (functions->nth (i));
+      result.reserve(functions->length());
+      for (int i = functions->length () - 1; i >= 0; i--) {
+        auto addr = functions->nth (i);
+        if (!skip_public_code || !is_public_code(addr))
+          result.push_back (addr);
+      }
+
       return result;
+    }
+    static bool is_public_code(void* addr) {
+      uint8_t* byte = (uint8_t*)addr;
+#ifdef _WIN32
+#if defined(_M_AMD64)
+      if (byte[0] == 0xE9 || byte[0] == 0xEB)
+        return true;
+      if (byte[0] == 0xFF)
+        if ((byte[1] & 0x07) == 4 || (byte[1] & 0x07) == 5)
+            return true;
+#elif defined(_M_IX86)
+      if (byte[0] == 0xE9 || byte[0] == 0xEA || byte[0] == 0xEB)
+        return true;
+      if (byte[0] == 0xFF)
+        if ((byte[1] & 0x07) == 4 || (byte[1] & 0x07) == 5)
+            return true;
+#else
+#error "unsupport"
+#endif
+#endif
+      return false;
     }
   };
   struct MemoryRange {

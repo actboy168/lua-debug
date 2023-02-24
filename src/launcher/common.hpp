@@ -11,6 +11,7 @@
 
 typedef struct _RuntimeModule {
     char path[1024];
+	char name[256];
     void *load_address;
 	size_t size;
 } RuntimeModule;

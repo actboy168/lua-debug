@@ -84,7 +84,7 @@ namespace autoattach {
             luaJIT_version_2_1_0_beta1
             luaJIT_version_2_1_0_alpha
         */
-        if (!Gum::SymbolUtil::find_matching_functions("luaJIT_version_2_1_0*").empty()){
+        if (!Gum::SymbolUtil::find_matching_functions("luaJIT_version_2_1_0*", true).empty()){
             return lua_version::luajit;
         }
 		auto p = Gum::Process::module_find_symbol_by_name(path, "lua_ident");;
@@ -93,12 +93,12 @@ namespace autoattach {
             return lua_version::unknown;
 		return get_lua_version_from_ident(lua_ident);
     }
-
+    constexpr auto find_lua_module_key = "luaL_newstate";
     bool is_lua_module(const char* module_path, bool signature) {
         if (signature) {
             //TODO:
         }
-        return Gum::Process::module_find_symbol_by_name(module_path, "luaL_newstate");
+        return Gum::Process::module_find_symbol_by_name(module_path, find_lua_module_key);
     }
 
     void attach_lua_vm(lua::state L) {
@@ -195,22 +195,31 @@ namespace autoattach {
 
         bool signature = is_signature_mode();
         RuntimeModule rm = {};
-        Gum::Process::enumerate_modules([&rm, signature](const Gum::ModuleDetails& details)->bool{
+
+        auto addrs = Gum::SymbolUtil::find_matching_functions(find_lua_module_key, true);
+        if (addrs.empty()) {
+            wait_lua_module();
+            LOG("can't find lua module");
+            return;
+        }
+        if (addrs.size() > 1){
+            LOG("find more than one lua module, random load the frist");
+        }
+
+        Gum::Process::enumerate_modules([&rm, signature, addr = addrs[0]](const Gum::ModuleDetails& details)->bool{
             const char* path = details.path();
-            if (is_lua_module(path, signature)){
-                memcpy(rm.path, path, strlen(path));
-                auto range = details.range();
+            const char* name = details.name();
+            auto range = details.range();
+            if (range.base_address < addr && addr < (void*)((intptr_t)range.base_address + range.size)) {
+                strcpy_s(rm.path, sizeof(rm.path), path);
+                strcpy_s(rm.name, sizeof(rm.name), name);
                 rm.load_address = range.base_address;
                 rm.size = range.size;
                 return false;
             }
             return true;
         });
-        if (!rm.load_address) {
-            wait_lua_module();
-            LOG("can't find lua module");
-            return;
-        }
+
         LOG(std::format("find lua module path:{}", rm.path).c_str());
         
         lua::lua_resolver r(rm);
