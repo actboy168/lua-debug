@@ -55,10 +55,11 @@ local function request_runinterminal(args)
 end
 
 local function attach_process(pkg, pid)
-    if pkg.arguments.luaVersion == "latest" then
+    local args = pkg.arguments
+    if args.luaVersion == "latest" then
         ipc_send_latest(pid)
     end
-    local ok, errmsg = process_inject.inject(pid, "attach")
+    local ok, errmsg = process_inject.inject(pid, "attach", args)
     if not ok then
 		return false, errmsg
 	end

@@ -85,6 +85,7 @@ function _M.windows_inject(process, entry)
         ) then
         return false, "injectdll failed."
     end
+    return true
 end
 
 function _M.inject(process, entry, args)
