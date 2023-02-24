@@ -3,6 +3,9 @@ local lm = require "luamake"
 require 'compile.common.detect_platform'
 
 local arch = lm.arch
+if not arch then
+    arch = lm.runtime_platform:match "[%w]+-([%w]+)"
+end
 
 local dir = "3rd/frida_gum/"..lm.os.."-"..arch
 lm:source_set "frida" {
