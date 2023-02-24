@@ -36,8 +36,12 @@ lm:lua_dll 'inject' {
     links = "advapi32",
 }
 if lm.mode == "debug" then
+    lm:executable "test_delayload" {
+        sources = "test/delayload.cpp",
+        includes = {"src/launcher","3rd/lua/lua54/"},
+    }
     lm:phony "tests" {
-        deps = "test_frida"
+        deps = {"test_frida", "test_delayload"}
     }
 end
 

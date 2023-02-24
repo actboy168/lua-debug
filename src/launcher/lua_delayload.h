@@ -75,9 +75,8 @@ namespace lua_delayload::impl {
 
         std::size_t i = 0;
 #if defined(_MSC_VER)
-        STRING_FIND('<');
-        STRING_FIND("__");
-        STRING_FIND(' ');
+        STRING_FIND('<');        
+        i = name.find("lua", i);
         name.remove_prefix(i);
         i = name.find('(');
 #else
