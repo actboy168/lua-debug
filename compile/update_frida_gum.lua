@@ -1,14 +1,12 @@
-local platform =  require 'bee.platform'
-if platform == "windows" then
-    error("Windows is not supported")
-end
+local platform = require 'bee.platform'
+local fs = require "bee.filesystem"
 local sp = require 'bee.subprocess'
 
 local output_dir = "3rd/frida_gum/"
 
 local version = "16.0.10"
-local file_fmt = "%s.tar.xz"
-local url_fmt = ("https://github.com/frida/frida/releases/download/%s/frida-gum-devkit-%s-%s")
+local file_fmt = "%s-%s." .. (platform.os == "windows" and "exe" or "tar.xz")
+local url_fmt = ("https://github.com/frida/frida/releases/download/%s/frida-gum-devkit-%s")
 
 local all_os = {
     "macos-arm64",
@@ -22,44 +20,72 @@ local all_os = {
     "freebsd-x86_64",
 }
 
+---@param url string
+---@param output string
+---@param dir string
 local function download(url, output, dir)
-    local p, err = sp.spawn({
+    dir = output_dir .. dir
+    local wget = {
         "wget",
         url,
         "-O",
         output
-    })
-    if not p then
-        return
-    end
-    if p:wait() ~= 0 then
-        return
-    end
-    dir = output_dir..dir
-    p = sp.spawn({
+    }
+    local mkdir = {
         "mkdir",
         dir
-    })
-    if not p then
-        return
-    end
-    p:wait()
-    p = sp.spawn({
+    }
+    local tar = {
         "tar",
         "-xvf",
         output,
         "-C",
         dir,
-    })
-    if p then
+    }
+    local cmds = { wget, mkdir, tar }
+
+    if platform.os == "windows" then
+        cmds[#cmds] = {
+            output,
+            "x",
+            "-y",
+            "-o" .. dir
+        }
+        table.insert(mkdir, "-Force")
+        for i, cmd in ipairs(cmds) do
+            local ok, err, ec = os.execute("powershell -Command " .. table.concat(cmd, " "))
+            if not ok then
+                print(err)
+                return
+            end
+        end
+        return
+    end
+    for i, cmd in ipairs(cmds) do
+        local p, err = sp.spawn(cmd)
+        if not p then
+            print(cmd[1], err)
+            return
+        end
         p:wait()
     end
 end
 
-for index, os in ipairs(all_os) do
-    local file = file_fmt:format(os)
-    local url = url_fmt:format(version, version, file)
-    file = output_dir..file
-    print(("%d/%d"):format(index, #all_os), url, file)
-    download(url, file, os)
+local targets = {}
+for _, os in ipairs(all_os) do
+    if os:find(platform.os, 0, true) then
+        table.insert(targets, os)
+    end
+end
+
+for index, os in ipairs(targets) do
+    local file = file_fmt:format(version, os)
+    local url = url_fmt:format(version, file)
+    file = output_dir .. file
+    print(("%d/%d"):format(index, #targets), url, file)
+    if not fs.exists(file) then
+        download(url, file, os)
+    else
+        print("use cached ", file)
+    end
 end

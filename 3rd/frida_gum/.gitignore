@@ -4,3 +4,7 @@
 *.vcxproj.filters
 *.user
 *.tar.xz
+*.exe
+*.a
+*.h
+*.lib
