@@ -107,9 +107,9 @@ namespace Gum
       gum_interceptor_detach (handle, GUM_INVOCATION_LISTENER (proxy->get_handle ()));
     }
 
-    virtual void replace (void * function_address, void * replacement_address, void * replacement_data)
+    void replace (void * function_address, void * replacement_address, void * replacement_data, void** origin_function) override
     {
-      gum_interceptor_replace (handle, function_address, replacement_address, replacement_data, NULL);
+      gum_interceptor_replace (handle, function_address, replacement_address, replacement_data, origin_function);
     }
 
     virtual void revert (void * function_address)
@@ -164,5 +164,5 @@ namespace Gum
     NoLeaveProxyMap no_leave_proxy_by_listener;
   };
 
-  extern "C" Interceptor * Interceptor_obtain (void) { return new InterceptorImpl; }
+  Interceptor * Interceptor_obtain (void) { return new InterceptorImpl; }
 }

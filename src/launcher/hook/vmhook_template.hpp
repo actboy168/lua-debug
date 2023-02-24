@@ -16,7 +16,7 @@ namespace autoattach {
         std::vector <watch_point> wather_points;
 		vmhooker hooker;
         std::atomic_bool inwatch = false;
-        Gum::RefPtr<Gum::Interceptor> interceptor;
+        Gum::RefPtr<Gum::Interceptor> interceptor = Gum::RefPtr<Gum::Interceptor>(Gum::Interceptor_obtain());
         bool hook() override {
             for (auto &&watch: wather_points) {
                 if (watch.address) {
@@ -50,11 +50,11 @@ namespace autoattach {
         }
 
         static void attach_lua_Hooker(lua::state L, lua::debug ar) {
-            attach_lua_vm(L);
             auto &_self = get_this();
             _self.hooker.call_origin_hook(L, ar);
             //inject success disable hook
             _self.unhook();
+			attach_lua_vm(L);
         }
 
         void watch_entry(lua::state L) {
