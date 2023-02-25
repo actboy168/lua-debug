@@ -7,7 +7,7 @@
 #include <intrin.h>
 #include <detours.h>
 #include "fp_call.h"
-#include "../remotedebug/rdebug_delayload.h"
+#include "../../remotedebug/rdebug_delayload.h"
 
 namespace autoattach {
 	std::mutex lockLoadDll;
