@@ -1,6 +1,6 @@
 #include "autoattach.h"
 #include <lua.hpp>
-#include <bee/filesystem.h>
+#include <filesystem>
 #include <bee/utility/path_helper.h>
 
 std::string readfile(const fs::path& filename) {
