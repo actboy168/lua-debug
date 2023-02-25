@@ -20,9 +20,9 @@
 #include "shellcode.inl"
 
 #include <bee/nonstd/format.h>
-#include "../../common/ipc.h"
-#define LOG(msg) LUA_DEBUG_FAIL_LOG("inject", "%s", msg)
-#define LOG_MACH(msg, err) LUA_DEBUG_FAIL_LOG("inject", "[%s] %s", mach_error_string(err))
+
+#define LOG(msg) fprintf(stderr, "%s\n", msg)
+#define LOG_MACH(msg, err) mach_error(msg, err)
 
 struct rmain_arg {           // dealloc
     size_t sizeofstruct;

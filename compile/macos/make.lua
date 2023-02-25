@@ -31,7 +31,7 @@ end
 
 lm:executable 'process_inject_helper' {
     bindir = "publish/bin/",
-    deps = { "std_format", "shellcode", "src_common" },
+    deps = { "std_format", "shellcode" },
     includes = {
         "3rd/bee.lua",
     },
