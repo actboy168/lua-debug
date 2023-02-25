@@ -2,9 +2,15 @@
 #include <string_view>
 #include <cstdio>
 #include <cassert>
+
 int main(){
     using namespace std::string_view_literals;
-    constexpr auto lua_sethook_s = lua_delayload::impl::symbol_string<lua_gethook>();
-    assert((std::string_view{lua_sethook_s.data(), lua_sethook_s.size()} == "lua_gethook"sv));
+#define check_symbol_name(name) \
+    constexpr auto name##_s = lua_delayload::impl::symbol_string<name>();\
+    static_assert((std::string_view{name##_s.data(), name##_s.size()} == #name##sv));
+
+    check_symbol_name(lua_gethook);
+    check_symbol_name(lua_sethook);
+
 	return 0;
 }

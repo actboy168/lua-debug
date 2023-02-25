@@ -83,7 +83,7 @@ namespace lua_delayload::impl {
 #else
         STRING_FIND('[');
         STRING_FIND('=');
-        STRING_FIND(' ');
+        i = name.find("lua", i);
         name.remove_prefix(i);
         i = name.find(']');
 #endif

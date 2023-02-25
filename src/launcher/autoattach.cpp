@@ -188,40 +188,44 @@ namespace autoattach {
 
     void initialize(fn_attach attach, bool ap) {
         Gum::runtime_init();
-        auto gum_runtime = std::shared_ptr<void>(nullptr, [](auto){
-            Gum::runtime_deinit();
-        });
+        //auto gum_runtime = std::shared_ptr<void>(nullptr, [](auto){
+        //    Gum::runtime_deinit();
+        //});
         debuggerAttach = attach;
         attachProcess = ap;
 
         bool signature = is_signature_mode();
         RuntimeModule rm = {};
-
-        auto addrs = Gum::SymbolUtil::find_matching_functions(find_lua_module_key, true);
-        if (addrs.empty()) {
-            wait_lua_module();
-            LOG("can't find lua module");
-            return;
-        }
-        if (addrs.size() > 1){
-            LOG("find more than one lua module, random load the frist");
-        }
-
-        Gum::Process::enumerate_modules([&rm, signature, addr = addrs[0]](const Gum::ModuleDetails& details)->bool{
-            const char* path = details.path();
-            const char* name = details.name();
-            auto range = details.range();
-            if (range.base_address < addr && addr < (void*)((intptr_t)range.base_address + range.size)) {
-                strcpy(rm.path, path);
-                strcpy(rm.name, name);
-                rm.load_address = range.base_address;
-                rm.size = range.size;
-                return false;
+        if (signature){
+            //TODO
+        }else{
+            auto addrs = Gum::SymbolUtil::find_matching_functions(find_lua_module_key, true);
+            if (addrs.empty()) {
+                wait_lua_module();
+                FAIL_LOG("can't find lua module");
+                return;
             }
-            return true;
-        });
+            if (addrs.size() > 1){
+                LOG("find more than one lua module, random load the frist");
+            }
 
-        LOG(std::format("find lua module path:{}", rm.path).c_str());
+            Gum::Process::enumerate_modules([&rm, addr = addrs[0]](const Gum::ModuleDetails& details)->bool{
+                const char* path = details.path();
+                const char* name = details.name();
+                auto range = details.range();
+                if (range.base_address < addr && addr < (void*)((intptr_t)range.base_address + range.size)) {
+                    strcpy(rm.path, path);
+                    strcpy(rm.name, name);
+                    rm.load_address = range.base_address;
+                    rm.size = range.size;
+                    return false;
+                }
+                return true;
+            });
+        }
+
+
+        LOG("find lua module path:%s", rm.path);
         
         lua::lua_resolver r(rm);
         lua::initialize(r);
@@ -230,11 +234,11 @@ namespace autoattach {
         if (luaversion == lua_version::unknown) {
             luaversion = get_lua_version(rm.path);
         }
-        LOG(std::format("current lua version: {}", lua_version_to_string(luaversion)).c_str());
+        LOG("current lua version: %s", lua_version_to_string(luaversion));
 
         auto vmhook = create_vmhook(luaversion);
         if (!vmhook->get_symbols(r.context)) {
-           LOG("get_symbols failed");
+           FAIL_LOG("get_symbols failed");
            return;
         }
         //TODO: fix other thread pc

@@ -3,6 +3,7 @@ local fs = require 'bee.filesystem'
 local network = require 'common.network'
 local select = require "common.select"
 local proxy = require 'frontend.proxy'
+local tick = require 'common.tick'
 local vscode
 WORKDIR = fs.exe_path():parent_path():parent_path()
 
@@ -30,6 +31,7 @@ local function run()
         select.update(0.01)
         proxy.update()
         update()
+        tick.update()
     end
 end
 

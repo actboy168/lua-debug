@@ -38,11 +38,13 @@ local function open(address, client)
     local write = ''
     local e_send = function(_) end
     local e_close = function() end
+    local event_connected = function (_)end
     local stat = {}
     function t.event(status, fd)
         if status == 'connect start' then
             assert(t.client)
             srvfd = fd
+            event_connected()
             return
         end
         if status == 'connect failed' then
@@ -85,6 +87,9 @@ local function open(address, client)
             f()
         end
     end
+    function m.event_connected(f)
+        event_connected = f
+    end
     function m.update()
         select.update(0)
         local data = m.recv()
@@ -107,7 +112,9 @@ local function open(address, client)
         return select.recv(session)
     end
     function m.close()
-        select.close(session)
+        if session then
+            select.close(session)
+        end
         write = ''
     end
     function m.debug(v)
