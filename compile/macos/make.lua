@@ -63,7 +63,7 @@ end
 if lm.mode == "debug" then
     lm:executable "test_delayload" {
         sources = "test/delayload.cpp",
-        includes = {"src/launcher","3rd/lua/lua54/"},
+        includes = {"src/launcher/new","3rd/lua/lua54"},
     }
     lm:phony "tests" {
         deps = {"test_frida", "test_delayload"}

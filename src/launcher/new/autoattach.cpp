@@ -1,4 +1,4 @@
-#include "../autoattach.h"
+#include "autoattach.h"
 #include <mutex>
 #include <stack>
 #include <set>
@@ -18,10 +18,10 @@
 #include <filesystem>
 #include <cstring>
 
-#include "../common.hpp"
-#include "../hook/hook_common.h"
-#include "../symbol_resolver/symbol_resolver.h"
-#include "../lua_resolver.h"
+#include "common.hpp"
+#include "hook/hook_common.h"
+#include "symbol_resolver/symbol_resolver.h"
+#include "lua_resolver.h"
 #include <gumpp.hpp>
 namespace autoattach {
 	std::mutex lockLoadDll;

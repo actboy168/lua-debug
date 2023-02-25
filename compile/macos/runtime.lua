@@ -11,9 +11,11 @@ lm:source_set "std_format" {
     }
 }
 
+local launcher_root = "src/launcher/new/";
+
 lm:source_set ("launcher_hook_luajit"){
     includes = {"3rd/lua/luajit/src", "3rd/frida_gum/gumpp"},
-    sources = "src/launcher/hook/luajit_listener.cpp",
+    sources = launcher_root.."hook/luajit_listener.cpp",
 }
 
 lm:lua_library('liblauncher') {
@@ -33,10 +35,10 @@ lm:lua_library('liblauncher') {
         "3rd/bee.lua/bee/error.cpp",
         "3rd/bee.lua/bee/utility/path_helper.cpp",
         "3rd/bee.lua/bee/utility/file_handle.cpp",
-        "src/launcher/new/*.cpp",
-        "src/launcher/hook/*.cpp",
-        "!src/launcher/hook/luajit_listener.cpp",
-        "src/launcher/symbol_resolver/*.cpp",
+        launcher_root.."*.cpp",
+        launcher_root.."hook/*.cpp",
+        "!"..launcher_root.."hook/luajit_listener.cpp",
+        launcher_root.."symbol_resolver/*.cpp",
     },
     defines = {
         "BEE_INLINE",

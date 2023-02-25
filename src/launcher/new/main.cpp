@@ -1,4 +1,4 @@
-#include "../autoattach.h"
+#include "autoattach.h"
 #include <bee/nonstd/filesystem.h>
 #include <bee/utility/path_helper.h>
 #ifndef _WIN32
@@ -12,7 +12,7 @@
 #include <string>
 #include <atomic>
 
-#include "../common.hpp"
+#include "common.hpp"
 
 namespace autoattach {
 	static std::string readfile(const fs::path& filename) {
