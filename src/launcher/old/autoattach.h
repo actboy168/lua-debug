@@ -1,13 +1,15 @@
 #pragma once
-#ifdef _WIN32
-#include <windows.h>
+
+#if defined(_WIN32)
+#include <Windows.h>
 #endif
-#include "lua_delayload.h"
+
+struct lua_State;
 
 namespace autoattach {
-	typedef void(*fn_attach)(lua::state L);
+	typedef void(*fn_attach)(lua_State* L);
 	void    initialize(fn_attach attach, bool ap);
-#ifdef _WIN32
+#if defined(_WIN32)
 	FARPROC luaapi(const char* name);
 #endif
 }
