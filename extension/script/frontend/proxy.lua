@@ -54,6 +54,31 @@ local function request_runinterminal(args)
     }
 end
 
+local function wait_launcher(pkg)
+    local tick = require 'common.tick'
+    local ipc = require 'common.ipc'
+    local time = os.time()
+    local ticker = tick.ontick(function ()
+        if os.time() <= time + 1 then
+            return
+        end
+        local file = ipc(WORKDIR, pid, "failed", "r")
+        if not file then
+            return
+        end
+        ---@type string
+        local msg = file:read("*a")
+        local end_pos = msg:find("__endfile__\n")
+        if end_pos then
+            server.close()
+            response_error(pkg, msg:sub(0, end_pos))
+            return "close"
+        end
+    end)
+    server.event_connected(function () ticker.closed = true end)
+    return true
+end
+
 local function attach_process(pkg, pid)
     local args = pkg.arguments
     if args.luaVersion == "latest" then
@@ -67,7 +92,7 @@ local function attach_process(pkg, pid)
     server = network(getUnixAddress(pid), true)
     server.sendmsg(initReq)
     server.sendmsg(pkg)
-    return true
+    return wait_launcher(pkg)
 end
 
 local function attach_tcp(pkg, args)
