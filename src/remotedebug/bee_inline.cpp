@@ -6,6 +6,9 @@
 #include "rlua.h"
 #include "rdebug_cmodule.h"
 
+#define luaL_newlibtable(L,l)	\
+  lua_createtable(L, 0, sizeof(l)/sizeof((l)[0]) - 1)
+
 #if !defined(LUAI_UACINT)
 #   if defined(_MSC_VER)
 #       define LUAI_UACINT __int64
@@ -21,7 +24,7 @@
 #       define LUA_INTEGER_FMT "%lld"
 #   endif
 #endif
-#include <bee/lua/file.h>
+#include <binding/file.h>
 
 #include <bee/error.cpp>
 #include <bee/net/socket.cpp>
@@ -37,6 +40,7 @@
 #if defined(_WIN32)
 #include <bee/platform/win/version_win.cpp>
 #include <bee/platform/win/unicode_win.cpp>
+#include <bee/platform/win/unlink_win.cpp>
 #include <bee/utility/file_handle_win.cpp>
 #include <bee/thread/simplethread_win.cpp>
 #include <binding/lua_unicode.cpp>

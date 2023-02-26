@@ -1,6 +1,6 @@
 #define RLUA_REPLACE
 #include "rdebug_cmodule.h"
-#include <bee/lua/binding.h>
+#include <binding/binding.h>
 
 extern "C" int luaopen_remotedebug_hookmgr(rlua_State* L);
 extern "C" int luaopen_remotedebug_stdio(rlua_State* L);

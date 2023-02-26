@@ -41,6 +41,8 @@ lm:lua_library ('launcher.'..ArchAlias[platform]) {
         "3rd/bee.lua/bee/utility/path_helper.cpp",
         "3rd/bee.lua/bee/utility/file_handle.cpp",
         "3rd/bee.lua/bee/utility/file_handle_win.cpp",
+        "3rd/bee.lua/bee/nonstd/3rd/os.cc",
+        "3rd/bee.lua/bee/nonstd/3rd/format.cc",
         "src/remotedebug/rdebug_delayload.cpp",
         "src/launcher/*.cpp",
     },
