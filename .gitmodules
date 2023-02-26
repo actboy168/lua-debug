@@ -10,3 +10,6 @@
 [submodule "3rd/json.lua"]
 	path = 3rd/json.lua
 	url = https://github.com/actboy168/json.lua
+[submodule "3rd/frida_gum/gumpp"]
+	path = 3rd/frida_gum/gumpp
+	url = https://github.com/fesily/gumpp

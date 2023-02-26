@@ -19,7 +19,7 @@ lm:source_set "frida" {
         links = {"kernel32","user32","gdi32","winspool","comdlg32","advapi32","shell32","ole32","oleaut32","uuid","odbc32","odbccp32"},
     },
     sources = {
-        "3rd/frida_gum/gumpp/*.cpp",
+        "3rd/frida_gum/gumpp/src/*.cpp",
     },
     linkdirs = dir,
     links = "frida-gum",
