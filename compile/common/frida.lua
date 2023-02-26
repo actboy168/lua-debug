@@ -12,7 +12,7 @@ if arch == "x64" then
 end
 local dir = "3rd/frida_gum/"..lm.os.."-"..arch
 lm:source_set "frida" {
-    includes = dir,
+    includes = {dir, "3rd/frida_gum/gumpp"},
     defines = {"GUMPP_STATIC"},
     windows = {
         defines = "HAVE_WINDOWS",
