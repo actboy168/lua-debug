@@ -24,7 +24,6 @@ local all_os = {
 ---@param output string
 ---@param dir string
 local function download(url, output, dir)
-    dir = output_dir .. dir
     local wget = {
         "wget",
         url,
@@ -82,10 +81,12 @@ for index, os in ipairs(targets) do
     local file = file_fmt:format(version, os)
     local url = url_fmt:format(version, file)
     file = output_dir .. file
-    print(("%d/%d"):format(index, #targets), url, file)
-    if not fs.exists(file) then
-        download(url, file, os)
+    print(("[%d/%d]"):format(index, #targets), url, file)
+    local target_dir = output_dir .. os
+    local target_file = fs.path(target_dir) / "frida-gum.h"
+    if not fs.exists(target_file) then
+        download(url, file, target_dir)
     else
-        print("use cached ", file)
+        print("use cached ", target_file)
     end
 end
