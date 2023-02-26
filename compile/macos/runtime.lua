@@ -20,7 +20,6 @@ lm:lua_library 'liblauncher' {
         "3rd/dobby/include"
     },
     sources = {
-        "3rd/bee.lua/bee/utility/path_helper.cpp",
         "3rd/bee.lua/bee/utility/file_handle.cpp",
         "3rd/bee.lua/bee/utility/file_handle_posix.cpp",
         "src/remotedebug/rdebug_delayload.cpp",
