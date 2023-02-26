@@ -54,20 +54,7 @@ local function request_runinterminal(args)
     }
 end
 
-local function attach_process(pkg, pid)
-    local args = pkg.arguments
-    if args.luaVersion == "latest" then
-        ipc_send_latest(pid)
-    end
-    local ok, errmsg = process_inject.inject(pid, "attach", args)
-    if not ok then
-		return false, errmsg
-	end
-
-    server = network(getUnixAddress(pid), true)
-    server.sendmsg(initReq)
-    server.sendmsg(pkg)
-
+local function wait_launcher(pkg)
     local tick = require 'common.tick'
     local ipc = require 'common.ipc'
     local time = os.time()
@@ -89,8 +76,23 @@ local function attach_process(pkg, pid)
         end
     end)
     server.event_connected(function () ticker.closed = true end)
-
     return true
+end
+
+local function attach_process(pkg, pid)
+    local args = pkg.arguments
+    if args.luaVersion == "latest" then
+        ipc_send_latest(pid)
+    end
+    local ok, errmsg = process_inject.inject(pid, "attach", args)
+    if not ok then
+		return false, errmsg
+	end
+
+    server = network(getUnixAddress(pid), true)
+    server.sendmsg(initReq)
+    server.sendmsg(pkg)
+    return wait_launcher(pkg)
 end
 
 local function attach_tcp(pkg, args)
