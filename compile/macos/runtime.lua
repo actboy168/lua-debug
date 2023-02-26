@@ -13,7 +13,7 @@ lm:source_set "src_common" {
 
 lm:lua_library 'liblauncher' {
     export_luaopen = "off",
-    deps = {"dobby", "src_common" }
+    deps = {"dobby", "src_common" },
     includes = {
         "3rd/bee.lua",
         "3rd/bee.lua/3rd/lua",
