@@ -179,6 +179,7 @@ for _, luaver in ipairs {"lua51","lua52","lua53","lua54","lua-latest","luajit"} 
                 "ole32",
                 "delayimp",
                 "dbghelp",
+                "ntdll"
             },
             ldflags = {
                 ("/DELAYLOAD:%s.dll"):format(luaver),

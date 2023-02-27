@@ -163,7 +163,7 @@ to_strview(lua_State* L, int idx) {
 
 static int
 la2u(lua_State *L) {
-    std::string r = bee::a2u(to_strview(L, 1));
+    std::string r = bee::win::a2u(to_strview(L, 1));
     lua_pushlstring(L, r.data(), r.size());
     return 1;
 }
