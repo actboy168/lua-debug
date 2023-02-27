@@ -66,7 +66,7 @@ if lm.mode == "debug" then
         includes = {"src/launcher","3rd/lua/lua54"},
     }
     lm:phony "tests" {
-        deps = {"test_frida", "test_delayload"}
+        deps = {"test_frida", "test_delayload", "test_symbol"}
     }
 end
 

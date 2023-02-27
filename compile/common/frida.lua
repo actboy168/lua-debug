@@ -10,6 +10,7 @@ end
 if arch == "x64" then
     arch = "x86_64"
 end
+
 local dir = "3rd/frida_gum/"..lm.os.."-"..arch
 lm:source_set "frida" {
     includes = {dir, "3rd/frida_gum/gumpp"},
@@ -31,5 +32,11 @@ if lm.mode == "debug" then
         deps = "frida",
         includes = "3rd/frida_gum/gumpp",
         sources = "test/interceptor.cpp",
+    }
+    lm:executable ("test_symbol") {
+        bindir = lm.builddir.."/tests",
+        deps = "frida",
+        sources = "test/symbol/*.c",
+        includes = {dir, "3rd/frida_gum/gumpp"},
     }
 end
