@@ -102,17 +102,21 @@ namespace lua_delayload::impl {
     }
 
     template <typename T>
-    struct global { static inline T v = T(); };
-    using initfunc = global<std::vector<std::function<void(resolver&)>>>;
+    struct global { 
+        static inline T v = T();
+    };
+    using initfunc = global<std::vector<std::function<const char* (resolver&)>>>;
     template <auto F>
     struct function {
-        static inline typename invocable<decltype(F)>::type invoke;
-        static inline bool _ = ([](){
+        using func_t = typename invocable<decltype(F)>::type;
+        static constexpr auto symbol_name = symbol_string<F>();
+        static inline func_t invoke = []()->func_t{
             initfunc::v.push_back([](resolver& r) {
-                invoke = reinterpret_cast<decltype(function<F>::invoke)>(r.find(symbol_string<F>().data()));
+                invoke = reinterpret_cast<decltype(function<F>::invoke)>(r.find(symbol_name.data()));
+                return invoke != nullptr ? nullptr : symbol_name.data();
             });
-            return true;
-        })();
+            return nullptr;
+        }();
     };
 
     template <> struct conv<lua_State*>    { using type = state; };
@@ -125,10 +129,13 @@ namespace lua_delayload::impl {
 }
 
 namespace lua_delayload {
-    inline void initialize(resolver& r) {
+    inline const char* initialize(resolver& r) {
         for (auto& f : impl::initfunc::v) {
-            f(r);
+            auto error_name = f(r);
+            if (error_name)
+                return error_name;
         }
+        return nullptr;
     }
 
     template <auto F, typename ...Args>

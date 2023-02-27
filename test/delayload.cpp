@@ -11,5 +11,6 @@ int main(){
     check_symbol_name(lua_gethook);
     check_symbol_name(lua_sethook);
 
+    assert(lua_delayload::impl::initfunc::v.size() == 4); 
 	return 0;
 }

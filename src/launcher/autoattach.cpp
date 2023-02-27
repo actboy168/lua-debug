@@ -248,7 +248,11 @@ namespace autoattach {
         LOG(std::format("find lua module path:{}", rm.path).c_str());
         
         lua::lua_resolver r(rm);
-        lua::initialize(r);
+        auto error_msg = lua::initialize(r);
+        if (error_msg) {
+            FATL_LOG(attachProcess, std::format("lua::initialize failed, can't find {}", error_msg).c_str());
+            return;
+        }
 
         auto luaversion = get_lua_version_from_env();
         if (luaversion == lua_version::unknown) {
@@ -258,7 +262,7 @@ namespace autoattach {
 
         auto vmhook = create_vmhook(luaversion);
         if (!vmhook->get_symbols(r.context)) {
-           log::fatal(attachProcess, "get_symbols failed");
+           FATL_LOG(attachProcess, "get_symbols failed");
            return;
         }
         //TODO: fix other thread pc

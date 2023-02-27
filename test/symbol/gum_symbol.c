@@ -58,9 +58,8 @@ int main() {
   extern_function(extern_data);
   gum_init_embedded();
   const char* module_name = "test_symbol";
-  gum_module_enumerate_symbols (module_name, FoundSymbolFunc, NULL);
+  //gum_module_enumerate_symbols (module_name, FoundSymbolFunc, NULL);
   
-  gum_find_function("1");
 
   g_assert(gum_module_find_symbol_by_name(module_name, "extern_function") ==
            GPOINTER_TO_SIZE(&extern_function));
