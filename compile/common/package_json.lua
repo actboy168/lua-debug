@@ -266,7 +266,7 @@ attributes.attach = {
 }
 
 if OS ~= "win32" and OS ~= "darwin" then
-    table.insert(attributes.launch.inject.enum, "gdb")
+    table.insert(attributes.attach.inject.enum, "gdb")
 end
 
 attributes.launch = {
