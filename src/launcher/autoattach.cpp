@@ -246,5 +246,5 @@ namespace autoattach {
 	void initialize(fn_attach attach, bool ap) {
 		log::fatal(ap, "unimplemented!");
 	}
-#endif
 }
+#endif
