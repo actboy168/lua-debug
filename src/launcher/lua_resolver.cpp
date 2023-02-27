@@ -31,8 +31,6 @@ namespace lua_delayload {
                 return (intptr_t)_luaL_loadbufferx;
             }
         }
-        fprintf(stderr, "Fatal Error: Can't find lua c function: `%s`.", name);
-        exit(1);
         return 0;
     }
 }
