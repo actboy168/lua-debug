@@ -9,6 +9,7 @@
 #define FATL_LOG(mode, msg) do{LOG(msg); log::fatal(mode, msg);}while(0)
 #else
 #define LOG(...)
+#define FATL_LOG(mode, msg) log::fatal(mode, msg)
 #endif
 
 typedef struct _RuntimeModule {
