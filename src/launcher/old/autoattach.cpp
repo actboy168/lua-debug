@@ -1,17 +1,20 @@
 #include "autoattach.h"
 #include <lua.hpp>
+
+#if defined(_WIN32)
+
 #include <mutex>
 #include <stack>
 #include <set>
 #include <vector>
+
 #include <intrin.h>
 #include <detours.h>
 #include "fp_call.h"
-#include "../../remotedebug/rdebug_delayload.h"
+#include "../remotedebug/rdebug_delayload.h"
 
 namespace autoattach {
 	std::mutex lockLoadDll;
-	std::set<std::wstring> loadedModules;
 	std::set<lua_State*> hookLuaStates;
 	fn_attach debuggerAttach;
 	bool      attachProcess = false;
@@ -114,7 +117,9 @@ namespace autoattach {
 			}
 			return true;
 		}
-	}
+    }
+
+	std::set<std::wstring> loadedModules;
 
 	static HMODULE enumerateModules(HANDLE hProcess, HMODULE hModuleLast, PIMAGE_NT_HEADERS32 pNtHeader) {
 		MEMORY_BASIC_INFORMATION mbi = { 0 };
@@ -233,3 +238,13 @@ namespace autoattach {
 #undef  FIND
 	}
 }
+
+#else
+#include "log.h"
+
+namespace autoattach {
+    void initialize(fn_attach attach, bool ap) {
+        log::fatal(ap, "unimplemented!");
+    }
+}
+#endif
