@@ -1,16 +1,17 @@
 #include "autoattach.h"
 #include <lua.hpp>
+
+#if defined(_WIN32)
+
 #include <mutex>
 #include <stack>
 #include <set>
 #include <vector>
 
-#if defined(_WIN32)
 #include <intrin.h>
 #include <detours.h>
 #include "fp_call.h"
 #include "../remotedebug/rdebug_delayload.h"
-#endif
 
 namespace autoattach {
 	std::mutex lockLoadDll;
@@ -19,7 +20,6 @@ namespace autoattach {
 	bool      attachProcess = false;
 	HMODULE   hookDll = NULL;
 
-#if defined(_WIN32)
 	static bool hook_install(uintptr_t* pointer_ptr, uintptr_t detour) {
 		LONG status;
 		if ((status = DetourTransactionBegin()) == NO_ERROR) {
@@ -51,7 +51,6 @@ namespace autoattach {
 		::SetLastError(status);
 		return false;
 	}
-#endif
 
 	namespace lua {
 		namespace real {
@@ -59,7 +58,6 @@ namespace autoattach {
 			uintptr_t lua_close = 0;
 			uintptr_t lua_settop = 0;
 		}
-#if defined(_WIN32)
 		namespace fake_launch {
 			static void __cdecl luaL_openlibs(lua_State* L) {
 				base::c_call<void>(real::luaL_openlibs, L);
@@ -119,10 +117,8 @@ namespace autoattach {
 			}
 			return true;
 		}
-#endif
     }
 
-#if defined(_WIN32)
 	std::set<std::wstring> loadedModules;
 
 	static HMODULE enumerateModules(HANDLE hProcess, HMODULE hModuleLast, PIMAGE_NT_HEADERS32 pNtHeader) {
@@ -241,7 +237,12 @@ namespace autoattach {
 		return 0;
 #undef  FIND
 	}
+}
+
 #else
+#include "log.h"
+
+namespace autoattach {
 	void initialize(fn_attach attach, bool ap) {
 		log::fatal(ap, "unimplemented!");
 	}

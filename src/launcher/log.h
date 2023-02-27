@@ -9,6 +9,7 @@
 
 #if !defined(_WIN32)
 #include <sys/select.h>
+#include <unistd.h>
 #endif
 
 namespace log {
