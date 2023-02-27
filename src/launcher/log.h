@@ -60,16 +60,15 @@ inline void fatal(bool attach, const char* msg) {
 		getpid()
 #endif
 	);
-	
 	if (!socket::initialize()) {
 		return;
 	}
-	socket::fd_t fd = socket::open(socket::protocol::uds);
 	endpoint ep = endpoint::from_unixpath(path);
 	if (!ep.valid()) {
 		return;
 	}
 	socket::unlink(ep);
+	socket::fd_t fd = socket::open(socket::protocol::uds);
 	if (socket::status::success != socket::bind(fd, ep)) {
 		socket::close(fd);
 		return;
