@@ -12,7 +12,7 @@ namespace autoattach::symbol_resolver {
         void *getsymbol(const char *name) const override {
 			auto keys = strings::spilt_string(name, '.');
             auto ptr = Gum::Process::module_find_symbol_by_name(image_name, keys.back().data());
-            LOG("%s", std::format("gum resolver symbol {}:{}", name, ptr).c_str());
+            LOG(std::format("gum resolver symbol {}:{}", name, ptr).c_str());
             return ptr;
         }
     };

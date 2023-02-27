@@ -202,7 +202,7 @@ namespace autoattach {
             auto addrs = Gum::SymbolUtil::find_matching_functions(find_lua_module_key, true);
             if (addrs.empty()) {
                 wait_lua_module();
-                FAIL_LOG("can't find lua module");
+                LOG("can't find lua module");
                 return;
             }
             if (addrs.size() > 1){
@@ -224,8 +224,7 @@ namespace autoattach {
             });
         }
 
-
-        LOG("find lua module path:%s", rm.path);
+        LOG(std::format("find lua module path:{}", rm.path).c_str());
         
         lua::lua_resolver r(rm);
         lua::initialize(r);
@@ -234,11 +233,11 @@ namespace autoattach {
         if (luaversion == lua_version::unknown) {
             luaversion = get_lua_version(rm.path);
         }
-        LOG("current lua version: %s", lua_version_to_string(luaversion));
+        LOG(std::format("current lua version: {}", lua_version_to_string(luaversion)).c_str());
 
         auto vmhook = create_vmhook(luaversion);
         if (!vmhook->get_symbols(r.context)) {
-           FAIL_LOG("get_symbols failed");
+           LOG("get_symbols failed");
            return;
         }
         //TODO: fix other thread pc

@@ -1,10 +1,13 @@
 #pragma once
 #include <string_view>
 #include <bee/nonstd/format.h>
-#include "../common/ipc.h"
 
-#define LOG(fmt, ...) LUA_DEBUG_LOG(launcher, fmt, ##__VA_ARGS__)
-#define FAIL_LOG(fmt, ...) LUA_DEBUG_FAIL_LOG(launcher, fmt, ##__VA_ARGS__)
+#ifndef NDEBUG
+#include <stdio.h>
+#define LOG(msg) fprintf(stderr, "[lua-debug][launcher]%s\n", msg)
+#else
+#define LOG(...)
+#endif
 
 typedef struct _RuntimeModule {
     char path[1024];

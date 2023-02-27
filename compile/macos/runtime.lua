@@ -11,14 +11,6 @@ lm:source_set "std_format" {
     }
 }
 
-lm:source_set "src_common" {
-    includes = "3rd/bee.lua",
-    sources = {
-        "src/common/common.cpp",
-        "3rd/bee.lua/bee/utility/path_helper.cpp"
-    }
-}
-
 lm:source_set ("launcher_hook_luajit"){
     includes = {"3rd/lua/luajit/src", "3rd/frida_gum/gumpp"},
     sources = "src/launcher/hook/luajit_listener.cpp",
@@ -30,7 +22,6 @@ lm:lua_library('liblauncher') {
         "frida",
         "std_format",
         "launcher_hook_luajit",
-        "src_common",
     },
     includes = {
         "3rd/bee.lua",
@@ -40,6 +31,7 @@ lm:lua_library('liblauncher') {
     },
     sources = {
         "3rd/bee.lua/bee/error.cpp",
+        "3rd/bee.lua/bee/utility/path_helper.cpp",
         "3rd/bee.lua/bee/utility/file_handle.cpp",
         "src/launcher/*.cpp",
         "src/launcher/hook/*.cpp",

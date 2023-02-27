@@ -13,7 +13,6 @@
 #include <atomic>
 
 #include "common.hpp"
-#include "../common/common.h"
 
 namespace autoattach {
 	static std::string readfile(const fs::path& filename) {
@@ -36,7 +35,7 @@ namespace autoattach {
 	}
 
 	static void print_error(lua::state L) {
-		FAIL_LOG("%s", lua::tostring(L, -1));
+		LOG(lua::tostring(L, -1));
 		lua::pop(L, 1);
 	}
 
@@ -46,7 +45,10 @@ namespace autoattach {
 		if (!r) {
 			return;
 		}
-		auto root = lua_debug_common::get_root_path();
+		auto root = r.value().parent_path().parent_path();
+#ifdef _WIN32
+		root = root.parent_path();
+#endif
 		auto buf = readfile(root / "script" / "attach.lua");
 		if (lua::loadbuffer(L, buf.data(), buf.size(), "=(attach.lua)")) {
 			print_error(L);

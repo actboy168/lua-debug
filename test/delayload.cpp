@@ -2,7 +2,6 @@
 #include <string_view>
 #include <cstdio>
 #include <cassert>
-
 int main(){
     using namespace std::string_view_literals;
 #define check_symbol_name(name) \

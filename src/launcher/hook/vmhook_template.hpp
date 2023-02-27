@@ -21,7 +21,7 @@ namespace autoattach {
             for (auto &&watch: wather_points) {
                 if (watch.address) {
                     if (!interceptor->attach(watch.address, this, (void*)this))
-					    LOG("%s", std::format("interceptor attach failed:{}[{}]",watch.address, watch.funcname).c_str());
+					    LOG(std::format("interceptor attach failed:{}[{}]",watch.address, watch.funcname).c_str());
 				}
             }
 			return true;
