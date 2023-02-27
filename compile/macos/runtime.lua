@@ -27,7 +27,7 @@ lm:lua_library('liblauncher') {
         "3rd/bee.lua",
         "3rd/frida_gum/gumpp",
         "3rd/lua/lua54",
-        "3rd/launcher/new"
+        "3rd/launcher"
     },
     sources = {
         "3rd/bee.lua/bee/error.cpp",
