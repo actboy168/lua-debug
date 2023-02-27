@@ -2,6 +2,7 @@
 #include <string_view>
 #include <bee/nonstd/format.h>
 
+#include "log.h"
 #ifndef NDEBUG
 #include <stdio.h>
 #define LOG(msg) fprintf(stderr, "[lua-debug][launcher]%s\n", msg)

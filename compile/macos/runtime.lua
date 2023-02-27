@@ -33,6 +33,8 @@ lm:lua_library('liblauncher') {
         "3rd/bee.lua/bee/error.cpp",
         "3rd/bee.lua/bee/utility/path_helper.cpp",
         "3rd/bee.lua/bee/utility/file_handle.cpp",
+        "3rd/bee.lua/bee/net/endpoint.cpp",
+        "3rd/bee.lua/bee/net/socket.cpp",
         "src/launcher/*.cpp",
         "src/launcher/hook/*.cpp",
         "!src/launcher/hook/luajit_listener.cpp",

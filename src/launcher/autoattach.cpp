@@ -184,6 +184,18 @@ namespace autoattach {
         }, NULL, &dllNotification.Cookie);
 #endif
     }
+
+    static RuntimeModule to_runtim_module(const Gum::ModuleDetails& details){
+        RuntimeModule rm = {};
+        const char* path = details.path();
+        const char* name = details.name();
+        auto range = details.range();
+        strcpy(rm.path, path);
+        strcpy(rm.name, name);
+        rm.load_address = range.base_address;
+        rm.size = range.size;
+        return rm;
+    }
     
 
     void initialize(fn_attach attach, bool ap) {
@@ -199,6 +211,7 @@ namespace autoattach {
         if (signature){
             //TODO
         }else{
+#ifdef _WIN32
             auto addrs = Gum::SymbolUtil::find_matching_functions(find_lua_module_key, true);
             if (addrs.empty()) {
                 wait_lua_module();
@@ -210,18 +223,26 @@ namespace autoattach {
             }
 
             Gum::Process::enumerate_modules([&rm, addr = addrs[0]](const Gum::ModuleDetails& details)->bool{
-                const char* path = details.path();
-                const char* name = details.name();
                 auto range = details.range();
                 if (range.base_address < addr && addr < (void*)((intptr_t)range.base_address + range.size)) {
-                    strcpy(rm.path, path);
-                    strcpy(rm.name, name);
-                    rm.load_address = range.base_address;
-                    rm.size = range.size;
+                    rm = to_runtim_module(details);
                     return false;
                 }
                 return true;
             });
+#else
+            Gum::Process::enumerate_modules([&rm](const Gum::ModuleDetails& details)->bool{
+                if (is_lua_module(details.path(), false)) {
+                    rm = to_runtim_module(details);
+                    return false;
+                }
+                return true;
+            });
+            if (!rm.load_address) {
+                log::fatal(attachProcess, "can't find lua module");
+                return;
+            }
+#endif
         }
 
         LOG(std::format("find lua module path:{}", rm.path).c_str());
@@ -237,7 +258,7 @@ namespace autoattach {
 
         auto vmhook = create_vmhook(luaversion);
         if (!vmhook->get_symbols(r.context)) {
-           LOG("get_symbols failed");
+           log::fatal(attachProcess, "get_symbols failed");
            return;
         }
         //TODO: fix other thread pc
