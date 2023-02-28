@@ -1,4 +1,5 @@
 *.c
+!gumpp/internal/*.c
 *.sln
 *.vcxproj
 *.vcxproj.filters
