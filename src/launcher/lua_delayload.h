@@ -108,17 +108,20 @@ namespace lua_delayload::impl {
     using initfunc = global<std::vector<std::function<const char* (resolver&)>>>;
     template <auto F>
     struct function {
+        using type_t = function<F>;
         using func_t = typename invocable<decltype(F)>::type;
         static constexpr auto symbol_name = symbol_string<F>();
+        static const char* init(resolver& r);
         static inline func_t invoke = []()->func_t{
-            initfunc::v.push_back([](resolver& r) {
-                invoke = reinterpret_cast<decltype(function<F>::invoke)>(r.find(symbol_name.data()));
-                return invoke != nullptr ? nullptr : symbol_name.data();
-            });
+            initfunc::v.push_back(type_t::init);
             return nullptr;
         }();
     };
-
+    template <auto F>
+    const char* function<F>::init(resolver& r) {
+        type_t::invoke = reinterpret_cast<decltype(type_t::invoke)>(r.find(symbol_name.data()));
+        return type_t::invoke != nullptr ? nullptr : symbol_name.data();
+    }
     template <> struct conv<lua_State*>    { using type = state; };
     template <> struct conv<lua_CFunction> { using type = cfunction; };
     template <> struct conv<lua_KContext>  { using type = kcontext; };

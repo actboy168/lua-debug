@@ -6,10 +6,10 @@
 #ifndef NDEBUG
 #include <stdio.h>
 #define LOG(msg) fprintf(stderr, "[lua-debug][launcher]%s\n", msg)
-#define FATL_LOG(mode, msg) do{LOG(msg); log::fatal(mode, msg);}while(0)
+#define FATL_LOG(mode, msg) do{LOG(msg); logger::fatal(mode, msg);}while(0)
 #else
 #define LOG(...)
-#define FATL_LOG(mode, msg) log::fatal(mode, msg)
+#define FATL_LOG(mode, msg) logger::fatal(mode, msg)
 #endif
 
 typedef struct _RuntimeModule {

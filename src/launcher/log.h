@@ -10,9 +10,11 @@
 #if !defined(_WIN32)
 #include <sys/select.h>
 #include <unistd.h>
+#else
+#include <WinSock.h>
 #endif
 
-namespace log {
+namespace logger {
 
 using namespace bee::net;
 

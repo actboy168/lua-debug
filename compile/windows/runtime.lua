@@ -46,6 +46,8 @@ lm:shared_library ('launcher.'..ArchAlias[platform]) {
     sources = {
         "3rd/bee.lua/bee/error.cpp",
         "3rd/bee.lua/bee/platform/win/unicode_win.cpp",
+        "3rd/bee.lua/bee/platform/win/unlink_win.cpp",
+        "3rd/bee.lua/bee/platform/win/version_win.cpp",
         "3rd/bee.lua/bee/utility/path_helper.cpp",
         "3rd/bee.lua/bee/utility/file_handle.cpp",
         "3rd/bee.lua/bee/utility/file_handle_win.cpp",
@@ -66,6 +68,8 @@ lm:shared_library ('launcher.'..ArchAlias[platform]) {
         "shell32",
         "ole32",
         "delayimp",
+        "ntdll",
+        "Version"
     },
 }
 

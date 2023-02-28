@@ -1,10 +1,18 @@
 #include <frida-gum.h>
 #include <stdio.h>
 
-__attribute__((visibility("hidden"))) extern void hidden_extern_function(
+#ifdef _WIN32
+#define EXPORT_HIDDEN 
+#define EXPORT __declspec( dllexport )
+#else
+#define EXPORT_HIDDEN __attribute__((visibility("hidden")))
+#define EXPORT __attribute__((visibility("default")))
+#endif
+
+EXPORT_HIDDEN extern void hidden_extern_function(
     const char*,
     ...);
-__attribute__((visibility("hidden"))) extern void extern_function(const char*,
+EXPORT_HIDDEN extern void extern_function(const char*,
                                                                   ...);
 extern const char* extern_data;
 
