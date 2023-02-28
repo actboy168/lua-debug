@@ -239,7 +239,7 @@ namespace autoattach {
                 return true;
             });
             if (!rm.load_address) {
-                log::fatal(attachProcess, "can't find lua module");
+                FATL_LOG(attachProcess, "can't find lua module");
                 return;
             }
 #endif
