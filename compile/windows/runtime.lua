@@ -34,7 +34,7 @@ lm:source_set ("launcher_hook_luajit"){
     sources = "src/launcher/hook/luajit_listener.cpp",
 }
 
-lm:lua_library ('launcher.'..ArchAlias[platform]) {
+lm:shared_library ('launcher.'..ArchAlias[platform]) {
     bindir = bindir,
     export_luaopen = "off",
     deps = {"std_format", "frida", "launcher_hook_luajit"},
