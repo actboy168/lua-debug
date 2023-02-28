@@ -94,7 +94,7 @@ namespace autoattach {
             return lua_version::unknown;
 		return get_lua_version_from_ident(lua_ident);
     }
-    constexpr auto find_lua_module_key = "luaL_newstate";
+    constexpr auto find_lua_module_key = "lua_newstate";
     bool is_lua_module(const char* module_path, bool signature) {
         if (signature) {
             //TODO:
