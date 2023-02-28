@@ -18,6 +18,7 @@ lm:source_set "frida" {
     windows = {
         defines = "HAVE_WINDOWS",
         links = {"kernel32","user32","gdi32","winspool","comdlg32","advapi32","shell32","ole32","oleaut32","uuid","odbc32","odbccp32"},
+        sources = "3rd/frida_gum/gumpp/src/internal/*.c"
     },
     sources = {
         "3rd/frida_gum/gumpp/src/*.cpp",
