@@ -27,15 +27,13 @@ local ArchAlias = {
     ["win32-ia32"] = "x86",
 }
 
-local bindir = "publish/bin/"..ArchAlias[platform]
-
 lm:source_set ("launcher_hook_luajit"){
     includes = {"3rd/lua/luajit/src", "3rd/frida_gum/gumpp"},
     sources = "src/launcher/hook/luajit_listener.cpp",
 }
 
-lm:shared_library ('launcher.'..ArchAlias[platform]) {
-    bindir = bindir,
+lm:lua_library ('launcher.'..ArchAlias[platform]) {
+    bindir = "publish/bin",
     export_luaopen = "off",
     deps = {"std_format", "frida", "launcher_hook_luajit"},
     includes = {
