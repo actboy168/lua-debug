@@ -12,7 +12,7 @@
 EXPORT_HIDDEN extern void hidden_extern_function(
     const char*,
     ...);
-EXPORT_HIDDEN extern void extern_function(const char*,
+EXPORT extern void extern_function(const char*,
                                                                   ...);
 extern const char* extern_data;
 

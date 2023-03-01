@@ -10,7 +10,8 @@ namespace autoattach::symbol_resolver {
         const char *image_name;
 
         void *getsymbol(const char *name) const override {
-            auto key = name;
+            auto keys = strings::spilt_string(name, '.');
+            auto key = keys.back().data();
             auto ptr = Gum::Process::module_find_export_by_name(image_name, key);
             if (!ptr)
                 ptr = Gum::Process::module_find_symbol_by_name(image_name, key);
