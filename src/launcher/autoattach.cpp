@@ -221,7 +221,7 @@ namespace autoattach {
         });
 #else
         Gum::Process::enumerate_modules([&rm](const Gum::ModuleDetails& details)->bool{
-            if (is_lua_module(details.path(), false)) {
+            if (is_lua_module(details.path())) {
                 rm = to_runtim_module(details);
                 return false;
             }
