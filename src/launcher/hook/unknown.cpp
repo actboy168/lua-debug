@@ -21,10 +21,6 @@ namespace autoattach {
     }
 
     std::vector <std::string_view> get_hook_entry_points(lua_version version) {
-        const char *list = getenv("LUA_DEBUG_HOOK_ENTRY");
-        if (list) {
-            return strings::spilt_string(list, ',');
-        }
         switch (version) {
             case lua_version::luajit:
                 return {

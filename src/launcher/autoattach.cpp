@@ -33,31 +33,7 @@ namespace autoattach {
         return nullptr;
 	}
 #endif
-    bool iequals(const std::string_view &a, const std::string_view &b) {
-        return std::equal(a.begin(), a.end(),
-                          b.begin(), b.end(),
-                          [](char a, char b) {
-                              return tolower(a) == tolower(b);
-                          });
-    }
 
-    lua_version get_lua_version_from_env() {
-        const char *env_version = getenv("LUA_DEBUG_VERSION");
-        if (env_version) {
-            auto env = std::string_view(env_version);
-            if (iequals(env, "jit"))
-                return lua_version::luajit;
-            if (iequals(env, "5.1"))
-                return lua_version::lua51;
-            if (iequals(env, "5.2"))
-                return lua_version::lua52;
-            if (iequals(env, "5.3"))
-                return lua_version::lua53;
-            if (iequals(env, "5.4") || iequals(env, "latest"))
-                return lua_version::lua54;
-        }
-        return lua_version::unknown;
-    }
 	lua_version get_lua_version_from_ident(const char* lua_ident){
 		auto id = std::string_view(lua_ident);
         using namespace std::string_view_literals;
@@ -242,10 +218,8 @@ namespace autoattach {
             return;
         }
 
-        auto luaversion = get_lua_version_from_env();
-        if (luaversion == lua_version::unknown) {
-            luaversion = get_lua_version(rm.path);
-        }
+        auto luaversion = get_lua_version(rm.path);
+
         LOG(std::format("current lua version: {}", lua_version_to_string(luaversion)).c_str());
 
         auto vmhook = create_vmhook(luaversion);
