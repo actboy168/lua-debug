@@ -8,7 +8,7 @@
 #define LOG(msg) fprintf(stderr, "[lua-debug][launcher]%s\n", msg)
 #define FATL_LOG(mode, msg) do{LOG(msg); logger::fatal(mode, msg);}while(0)
 #else
-#define LOG(...)
+#define LOG(...) ((void)0)
 #define FATL_LOG(mode, msg) logger::fatal(mode, msg)
 #endif
 

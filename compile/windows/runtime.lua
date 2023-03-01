@@ -69,6 +69,9 @@ lm:lua_library ('launcher.'..ArchAlias[platform]) {
         "ntdll",
         "Version"
     },
+    ldflags = {
+        "/NODEFAULTLIB:LIBCMT"
+    }
 }
 
 lm:phony "launcher" {

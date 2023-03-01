@@ -16,9 +16,13 @@ lm:source_set "frida" {
     includes = {dir, "3rd/frida_gum/gumpp"},
     defines = {"GUMPP_STATIC"},
     windows = {
-        defines = "HAVE_WINDOWS",
+        defines = {"HAVE_WINDOWS", "_CRT_SECURE_NO_WARNINGS"},
         links = {"kernel32","user32","gdi32","winspool","comdlg32","advapi32","shell32","ole32","oleaut32","uuid","odbc32","odbccp32"},
-        sources = "3rd/frida_gum/gumpp/src/internal/*.c"
+        sources = "3rd/frida_gum/gumpp/src/internal/*.c",
+        flags = {
+            '/wd4819',
+            '/wd5051',
+        }
     },
     sources = {
         "3rd/frida_gum/gumpp/src/*.cpp",
