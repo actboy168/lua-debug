@@ -32,9 +32,6 @@ namespace autoattach {
         }
 
         bool get_symbols(const std::unique_ptr<symbol_resolver::interface> &resolver) override {
-			if (!hooker.get_symbols(resolver)) {
-				return false;
-			}
             for (auto &&watch: wather_points) {
                 get_watch_symbol(watch, resolver);
             }

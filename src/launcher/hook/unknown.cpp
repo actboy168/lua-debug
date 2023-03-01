@@ -16,10 +16,6 @@ namespace autoattach {
         lua::call<lua_sethook>(L, fn, 0 | 1 | 2, 0);
     }
 
-    bool vmhooker::get_symbols(const std::unique_ptr <symbol_resolver::interface> &resolver) {
-        return true;
-    }
-
     std::vector <std::string_view> get_hook_entry_points(lua_version version) {
         switch (version) {
             case lua_version::luajit:

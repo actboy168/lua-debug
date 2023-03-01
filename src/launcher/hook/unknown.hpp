@@ -17,6 +17,5 @@ namespace autoattach {
         int origin_hookcount;
         void call_origin_hook(lua::state L, lua::debug ar);
         void call_lua_sethook(lua::state L, lua::hook fn);
-        bool get_symbols(const std::unique_ptr<symbol_resolver::interface> &resolver);
     };
 }
