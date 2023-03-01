@@ -95,19 +95,12 @@ namespace autoattach {
 		return get_lua_version_from_ident(lua_ident);
     }
     constexpr auto find_lua_module_key = "lua_newstate";
-    bool is_lua_module(const char* module_path, bool signature) {
-        if (signature) {
-            //TODO:
-        }
+    bool is_lua_module(const char* module_path) {
         return Gum::Process::module_find_symbol_by_name(module_path, find_lua_module_key);
     }
 
     void attach_lua_vm(lua::state L) {
         debuggerAttach(L);
-    }
-
-    bool is_signature_mode() {
-        return getenv("LUA_DEBUG_SIGNATURE") != nullptr;
     }
 
     void wait_lua_module() {
@@ -170,7 +163,7 @@ namespace autoattach {
         dllNotification.dllRegisterNotification(0, [](LdrDllNotificationReason NotificationReason, PLDR_DLL_NOTIFICATION_DATA const NotificationData, PVOID Context){
             if (NotificationReason == LdrDllNotificationReason::LDR_DLL_NOTIFICATION_REASON_LOADED) {
                 auto path = std::filesystem::path(std::wstring(NotificationData->Loaded.FullDllName->Buffer, NotificationData->Loaded.FullDllName->Length)).string();
-                if (is_lua_module(path.c_str(), is_signature_mode())){
+                if (is_lua_module(path.c_str())){
                     RuntimeModule rm = {};
                     memcpy_s(rm.path, sizeof(rm.path), path.c_str(), path.size());
                     // find lua module lazy 
@@ -206,44 +199,39 @@ namespace autoattach {
         debuggerAttach = attach;
         attachProcess = ap;
 
-        bool signature = is_signature_mode();
         RuntimeModule rm = {};
-        if (signature){
-            //TODO
-        }else{
 #ifdef _WIN32
-            auto addrs = Gum::SymbolUtil::find_matching_functions(find_lua_module_key, true);
-            if (addrs.empty()) {
-                wait_lua_module();
-                LOG("can't find lua module");
-                return;
-            }
-            if (addrs.size() > 1){
-                LOG("find more than one lua module, random load the frist");
-            }
-
-            Gum::Process::enumerate_modules([&rm, addr = addrs[0]](const Gum::ModuleDetails& details)->bool{
-                auto range = details.range();
-                if (range.base_address < addr && addr < (void*)((intptr_t)range.base_address + range.size)) {
-                    rm = to_runtim_module(details);
-                    return false;
-                }
-                return true;
-            });
-#else
-            Gum::Process::enumerate_modules([&rm](const Gum::ModuleDetails& details)->bool{
-                if (is_lua_module(details.path(), false)) {
-                    rm = to_runtim_module(details);
-                    return false;
-                }
-                return true;
-            });
-            if (!rm.load_address) {
-                FATL_LOG(attachProcess, "can't find lua module");
-                return;
-            }
-#endif
+        auto addrs = Gum::SymbolUtil::find_matching_functions(find_lua_module_key, true);
+        if (addrs.empty()) {
+            wait_lua_module();
+            LOG("can't find lua module");
+            return;
         }
+        if (addrs.size() > 1){
+            LOG("find more than one lua module, random load the frist");
+        }
+
+        Gum::Process::enumerate_modules([&rm, addr = addrs[0]](const Gum::ModuleDetails& details)->bool{
+            auto range = details.range();
+            if (range.base_address < addr && addr < (void*)((intptr_t)range.base_address + range.size)) {
+                rm = to_runtim_module(details);
+                return false;
+            }
+            return true;
+        });
+#else
+        Gum::Process::enumerate_modules([&rm](const Gum::ModuleDetails& details)->bool{
+            if (is_lua_module(details.path(), false)) {
+                rm = to_runtim_module(details);
+                return false;
+            }
+            return true;
+        });
+        if (!rm.load_address) {
+            FATL_LOG(attachProcess, "can't find lua module");
+            return;
+        }
+#endif
 
         LOG(std::format("find lua module path:{}", rm.path).c_str());
         
