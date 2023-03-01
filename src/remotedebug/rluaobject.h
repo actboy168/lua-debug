@@ -4,6 +4,7 @@
 #include <lj_tab.h>
 #include <lj_cdata.h>
 #include <lj_ctype.h>
+#include <lj_trace.h>
 using Table= GCtab;
 using Closure = GCfunc;
 using UpVal = GCupval;
@@ -44,6 +45,16 @@ inline TValue *index2adr(lua_State *L, int idx)
 inline int lua_isinteger (lua_State *L, int idx) {
   cTValue *o = index2adr(L, idx);
   return tvisint(o);
+}
+
+inline void setjitmode (lua_State *L, GCproto *pt, bool is_on) {
+  if (is_on) {  /* (Re-)enable JIT compilation. */
+    pt->flags &= ~PROTO_NOJIT;
+    lj_trace_reenableproto(pt);  /* Unpatch all ILOOP etc. bytecodes. */
+  } else {  /* Flush and/or disable JIT compilation. */
+    pt->flags |= PROTO_NOJIT;
+    lj_trace_flushproto(G(L), pt);  /* Flush all traces of prototype. */
+  }    
 }
 #else
 #include <lapi.h>

@@ -21,35 +21,49 @@ public:
         Ignore,
     };
 
+    enum status_flag : uint8_t{
+        Break = 0b1,
+        Jit = 0b10   
+    };
+
     void set(void* proto, status status) {
         switch (status) {
         case status::None:
             m_flatmap.erase(tokey(proto));
             break;
         case status::Break:
-            m_flatmap.insert_or_assign(tokey(proto), true);
+            m_flatmap[tokey(proto)] |= status_flag::Break;
             break;
         case status::Ignore:
-            m_flatmap.insert_or_assign(tokey(proto), false);
+            m_flatmap[tokey(proto)] &= (uint8_t)~status_flag::Break;
             break;
         }
     }
 
     status get(void* proto) const noexcept {
-#if defined(RDEBUG_USE_STDMAP)
         auto v = m_flatmap.find(tokey(proto));
         if (v != m_flatmap.end()) {
-            return v->second? status::Break: status::Ignore;
+            return v->second & status_flag::Break? status::Break: status::Ignore;
         }
         return status::None;
-#else
-        const bool* v = m_flatmap.find(tokey(proto));
-        if (v) {
-            return *v? status::Break: status::Ignore;
-        }
-        return status::None;
-#endif
     }
+
+#ifdef LUAJIT_VERSION
+    void set_git(void* proto, bool is_on) {
+        if (is_on)
+            m_flatmap[tokey(proto)] |= status_flag::Jit;
+        else
+            m_flatmap[tokey(proto)] &= (uint8_t)~status_flag::Jit;
+    }
+    
+    bool get_jit(void* proto) const noexcept {
+        auto v = m_flatmap.find(tokey(proto));
+        if (v != m_flatmap.end()) {
+            return (v->second & status_flag::Jit);
+        }
+        return false;
+    }
+#endif
 
 private:
     intptr_t tokey(void* proto) const noexcept {
@@ -57,10 +71,10 @@ private:
     }
 
 #if defined(RDEBUG_USE_STDMAP)
-    std::unordered_map<intptr_t, bool> m_flatmap;
+    std::unordered_map<intptr_t, uint8_t> m_flatmap;
 #else
     // TODO: bullet size可以压缩到一个int64_t
-    remotedebug::flatmap<intptr_t, bool> m_flatmap;
+    remotedebug::flatmap<intptr_t, uint8_t> m_flatmap;
 #endif
 };
 
@@ -246,10 +260,20 @@ struct hookmgr {
         return status == bpmap::status::Break;
     }
     void break_update(lua_State* hL, CallInfo* ci, int event) {
-        if (break_has(hL, ci2proto(ci), event)) {
+        auto proto = ci2proto(ci);
+        if (break_has(hL, proto, event)) {
+#ifdef LUAJIT_VERSION
+            bool oldjitmode = proto->flags & PROTO_NOJIT;
+            break_proto.set_git(proto, oldjitmode);
+            setjitmode(hL, proto, false);
+#endif
             break_openline(hL);
         }
         else {
+#ifdef LUAJIT_VERSION
+            bool oldjitmode = break_proto.get_jit(proto);
+            setjitmode(hL, proto, oldjitmode);
+#endif
             break_closeline(hL);
         }
     }
