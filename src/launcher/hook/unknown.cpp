@@ -1,6 +1,6 @@
 #include "vmhook_template.hpp"
 
-namespace autoattach {
+namespace luadebug::autoattach {
     void vmhooker::call_origin_hook(lua::state L, lua::debug ar) {
         if (origin_lua_hook) {
             lua::call<lua_sethook>(L, origin_lua_hook, origin_hookmask, origin_hookcount);

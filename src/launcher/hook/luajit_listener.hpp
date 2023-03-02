@@ -1,5 +1,5 @@
 #include <gumpp.hpp>
-namespace autoattach {
+namespace luadebug::autoattach {
 
 struct luajit_global_listener : Gum::NoLeaveInvocationListener {
   virtual ~luajit_global_listener() = default;

@@ -3,7 +3,7 @@
 #include "luajit_listener.hpp"
 #include "vmhook_template.hpp"
 #include <gumpp.hpp>
-namespace autoattach{
+namespace luadebug::autoattach{
     struct luajit_hook : vmhook_template {
         luajit_hook() = default;
         ~luajit_hook() = default;

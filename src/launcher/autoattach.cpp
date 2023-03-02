@@ -22,7 +22,7 @@
 #include "hook/hook_common.h"
 #include "lua_resolver.h"
 #include <gumpp.hpp>
-namespace autoattach {
+namespace luadebug::autoattach {
 	std::mutex lockLoadDll;
 	fn_attach debuggerAttach;
 	bool      attachProcess = false;
@@ -167,6 +167,7 @@ namespace autoattach {
     
 
     void initialize(fn_attach attach, bool ap) {
+        log::init(ap);
         Gum::runtime_init();
         //auto gum_runtime = std::shared_ptr<void>(nullptr, [](auto){
         //    Gum::runtime_deinit();
@@ -179,11 +180,11 @@ namespace autoattach {
         auto addrs = Gum::SymbolUtil::find_matching_functions(find_lua_module_key, true);
         if (addrs.empty()) {
             wait_lua_module();
-            LOG("can't find lua module");
+            log::info("can't find lua module");
             return;
         }
         if (addrs.size() > 1){
-            LOG("find more than one lua module, random load the frist");
+            log::info("find more than one lua module, random load the frist");
         }
 
         Gum::Process::enumerate_modules([&rm, addr = addrs[0]](const Gum::ModuleDetails& details)->bool{
@@ -203,27 +204,27 @@ namespace autoattach {
             return true;
         });
         if (!rm.load_address) {
-            FATL_LOG(attachProcess, "can't find lua module");
+            log::fatal("can't find lua module");
             return;
         }
 #endif
 
-        LOG(std::format("find lua module path:{}", rm.path).c_str());
+        log::info(std::format("find lua module path:{}", rm.path).c_str());
         
         lua::lua_resolver r(rm.name);
         auto error_msg = lua::initialize(r);
         if (error_msg) {
-            FATL_LOG(attachProcess, std::format("lua::initialize failed, can't find {}", error_msg).c_str());
+            log::fatal(std::format("lua::initialize failed, can't find {}", error_msg).c_str());
             return;
         }
 
         auto luaversion = get_lua_version(rm.path);
 
-        LOG(std::format("current lua version: {}", lua_version_to_string(luaversion)).c_str());
+        log::info(std::format("current lua version: {}", lua_version_to_string(luaversion)).c_str());
 
         auto vmhook = create_vmhook(luaversion);
         if (!vmhook->get_symbols(r)) {
-           FATL_LOG(attachProcess, "get_symbols failed");
+           log::fatal("get_symbols failed");
            return;
         }
         //TODO: fix other thread pc

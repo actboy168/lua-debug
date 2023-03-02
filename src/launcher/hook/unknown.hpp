@@ -5,7 +5,7 @@
 #include "hook_common.h"
 #include "../lua_delayload.h"
 
-namespace autoattach {
+namespace luadebug::autoattach {
 
 #define FILED_VAR(name, ...) name##_t name;
 

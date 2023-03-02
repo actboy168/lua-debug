@@ -4,7 +4,7 @@
 #endif
 #include "lua_delayload.h"
 
-namespace autoattach {
+namespace luadebug::autoattach {
 	typedef void(*fn_attach)(lua::state L);
 	void    initialize(fn_attach attach, bool ap);
 #ifdef _WIN32

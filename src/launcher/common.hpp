@@ -3,14 +3,6 @@
 #include <bee/nonstd/format.h>
 
 #include "utility/log.h"
-#ifndef NDEBUG
-#include <stdio.h>
-#define LOG(msg) fprintf(stderr, "[lua-debug][launcher]%s\n", msg)
-#define FATL_LOG(mode, msg) do{LOG(msg); logger::fatal(mode, msg);}while(0)
-#else
-#define LOG(...) ((void)0)
-#define FATL_LOG(mode, msg) logger::fatal(mode, msg)
-#endif
 
 typedef struct _RuntimeModule {
     char path[1024];
@@ -19,7 +11,7 @@ typedef struct _RuntimeModule {
 	size_t size;
 } RuntimeModule;
 
-namespace autoattach {
+namespace luadebug::autoattach {
     enum class lua_version {
         unknown,
         luajit,

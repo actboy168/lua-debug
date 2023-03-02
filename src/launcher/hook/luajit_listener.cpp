@@ -3,7 +3,7 @@
 
 #include "luajit_listener.hpp"
 
-namespace autoattach {
+namespace luadebug::autoattach {
 static void* jit2state(void* ctx) {
   auto j = (jit_State*)ctx;
   return (void*)j->L;

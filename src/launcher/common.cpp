@@ -1,5 +1,5 @@
 #include "common.hpp"
-namespace autoattach {
+namespace luadebug::autoattach {
 	lua_version lua_version_from_string(const std::string_view& v) {
 		if (v == "luajit")
 			return lua_version::luajit;

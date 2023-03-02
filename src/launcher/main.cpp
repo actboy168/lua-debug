@@ -14,7 +14,7 @@
 
 #include "common.hpp"
 
-namespace autoattach {
+namespace luadebug::autoattach {
 	static std::string readfile(const fs::path& filename) {
 	#ifdef _WIN32
 		FILE* f = _wfopen(filename.c_str(), L"rb");
@@ -35,12 +35,12 @@ namespace autoattach {
 	}
 
 	static void print_error(lua::state L) {
-		LOG(lua::tostring(L, -1));
+		log::info(lua::tostring(L, -1));
 		lua::pop(L, 1);
 	}
 
 	static void attach(lua::state L) {
-		LOG("attach lua vm entry");
+		log::info("attach lua vm entry");
 		auto r = bee::path_helper::dll_path();
 		if (!r) {
 			return;
@@ -71,8 +71,8 @@ static void initialize(bool ap) {
 	static std::atomic_bool injected;
 	bool test = false;
 	if (injected.compare_exchange_strong(test, true, std::memory_order_acquire)) {
-		LOG("initialize");
-		autoattach::initialize(autoattach::attach, ap);
+		luadebug::log::info("initialize");
+		luadebug::autoattach::initialize(luadebug::autoattach::attach, ap);
 		injected.store(false, std::memory_order_release);
 	}
 }

@@ -1,4 +1,7 @@
+#pragma once
 
-namespace logger {
-    void fatal(bool attach, const char* msg);
+namespace luadebug::log {
+    void init(bool attach);
+    void info(const char* msg);
+    void fatal(const char* msg);
 }

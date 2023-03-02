@@ -6,6 +6,7 @@
 #include <bee/nonstd/filesystem.h>
 #include <bee/nonstd/unreachable.h>
 #include <bee/utility/path_helper.h>
+#include <stdio.h>
 
 #if !defined(_WIN32)
 #include <sys/select.h>
@@ -14,7 +15,20 @@
 #include <WinSock.h>
 #endif
 
-namespace logger {
+namespace luadebug::log {
+
+static bool attach_mode = false;
+
+void init(bool attach) {
+	attach_mode = attach;
+}
+
+void info(const char* msg) {
+#ifndef NDEBUG
+	//TODO: use std::print
+	fprintf(stderr, "[lua-debug][launcher]%s\n", msg);
+#endif
+}
 
 using namespace bee::net;
 
@@ -49,7 +63,9 @@ inline bool fatal_send(socket::fd_t fd, const char* buf, int len) {
 	}
 }
 
-void fatal(bool attach, const char* msg) {
+void fatal(const char* msg) {
+	info(msg);
+
 	auto dllpath = bee::path_helper::dll_path();
 	if (!dllpath) {
 		return;
@@ -106,7 +122,7 @@ void fatal(bool attach, const char* msg) {
 		"message": "{}"
 	}})";
 	jsonfmt.erase(std::remove_if(jsonfmt.begin(), jsonfmt.end(), ::isspace), jsonfmt.end());
-	std::string json = std::format(jsonfmt, attach? "attach": "launch", msg);
+	std::string json = std::format(jsonfmt, attach_mode? "attach": "launch", msg);
 	std::string data = std::format("Content-Length: {}\r\n\r\n{}", json.size(), json);
 	fatal_send(newfd, data.data(), (int)data.size());
 }

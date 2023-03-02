@@ -7,7 +7,7 @@ namespace lua_delayload {
     struct resolver;
 }
 
-namespace autoattach {
+namespace luadebug::autoattach {
     struct vmhook {
         virtual ~vmhook() = default;
 

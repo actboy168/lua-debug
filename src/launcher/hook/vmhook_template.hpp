@@ -6,7 +6,7 @@
 #include <string>
 #include <atomic>
 
-namespace autoattach {
+namespace luadebug::autoattach {
     struct watch_point {
         std::string funcname;
         void *address;
@@ -22,7 +22,7 @@ namespace autoattach {
             for (auto &&watch: wather_points) {
                 if (watch.address) {
                     if (!interceptor->attach(watch.address, this, (void*)this))
-					    LOG(std::format("interceptor attach failed:{}[{}]",watch.address, watch.funcname).c_str());
+					    log::info(std::format("interceptor attach failed:{}[{}]",watch.address, watch.funcname).c_str());
 				}
             }
 			return true;
