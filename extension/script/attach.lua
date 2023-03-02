@@ -1,4 +1,4 @@
-local path, pid, luaapi = ...
+local path, pid = ...
 if type(pid) == "string" then
 	pid = tonumber(pid)
 end
@@ -23,7 +23,6 @@ end
 local dbg = dofile(path.."/script/debugger.lua", path)
 dbg:start {
     address = ("@%s/tmp/pid_%s"):format(path, pid),
-    luaapi = luaapi,
     latest = isLatest(),
 }
 dbg:event "wait"

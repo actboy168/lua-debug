@@ -7,7 +7,4 @@
 namespace luadebug::autoattach {
 	typedef void(*fn_attach)(lua::state L);
 	void    initialize(fn_attach attach, bool ap);
-#ifdef _WIN32
-	FARPROC luaapi(const char* name);
-#endif
 }

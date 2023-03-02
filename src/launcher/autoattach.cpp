@@ -27,12 +27,6 @@ namespace luadebug::autoattach {
 	fn_attach debuggerAttach;
 	bool      attachProcess = false;
 
-#ifdef _WIN32
-	FARPROC luaapi(const char* name) {
-        return nullptr;
-	}
-#endif
-
 	lua_version get_lua_version_from_ident(const char* lua_ident){
 		auto id = std::string_view(lua_ident);
         using namespace std::string_view_literals;

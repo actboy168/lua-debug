@@ -55,13 +55,10 @@ namespace luadebug::autoattach {
 		
 	#ifdef _WIN32
 		lua::call<lua_pushstring>(L, std::to_string(GetCurrentProcessId()).c_str());
-		void* luaapi = autoattach::luaapi;
-		lua::call<lua_pushlstring>(L, (const char*)&luaapi, sizeof(luaapi));
 	#else
 		lua::call<lua_pushstring>(L, std::to_string(getpid()).c_str());
-		lua::call<lua_pushstring>(L, "0");
 	#endif
-		if (lua::pcall(L, 3, 0, 0)) {
+		if (lua::pcall(L, 2, 0, 0)) {
 			print_error(L);
 		}
 	}
