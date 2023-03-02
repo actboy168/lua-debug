@@ -41,33 +41,7 @@ private:
     static constexpr size_t kMaxLoadFactor = 80;
     static constexpr uint8_t kMaxDistance = 128;
     static constexpr size_t kMaxTryRehash = 1;
-public:
-    struct iterator {
-        const key_type& first;
-        mapped_type& second;
-        bool operator!=(const iterator& other) const {
-            return first != other.first || second != other.second;
-        }
-        iterator* operator->() {
-            return this;
-        }
-        iterator* operator->() const{
-            return this;
-        }
-    };
-    struct const_iterator {
-        const key_type& first;
-        const mapped_type& second;
-        bool operator!=(const const_iterator& other) const {
-            return first != other.first || second != other.second;
-        }
-        const_iterator* operator->() {
-            return this;
-        }
-        const_iterator* operator->() const{
-            return this;
-        }
-    };
+
 public:
     flatmap() noexcept
         : KeyHash()
@@ -98,15 +72,6 @@ public:
         std::free(m_buckets);
     }
 
-    mapped_type& operator[](const key_type& key){
-        auto slot = find_key(key);
-        if (slot == kInvalidSlot) {
-            insert_or_assign(key, {});
-            slot = find_key(key);
-        }
-        return &m_buckets[slot].obj;
-    }
-
     void insert_or_assign(const key_type& key, mapped_type&& obj) {
         if (m_size >= m_maxsize) {
             increase_size();
@@ -134,20 +99,16 @@ public:
         }
     }
 
-    iterator find(const key_type& key) noexcept {
+    mapped_type* find(const key_type& key) noexcept {
         auto slot = find_key(key);
         if (slot == kInvalidSlot) {
             return nullptr;
         }
-        return iterator{key, &m_buckets[slot].obj};
+        return &m_buckets[slot].obj;
     }
 
-    const_iterator end() const noexcept {
-        return {};
-    }
-
-    const_iterator find(const key_type& key) const noexcept {
-        return *(const_iterator*)&const_cast<flatmap*>(this)->find(key);
+    const mapped_type* find(const key_type& key) const noexcept {
+        return const_cast<flatmap*>(this)->find(key);
     }
 
     void erase(const key_type& key) noexcept {
