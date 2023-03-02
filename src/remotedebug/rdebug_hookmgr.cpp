@@ -97,13 +97,12 @@ cTValue *lj_debug_frame(lua_State *L, int level, int *size)
   return NULL;  /* Level not found. */
 }
 inline void setjitmode (lua_State *L, GCproto *pt, bool is_on) {
-  if (is_on) {  /* (Re-)enable JIT compilation. */
-    pt->flags &= ~PROTO_NOJIT;
-    lj_trace_reenableproto(pt);  /* Unpatch all ILOOP etc. bytecodes. */
-  } else {  /* Flush and/or disable JIT compilation. */
-    pt->flags |= PROTO_NOJIT;
-    lj_trace_flushproto(G(L), pt);  /* Flush all traces of prototype. */
-  }    
+  int flag = LUAJIT_MODE_ALLFUNC;
+  flag |= is_on ? LUAJIT_MODE_ON : LUAJIT_MODE_OFF;
+  setprotoV(L, L->top, pt);
+  L->top++;
+  luaJIT_setmode(L, -1, flag);
+  L->top--;
 }
 #endif
 
