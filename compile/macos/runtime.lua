@@ -37,6 +37,7 @@ lm:lua_library('liblauncher') {
         "3rd/bee.lua/bee/net/socket.cpp",
         "src/launcher/*.cpp",
         "src/launcher/hook/*.cpp",
+        "src/launcher/utility/*.cpp",
         "!src/launcher/hook/luajit_listener.cpp",
         "src/launcher/symbol_resolver/*.cpp",
     },
