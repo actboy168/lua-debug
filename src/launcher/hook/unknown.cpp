@@ -1,5 +1,4 @@
 #include "vmhook_template.hpp"
-#include "../utility/string_helper.hpp"
 
 namespace autoattach {
     void vmhooker::call_origin_hook(lua::state L, lua::debug ar) {
