@@ -70,6 +70,7 @@ private:
 #include <lj_frame.h>
 #include <lj_obj.h>
 #include <lj_debug.h>
+#include <lj_trace.h>
 using lu_byte = uint8_t;
 using CallInfo = TValue;
 cTValue *lj_debug_frame(lua_State *L, int level, int *size)
@@ -94,6 +95,15 @@ cTValue *lj_debug_frame(lua_State *L, int level, int *size)
   }
   *size = level;
   return NULL;  /* Level not found. */
+}
+inline void setjitmode (lua_State *L, GCproto *pt, bool is_on) {
+  if (is_on) {  /* (Re-)enable JIT compilation. */
+    pt->flags &= ~PROTO_NOJIT;
+    lj_trace_reenableproto(pt);  /* Unpatch all ILOOP etc. bytecodes. */
+  } else {  /* Flush and/or disable JIT compilation. */
+    pt->flags |= PROTO_NOJIT;
+    lj_trace_flushproto(G(L), pt);  /* Flush all traces of prototype. */
+  }    
 }
 #endif
 
@@ -197,9 +207,15 @@ struct hookmgr {
     int   break_mask = 0;
 
     void break_add(lua_State* hL, Proto* p) {
+#ifdef LJ_HASJIT
+        setjitmode(hL, p, false);
+#endif
         break_proto.set(p, bpmap::status::Break);
     }
     void break_del(lua_State* hL, Proto* p) {
+#ifdef LJ_HASJIT
+        setjitmode(hL, p, true);
+#endif
         break_proto.set(p, bpmap::status::Ignore);
     }
     void break_freeobj(Proto* p) {
