@@ -133,8 +133,6 @@ namespace luadebug::autoattach {
             if (NotificationReason == LdrDllNotificationReason::LDR_DLL_NOTIFICATION_REASON_LOADED) {
                 auto path = std::filesystem::path(std::wstring(NotificationData->Loaded.FullDllName->Buffer, NotificationData->Loaded.FullDllName->Length)).string();
                 if (is_lua_module(path.c_str())){
-                    RuntimeModule rm = {};
-                    memcpy_s(rm.path, sizeof(rm.path), path.c_str(), path.size());
                     // find lua module lazy 
                     std::thread([](){
                         initialize(debuggerAttach, attachProcess);
