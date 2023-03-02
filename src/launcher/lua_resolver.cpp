@@ -1,5 +1,6 @@
 #include "lua_resolver.h"
 #include "gumpp.hpp"
+#include <string_view>
 
 namespace lua_delayload {
     lua_resolver::lua_resolver(const std::string_view& module_name)
@@ -24,6 +25,11 @@ namespace lua_delayload {
     }
 
     intptr_t lua_resolver::find(const char* name) const {
+        auto n = std::string_view(name);
+        auto pos = n.find_first_of('.');
+        if (pos != std::string_view::npos){
+            name = n.substr(pos).data();
+        }
         for (auto& finder : {&lua_resolver::find_export, &lua_resolver::find_symbol}) {
             if (auto result = (this->*finder)(name)) {
                 return result;
