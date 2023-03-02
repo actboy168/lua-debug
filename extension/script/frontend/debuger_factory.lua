@@ -209,14 +209,14 @@ local function create_luaexe_in_console(args, dbg, address)
 end
 
 local function create_process_in_console(args, callback)
-    local use_suspend = platform_os():lower() == "windows"
+    local need_resume = platform_os():lower() == "windows"
     initialize(args)
     local process, err = sp.spawn {
         args.runtimeExecutable, args.runtimeArgs,
         env = args.env,
         console = 'new',
         cwd = args.cwd or fs.path(args.runtimeExecutable):parent_path(),
-        suspended = use_suspend,
+        suspended = true,
     }
     if not process then
         return nil, err
@@ -234,7 +234,7 @@ local function create_process_in_console(args, callback)
     if callback then
         callback(process)
     end
-    if use_suspend then
+    if need_resume then
         process:resume()
     end
     return process

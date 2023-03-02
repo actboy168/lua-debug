@@ -7,6 +7,7 @@ local _M = {}
 
 local macos = "macOS"
 local windows = "Windows"
+local entry_launch = "launch"
 
 function _M.get_inject_library_path()
     if platform_os == macos then
@@ -16,17 +17,30 @@ end
 
 function _M.lldb_inject(pid, entry, injectdll, lldb_path)
     lldb_path = lldb_path or "lldb"
-    local p, err = sp.spawn {
-        lldb_path,
-        "-p", pid,
-        "--batch",
+    local pre_luancher = entry == entry_launch and
+        {
+            "-o",
+            "breakpoint set -n main",
+            "-o",
+            "c",
+        } or {}
+
+    local launcher = {
         "-o",
         -- 6 = RTDL_NOW|RTDL_LOCAL
         ('expression (void*)dlopen("%s", 6)'):format(injectdll),
         "-o",
         ('expression ((void(*)())&%s)()'):format(entry),
         "-o",
-        "quit",
+        "quit"
+    }
+
+    local p, err = sp.spawn {
+        lldb_path,
+        "-p", tostring(pid),
+        "--batch",
+        pre_luancher,
+        launcher,
         stdout = true,
         stderr = true,
     }
@@ -34,7 +48,7 @@ function _M.lldb_inject(pid, entry, injectdll, lldb_path)
         return false, "Spwan lldb failed:" .. err
     end
     if p:wait() ~= 0 then
-        return false, "stdout:" .. p.stdout:read "a" .."\nstderr:" .. p.stderr:read "a"
+        return false, "stdout:" .. p.stdout:read "a" .. "\nstderr:" .. p.stderr:read "a"
     end
     return true
 end
@@ -97,10 +111,8 @@ function _M.inject(process, entry, args)
         return _M.lldb_inject(process, entry, _M.get_inject_library_path(), args.inject_executable)
     else
         if platform_os == macos then
-            if arch == "arm64" then
-                if _M.macos_check_rosetta_process(process) then
-                    return _M.lldb_inject(process, entry, _M.get_inject_library_path(), args.inject_executable)
-                end
+            if entry == entry_launch or (arch == "arm64" and _M.macos_check_rosetta_process(process)) then
+                return _M.lldb_inject(process, entry, _M.get_inject_library_path(), args.inject_executable)
             end
             return _M.macos_inject(process, entry, _M.get_inject_library_path())
         elseif platform_os == windows then
