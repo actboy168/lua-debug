@@ -16,7 +16,7 @@ namespace autoattach {
         lua::call<lua_sethook>(L, fn, 0 | 1 | 2, 0);
     }
 
-    std::vector <std::string_view> get_hook_entry_points(lua_version version) {
+    static std::vector <std::string_view> get_hook_entry_points(lua_version version) {
         switch (version) {
             case lua_version::luajit:
                 return {

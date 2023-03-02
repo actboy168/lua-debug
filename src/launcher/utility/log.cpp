@@ -49,7 +49,7 @@ inline bool fatal_send(socket::fd_t fd, const char* buf, int len) {
 	}
 }
 
-inline void fatal(bool attach, const char* msg) {
+void fatal(bool attach, const char* msg) {
 	auto dllpath = bee::path_helper::dll_path();
 	if (!dllpath) {
 		return;
