@@ -24,15 +24,12 @@ local all_os = {
 ---@param output string
 ---@param dir string
 local function download(url, output, dir)
+    local downloader = platform.os == "macos" and { "curl", "--location" } or "wget"
     local wget = {
-        "wget",
+        downloader,
         url,
-        "-O",
+        downloader == "wget" and "-O" or "-o",
         output
-    }
-    local mkdir = {
-        "mkdir",
-        dir
     }
     local tar = {
         "tar",
@@ -41,7 +38,7 @@ local function download(url, output, dir)
         "-C",
         dir,
     }
-    local cmds = { wget, mkdir, tar }
+    local cmds = { wget, tar }
 
     if platform.os == "windows" then
         cmds[#cmds] = {
@@ -50,12 +47,10 @@ local function download(url, output, dir)
             "-y",
             "-o" .. dir
         }
-        table.insert(mkdir, "-Force")
         for i, cmd in ipairs(cmds) do
             local ok, err, ec = os.execute("powershell -Command " .. table.concat(cmd, " "))
             if not ok then
-                print(err)
-                return
+                error(err)
             end
         end
         return
@@ -63,8 +58,7 @@ local function download(url, output, dir)
     for i, cmd in ipairs(cmds) do
         local p, err = sp.spawn(cmd)
         if not p then
-            print(cmd[1], err)
-            return
+            error(cmd[1], err)
         end
         p:wait()
     end
@@ -83,6 +77,7 @@ for index, os in ipairs(targets) do
     file = output_dir .. file
     print(("[%d/%d]"):format(index, #targets), url, file)
     local target_dir = output_dir .. os
+    fs.create_directory(target_dir)
     local target_file = fs.path(target_dir) / "frida-gum.h"
     if not fs.exists(target_file) then
         download(url, file, target_dir)
