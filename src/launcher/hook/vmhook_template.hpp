@@ -1,6 +1,7 @@
 #pragma once
 
 #include "unknown.hpp"
+#include "../lua_delayload.h"
 #include <vector>
 #include <string>
 #include <atomic>
@@ -31,7 +32,7 @@ namespace autoattach {
            interceptor->detach(this);
         }
 
-        bool get_symbols(const std::unique_ptr<symbol_resolver::interface> &resolver) override {
+        bool get_symbols(const lua_delayload::resolver& resolver) override {
             for (auto &&watch: wather_points) {
                 get_watch_symbol(watch, resolver);
             }
@@ -42,8 +43,8 @@ namespace autoattach {
             return false;
         }
 
-        static inline void get_watch_symbol(watch_point& watch,const std::unique_ptr<symbol_resolver::interface> &resolver){
-            watch.address = resolver->getsymbol(watch.funcname.c_str());
+        static inline void get_watch_symbol(watch_point& watch, const lua_delayload::resolver& resolver){
+            watch.address = (void*)resolver.find(watch.funcname.c_str());
         }
 
         static void attach_lua_Hooker(lua::state L, lua::debug ar) {

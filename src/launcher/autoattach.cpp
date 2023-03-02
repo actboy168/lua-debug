@@ -20,7 +20,6 @@
 
 #include "common.hpp"
 #include "hook/hook_common.h"
-#include "symbol_resolver/symbol_resolver.h"
 #include "lua_resolver.h"
 #include <gumpp.hpp>
 namespace autoattach {
@@ -211,7 +210,7 @@ namespace autoattach {
 
         LOG(std::format("find lua module path:{}", rm.path).c_str());
         
-        lua::lua_resolver r(rm);
+        lua::lua_resolver r(rm.name);
         auto error_msg = lua::initialize(r);
         if (error_msg) {
             FATL_LOG(attachProcess, std::format("lua::initialize failed, can't find {}", error_msg).c_str());
@@ -223,7 +222,7 @@ namespace autoattach {
         LOG(std::format("current lua version: {}", lua_version_to_string(luaversion)).c_str());
 
         auto vmhook = create_vmhook(luaversion);
-        if (!vmhook->get_symbols(r.context)) {
+        if (!vmhook->get_symbols(r)) {
            FATL_LOG(attachProcess, "get_symbols failed");
            return;
         }

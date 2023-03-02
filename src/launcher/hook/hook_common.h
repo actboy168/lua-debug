@@ -3,14 +3,11 @@
 #include "../common.hpp"
 #include <memory>
 
-#ifdef interface
-#undef interface
-#endif
+namespace lua_delayload {
+    struct resolver;
+}
 
 namespace autoattach {
-	namespace symbol_resolver {
-		struct interface;
-	}
     struct vmhook {
         virtual ~vmhook() = default;
 
@@ -18,7 +15,7 @@ namespace autoattach {
 
         virtual void unhook() = 0;
 
-        virtual bool get_symbols(const std::unique_ptr<symbol_resolver::interface> &resolver) = 0;
+        virtual bool get_symbols(const lua_delayload::resolver& resolver) = 0;
     };
 
     vmhook *create_vmhook(lua_version v);

@@ -16,7 +16,7 @@ namespace lua_delayload {
     using hook = void (*) (state, debug);
 
     struct resolver {
-        virtual intptr_t find(const char* name) = 0;
+        virtual intptr_t find(const char* name) const = 0;
     };
 }
 

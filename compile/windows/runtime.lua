@@ -55,7 +55,6 @@ lm:lua_library ('launcher.'..ArchAlias[platform]) {
         "src/launcher/hook/*.cpp",
         "src/launcher/utility/*.cpp",
         "!src/launcher/hook/luajit_listener.cpp",
-        "src/launcher/symbol_resolver/*.cpp",
     },
     defines = {
         "BEE_INLINE",

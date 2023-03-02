@@ -3,7 +3,6 @@
 #include <gumpp.hpp>
 
 #include "hook_common.h"
-#include "../symbol_resolver/symbol_resolver.h"
 #include "../lua_delayload.h"
 
 namespace autoattach {
