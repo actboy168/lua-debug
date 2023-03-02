@@ -168,26 +168,6 @@ namespace luadebug::autoattach {
         attachProcess = ap;
 
         RuntimeModule rm = {};
-#ifdef _WIN32
-        auto addrs = Gum::SymbolUtil::find_matching_functions(find_lua_module_key, true);
-        if (addrs.empty()) {
-            wait_lua_module();
-            log::info("can't find lua module");
-            return;
-        }
-        if (addrs.size() > 1){
-            log::info("find more than one lua module, random load the frist");
-        }
-
-        Gum::Process::enumerate_modules([&rm, addr = addrs[0]](const Gum::ModuleDetails& details)->bool{
-            auto range = details.range();
-            if (range.base_address < addr && addr < (void*)((intptr_t)range.base_address + range.size)) {
-                rm = to_runtim_module(details);
-                return false;
-            }
-            return true;
-        });
-#else
         Gum::Process::enumerate_modules([&rm](const Gum::ModuleDetails& details)->bool{
             if (is_lua_module(details.path())) {
                 rm = to_runtim_module(details);
@@ -199,7 +179,6 @@ namespace luadebug::autoattach {
             log::fatal("can't find lua module");
             return;
         }
-#endif
 
         log::info(std::format("find lua module path:{}", rm.path).c_str());
         
