@@ -34,11 +34,6 @@ namespace luadebug::autoattach {
 		return tmp;
 	}
 
-	static void print_error(lua::state L) {
-		log::info(lua::tostring(L, -1));
-		lua::pop(L, 1);
-	}
-
 	static void attach(lua::state L) {
 		log::info("attach lua vm entry");
 		auto r = bee::path_helper::dll_path();
@@ -48,7 +43,13 @@ namespace luadebug::autoattach {
 		auto root = r.value().parent_path().parent_path();
 		auto buf = readfile(root / "script" / "attach.lua");
 		if (lua::loadbuffer(L, buf.data(), buf.size(), "=(attach.lua)")) {
-			print_error(L);
+			/*
+			TODO:
+				attach.lua编译失败，这里应该用log::fatal将错误信息返回前端。
+				但需要先将autoattach中止。
+			*/
+			log::error(lua::tostring(L, -1));
+			lua::pop(L, 1);
 			return;
 		}
 		lua::call<lua_pushstring>(L, root.generic_u8string().c_str());
@@ -59,27 +60,31 @@ namespace luadebug::autoattach {
 		lua::call<lua_pushstring>(L, std::to_string(getpid()).c_str());
 	#endif
 		if (lua::pcall(L, 2, 0, 0)) {
-			print_error(L);
+			/*
+				这里失败无法调用log::fatal，因为无法知道调试器已经加载到哪一步才失败的。
+				所以调试器不应该把错误抛到这里。
+			*/
+			log::error(lua::tostring(L, -1));
+			lua::pop(L, 1);
+		}
+	}
+	static void start(bool ap) {
+		static std::atomic_bool injected;
+		bool test = false;
+		if (injected.compare_exchange_strong(test, true, std::memory_order_acquire)) {
+			luadebug::autoattach::initialize(luadebug::autoattach::attach, ap);
+			injected.store(false, std::memory_order_release);
 		}
 	}
 }
 
-static void initialize(bool ap) {
-	static std::atomic_bool injected;
-	bool test = false;
-	if (injected.compare_exchange_strong(test, true, std::memory_order_acquire)) {
-		luadebug::log::info("initialize");
-		luadebug::autoattach::initialize(luadebug::autoattach::attach, ap);
-		injected.store(false, std::memory_order_release);
-	}
-}
 
 extern "C" {
 DLLEXPORT void DLLEXPORT_DECLARATION launch() {
-	initialize(false);
+	luadebug::autoattach::start(false);
 }
 
 DLLEXPORT void DLLEXPORT_DECLARATION attach() {
-	initialize(true);
+	luadebug::autoattach::start(true);
 }
 }
