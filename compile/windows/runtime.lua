@@ -14,14 +14,6 @@ lm:msvc_copydll "copy_vcredist" {
     output = 'publish/vcredist/'..platform
 }
 
-lm:source_set "std_format" {
-    includes = "3rd/bee.lua/bee/nonstd/3rd/fmt",
-    sources = {
-        "3rd/bee.lua/bee/nonstd/3rd/format.cc",
-        "3rd/bee.lua/bee/nonstd/3rd/os.cc",
-    }
-}
-
 local ArchAlias = {
     ["win32-x64"] = "x64",
     ["win32-ia32"] = "x86",
@@ -39,7 +31,10 @@ lm:source_set "launcher_hook_luajit" {
 lm:lua_library ('launcher.'..ArchAlias[platform]) {
     bindir = "publish/bin",
     export_luaopen = "off",
-    deps = {"std_format", "frida", "launcher_hook_luajit"},
+    deps = {
+        "frida",
+        "launcher_hook_luajit"
+    },
     includes = {
         "3rd/bee.lua",
         "3rd/lua/lua54",
@@ -47,15 +42,6 @@ lm:lua_library ('launcher.'..ArchAlias[platform]) {
         "src/launcher",
     },
     sources = {
-        "3rd/bee.lua/bee/error.cpp",
-        "3rd/bee.lua/bee/platform/win/unicode_win.cpp",
-        "3rd/bee.lua/bee/platform/win/unlink_win.cpp",
-        "3rd/bee.lua/bee/platform/win/version_win.cpp",
-        "3rd/bee.lua/bee/utility/path_helper.cpp",
-        "3rd/bee.lua/bee/utility/file_handle.cpp",
-        "3rd/bee.lua/bee/utility/file_handle_win.cpp",
-        "3rd/bee.lua/bee/net/endpoint.cpp",
-        "3rd/bee.lua/bee/net/socket.cpp",
         "src/launcher/**/*.cpp",
         "!src/launcher/hook/luajit_listener.cpp",
     },
