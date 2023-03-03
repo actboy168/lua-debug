@@ -13,13 +13,14 @@ namespace luadebug::autoattach {
         std::string funcname;
         void *address;
     };
+    static void attach_lua_Hooker(lua::state L, lua::debug ar);
     struct vmhook_template : vmhook ,Gum::NoLeaveInvocationListener{
-		vmhook_template() = default;
+		vmhook_template(Gum::RefPtr<Gum::Interceptor> in) : interceptor{in} {}
 		vmhook_template(const vmhook_template&) = delete;
         std::vector <watch_point> wather_points;
 		vmhooker hooker;
         std::atomic_bool inwatch = false;
-        Gum::RefPtr<Gum::Interceptor> interceptor = Gum::RefPtr<Gum::Interceptor>(Gum::Interceptor_obtain());
+        Gum::RefPtr<Gum::Interceptor> interceptor;
         bool hook() override {
             for (auto &&watch: wather_points) {
                 if (watch.address) {
@@ -49,14 +50,6 @@ namespace luadebug::autoattach {
             watch.address = (void*)resolver.find(watch.funcname.c_str());
         }
 
-        static void attach_lua_Hooker(lua::state L, lua::debug ar) {
-            auto &_self = get_this();
-            _self.hooker.call_origin_hook(L, ar);
-            //inject success disable hook
-            _self.unhook();
-			attach_lua_vm(L);
-        }
-
         void watch_entry(lua::state L) {
             bool test = false;
             if (inwatch.compare_exchange_strong(test, true, std::memory_order_acquire)) {
@@ -69,6 +62,5 @@ namespace luadebug::autoattach {
             watch_entry(L);
         }
 
-        static vmhook_template &get_this();
     };
 }
