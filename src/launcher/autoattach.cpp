@@ -47,17 +47,18 @@ namespace luadebug::autoattach {
         }
         return lua_version::unknown;
 	}
-    lua_version get_lua_version(const char *path) {
+    lua_version get_lua_version(const RuntimeModule& rm) {
         /*
             luaJIT_version_2_1_0_beta3
             luaJIT_version_2_1_0_beta2
             luaJIT_version_2_1_0_beta1
             luaJIT_version_2_1_0_alpha
         */
-        if (!Gum::SymbolUtil::find_matching_functions("luaJIT_version_2_1_0*", true).empty()){
-            return lua_version::luajit;
+        for(void* addr : Gum::SymbolUtil::find_matching_functions("luaJIT_version_2_1_0*", true)){
+            if (rm.in_module(addr))
+                return lua_version::luajit;
         }
-		auto p = Gum::Process::module_find_symbol_by_name(path, "lua_ident");;
+		auto p = Gum::Process::module_find_symbol_by_name(rm.path, "lua_ident");;
         const char *lua_ident = (const char *) p;
         if (!lua_ident)
             return lua_version::unknown;
@@ -189,7 +190,7 @@ namespace luadebug::autoattach {
             return;
         }
 
-        auto luaversion = get_lua_version(rm.path);
+        auto luaversion = get_lua_version(rm);
 
         log::info(std::format("current lua version: {}", lua_version_to_string(luaversion)).c_str());
 
