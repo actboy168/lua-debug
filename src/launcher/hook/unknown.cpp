@@ -19,25 +19,25 @@ namespace luadebug::autoattach {
         switch (version) {
             case lua_version::luajit:
                 return {
-                        "luajit.lj_dispatch_ins",
-                        "luajit.lj_dispatch_call",
-                        "luajit.lj_vm_call",
-                        "luajit.lj_vm_pcall",
-                        "luajit.lj_vm_cpcall",
-                        "luajit.lj_vm_resume",
-                        "luajit.lj_meta_tget",
+                        "lj_dispatch_ins",
+                        "lj_dispatch_call",
+                        "lj_vm_call",
+                        "lj_vm_pcall",
+                        "lj_vm_cpcall",
+                        "lj_vm_resume",
+                        "lj_meta_tget",
                 };
             case lua_version::lua51:
                 return {
-                        "lua51.luaD_precall",
-                        "lua51.luaV_gettable",
-                        "lua51.luaV_settable"
+                        "luaD_precall",
+                        "luaV_gettable",
+                        "luaV_settable"
                 };
             case lua_version::lua54:
                 return {
-                        "lua54.luaD_poscall",
-                        "lua54.luaH_finishset",
-                        "lua54.luaV_finishget",
+                        "luaD_poscall",
+                        "luaH_finishset",
+                        "luaV_finishget",
                 };
             default:
                 return {
