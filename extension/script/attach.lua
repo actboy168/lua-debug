@@ -1,9 +1,16 @@
 local path, pid = ...
-if type == nil then
+if _VERSION == nil
+    or type == nil
+    or assert == nil
+    or error == nil
+    or dofile == nil
+    or io == nil
+    or os == nil
+    or debug == nil
+    or package == nil
+    or string == nil
+then
     return false
-end
-if type(pid) == "string" then
-	pid = tonumber(pid)
 end
 
 local function dofile(filename, ...)
