@@ -12,7 +12,6 @@
 #define DLLEXPORT_DECLARATION __cdecl
 #endif
 #include <string>
-#include <atomic>
 
 namespace luadebug::autoattach {
 	static std::string readfile(const fs::path& filename) {
