@@ -1,4 +1,4 @@
-#include "vmhook_template.hpp"
+#include <hook/vmhook_template.hpp>
 
 namespace luadebug::autoattach {
     void vmhooker::call_origin_hook(lua::state L, lua::debug ar) {

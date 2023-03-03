@@ -1,9 +1,13 @@
-#include "autoattach.h"
+#include <autoattach/autoattach.h>
+#include <util/common.hpp>
+#include <util/log.h>
+#include <hook/hook_common.h>
+#include <resolver/lua_resolver.h>
+
 #include <mutex>
 #include <stack>
 #include <set>
 #include <vector>
-#include "../remotedebug/rdebug_delayload.h"
 #ifdef _WIN32
 #include <intrin.h>
 #include <Windows.h>
@@ -17,11 +21,8 @@
 #include <charconv>
 #include <filesystem>
 #include <cstring>
-
-#include "common.hpp"
-#include "hook/hook_common.h"
-#include "lua_resolver.h"
 #include <gumpp.hpp>
+
 namespace luadebug::autoattach {
 	std::mutex lockLoadDll;
 	fn_attach debuggerAttach;

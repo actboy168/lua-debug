@@ -2,8 +2,8 @@
 
 #include <gumpp.hpp>
 
-#include "hook_common.h"
-#include "../lua_delayload.h"
+#include <hook/hook_common.h>
+#include <resolver/lua_delayload.h>
 
 namespace luadebug::autoattach {
 

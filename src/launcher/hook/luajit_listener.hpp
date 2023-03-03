@@ -1,4 +1,5 @@
 #include <gumpp.hpp>
+
 namespace luadebug::autoattach {
 
 struct luajit_global_listener : Gum::NoLeaveInvocationListener {

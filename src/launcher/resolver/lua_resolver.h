@@ -1,6 +1,6 @@
 #pragma once
 
-#include "lua_delayload.h"
+#include <resolver/lua_delayload.h>
 #include <string_view>
 
 namespace luadebug {

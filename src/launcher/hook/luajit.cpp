@@ -1,7 +1,7 @@
 #include <memory>
 
-#include "luajit_listener.hpp"
-#include "vmhook_template.hpp"
+#include <hook/luajit_listener.hpp>
+#include <hook/vmhook_template.hpp>
 #include <gumpp.hpp>
 
 namespace luadebug::autoattach {

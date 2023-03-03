@@ -1,8 +1,7 @@
 #pragma once
+
 #include <string_view>
 #include <bee/nonstd/format.h>
-
-#include "utility/log.h"
 
 typedef struct _RuntimeModule {
     char path[1024];

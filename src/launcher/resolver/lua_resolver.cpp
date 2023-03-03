@@ -1,5 +1,5 @@
-#include "lua_resolver.h"
-#include "gumpp.hpp"
+#include <resolver/lua_resolver.h>
+#include <gumpp.hpp>
 #include <string_view>
 
 namespace luadebug {

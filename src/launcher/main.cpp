@@ -1,4 +1,6 @@
-#include "autoattach.h"
+﻿#include <autoattach/autoattach.h>
+#include <util/log.h>
+
 #include <bee/nonstd/filesystem.h>
 #include <bee/utility/path_helper.h>
 #ifndef _WIN32
@@ -11,8 +13,6 @@
 #endif
 #include <string>
 #include <atomic>
-
-#include "common.hpp"
 
 namespace luadebug::autoattach {
 	static std::string readfile(const fs::path& filename) {

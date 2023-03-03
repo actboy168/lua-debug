@@ -2,7 +2,7 @@
 #ifdef _WIN32
 #include <windows.h>
 #endif
-#include "lua_delayload.h"
+#include <resolver/lua_delayload.h>
 
 namespace luadebug::autoattach {
 	typedef void(*fn_attach)(lua::state L);

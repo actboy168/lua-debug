@@ -1,7 +1,9 @@
 #pragma once
 
-#include "unknown.hpp"
-#include "../lua_delayload.h"
+#include <hook/unknown.hpp>
+#include <resolver/lua_delayload.h>
+#include <util/log.h>
+
 #include <vector>
 #include <string>
 #include <atomic>

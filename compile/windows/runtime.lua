@@ -27,8 +27,12 @@ local ArchAlias = {
     ["win32-ia32"] = "x86",
 }
 
-lm:source_set ("launcher_hook_luajit"){
-    includes = {"3rd/lua/luajit/src", "3rd/frida_gum/gumpp"},
+lm:source_set "launcher_hook_luajit" {
+    includes = {
+        "3rd/lua/luajit/src",
+        "3rd/frida_gum/gumpp",
+        "src/launcher"
+    },
     sources = "src/launcher/hook/luajit_listener.cpp",
 }
 
@@ -40,6 +44,7 @@ lm:lua_library ('launcher.'..ArchAlias[platform]) {
         "3rd/bee.lua",
         "3rd/lua/lua54",
         "3rd/frida_gum/gumpp",
+        "src/launcher",
     },
     sources = {
         "3rd/bee.lua/bee/error.cpp",
@@ -51,9 +56,7 @@ lm:lua_library ('launcher.'..ArchAlias[platform]) {
         "3rd/bee.lua/bee/utility/file_handle_win.cpp",
         "3rd/bee.lua/bee/net/endpoint.cpp",
         "3rd/bee.lua/bee/net/socket.cpp",
-        "src/launcher/*.cpp",
-        "src/launcher/hook/*.cpp",
-        "src/launcher/utility/*.cpp",
+        "src/launcher/**/*.cpp",
         "!src/launcher/hook/luajit_listener.cpp",
     },
     defines = {
