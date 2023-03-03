@@ -13,7 +13,7 @@ namespace luadebug::autoattach {
         std::string funcname;
         void *address;
     };
-    static void attach_lua_Hooker(lua::state L, lua::debug ar);
+    void attach_lua_Hooker(lua::state L, lua::debug ar);
     struct vmhook_template : vmhook ,Gum::NoLeaveInvocationListener{
 		vmhook_template(Gum::RefPtr<Gum::Interceptor> in) : interceptor{in} {}
 		vmhook_template(const vmhook_template&) = delete;

@@ -80,7 +80,7 @@ namespace luadebug::autoattach{
         vmhook_template* now_hook;
     }* context;
     
-    static void attach_lua_Hooker(lua::state L, lua::debug ar) {
+    void attach_lua_Hooker(lua::state L, lua::debug ar) {
         if (context) {
             context->now_hook->hooker.call_origin_hook(L, ar);
             //inject success disable hook
