@@ -66,9 +66,11 @@ namespace luadebug::autoattach {
 			*/
 			log::error(lua::tostring(L, -1));
 			lua::pop(L, 1);
-            return 1;
+            return -2;
 		}
-        return 0;
+        auto ec = lua::call<lua_toboolean>(L, -1) ? 0 : 1;
+        lua::pop(L, 1);
+        return ec;
 	}
 	static void start(bool ap) {
 		static std::atomic_bool injected;

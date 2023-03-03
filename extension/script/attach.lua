@@ -1,4 +1,7 @@
 local path, pid = ...
+if type == nil then
+    return false
+end
 if type(pid) == "string" then
 	pid = tonumber(pid)
 end
@@ -26,3 +29,4 @@ dbg:start {
     latest = isLatest(),
 }
 dbg:event "wait"
+return true
