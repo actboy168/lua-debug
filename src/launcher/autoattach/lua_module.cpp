@@ -1,9 +1,11 @@
-#include <autoattach/luaversion.h>
+#include <autoattach/lua_module.h>
+#include <util/log.h>
+#include <bee/nonstd/format.h>
 #include <charconv>
 #include <gumpp.hpp>
 
 namespace luadebug::autoattach {
-    lua_version lua_version_from_string(const std::string_view& v) {
+    static lua_version lua_version_from_string(const std::string_view& v) {
         if (v == "luajit")
             return lua_version::luajit;
         if (v == "lua51")
@@ -17,7 +19,7 @@ namespace luadebug::autoattach {
         return lua_version::unknown;
     }
 
-    const char* lua_version_to_string(lua_version v) {
+    static const char* lua_version_to_string(lua_version v) {
         switch (v) {
         case lua_version::lua51:
             return "lua51";
@@ -34,7 +36,11 @@ namespace luadebug::autoattach {
         }
     }
 
-    lua_version get_lua_version(const RuntimeModule& rm) {
+    static bool in_module(const lua_module& m, void* addr) {
+        return addr > m.memory_address && addr <= (void*)((intptr_t)m.memory_address + m.memory_size);
+    }
+
+    static lua_version get_lua_version(const lua_module& m) {
         /*
             luaJIT_version_2_1_0_beta3
             luaJIT_version_2_1_0_beta2
@@ -42,10 +48,10 @@ namespace luadebug::autoattach {
             luaJIT_version_2_1_0_alpha
         */
         for (void* addr : Gum::SymbolUtil::find_matching_functions("luaJIT_version_2_1_0*", true)){
-            if (rm.in_module(addr))
+            if (in_module(m, addr))
                 return lua_version::luajit;
         }
-        auto p = Gum::Process::module_find_symbol_by_name(rm.path, "lua_ident");;
+        auto p = Gum::Process::module_find_symbol_by_name(m.path.c_str(), "lua_ident");;
         const char *lua_ident = (const char *) p;
         if (!lua_ident)
             return lua_version::unknown;
@@ -77,5 +83,17 @@ namespace luadebug::autoattach {
         default:
             return lua_version::unknown;
         }
+    }
+
+    bool lua_module::initialize() {
+        resolver.module_name = path;
+        auto error_msg = lua::initialize(resolver);
+        if (error_msg) {
+            log::fatal(std::format("lua::initialize failed, can't find {}", error_msg).c_str());
+            return false;
+        }
+        version = get_lua_version(*this);
+        log::info(std::format("current lua version: {}", lua_version_to_string(version)).c_str());
+        return true;
     }
 }

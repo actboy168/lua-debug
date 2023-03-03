@@ -1,5 +1,5 @@
 #include <autoattach/autoattach.h>
-#include <autoattach/luaversion.h>
+#include <autoattach/lua_module.h>
 #include <autoattach/wait_dll.h>
 #include <util/log.h>
 #include <hook/hook_common.h>
@@ -36,48 +36,33 @@ namespace luadebug::autoattach {
         return debuggerAttach(L);
     }
 
-    static RuntimeModule to_runtim_module(const Gum::ModuleDetails& details){
-        RuntimeModule rm = {};
-        const char* path = details.path();
-        const char* name = details.name();
-        auto range = details.range();
-        strcpy(rm.path, path);
-        strcpy(rm.name, name);
-        rm.load_address = range.base_address;
-        rm.size = range.size;
-        return rm;
-    }
-
     void start() {
-        RuntimeModule rm = {};
-        Gum::Process::enumerate_modules([&rm](const Gum::ModuleDetails& details)->bool{
+        bool found = false;
+        lua_module rm = {};
+        Gum::Process::enumerate_modules([&rm, &found](const Gum::ModuleDetails& details)->bool{
             if (is_lua_module(details.path())) {
-                rm = to_runtim_module(details);
+                auto range = details.range();
+                rm.memory_address = range.base_address;
+                rm.memory_size = range.size;
+                rm.path = details.path();
+                rm.name = details.name();
+                found = true;
                 return false;
             }
             return true;
         });
-        if (!rm.load_address) {
-            if (!wait_dll(load_lua_module))
+        if (!found) {
+            if (!wait_dll(load_lua_module)) {
                 log::fatal("can't find lua module");
+            }
             return;
         }
-
         log::info(std::format("find lua module path:{}", rm.path).c_str());
-        
-        lua_resolver r(rm.path);
-        auto error_msg = lua::initialize(r);
-        if (error_msg) {
-            log::fatal(std::format("lua::initialize failed, can't find {}", error_msg).c_str());
+        if (!rm.initialize()) {
             return;
         }
-
-        auto luaversion = get_lua_version(rm);
-
-        log::info(std::format("current lua version: {}", lua_version_to_string(luaversion)).c_str());
-
-        auto vmhook = create_vmhook(luaversion);
-        if (!vmhook->get_symbols(r)) {
+        auto vmhook = create_vmhook(rm.version);
+        if (!vmhook->get_symbols(rm.resolver)) {
            log::fatal("get_symbols failed");
            return;
         }

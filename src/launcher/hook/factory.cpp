@@ -2,7 +2,7 @@
 #include <string_view>
 #include <string>
 #include <hook/vmhook_template.hpp>
-#include <autoattach/luaversion.h>
+#include <autoattach/lua_module.h>
 
 namespace luadebug::autoattach {
 

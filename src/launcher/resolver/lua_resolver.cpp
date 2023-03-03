@@ -3,10 +3,6 @@
 #include <string_view>
 
 namespace luadebug {
-    lua_resolver::lua_resolver(const std::string_view& module_name)
-        : module_name(module_name)
-    { }
-
     static int (*_lua_pcall)(intptr_t L, int nargs, int nresults, int errfunc);
     static int _lua_pcallk(intptr_t L, int nargs, int nresults, int errfunc, intptr_t ctx, intptr_t k) {
         return _lua_pcall(L,nargs,nresults,errfunc);
