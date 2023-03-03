@@ -13,6 +13,7 @@
 #define DLLEXPORT_DECLARATION __cdecl
 #endif
 #include <string>
+#include <string_view>
 
 namespace luadebug::autoattach {
 	static std::string readfile(const fs::path& filename) {
@@ -68,7 +69,8 @@ namespace luadebug::autoattach {
 			lua::pop(L, 1);
             return -2;
 		}
-        auto ec = lua::call<lua_toboolean>(L, -1) ? 0 : 1;
+		using namespace std::string_view_literals;
+        auto ec = lua::tostring(L, -1) == "ok"sv ? 0 : 1;
         lua::pop(L, 1);
         return ec;
 	}

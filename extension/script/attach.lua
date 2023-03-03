@@ -10,7 +10,7 @@ if _VERSION == nil
     or package == nil
     or string == nil
 then
-    return false
+    return "wait initialized"
 end
 
 local function dofile(filename, ...)
@@ -36,4 +36,4 @@ dbg:start {
     latest = isLatest(),
 }
 dbg:event "wait"
-return true
+return "ok"
