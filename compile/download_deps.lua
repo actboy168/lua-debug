@@ -13,11 +13,11 @@ local all_os = {
     "macos-x86_64",
     "windows-x86",
     "windows-x86_64",
-    "linux-x86_64",
-    "linux-arm64",
-    "linux-x86",
-    "freebsd-arm64",
-    "freebsd-x86_64",
+    --"linux-x86_64",
+    --"linux-arm64",
+    --"linux-x86",
+    --"freebsd-arm64",
+    --"freebsd-x86_64",
 }
 
 ---@param url string
