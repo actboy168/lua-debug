@@ -5,7 +5,7 @@
 #include <gumpp.hpp>
 
 namespace luadebug::autoattach {
-    struct luajit_hook : vmhook_template {
+    struct luajit_hook: vmhook_template {
         luajit_hook(Gum::RefPtr<Gum::Interceptor> in) : vmhook_template{in} {}
         ~luajit_hook() = default;
         watch_point lj_dispatch_update{ "lj_dispatch_update"};

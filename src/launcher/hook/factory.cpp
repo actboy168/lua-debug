@@ -23,7 +23,7 @@ namespace luadebug::autoattach {
         }
 
         bool get_symbols(const lua::resolver& resolver) override {
-            for (auto&& hook : vmhooks){
+            for (auto&& hook : vmhooks) {
                 if (hook->get_symbols(resolver)) {
                     vaild_vmhook = hook.get();
                     return true;

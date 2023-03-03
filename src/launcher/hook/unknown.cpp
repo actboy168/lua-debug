@@ -12,9 +12,9 @@ namespace luadebug::autoattach {
     }
 
     void vmhooker::call_lua_sethook(lua::state L, lua::hook fn) {
-		origin_lua_hook = lua::call<lua_gethook>(L);
-		origin_hookmask = lua::call<lua_gethookmask>(L);
-		origin_hookcount = lua::call<lua_gethookcount>(L);
+        origin_lua_hook = lua::call<lua_gethook>(L);
+        origin_hookmask = lua::call<lua_gethookmask>(L);
+        origin_hookcount = lua::call<lua_gethookcount>(L);
         lua::call<lua_sethook>(L, fn, 0 | 1 | 2, 0);
     }
 }

@@ -1,14 +1,8 @@
 #pragma once
 
-#include <gumpp.hpp>
-
-#include <hook/hook_common.h>
 #include <resolver/lua_delayload.h>
 
 namespace luadebug::autoattach {
-
-#define FILED_VAR(name, ...) name##_t name;
-
     struct vmhooker {
         lua::hook origin_lua_hook;
         int origin_hookmask;
