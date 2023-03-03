@@ -2,7 +2,7 @@
 
 #include <autoattach/autoattach.h>
 #include <resolver/lua_resolver.h>
-#include <string_view>
+#include <string>
 
 namespace luadebug::autoattach {
     enum class lua_version {
