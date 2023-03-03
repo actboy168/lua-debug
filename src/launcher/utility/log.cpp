@@ -23,10 +23,14 @@ void init(bool attach) {
 	attach_mode = attach;
 }
 
-void info(const char* msg) {
-#ifndef NDEBUG
+void error(const char* msg) {
 	//TODO: use std::print
 	fprintf(stderr, "[lua-debug][launcher]%s\n", msg);
+}
+
+void info(const char* msg) {
+#ifndef NDEBUG
+	error(msg);
 #endif
 }
 

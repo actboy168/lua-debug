@@ -160,6 +160,7 @@ namespace luadebug::autoattach {
 
     void initialize(fn_attach attach, bool ap) {
         log::init(ap);
+        log::info("initialize");
         Gum::runtime_init();
         //auto gum_runtime = std::shared_ptr<void>(nullptr, [](auto){
         //    Gum::runtime_deinit();
