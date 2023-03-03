@@ -3,6 +3,7 @@
 #include <hook/unknown.hpp>
 #include <resolver/lua_delayload.h>
 #include <util/log.h>
+#include <bee/nonstd/format.h>
 
 #include <vector>
 #include <string>

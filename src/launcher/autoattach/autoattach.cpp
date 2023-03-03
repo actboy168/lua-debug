@@ -1,11 +1,11 @@
 #include <autoattach/autoattach.h>
 #include <autoattach/luaversion.h>
 #include <autoattach/wait_dll.h>
-#include <util/common.hpp>
 #include <util/log.h>
 #include <hook/hook_common.h>
 #include <resolver/lua_resolver.h>
 
+#include <bee/nonstd/format.h>
 #include <string>
 #include <memory>
 #include <thread>

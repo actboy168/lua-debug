@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string_view>
-#include <util/common.hpp>
+#include <autoattach/autoattach.h>
 
 namespace luadebug::autoattach {
     enum class lua_version {

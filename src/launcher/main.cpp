@@ -8,6 +8,7 @@
 #define DLLEXPORT __attribute__((visibility("default")))
 #define DLLEXPORT_DECLARATION
 #else
+#include <windows.h>
 #define DLLEXPORT __declspec(dllexport)
 #define DLLEXPORT_DECLARATION __cdecl
 #endif
