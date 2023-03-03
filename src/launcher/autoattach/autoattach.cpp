@@ -1,4 +1,5 @@
 #include <autoattach/autoattach.h>
+#include <autoattach/luaversion.h>
 #include <util/common.hpp>
 #include <util/log.h>
 #include <hook/hook_common.h>
@@ -18,7 +19,6 @@
 #include <string>
 #include <string_view>
 #include <memory>
-#include <charconv>
 #include <filesystem>
 #include <cstring>
 #include <gumpp.hpp>
@@ -28,43 +28,6 @@ namespace luadebug::autoattach {
 	fn_attach debuggerAttach;
 	bool      attachProcess = false;
 
-	lua_version get_lua_version_from_ident(const char* lua_ident){
-		auto id = std::string_view(lua_ident);
-        using namespace std::string_view_literals;
-        constexpr auto key = "$Lua"sv;
-        if (id.substr(0, key.length()) == key) {
-            if (id[key.length()] == ':') {
-                //$Lua: Lua 5.1.*
-                return lua_version::lua51;
-            }
-            constexpr auto key = "$LuaVersion: Lua 5."sv;
-            id = id.substr(key.length());
-            int patch;
-            auto res = std::from_chars(id.data(), id.data() + 3, patch, 10);
-            if (res.ec != std::errc()) {
-                return lua_version::unknown;
-            }
-            return (lua_version) ((int) lua_version::luajit + patch);
-        }
-        return lua_version::unknown;
-	}
-    lua_version get_lua_version(const RuntimeModule& rm) {
-        /*
-            luaJIT_version_2_1_0_beta3
-            luaJIT_version_2_1_0_beta2
-            luaJIT_version_2_1_0_beta1
-            luaJIT_version_2_1_0_alpha
-        */
-        for(void* addr : Gum::SymbolUtil::find_matching_functions("luaJIT_version_2_1_0*", true)){
-            if (rm.in_module(addr))
-                return lua_version::luajit;
-        }
-		auto p = Gum::Process::module_find_symbol_by_name(rm.path, "lua_ident");;
-        const char *lua_ident = (const char *) p;
-        if (!lua_ident)
-            return lua_version::unknown;
-		return get_lua_version_from_ident(lua_ident);
-    }
     constexpr auto find_lua_module_key = "lua_newstate";
     bool is_lua_module(const char* module_path) {
         if (Gum::Process::module_find_export_by_name(module_path, find_lua_module_key))

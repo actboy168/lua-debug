@@ -1,10 +1,10 @@
-
 #include <vector>
 #include <string_view>
 #include <string>
-
 #include <hook/vmhook_template.hpp>
-namespace luadebug::autoattach{
+#include <autoattach/luaversion.h>
+
+namespace luadebug::autoattach {
 
     struct vmhook_list : public vmhook {
         std::vector<std::unique_ptr<vmhook>> vmhooks;

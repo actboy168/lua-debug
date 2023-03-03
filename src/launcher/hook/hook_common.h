@@ -1,6 +1,6 @@
 #pragma once
 
-#include <util/common.hpp>
+#include <autoattach/luaversion.h>
 #include <memory>
 
 namespace luadebug::lua {
