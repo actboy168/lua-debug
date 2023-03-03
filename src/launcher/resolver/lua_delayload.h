@@ -16,7 +16,7 @@ namespace luadebug::lua {
     using hook = void (*) (state, debug);
 
     struct resolver {
-        virtual intptr_t find(const char* name) const = 0;
+        virtual intptr_t find(std::string_view name) const = 0;
     };
 }
 
@@ -119,7 +119,7 @@ namespace luadebug::lua::impl {
     };
     template <auto F>
     const char* function<F>::init(resolver& r) {
-        type_t::invoke = reinterpret_cast<decltype(type_t::invoke)>(r.find(symbol_name.data()));
+        type_t::invoke = reinterpret_cast<decltype(type_t::invoke)>(r.find(std::string_view { symbol_name.data(), symbol_name.size() }));
         return type_t::invoke != nullptr ? nullptr : symbol_name.data();
     }
     template <> struct conv<lua_State*>    { using type = state; };

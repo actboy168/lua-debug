@@ -33,7 +33,7 @@ namespace luadebug::autoattach {
         }
     };
 
-    static std::vector <std::string_view> get_hook_entry_points(lua_version version) {
+    static std::vector<std::string_view> get_hook_entry_points(lua_version version) {
         switch (version) {
             case lua_version::luajit:
                 return {
@@ -105,7 +105,7 @@ namespace luadebug::autoattach {
         hk->wather_points.clear();
         auto entry = get_hook_entry_points(version);
         for (auto &&e: entry) {
-            hk->wather_points.emplace_back(watch_point{std::string{e}, 0});
+            hk->wather_points.emplace_back(watch_point{e, 0});
         }
     }
     

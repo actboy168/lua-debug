@@ -11,7 +11,7 @@
 
 namespace luadebug::autoattach {
     struct watch_point {
-        std::string funcname;
+        std::string_view funcname;
         void *address;
     };
 

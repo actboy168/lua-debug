@@ -10,7 +10,7 @@ namespace luadebug::autoattach {
     void attach_lua_Hooker(lua::state L, lua::debug ar);
 
     void get_watch_symbol(watch_point& watch, const lua::resolver& resolver) {
-        watch.address = (void*)resolver.find(watch.funcname.c_str());
+        watch.address = (void*)resolver.find(watch.funcname);
     }
 
     vmhook_template::vmhook_template(Gum::RefPtr<Gum::Interceptor> in) 

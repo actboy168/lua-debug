@@ -1,12 +1,16 @@
 #pragma once
 
-
 #include <bee/nonstd/format.h>
 
 #if !defined(__cpp_lib_format)
 namespace std {
     using ::fmt::format_string;
 }
+#endif
+
+
+#if !defined(NDEBUG)
+#define LUADEBUG_ENABLE_LOG 1
 #endif
 
 namespace luadebug::log {
@@ -18,19 +22,21 @@ namespace luadebug::log {
         std::print(stderr, "[lua-debug][launcher]{}\n", std::format(fmt, std::forward<T>(args)...));
     }
 
-#ifdef NDEBUG
+#if defined(LUADEBUG_ENABLE_LOG)
+    template <typename... T>
+    inline void info(std::format_string<T...> fmt, T&&... args) {
+        error(fmt, std::forward<T>(args)...);
+    }
+#else
     template <typename... T>
     inline void info(std::format_string<T...> fmt, T&&... args)
     {}
-#else
-    template <typename... T>
-    using info = error<T...>;
 #endif
 
     template <typename... T>
     inline void fatal(std::format_string<T...> fmt, T&&... args) {
         auto msg = std::format(fmt, std::forward<T>(args)...);
-#ifndef NDEBUG
+#if defined(LUADEBUG_ENABLE_LOG)
         error("{}", msg);
 #endif
         notify_frontend(msg);
