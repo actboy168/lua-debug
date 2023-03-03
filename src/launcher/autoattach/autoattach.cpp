@@ -67,7 +67,9 @@ namespace luadebug::autoattach {
     }
     constexpr auto find_lua_module_key = "lua_newstate";
     bool is_lua_module(const char* module_path) {
-        return Gum::Process::module_find_symbol_by_name(module_path, find_lua_module_key);
+        if (Gum::Process::module_find_export_by_name(module_path, find_lua_module_key))
+            return true;
+        return Gum::Process::module_find_symbol_by_name(module_path, find_lua_module_key) != nullptr;
     }
 
     int attach_lua_vm(lua::state L) {
