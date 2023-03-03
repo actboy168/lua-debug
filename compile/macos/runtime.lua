@@ -12,6 +12,7 @@ lm:source_set "launcher_hook_luajit" {
     sources = "src/launcher/hook/luajit_listener.cpp",
 }
 
+
 lm:lua_library('liblauncher') {
     export_luaopen = "off",
     deps = {
