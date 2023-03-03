@@ -34,11 +34,11 @@ namespace luadebug::autoattach {
 		return tmp;
 	}
 
-	static void attach(lua::state L) {
+	static int attach(lua::state L) {
 		log::info("attach lua vm entry");
 		auto r = bee::path_helper::dll_path();
 		if (!r) {
-			return;
+			return -1;
 		}
 		auto root = r.value().parent_path().parent_path();
 		auto buf = readfile(root / "script" / "attach.lua");
@@ -50,7 +50,7 @@ namespace luadebug::autoattach {
 			*/
 			log::error(lua::tostring(L, -1));
 			lua::pop(L, 1);
-			return;
+			return -1;
 		}
 		lua::call<lua_pushstring>(L, root.generic_u8string().c_str());
 		
@@ -66,7 +66,9 @@ namespace luadebug::autoattach {
 			*/
 			log::error(lua::tostring(L, -1));
 			lua::pop(L, 1);
+            return 1;
 		}
+        return 0;
 	}
 	static void start(bool ap) {
 		static std::atomic_bool injected;

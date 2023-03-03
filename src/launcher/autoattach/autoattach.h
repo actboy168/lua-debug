@@ -5,6 +5,6 @@
 #include <resolver/lua_delayload.h>
 
 namespace luadebug::autoattach {
-	typedef void(*fn_attach)(lua::state L);
+	typedef int(*fn_attach)(lua::state L);
 	void    initialize(fn_attach attach, bool ap);
 }

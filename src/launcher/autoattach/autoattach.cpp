@@ -70,8 +70,8 @@ namespace luadebug::autoattach {
         return Gum::Process::module_find_symbol_by_name(module_path, find_lua_module_key);
     }
 
-    void attach_lua_vm(lua::state L) {
-        debuggerAttach(L);
+    int attach_lua_vm(lua::state L) {
+        return debuggerAttach(L);
     }
 
     bool wait_lua_module() {

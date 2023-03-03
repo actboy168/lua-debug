@@ -79,19 +79,23 @@ namespace luadebug::autoattach{
         std::unique_ptr<vmhook_list> hooker_list = std::make_unique<vmhook_list>();
         vmhook_template* now_hook;
     }* context;
-    
+
+    int attach_lua_vm(lua::state L);
     void attach_lua_Hooker(lua::state L, lua::debug ar) {
-        if (context) {
-            context->now_hook->hooker.call_origin_hook(L, ar);
+        if (!context)
+            return; //TODO: maybe throw an exception
+        auto now_hook = context->now_hook;
+        now_hook->hooker.call_origin_hook(L, ar);
+
+        if (attach_lua_vm(L) == 0){
             //inject success disable hook
-            context->now_hook->unhook();
+            now_hook->unhook();
+
+            //TODO: how to free so
+            //TODO: free all resources
+            //delete context;
+            //context = nullptr;
         }
-        
-        attach_lua_vm(L);
-        //TODO: how to free so
-        //TODO: free all resources
-        //delete context;
-        //context = nullptr;
     }
 
     
