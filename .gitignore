@@ -1,6 +1,7 @@
-/*.vscode/ipch/
+/.vscode/ipch/
+/.vscode/c_cpp_properties.json
+/.vscode/settings.json
 /.vs/
 /publish/
 /build/
-/.vscode/c_cpp_properties.json
 /extension/package.json
