@@ -72,23 +72,15 @@ namespace luadebug::autoattach {
         lua::pop(L, 1);
         return ec;
 	}
-	static void start(bool ap) {
-		static std::atomic_bool injected;
-		bool test = false;
-		if (injected.compare_exchange_strong(test, true, std::memory_order_acquire)) {
-			luadebug::autoattach::initialize(luadebug::autoattach::attach, ap);
-			injected.store(false, std::memory_order_release);
-		}
-	}
 }
 
 
 extern "C" {
 DLLEXPORT void DLLEXPORT_DECLARATION launch() {
-	luadebug::autoattach::start(false);
+	luadebug::autoattach::initialize(luadebug::autoattach::attach, false);
 }
 
 DLLEXPORT void DLLEXPORT_DECLARATION attach() {
-	luadebug::autoattach::start(true);
+	luadebug::autoattach::initialize(luadebug::autoattach::attach, true);
 }
 }

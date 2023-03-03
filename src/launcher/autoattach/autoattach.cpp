@@ -24,9 +24,10 @@
 #include <gumpp.hpp>
 
 namespace luadebug::autoattach {
-	std::mutex lockLoadDll;
-	fn_attach debuggerAttach;
-	bool      attachProcess = false;
+    fn_attach debuggerAttach;
+    bool      attachProcess = false;
+
+	void    start();
 
     constexpr auto find_lua_module_key = "lua_newstate";
     bool is_lua_module(const char* module_path) {
@@ -102,7 +103,7 @@ namespace luadebug::autoattach {
                 if (is_lua_module(path.c_str())){
                     // find lua module lazy 
                     std::thread([](){
-                        initialize(debuggerAttach, attachProcess);
+                        start();
                         if (dllNotification.Cookie)
                             dllNotification.dllUnregisterNotification(dllNotification.Cookie);
                     }).detach();
@@ -127,16 +128,7 @@ namespace luadebug::autoattach {
     }
     
 
-    void initialize(fn_attach attach, bool ap) {
-        log::init(ap);
-        log::info("initialize");
-        Gum::runtime_init();
-        //auto gum_runtime = std::shared_ptr<void>(nullptr, [](auto){
-        //    Gum::runtime_deinit();
-        //});
-        debuggerAttach = attach;
-        attachProcess = ap;
-
+    void start() {
         RuntimeModule rm = {};
         Gum::Process::enumerate_modules([&rm](const Gum::ModuleDetails& details)->bool{
             if (is_lua_module(details.path())) {
@@ -171,5 +163,18 @@ namespace luadebug::autoattach {
         }
         //TODO: fix other thread pc
         vmhook->hook();
+    }
+    void initialize(fn_attach attach, bool ap) {
+        static std::atomic_bool injected;
+        bool test = false;
+        if (injected.compare_exchange_strong(test, true, std::memory_order_acquire)) {
+            log::init(ap);
+            log::info("initialize");
+            Gum::runtime_init();
+            debuggerAttach = attach;
+            attachProcess = ap;
+            luadebug::autoattach::start();
+            injected.store(false, std::memory_order_release);
+        }
     }
 }
