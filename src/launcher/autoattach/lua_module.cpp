@@ -89,11 +89,11 @@ namespace luadebug::autoattach {
         resolver.module_name = path;
         auto error_msg = lua::initialize(resolver);
         if (error_msg) {
-            log::fatal(std::format("lua::initialize failed, can't find {}", error_msg).c_str());
+            log::fatal("lua::initialize failed, can't find {}", error_msg);
             return false;
         }
         version = get_lua_version(*this);
-        log::info(std::format("current lua version: {}", lua_version_to_string(version)).c_str());
+        log::info("current lua version: {}", lua_version_to_string(version));
         return true;
     }
 }

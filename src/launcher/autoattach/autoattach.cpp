@@ -57,7 +57,7 @@ namespace luadebug::autoattach {
             }
             return;
         }
-        log::info(std::format("find lua module path:{}", rm.path).c_str());
+        log::info("find lua module path:{}", rm.path);
         if (!rm.initialize()) {
             return;
         }

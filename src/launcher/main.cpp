@@ -48,7 +48,7 @@ namespace luadebug::autoattach {
 				attach.lua编译失败，这里应该用log::fatal将错误信息返回前端。
 				但需要先将autoattach中止。
 			*/
-			log::error(lua::tostring(L, -1));
+			log::error("{}", lua::tostring(L, -1));
 			lua::pop(L, 1);
 			return -1;
 		}
@@ -64,7 +64,7 @@ namespace luadebug::autoattach {
 				这里失败无法调用log::fatal，因为无法知道调试器已经加载到哪一步才失败的。
 				所以调试器不应该把错误抛到这里。
 			*/
-			log::error(lua::tostring(L, -1));
+			log::error("{}", lua::tostring(L, -1));
 			lua::pop(L, 1);
             return -2;
 		}
