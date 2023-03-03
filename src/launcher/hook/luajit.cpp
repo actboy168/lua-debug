@@ -3,7 +3,8 @@
 #include "luajit_listener.hpp"
 #include "vmhook_template.hpp"
 #include <gumpp.hpp>
-namespace luadebug::autoattach{
+
+namespace luadebug::autoattach {
     struct luajit_hook : vmhook_template {
         luajit_hook() = default;
         ~luajit_hook() = default;
@@ -11,7 +12,7 @@ namespace luadebug::autoattach{
         watch_point lj_dispatch_stitch{ "lj_dispatch_stitch"};
         luajit_global_listener global_listener;
         luajit_jit_listener jit_listener;
-        virtual bool get_symbols(const lua_delayload::resolver& resolver) override{
+        virtual bool get_symbols(const lua::resolver& resolver) override{
             if (!vmhook_template::get_symbols(resolver))
                 return false;
             get_watch_symbol(lj_dispatch_update, resolver);

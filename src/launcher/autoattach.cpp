@@ -184,7 +184,7 @@ namespace luadebug::autoattach {
 
         log::info(std::format("find lua module path:{}", rm.path).c_str());
         
-        lua::lua_resolver r(rm.path);
+        lua_resolver r(rm.path);
         auto error_msg = lua::initialize(r);
         if (error_msg) {
             log::fatal(std::format("lua::initialize failed, can't find {}", error_msg).c_str());

@@ -3,7 +3,7 @@
 #include "../common.hpp"
 #include <memory>
 
-namespace lua_delayload {
+namespace luadebug::lua {
     struct resolver;
 }
 
@@ -15,7 +15,7 @@ namespace luadebug::autoattach {
 
         virtual void unhook() = 0;
 
-        virtual bool get_symbols(const lua_delayload::resolver& resolver) = 0;
+        virtual bool get_symbols(const lua::resolver& resolver) = 0;
     };
 
     vmhook *create_vmhook(lua_version v);

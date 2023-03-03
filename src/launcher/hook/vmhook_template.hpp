@@ -32,7 +32,7 @@ namespace luadebug::autoattach {
            interceptor->detach(this);
         }
 
-        bool get_symbols(const lua_delayload::resolver& resolver) override {
+        bool get_symbols(const lua::resolver& resolver) override {
             for (auto &&watch: wather_points) {
                 get_watch_symbol(watch, resolver);
             }
@@ -43,7 +43,7 @@ namespace luadebug::autoattach {
             return false;
         }
 
-        static inline void get_watch_symbol(watch_point& watch, const lua_delayload::resolver& resolver){
+        static inline void get_watch_symbol(watch_point& watch, const lua::resolver& resolver){
             watch.address = (void*)resolver.find(watch.funcname.c_str());
         }
 

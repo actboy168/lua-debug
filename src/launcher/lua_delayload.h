@@ -7,7 +7,7 @@
 #include <string_view>
 #include <stdint.h>
 
-namespace lua_delayload {
+namespace luadebug::lua {
     using state = uintptr_t;
     using cfunction = int (*) (state);
     using kcontext = LUA_KCONTEXT;
@@ -20,7 +20,7 @@ namespace lua_delayload {
     };
 }
 
-namespace lua_delayload::impl {
+namespace luadebug::lua::impl {
     template <class T>
     struct conv { using type = T; };
     template <class T>
@@ -131,7 +131,7 @@ namespace lua_delayload::impl {
     
 }
 
-namespace lua_delayload {
+namespace luadebug::lua {
     inline const char* initialize(resolver& r) {
         for (auto& f : impl::initfunc::v) {
             auto error_name = f(r);
@@ -159,5 +159,3 @@ namespace lua_delayload {
         return call<lua_tolstring>(L, idx, nullptr);
     }
 }
-
-namespace lua = lua_delayload;

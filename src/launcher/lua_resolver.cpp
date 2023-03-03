@@ -2,7 +2,7 @@
 #include "gumpp.hpp"
 #include <string_view>
 
-namespace lua_delayload {
+namespace luadebug {
     lua_resolver::lua_resolver(const std::string_view& module_name)
         : module_name(module_name)
     { }
