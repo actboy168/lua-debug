@@ -3,6 +3,7 @@
 #include <string>
 #include <hook/vmhook_template.hpp>
 #include <autoattach/lua_module.h>
+#include <bee/nonstd/unreachable.h>
 
 namespace luadebug::autoattach {
 
@@ -80,21 +81,25 @@ namespace luadebug::autoattach {
         vmhook_template* now_hook;
     }* context;
 
-    int attach_lua_vm(lua::state L);
+    attach_status attach_lua_vm(lua::state L);
     void attach_lua_Hooker(lua::state L, lua::debug ar) {
         if (!context)
             return; //TODO: maybe throw an exception
         auto now_hook = context->now_hook;
-        now_hook->hooker.call_origin_hook(L, ar);
-
-        if (attach_lua_vm(L) == 0){
+        switch (attach_lua_vm(L)) {
+        case attach_status::fatal:
+        case attach_status::success:
             //inject success disable hook
             now_hook->unhook();
-
             //TODO: how to free so
             //TODO: free all resources
             //delete context;
             //context = nullptr;
+            break;
+        case attach_status::wait:
+            break;
+        default:
+            std::unreachable();
         }
     }
 
