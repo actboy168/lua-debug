@@ -60,7 +60,7 @@ namespace luadebug::autoattach {
 	#else
 		lua::call<lua_pushstring>(L, std::to_string(getpid()).c_str());
 	#endif
-		if (lua::pcall(L, 2, 0, 0)) {
+		if (lua::pcall(L, 2, 1, 0)) {
 			/*
 				这里失败无法调用log::fatal，因为无法知道调试器已经加载到哪一步才失败的。
 				所以调试器不应该把错误抛到这里。
