@@ -74,7 +74,7 @@ namespace luadebug::autoattach {
         debuggerAttach(L);
     }
 
-    void wait_lua_module() {
+    bool wait_lua_module() {
         //TODO: support linux/macos
 #ifdef _WIN32
         typedef struct _LDR_DLL_UNLOADED_NOTIFICATION_DATA {
@@ -144,7 +144,9 @@ namespace luadebug::autoattach {
                 }
             }
         }, NULL, &dllNotification.Cookie);
+        return true;
 #endif
+        return false;
     }
 
     static RuntimeModule to_runtim_module(const Gum::ModuleDetails& details){
@@ -179,7 +181,8 @@ namespace luadebug::autoattach {
             return true;
         });
         if (!rm.load_address) {
-            log::fatal("can't find lua module");
+            if (!wait_lua_module())
+                log::fatal("can't find lua module");
             return;
         }
 
