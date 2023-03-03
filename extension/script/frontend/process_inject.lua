@@ -15,6 +15,45 @@ function _M.get_inject_library_path()
     end
 end
 
+function _M.gdb_inject(pid, entry, injectdll, gdb_path)
+    gdb_path = gdb_path or "gdb"
+    local pre_luancher = entry == entry_launch and
+        {
+            "-o",
+            "break main",
+            "-o",
+            "c",
+        } or {}
+
+    local launcher = {
+        "-o",
+        -- 6 = RTDL_NOW|RTDL_LOCAL
+        ('print  (void*)dlopen("%s", 6)'):format(injectdll),
+        "-o",
+        ('call ((void(*)())&%s)()'):format(entry),
+        "-o",
+        "quit"
+    }
+
+    local p, err = sp.spawn {
+        gdb_path,
+        "-p", tostring(pid),
+        "--batch",
+        pre_luancher,
+        launcher,
+        stdout = true,
+        stderr = true,
+    }
+    if not p then
+        return false, "Spwan lldb failed:" .. err
+    end
+    if p:wait() ~= 0 then
+        return false, "stdout:" .. p.stdout:read "a" .. "\nstderr:" .. p.stderr:read "a"
+    end
+    return true
+end
+
+
 function _M.lldb_inject(pid, entry, injectdll, lldb_path)
     lldb_path = lldb_path or "lldb"
     local pre_luancher = entry == entry_launch and
