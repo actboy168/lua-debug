@@ -1,5 +1,3 @@
-#pragma once
-
 #include <bee/net/socket.h>
 #include <bee/net/endpoint.h>
 #include <bee/nonstd/format.h>

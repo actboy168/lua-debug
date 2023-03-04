@@ -5,7 +5,7 @@
 #include <gumpp.hpp>
 
 namespace luadebug::autoattach {
-    static lua_version lua_version_from_string(const std::string_view& v) {
+    static lua_version lua_version_from_string[[maybe_unused]](const std::string_view& v) {
         if (v == "luajit")
             return lua_version::luajit;
         if (v == "lua51")
