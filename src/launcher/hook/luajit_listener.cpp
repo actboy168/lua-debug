@@ -4,21 +4,21 @@
 #include <hook/luajit_listener.hpp>
 
 namespace luadebug::autoattach {
-static void* jit2state(void* ctx) {
+static lua::state jit2state(void* ctx) {
     auto j = (jit_State*)ctx;
-    return (void*)j->L;
+    return (lua::state)j->L;
 }
-static void* global2state(void* ctx) {
+static lua::state global2state(void* ctx) {
     auto g = (global_State*)ctx;
-    return (void*)gco2th(gcref(g->cur_L));
+    return (lua::state)gco2th(gcref(g->cur_L));
 }
 
 void luajit_global_listener::on_enter(Gum::InvocationContext* context) {
-    global2state(context->get_nth_argument_ptr(0));
+    hooker->watch_entry(global2state(context->get_nth_argument_ptr(0)));
 }
 
 void luajit_jit_listener::on_enter(Gum::InvocationContext* context) {
-    jit2state(context->get_nth_argument_ptr(0));
+    hooker->watch_entry(jit2state(context->get_nth_argument_ptr(0)));
 }
 
 }

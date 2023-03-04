@@ -10,8 +10,8 @@ namespace luadebug::autoattach {
         ~luajit_hook() = default;
         watch_point lj_dispatch_update{ "lj_dispatch_update" };
         watch_point lj_dispatch_stitch{ "lj_dispatch_stitch" };
-        luajit_global_listener global_listener;
-        luajit_jit_listener jit_listener;
+        luajit_global_listener global_listener{ this };
+        luajit_jit_listener jit_listener{ this };
         virtual bool get_symbols(const lua::resolver& resolver) override{
             if (!vmhook_template::get_symbols(resolver))
                 return false;
