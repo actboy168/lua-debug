@@ -105,7 +105,7 @@ local function detectLuaDebugPath(cfg)
     elseif _VERSION == "Lua 5.2" then
         rt = rt .. "/lua52"
     elseif _VERSION == "Lua 5.1" then
-        if jit ~= nil then
+        if (tostring(assert):match('builtin') ~= nil) then
             rt = rt .. "/luajit"
             jit.off()
         else
