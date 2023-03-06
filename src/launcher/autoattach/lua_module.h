@@ -5,6 +5,7 @@
 #include <string>
 
 namespace luadebug::autoattach {
+    struct watchdog;
     enum class lua_version {
         unknown,
         luajit,
@@ -20,6 +21,7 @@ namespace luadebug::autoattach {
         size_t memory_size = 0;
         lua_version version = lua_version::unknown;
         lua_resolver resolver;
+        watchdog* watchdog = nullptr;
 
         bool initialize();
     };

@@ -1,5 +1,7 @@
 #include <autoattach/lua_module.h>
+#include <hook/create_watchdog.h>
 #include <util/log.h>
+
 #include <bee/nonstd/format.h>
 #include <charconv>
 #include <gumpp.hpp>
@@ -89,11 +91,18 @@ namespace luadebug::autoattach {
         resolver.module_name = path;
         auto error_msg = lua::initialize(resolver);
         if (error_msg) {
-            log::fatal("lua::initialize failed, can't find {}", error_msg);
+            log::fatal("lua initialize failed, can't find {}", error_msg);
             return false;
         }
         version = get_lua_version(*this);
         log::info("current lua version: {}", lua_version_to_string(version));
+
+        watchdog = create_watchdog(version, resolver);
+        if (!watchdog) {
+            //TODO: more errmsg
+           log::fatal("watchdog initialize failed");
+           return false;
+        }
         return true;
     }
 }

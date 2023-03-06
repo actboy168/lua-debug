@@ -2,7 +2,6 @@
 #include <autoattach/lua_module.h>
 #include <autoattach/wait_dll.h>
 #include <util/log.h>
-#include <hook/hook_common.h>
 #include <resolver/lua_resolver.h>
 
 #include <bee/nonstd/format.h>
@@ -61,13 +60,6 @@ namespace luadebug::autoattach {
         if (!rm.initialize()) {
             return;
         }
-        auto vmhook = create_vmhook(rm.version);
-        if (!vmhook->get_symbols(rm.resolver)) {
-           log::fatal("get_symbols failed");
-           return;
-        }
-        //TODO: fix other thread pc
-        vmhook->hook();
     }
     void initialize(fn_attach attach, bool ap) {
         static std::atomic_bool injected;
