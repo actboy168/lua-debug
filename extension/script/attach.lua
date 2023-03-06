@@ -2,6 +2,7 @@ local path, pid = ...
 if _VERSION == nil
     or type == nil
     or assert == nil
+    or tostring == nil
     or error == nil
     or dofile == nil
     or io == nil
@@ -10,6 +11,11 @@ if _VERSION == nil
     or package == nil
     or string == nil
 then
+    return "wait initialized"
+end
+
+local is_luajit = tostring(assert):match('builtin') ~= nil
+if is_luajit and jit == nil then
     return "wait initialized"
 end
 
