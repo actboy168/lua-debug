@@ -19,10 +19,10 @@ namespace luadebug::autoattach {
         bool hook();
         void unhook();
         void watch_entry(lua::state L);
-        void attach_lua(lua::state L, lua::debug ar);
+        void attach_lua(lua::state L, lua::debug ar, lua::hook fn);
     private:
         void reset_luahook(lua::state L, lua::debug ar);
-        void set_luahook(lua::state L);
+        void set_luahook(lua::state L, lua::hook fn);
     private:
         std::vector<watch_point>      watch_points;
         std::atomic_bool              inwatch = false;
