@@ -37,7 +37,6 @@ lm:lua_library ('launcher.'..ArchAlias[platform]) {
     },
     includes = {
         "3rd/bee.lua",
-        "3rd/lua/lua54",
         "3rd/frida_gum/gumpp",
         "src/launcher",
     },
