@@ -2,6 +2,7 @@
 
 #include <hook/watch_point.h>
 #include <hook/listener.h>
+#include <autoattach/autoattach.h>
 #include <resolver/lua_delayload.h>
 
 #include <gumpp.hpp>
@@ -13,7 +14,7 @@ namespace luadebug::autoattach {
     struct watchdog {
         static_assert(std::is_same_v<lua::state, uintptr_t>);
     public:
-        watchdog();
+        watchdog(fn_attach attach_lua_vm);
         watchdog(const watchdog&) = delete;
         bool init(const lua::resolver& resolver, std::vector<watch_point>&& points);
         bool hook();
@@ -33,5 +34,6 @@ namespace luadebug::autoattach {
         lua::hook                     origin_hook;
         int                           origin_hookmask;
         int                           origin_hookcount;
+        fn_attach                     attach_lua_vm;
     };
 }

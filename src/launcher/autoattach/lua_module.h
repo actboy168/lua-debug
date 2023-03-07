@@ -23,6 +23,6 @@ namespace luadebug::autoattach {
         lua_resolver resolver;
         watchdog* watchdog = nullptr;
 
-        bool initialize();
+        bool initialize(fn_attach attach_lua_vm);
     };
 }

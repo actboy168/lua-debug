@@ -1,14 +1,14 @@
 #include <hook/watchdog.h>
 #include <resolver/lua_delayload.h>
-#include <autoattach/autoattach.h>
 #include <util/log.h>
 
 #include <bee/nonstd/format.h>
 #include <bee/nonstd/unreachable.h>
 
 namespace luadebug::autoattach {
-    watchdog::watchdog() 
+    watchdog::watchdog(fn_attach attach_lua_vm) 
         : interceptor{Gum::Interceptor_obtain()}
+        , attach_lua_vm(attach_lua_vm)
     {}
 
     bool watchdog::hook() {
@@ -55,8 +55,6 @@ namespace luadebug::autoattach {
         }
         return ok;
     }
-
-    attach_status attach_lua_vm(lua::state L);
 
     struct trampoline {
         template <size_t Index>

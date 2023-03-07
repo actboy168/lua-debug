@@ -57,7 +57,7 @@ namespace luadebug::autoattach {
             return;
         }
         log::info("find lua module path:{}", rm.path);
-        if (!rm.initialize()) {
+        if (!rm.initialize(attach_lua_vm)) {
             return;
         }
     }
