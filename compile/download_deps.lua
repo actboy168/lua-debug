@@ -24,7 +24,7 @@ local all_os = {
 ---@param output string
 ---@param dir string
 local function download(url, output, dir)
-    local downloader = platform.os == "macos" and { "curl", "--location" } or "wget"
+    local downloader = platform.os == "macos" and { "curl", "--location", "-C", "-" } or "wget"
     local wget = {
         downloader,
         url,

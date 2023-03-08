@@ -5,3 +5,4 @@
 /publish/
 /build/
 /extension/package.json
+.DS_Store
