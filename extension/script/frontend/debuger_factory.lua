@@ -221,13 +221,13 @@ local function create_process_in_console(args, callback)
     if not process then
         return nil, err
     end
-    if args.inject == "hook" then
+    if args.inject ~= "none" then
 		local ok, errmsg = process_inject.inject(process, "launch", args)
         if not ok then
             if process:is_running() then
                 return nil, errmsg
             else
-                return nil, "process is already exited, can't inject debugger"
+                return nil, "process is already exited:\n" + errmsg
             end
         end
     end
