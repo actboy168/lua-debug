@@ -252,7 +252,6 @@ attributes.attach = {
         markdownDescription = "How to attach debugger.",
         enum = {
             "default",
-            "lldb",
         },
         type = "string",
     },
@@ -265,8 +264,8 @@ attributes.attach = {
     }
 }
 
-if OS ~= "win32" and OS ~= "darwin" then
-    table.insert(attributes.attach.inject.enum, "gdb")
+if OS ~= "win32" then
+    table.insert(attributes.attach.inject.enum, "lldb")
 end
 
 attributes.launch = {
