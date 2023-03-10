@@ -9,13 +9,26 @@ local macos = "macOS"
 local windows = "Windows"
 local entry_launch = "launch"
 
-function _M.get_inject_library_path()
-    if platform_os == macos then
-        return (WORKDIR / "bin" / "launcher.so"):string()
+local function macos_check_rosetta_process(process)
+    local rosetta_runtime <const> = "/usr/libexec/rosetta/runtime"
+    if not fs.exists(rosetta_runtime) then
+        return false
     end
+    local p = sp.spawn {
+        "/usr/bin/fuser",
+        rosetta_runtime,
+        stdout = true,
+        stderr = true, -- for skip  fuser output
+    }
+    if not p then
+        return false
+    end
+    local l = p.stdout:read "a"
+    return l:find(tostring(process)) ~= nil
 end
 
 function _M.lldb_inject(pid, entry, injectdll, lldb_path)
+    injectdll = injectdll or (WORKDIR / "bin" / "launcher.so"):string()
     lldb_path = lldb_path or "lldb"
     local pre_luancher = entry == entry_launch and
         {
@@ -53,33 +66,16 @@ function _M.lldb_inject(pid, entry, injectdll, lldb_path)
     return true
 end
 
-function _M.macos_check_rosetta_process(process)
-    local rosetta_runtime = "/usr/libexec/rosetta/runtime"
-    if not fs.exists(rosetta_runtime) then
-        return false
-    end
-    local p, err = sp.spawn({
-        "/usr/bin/fuser",
-        rosetta_runtime,
-        stdout = true,
-        stderr = true, -- for skip  fuser output
-    })
-    if not p then
-        return false
-    end
-    local l = p.stdout:read("a")
-    return l:find(tostring(process)) ~= nil
-end
-
-function _M.macos_inject(process, entry, dylib)
+function _M.macos_inject(process, entry, injectdll)
+    injectdll = injectdll or (WORKDIR / "bin" / "launcher.so"):string()
     local helper = (WORKDIR / "bin" / "process_inject_helper"):string()
-    if not fs.exists(dylib) then
+    if not fs.exists(injectdll) then
         return false, "Not found launcher.so."
     end
     local p, err = sp.spawn {
         "/usr/bin/osascript",
         "-e",
-        ([[do shell script "%s %d %s %s" with administrator privileges with prompt "lua-debug"]]):format(helper, process, dylib, entry),
+        ([[do shell script "%s %d %s %s" with administrator privileges with prompt "lua-debug"]]):format(helper, process, injectdll, entry),
         stderr = true,
     }
     if not p then
@@ -108,18 +104,20 @@ function _M.inject(process, entry, args)
         process = process:get_id()
     end
     if args.inject == 'lldb' then
-        return _M.lldb_inject(process, entry, _M.get_inject_library_path(), args.inject_executable)
-    else
+        return _M.lldb_inject(process, entry, nil, args.inject_executable)
+    elseif args.inject == 'hook' then
         if platform_os == macos then
-            if entry == entry_launch or (arch == "arm64" and _M.macos_check_rosetta_process(process)) then
-                return _M.lldb_inject(process, entry, _M.get_inject_library_path(), args.inject_executable)
+            if entry == entry_launch or (arch == "arm64" and macos_check_rosetta_process(process)) then
+                return _M.lldb_inject(process, entry, nil, args.inject_executable)
             end
-            return _M.macos_inject(process, entry, _M.get_inject_library_path())
+            return _M.macos_inject(process, entry)
         elseif platform_os == windows then
             return _M.windows_inject(process, entry)
         else
-            return false, "Inject unsupported."
+            return false, ("Inject (use %s) is not supported in %s."):format(args.inject, platform_os)
         end
+    else
+        return false, ("Inject (use %s) is not supported."):format(args.inject)
     end
 end
 
