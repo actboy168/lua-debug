@@ -381,9 +381,6 @@ table.insert(attributes.launch.inject.enum, "hook")
 
 if OS ~= "win32" then
     table.insert(attributes.launch.inject.enum, "lldb")
-    if OS ~= "darwin" then
-        table.insert(attributes.launch.inject.enum, "gdb")
-    end
 end
 
 attributes.attach.processId = {
