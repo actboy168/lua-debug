@@ -22,11 +22,40 @@
 
 ## Build
 
+1. Install [luamake](https://github.com/actboy168/luamake)
+``` bash
+git clone https://github.com/actboy168/luamake
+pushd luamake
+git submodule init
+git submodule update
+.\compile\install.bat(msvc)
+./compile/install.sh (other)
+popd
+```
+
+2. Clone repo.
+``` bash
+git clone https://github.com/actboy168/lua-debug
+cd lua-debug
+git submodule init
+git submodule update
+```
+
+3. Download deps.
+``` bash
+luamake lua compile/download_deps.lua
+```
+
+4. Build
+```
+luamake
+```
+
+## Install to VSCode
+
 1. Install extension `actboy168.lua-debug` and `actboy168.extension-path`
-2. Build [luamake](https://github.com/actboy168/luamake)
-3. Open [repo](https://github.com/actboy168/lua-debug) in VSCode
-4. Run task：Rebuild
-5. Run task：Copy Publish
+2. Open [repo](https://github.com/actboy168/lua-debug) in VSCode
+3. Run task：Copy Publish
 
 ## Todo
 

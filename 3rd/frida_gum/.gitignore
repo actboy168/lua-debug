@@ -1,0 +1,11 @@
+*.c
+!gumpp/internal/*.c
+*.sln
+*.vcxproj
+*.vcxproj.filters
+*.user
+*.tar.xz
+*.exe
+*.a
+*.h
+*.lib

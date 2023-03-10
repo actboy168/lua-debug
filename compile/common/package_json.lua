@@ -252,7 +252,6 @@ attributes.attach = {
         markdownDescription = "How to attach debugger.",
         enum = {
             "default",
-            "lldb",
         },
         type = "string",
     },
@@ -264,6 +263,10 @@ attributes.attach = {
         },
     }
 }
+
+if OS == "darwin" then
+    table.insert(attributes.attach.inject.enum, "lldb")
+end
 
 attributes.launch = {
     luaexe = {
@@ -374,6 +377,10 @@ attributes.launch = {
     }
 }
 table.insert(attributes.launch.inject.enum, "hook")
+
+if OS == "darwin" then
+    table.insert(attributes.launch.inject.enum, "lldb")
+end
 
 attributes.attach.processId = {
 	default = "${command:pickProcess}",

@@ -1,12 +1,13 @@
 [submodule "3rd/bee.lua"]
 	path = 3rd/bee.lua
 	url = https://github.com/actboy168/bee.lua.git
-[submodule "3rd/detours"]
-	path = 3rd/detours
-	url = https://github.com/microsoft/Detours
 [submodule "3rd/lua/luajit"]
 	path = 3rd/lua/luajit
 	url = https://github.com/fesily/luajit2
 [submodule "3rd/json.lua"]
 	path = 3rd/json.lua
 	url = https://github.com/actboy168/json.lua
+[submodule "3rd/frida_gum/gumpp"]
+	path = 3rd/frida_gum/gumpp
+	url = https://github.com/fesily/gumpp
+

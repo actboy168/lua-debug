@@ -19,8 +19,7 @@
 #include "injectdll.h"
 #include "shellcode.inl"
 
-#include <bee/nonstd/format.h>
-
+#define LOG_FMT(fmt, ...) fprintf(stderr, fmt "\n", __VA_ARGS__)
 #define LOG(msg) fprintf(stderr, "%s\n", msg)
 #define LOG_MACH(msg, err) mach_error(msg, err)
 
@@ -259,7 +258,7 @@ freeport:
 bool injectdll(pid_t pid, const std::string &dll, const char *entry) {
 	std::string_view v(entry?entry:"");
 	if (v.size() >= sizeof(rmain_arg::entrypoint)){
-		LOG(std::format("entrypoint name[{}] is too long", entry).c_str());
+		LOG_FMT("entrypoint name[%s] is too long", entry);
 		return false;
 	}
 #if defined(__aarch64__) || defined(__x86_64__)

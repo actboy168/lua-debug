@@ -7,18 +7,11 @@ lm.defines = "_WIN32_WINNT=0x0601"
 lm.builddir = ("build/%s/%s"):format(platform, lm.mode)
 
 require "compile.common.runtime"
+require "compile.common.frida"
 
 lm:msvc_copydll "copy_vcredist" {
     type = "vcrt",
     output = 'publish/vcredist/'..platform
-}
-
-lm:source_set 'detours' {
-    rootdir = "3rd/detours/src",
-    sources = {
-        "*.cpp",
-        "!uimports.cpp"
-    }
 }
 
 local ArchAlias = {
@@ -26,34 +19,34 @@ local ArchAlias = {
     ["win32-ia32"] = "x86",
 }
 
+lm:source_set "launcher_hook_luajit" {
+    includes = {
+        "3rd/lua/luajit/src",
+        "3rd/frida_gum/gumpp",
+        "src/launcher"
+    },
+    sources = "src/launcher/hook/luajit_listener.cpp",
+}
+
 lm:lua_library ('launcher.'..ArchAlias[platform]) {
-    bindir = "publish/bin/",
+    bindir = "publish/bin",
     export_luaopen = "off",
-    deps = "detours",
+    deps = {
+        "frida",
+        "launcher_hook_luajit"
+    },
     includes = {
         "3rd/bee.lua",
-        "3rd/bee.lua/3rd/lua",
-        "3rd/detours/src",
+        "3rd/frida_gum/gumpp",
+        "src/launcher",
     },
     sources = {
-        "3rd/bee.lua/bee/error.cpp",
-        "3rd/bee.lua/bee/platform/win/version_win.cpp",
-        "3rd/bee.lua/bee/platform/win/unicode_win.cpp",
-        "3rd/bee.lua/bee/platform/win/unlink_win.cpp",
-        "3rd/bee.lua/bee/utility/path_helper.cpp",
-        "3rd/bee.lua/bee/utility/file_handle.cpp",
-        "3rd/bee.lua/bee/utility/file_handle_win.cpp",
-        "3rd/bee.lua/bee/net/endpoint.cpp",
-        "3rd/bee.lua/bee/net/socket.cpp",
-        "3rd/bee.lua/bee/nonstd/3rd/os.cc",
-        "3rd/bee.lua/bee/nonstd/3rd/format.cc",
-        "src/remotedebug/rdebug_delayload.cpp",
-        "src/launcher/*.cpp",
+        "src/launcher/**/*.cpp",
+        "!src/launcher/hook/luajit_listener.cpp",
     },
     defines = {
         "BEE_INLINE",
         "_CRT_SECURE_NO_WARNINGS",
-        "LUA_DLL_VERSION=lua54"
     },
     links = {
         "ws2_32",
@@ -61,10 +54,12 @@ lm:lua_library ('launcher.'..ArchAlias[platform]) {
         "shell32",
         "ole32",
         "delayimp",
-        "version",
         "ntdll",
+        "Version"
     },
-    ldflags = '/DELAYLOAD:lua54.dll',
+    ldflags = {
+        "/NODEFAULTLIB:LIBCMT"
+    }
 }
 
 lm:phony "launcher" {

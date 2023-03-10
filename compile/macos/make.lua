@@ -28,16 +28,10 @@ if lm.platform == "darwin-arm64" then
     }
 end
 
-lm:source_set "std_format" {
-    sources = {
-        "3rd/bee.lua/bee/nonstd/3rd/format.cc",
-        "3rd/bee.lua/bee/nonstd/3rd/os.cc",
-    }
-}
 
 lm:executable 'process_inject_helper' {
     bindir = "publish/bin/",
-    deps = { "std_format", "shellcode" },
+    deps = { "shellcode" },
     includes = {
         "3rd/bee.lua",
     },
@@ -48,21 +42,28 @@ lm:executable 'process_inject_helper' {
 }
 
 if lm.platform == "darwin-arm64" then
-    lm:build "launcher" {
-        deps = { "x86_64", "liblauncher" },
-        "lipo",
-        "-create",
-        "-output",
-        "publish/bin/launcher.so",
-        "build/darwin-x64/"..lm.mode.."/bin/liblauncher.so",
-        lm.bindir .. "/liblauncher.so"
+    lm:build "merge_launcher" {
+        deps = { "x86_64", "launcher" },
+        "lipo", "-create", "-output", "$out", "$in",
+        "build/darwin-x64/"..lm.mode.."/bin/launcher.so", --TODO
+        input = "$bin/launcher.so",
+        output = "publish/bin/launcher.so",
     }
 else
-    lm:build "launcher" {
-        deps = "liblauncher",
-        "cp",
-        lm.bindir.."/liblauncher.so",
-        "publish/bin/"
+    lm:copy "merge_launcher" {
+        deps = "launcher",
+        input = "$bin/launcher.so",
+        output = "publish/bin/launcher.so"
+    }
+end
+
+if lm.mode == "debug" then
+    lm:executable "test_delayload" {
+        sources = "test/delayload.cpp",
+        includes = {"src/launcher","3rd/lua/lua54"},
+    }
+    lm:phony "tests" {
+        deps = {"test_frida", "test_delayload", "test_symbol"}
     }
 end
 
@@ -71,6 +72,7 @@ lm:default {
     "lua-debug",
     "runtime",
     "process_inject_helper",
-    "launcher",
-    lm.platform == "darwin-arm64" and "x86_64"
+    "merge_launcher",
+    lm.platform == "darwin-arm64" and "x86_64",
+    lm.mode == "debug" and "tests"
 }

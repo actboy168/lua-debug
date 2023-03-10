@@ -209,6 +209,7 @@ local function create_luaexe_in_console(args, dbg, address)
 end
 
 local function create_process_in_console(args, callback)
+    local need_resume = platform_os():lower() == "windows"
     initialize(args)
     local process, err = sp.spawn {
         args.runtimeExecutable, args.runtimeArgs,
@@ -220,16 +221,22 @@ local function create_process_in_console(args, callback)
     if not process then
         return nil, err
     end
-    if args.inject == "hook" then
+    if args.inject ~= "none" then
 		local ok, errmsg = process_inject.inject(process, "launch", args)
         if not ok then
-            return nil, errmsg
+            if process:is_running() then
+                return nil, errmsg
+            else
+                return nil, "process is already exited:\n" + errmsg
+            end
         end
     end
     if callback then
         callback(process)
     end
-    process:resume()
+    if need_resume then
+        process:resume()
+    end
     return process
 end
 

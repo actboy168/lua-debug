@@ -1,22 +1,29 @@
-#pragma once
-
 #include <bee/net/socket.h>
 #include <bee/net/endpoint.h>
 #include <bee/nonstd/format.h>
 #include <bee/nonstd/filesystem.h>
 #include <bee/nonstd/unreachable.h>
 #include <bee/utility/path_helper.h>
+#include <stdio.h>
 
 #if !defined(_WIN32)
 #include <sys/select.h>
 #include <unistd.h>
+#else
+#include <WinSock.h>
 #endif
 
-namespace log {
+namespace luadebug::log {
+
+static bool attach_mode = false;
+
+void init(bool attach) {
+	attach_mode = attach;
+}
 
 using namespace bee::net;
 
-inline int fatal_nfd(socket::fd_t fd) {
+static int nfd(socket::fd_t fd) {
 #if defined(_WIN32)
 	return 0;
 #else
@@ -24,22 +31,22 @@ inline int fatal_nfd(socket::fd_t fd) {
 #endif
 }
 
-inline bool fatal_send(socket::fd_t fd, const char* buf, int len) {
+static bool sendto_frontend(socket::fd_t fd, const char* buf, int len) {
 	fd_set writefds;
 	FD_ZERO(&writefds);
 	FD_SET(fd, &writefds);
-	if (::select(fatal_nfd(fd), NULL, &writefds, NULL, 0) <= 0) {
+	if (::select(nfd(fd), NULL, &writefds, NULL, 0) <= 0) {
 		return false;
 	}
 	int rc;
 	switch (socket::send(fd, rc, buf, len)) {
 	case socket::status::wait:
-		return fatal_send(fd, buf, len);
+		return sendto_frontend(fd, buf, len);
 	case socket::status::success:
 		if (rc >= len) {
 			return true;
 		}
-		return fatal_send(fd, buf + rc, len - rc);
+		return sendto_frontend(fd, buf + rc, len - rc);
 	case socket::status::failed:
 		return false;
 	default:
@@ -47,7 +54,7 @@ inline bool fatal_send(socket::fd_t fd, const char* buf, int len) {
 	}
 }
 
-inline void fatal(bool attach, const char* msg) {
+void notify_frontend(const std::string& msg) {
 	auto dllpath = bee::path_helper::dll_path();
 	if (!dllpath) {
 		return;
@@ -68,24 +75,24 @@ inline void fatal(bool attach, const char* msg) {
 		return;
 	}
 	socket::unlink(ep);
-	socket::fd_t fd = socket::open(socket::protocol::uds);
-	if (socket::status::success != socket::bind(fd, ep)) {
+	socket::fd_t fd = socket::open(socket::protocol::unix);
+	if (!socket::bind(fd, ep)) {
 		socket::close(fd);
 		return;
 	}
-	if (socket::status::success != socket::listen(fd, 5)) {
+	if (!socket::listen(fd, 5)) {
 		socket::close(fd);
 		return;
 	}
 	fd_set readfds;
 	FD_ZERO(&readfds);
 	FD_SET(fd, &readfds);
-	if (::select(fatal_nfd(fd), &readfds, NULL, NULL, 0) <= 0) {
+	if (::select(nfd(fd), &readfds, NULL, NULL, 0) <= 0) {
 		socket::close(fd);
 		return;
 	}
 	socket::fd_t newfd;
-	if (socket::status::success != socket::accept(fd, newfd)) {
+	if (socket::fdstat::success != socket::accept(fd, newfd)) {
 		socket::close(fd);
 		return;
 	}
@@ -104,8 +111,8 @@ inline void fatal(bool attach, const char* msg) {
 		"message": "{}"
 	}})";
 	jsonfmt.erase(std::remove_if(jsonfmt.begin(), jsonfmt.end(), ::isspace), jsonfmt.end());
-	std::string json = std::format(jsonfmt, attach? "attach": "launch", msg);
+	std::string json = std::format(jsonfmt, attach_mode? "attach": "launch", msg);
 	std::string data = std::format("Content-Length: {}\r\n\r\n{}", json.size(), json);
-	fatal_send(newfd, data.data(), (int)data.size());
+	sendto_frontend(newfd, data.data(), (int)data.size());
 }
 }
