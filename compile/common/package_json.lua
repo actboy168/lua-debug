@@ -264,7 +264,7 @@ attributes.attach = {
     }
 }
 
-if OS ~= "win32" then
+if OS == "darwin" then
     table.insert(attributes.attach.inject.enum, "lldb")
 end
 
@@ -378,7 +378,7 @@ attributes.launch = {
 }
 table.insert(attributes.launch.inject.enum, "hook")
 
-if OS ~= "win32" then
+if OS == "darwin" then
     table.insert(attributes.launch.inject.enum, "lldb")
 end
 

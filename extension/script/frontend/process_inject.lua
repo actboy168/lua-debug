@@ -100,6 +100,9 @@ function _M.windows_inject(process, entry)
 end
 
 function _M.inject(process, entry, args)
+    if platform_os ~= windows and platform_os ~= macos then
+        return false, "unsupported inject"
+    end
     if platform_os ~= windows and type(process) == "userdata" then
         process = process:get_id()
     end
