@@ -24,13 +24,16 @@
 #       define LUA_INTEGER_FMT "%lld"
 #   endif
 #endif
-#include <binding/file.h>
 
+#if !defined(LUA_GCGEN)
+# define LUA_GCGEN 10
+#endif
+
+#include <binding/file.h>
 #include <bee/error.cpp>
 #include <bee/net/socket.cpp>
 #include <bee/net/endpoint.cpp>
 #include <bee/nonstd/3rd/format.cc>
-#include <bee/nonstd/3rd/os.cc>
 #include <bee/utility/path_helper.cpp>
 #include <bee/utility/file_handle.cpp>
 #include <binding/lua_socket.cpp>
@@ -38,7 +41,6 @@
 #include <binding/lua_filesystem.cpp>
 
 #if defined(_WIN32)
-#include <bee/platform/win/version_win.cpp>
 #include <bee/platform/win/unicode_win.cpp>
 #include <bee/platform/win/unlink_win.cpp>
 #include <bee/utility/file_handle_win.cpp>
