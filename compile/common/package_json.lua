@@ -379,6 +379,13 @@ attributes.launch = {
 }
 table.insert(attributes.launch.inject.enum, "hook")
 
+if OS ~= "win32" then
+    table.insert(attributes.launch.inject.enum, "lldb")
+    if OS ~= "darwin" then
+        table.insert(attributes.launch.inject.enum, "gdb")
+    end
+end
+
 attributes.attach.processId = {
 	default = "${command:pickProcess}",
 	markdownDescription = "Id of process to attach to.",
