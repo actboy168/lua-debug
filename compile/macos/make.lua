@@ -42,21 +42,18 @@ lm:executable 'process_inject_helper' {
 }
 
 if lm.platform == "darwin-arm64" then
-    lm:build "launcher" {
-        deps = { "x86_64", "liblauncher" },
-        "lipo",
-        "-create",
-        "-output",
-        "publish/bin/launcher.so",
-        "build/darwin-x64/"..lm.mode.."/bin/liblauncher.so",
-        lm.bindir .. "/liblauncher.so"
+    lm:build "merge_launcher" {
+        deps = { "x86_64", "launcher" },
+        "lipo", "-create", "-output", "$out", "$in",
+        "build/darwin-x64/"..lm.mode.."/bin/launcher.so", --TODO
+        input = "$bin/launcher.so",
+        output = "publish/bin/launcher.so",
     }
 else
-    lm:build "launcher" {
-        deps = "liblauncher",
-        "cp",
-        lm.bindir.."/liblauncher.so",
-        "publish/bin/"
+    lm:copy "merge_launcher" {
+        deps = "launcher",
+        input = "$bin/launcher.so",
+        output = "publish/bin/launcher.so"
     }
 end
 
@@ -75,7 +72,7 @@ lm:default {
     "lua-debug",
     "runtime",
     "process_inject_helper",
-    "launcher",
+    "merge_launcher",
     lm.platform == "darwin-arm64" and "x86_64",
     lm.mode == "debug" and "tests"
 }
