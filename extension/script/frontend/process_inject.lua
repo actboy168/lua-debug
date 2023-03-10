@@ -111,15 +111,11 @@ function _M.inject(process, entry, args)
             local is_rosetta = arch == "arm64" and macos_check_rosetta_process(process)
             local force_lldb = is_launch or is_rosetta
             if force_lldb then
-                local ok, err = _M.lldb_inject(process, entry, nil, args.inject_executable)
-                if not ok then
-                    return false, "force use lldb when " + is_launch and entry or "rosetta" + " but lldb inject failed: " .. err
-                end
-                end
+                return false, "force use lldb when " .. (is_launch and entry or "rosetta") .. ", please try lldb inject."
             end
             local ok, err = _M.macos_inject(process, entry)
             if not ok then
-                return false, err + "\nretry or try lldb inject."
+                return false, err .. "\nretry or try lldb inject."
             end
             return true
         elseif platform_os == windows then
