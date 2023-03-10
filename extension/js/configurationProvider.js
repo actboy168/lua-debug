@@ -175,7 +175,7 @@ function resolveConfig(folder, config) {
     }
     if (config.request == 'launch') {
         if (typeof config.runtimeExecutable == 'string') {
-            if (config.inject !== 'hook' && typeof config.address != 'string') {
+            if (config.inject !== 'hook' && config.inject !== 'lldb' && typeof config.address != 'string') {
                 config.console = "internalConsole";
             }
             if (typeof config.inject != 'string') {
@@ -185,6 +185,9 @@ function resolveConfig(folder, config) {
                     }
                     else if (plat == "Windows") {
                         config.inject = "hook";
+                    }
+                    else if (plat == "macOS") {
+                        config.inject = "lldb";
                     }
                     else {
                         config.inject = "none";

@@ -160,7 +160,7 @@ attributes.common = {
             "5.3",
             "5.4",
             "latest",
-			"jit",
+            "jit",
         },
         markdownDescription = "%lua.debug.launch.luaVersion.description%",
         type = "string",
@@ -244,28 +244,50 @@ Debugger address.
         markdownDescription = "Choose whether to `connect` or `listen`.",
         type = "boolean",
     },
-}
-
-attributes.attach = {
     inject = {
-        default = "default",
-        markdownDescription = "How to attach debugger.",
+        default = "none",
+        markdownDescription = "How to inject debugger.",
         enum = {
-            "default",
+            "none",
         },
         type = "string",
     },
-    inject_executable = {
+}
+
+if OS == "win32" then
+    attributes.common.inject.default = "hook"
+    table.insert(attributes.common.inject.enum, "hook")
+elseif OS == "darwin" then
+    attributes.common.inject.default = "lldb"
+    table.insert(attributes.common.inject.enum, "hook")
+    table.insert(attributes.common.inject.enum, "lldb")
+    attributes.common.inject_executable = {
         markdownDescription = "inject executable path",
         type = {
             "string",
             "null",
         },
     }
+end
+
+attributes.attach = {
 }
 
-if OS == "darwin" then
-    table.insert(attributes.attach.inject.enum, "lldb")
+if OS == "win32" or OS == "darwin" then
+    attributes.attach.processId = {
+        default = "${command:pickProcess}",
+        markdownDescription = "Id of process to attach to.",
+        type = "string",
+    }
+    attributes.attach.processName = {
+        default = "lua.exe",
+        markdownDescription = "Name of process to attach to.",
+        type = "string",
+    }
+    json.activationEvents[#json.activationEvents+1] = "onCommand:extension.lua-debug.pickProcess"
+    json.contributes.debuggers[1].variables = {
+        pickProcess = "extension.lua-debug.pickProcess",
+    }
 end
 
 attributes.launch = {
@@ -367,61 +389,34 @@ attributes.launch = {
             "null",
         },
     },
-    inject = {
-        default = "${workspaceFolder}/main.lua",
-        markdownDescription = "How to inject debugger.",
-        enum = {
-            "none",
-        },
-        type = "string",
+}
+
+if OS == "win32" or OS == "darwin" then
+    local snippets = json.contributes.debuggers[1].configurationSnippets
+    snippets[#snippets+1] = {
+        label = "Lua Debug: Launch Process",
+        description = "A new configuration for launching a lua process",
+        body = {
+            type = "lua",
+            request = "launch",
+            name = "${1:launch process}",
+            stopOnEntry = true,
+            runtimeExecutable = "^\"\\${workspaceFolder}/lua.exe\"",
+            runtimeArgs = "^\"\\${workspaceFolder}/${2:main.lua}\"",
+        }
     }
-}
-table.insert(attributes.launch.inject.enum, "hook")
-
-if OS == "darwin" then
-    table.insert(attributes.launch.inject.enum, "lldb")
+    snippets[#snippets+1] = {
+        label = "Lua Debug: Attach Process",
+        description = "A new configuration for attaching a lua debug program",
+        body = {
+            type = "lua",
+            request = "attach",
+            name = "${1:attach}",
+            stopOnEntry = true,
+            processId = "^\"\\${command:pickProcess}\"",
+        }
+    }
 end
-
-attributes.attach.processId = {
-	default = "${command:pickProcess}",
-	markdownDescription = "Id of process to attach to.",
-	type = "string",
-}
-attributes.attach.processName = {
-	default = "lua.exe",
-	markdownDescription = "Name of process to attach to.",
-	type = "string",
-}
-
-json.activationEvents[#json.activationEvents+1] = "onCommand:extension.lua-debug.pickProcess"
-json.contributes.debuggers[1].variables = {
-	pickProcess = "extension.lua-debug.pickProcess",
-}
-
-local snippets = json.contributes.debuggers[1].configurationSnippets
-snippets[#snippets+1] = {
-	label = "Lua Debug: Launch Process",
-	description = "A new configuration for launching a lua process",
-	body = {
-		type = "lua",
-		request = "launch",
-		name = "${1:launch process}",
-		stopOnEntry = true,
-		runtimeExecutable = "^\"\\${workspaceFolder}/lua.exe\"",
-		runtimeArgs = "^\"\\${workspaceFolder}/${2:main.lua}\"",
-	}
-}
-snippets[#snippets+1] = {
-	label = "Lua Debug: Attach Process",
-	description = "A new configuration for attaching a lua debug program",
-	body = {
-		type = "lua",
-		request = "attach",
-		name = "${1:attach}",
-		stopOnEntry = true,
-		processId = "^\"\\${command:pickProcess}\"",
-	}
-}
 
 if OS == "win32" then
     attributes.common.sourceCoding = {
