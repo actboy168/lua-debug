@@ -8,6 +8,7 @@ lm.builddir = ("build/%s/%s"):format(platform, lm.mode)
 
 require "compile.common.runtime"
 require "compile.common.frida"
+require "compile.windows.shellcode"
 
 lm:msvc_copydll "copy_vcredist" {
     type = "vcrt",

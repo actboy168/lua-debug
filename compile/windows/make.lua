@@ -53,5 +53,6 @@ lm:default {
     "launcher",
     "runtime",
     "x86_64",
-    lm.mode == "debug" and "tests"
+    lm.mode == "debug" and "tests",
+    "shellcode"
 }
