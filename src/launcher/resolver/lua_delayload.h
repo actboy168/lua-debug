@@ -6,6 +6,7 @@
 #include <type_traits>
 #include <string_view>
 #include <stdint.h>
+#include <resolver/lua_funcname.h>
 
 namespace luadebug::lua {
     using state = uintptr_t;
@@ -36,71 +37,6 @@ namespace luadebug::lua::impl {
         using type = conv_t<R>(*)(conv_t<Args>...);
     };
 
-    template <uint16_t N>
-    class static_string {
-    public:
-        constexpr explicit static_string(std::string_view str) noexcept : static_string{str, std::make_integer_sequence<std::uint16_t, N>{}} {}
-        constexpr const char* data() const noexcept { return chars_; }
-        constexpr std::uint16_t size() const noexcept { return N; }
-    private:
-        template <uint16_t... I>
-        constexpr static_string(std::string_view str, std::integer_sequence<std::uint16_t, I...>) noexcept : chars_{str[I]..., '\0'} {}
-        char chars_[static_cast<size_t>(N) + 1];
-    };
-    template <>
-    class static_string<0> {
-    public:
-        constexpr explicit static_string() = default;
-        constexpr explicit static_string(std::string_view) noexcept {}
-        constexpr const char* data() const noexcept { return nullptr; }
-        constexpr uint16_t size() const noexcept { return 0; }
-    };
-
-    template <auto F>
-    constexpr auto symbol() noexcept {
-        std::string_view name =
-#if defined(_MSC_VER)
-            {__FUNCSIG__, sizeof(__FUNCSIG__)}
-#else
-            {__PRETTY_FUNCTION__, sizeof(__PRETTY_FUNCTION__)}
-#endif
-        ;
-#define STRING_FIND(C)                         \
-        do {                                   \
-            i = name.find(C, i);               \
-            if (i == std::string_view::npos) { \
-                return std::string_view {};    \
-            }                                  \
-            ++i;                               \
-        } while (0)
-
-        std::size_t i = 0;
-#if defined(_MSC_VER)
-        STRING_FIND('<');        
-        i = name.find("lua", i);
-        name.remove_prefix(i);
-        i = name.find('(');
-#else
-        STRING_FIND('[');
-        STRING_FIND('=');
-        i = name.find("lua", i);
-        name.remove_prefix(i);
-        i = name.find(']');
-#endif
-        if (i == std::string_view::npos) {
-            return std::string_view {};
-        }
-        name.remove_suffix(name.size() - i);
-#undef STRING_FIND
-        return name;
-    }
-
-    template <auto F>
-    constexpr auto symbol_string() noexcept {
-        constexpr auto name = symbol<F>();
-        return static_string<name.size()>{name};
-    }
-
     template <typename T>
     struct global { 
         static inline T v = T();
@@ -110,7 +46,6 @@ namespace luadebug::lua::impl {
     struct function {
         using type_t = function<F>;
         using func_t = typename invocable<decltype(F)>::type;
-        static constexpr auto symbol_name = symbol_string<F>();
         static const char* init(resolver& r);
         static inline func_t invoke = []()->func_t{
             initfunc::v.push_back(type_t::init);
@@ -119,8 +54,8 @@ namespace luadebug::lua::impl {
     };
     template <auto F>
     const char* function<F>::init(resolver& r) {
-        type_t::invoke = reinterpret_cast<decltype(type_t::invoke)>(r.find(std::string_view { symbol_name.data(), symbol_name.size() }));
-        return type_t::invoke != nullptr ? nullptr : symbol_name.data();
+        type_t::invoke = reinterpret_cast<decltype(type_t::invoke)>(r.find(function_name_v<F>));
+        return type_t::invoke != nullptr ? nullptr : function_name_v<F>.data();
     }
     template <> struct conv<lua_State*>    { using type = state; };
     template <> struct conv<lua_CFunction> { using type = cfunction; };
