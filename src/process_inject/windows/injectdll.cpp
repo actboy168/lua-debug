@@ -337,6 +337,11 @@ static bool injectdll_x64(const PROCESS_INFORMATION& pi, const std::wstring& dll
     memcpy(sc + 108, &pfLdrGetProcedureAddress, sizeof(pfLdrGetProcedureAddress));
     memcpy(sc + 120, &entryfunc, sizeof(entryfunc));
     memcpy(sc + 171, &ctx.Rip, sizeof(ctx.Rip));
+    {
+        uint8_t v = 0x30 + (ctx.Rsp & 0x10);
+        memcpy(sc + 31, &v, 1);
+        memcpy(sc + 136, &v, 1);
+    }
     if (!wow64_write_memory(pfNtWriteVirtualMemory, pi.hProcess, shellcode, &sc, sizeof(sc))) {
         return false;
     }
