@@ -19,7 +19,7 @@ struct rmain_arg {           // dealloc
     }
 };
 
-__declspec(dllexport) DWORD WINAPI inject(_In_ LPVOID ptr) {
+extern "C" __declspec(dllexport) DWORD inject(_In_ LPVOID ptr) {
     if (!ptr) {
         return ERROR_INVALID_HANDLE;
     }
