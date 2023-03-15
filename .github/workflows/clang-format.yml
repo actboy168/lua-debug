@@ -1,15 +1,16 @@
 name: clang-format
-push:
-  branches:
-  - master
-pull_request:
-  branches:
-  - master
+on:
+  push:
+    branches:
+    - master
+  pull_request:
+    branches:
+    - master
 jobs:
   clang-format:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - run: sudo apt-get install -y clang-format
+      - run: apt-get install -y clang-format
       - run: find src -iname *.cpp -o -iname *.c -o -iname *.h -o -iname *.inl | xargs clang-format --dry-run --Werror
  
