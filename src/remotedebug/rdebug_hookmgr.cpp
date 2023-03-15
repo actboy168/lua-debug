@@ -920,29 +920,29 @@ int luaopen_remotedebug_hookmgr(rlua_State* L) {
     }
 
     static rluaL_Reg lib[] = {
-        {"init", init},
-        {"sethost", sethost},
-        {"gethost", gethost},
-        {"updatehookmask", updatehookmask},
-        {"stacklevel", stacklevel},
-        {"break_add", break_add},
-        {"break_del", break_del},
-        {"break_open", break_open},
-        {"break_closeline", break_closeline},
-        {"funcbp_open", funcbp_open},
-        {"step_in", step_in},
-        {"step_out", step_out},
-        {"step_over", step_over},
-        {"step_cancel", step_cancel},
-        {"update_open", update_open},
+        { "init", init },
+        { "sethost", sethost },
+        { "gethost", gethost },
+        { "updatehookmask", updatehookmask },
+        { "stacklevel", stacklevel },
+        { "break_add", break_add },
+        { "break_del", break_del },
+        { "break_open", break_open },
+        { "break_closeline", break_closeline },
+        { "funcbp_open", funcbp_open },
+        { "step_in", step_in },
+        { "step_out", step_out },
+        { "step_over", step_over },
+        { "step_cancel", step_cancel },
+        { "update_open", update_open },
 #if defined(LUA_HOOKEXCEPTION)
-        {"exception_open", exception_open},
+        { "exception_open", exception_open },
 #endif
 #if defined(LUA_HOOKTHREAD)
-        {"thread_open", thread_open},
-        {"coroutine_from", coroutine_from},
+        { "thread_open", thread_open },
+        { "coroutine_from", coroutine_from },
 #endif
-        {NULL, NULL},
+        { NULL, NULL },
     };
     rluaL_setfuncs(L, lib, 1);
     return 1;
