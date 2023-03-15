@@ -1,26 +1,16 @@
 #include <autoattach/lua_module.h>
 #include <hook/create_watchdog.h>
 #include <util/log.h>
+#include <config/config.h>
 
 #include <bee/nonstd/format.h>
+#include <bee/utility/path_helper.h>
 #include <charconv>
 #include <gumpp.hpp>
 
-namespace luadebug::autoattach {
-    static lua_version lua_version_from_string[[maybe_unused]](const std::string_view& v) {
-        if (v == "luajit")
-            return lua_version::luajit;
-        if (v == "lua51")
-            return lua_version::lua51;
-        if (v == "lua52")
-            return lua_version::lua52;
-        if (v == "lua53")
-            return lua_version::lua53;
-        if (v == "lua54")
-            return lua_version::lua54;
-        return lua_version::unknown;
-    }
+#include <dlfcn.h>
 
+namespace luadebug::autoattach {
     static const char* lua_version_to_string(lua_version v) {
         switch (v) {
         case lua_version::lua51:
@@ -43,6 +33,9 @@ namespace luadebug::autoattach {
     }
 
     static lua_version get_lua_version(const lua_module& m) {
+		auto version = config.get_lua_version();
+		if (version != lua_version::unknown)
+			return version;
         /*
             luaJIT_version_2_1_0_beta3
             luaJIT_version_2_1_0_beta2
@@ -85,7 +78,53 @@ namespace luadebug::autoattach {
         default:
             return lua_version::unknown;
         }
+		//TODO: from signature 
     }
+
+	bool load_remotedebug_dll(lua_version version) {
+		if (version != lua_version::unknown)
+			return false;
+		
+		auto dllpath = bee::path_helper::dll_path();
+		if (!dllpath) {
+			return false;
+		}
+		auto os = 
+#if defined(_WIN32)
+		"windows"
+#elif defined(__ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__)
+		"darwin"
+#else
+		;return false;
+#endif
+		;
+		auto arch = 
+#if defined(_M_ARM64) || defined(__aarch64__)
+		"arm64"
+#elif defined(_M_IX86) || defined(__i386__)
+		"x86"
+#elif defined(_M_X64) || defined(__x86_64__)
+		"x86_64"
+#elif defined(__arm__)
+		"arm"
+#elif defined(__riscv)
+		"riscv"
+#else
+		;return false;
+#endif
+		;
+		auto platform = std::format("{}-{}", os, arch);
+		auto path = dllpath.value().parent_path().parent_path() / "runtime" / platform /lua_version_to_string(version);
+		
+		dlopen(path.c_str(), RTLD_LAZY | RTLD_LOCAL);
+
+        module_enumerate_import(path.c_str(), [](const Gum::ImportDetails& details)->bool {
+            if (std::string_view (details.name).find_first_of("lua") != 0){
+                return true;
+            }
+            return true;
+        });
+	}
 
     bool lua_module::initialize(fn_attach attach_lua_vm) {
         resolver.module_name = path;
@@ -96,6 +135,10 @@ namespace luadebug::autoattach {
         }
         version = get_lua_version(*this);
         log::info("current lua version: {}", lua_version_to_string(version));
+
+		if (config.is_remotedebug_by_signature()) {
+            load_remotedebug_dll(version);
+		}
 
         watchdog = create_watchdog(attach_lua_vm, version, resolver);
         if (!watchdog) {
