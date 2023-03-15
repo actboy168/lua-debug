@@ -17,7 +17,7 @@ inline int lua_absindex(lua_State* L, int idx) {
 inline void lua_rawgetp(lua_State* L, int idx, const void* p) {
     idx = lua_absindex(L, idx);
     lua_pushlightuserdata(L, (void*)(p));
-    lua_rawget(L,idx);
+    lua_rawget(L, idx);
 }
 
 inline void lua_rawsetp(lua_State* L, int idx, const void* p) {
@@ -35,7 +35,7 @@ inline void lua_getglobal(lua_State* L, const char* s) {
     lua_getfield(L, LUA_GLOBALSINDEX, (s));
 }
 
-inline const char* luaL_tolstring(lua_State *L, int idx, size_t *len) {
+inline const char* luaL_tolstring(lua_State* L, int idx, size_t* len) {
     if (!luaL_callmeta(L, idx, "__tostring")) {
         int t = lua_type(L, idx), tt = 0;
         char const* name = NULL;
@@ -69,7 +69,7 @@ inline const char* luaL_tolstring(lua_State *L, int idx, size_t *len) {
     return lua_tolstring(L, -1, len);
 }
 
-inline size_t lua_rawlen(lua_State *L, int idx) {
+inline size_t lua_rawlen(lua_State* L, int idx) {
     return lua_objlen(L, idx);
 }
 
@@ -78,11 +78,16 @@ inline size_t lua_rawlen(lua_State *L, int idx) {
 namespace lua {
 
 #if LUA_VERSION_NUM >= 503
-#define LUACOMPAT_DEF(name) template <typename ... Args> \
-    int name(lua_State* L, Args ... args) { return lua_##name(L,args...); }
+#define LUACOMPAT_DEF(name)     \
+    template <typename... Args> \
+    int name(lua_State* L, Args... args) { return lua_##name(L, args...); }
 #else
-#define LUACOMPAT_DEF(name) template <typename ... Args> \
-    int name(lua_State* L, Args ... args) { lua_##name(L,args...); return lua_type(L,-1); }
+#define LUACOMPAT_DEF(name)                \
+    template <typename... Args>            \
+    int name(lua_State* L, Args... args) { \
+        lua_##name(L, args...);            \
+        return lua_type(L, -1);            \
+    }
 #endif
 
     LUACOMPAT_DEF(rawgeti)
