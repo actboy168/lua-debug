@@ -72,7 +72,7 @@ private:
 #include <lj_debug.h>
 using lu_byte = uint8_t;
 using CallInfo = TValue;
-cTValue *lj_debug_frame(lua_State *L, int level, int *size)
+cTValue *lj_debug_frame(lua_State* L, int level, int *size)
 {
   cTValue *frame, *nextframe, *bot = tvref(L->stack)+LJ_FR2;
   /* Traverse frames backwards. */
@@ -88,7 +88,7 @@ cTValue *lj_debug_frame(lua_State *L, int level, int *size)
       frame = frame_prevl(frame);
     } else {
       if (frame_isvarg(frame))
-	level++;  /* Skip vararg pseudo-frame. */
+    level++;  /* Skip vararg pseudo-frame. */
       frame = frame_prevd(frame);
     }
   }
@@ -166,11 +166,11 @@ static CallInfo* debug2ci(lua_State* hL, lua_Debug* ar) {
 #endif
 }
 
-CallInfo *get_callinfo(lua_State *L, uint16_t level = 0)
+CallInfo* get_callinfo(lua_State* L, uint16_t level = 0)
 {
 #ifdef LUAJIT_VERSION
     int size;
-    return const_cast<CallInfo *>(lj_debug_frame(L, level, &size));
+    return const_cast<CallInfo*>(lj_debug_frame(L, level, &size));
 #else
     return L->ci;
 #endif
@@ -190,7 +190,7 @@ struct timer {
 };
 
 struct hookmgr {
-    // 
+    //
     // break
     //
     bpmap break_proto;
@@ -281,7 +281,7 @@ struct hookmgr {
         }
     }
 
-    // 
+    //
     // funcbp
     //
     int funcbp_mask = 0;
@@ -313,7 +313,7 @@ struct hookmgr {
         }
     }
 
-    // 
+    //
     // step
     //
     lua_State* stepL = 0;
@@ -321,7 +321,7 @@ struct hookmgr {
     int step_target_level = 0;
     int step_mask = 0;
     
-    static int stacklevel(lua_State *L) {
+    static int stacklevel(lua_State* L) {
         int level = 0;
 #if LUA_VERSION_NUM >= 502
         for (CallInfo* ci = L->ci; ci != &L->base_ci; ci = ci->previous) {
@@ -352,7 +352,7 @@ struct hookmgr {
 #else
         for (CallInfo* ci = L->ci; ci > L->base_ci; ci--) {
             level++;
-            if (f_isLua(ci)) level += ci->tailcalls; 
+            if (f_isLua(ci)) level += ci->tailcalls;
         }
 #endif
         return level;
@@ -445,14 +445,14 @@ struct hookmgr {
             rlua_pop(cL, 1);
             return;
         }
-		int errcode;
+        int errcode;
         set_host(cL, hL);
         rlua_pushstring(cL, "exception");
 #if LUA_VERSION_NUM >= 504
-		LUA_STKID(hL->top) = LUA_STKID(hL->stack) + ar->currentline;
-		errcode = ar->i_ci->u2.transferinfo.ntransfer;
+        LUA_STKID(hL->top) = LUA_STKID(hL->stack) + ar->currentline;
+        errcode = ar->i_ci->u2.transferinfo.ntransfer;
 #else
-		errcode = ar->currentline;
+        errcode = ar->currentline;
 #endif
         int ref = copy_value(hL, cL, true);
         rlua_pushinteger(cL, errcode);
@@ -550,17 +550,17 @@ struct hookmgr {
         return nres;
     }
 #ifdef LUAJIT_VERSION
-	bool last_hook_call_in_c = false;
+    bool last_hook_call_in_c = false;
 #endif
     void full_hook(lua_State* hL, lua_Debug* ar) {
         switch (ar->event) {
         case LUA_HOOKLINE:
 #ifdef LUAJIT_VERSION
-			if (last_hook_call_in_c){
-				thread_mask &= (~LUA_MASKTHREAD);
-				updatehookmask(hL);
-				last_hook_call_in_c = false;
-			}
+            if (last_hook_call_in_c){
+                thread_mask &= (~LUA_MASKTHREAD);
+                updatehookmask(hL);
+                last_hook_call_in_c = false;
+            }
             if (stepL == hL) {
                 if (step_mask & LUA_MASKRET) {
                     step_hook_line(hL, ar);
@@ -586,14 +586,14 @@ struct hookmgr {
                 }
             }
 #ifdef LUAJIT_VERSION
-			last_hook_call_in_c = !isluafunc(frame_func(debug2ci(hL, ar)));
-			if (last_hook_call_in_c) {
-				thread_mask |= LUA_MASKLINE; 
-				updatehookmask(hL);
+            last_hook_call_in_c = !isluafunc(frame_func(debug2ci(hL, ar)));
+            if (last_hook_call_in_c) {
+                thread_mask |= LUA_MASKLINE;
+                updatehookmask(hL);
 
-				if (update_mask)
+                if (update_mask)
                 update_hook(hL);
-			}
+            }
 #endif
             return;
         case LUA_HOOKRET:
@@ -960,7 +960,7 @@ int event(rlua_State* cL, lua_State* hL, const char* name, int start) {
     return ok;
 }
 
-int debug_pcall(lua_State *L, int nargs, int nresults, int errfunc)
+int debug_pcall(lua_State* L, int nargs, int nresults, int errfunc)
 {
 #ifdef LUAJIT_VERSION
     global_State *g = G(L);
