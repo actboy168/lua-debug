@@ -39,13 +39,13 @@ public:
 #if defined(RDEBUG_USE_STDMAP)
         auto v = m_flatmap.find(tokey(proto));
         if (v != m_flatmap.end()) {
-            return v->second? status::Break: status::Ignore;
+            return v->second ? status::Break : status::Ignore;
         }
         return status::None;
 #else
         const bool* v = m_flatmap.find(tokey(proto));
         if (v) {
-            return *v? status::Break: status::Ignore;
+            return *v ? status::Break : status::Ignore;
         }
         return status::None;
 #endif
@@ -228,7 +228,7 @@ struct hookmgr {
         set_host(cL, hL);
         rlua_pushstring(cL, "newproto");
         rlua_pushlightuserdata(cL, p);
-        rlua_pushinteger(cL, event != LUA_HOOKRET? 0: 1);
+        rlua_pushinteger(cL, event != LUA_HOOKRET ? 0 : 1);
         if (rlua_pcall(cL, 3, 0, 0) != LUA_OK) {
             rlua_pop(cL, 1);
             return false;
@@ -304,7 +304,7 @@ struct hookmgr {
         }
     }
     void funcbp_open(lua_State* hL, bool enable) {
-        funcbp_hookmask(hL, enable? LUA_MASKCALL: 0);
+        funcbp_hookmask(hL, enable ? LUA_MASKCALL : 0);
     }
     void funcbp_hookmask(lua_State* hL, int mask) {
         if (funcbp_mask != mask) {
@@ -435,7 +435,7 @@ struct hookmgr {
         }
     }
     void exception_open(lua_State* hL, int enable) {
-        exception_hookmask(hL, enable? LUA_MASKEXCEPTION: 0);
+        exception_hookmask(hL, enable ? LUA_MASKEXCEPTION : 0);
     }
     void exception_hook(lua_State* hL, lua_Debug* ar) {
         if (rlua_rawgetp(cL, RLUA_REGISTRYINDEX, &HOOK_CALLBACK) != LUA_TFUNCTION) {
@@ -473,7 +473,7 @@ struct hookmgr {
         }
     }
     void thread_open(lua_State* hL, int enable) {
-        thread_hookmask(hL, enable? LUA_MASKTHREAD: 0);
+        thread_hookmask(hL, enable ? LUA_MASKTHREAD : 0);
     }
     void thread_hook(lua_State* co, lua_Debug* ar) {
         lua_State* from = (lua_State*)lua_touserdata(co, -1);
@@ -506,8 +506,7 @@ struct hookmgr {
     void* eventfree = nullptr;
 
     hookmgr(rlua_State* L)
-        : cL(L)
-    { }
+        : cL(L) {}
 
     int call_event(int nargs) {
         if (rlua_pcall(cL, 1 + nargs, 1, 0) != LUA_OK) {
@@ -515,7 +514,7 @@ struct hookmgr {
             return -1;
         }
         if (rlua_type(cL, -1) == LUA_TBOOLEAN) {
-            int ok = rlua_toboolean(cL, -1)? 1 : 0;
+            int ok = rlua_toboolean(cL, -1) ? 1 : 0;
             rlua_pop(cL, 1);
             return ok;
         }
@@ -719,7 +718,7 @@ struct hookmgr {
     int update_mask = 0;
     timer update_timer;
     void update_open(lua_State* hL, int enable) {
-        update_mask = enable? LUA_MASKRET: 0;
+        update_mask = enable ? LUA_MASKRET : 0;
         updatehookmask(hL);
     }
     void update_hook(lua_State* hL) {
