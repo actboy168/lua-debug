@@ -69,9 +69,10 @@ RLUA_FUNC
 int luaopen_remotedebug_utility(rlua_State* L) {
     rlua_newtable(L);
     rluaL_Reg lib[] = {
-        {"closewindow", rdebug_utility::closewindow},
-        {"closeprocess", rdebug_utility::closeprocess},
-        {NULL, NULL}};
+        { "closewindow", rdebug_utility::closewindow },
+        { "closeprocess", rdebug_utility::closeprocess },
+        { NULL, NULL }
+    };
     rluaL_setfuncs(L, lib, 0);
     return 1;
 }

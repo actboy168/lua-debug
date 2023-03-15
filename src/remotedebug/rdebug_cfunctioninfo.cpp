@@ -1,15 +1,15 @@
 #include "rdebug_cfunctioninfo.h"
 
 #if defined(_WIN32)
-#   include <windows.h>
-#   include <DbgHelp.h>
+#include <windows.h>
+#include <DbgHelp.h>
 #else
-#   include <dlfcn.h>
-#   include <unistd.h>
+#include <dlfcn.h>
+#include <unistd.h>
 #endif
 
 #if defined(__GNUC__)
-#   include <cxxabi.h>
+#include <cxxabi.h>
 #endif
 
 #include <bee/subprocess.h>
@@ -42,7 +42,7 @@ namespace remotedebug {
                 searchpath += ';';
             }
             const size_t nTempLen = 1024;
-            char         szTemp[nTempLen];
+            char szTemp[nTempLen];
 
             // Now add the path for the main-module:
             if (GetModuleFileNameA(NULL, szTemp, nTempLen) > 0) {
@@ -99,7 +99,7 @@ namespace remotedebug {
     }
 
     inline SymHandler& GetSymHandler() {
-        static SymHandler handler{ createSymHandler(true, true) };
+        static SymHandler handler { createSymHandler(true, true) };
         return handler;
     }
 
@@ -121,8 +121,7 @@ namespace remotedebug {
 #else
             2000;
 #endif // DEBUG
-        struct MY_SYMBOL_INFO :SYMBOL_INFO
-        {
+        struct MY_SYMBOL_INFO : SYMBOL_INFO {
             char name_buffer[MAX_SYM_NAME];
         };
 
@@ -130,14 +129,14 @@ namespace remotedebug {
         if (!handler) {
             return std::nullopt;
         }
-        using PTR_T = 
+        using PTR_T =
 #ifdef _WIN64
             DWORD64;
 #else
             DWORD;
 #endif
-        PTR_T            dwAddress = PTR_T(pObject);
-        DWORD64            dwDisplacement = 0;
+        PTR_T dwAddress = PTR_T(pObject);
+        DWORD64 dwDisplacement = 0;
 
         MY_SYMBOL_INFO sym = {};
         sym.SizeOfStruct = sizeof(SYMBOL_INFO);
@@ -155,7 +154,6 @@ namespace remotedebug {
 #else
             //TODO ARM64/ARM64EC
 #endif // _M_AMD64
-
         }
         Symbol sb;
         {
@@ -175,7 +173,7 @@ namespace remotedebug {
                 line.SizeOfStruct = sizeof(IMAGEHLP_LINE);
                 DWORD lineDisplacement = 0;
                 if (SymGetLineFromAddr(handler.hProcess, dwAddress, &lineDisplacement, &line)) {
-                    sb.file = {line.FileName, line.LineNumber};
+                    sb.file = { line.FileName, line.LineNumber };
                 }
 #if defined(_WIN64)
             }
@@ -199,7 +197,7 @@ namespace remotedebug {
         int pdes[2] = {};
         if (::pipe(pdes) < 0) {
             return std::nullopt;
-           }
+        }
         auto pipe = bee::subprocess::pipe::open();
         if (!pipe) {
             return std::nullopt;

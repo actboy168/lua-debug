@@ -6,10 +6,9 @@
 #include <bee/nonstd/unreachable.h>
 
 namespace luadebug::autoattach {
-    watchdog::watchdog(fn_attach attach_lua_vm) 
-        : interceptor{Gum::Interceptor_obtain()}
-        , attach_lua_vm(attach_lua_vm)
-    {}
+    watchdog::watchdog(fn_attach attach_lua_vm)
+        : interceptor { Gum::Interceptor_obtain() }
+        , attach_lua_vm(attach_lua_vm) {}
 
     bool watchdog::hook() {
         for (auto& point: watch_points) {
@@ -78,23 +77,40 @@ namespace luadebug::autoattach {
         static lua::hook create(watchdog* w) {
             size_t id = create_instance_id();
             switch (id) {
-            case 0x0: return callback<0x0>::create(w);
-            case 0x1: return callback<0x1>::create(w);
-            case 0x2: return callback<0x2>::create(w);
-            case 0x3: return callback<0x3>::create(w);
-            case 0x4: return callback<0x4>::create(w);
-            case 0x5: return callback<0x5>::create(w);
-            case 0x6: return callback<0x6>::create(w);
-            case 0x7: return callback<0x7>::create(w);
-            case 0x8: return callback<0x8>::create(w);
-            case 0x9: return callback<0x9>::create(w);
-            case 0xA: return callback<0xA>::create(w);
-            case 0xB: return callback<0xB>::create(w);
-            case 0xC: return callback<0xC>::create(w);
-            case 0xD: return callback<0xD>::create(w);
-            case 0xE: return callback<0xE>::create(w);
-            case 0xF: return callback<0xF>::create(w);
-            default: return 0;
+            case 0x0:
+                return callback<0x0>::create(w);
+            case 0x1:
+                return callback<0x1>::create(w);
+            case 0x2:
+                return callback<0x2>::create(w);
+            case 0x3:
+                return callback<0x3>::create(w);
+            case 0x4:
+                return callback<0x4>::create(w);
+            case 0x5:
+                return callback<0x5>::create(w);
+            case 0x6:
+                return callback<0x6>::create(w);
+            case 0x7:
+                return callback<0x7>::create(w);
+            case 0x8:
+                return callback<0x8>::create(w);
+            case 0x9:
+                return callback<0x9>::create(w);
+            case 0xA:
+                return callback<0xA>::create(w);
+            case 0xB:
+                return callback<0xB>::create(w);
+            case 0xC:
+                return callback<0xC>::create(w);
+            case 0xD:
+                return callback<0xD>::create(w);
+            case 0xE:
+                return callback<0xE>::create(w);
+            case 0xF:
+                return callback<0xF>::create(w);
+            default:
+                return 0;
             }
         }
     };

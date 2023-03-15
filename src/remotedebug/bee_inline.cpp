@@ -1,32 +1,34 @@
 #if defined _WIN32
-#   include <winsock2.h>
+#include <winsock2.h>
 #endif
 
 #define RLUA_REPLACE
 #include "rlua.h"
 #include "rdebug_cmodule.h"
 
-#define luaL_newlibtable(L,l)	\
-  lua_createtable(L, 0, sizeof(l)/sizeof((l)[0]) - 1)
+#if !defined(luaL_newlibtable)
+#define luaL_newlibtable(L, l) \
+    lua_createtable(L, 0, sizeof(l) / sizeof((l)[0]) - 1)
+#endif
 
 #if !defined(LUAI_UACINT)
-#   if defined(_MSC_VER)
-#       define LUAI_UACINT __int64
-#   else
-#       define LUAI_UACINT long long
-#   endif
+#if defined(_MSC_VER)
+#define LUAI_UACINT __int64
+#else
+#define LUAI_UACINT long long
+#endif
 #endif
 
 #if !defined(LUA_INTEGER_FMT)
-#   if defined(_MSC_VER)
-#       define LUA_INTEGER_FMT "%I64d"
-#   else
-#       define LUA_INTEGER_FMT "%lld"
-#   endif
+#if defined(_MSC_VER)
+#define LUA_INTEGER_FMT "%I64d"
+#else
+#define LUA_INTEGER_FMT "%lld"
+#endif
 #endif
 
 #if !defined(LUA_GCGEN)
-# define LUA_GCGEN 10
+#define LUA_GCGEN 10
 #endif
 
 #include <binding/file.h>

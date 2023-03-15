@@ -14,17 +14,17 @@ extern "C" int luaopen_bee_unicode(rlua_State* L);
 #endif
 
 static rluaL_Reg cmodule[] = {
-    {"remotedebug.hookmgr", luaopen_remotedebug_hookmgr},
-    {"remotedebug.stdio", luaopen_remotedebug_stdio},
-    {"remotedebug.utility", luaopen_remotedebug_utility},
-    {"remotedebug.visitor", luaopen_remotedebug_visitor},
-    {"bee.socket", luaopen_bee_socket},
-    {"bee.thread", luaopen_bee_thread},
-    {"bee.filesystem", luaopen_bee_filesystem},
+    { "remotedebug.hookmgr", luaopen_remotedebug_hookmgr },
+    { "remotedebug.stdio", luaopen_remotedebug_stdio },
+    { "remotedebug.utility", luaopen_remotedebug_utility },
+    { "remotedebug.visitor", luaopen_remotedebug_visitor },
+    { "bee.socket", luaopen_bee_socket },
+    { "bee.thread", luaopen_bee_thread },
+    { "bee.filesystem", luaopen_bee_filesystem },
 #if defined(_WIN32)
-    {"bee.unicode", luaopen_bee_unicode},
+    { "bee.unicode", luaopen_bee_unicode },
 #endif
-    {NULL, NULL},
+    { NULL, NULL },
 };
 
 namespace remotedebug {

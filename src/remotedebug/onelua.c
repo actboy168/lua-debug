@@ -43,9 +43,9 @@
 #undef LUAI_FUNC
 #undef LUAI_DDEC
 #undef LUAI_DDEF
-#define LUAI_FUNC	static
-#define LUAI_DDEC(def)	/* empty */
-#define LUAI_DDEF	static
+#define LUAI_FUNC static
+#define LUAI_DDEC(def) /* empty */
+#define LUAI_DDEF static
 
 /* core -- used by all */
 #include "lzio.c"
@@ -87,8 +87,8 @@
 
 #include "../lua-seri/lua-seri.c"
 
-LClosure *luaU_undump(lua_State *L, ZIO *Z, const char *name) {
-  luaO_pushfstring(L, "%s: binary loader not available", name);
-  luaD_throw(L, LUA_ERRSYNTAX);
-  return NULL;
+LClosure* luaU_undump(lua_State* L, ZIO* Z, const char* name) {
+    luaO_pushfstring(L, "%s: binary loader not available", name);
+    luaD_throw(L, LUA_ERRSYNTAX);
+    return NULL;
 }

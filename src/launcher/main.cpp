@@ -17,15 +17,15 @@
 
 namespace luadebug::autoattach {
     static std::string readfile(const fs::path& filename) {
-    #ifdef _WIN32
+#ifdef _WIN32
         FILE* f = _wfopen(filename.c_str(), L"rb");
-    #else
+#else
         FILE* f = fopen(filename.c_str(), "rb");
-    #endif
+#endif
         if (!f) {
             return std::string();
         }
-        fseek (f, 0, SEEK_END);
+        fseek(f, 0, SEEK_END);
         long length = ftell(f);
         fseek(f, 0, SEEK_SET);
         std::string tmp;
@@ -50,11 +50,11 @@ namespace luadebug::autoattach {
             return attach_status::fatal;
         }
         lua::call<lua_pushstring>(L, root.generic_u8string().c_str());
-    #ifdef _WIN32
+#ifdef _WIN32
         lua::call<lua_pushstring>(L, std::to_string(GetCurrentProcessId()).c_str());
-    #else
+#else
         lua::call<lua_pushstring>(L, std::to_string(getpid()).c_str());
-    #endif
+#endif
         if (lua::pcall(L, 2, 1, 0)) {
             /*
                 这里失败无法调用log::fatal，因为无法知道调试器已经加载到哪一步才失败的。
@@ -67,7 +67,7 @@ namespace luadebug::autoattach {
         using namespace std::string_view_literals;
         bool ok = lua::tostring(L, -1) == "ok"sv;
         lua::pop(L, 1);
-        return ok? attach_status::success: attach_status::wait;
+        return ok ? attach_status::success : attach_status::wait;
     }
 }
 

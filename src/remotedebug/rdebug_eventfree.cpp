@@ -12,7 +12,7 @@ namespace remotedebug::eventfree {
         std::unique_ptr<thunk> f;
 #endif
     };
-    static void* fake_allocf(void *ud, void *ptr, size_t osize, size_t nsize) {
+    static void* fake_allocf(void* ud, void* ptr, size_t osize, size_t nsize) {
         userdata* self = (userdata*)ud;
         if (ptr != NULL && nsize == 0 && self->cb) {
             self->cb(self->ud, ptr);

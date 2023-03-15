@@ -3,9 +3,9 @@
 #include <limits>
 #include "rdebug_redirect.h"
 
-lua_State* get_host(rlua_State *L);
-rlua_State* get_client(lua_State *L);
-int  event(rlua_State* cL, lua_State* hL, const char* name, int start);
+lua_State* get_host(rlua_State* L);
+rlua_State* get_client(lua_State* L);
+int event(rlua_State* cL, lua_State* hL, const char* name, int start);
 
 static int getIoOutput(lua_State* L) {
 #if LUA_VERSION_NUM >= 502
@@ -59,7 +59,7 @@ static int redirect_gc(rlua_State* L) {
 }
 
 static int redirect(rlua_State* L) {
-    const char* lst[] = {"stdin", "stdout", "stderr", NULL};
+    const char* lst[] = { "stdin", "stdout", "stderr", NULL };
     remotedebug::std_fd type = (remotedebug::std_fd)(rluaL_checkoption(L, 1, "stdout", lst));
     switch (type) {
     case remotedebug::std_fd::STDIN:
@@ -98,7 +98,7 @@ static int callfunc(lua_State* L) {
 }
 
 static int redirect_print(lua_State* L) {
-    rlua_State *cL = get_client(L);
+    rlua_State* cL = get_client(L);
     if (cL) {
         int ok = event(cL, L, "print", 1);
         if (ok > 0) {
@@ -112,7 +112,7 @@ static int redirect_f_write(lua_State* L) {
     bool ok = LUA_TUSERDATA == getIoOutput(L) && lua_rawequal(L, -1, 1);
     lua_pop(L, 1);
     if (ok) {
-        rlua_State *cL = get_client(L);
+        rlua_State* cL = get_client(L);
         if (cL) {
             int ok = event(cL, L, "iowrite", 2);
             if (ok > 0) {
@@ -125,7 +125,7 @@ static int redirect_f_write(lua_State* L) {
 }
 
 static int redirect_io_write(lua_State* L) {
-    rlua_State *cL = get_client(L);
+    rlua_State* cL = get_client(L);
     if (cL) {
         int ok = event(cL, L, "iowrite", 1);
         if (ok > 0) {

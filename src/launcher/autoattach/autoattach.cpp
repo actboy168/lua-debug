@@ -23,8 +23,8 @@ namespace luadebug::autoattach {
 
     static void start();
     static bool load_lua_module(const std::string& path) {
-        if (is_lua_module(path.c_str())){
-            // find lua module lazy 
+        if (is_lua_module(path.c_str())) {
+            // find lua module lazy
             std::thread(start).detach();
             return true;
         }
@@ -38,7 +38,7 @@ namespace luadebug::autoattach {
     void start() {
         bool found = false;
         lua_module rm = {};
-        Gum::Process::enumerate_modules([&rm, &found](const Gum::ModuleDetails& details)->bool{
+        Gum::Process::enumerate_modules([&rm, &found](const Gum::ModuleDetails& details) -> bool {
             if (is_lua_module(details.path())) {
                 auto range = details.range();
                 rm.memory_address = range.base_address;
