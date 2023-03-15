@@ -6,7 +6,7 @@ int main(){
     using namespace std::string_view_literals;
     using namespace luadebug::lua;
 #define check_symbol_name(name) \
-    constexpr auto name##_s = impl::symbol_string<name>();\
+    constexpr auto name##_s = function_name_v<name>;\
     static_assert((std::string_view{name##_s.data(), name##_s.size()} == #name##sv));
 
     check_symbol_name(lua_gethook);
