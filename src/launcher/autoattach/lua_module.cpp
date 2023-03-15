@@ -7,7 +7,7 @@
 #include <gumpp.hpp>
 
 namespace luadebug::autoattach {
-    static lua_version lua_version_from_string[[maybe_unused]](const std::string_view& v) {
+    static lua_version lua_version_from_string [[maybe_unused]] (const std::string_view& v) {
         if (v == "luajit")
             return lua_version::luajit;
         if (v == "lua51")
@@ -49,12 +49,13 @@ namespace luadebug::autoattach {
             luaJIT_version_2_1_0_beta1
             luaJIT_version_2_1_0_alpha
         */
-        for (void* addr : Gum::SymbolUtil::find_matching_functions("luaJIT_version_2_1_0*", true)){
+        for (void* addr: Gum::SymbolUtil::find_matching_functions("luaJIT_version_2_1_0*", true)) {
             if (in_module(m, addr))
                 return lua_version::luajit;
         }
-        auto p = Gum::Process::module_find_symbol_by_name(m.path.c_str(), "lua_ident");;
-        const char *lua_ident = (const char *) p;
+        auto p = Gum::Process::module_find_symbol_by_name(m.path.c_str(), "lua_ident");
+        ;
+        const char* lua_ident = (const char*)p;
         if (!lua_ident)
             return lua_version::unknown;
         auto id = std::string_view(lua_ident);
@@ -100,8 +101,8 @@ namespace luadebug::autoattach {
         watchdog = create_watchdog(attach_lua_vm, version, resolver);
         if (!watchdog) {
             //TODO: more errmsg
-           log::fatal("watchdog initialize failed");
-           return false;
+            log::fatal("watchdog initialize failed");
+            return false;
         }
         return true;
     }

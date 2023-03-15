@@ -21,11 +21,10 @@ static int injectdll(lua_State* L) {
     }
 }
 
-extern "C" __declspec(dllexport)
-int luaopen_inject(lua_State* L) {
+extern "C" __declspec(dllexport) int luaopen_inject(lua_State* L) {
     luaL_Reg lib[] = {
-        {"injectdll", injectdll},
-        {NULL, NULL},
+        { "injectdll", injectdll },
+        { NULL, NULL },
     };
     luaL_newlib(L, lib);
     return 1;

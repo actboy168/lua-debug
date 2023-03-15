@@ -1,5 +1,5 @@
 #if defined(_M_X64)
-    #error unsupport x86_64
+#error unsupport x86_64
 #endif
 
 #include "injectdll.h"
@@ -50,63 +50,63 @@ static bool wow64_write_memory(uint64_t nwvm, HANDLE hProcess, uint64_t lpBaseAd
 
 static bool injectdll_x64(const PROCESS_INFORMATION& pi, const std::wstring& dll, const std::string_view& entry) {
     static unsigned char sc[] = {
-        0x9C,                                                                   // pushfq
-        0x0F, 0xA8,                                                             // push gs
-        0x0F, 0xA0,                                                             // push fs
-        0x50,                                                                   // push rax
-        0x51,                                                                   // push rcx
-        0x52,                                                                   // push rdx
-        0x53,                                                                   // push rbx
-        0x55,                                                                   // push rbp
-        0x56,                                                                   // push rsi
-        0x57,                                                                   // push rdi
-        0x41, 0x50,                                                             // push r8
-        0x41, 0x51,                                                             // push r9
-        0x41, 0x52,                                                             // push r10
-        0x41, 0x53,                                                             // push r11
-        0x41, 0x54,                                                             // push r12
-        0x41, 0x55,                                                             // push r13
-        0x41, 0x56,                                                             // push r14
-        0x41, 0x57,                                                             // push r15
-        0x48, 0x83, 0xEC, 0x28,                                                 // sub rsp, 0x28
-        0x49, 0xB9, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,             // mov  r9, 0  // DllHandle
-        0x49, 0xB8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,             // mov  r8, 0  // DllPath
-        0x48, 0x31, 0xD2,                                                       // xor  rdx,rdx
-        0x48, 0x31, 0xC9,                                                       // xor  rcx,rcx
-        0x48, 0xB8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,             // mov  rax,0  // LdrLoadDll
-        0xFF, 0xD0,                                                             // call rax
-        0x49, 0xB9, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,             // mov  r9, 0  // EntryFunc
-        0x4D, 0x31, 0xC0,                                                       // xor  r8, r8
-        0x48, 0xBA, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,             // mov  rdx,0  // EntryName
-        0x48, 0xB9, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,             // mov  rcx,0  // DllHandle
-        0x48, 0x8B, 0x09,                                                       // mov  rcx,[rcx]
-        0x48, 0xB8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,             // mov  rax,0  // LdrGetProcedureAddress
-        0xFF, 0xD0,                                                             // call rax
-        0x48, 0xB8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,             // mov  rax,0  // EntryFunc
-        0x48, 0x8B, 0x00,                                                       // mov  rax,[rax]
-        0xFF, 0xD0,                                                             // call rax
-        0x48, 0x83, 0xC4, 0x28,                                                 // add rsp, 0x28
-        0x41, 0x5F,                                                             // pop r15
-        0x41, 0x5E,                                                             // pop r14
-        0x41, 0x5D,                                                             // pop r13
-        0x41, 0x5C,                                                             // pop r12
-        0x41, 0x5B,                                                             // pop r11
-        0x41, 0x5A,                                                             // pop r10
-        0x41, 0x59,                                                             // pop r9
-        0x41, 0x58,                                                             // pop r8
-        0x5F,                                                                   // pop rdi
-        0x5E,                                                                   // pop rsi
-        0x5D,                                                                   // pop rbp
-        0x5B,                                                                   // pop rbx
-        0x5A,                                                                   // pop rdx
-        0x59,                                                                   // pop rcx
-        0x58,                                                                   // pop rax
-        0x0F, 0xA1,                                                             // pop fs
-        0x0F, 0xA9,                                                             // pop gs
-        0x9D,                                                                   // popfq
-        0xFF, 0x25, 0x00, 0x00, 0x00, 0x00,                                     // jmp offset
-        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00                          // rip
-    }; 
+        0x9C,                                                       // pushfq
+        0x0F, 0xA8,                                                 // push gs
+        0x0F, 0xA0,                                                 // push fs
+        0x50,                                                       // push rax
+        0x51,                                                       // push rcx
+        0x52,                                                       // push rdx
+        0x53,                                                       // push rbx
+        0x55,                                                       // push rbp
+        0x56,                                                       // push rsi
+        0x57,                                                       // push rdi
+        0x41, 0x50,                                                 // push r8
+        0x41, 0x51,                                                 // push r9
+        0x41, 0x52,                                                 // push r10
+        0x41, 0x53,                                                 // push r11
+        0x41, 0x54,                                                 // push r12
+        0x41, 0x55,                                                 // push r13
+        0x41, 0x56,                                                 // push r14
+        0x41, 0x57,                                                 // push r15
+        0x48, 0x83, 0xEC, 0x28,                                     // sub rsp, 0x28
+        0x49, 0xB9, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // mov  r9, 0  // DllHandle
+        0x49, 0xB8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // mov  r8, 0  // DllPath
+        0x48, 0x31, 0xD2,                                           // xor  rdx,rdx
+        0x48, 0x31, 0xC9,                                           // xor  rcx,rcx
+        0x48, 0xB8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // mov  rax,0  // LdrLoadDll
+        0xFF, 0xD0,                                                 // call rax
+        0x49, 0xB9, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // mov  r9, 0  // EntryFunc
+        0x4D, 0x31, 0xC0,                                           // xor  r8, r8
+        0x48, 0xBA, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // mov  rdx,0  // EntryName
+        0x48, 0xB9, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // mov  rcx,0  // DllHandle
+        0x48, 0x8B, 0x09,                                           // mov  rcx,[rcx]
+        0x48, 0xB8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // mov  rax,0  // LdrGetProcedureAddress
+        0xFF, 0xD0,                                                 // call rax
+        0x48, 0xB8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // mov  rax,0  // EntryFunc
+        0x48, 0x8B, 0x00,                                           // mov  rax,[rax]
+        0xFF, 0xD0,                                                 // call rax
+        0x48, 0x83, 0xC4, 0x28,                                     // add rsp, 0x28
+        0x41, 0x5F,                                                 // pop r15
+        0x41, 0x5E,                                                 // pop r14
+        0x41, 0x5D,                                                 // pop r13
+        0x41, 0x5C,                                                 // pop r12
+        0x41, 0x5B,                                                 // pop r11
+        0x41, 0x5A,                                                 // pop r10
+        0x41, 0x59,                                                 // pop r9
+        0x41, 0x58,                                                 // pop r8
+        0x5F,                                                       // pop rdi
+        0x5E,                                                       // pop rsi
+        0x5D,                                                       // pop rbp
+        0x5B,                                                       // pop rbx
+        0x5A,                                                       // pop rdx
+        0x59,                                                       // pop rcx
+        0x58,                                                       // pop rax
+        0x0F, 0xA1,                                                 // pop fs
+        0x0F, 0xA9,                                                 // pop gs
+        0x9D,                                                       // popfq
+        0xFF, 0x25, 0x00, 0x00, 0x00, 0x00,                         // jmp offset
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00              // rip
+    };
     uint64_t ntdll = wow64_module(L"ntdll.dll");
     if (!ntdll) {
         return false;
@@ -124,9 +124,9 @@ static bool injectdll_x64(const PROCESS_INFORMATION& pi, const std::wstring& dll
         return false;
     }
     struct UNICODE_STRING {
-        USHORT    Length;
-        USHORT    MaximumLength;
-        uint64_t  Buffer;
+        USHORT Length;
+        USHORT MaximumLength;
+        uint64_t Buffer;
     };
     SIZE_T mem1size = sizeof(uint64_t) + sizeof(UNICODE_STRING) + (dll.size() + 1) * sizeof(wchar_t);
     uint64_t mem1 = wow64_alloc_memory(pfNtAllocateVirtualMemory, pi.hProcess, mem1size, PAGE_READWRITE);
@@ -138,7 +138,7 @@ static bool injectdll_x64(const PROCESS_INFORMATION& pi, const std::wstring& dll
     if (!mem2) {
         return false;
     }
-    uint64_t shellcode = wow64_alloc_memory(pfNtAllocateVirtualMemory, pi.hProcess, sizeof(sc),PAGE_EXECUTE_READWRITE);
+    uint64_t shellcode = wow64_alloc_memory(pfNtAllocateVirtualMemory, pi.hProcess, sizeof(sc), PAGE_EXECUTE_READWRITE);
     if (!shellcode) {
         return false;
     }
@@ -196,20 +196,20 @@ static bool injectdll_x64(const PROCESS_INFORMATION& pi, const std::wstring& dll
 
 static bool injectdll_x86(const PROCESS_INFORMATION& pi, const std::wstring& dll, const std::string_view& entry) {
     static unsigned char sc[] = {
-        0x68, 0x00, 0x00, 0x00, 0x00,    // push eip
-        0x9C,                            // pushfd
-        0x60,                            // pushad
-        0x68, 0x00, 0x00, 0x00, 0x00,    // push DllPath
-        0xB8, 0x00, 0x00, 0x00, 0x00,    // mov eax, LoadLibraryW
-        0xFF, 0xD0,                      // call eax
-        0x68, 0x00, 0x00, 0x00, 0x00,    // push EntryName
-        0x50,                            // push eax
-        0xB8, 0x00, 0x00, 0x00, 0x00,    // mov eax, GetProcAddress
-        0xFF, 0xD0,                      // call eax
-        0xFF, 0xD0,                      // call eax
-        0x61,                            // popad
-        0x9D,                            // popfd
-        0xC3                             // ret
+        0x68, 0x00, 0x00, 0x00, 0x00, // push eip
+        0x9C,                         // pushfd
+        0x60,                         // pushad
+        0x68, 0x00, 0x00, 0x00, 0x00, // push DllPath
+        0xB8, 0x00, 0x00, 0x00, 0x00, // mov eax, LoadLibraryW
+        0xFF, 0xD0,                   // call eax
+        0x68, 0x00, 0x00, 0x00, 0x00, // push EntryName
+        0x50,                         // push eax
+        0xB8, 0x00, 0x00, 0x00, 0x00, // mov eax, GetProcAddress
+        0xFF, 0xD0,                   // call eax
+        0xFF, 0xD0,                   // call eax
+        0x61,                         // popad
+        0x9D,                         // popfd
+        0xC3                          // ret
     };
     DWORD pfLoadLibrary = (DWORD)::GetProcAddress(::GetModuleHandleW(L"Kernel32"), "LoadLibraryW");
     if (!pfLoadLibrary) {
