@@ -9,7 +9,7 @@ local bindir = "publish/runtime/"..lm.runtime_platform
 
 lm:source_set 'onelua' {
     includes = "3rd/bee.lua/3rd/lua",
-    sources = "src/remotedebug/onelua.c",
+    sources = "src/luadebug/onelua.c",
     linux = {
         flags = "-fPIC"
     },
@@ -24,14 +24,14 @@ lm:source_set 'onelua' {
     }
 }
 
-for _, luaver in ipairs {"lua51","lua52","lua53","lua54","lua-latest","luajit"} do
-    runtimes[#runtimes+1] = luaver.."/lua"
-    runtimes[#runtimes+1] = luaver.."/remotedebug"
+for _, luaver in ipairs { "lua51", "lua52", "lua53", "lua54", "lua-latest", "luajit" } do
+    runtimes[#runtimes + 1] = luaver.."/lua"
+    runtimes[#runtimes + 1] = luaver.."/luadebug"
 
     if luaver ~= "luajit" then
         if lm.os == "windows" then
-            runtimes[#runtimes+1] = luaver.."/"..luaver
-            lm:shared_library (luaver..'/'..luaver) {
+            runtimes[#runtimes + 1] = luaver.."/"..luaver
+            lm:shared_library(luaver..'/'..luaver) {
                 rootdir = '3rd/lua/'..luaver,
                 bindir = bindir,
                 includes = {
@@ -50,7 +50,7 @@ for _, luaver in ipairs {"lua51","lua52","lua53","lua54","lua-latest","luajit"} 
                 }
             }
 
-            lm:executable (luaver..'/lua') {
+            lm:executable(luaver..'/lua') {
                 rootdir = '3rd/lua/'..luaver,
                 bindir = bindir,
                 output = "lua",
@@ -69,7 +69,7 @@ for _, luaver in ipairs {"lua51","lua52","lua53","lua54","lua-latest","luajit"} 
                 }
             }
         else
-            lm:executable (luaver..'/lua') {
+            lm:executable(luaver..'/lua') {
                 rootdir = '3rd/lua/'..luaver,
                 bindir = bindir,
                 includes = {
@@ -141,7 +141,7 @@ for _, luaver in ipairs {"lua51","lua52","lua53","lua54","lua-latest","luajit"} 
     elseif luaver == "luajit" then
         lua_version_num = 501
     else
-        lua_version_num = 100 * math.tointeger(luaver:sub(4,4)) + math.tointeger(luaver:sub(5,5))
+        lua_version_num = 100 * math.tointeger(luaver:sub(4, 4)) + math.tointeger(luaver:sub(5, 5))
     end
 
     local luaSrcDir = "3rd/lua/"..luaver;
@@ -149,7 +149,7 @@ for _, luaver in ipairs {"lua51","lua52","lua53","lua54","lua-latest","luajit"} 
         luaSrcDir = luaSrcDir.."/src";
     end
 
-    lm:shared_library (luaver..'/remotedebug') {
+    lm:shared_library(luaver..'/luadebug') {
         bindir = bindir,
         deps = "onelua",
         defines = {
@@ -162,7 +162,7 @@ for _, luaver in ipairs {"lua51","lua52","lua53","lua54","lua-latest","luajit"} 
             "3rd/bee.lua/3rd/lua-seri",
         },
         sources = {
-            "src/remotedebug/**/*.cpp",
+            "src/luadebug/**/*.cpp",
         },
         windows = {
             deps = luaver..'/'..luaver,

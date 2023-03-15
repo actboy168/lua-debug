@@ -8,7 +8,7 @@
 
 此外，你也可以在lua端自己抛这个事件而无需修改lua。例如
 ``` lua
-local rdebug = require "remotedebug"
+local rdebug = require "luadebug"
 
 local rawcoroutineresume = coroutine.resume
 local rawcoroutinewrap   = coroutine.wrap
@@ -44,7 +44,7 @@ end
 
 此外，你也可以在lua端自己抛这个事件而无需修改lua。例如
 ``` lua
-local rdebug = require "remotedebug"
+local rdebug = require "luadebug"
 
 local rawxpcall = xpcall
 function pcall(f, ...)
@@ -65,9 +65,9 @@ function xpcall(f, msgh, ...)
 end
 ```
 
-## 使用你的lua重新编译remotedebug
+## 使用你的lua重新编译luadebug
 
-remotedebug引用了非公开的lua头文件lstate.h，如果你的lua有修改过它，则需要重新编译remotedebug。
+luadebug引用了非公开的lua头文件lstate.h，如果你的lua有修改过它，则需要重新编译luadebug。
 
 
 ## update优化

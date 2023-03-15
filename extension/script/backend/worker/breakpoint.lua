@@ -1,9 +1,9 @@
-local rdebug = require 'remotedebug.visitor'
+local rdebug = require 'luadebug.visitor'
 local fs = require 'backend.worker.filesystem'
 local source = require 'backend.worker.source'
 local eval = require 'backend.worker.eval'
 local ev = require 'backend.event'
-local hookmgr = require 'remotedebug.hookmgr'
+local hookmgr = require 'luadebug.hookmgr'
 local parser = require 'backend.worker.parser'
 local stdout = require 'backend.worker.stdout'
 
@@ -112,7 +112,7 @@ local function valid(bp)
         end
     end
     if bp.hitCondition then
-        local ok, err = eval.verify('0 ' .. bp.hitCondition)
+        local ok, err = eval.verify('0 '..bp.hitCondition)
         if not ok then
             bp.verified = false
             ev.emit('breakpoint', 'changed', {
@@ -140,10 +140,10 @@ local function verifyBreakpoint(breakpoints)
             bp.statLog[1] = bp.logMessage:gsub('%b{}', function(str)
                 n = n + 1
                 local key = ('{%d}'):format(n)
-                bp.statLog[key] = str:sub(2,-2)
+                bp.statLog[key] = str:sub(2, -2)
                 return key
             end)
-            bp.statLog[1] = bp.statLog[1] .. '\n'
+            bp.statLog[1] = bp.statLog[1]..'\n'
         end
         ::continue::
     end
@@ -197,16 +197,16 @@ local function parserInlineLineinfo(src)
     local diff = src.startline - 1
     for k, v in pairs(old) do
         if type(k) == "number" then
-            new[k+diff] = v+diff
+            new[k + diff] = v + diff
         else
             local newv = {}
-            for l in pairs(v) do newv[l+diff] = true end
+            for l in pairs(v) do newv[l + diff] = true end
             if k == "0-0" then
                 new[k] = newv
             else
                 local s, e = k:match "^(%d+)-(%d+)$"
-                s = tonumber(s)+1
-                e = tonumber(e)+1
+                s = tonumber(s) + 1
+                e = tonumber(e) + 1
                 new[("%d-%d"):format(s, e)] = newv
             end
         end
@@ -274,7 +274,7 @@ function m.exec(bp)
     end
     bp.statHit = bp.statHit + 1
     if bp.hitCondition then
-        local ok, res = eval.eval(bp.statHit .. ' ' .. bp.hitCondition)
+        local ok, res = eval.eval(bp.statHit..' '..bp.hitCondition)
         if not ok or res ~= true then
             return false
         end
@@ -333,7 +333,7 @@ function m.set_funcbp(breakpoints)
         if not valid(bp) then
             goto continue
         end
-        funcs[#funcs+1] = bp
+        funcs[#funcs + 1] = bp
         bp.verified = true
         bp.statHit = 0
         ev.emit('breakpoint', 'changed', bp)
