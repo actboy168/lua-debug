@@ -5,25 +5,22 @@
 
 namespace luadebug::autoattach {
 
-	enum class lua_version;
-	struct signture;
+    enum class lua_version;
+    struct signture;
 
-	class Config {
-		std::unordered_map<std::string, std::string> values;
-	public:
-		std::string get(const std::string& key) const;
+    class Config {
+        std::unordered_map<std::string, std::string> values;
 
-		bool contains(const std::string& key) const;
+    public:
+        lua_version get_lua_version() const;
 
-		lua_version get_lua_version() const;
+        std::optional<signture> get_lua_signature(const std::string& key) const;
 
-		std::optional<signture> get_lua_signature(const std::string& key) const;
+        std::string get_lua_module() const;
 
-		std::string get_lua_module() const;
+        bool is_remotedebug_by_signature() const;
 
-		bool is_remotedebug_by_signature() const;
-
-		static bool init_from_file();
-	};
-	extern Config config;
-}
+        static bool init_from_file();
+    };
+    extern Config config;
+}// namespace luadebug::autoattach
