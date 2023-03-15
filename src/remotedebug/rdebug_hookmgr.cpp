@@ -72,28 +72,28 @@ private:
 #include <lj_debug.h>
 using lu_byte = uint8_t;
 using CallInfo = TValue;
-cTValue *lj_debug_frame(lua_State* L, int level, int *size)
-{
-  cTValue *frame, *nextframe, *bot = tvref(L->stack)+LJ_FR2;
-  /* Traverse frames backwards. */
-  for (nextframe = frame = L->base-1; frame > bot; ) {
-    if (frame_gc(frame) == obj2gco(L))
-      level++;  /* Skip dummy frames. See lj_err_optype_call(). */
-    if (level-- == 0) {
-      *size = (int)(nextframe - frame);
-      return frame;  /* Level found. */
+cTValue* lj_debug_frame(lua_State* L, int level, int* size) {
+    cTValue *frame, *nextframe, *bot = tvref(L->stack) + LJ_FR2;
+    /* Traverse frames backwards. */
+    for (nextframe = frame = L->base - 1; frame > bot;) {
+        if (frame_gc(frame) == obj2gco(L))
+            level++; /* Skip dummy frames. See lj_err_optype_call(). */
+        if (level-- == 0) {
+            *size = (int)(nextframe - frame);
+            return frame; /* Level found. */
+        }
+        nextframe = frame;
+        if (frame_islua(frame)) {
+            frame = frame_prevl(frame);
+        }
+        else {
+            if (frame_isvarg(frame))
+                level++; /* Skip vararg pseudo-frame. */
+            frame = frame_prevd(frame);
+        }
     }
-    nextframe = frame;
-    if (frame_islua(frame)) {
-      frame = frame_prevl(frame);
-    } else {
-      if (frame_isvarg(frame))
-    level++;  /* Skip vararg pseudo-frame. */
-      frame = frame_prevd(frame);
-    }
-  }
-  *size = level;
-  return NULL;  /* Level not found. */
+    *size = level;
+    return NULL; /* Level not found. */
 }
 #endif
 
@@ -114,15 +114,16 @@ static int THUNK_MGR = 0;
 #endif
 
 void set_host(rlua_State* L, lua_State* hL);
-lua_State* get_host(rlua_State *L);
+lua_State* get_host(rlua_State* L);
 int copy_value(lua_State* from, rlua_State* to, bool ref);
 void unref_value(lua_State* from, int ref);
 
-#define LOG(...) do { \
-    FILE* f = fopen("dbg.log", "a"); \
-    fprintf(f, __VA_ARGS__); \
-    fclose(f); \
-} while(0)
+#define LOG(...)                         \
+    do {                                 \
+        FILE* f = fopen("dbg.log", "a"); \
+        fprintf(f, __VA_ARGS__);         \
+        fclose(f);                       \
+    } while (0)
 
 template <class T>
 static T* checklightudata(rlua_State* L, int idx) {
@@ -132,7 +133,7 @@ static T* checklightudata(rlua_State* L, int idx) {
 
 static Proto* ci2proto(CallInfo* ci) {
 #ifdef LUAJIT_VERSION
-    GCfunc *func = frame_func(ci);
+    GCfunc* func = frame_func(ci);
 
     if (!isluafunc(func))
         return 0;
@@ -166,8 +167,7 @@ static CallInfo* debug2ci(lua_State* hL, lua_Debug* ar) {
 #endif
 }
 
-CallInfo* get_callinfo(lua_State* L, uint16_t level = 0)
-{
+CallInfo* get_callinfo(lua_State* L, uint16_t level = 0) {
 #ifdef LUAJIT_VERSION
     int size;
     return const_cast<CallInfo*>(lj_debug_frame(L, level, &size));
@@ -194,7 +194,7 @@ struct hookmgr {
     // break
     //
     bpmap break_proto;
-    int   break_mask = 0;
+    int break_mask = 0;
 
     void break_add(lua_State* hL, Proto* p) {
         break_proto.set(p, bpmap::status::Break);
@@ -320,7 +320,7 @@ struct hookmgr {
     int step_current_level = 0;
     int step_target_level = 0;
     int step_mask = 0;
-    
+
     static int stacklevel(lua_State* L) {
         int level = 0;
 #if LUA_VERSION_NUM >= 502
@@ -331,19 +331,16 @@ struct hookmgr {
 
         cTValue *frame, *nextframe, *bot = tvref(L->stack) + LJ_FR2;
         /* Traverse frames backwards. */
-        for (nextframe = frame = L->base - 1; frame > bot;)
-        {
+        for (nextframe = frame = L->base - 1; frame > bot;) {
             if (frame_gc(frame) == obj2gco(L)) {
                 level--;
             }
             level++;
             nextframe = frame;
-            if (frame_islua(frame))
-            {
+            if (frame_islua(frame)) {
                 frame = frame_prevl(frame);
             }
-            else
-            {
+            else {
                 if (frame_isvarg(frame))
                     level--; /* Skip vararg pseudo-frame. */
                 frame = frame_prevd(frame);
@@ -388,7 +385,7 @@ struct hookmgr {
     void step_hook_call(lua_State* hL, lua_Debug* ar) {
 #ifdef LUAJIT_VERSION
         // because luajit enter the hook when call c function but not enter hook when return c funtion,so skip c function
-        if(!isluafunc(frame_func(debug2ci(hL, ar))))
+        if (!isluafunc(frame_func(debug2ci(hL, ar))))
             return;
 #endif
         step_current_level++;
@@ -537,7 +534,8 @@ struct hookmgr {
         if (nargs <= 0) {
             return call_event(0);
         }
-        std::vector<int> refs; refs.resize(nargs);
+        std::vector<int> refs;
+        refs.resize(nargs);
         for (int i = 0; i < nargs; ++i) {
             lua_pushvalue(hL, start + i);
             refs[i] = copy_value(hL, cL, true);
@@ -556,7 +554,7 @@ struct hookmgr {
         switch (ar->event) {
         case LUA_HOOKLINE:
 #ifdef LUAJIT_VERSION
-            if (last_hook_call_in_c){
+            if (last_hook_call_in_c) {
                 thread_mask &= (~LUA_MASKTHREAD);
                 updatehookmask(hL);
                 last_hook_call_in_c = false;
@@ -592,7 +590,7 @@ struct hookmgr {
                 updatehookmask(hL);
 
                 if (update_mask)
-                update_hook(hL);
+                    update_hook(hL);
             }
 #endif
             return;
@@ -677,7 +675,7 @@ struct hookmgr {
 
     lua_State* getmainthread(lua_State* L) {
 #if !defined(RDEBUG_FAST) && LUA_VERSION_NUM >= 502
-        lua_rawgeti(L,  LUA_REGISTRYINDEX, LUA_RIDX_MAINTHREAD);
+        lua_rawgeti(L, LUA_REGISTRYINDEX, LUA_RIDX_MAINTHREAD);
         lua_State* mL = lua_tothread(L, -1);
         lua_pop(L, 1);
         return mL;
@@ -690,7 +688,8 @@ struct hookmgr {
 
     void sethook(lua_State* L, lua_Hook func, int mask, int count) {
         lua_sethook(L, func, mask, count);
-#ifndef LUAJIT_VERSION  //luajit hook info in global_state
+#ifndef LUAJIT_VERSION
+        //luajit hook info in global_state
         lua_State* mainL = getmainthread(L);
         if (mainL != L) {
             lua_sethook(mainL, func, mask, count);
@@ -716,7 +715,7 @@ struct hookmgr {
             sethook(hL, 0, 0, 0);
         }
     }
-    
+
     int update_mask = 0;
     timer update_timer;
     void update_open(lua_State* hL, int enable) {
@@ -922,29 +921,29 @@ int luaopen_remotedebug_hookmgr(rlua_State* L) {
     }
 
     static rluaL_Reg lib[] = {
-        { "init", init },
-        { "sethost", sethost },
-        { "gethost", gethost },
-        { "updatehookmask", updatehookmask },
-        { "stacklevel", stacklevel },
-        { "break_add", break_add },
-        { "break_del", break_del },
-        { "break_open", break_open },
-        { "break_closeline", break_closeline },
-        { "funcbp_open", funcbp_open },
-        { "step_in", step_in },
-        { "step_out", step_out },
-        { "step_over", step_over },
-        { "step_cancel", step_cancel },
-        { "update_open", update_open },
+        {"init", init},
+        {"sethost", sethost},
+        {"gethost", gethost},
+        {"updatehookmask", updatehookmask},
+        {"stacklevel", stacklevel},
+        {"break_add", break_add},
+        {"break_del", break_del},
+        {"break_open", break_open},
+        {"break_closeline", break_closeline},
+        {"funcbp_open", funcbp_open},
+        {"step_in", step_in},
+        {"step_out", step_out},
+        {"step_over", step_over},
+        {"step_cancel", step_cancel},
+        {"update_open", update_open},
 #if defined(LUA_HOOKEXCEPTION)
-        { "exception_open", exception_open },
+        {"exception_open", exception_open},
 #endif
 #if defined(LUA_HOOKTHREAD)
-        { "thread_open", thread_open },
-        { "coroutine_from", coroutine_from },
+        {"thread_open", thread_open},
+        {"coroutine_from", coroutine_from},
 #endif
-        { NULL, NULL },
+        {NULL, NULL},
     };
     rluaL_setfuncs(L, lib, 1);
     return 1;
@@ -960,10 +959,9 @@ int event(rlua_State* cL, lua_State* hL, const char* name, int start) {
     return ok;
 }
 
-int debug_pcall(lua_State* L, int nargs, int nresults, int errfunc)
-{
+int debug_pcall(lua_State* L, int nargs, int nresults, int errfunc) {
 #ifdef LUAJIT_VERSION
-    global_State *g = G(L);
+    global_State* g = G(L);
     bool needClean = !hook_active(g);
     hook_enter(g);
     int ok = lua_pcall(L, nargs, nresults, errfunc);
