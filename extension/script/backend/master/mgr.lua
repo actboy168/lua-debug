@@ -1,7 +1,7 @@
 local proto = require 'common.protocol'
 local ev = require 'backend.event'
 local thread = require 'bee.thread'
-local stdio = require 'remotedebug.stdio'
+local stdio = require 'luadebug.stdio'
 
 local redirect = {}
 local mgr = {}
@@ -144,7 +144,7 @@ function mgr.threads()
             }
         end
     end
-    table.sort(t, function (a, b)
+    table.sort(t, function(a, b)
         return a.name < b.name
     end)
     return t

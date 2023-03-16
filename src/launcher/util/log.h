@@ -29,8 +29,7 @@ namespace luadebug::log {
     }
 #else
     template <typename... T>
-    inline void info(std::format_string<T...> fmt, T&&... args)
-    {}
+    inline void info(std::format_string<T...> fmt, T&&... args) {}
 #endif
 
     template <typename... T>

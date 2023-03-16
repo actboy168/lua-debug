@@ -3,5 +3,5 @@
 #include <string>
 
 namespace luadebug::autoattach {
-    bool wait_dll(bool(*loaded)(std::string const&));
+    bool wait_dll(bool (*loaded)(std::string const&));
 }

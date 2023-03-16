@@ -1,5 +1,0 @@
-> 为什么需要remotedebug?
-
-remotedebug设计的首要目标是尽可能减少调试器对调试目标的影响。虽然lua-debug看起来和其它Lua调试器一样大部分的代码是用Lua编写，但这些Lua没有在调试目标的VM上执行。remotedebug内嵌了一个Lua 5.4的VM，无论调试目标是Lua5.1或者Lua5.4，调试器的代码始终是跑在remotedebug内嵌的Lua 5.4上。调试器只能通过remotedebug提供的API读取和修改调试目标的数据。这样可以最大限度地降低调试器对调试目标的影响。
-
-因此remotedebug可以被调试目标和调试器的代码分别加载，但对它们提供的API并不相同。

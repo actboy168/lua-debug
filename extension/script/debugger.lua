@@ -2,35 +2,41 @@ local root = ...
 
 if debug.getregistry()["lua-debug"] then
     local dbg = debug.getregistry()["lua-debug"]
-    local empty = {root = dbg.root}
+    local empty = { root = dbg.root }
     function empty:init()
         return self
     end
+
     function empty:start()
         return self
     end
+
     function empty:attach()
         return self
     end
+
     function empty:event(what, ...)
         if what == "setThreadName" then
             dbg:event(what, ...)
         end
         return self
     end
+
     function empty:set_wait()
         return self
     end
+
     function empty:setup_patch()
         return self
     end
+
     return empty
 end
 
 local function detectLuaDebugPath(cfg)
     local PLATFORM
     local function isWindows()
-        return package.config:sub(1,1) == "\\"
+        return package.config:sub(1, 1) == "\\"
     end
     do
         local function shell(command)
@@ -95,53 +101,53 @@ local function detectLuaDebugPath(cfg)
         end
     end
 
-    local rt = "/runtime/" .. PLATFORM
+    local rt = "/runtime/"..PLATFORM
     if cfg.latest then
-        rt = rt .. "/lua-latest"
+        rt = rt.."/lua-latest"
     elseif _VERSION == "Lua 5.4" then
-        rt = rt .. "/lua54"
+        rt = rt.."/lua54"
     elseif _VERSION == "Lua 5.3" then
-        rt = rt .. "/lua53"
+        rt = rt.."/lua53"
     elseif _VERSION == "Lua 5.2" then
-        rt = rt .. "/lua52"
+        rt = rt.."/lua52"
     elseif _VERSION == "Lua 5.1" then
         if (tostring(assert):match('builtin') ~= nil) then
-            rt = rt .. "/luajit"
+            rt = rt.."/luajit"
             jit.off()
         else
-            rt = rt .. "/lua51"
+            rt = rt.."/lua51"
         end
     else
-        error(_VERSION .. " is not supported.")
+        error(_VERSION.." is not supported.")
     end
 
     local ext = isWindows() and "dll" or "so"
-    return root..rt..'/remotedebug.'..ext
+    return root..rt..'/luadebug.'..ext
 end
 
 local function initDebugger(dbg, cfg)
     if type(cfg) == "string" then
-        cfg = {address = cfg}
+        cfg = { address = cfg }
     end
 
-    local remotedebug = os.getenv "LUA_DEBUG_CORE"
+    local luadebug = os.getenv "LUA_DEBUG_CORE"
     local updateenv = false
-    if not remotedebug then
-        remotedebug = detectLuaDebugPath(cfg)
+    if not luadebug then
+        luadebug = detectLuaDebugPath(cfg)
         updateenv = true
     end
-    local isWindows = package.config:sub(1,1) == "\\"
+    local isWindows = package.config:sub(1, 1) == "\\"
     if isWindows then
-        assert(package.loadlib(remotedebug,'init'))(cfg.luaapi)
+        assert(package.loadlib(luadebug, 'init'))(cfg.luaapi)
     end
 
-    ---@type RemoteDebug
-    dbg.rdebug = assert(package.loadlib(remotedebug,'luaopen_remotedebug'))()
+    ---@type LuaDebug
+    dbg.rdebug = assert(package.loadlib(luadebug, 'luaopen_luadebug'))()
     if not os.getenv "LUA_DEBUG_PATH" then
-        dbg.rdebug.setenv("LUA_DEBUG_PATH",root)
+        dbg.rdebug.setenv("LUA_DEBUG_PATH", root)
     end
     if updateenv then
-        dbg.rdebug.setenv("LUA_DEBUG_CORE",remotedebug)
+        dbg.rdebug.setenv("LUA_DEBUG_CORE", luadebug)
     end
 
     local function utf8(s)
@@ -163,16 +169,16 @@ function dbg:start(cfg)
         package.path = %q
         require "bee.thread".bootstrap_lua = debug.getinfo(1, "S").source
     ]]):format(
-          self.root..'/script/?.lua'
+        self.root..'/script/?.lua'
     )
-    self.rdebug.start(("assert(load(%q))(...)"):format(bootstrap_lua) .. ([[
+    self.rdebug.start(("assert(load(%q))(...)"):format(bootstrap_lua)..([[
         local logpath = %q
         local log = require 'common.log'
         log.file = logpath..'/worker.log'
         require 'backend.master' .init(logpath, %q)
         require 'backend.worker'
     ]]):format(
-          self.root
+        self.root
         , ("%q, %s"):format(dbg.address, cfg.client == true and "true" or "false")
     ))
     return self
@@ -185,9 +191,9 @@ function dbg:attach(cfg)
         package.path = %q
         require "bee.thread".bootstrap_lua = debug.getinfo(1, "S").source
     ]]):format(
-          self.root..'/script/?.lua'
+        self.root..'/script/?.lua'
     )
-    self.rdebug.start(("assert(load(%q))(...)"):format(bootstrap_lua) .. ([[
+    self.rdebug.start(("assert(load(%q))(...)"):format(bootstrap_lua)..([[
         if require 'backend.master' .has() then
             local logpath = %q
             local log = require 'common.log'
@@ -222,16 +228,18 @@ function dbg:setup_patch()
                 self:event("exception", msg)
                 return msg
             end,
-        ...)
+            ...)
     end
+
     function xpcall(f, msgh, ...)
         return rawxpcall(f,
             function(msg)
                 self:event("exception", msg)
                 return msgh and msgh(msg) or msg
             end
-        , ...)
+            , ...)
     end
+
     local rawcoroutineresume = coroutine.resume
     local rawcoroutinewrap   = coroutine.wrap
     local function coreturn(co, ...)
@@ -242,6 +250,7 @@ function dbg:setup_patch()
         self:event("thread", co, 0)
         return coreturn(co, rawcoroutineresume(co, ...))
     end
+
     function coroutine.wrap(f)
         local wf = rawcoroutinewrap(f)
         local _, co = debug.getupvalue(wf, 1)
@@ -250,6 +259,7 @@ function dbg:setup_patch()
             return coreturn(co, wf(...))
         end
     end
+
     return self
 end
 

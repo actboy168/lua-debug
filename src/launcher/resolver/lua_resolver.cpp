@@ -5,11 +5,11 @@
 namespace luadebug {
     static int (*_lua_pcall)(intptr_t L, int nargs, int nresults, int errfunc);
     static int _lua_pcallk(intptr_t L, int nargs, int nresults, int errfunc, intptr_t ctx, intptr_t k) {
-        return _lua_pcall(L,nargs,nresults,errfunc);
+        return _lua_pcall(L, nargs, nresults, errfunc);
     }
-    static int (*_luaL_loadbuffer)(intptr_t L, const char *buff, size_t size, const char *name);
-    static int _luaL_loadbufferx(intptr_t L, const char *buff, size_t size, const char *name, const char *mode) {
-        return _luaL_loadbuffer(L,buff,size,name);
+    static int (*_luaL_loadbuffer)(intptr_t L, const char* buff, size_t size, const char* name);
+    static int _luaL_loadbufferx(intptr_t L, const char* buff, size_t size, const char* name, const char* mode) {
+        return _luaL_loadbuffer(L, buff, size, name);
     }
 
     intptr_t lua_resolver::find_export(std::string_view name) const {
@@ -22,7 +22,7 @@ namespace luadebug {
 
     intptr_t lua_resolver::find(std::string_view name) const {
         using namespace std::string_view_literals;
-        for (auto& finder : {&lua_resolver::find_export, &lua_resolver::find_symbol}) {
+        for (auto& finder: { &lua_resolver::find_export, &lua_resolver::find_symbol }) {
             if (auto result = (this->*finder)(name)) {
                 return result;
             }
