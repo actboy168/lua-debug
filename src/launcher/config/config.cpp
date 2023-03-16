@@ -18,15 +18,15 @@
 using namespace std::string_view_literals;
 namespace luadebug::autoattach {
     static lua_version lua_version_from_string [[maybe_unused]] (const std::string_view& v) {
-        if (v == "luajit")
+        if (v == "jit" || v == "luajit")
             return lua_version::luajit;
-        if (v == "lua51")
+        else if (v == "5.1" || v == "lua51")
             return lua_version::lua51;
-        if (v == "lua52")
+        else if (v == "5.2" || v == "lua52")
             return lua_version::lua52;
-        if (v == "lua53")
+        else if (v == "5.3" || v == "lua53")
             return lua_version::lua53;
-        if (v == "lua54")
+        else if (v == "5.4" || v == "lua54")
             return lua_version::lua54;
         return lua_version::unknown;
     }
@@ -61,7 +61,7 @@ namespace luadebug::autoattach {
             json["hit_offset"].get_to(res.hit_offset);
             return res;
         } catch (const nlohmann::json::exception& e) {
-            std::cerr << e.what() << '\n';
+            log::info("get_lua_signature {} error: {}", key, e.what());
         }
         return std::nullopt;
     }
@@ -100,7 +100,7 @@ namespace luadebug::autoattach {
         try {
             s >> *config.values;
         } catch (const nlohmann::json::exception& e) {
-            std::cerr << e.what() << '\n';
+            log::info("init_from_file error: {}", e.what());
         }
 
         return true;

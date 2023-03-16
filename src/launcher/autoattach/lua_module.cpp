@@ -8,22 +8,21 @@
 #include <charconv>
 #include <gumpp.hpp>
 
-
 #include <dlfcn.h>
 
 namespace luadebug::autoattach {
     static const char* lua_version_to_string(lua_version v) {
         switch (v) {
         case lua_version::lua51:
-            return "5.1";
+            return "lua51";
         case lua_version::lua52:
-            return "5.2";
+            return "lua52";
         case lua_version::lua53:
-            return "5.3";
+            return "lua53";
         case lua_version::lua54:
-            return "5.4";
+            return "lua54";
         case lua_version::luajit:
-            return "jit";
+            return "luajit";
         default:
             return "unknown";
         }
@@ -80,7 +79,7 @@ namespace luadebug::autoattach {
         default:
             return lua_version::unknown;
         }
-        //TODO: from signature
+        // TODO: from signature
     }
 
     bool load_remotedebug_dll(lua_version version, const lua_resolver& resolver) {

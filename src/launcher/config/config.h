@@ -25,4 +25,4 @@ namespace luadebug::autoattach {
     };
 
     extern Config config;
-} // namespace luadebug::autoattach
+}  // namespace luadebug::autoattach
