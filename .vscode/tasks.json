@@ -18,28 +18,6 @@
     },
     "tasks": [
         {
-            "label": "Test",
-            "command": "luamake",
-            "args": [
-                "test"
-            ]
-        },
-        {
-            "label": "Rebuild",
-            "command": "luamake",
-            "args": [
-                "rebuild"
-            ]
-        },
-        {
-            "label": "Update Version",
-            "command": "luamake",
-            "args": [
-                "lua",
-                "compile/update_version.lua",
-            ]
-        },
-        {
             "label": "Copy Extension",
             "command": "luamake",
             "args": [
