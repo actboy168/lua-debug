@@ -19,10 +19,10 @@ namespace luadebug::autoattach {
 
         std::string get_lua_module() const;
 
-        bool is_remotedebug_by_signature() const;
+        bool is_signature_mode() const;
 
         static bool init_from_file();
     };
 
     extern Config config;
-}// namespace luadebug::autoattach
+} // namespace luadebug::autoattach

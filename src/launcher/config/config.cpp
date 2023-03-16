@@ -50,34 +50,21 @@ namespace luadebug::autoattach {
         if (it == values->end()) {
             return std::nullopt;
         }
-
-        //split key by .
-        std::vector<std::string_view> keys;
-        std::string_view key_view = key;
-        while (!key_view.empty()) {
-            auto pos = key_view.find('.');
-            if (pos == std::string_view::npos) {
-                keys.push_back(key_view);
-                break;
-            }
-            keys.push_back(key_view.substr(0, pos));
-            key_view = key_view.substr(pos + 1);
+        try {
+            const auto& json = (*it)[key];
+            // searilize json to signture
+            signture res = {};
+            json["name"].get_to(res.name);
+            json["start_offset"].get_to(res.start_offset);
+            json["end_offset"].get_to(res.end_offset);
+            json["pattern"].get_to(res.pattern);
+            json["pattern_offset"].get_to(res.pattern_offset);
+            json["hit_offset"].get_to(res.hit_offset);
+            return res;
+        } catch (const nlohmann::json::exception& e) {
+            std::cerr << e.what() << '\n';
         }
-
-        nlohmann::json& json = *it;
-        for (const auto& key: keys) {
-            json = json[key];
-        }
-
-        // searilize json to signture
-        signture res = {};
-        json["name"].get_to(res.name);
-        json["start_offset"].get_to(res.start_offset);
-        json["end_offset"].get_to(res.end_offset);
-        json["pattern"].get_to(res.pattern);
-        json["pattern_offset"].get_to(res.pattern_offset);
-        json["hit_offset"].get_to(res.hit_offset);
-        return res;
+        return std::nullopt;
     }
 
     std::string Config::get_lua_module() const {
@@ -94,8 +81,8 @@ namespace luadebug::autoattach {
         return value;
     }
 
-    bool Config::is_remotedebug_by_signature() const {
-        const auto key = "remotedebug_by_signature"sv;
+    bool Config::is_signature_mode() const {
+        const auto key = "signature_mode"sv;
         return values->find(key) != values->end();
     }
 
@@ -111,8 +98,12 @@ namespace luadebug::autoattach {
         std::ifstream s(filename, s.in);
         if (!s.is_open())
             return false;
+        try {
+            s >> *config.values;
+        } catch (const nlohmann::json::exception& e) {
+            std::cerr << e.what() << '\n';
+        }
 
-        s >> *config.values;
         return true;
     }
 

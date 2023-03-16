@@ -8,6 +8,7 @@
 #include <charconv>
 #include <gumpp.hpp>
 
+
 #include <dlfcn.h>
 
 namespace luadebug::autoattach {
@@ -29,7 +30,7 @@ namespace luadebug::autoattach {
     }
 
     static bool in_module(const lua_module& m, void* addr) {
-        return addr > m.memory_address && addr <= (void*)((intptr_t)m.memory_address + m.memory_size);
+        return addr >= m.memory_address && addr <= (void*)((intptr_t)m.memory_address + m.memory_size);
     }
 
     static lua_version get_lua_version(const lua_module& m) {
@@ -82,7 +83,7 @@ namespace luadebug::autoattach {
         //TODO: from signature
     }
 
-    bool load_remotedebug_dll(lua_version version) {
+    bool load_remotedebug_dll(lua_version version, const lua_resolver& resolver) {
         if (version != lua_version::unknown)
             return false;
 
@@ -118,12 +119,18 @@ namespace luadebug::autoattach {
             ;
         auto platform = std::format("{}-{}", os, arch);
         auto path = dllpath.value().parent_path().parent_path() / "runtime" / platform / lua_version_to_string(version);
+#ifdef _WIN32
 
+#else
         dlopen(path.c_str(), RTLD_LAZY | RTLD_LOCAL);
-
-        Gum::Process::module_enumerate_import(path.c_str(), [](const Gum::ImportDetails& details) -> bool {
+#endif
+        Gum::Process::module_enumerate_import(path.c_str(), [&](const Gum::ImportDetails& details) -> bool {
             if (std::string_view(details.name).find_first_of("lua") != 0) {
                 return true;
+            }
+            if (auto address = (void*)resolver.find_signture(details.name)) {
+                *(void**)details.slot = address;
+                log::info("find signture {} to {}", details.name, address);
             }
             return true;
         });
@@ -139,9 +146,11 @@ namespace luadebug::autoattach {
         }
         version = get_lua_version(*this);
         log::info("current lua version: {}", lua_version_to_string(version));
+        if (version != lua_version::unknown)
+            resolver.version = lua_version_to_string(version);
 
-        if (config.is_remotedebug_by_signature()) {
-            load_remotedebug_dll(version);
+        if (config.is_signature_mode()) {
+            load_remotedebug_dll(version, resolver);
         }
 
         watchdog = create_watchdog(attach_lua_vm, version, resolver);

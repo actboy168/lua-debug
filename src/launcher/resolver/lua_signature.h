@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include <string_view>
 
 namespace luadebug::autoattach {
     struct signture {
@@ -9,5 +10,6 @@ namespace luadebug::autoattach {
         std::string pattern;
         int32_t pattern_offset = 0;
         uint8_t hit_offset = 0;
+        intptr_t find(const char* module_name) const;
     };
 }

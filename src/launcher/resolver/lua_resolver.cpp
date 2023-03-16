@@ -1,6 +1,8 @@
 #include <resolver/lua_resolver.h>
 #include <gumpp.hpp>
 #include <string_view>
+#include <resolver/lua_signature.h>
+#include <config/config.h>
 
 namespace luadebug {
     static int (*_lua_pcall)(intptr_t L, int nargs, int nresults, int errfunc);
@@ -20,9 +22,22 @@ namespace luadebug {
         return (intptr_t)Gum::Process::module_find_symbol_by_name(module_name.data(), name.data());
     }
 
+    intptr_t lua_resolver::find_signture(std::string_view name) const {
+        if (!version.empty()) {
+            if (auto signature = autoattach::config.get_lua_signature(version + "." + std::string(name))) {
+                return signature->find(module_name.data());
+            }
+        }
+
+        if (auto signature = autoattach::config.get_lua_signature(std::string(name))) {
+            return signature->find(module_name.data());
+        }
+        return 0;
+    }
+
     intptr_t lua_resolver::find(std::string_view name) const {
         using namespace std::string_view_literals;
-        for (auto& finder: { &lua_resolver::find_export, &lua_resolver::find_symbol }) {
+        for (auto& finder: { &lua_resolver::find_export, &lua_resolver::find_symbol, &lua_resolver::find_signture }) {
             if (auto result = (this->*finder)(name)) {
                 return result;
             }
