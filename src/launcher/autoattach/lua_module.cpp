@@ -100,7 +100,7 @@ namespace luadebug::autoattach {
 
         watchdog = create_watchdog(attach_lua_vm, version, resolver);
         if (!watchdog) {
-            //TODO: more errmsg
+            // TODO: more errmsg
             log::fatal("watchdog initialize failed");
             return false;
         }

@@ -152,7 +152,7 @@ namespace luadebug {
                 return Addr2Symbol((void*)(dwAddress + 5 + offset));
             }
 #else
-            //TODO ARM64/ARM64EC
+            // TODO ARM64/ARM64EC
 #endif // _M_AMD64
         }
         Symbol sb;

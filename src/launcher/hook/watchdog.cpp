@@ -71,7 +71,7 @@ namespace luadebug::autoattach {
         };
         static inline std::atomic<size_t> used = 0;
         static size_t create_instance_id() {
-            //TODO: free instance id
+            // TODO: free instance id
             return 1 + std::atomic_fetch_add(&used, 1);
         }
         static lua::hook create(watchdog* w) {
@@ -120,8 +120,8 @@ namespace luadebug::autoattach {
         switch (attach_lua_vm(L)) {
         case attach_status::fatal:
         case attach_status::success:
-            //TODO: how to free so
-            //TODO: free all resources
+            // TODO: how to free so
+            // TODO: free all resources
             break;
         case attach_status::wait:
             set_luahook(L, fn);

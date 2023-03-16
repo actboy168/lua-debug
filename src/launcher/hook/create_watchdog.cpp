@@ -50,7 +50,7 @@ namespace luadebug::autoattach {
     watchdog* create_watchdog(fn_attach attach_lua_vm, lua_version version, const lua::resolver& resolver) {
         watchdog* context = new watchdog(attach_lua_vm);
         if (context->init(resolver, get_watch_points(version))) {
-            //TODO: fix other thread pc
+            // TODO: fix other thread pc
             context->hook();
             return context;
         }
@@ -58,7 +58,7 @@ namespace luadebug::autoattach {
             return nullptr;
         }
         if (context->init(resolver, get_watch_points(lua_version::unknown))) {
-            //TODO: fix other thread pc
+            // TODO: fix other thread pc
             context->hook();
             return context;
         }

@@ -13,9 +13,6 @@ MaxEmptyLinesToKeep: 2
 NamespaceIndentation: All
 PackConstructorInitializers: Never
 SortIncludes: Never
-SpacesInLineCommentPrefix:
-  Minimum: 0
-  Maximum: -1
 SpaceBeforeCpp11BracedList: true
 SpacesBeforeTrailingComments: 1
 

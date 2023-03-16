@@ -123,7 +123,7 @@ lhost_start(lua_State* L) {
     rlua_pushlightuserdata(cL, (void*)mainscript);
     rlua_pushlightuserdata(cL, (void*)L);
     if (preprocessor) {
-        //TODO: convert C function？
+        // TODO: convert C function？
         rlua_pushcfunction(cL, (rlua_CFunction)preprocessor);
     }
     else {

@@ -1356,8 +1356,8 @@ lclient_getinfo(rlua_State* L) {
     }
 #ifdef LUAJIT_VERSION
     if (hasSFlag && strcmp(ar.what, "main") == 0) {
-        //carzy bug,luajit is real linedefined in main file,but in lua it's zero
-        //maybe fix it is a new bug
+        // carzy bug,luajit is real linedefined in main file,but in lua it's zero
+        // maybe fix it is a new bug
         ar.lastlinedefined = 0;
     }
 #endif

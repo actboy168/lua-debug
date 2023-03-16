@@ -688,7 +688,7 @@ struct hookmgr {
     void sethook(lua_State* L, lua_Hook func, int mask, int count) {
         lua_sethook(L, func, mask, count);
 #ifndef LUAJIT_VERSION
-        //luajit hook info in global_state
+        // luajit hook info in global_state
         lua_State* mainL = getmainthread(L);
         if (mainL != L) {
             lua_sethook(mainL, func, mask, count);
