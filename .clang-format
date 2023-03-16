@@ -17,7 +17,3 @@ SpaceBeforeCpp11BracedList: true
 BreakBeforeBraces: Custom
 BraceWrapping:
   BeforeElse: true
-
-WhitespaceSensitiveMacros:
-  - LUA_STRINGIZE
-  - LUA_STRINGIZE_

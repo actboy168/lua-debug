@@ -8,9 +8,10 @@
 #    if !defined(LUA_DLL_VERSION)
 #        error "Need LUA_DLL_VERSION"
 #    endif
-
+// clang-format off
 #    define LUA_STRINGIZE(_x) LUA_STRINGIZE_(_x)
 #    define LUA_STRINGIZE_(_x) #_x
+// clang-format on
 
 #    define LUA_DLL_NAME LUA_STRINGIZE(LUA_DLL_VERSION) ".dll"
 
