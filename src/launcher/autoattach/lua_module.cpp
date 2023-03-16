@@ -14,15 +14,15 @@ namespace luadebug::autoattach {
     static const char* lua_version_to_string(lua_version v) {
         switch (v) {
         case lua_version::lua51:
-            return "lua51";
+            return "5.1";
         case lua_version::lua52:
-            return "lua52";
+            return "5.2";
         case lua_version::lua53:
-            return "lua53";
+            return "5.3";
         case lua_version::lua54:
-            return "lua54";
+            return "5.4";
         case lua_version::luajit:
-            return "luajit";
+            return "jit";
         default:
             return "unknown";
         }
