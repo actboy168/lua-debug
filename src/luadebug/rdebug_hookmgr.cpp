@@ -10,7 +10,7 @@
 #include "rdebug_eventfree.h"
 #include "thunk/thunk.h"
 #if !defined(RDEBUG_USE_STDMAP)
-#include "rdebug_flatmap.h"
+#    include "rdebug_flatmap.h"
 #endif
 
 class bpmap {
@@ -66,10 +66,10 @@ private:
 
 #include "rluaobject.h"
 #ifdef LUAJIT_VERSION
-#include <lj_arch.h>
-#include <lj_frame.h>
-#include <lj_obj.h>
-#include <lj_debug.h>
+#    include <lj_arch.h>
+#    include <lj_frame.h>
+#    include <lj_obj.h>
+#    include <lj_debug.h>
 using lu_byte = uint8_t;
 using CallInfo = TValue;
 cTValue* lj_debug_frame(lua_State* L, int level, int* size) {
@@ -98,13 +98,13 @@ cTValue* lj_debug_frame(lua_State* L, int level, int* size) {
 #endif
 
 #if LUA_VERSION_NUM < 504
-#define s2v(o) (o)
+#    define s2v(o) (o)
 #endif
 
 #if defined(LUA_VERSION_LATEST)
-#define LUA_STKID(s) s.p
+#    define LUA_STKID(s) s.p
 #else
-#define LUA_STKID(s) s
+#    define LUA_STKID(s) s
 #endif
 
 static int HOOK_MGR = 0;
@@ -140,17 +140,17 @@ static Proto* ci2proto(CallInfo* ci) {
     return funcproto(func);
 #else
     StkId func = LUA_STKID(ci->func);
-#if LUA_VERSION_NUM >= 502
+#    if LUA_VERSION_NUM >= 502
     if (!ttisLclosure(s2v(func))) {
         return 0;
     }
     return clLvalue(s2v(func))->p;
-#else
+#    else
     if (clvalue(func)->c.isC) {
         return 0;
     }
     return clvalue(func)->l.p;
-#endif
+#    endif
 #endif
 }
 
@@ -158,12 +158,12 @@ static CallInfo* debug2ci(lua_State* hL, lua_Debug* ar) {
 #if LUA_VERSION_NUM >= 502
     return ar->i_ci;
 #else
-#ifdef LUAJIT_VERSION
+#    ifdef LUAJIT_VERSION
     uint32_t offset = (uint32_t)ar->i_ci & 0xffff;
     return tvref(hL->stack) + offset;
-#else
+#    else
     return hL->base_ci + ar->i_ci;
-#endif
+#    endif
 #endif
 }
 
@@ -445,12 +445,12 @@ struct hookmgr {
         int errcode;
         set_host(cL, hL);
         rlua_pushstring(cL, "exception");
-#if LUA_VERSION_NUM >= 504
+#    if LUA_VERSION_NUM >= 504
         LUA_STKID(hL->top) = LUA_STKID(hL->stack) + ar->currentline;
         errcode = ar->i_ci->u2.transferinfo.ntransfer;
-#else
+#    else
         errcode = ar->currentline;
-#endif
+#    endif
         int ref = copy_value(hL, cL, true);
         rlua_pushinteger(cL, errcode);
         if (rlua_pcall(cL, 3, 0, 0) != LUA_OK) {

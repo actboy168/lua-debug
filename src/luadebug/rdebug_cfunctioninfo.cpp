@@ -1,15 +1,15 @@
 #include "rdebug_cfunctioninfo.h"
 
 #if defined(_WIN32)
-#include <windows.h>
-#include <DbgHelp.h>
+#    include <windows.h>
+#    include <DbgHelp.h>
 #else
-#include <dlfcn.h>
-#include <unistd.h>
+#    include <dlfcn.h>
+#    include <unistd.h>
 #endif
 
 #if defined(__GNUC__)
-#include <cxxabi.h>
+#    include <cxxabi.h>
 #endif
 
 #include <bee/subprocess.h>
@@ -116,11 +116,11 @@ namespace luadebug {
 
     inline std::optional<Symbol> Addr2Symbol(void* pObject) {
         static constexpr size_t max_sym_name =
-#ifdef MAX_SYM_NAME
+#    ifdef MAX_SYM_NAME
             MAX_SYM_NAME;
-#else
+#    else
             2000;
-#endif  // DEBUG
+#    endif  // DEBUG
         struct MY_SYMBOL_INFO : SYMBOL_INFO {
             char name_buffer[MAX_SYM_NAME];
         };
@@ -130,11 +130,11 @@ namespace luadebug {
             return std::nullopt;
         }
         using PTR_T =
-#ifdef _WIN64
+#    ifdef _WIN64
             DWORD64;
-#else
+#    else
             DWORD;
-#endif
+#    endif
         PTR_T dwAddress = PTR_T(pObject);
         DWORD64 dwDisplacement = 0;
 
@@ -145,15 +145,15 @@ namespace luadebug {
             return std::nullopt;
         }
         if (sym.Flags & SYMFLAG_PUBLIC_CODE) {
-#if defined(_M_AMD64)
+#    if defined(_M_AMD64)
             uint8_t OP = *(uint8_t*)dwAddress;
             if (OP == 0xe9) {
                 int32_t offset = *(int32_t*)((char*)dwAddress + 1);
                 return Addr2Symbol((void*)(dwAddress + 5 + offset));
             }
-#else
+#    else
             // TODO ARM64/ARM64EC
-#endif  // _M_AMD64
+#    endif  // _M_AMD64
         }
         Symbol sb;
         {
@@ -166,18 +166,18 @@ namespace luadebug {
         IMAGEHLP_MODULE md = {};
         md.SizeOfStruct = sizeof(IMAGEHLP_MODULE);
         if (SymGetModuleInfo(handler.hProcess, dwAddress, &md)) {
-#if defined(_WIN64)
+#    if defined(_WIN64)
             if (md.LineNumbers) {
-#endif
+#    endif
                 IMAGEHLP_LINE line = {};
                 line.SizeOfStruct = sizeof(IMAGEHLP_LINE);
                 DWORD lineDisplacement = 0;
                 if (SymGetLineFromAddr(handler.hProcess, dwAddress, &lineDisplacement, &line)) {
                     sb.file = { line.FileName, line.LineNumber };
                 }
-#if defined(_WIN64)
+#    if defined(_WIN64)
             }
-#endif
+#    endif
             sb.module_name = md.ModuleName;
         }
 
@@ -186,11 +186,11 @@ namespace luadebug {
     };
 #else
     static std::string demangle_name(const char* name) {
-#if defined(__GNUC__)
+#    if defined(__GNUC__)
         int status = 0;
         std::unique_ptr<char, decltype(&free)> realname(abi::__cxa_demangle(name, 0, 0, &status), free);
         return realname.get();
-#endif
+#    endif
         return name;
     }
     static inline std::optional<std::string> shellcommand(const char** argp) {
@@ -234,7 +234,7 @@ namespace luadebug {
         return res;
     }
 
-#if defined(__APPLE__)
+#    if defined(__APPLE__)
     static std::optional<std::string> get_function_atos(void* ptr) {
         struct AtosInfo {
             std::string pid;
@@ -258,9 +258,9 @@ namespace luadebug {
         }
         return std::nullopt;
     }
-#endif
+#    endif
 
-#if defined(__linux__)
+#    if defined(__linux__)
     static std::optional<std::string> get_function_addr2line(const char* fname, intptr_t offset) {
         auto offset_x = std::format("{:#x}", offset);
         const char* args[] = {
@@ -280,7 +280,7 @@ namespace luadebug {
         }
         return std::nullopt;
     }
-#endif
+#    endif
 #endif  // _WIN32
 
     std::optional<std::string> get_functioninfo(void* ptr) {
@@ -307,13 +307,13 @@ namespace luadebug {
         if (ptr > info.dli_fbase) {
             void* calc_address = info.dli_saddr == ptr ? info.dli_saddr : ptr;
             std::optional<std::string> funcinfo
-#if defined(__APPLE__)
+#    if defined(__APPLE__)
                 = get_function_atos(calc_address);
-#elif defined(__linux__)
+#    elif defined(__linux__)
                 = get_function_addr2line(info.dli_fname, (intptr_t)calc_address - (intptr_t)info.dli_fbase);
-#else
+#    else
                 ;
-#endif
+#    endif
             if (funcinfo.has_value()) {
                 return funcinfo;
             }

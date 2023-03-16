@@ -1,7 +1,7 @@
 #if defined(_MSC_VER)
 
-#include <lua.hpp>
-#include "rdebug_delayload.h"
+#    include <lua.hpp>
+#    include "rdebug_delayload.h"
 
 extern "C" __declspec(dllexport) int init(lua_State* L) {
     luadebug::delayload::caller_is_luadll(_ReturnAddress());

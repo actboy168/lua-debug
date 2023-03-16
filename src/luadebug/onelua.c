@@ -2,11 +2,11 @@
 #include "rlua.h"
 
 #if defined(__linux__)
-#define LUA_USE_LINUX
+#    define LUA_USE_LINUX
 #elif defined(__APPLE__)
-#define LUA_USE_MACOSX
+#    define LUA_USE_MACOSX
 #elif defined(_WIN32)
-#include "utf8_crt.c"
+#    include "utf8_crt.c"
 #endif
 
 #define LUAI_MAXCCALLS 1000

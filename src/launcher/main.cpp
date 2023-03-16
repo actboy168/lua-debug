@@ -4,13 +4,13 @@
 #include <bee/nonstd/filesystem.h>
 #include <bee/utility/path_helper.h>
 #ifndef _WIN32
-#include <unistd.h>
-#define DLLEXPORT __attribute__((visibility("default")))
-#define DLLEXPORT_DECLARATION
+#    include <unistd.h>
+#    define DLLEXPORT __attribute__((visibility("default")))
+#    define DLLEXPORT_DECLARATION
 #else
-#include <windows.h>
-#define DLLEXPORT __declspec(dllexport)
-#define DLLEXPORT_DECLARATION __cdecl
+#    include <windows.h>
+#    define DLLEXPORT __declspec(dllexport)
+#    define DLLEXPORT_DECLARATION __cdecl
 #endif
 #include <string>
 #include <string_view>

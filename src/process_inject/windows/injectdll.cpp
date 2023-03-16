@@ -1,5 +1,5 @@
 #if defined(_M_X64)
-#error unsupport x86_64
+#    error unsupport x86_64
 #endif
 
 #include "injectdll.h"

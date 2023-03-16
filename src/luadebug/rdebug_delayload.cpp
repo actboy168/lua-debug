@@ -1,18 +1,18 @@
 #if defined(_MSC_VER)
 
-#include "rdebug_delayload.h"
-#include <lua.hpp>
-#define DELAYIMP_INSECURE_WRITABLE_HOOKS
-#include <DelayImp.h>
+#    include "rdebug_delayload.h"
+#    include <lua.hpp>
+#    define DELAYIMP_INSECURE_WRITABLE_HOOKS
+#    include <DelayImp.h>
 
-#if !defined(LUA_DLL_VERSION)
-#error "Need LUA_DLL_VERSION"
-#endif
+#    if !defined(LUA_DLL_VERSION)
+#        error "Need LUA_DLL_VERSION"
+#    endif
 
-#define LUA_STRINGIZE(_x) LUA_STRINGIZE_(_x)
-#define LUA_STRINGIZE_(_x) #_x
+#    define LUA_STRINGIZE(_x) LUA_STRINGIZE_(_x)
+#    define LUA_STRINGIZE_(_x) #_x
 
-#define LUA_DLL_NAME LUA_STRINGIZE(LUA_DLL_VERSION) ".dll"
+#    define LUA_DLL_NAME LUA_STRINGIZE(LUA_DLL_VERSION) ".dll"
 
 namespace luadebug::delayload {
     typedef FARPROC (*FindLuaApi)(const char* name);

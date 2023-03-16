@@ -2,10 +2,10 @@
 
 #if defined(_WIN32)
 
-#include <windows.h>
-#include <fcntl.h>
-#include <io.h>
-#include <stdio.h>
+#    include <windows.h>
+#    include <fcntl.h>
+#    include <io.h>
+#    include <stdio.h>
 
 namespace luadebug {
 
@@ -101,11 +101,11 @@ namespace luadebug {
 
 #else
 
-#include <fcntl.h>
-#include <unistd.h>
-#if defined(__APPLE__)
-#include <assert.h>
-#endif
+#    include <fcntl.h>
+#    include <unistd.h>
+#    if defined(__APPLE__)
+#        include <assert.h>
+#    endif
 
 namespace luadebug {
     redirect::handle_t kInvalidHandle = -1;
@@ -119,7 +119,7 @@ namespace luadebug {
         close();
     }
 
-#if defined(__APPLE__)
+#    if defined(__APPLE__)
     static void no_blocking(int s) {
         int flags = fcntl(s, F_GETFL, 0);
         int rc = fcntl(s, F_SETFL, flags | O_NONBLOCK);
@@ -136,7 +136,7 @@ namespace luadebug {
         no_blocking(pipefd[1]);
         return ok;
     }
-#endif
+#    endif
 
     bool redirect::open(std_fd type) {
         if (pipe2(m_pipe, O_NONBLOCK) == -1) {

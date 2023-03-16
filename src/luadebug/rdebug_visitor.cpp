@@ -10,7 +10,7 @@
 #include "rdebug_table.h"
 
 #ifdef LUAJIT_VERSION
-#include "rluaobject.h"
+#    include "rluaobject.h"
 #endif
 #include "rdebug_cfunctioninfo.h"
 int debug_pcall(lua_State* L, int nargs, int nresults, int errfunc);

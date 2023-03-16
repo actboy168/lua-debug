@@ -68,9 +68,9 @@ client_main(rlua_State* L) {
     luadebug::require_all(L);
 
 #if !defined(RLUA_DISABLE) || LUA_VERSION_NUM >= 504
-#if !defined(LUA_GCGEN)
-#define LUA_GCGEN 10
-#endif
+#    if !defined(LUA_GCGEN)
+#        define LUA_GCGEN 10
+#    endif
     rlua_gc(L, LUA_GCGEN, 0, 0);
 #endif
     const char* mainscript = (const char*)rlua_touserdata(L, 1);
@@ -153,7 +153,7 @@ lhost_event(lua_State* L) {
 }
 
 #if defined(_WIN32) && !defined(RLUA_DISABLE)
-#include <bee/platform/win/unicode.h>
+#    include <bee/platform/win/unicode.h>
 
 static std::string_view
 to_strview(lua_State* L, int idx) {

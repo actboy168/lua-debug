@@ -1,7 +1,7 @@
 #if defined(_MSC_VER)
-#include "rdebug_delayload.h"
-#include <Windows.h>
-#include <stdint.h>
+#    include "rdebug_delayload.h"
+#    include <Windows.h>
+#    include <stdint.h>
 
 namespace luadebug {
     static uintptr_t rva_to_addr(HMODULE module, uintptr_t rva) {

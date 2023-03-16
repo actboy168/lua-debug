@@ -2,9 +2,9 @@
 
 #ifdef _WIN32
 
-#include <windows.h>
-#include <winternl.h>
-#include <bee/nonstd/filesystem.h>
+#    include <windows.h>
+#    include <winternl.h>
+#    include <bee/nonstd/filesystem.h>
 
 namespace luadebug::autoattach {
     bool wait_dll(bool (*loaded)(std::string const&)) {

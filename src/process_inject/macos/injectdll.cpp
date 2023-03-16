@@ -46,9 +46,9 @@ vm_address_t get_symbol_address(void* ptr) {
     return 0;
 }
 #ifndef CPU_TYPE_ARM64
-#define CPU_TYPE_ARM ((cpu_type_t)12)
-#define CPU_ARCH_ABI64 0x01000000
-#define CPU_TYPE_ARM64 (CPU_TYPE_ARM | CPU_ARCH_ABI64)
+#    define CPU_TYPE_ARM ((cpu_type_t)12)
+#    define CPU_ARCH_ABI64 0x01000000
+#    define CPU_TYPE_ARM64 (CPU_TYPE_ARM | CPU_ARCH_ABI64)
 #endif
 uint64_t injector__get_system_arch() {
     size_t size;
@@ -70,7 +70,7 @@ uint64_t injector__get_system_arch() {
     return type;
 }
 #ifndef P_TRANSLATED
-#define P_TRANSLATED 0x00020000
+#    define P_TRANSLATED 0x00020000
 #endif
 uint64_t injector__get_process_arch(pid_t pid) {
     int mib[CTL_MAXNAME] = { 0 };

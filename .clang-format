@@ -7,7 +7,7 @@ ColumnLimit: 0
 Cpp11BracedListStyle: false
 FixNamespaceComments: false
 IndentCaseLabels: false
-#IndentPPDirectives: AfterHash
+IndentPPDirectives: AfterHash
 IndentWidth: 4
 NamespaceIndentation: All
 PackConstructorInitializers: Never
