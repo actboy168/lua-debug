@@ -49,7 +49,7 @@ namespace luadebug::autoattach {
             luaJIT_version_2_1_0_beta1
             luaJIT_version_2_1_0_alpha
         */
-        for (void* addr: Gum::SymbolUtil::find_matching_functions("luaJIT_version_2_1_0*", true)) {
+        for (void* addr : Gum::SymbolUtil::find_matching_functions("luaJIT_version_2_1_0*", true)) {
             if (in_module(m, addr))
                 return lua_version::luajit;
         }

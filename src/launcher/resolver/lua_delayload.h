@@ -88,7 +88,7 @@ namespace luadebug::lua::impl {
 
 namespace luadebug::lua {
     inline const char* initialize(resolver& r) {
-        for (auto& f: impl::initfunc::v) {
+        for (auto& f : impl::initfunc::v) {
             auto error_name = f(r);
             if (error_name)
                 return error_name;

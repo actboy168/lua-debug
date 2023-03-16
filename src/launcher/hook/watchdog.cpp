@@ -11,7 +11,7 @@ namespace luadebug::autoattach {
         , attach_lua_vm(attach_lua_vm) {}
 
     bool watchdog::hook() {
-        for (auto& point: watch_points) {
+        for (auto& point : watch_points) {
             if (!point.address) {
                 continue;
             }
@@ -44,7 +44,7 @@ namespace luadebug::autoattach {
 
     bool watchdog::init(const lua::resolver& resolver, std::vector<watch_point>&& points) {
         bool ok = false;
-        for (auto& point: points) {
+        for (auto& point : points) {
             if (point.find_symbol(resolver)) {
                 ok = true;
             }

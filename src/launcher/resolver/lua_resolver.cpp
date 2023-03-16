@@ -22,7 +22,7 @@ namespace luadebug {
 
     intptr_t lua_resolver::find(std::string_view name) const {
         using namespace std::string_view_literals;
-        for (auto& finder: { &lua_resolver::find_export, &lua_resolver::find_symbol }) {
+        for (auto& finder : { &lua_resolver::find_export, &lua_resolver::find_symbol }) {
             if (auto result = (this->*finder)(name)) {
                 return result;
             }
