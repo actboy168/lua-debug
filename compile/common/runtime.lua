@@ -160,6 +160,7 @@ for _, luaver in ipairs { "lua51", "lua52", "lua53", "lua54", "lua-latest", "lua
             luaSrcDir,
             "3rd/bee.lua/",
             "3rd/bee.lua/3rd/lua-seri",
+            "src/luadebug/",
         },
         sources = {
             "src/luadebug/**/*.cpp",

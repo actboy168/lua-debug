@@ -4,5 +4,5 @@
 #include <string>
 
 namespace luadebug {
-    std::optional<std::string> get_functioninfo(void* ptr);
+    std::optional<std::string> symbolize(const void* ptr);
 }
