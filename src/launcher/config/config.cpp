@@ -45,7 +45,7 @@ namespace luadebug::autoattach {
     }
 
     std::optional<signture> Config::get_lua_signature(const std::string& key) const {
-        const auto signture_key = "signture"sv;
+        const auto signture_key = "functions"sv;
         auto it = values->find(signture_key);
         if (it == values->end()) {
             return std::nullopt;
@@ -81,8 +81,7 @@ namespace luadebug::autoattach {
     }
 
     bool Config::is_signature_mode() const {
-        const auto key = "signature_mode"sv;
-        return values->find(key) != values->end();
+        return !values->is_null();
     }
 
     bool Config::init_from_file() {

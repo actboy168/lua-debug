@@ -252,6 +252,44 @@ Debugger address.
         },
         type = "string",
     },
+    signature = {
+        default = "null",
+        type = "object",
+        markdownDescription = "signature info",
+        properties = {
+            lua_module = {
+                default = "null",
+                type = "string",
+                markdownDescription = "lua module path or name",
+            },
+            functions = {
+                default = "null",
+                type = "object",
+                additionalProperties = {
+                    type = "object",
+                    properties = {
+                        start_offset = {
+                            type = "integer"
+                        },
+                        end_offset = {
+                            type = "integer"
+                        },
+                        pattern = {
+                            type = "string"
+                        },
+                        pattern_offset = {
+                            type = "integer"
+                        },
+                        hit_offset = {
+                            type = "integer",
+                        }
+                    },
+                    required = { "pattern" }
+                }
+            }
+        },
+        required = { "functions" }
+    }
 }
 
 if OS == "win32" then
