@@ -17,8 +17,8 @@ namespace luadebug::autoattach {
 
     constexpr auto find_lua_module_key = "lua_newstate";
     static bool is_lua_module(const char* module_path) {
-		if (config.get_lua_module() == module_path)
-			return true;
+        if (std::string_view(module_path).find(config.get_lua_module()) != std::string_view::npos)
+            return true;
         if (Gum::Process::module_find_export_by_name(module_path, find_lua_module_key))
             return true;
         return Gum::Process::module_find_symbol_by_name(module_path, find_lua_module_key) != nullptr;
@@ -39,10 +39,10 @@ namespace luadebug::autoattach {
     }
 
     void start() {
-		if (!Config::init_from_file()){
-			log::info("can't load config");
-			return;
-		}
+        if (!Config::init_from_file()) {
+            log::info("can't load config");
+            return;
+        }
         bool found = false;
         lua_module rm = {};
         Gum::Process::enumerate_modules([&rm, &found](const Gum::ModuleDetails& details) -> bool {

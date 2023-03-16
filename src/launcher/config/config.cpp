@@ -54,7 +54,6 @@ namespace luadebug::autoattach {
             const auto& json = (*it)[key];
             // searilize json to signture
             signture res = {};
-            json["name"].get_to(res.name);
             json["start_offset"].get_to(res.start_offset);
             json["end_offset"].get_to(res.end_offset);
             json["pattern"].get_to(res.pattern);
@@ -107,4 +106,4 @@ namespace luadebug::autoattach {
         return true;
     }
 
-} // namespace luadebug::autoattach
+}  // namespace luadebug::autoattach
