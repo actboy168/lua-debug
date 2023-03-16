@@ -18,6 +18,14 @@
     },
     "tasks": [
         {
+            "label": "Clang Format",
+            "command": "luamake",
+            "args": [
+                "lua",
+                "compile/clang-format.lua",
+            ]
+        },
+        {
             "label": "Copy Extension",
             "command": "luamake",
             "args": [
