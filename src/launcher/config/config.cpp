@@ -5,7 +5,7 @@
 
 #include <fstream>
 #include <iostream>
-#include <regex>
+#include <string_view>
 
 #include <bee/nonstd/filesystem.h>
 #include <bee/nonstd/format.h>
@@ -15,6 +15,7 @@
 
 #include <nlohmann/json.hpp>
 
+using namespace std::string_view_literals;
 namespace luadebug::autoattach {
     static lua_version lua_version_from_string [[maybe_unused]] (const std::string_view& v) {
         if (v == "luajit")
@@ -33,7 +34,7 @@ namespace luadebug::autoattach {
     Config config;
 
     lua_version Config::get_lua_version() const {
-        std::string key = "lua_version";
+        const auto key = "lua_version"sv;
 
         auto it = values->find(key);
         if (!values || it == values->end()) {
@@ -44,36 +45,43 @@ namespace luadebug::autoattach {
     }
 
     std::optional<signture> Config::get_lua_signature(const std::string& key) const {
-        auto it = values->find(key);
+        const auto signture_key = "signture"sv;
+        auto it = values->find(signture_key);
         if (it == values->end()) {
             return std::nullopt;
         }
-        const auto& value = it->get<std::string>();
-        if (value.empty())
-            return std::nullopt;
-        // value string match regex
-        std::regex re(R"re((?:\[([-+]?\d+)(?::([-+]?\d+)\])?)?([ \da-fA-F]+)([-+]\d+)?)re");
-        std::smatch match;
-        if (!std::regex_match(value, match, re))
-            return std::nullopt;
 
+        //split key by .
+        std::vector<std::string_view> keys;
+        std::string_view key_view = key;
+        while (!key_view.empty()) {
+            auto pos = key_view.find('.');
+            if (pos == std::string_view::npos) {
+                keys.push_back(key_view);
+                break;
+            }
+            keys.push_back(key_view.substr(0, pos));
+            key_view = key_view.substr(pos + 1);
+        }
+
+        nlohmann::json& json = *it;
+        for (const auto& key: keys) {
+            json = json[key];
+        }
+
+        // searilize json to signture
         signture res = {};
-        if (match[1].matched)
-            res.start_offset = std::atoi(match[1].str().c_str());
-
-        if (match[2].matched)
-            res.end_offset = std::atoi(match[2].str().c_str());
-
-        res.pattern = match[3].str();
-
-        if (match[4].matched)
-            res.pattern_offset = std::atoi(match[4].str().c_str());
-
+        json["name"].get_to(res.name);
+        json["start_offset"].get_to(res.start_offset);
+        json["end_offset"].get_to(res.end_offset);
+        json["pattern"].get_to(res.pattern);
+        json["pattern_offset"].get_to(res.pattern_offset);
+        json["hit_offset"].get_to(res.hit_offset);
         return res;
     }
 
     std::string Config::get_lua_module() const {
-        std::string key = "lua_module";
+        const auto key = "lua_module"sv;
 
         auto it = values->find(key);
         if (it == values->end()) {
@@ -87,7 +95,7 @@ namespace luadebug::autoattach {
     }
 
     bool Config::is_remotedebug_by_signature() const {
-        std::string key = "remotedebug_by_signature";
+        const auto key = "remotedebug_by_signature"sv;
         return values->find(key) != values->end();
     }
 
@@ -108,4 +116,4 @@ namespace luadebug::autoattach {
         return true;
     }
 
-}// namespace luadebug::autoattach
+} // namespace luadebug::autoattach
