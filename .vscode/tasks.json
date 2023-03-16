@@ -18,25 +18,11 @@
     },
     "tasks": [
         {
-            "label": "Test",
-            "command": "luamake",
-            "args": [
-                "test"
-            ]
-        },
-        {
-            "label": "Rebuild",
-            "command": "luamake",
-            "args": [
-                "rebuild"
-            ]
-        },
-        {
-            "label": "Update Version",
+            "label": "Clang Format",
             "command": "luamake",
             "args": [
                 "lua",
-                "compile/update_version.lua",
+                "compile/clang-format.lua",
             ]
         },
         {

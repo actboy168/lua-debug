@@ -2,8 +2,8 @@
 
 #if defined(_MSC_VER)
 
-#include <Windows.h>
-#include <intrin.h>
+#    include <Windows.h>
+#    include <intrin.h>
 
 namespace luadebug::delayload {
     HMODULE get_luadll();

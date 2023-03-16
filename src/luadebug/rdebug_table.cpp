@@ -1,11 +1,10 @@
 #include "rdebug_table.h"
 #include "rluaobject.h"
 
-
 namespace luadebug::table {
 
 #if LUA_VERSION_NUM < 504
-#define s2v(o) (o)
+#    define s2v(o) (o)
 #endif
 
     template <typename T>
@@ -28,9 +27,9 @@ namespace luadebug::table {
         size |= (size >> 4);
         size |= (size >> 8);
         size |= (size >> 16);
-#if (UINT_MAX >> 30) > 3
+#    if (UINT_MAX >> 30) > 3
         size |= (size >> 32);
-#endif
+#    endif
         size++;
         return size;
 #elif defined(LUAJIT_VERSION)
@@ -122,11 +121,11 @@ namespace luadebug::table {
         LUA_STKID(L->top) += 2;
         StkId key = LUA_STKID(L->top) - 1;
         StkId val = LUA_STKID(L->top) - 2;
-#if LUA_VERSION_NUM >= 504
+#    if LUA_VERSION_NUM >= 504
         getnodekey(L, s2v(key), n);
-#else
+#    else
         setobj2s(L, key, &n->i_key.tvk);
-#endif
+#    endif
         setobj2s(L, val, gval(n));
 #endif
         return 1;
@@ -151,11 +150,11 @@ namespace luadebug::table {
             return 0;
         }
         StkId key = LUA_STKID(L->top);
-#if LUA_VERSION_NUM >= 504
+#    if LUA_VERSION_NUM >= 504
         getnodekey(L, s2v(key), n);
-#else
+#    else
         setobj2s(L, key, &n->i_key.tvk);
-#endif
+#    endif
 #endif
         LUA_STKID(L->top) += 1;
         return 1;

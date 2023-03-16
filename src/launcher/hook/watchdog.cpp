@@ -11,7 +11,7 @@ namespace luadebug::autoattach {
         , attach_lua_vm(attach_lua_vm) {}
 
     bool watchdog::hook() {
-        for (auto& point: watch_points) {
+        for (auto& point : watch_points) {
             if (!point.address) {
                 continue;
             }
@@ -44,7 +44,7 @@ namespace luadebug::autoattach {
 
     bool watchdog::init(const lua::resolver& resolver, std::vector<watch_point>&& points) {
         bool ok = false;
-        for (auto& point: points) {
+        for (auto& point : points) {
             if (point.find_symbol(resolver)) {
                 ok = true;
             }
@@ -71,7 +71,7 @@ namespace luadebug::autoattach {
         };
         static inline std::atomic<size_t> used = 0;
         static size_t create_instance_id() {
-            //TODO: free instance id
+            // TODO: free instance id
             return 1 + std::atomic_fetch_add(&used, 1);
         }
         static lua::hook create(watchdog* w) {
@@ -120,8 +120,8 @@ namespace luadebug::autoattach {
         switch (attach_lua_vm(L)) {
         case attach_status::fatal:
         case attach_status::success:
-            //TODO: how to free so
-            //TODO: free all resources
+            // TODO: how to free so
+            // TODO: free all resources
             break;
         case attach_status::wait:
             set_luahook(L, fn);

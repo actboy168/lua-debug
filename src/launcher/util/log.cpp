@@ -7,10 +7,10 @@
 #include <stdio.h>
 
 #if !defined(_WIN32)
-#include <sys/select.h>
-#include <unistd.h>
+#    include <sys/select.h>
+#    include <unistd.h>
 #else
-#include <WinSock.h>
+#    include <WinSock.h>
 #endif
 
 namespace luadebug::log {

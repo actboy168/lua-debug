@@ -1,9 +1,9 @@
 #pragma once
 #ifdef LUAJIT_VERSION
-#include <lj_obj.h>
-#include <lj_tab.h>
-#include <lj_cdata.h>
-#include <lj_ctype.h>
+#    include <lj_obj.h>
+#    include <lj_tab.h>
+#    include <lj_cdata.h>
+#    include <lj_ctype.h>
 using Table = GCtab;
 using Closure = GCfunc;
 using UpVal = GCupval;
@@ -48,9 +48,9 @@ inline int lua_isinteger(lua_State* L, int idx) {
     return tvisint(o);
 }
 #else
-#include <lapi.h>
-#include <lgc.h>
-#include <lobject.h>
-#include <lstate.h>
-#include <ltable.h>
+#    include <lapi.h>
+#    include <lgc.h>
+#    include <lobject.h>
+#    include <lstate.h>
+#    include <ltable.h>
 #endif

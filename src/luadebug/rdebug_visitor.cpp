@@ -10,7 +10,7 @@
 #include "rdebug_table.h"
 
 #ifdef LUAJIT_VERSION
-#include "rluaobject.h"
+#    include "rluaobject.h"
 #endif
 #include "rdebug_cfunctioninfo.h"
 int debug_pcall(lua_State* L, int nargs, int nresults, int errfunc);
@@ -18,20 +18,19 @@ int debug_pcall(lua_State* L, int nargs, int nresults, int errfunc);
 lua_State* get_host(rlua_State* L);
 
 enum class VAR : uint8_t {
-    FRAME_LOCAL, // stack(frame, index)
-    FRAME_FUNC,  // stack(frame).func
-    UPVALUE,     // func[index]
-    GLOBAL,      // _G
-    REGISTRY,    // REGISTRY
-    METATABLE,   // table.metatable
-    USERVALUE,   // userdata.uservalue
+    FRAME_LOCAL,  // stack(frame, index)
+    FRAME_FUNC,   // stack(frame).func
+    UPVALUE,      // func[index]
+    GLOBAL,       // _G
+    REGISTRY,     // REGISTRY
+    METATABLE,    // table.metatable
+    USERVALUE,    // userdata.uservalue
     STACK,
     INDEX_KEY,
     INDEX_VAL,
     INDEX_INT,
     INDEX_STR,
 };
-
 
 struct value {
     VAR type;
@@ -261,7 +260,7 @@ eval_value_(lua_State* cL, struct value* v) {
             break;
         }
         if (lua_getupvalue(cL, -1, v->index)) {
-            lua_replace(cL, -2); // remove function
+            lua_replace(cL, -2);  // remove function
             return lua_type(cL, -1);
         }
         else {
@@ -411,9 +410,9 @@ assign_value(struct value* v, lua_State* cL) {
             // only table can be index
             break;
         }
-        lua_pushinteger(cL, (lua_Integer)v->index); // key, table, value, ...
-        lua_pushvalue(cL, -3);                      // value, key, table, value, ...
-        lua_rawset(cL, -3);                         // table, value, ...
+        lua_pushinteger(cL, (lua_Integer)v->index);  // key, table, value, ...
+        lua_pushvalue(cL, -3);                       // value, key, table, value, ...
+        lua_rawset(cL, -3);                          // table, value, ...
         lua_pop(cL, 2);
         return 1;
     }
@@ -425,9 +424,9 @@ assign_value(struct value* v, lua_State* cL) {
             // only table can be index
             break;
         }
-        lua_pushlstring(cL, (const char*)(v + 1), (size_t)v->index); // key, table, value, ...
-        lua_pushvalue(cL, -3);                                       // value, key, table, value, ...
-        lua_rawset(cL, -3);                                          // table, value, ...
+        lua_pushlstring(cL, (const char*)(v + 1), (size_t)v->index);  // key, table, value, ...
+        lua_pushvalue(cL, -3);                                        // value, key, table, value, ...
+        lua_rawset(cL, -3);                                           // table, value, ...
         lua_pop(cL, 2);
         return 1;
     }
@@ -551,16 +550,16 @@ table_key(rlua_State* L, lua_State* cL) {
     if (lua_checkstack(cL, 3) == 0) {
         return rluaL_error(L, "stack overflow");
     }
-    rlua_insert(L, -2); // L : key table
+    rlua_insert(L, -2);  // L : key table
     if (copy_fromR(L, cL) != LUA_TTABLE) {
-        lua_pop(cL, 1); // pop table
-        rlua_pop(L, 2); // pop k/t
+        lua_pop(cL, 1);  // pop table
+        rlua_pop(L, 2);  // pop k/t
         return 0;
     }
-    rlua_insert(L, -2);                   // L : table key
-    if (copy_fromR(L, cL) == LUA_TNONE) { // key
-        lua_pop(cL, 1);                   // pop table
-        rlua_pop(L, 2);                   // pop k/t
+    rlua_insert(L, -2);                    // L : table key
+    if (copy_fromR(L, cL) == LUA_TNONE) {  // key
+        lua_pop(cL, 1);                    // pop table
+        rlua_pop(L, 2);                    // pop k/t
         return 0;
     }
     return 1;
@@ -587,7 +586,7 @@ combine_index(rlua_State* L, lua_State* cL, int getref) {
         rlua_pop(L, 1);
         return;
     }
-    lua_pop(cL, 2); // pop t v from cL
+    lua_pop(cL, 2);  // pop t v from cL
     // L : t, k
     new_index(L);
     // L : t, k, v
@@ -618,7 +617,7 @@ combine_field(rlua_State* L, lua_State* cL, int getref) {
         rlua_pop(L, 1);
         return;
     }
-    lua_pop(cL, 2); // pop t v from cL
+    lua_pop(cL, 2);  // pop t v from cL
     // L : t, k
     new_field(L);
     // L : t, k, v
@@ -634,30 +633,30 @@ get_upvalue(rlua_State* L, lua_State* cL, int index, int getref) {
     }
     int t = copy_fromR(L, cL);
     if (t == LUA_TNONE) {
-        rlua_pop(L, 1); // remove function object
+        rlua_pop(L, 1);  // remove function object
         return NULL;
     }
     if (t != LUA_TFUNCTION) {
-        rlua_pop(L, 1); // remove function object
-        lua_pop(cL, 1); // remove none function
+        rlua_pop(L, 1);  // remove function object
+        lua_pop(cL, 1);  // remove none function
         return NULL;
     }
     const char* name = lua_getupvalue(cL, -1, index);
     if (name == NULL) {
-        rlua_pop(L, 1); // remove function object
-        lua_pop(cL, 1); // remove function
+        rlua_pop(L, 1);  // remove function object
+        lua_pop(cL, 1);  // remove function
         return NULL;
     }
 
     if (!getref && copy_toR(cL, L) != LUA_TNONE) {
-        rlua_replace(L, -2); // remove function object
+        rlua_replace(L, -2);  // remove function object
         lua_pop(cL, 1);
         return name;
     }
-    lua_pop(cL, 2); // remove func / upvalue
+    lua_pop(cL, 2);  // remove func / upvalue
     struct value* v = create_value(L, VAR::UPVALUE, -1);
     v->index = index;
-    rlua_replace(L, -2); // remove function object
+    rlua_replace(L, -2);  // remove function object
     return name;
 }
 
@@ -733,7 +732,7 @@ get_uservalue(rlua_State* L, lua_State* cL, int index, int getref) {
             return 0;
         }
         if (copy_toR(cL, L) != LUA_TNONE) {
-            lua_pop(cL, 2); // pop userdata / uservalue
+            lua_pop(cL, 2);  // pop userdata / uservalue
             rlua_replace(L, -2);
             return 1;
         }
@@ -832,7 +831,7 @@ client_index(rlua_State* L, int getref) {
         lua_pop(cL, 2);
         return rluaL_error(L, "#1 is not a table");
     }
-    lua_rawget(cL, -2); // cL : table value
+    lua_rawget(cL, -2);  // cL : table value
     combine_index(L, cL, getref);
     return 1;
 }
@@ -860,7 +859,7 @@ client_field(rlua_State* L, int getref) {
         lua_pop(cL, 2);
         return rluaL_error(L, "#1 is not a table");
     }
-    lua_rawget(cL, -2); // cL : table value
+    lua_rawget(cL, -2);  // cL : table value
     combine_field(L, cL, getref);
     return 1;
 }
@@ -1336,7 +1335,7 @@ lclient_getinfo(rlua_State* L) {
         int t = copy_fromR(L, cL);
         if (t != LUA_TFUNCTION) {
             if (t != LUA_TNONE) {
-                lua_pop(cL, 1); // remove none function
+                lua_pop(cL, 1);  // remove none function
             }
             return rluaL_error(L, "Need a function ref, It's %s", rlua_typename(L, t));
         }
@@ -1356,8 +1355,8 @@ lclient_getinfo(rlua_State* L) {
     }
 #ifdef LUAJIT_VERSION
     if (hasSFlag && strcmp(ar.what, "main") == 0) {
-        //carzy bug,luajit is real linedefined in main file,but in lua it's zero
-        //maybe fix it is a new bug
+        // carzy bug,luajit is real linedefined in main file,but in lua it's zero
+        // maybe fix it is a new bug
         ar.lastlinedefined = 0;
     }
 #endif
@@ -1586,7 +1585,6 @@ lclient_costatus(rlua_State* L) {
     return 1;
 }
 
-
 static int
 lclient_gccount(rlua_State* L) {
     lua_State* cL = get_host(L);
@@ -1596,7 +1594,6 @@ lclient_gccount(rlua_State* L) {
     rlua_pushinteger(L, (rlua_Integer)m);
     return 1;
 }
-
 
 static int lclient_cfunctioninfo(rlua_State* L) {
     lua_State* cL = get_host(L);
@@ -1650,7 +1647,6 @@ static int lclient_cfunctioninfo(rlua_State* L) {
     rlua_pushlstring(L, info->c_str(), info->size());
     return 1;
 }
-
 
 int init_visitor(rlua_State* L) {
     rluaL_Reg l[] = {
