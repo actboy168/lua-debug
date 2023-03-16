@@ -21,7 +21,7 @@ namespace luadebug::autoattach {
                 return true;
             });
 
-            range.size -= end_offset * sizeof(void*);
+            range.size -= end_offset;
             range.base_address = (void*)((uint8_t*)range.base_address + start_offset);
 
             // 限定匹配地址范围
