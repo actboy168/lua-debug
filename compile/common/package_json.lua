@@ -263,7 +263,6 @@ Debugger address.
                 markdownDescription = "lua module path or name",
             },
             functions = {
-                default = "null",
                 type = "object",
                 additionalProperties = {
                     type = "object",
