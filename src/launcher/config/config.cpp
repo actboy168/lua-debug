@@ -5,19 +5,15 @@
 
 #include <fstream>
 #include <iostream>
+#include <regex>
 
 #include <bee/nonstd/filesystem.h>
 #include <bee/nonstd/format.h>
 #include <bee/utility/path_helper.h>
 
-#include <regex>
+#include <gumpp.hpp>
 
-#if !defined(_WIN32)
-#include <unistd.h>
-#else
-#include <WinSock.h>
-#include "config.h"
-#endif
+#include <nlohmann/json.hpp>
 
 namespace luadebug::autoattach {
     static lua_version lua_version_from_string [[maybe_unused]] (const std::string_view& v) {
@@ -39,20 +35,20 @@ namespace luadebug::autoattach {
     lua_version Config::get_lua_version() const {
         std::string key = "lua_version";
 
-        auto it = values.find(key);
-        if (it == values.end()) {
+        auto it = values->find(key);
+        if (!values || it == values->end()) {
             return lua_version::unknown;
         }
 
-        return lua_version_from_string(it->second);
+        return lua_version_from_string(it->get<std::string>());
     }
 
     std::optional<signture> Config::get_lua_signature(const std::string& key) const {
-        auto it = values.find(key);
-        if (it == values.end()) {
+        auto it = values->find(key);
+        if (it == values->end()) {
             return std::nullopt;
         }
-        const auto& value = it->second;
+        const auto& value = it->get<std::string>();
         if (value.empty())
             return std::nullopt;
         // value string match regex
@@ -79,11 +75,11 @@ namespace luadebug::autoattach {
     std::string Config::get_lua_module() const {
         std::string key = "lua_module";
 
-        auto it = values.find(key);
-        if (it == values.end()) {
+        auto it = values->find(key);
+        if (it == values->end()) {
             return {};
         }
-        const auto& value = it->second;
+        const auto& value = it->get<std::string>();
         if (!fs::exists(value))
             return {};
 
@@ -92,37 +88,23 @@ namespace luadebug::autoattach {
 
     bool Config::is_remotedebug_by_signature() const {
         std::string key = "remotedebug_by_signature";
-        return values.find(key) != values.end();
+        return values->find(key) != values->end();
     }
 
     bool Config::init_from_file() {
-        config.values.clear();
+        config.values = std::make_unique<nlohmann::json>();
         auto dllpath = bee::path_helper::dll_path();
         if (!dllpath) {
             return false;
         }
 
-        auto filename = std::format("{}/tmp/pid_{}_config", dllpath.value().parent_path().parent_path().generic_string(),
-#if defined(_WIN32)
-                                    GetCurrentProcessId()
-#else
-                                    getpid()
-#endif
-        );
+        auto filename = std::format("{}/tmp/pid_{}_config", dllpath.value().parent_path().parent_path().generic_string(), Gum::Process::get_id());
 
         std::ifstream s(filename, s.in);
         if (!s.is_open())
             return false;
 
-        for (std::string line; std::getline(s, line);) {
-            auto pos = line.find(':');
-            if (pos == std::string::npos) {
-                continue;
-            }
-            auto iter = config.values.insert_or_assign(line.substr(0, pos), line.substr(pos + 1)).first;
-
-            log::info("load config {}={}", iter->first, iter->second);
-        }
+        s >> *config.values;
         return true;
     }
 

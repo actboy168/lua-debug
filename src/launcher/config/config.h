@@ -2,6 +2,7 @@
 #include <string>
 #include <string_view>
 #include <optional>
+#include <nlohmann/json_fwd.hpp>
 
 namespace luadebug::autoattach {
 
@@ -9,7 +10,7 @@ namespace luadebug::autoattach {
     struct signture;
 
     class Config {
-        std::unordered_map<std::string, std::string> values;
+        std::unique_ptr<nlohmann::json> values;
 
     public:
         lua_version get_lua_version() const;
@@ -22,5 +23,6 @@ namespace luadebug::autoattach {
 
         static bool init_from_file();
     };
+
     extern Config config;
 }// namespace luadebug::autoattach

@@ -118,12 +118,13 @@ namespace luadebug::autoattach {
 		
 		dlopen(path.c_str(), RTLD_LAZY | RTLD_LOCAL);
 
-        module_enumerate_import(path.c_str(), [](const Gum::ImportDetails& details)->bool {
+        Gum::Process::module_enumerate_import(path.c_str(), [](const Gum::ImportDetails& details)->bool {
             if (std::string_view (details.name).find_first_of("lua") != 0){
                 return true;
             }
             return true;
         });
+        return true;
 	}
 
     bool lua_module::initialize(fn_attach attach_lua_vm) {
