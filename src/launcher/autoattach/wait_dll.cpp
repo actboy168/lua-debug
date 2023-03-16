@@ -9,18 +9,18 @@
 namespace luadebug::autoattach {
     bool wait_dll(bool (*loaded)(std::string const&)) {
         typedef struct _LDR_DLL_UNLOADED_NOTIFICATION_DATA {
-            ULONG Flags;                  // Reserved.
-            PCUNICODE_STRING FullDllName; // The full path name of the DLL module.
-            PCUNICODE_STRING BaseDllName; // The base file name of the DLL module.
-            PVOID DllBase;                // A pointer to the base address for the DLL in memory.
-            ULONG SizeOfImage;            // The size of the DLL image, in bytes.
+            ULONG Flags;                   // Reserved.
+            PCUNICODE_STRING FullDllName;  // The full path name of the DLL module.
+            PCUNICODE_STRING BaseDllName;  // The base file name of the DLL module.
+            PVOID DllBase;                 // A pointer to the base address for the DLL in memory.
+            ULONG SizeOfImage;             // The size of the DLL image, in bytes.
         } LDR_DLL_UNLOADED_NOTIFICATION_DATA, *PLDR_DLL_UNLOADED_NOTIFICATION_DATA;
         typedef struct _LDR_DLL_LOADED_NOTIFICATION_DATA {
-            ULONG Flags;                  // Reserved.
-            PCUNICODE_STRING FullDllName; // The full path name of the DLL module.
-            PCUNICODE_STRING BaseDllName; // The base file name of the DLL module.
-            PVOID DllBase;                // A pointer to the base address for the DLL in memory.
-            ULONG SizeOfImage;            // The size of the DLL image, in bytes.
+            ULONG Flags;                   // Reserved.
+            PCUNICODE_STRING FullDllName;  // The full path name of the DLL module.
+            PCUNICODE_STRING BaseDllName;  // The base file name of the DLL module.
+            PVOID DllBase;                 // A pointer to the base address for the DLL in memory.
+            ULONG SizeOfImage;             // The size of the DLL image, in bytes.
         } LDR_DLL_LOADED_NOTIFICATION_DATA, *PLDR_DLL_LOADED_NOTIFICATION_DATA;
         typedef union _LDR_DLL_NOTIFICATION_DATA {
             LDR_DLL_LOADED_NOTIFICATION_DATA Loaded;

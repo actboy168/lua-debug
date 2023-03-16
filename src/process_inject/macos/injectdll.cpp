@@ -1,14 +1,14 @@
 #include <mach/error.h>
 #include <mach/vm_types.h>
-#include <cstddef> // for ptrdiff_t
+#include <cstddef>  // for ptrdiff_t
 
 #include <mach-o/dyld.h>
 #include <mach-o/getsect.h>
 #include <mach/mach.h>
 #include <mach/processor.h>
 #include <mach/processor_info.h>
-#include <mach-o/fat.h> // for fat structure decoding
-#include <fcntl.h>      // for open/close
+#include <mach-o/fat.h>  // for fat structure decoding
+#include <fcntl.h>       // for open/close
 #include <sys/sysctl.h>
 // for mmap()
 #include <dlfcn.h>
@@ -23,10 +23,10 @@
 #define LOG(msg) fprintf(stderr, "%s\n", msg)
 #define LOG_MACH(msg, err) mach_error(msg, err)
 
-struct rmain_arg { // dealloc
+struct rmain_arg {  // dealloc
     size_t sizeofstruct;
-    const char* name;      // dealloc
-    thread_t injectThread; // kill this tread
+    const char* name;       // dealloc
+    thread_t injectThread;  // kill this tread
     vm_address_t dlsym;
     char entrypoint[256];
 };
@@ -204,13 +204,13 @@ bool mach_inject(
 
 
     //	Allocate the thread.
-    remoteStack += (stackSize / 2); // this is the real stack
+    remoteStack += (stackSize / 2);  // this is the real stack
     // (*) increase the stack, since we're simulating a CALL instruction, which normally pushes return address on the stack
     remoteStack -= 16;
 
 #ifdef __aarch64__
 
-    remoteThreadState.__lr = 0; // invalid return address.
+    remoteThreadState.__lr = 0;  // invalid return address.
 
     remoteThreadState.__x[0] = (unsigned long long)(remoteArg);
     remoteThreadState.__x[1] = (unsigned long long)get_symbol_address((void*)&pthread_create_from_mach_thread);

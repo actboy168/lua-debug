@@ -6,10 +6,10 @@
 #include <stdlib.h>
 
 extern "C" {
-struct rmain_arg { // dealloc
+struct rmain_arg {  // dealloc
     size_t sizeofstruct;
-    const char* name;      // dealloc
-    thread_t injectThread; // kill this tread
+    const char* name;       // dealloc
+    thread_t injectThread;  // kill this tread
     decltype(&dlsym) dlsym;
     char entrypoint[256];
 

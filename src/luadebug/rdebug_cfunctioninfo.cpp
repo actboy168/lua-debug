@@ -79,7 +79,7 @@ namespace luadebug {
                     searchpath.append("SRV*c:\\websymbols*https://msdl.microsoft.com/download/symbols;");
             }
             return searchpath;
-        } // if SymBuildPath
+        }  // if SymBuildPath
         return {};
     }
 
@@ -91,7 +91,7 @@ namespace luadebug {
                 return nullptr;
             }
         }
-        DWORD symOptions = SymGetOptions(); // SymGetOptions
+        DWORD symOptions = SymGetOptions();  // SymGetOptions
         symOptions |= SYMOPT_LOAD_LINES;
         symOptions |= SYMOPT_FAIL_CRITICAL_ERRORS;
         symOptions = SymSetOptions(symOptions);
@@ -120,7 +120,7 @@ namespace luadebug {
             MAX_SYM_NAME;
 #else
             2000;
-#endif // DEBUG
+#endif  // DEBUG
         struct MY_SYMBOL_INFO : SYMBOL_INFO {
             char name_buffer[MAX_SYM_NAME];
         };
@@ -153,7 +153,7 @@ namespace luadebug {
             }
 #else
             // TODO ARM64/ARM64EC
-#endif // _M_AMD64
+#endif  // _M_AMD64
         }
         Symbol sb;
         {
@@ -281,7 +281,7 @@ namespace luadebug {
         return std::nullopt;
     }
 #endif
-#endif // _WIN32
+#endif  // _WIN32
 
     std::optional<std::string> get_functioninfo(void* ptr) {
         if (!ptr) {

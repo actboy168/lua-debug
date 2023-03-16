@@ -3,8 +3,8 @@
 #include "rdebug_putenv.h"
 #include <stdlib.h>
 
-static int DEBUG_HOST = 0;   // host L in client VM
-static int DEBUG_CLIENT = 0; // client L in host VM for hook
+static int DEBUG_HOST = 0;    // host L in client VM
+static int DEBUG_CLIENT = 0;  // client L in host VM for hook
 
 int event(rlua_State* cL, lua_State* hL, const char* name, int start);
 

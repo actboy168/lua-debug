@@ -9,14 +9,14 @@ thunk* thunk_create_hook(intptr_t dbg, intptr_t hook) {
     //     return `undefinition`;
     // }
     static unsigned char sc[] = {
-        0x50,                                                       // push rax
-        0x48, 0x89, 0xf2,                                           // mov rdx, rsi
-        0x48, 0x89, 0xfe,                                           // mov rsi, rdi
-        0x48, 0xbf, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // mov rdi, dbg
-        0x48, 0xb8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // mov rax, hook
-        0xff, 0xd0,                                                 // call rax
-        0x58,                                                       // pop rax
-        0xc3,                                                       // ret
+        0x50,                                                        // push rax
+        0x48, 0x89, 0xf2,                                            // mov rdx, rsi
+        0x48, 0x89, 0xfe,                                            // mov rsi, rdi
+        0x48, 0xbf, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // mov rdi, dbg
+        0x48, 0xb8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // mov rax, hook
+        0xff, 0xd0,                                                  // call rax
+        0x58,                                                        // pop rax
+        0xc3,                                                        // ret
     };
     std::unique_ptr<thunk> t(new thunk);
     if (!t->create(sizeof(sc))) {
@@ -36,10 +36,10 @@ thunk* thunk_create_allocf(intptr_t dbg, intptr_t allocf) {
     //     return `allocf`(`dbg`, ptr, osize, nsize);
     // }
     static unsigned char sc[] = {
-        0x48, 0xbf, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // mov rdi, dbg
-        0x48, 0xb8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // mov rax, hook
-        0xff, 0xd0,                                                 // call rax
-        0xc3,                                                       // ret
+        0x48, 0xbf, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // mov rdi, dbg
+        0x48, 0xb8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // mov rax, hook
+        0xff, 0xd0,                                                  // call rax
+        0xc3,                                                        // ret
     };
     std::unique_ptr<thunk> t(new thunk);
     if (!t->create(sizeof(sc))) {

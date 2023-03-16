@@ -8,18 +8,18 @@ thunk* thunk_create_hook(intptr_t dbg, intptr_t hook) {
     //     return `undefinition`;
     // }
     static unsigned char sc[] = {
-        0x57,                                                       // push rdi
-        0x50,                                                       // push rax
-        0x48, 0x83, 0xec, 0x28,                                     // sub rsp, 0x28
-        0x4c, 0x8b, 0xc2,                                           // mov r8, rdx
-        0x48, 0x8b, 0xd1,                                           // mov rdx, rcx
-        0x48, 0xb9, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // mov rcx, dbg
-        0x48, 0xb8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // mov rax, hook
-        0xff, 0xd0,                                                 // call rax
-        0x48, 0x83, 0xc4, 0x28,                                     // add rsp, 0x28
-        0x58,                                                       // pop rax
-        0x5f,                                                       // pop rdi
-        0xc3,                                                       // ret
+        0x57,                                                        // push rdi
+        0x50,                                                        // push rax
+        0x48, 0x83, 0xec, 0x28,                                      // sub rsp, 0x28
+        0x4c, 0x8b, 0xc2,                                            // mov r8, rdx
+        0x48, 0x8b, 0xd1,                                            // mov rdx, rcx
+        0x48, 0xb9, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // mov rcx, dbg
+        0x48, 0xb8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // mov rax, hook
+        0xff, 0xd0,                                                  // call rax
+        0x48, 0x83, 0xc4, 0x28,                                      // add rsp, 0x28
+        0x58,                                                        // pop rax
+        0x5f,                                                        // pop rdi
+        0xc3,                                                        // ret
     };
     std::unique_ptr<thunk> t(new thunk);
     if (!t->create(sizeof(sc))) {
@@ -39,14 +39,14 @@ thunk* thunk_create_allocf(intptr_t dbg, intptr_t allocf) {
     //     return `allocf`(`dbg`, ptr, osize, nsize);
     // }
     static unsigned char sc[] = {
-        0x57,                                                       // push rdi
-        0x48, 0x83, 0xec, 0x28,                                     // sub rsp, 0x28
-        0x48, 0xb9, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // mov rcx, dbg
-        0x48, 0xb8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // mov rax, hook
-        0xff, 0xd0,                                                 // call rax
-        0x48, 0x83, 0xc4, 0x28,                                     // add rsp, 0x28
-        0x5f,                                                       // pop rdi
-        0xc3,                                                       // ret
+        0x57,                                                        // push rdi
+        0x48, 0x83, 0xec, 0x28,                                      // sub rsp, 0x28
+        0x48, 0xb9, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // mov rcx, dbg
+        0x48, 0xb8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // mov rax, hook
+        0xff, 0xd0,                                                  // call rax
+        0x48, 0x83, 0xc4, 0x28,                                      // add rsp, 0x28
+        0x5f,                                                        // pop rdi
+        0xc3,                                                        // ret
     };
     std::unique_ptr<thunk> t(new thunk);
     if (!t->create(sizeof(sc))) {

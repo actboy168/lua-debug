@@ -14,7 +14,6 @@ NamespaceIndentation: All
 PackConstructorInitializers: Never
 SortIncludes: Never
 SpaceBeforeCpp11BracedList: true
-SpacesBeforeTrailingComments: 1
 
 BreakBeforeBraces: Custom
 BraceWrapping:
