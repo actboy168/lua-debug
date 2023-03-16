@@ -71,7 +71,6 @@ namespace luadebug::autoattach {
     }
 }
 
-
 extern "C" {
 DLLEXPORT void DLLEXPORT_DECLARATION launch() {
     luadebug::autoattach::initialize(luadebug::autoattach::attach, false);

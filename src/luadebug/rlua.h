@@ -576,7 +576,6 @@ int(rluaL_fileresult)(rlua_State* L, int stat, const char* fname);
 
 #endif
 
-
 #if defined(_WIN32)
 #define RLUA_FUNC extern "C" __declspec(dllexport)
 #else

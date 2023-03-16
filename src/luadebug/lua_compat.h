@@ -124,7 +124,6 @@ inline int lua_getiuservalue(lua_State* L, int idx, int n) {
 }
 #endif
 
-
 #if LUA_VERSION_NUM == 501
 inline int lua_setiuservalue(lua_State* L, int idx, int n) {
     if (n != 1) {

@@ -1,7 +1,6 @@
 #include "rdebug_table.h"
 #include "rluaobject.h"
 
-
 namespace luadebug::table {
 
 #if LUA_VERSION_NUM < 504

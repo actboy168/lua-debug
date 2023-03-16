@@ -33,7 +33,6 @@
 #include <string.h>
 #include <time.h>
 
-
 /* setup for luaconf.h */
 #define ltable_c
 #define lvm_c

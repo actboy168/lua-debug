@@ -9,7 +9,6 @@ FixNamespaceComments: false
 IndentCaseLabels: false
 #IndentPPDirectives: AfterHash
 IndentWidth: 4
-MaxEmptyLinesToKeep: 2
 NamespaceIndentation: All
 PackConstructorInitializers: Never
 SortIncludes: Never

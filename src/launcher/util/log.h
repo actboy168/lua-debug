@@ -8,7 +8,6 @@ namespace std {
 }
 #endif
 
-
 #if !defined(NDEBUG)
 #define LUADEBUG_ENABLE_LOG 1
 #endif

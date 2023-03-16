@@ -185,7 +185,6 @@ bool mach_inject(
         goto deallocateCode;
     }
 
-
     err = vm_write(remoteTask, remoteLibPath, (pointer_t)dylibPath, libPathSize);
     if (err) {
         LOG_MACH("vm_write", err);
@@ -201,7 +200,6 @@ bool mach_inject(
         LOG_MACH("vm_write", err);
         goto deallocateCode;
     }
-
 
     //	Allocate the thread.
     remoteStack += (stackSize / 2);  // this is the real stack

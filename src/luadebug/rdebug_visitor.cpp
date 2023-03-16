@@ -32,7 +32,6 @@ enum class VAR : uint8_t {
     INDEX_STR,
 };
 
-
 struct value {
     VAR type;
     union {
@@ -1586,7 +1585,6 @@ lclient_costatus(rlua_State* L) {
     return 1;
 }
 
-
 static int
 lclient_gccount(rlua_State* L) {
     lua_State* cL = get_host(L);
@@ -1596,7 +1594,6 @@ lclient_gccount(rlua_State* L) {
     rlua_pushinteger(L, (rlua_Integer)m);
     return 1;
 }
-
 
 static int lclient_cfunctioninfo(rlua_State* L) {
     lua_State* cL = get_host(L);
@@ -1650,7 +1647,6 @@ static int lclient_cfunctioninfo(rlua_State* L) {
     rlua_pushlstring(L, info->c_str(), info->size());
     return 1;
 }
-
 
 int init_visitor(rlua_State* L) {
     rluaL_Reg l[] = {
