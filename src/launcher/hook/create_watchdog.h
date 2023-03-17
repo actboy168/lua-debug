@@ -1,7 +1,8 @@
 #pragma once
 
-#include <autoattach/lua_module.h>
 #include <autoattach/autoattach.h>
+#include <autoattach/lua_module.h>
+
 #include <memory>
 
 namespace luadebug::lua {

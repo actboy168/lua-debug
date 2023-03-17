@@ -1,7 +1,7 @@
-#include <bee/net/socket.h>
 #include <bee/net/endpoint.h>
-#include <bee/nonstd/format.h>
+#include <bee/net/socket.h>
 #include <bee/nonstd/filesystem.h>
+#include <bee/nonstd/format.h>
 #include <bee/nonstd/unreachable.h>
 #include <bee/utility/path_helper.h>
 #include <stdio.h>
@@ -60,7 +60,7 @@ namespace luadebug::log {
             return;
         }
         auto rootpath = dllpath.value().parent_path().parent_path();
-        auto path = std::format("{}/tmp/pid_{}", rootpath.generic_u8string(),
+        auto path     = std::format("{}/tmp/pid_{}", rootpath.generic_u8string(),
 #if defined(_WIN32)
                                 GetCurrentProcessId()
 #else

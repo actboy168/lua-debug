@@ -3,6 +3,7 @@
 #endif
 
 #include "injectdll.h"
+
 #include <Windows.h>
 #include <stdint.h>
 #include <tlhelp32.h>
@@ -32,7 +33,7 @@ static uint64_t wow64_call(uint64_t func, Args... args) {
 static uint64_t wow64_alloc_memory(uint64_t navm, HANDLE hProcess, SIZE_T dwSize, DWORD flProtect) {
     uint64_t tmpAddr = 0;
     uint64_t tmpSize = dwSize;
-    uint64_t ret = wow64_call(navm, hProcess, &tmpAddr, 0, &tmpSize, MEM_COMMIT, flProtect);
+    uint64_t ret     = wow64_call(navm, hProcess, &tmpAddr, 0, &tmpSize, MEM_COMMIT, flProtect);
     if (0 != ret) {
         return 0;
     }
@@ -41,7 +42,7 @@ static uint64_t wow64_alloc_memory(uint64_t navm, HANDLE hProcess, SIZE_T dwSize
 
 static bool wow64_write_memory(uint64_t nwvm, HANDLE hProcess, uint64_t lpBaseAddress, LPVOID lpBuffer, SIZE_T nSize) {
     uint64_t written = 0;
-    uint64_t res = wow64_call(nwvm, hProcess, lpBaseAddress, lpBuffer, nSize, &written);
+    uint64_t res     = wow64_call(nwvm, hProcess, lpBaseAddress, lpBuffer, nSize, &written);
     if (0 != res || nSize != written) {
         return false;
     }
@@ -111,15 +112,15 @@ static bool injectdll_x64(const PROCESS_INFORMATION& pi, const std::wstring& dll
     if (!ntdll) {
         return false;
     }
-    uint64_t pfLdrLoadDll = wow64_import(ntdll, "LdrLoadDll");
+    uint64_t pfLdrLoadDll             = wow64_import(ntdll, "LdrLoadDll");
     uint64_t pfLdrGetProcedureAddress = wow64_import(ntdll, "LdrGetProcedureAddress");
     if (!pfLdrLoadDll || !pfLdrGetProcedureAddress) {
         return false;
     }
-    uint64_t pfNtGetContextThread = wow64_import(ntdll, "NtGetContextThread");
-    uint64_t pfNtSetContextThread = wow64_import(ntdll, "NtSetContextThread");
+    uint64_t pfNtGetContextThread      = wow64_import(ntdll, "NtGetContextThread");
+    uint64_t pfNtSetContextThread      = wow64_import(ntdll, "NtSetContextThread");
     uint64_t pfNtAllocateVirtualMemory = wow64_import(ntdll, "NtAllocateVirtualMemory");
-    uint64_t pfNtWriteVirtualMemory = wow64_import(ntdll, "NtWriteVirtualMemory");
+    uint64_t pfNtWriteVirtualMemory    = wow64_import(ntdll, "NtWriteVirtualMemory");
     if (!pfNtGetContextThread || !pfNtSetContextThread || !pfNtAllocateVirtualMemory || !pfNtWriteVirtualMemory) {
         return false;
     }
@@ -129,12 +130,12 @@ static bool injectdll_x64(const PROCESS_INFORMATION& pi, const std::wstring& dll
         uint64_t Buffer;
     };
     SIZE_T mem1size = sizeof(uint64_t) + sizeof(UNICODE_STRING) + (dll.size() + 1) * sizeof(wchar_t);
-    uint64_t mem1 = wow64_alloc_memory(pfNtAllocateVirtualMemory, pi.hProcess, mem1size, PAGE_READWRITE);
+    uint64_t mem1   = wow64_alloc_memory(pfNtAllocateVirtualMemory, pi.hProcess, mem1size, PAGE_READWRITE);
     if (!mem1) {
         return false;
     }
     SIZE_T mem2size = sizeof(uint64_t) + sizeof(UNICODE_STRING) + (entry.size() + 1) * sizeof(char);
-    uint64_t mem2 = wow64_alloc_memory(pfNtAllocateVirtualMemory, pi.hProcess, mem2size, PAGE_READWRITE);
+    uint64_t mem2   = wow64_alloc_memory(pfNtAllocateVirtualMemory, pi.hProcess, mem2size, PAGE_READWRITE);
     if (!mem2) {
         return false;
     }
@@ -143,9 +144,9 @@ static bool injectdll_x64(const PROCESS_INFORMATION& pi, const std::wstring& dll
         return false;
     }
     UNICODE_STRING us1;
-    us1.Length = (USHORT)(dll.size() * sizeof(wchar_t));
+    us1.Length        = (USHORT)(dll.size() * sizeof(wchar_t));
     us1.MaximumLength = us1.Length + sizeof(wchar_t);
-    us1.Buffer = mem1 + sizeof(UNICODE_STRING);
+    us1.Buffer        = mem1 + sizeof(UNICODE_STRING);
     if (!wow64_write_memory(pfNtWriteVirtualMemory, pi.hProcess, mem1, &us1, sizeof(UNICODE_STRING))) {
         return false;
     }
@@ -153,16 +154,16 @@ static bool injectdll_x64(const PROCESS_INFORMATION& pi, const std::wstring& dll
         return false;
     }
     UNICODE_STRING us2;
-    us2.Length = (USHORT)(dll.size() * sizeof(wchar_t));
+    us2.Length        = (USHORT)(dll.size() * sizeof(wchar_t));
     us2.MaximumLength = us2.Length + sizeof(wchar_t);
-    us2.Buffer = mem2 + sizeof(UNICODE_STRING);
+    us2.Buffer        = mem2 + sizeof(UNICODE_STRING);
     if (!wow64_write_memory(pfNtWriteVirtualMemory, pi.hProcess, mem2, &us2, sizeof(UNICODE_STRING))) {
         return false;
     }
     if (!wow64_write_memory(pfNtWriteVirtualMemory, pi.hProcess, us2.Buffer, (void*)entry.data(), us2.MaximumLength)) {
         return false;
     }
-    _CONTEXT64 ctx = { 0 };
+    _CONTEXT64 ctx   = { 0 };
     ctx.ContextFlags = CONTEXT_CONTROL;
     if (wow64_call(pfNtGetContextThread, pi.hThread, &ctx)) {
         return false;
@@ -187,7 +188,7 @@ static bool injectdll_x64(const PROCESS_INFORMATION& pi, const std::wstring& dll
         return false;
     }
     ctx.ContextFlags = CONTEXT_CONTROL;
-    ctx.Rip = shellcode;
+    ctx.Rip          = shellcode;
     if (wow64_call(pfNtSetContextThread, pi.hThread, &ctx)) {
         return false;
     }
@@ -220,12 +221,12 @@ static bool injectdll_x86(const PROCESS_INFORMATION& pi, const std::wstring& dll
         return false;
     }
     SIZE_T mem1size = (dll.size() + 1) * sizeof(wchar_t);
-    LPVOID mem1 = VirtualAllocEx(pi.hProcess, NULL, mem1size, MEM_COMMIT, PAGE_READWRITE);
+    LPVOID mem1     = VirtualAllocEx(pi.hProcess, NULL, mem1size, MEM_COMMIT, PAGE_READWRITE);
     if (!mem1) {
         return false;
     }
     SIZE_T mem2size = (entry.size() + 1) * sizeof(char);
-    LPVOID mem2 = VirtualAllocEx(pi.hProcess, NULL, mem2size, MEM_COMMIT, PAGE_READWRITE);
+    LPVOID mem2     = VirtualAllocEx(pi.hProcess, NULL, mem2size, MEM_COMMIT, PAGE_READWRITE);
     if (!mem2) {
         return false;
     }
@@ -234,8 +235,8 @@ static bool injectdll_x86(const PROCESS_INFORMATION& pi, const std::wstring& dll
         return false;
     }
     SIZE_T written = 0;
-    BOOL ok = FALSE;
-    ok = WriteProcessMemory(pi.hProcess, mem1, dll.data(), mem1size, &written);
+    BOOL ok        = FALSE;
+    ok             = WriteProcessMemory(pi.hProcess, mem1, dll.data(), mem1size, &written);
     if (!ok || written != mem1size) {
         return false;
     }
@@ -243,7 +244,7 @@ static bool injectdll_x86(const PROCESS_INFORMATION& pi, const std::wstring& dll
     if (!ok || written != mem2size) {
         return false;
     }
-    CONTEXT ctx = { 0 };
+    CONTEXT ctx      = { 0 };
     ctx.ContextFlags = CONTEXT_FULL;
     if (!::GetThreadContext(pi.hThread, &ctx)) {
         return false;
@@ -258,7 +259,7 @@ static bool injectdll_x86(const PROCESS_INFORMATION& pi, const std::wstring& dll
         return false;
     }
     ctx.ContextFlags = CONTEXT_CONTROL;
-    ctx.Eip = (DWORD)shellcode;
+    ctx.Eip          = (DWORD)shellcode;
     if (!::SetThreadContext(pi.hThread, &ctx)) {
         return false;
     }
@@ -276,11 +277,11 @@ bool injectdll(const PROCESS_INFORMATION& pi, const std::wstring& x86dll, const 
 
 static bool setdebugprivilege() {
     TOKEN_PRIVILEGES tp = { 0 };
-    HANDLE hToken = NULL;
+    HANDLE hToken       = NULL;
     if (!OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, &hToken)) {
         return false;
     }
-    tp.PrivilegeCount = 1;
+    tp.PrivilegeCount           = 1;
     tp.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
     if (!LookupPrivilegeValueW(NULL, L"SeDebugPrivilege", &tp.Privileges[0].Luid)) {
         CloseHandle(hToken);
@@ -323,7 +324,7 @@ static bool openprocess(DWORD pid, DWORD process_access, DWORD thread_access, PR
         return false;
     }
     pi.dwProcessId = pid;
-    pi.hProcess = OpenProcess(process_access, FALSE, pi.dwProcessId);
+    pi.hProcess    = OpenProcess(process_access, FALSE, pi.dwProcessId);
     if (!pi.hProcess) {
         closeprocess(pi);
         return false;

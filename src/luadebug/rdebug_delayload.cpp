@@ -1,6 +1,7 @@
 #if defined(_MSC_VER)
 
 #    include "rdebug_delayload.h"
+
 #    include <lua.hpp>
 #    define DELAYIMP_INSECURE_WRITABLE_HOOKS
 #    include <DelayImp.h>
@@ -17,7 +18,7 @@
 
 namespace luadebug::delayload {
     typedef FARPROC (*FindLuaApi)(const char* name);
-    static HMODULE luadll = 0;
+    static HMODULE luadll    = 0;
     static FindLuaApi luaapi = 0;
 
     HMODULE get_luadll() {

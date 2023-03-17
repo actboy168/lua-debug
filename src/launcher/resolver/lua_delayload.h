@@ -1,20 +1,21 @@
 #pragma once
 
-#include <lua.hpp>
-#include <vector>
-#include <functional>
-#include <type_traits>
-#include <string_view>
-#include <stdint.h>
 #include <resolver/lua_funcname.h>
+#include <stdint.h>
+
+#include <functional>
+#include <lua.hpp>
+#include <string_view>
+#include <type_traits>
+#include <vector>
 
 namespace luadebug::lua {
-    using state = uintptr_t;
+    using state     = uintptr_t;
     using cfunction = int (*)(state);
-    using kcontext = LUA_KCONTEXT;
+    using kcontext  = LUA_KCONTEXT;
     using kfunction = int (*)(state, int, kcontext);
-    using debug = uintptr_t;
-    using hook = void (*)(state, debug);
+    using debug     = uintptr_t;
+    using hook      = void (*)(state, debug);
 
     struct resolver {
         virtual intptr_t find(std::string_view name) const = 0;

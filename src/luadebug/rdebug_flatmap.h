@@ -1,14 +1,13 @@
 #pragma once
 
 #include <algorithm>
+#include <cstdint>
+#include <cstring>
 #include <functional>
 #include <limits>
 #include <stdexcept>
-#include <cstdint>
-#include <cstring>
 
 namespace luadebug {
-
     template <typename T>
     struct flatmap_hash {
         size_t operator()(T v) const noexcept {
@@ -36,7 +35,7 @@ namespace luadebug {
         : public KeyHash
         , public KeyEqual {
     private:
-        using key_type = Key;
+        using key_type    = Key;
         using mapped_type = T;
         struct bucket_kv {
             key_type key;
@@ -56,10 +55,10 @@ namespace luadebug {
                 , key(key)
                 , dib(dib) {}
         };
-        static constexpr size_t kInvalidSlot = size_t(-1);
+        static constexpr size_t kInvalidSlot   = size_t(-1);
         static constexpr size_t kMaxLoadFactor = 80;
-        static constexpr uint8_t kMaxDistance = 128;
-        static constexpr size_t kMaxTryRehash = 1;
+        static constexpr uint8_t kMaxDistance  = 128;
+        static constexpr size_t kMaxTryRehash  = 1;
 
     public:
         using bucket = typename std::conditional<sizeof(bucket_kv) <= sizeof(bucket_vk), bucket_kv, bucket_vk>::type;
@@ -70,18 +69,18 @@ namespace luadebug {
             , KeyEqual() {}
 
         flatmap(flatmap&& rhs) {
-            m_mask = rhs.m_mask;
+            m_mask    = rhs.m_mask;
             m_maxsize = rhs.m_maxsize;
-            m_size = rhs.m_size;
+            m_size    = rhs.m_size;
             if (rhs.m_mask == 0) {
                 m_buckets = reinterpret_cast<bucket*>(&m_mask);
             }
             else {
                 m_buckets = rhs.m_buckets;
             }
-            rhs.m_mask = 0;
+            rhs.m_mask    = 0;
             rhs.m_maxsize = 0;
-            rhs.m_size = 0;
+            rhs.m_size    = 0;
             rhs.m_buckets = reinterpret_cast<bucket*>(&rhs.m_mask);
         }
 
@@ -90,7 +89,7 @@ namespace luadebug {
             return *this;
         }
 
-        flatmap(const flatmap&) = delete;
+        flatmap(const flatmap&)            = delete;
         flatmap& operator=(const flatmap&) = delete;
 
         ~flatmap() noexcept {
@@ -205,7 +204,7 @@ namespace luadebug {
                 m_buckets[slot] = std::move(m_buckets[next_slot]);
                 --m_buckets[slot].dib;
 
-                slot = next_slot;
+                slot      = next_slot;
                 next_slot = (next_slot + 1) & m_mask;
             }
 
@@ -219,9 +218,9 @@ namespace luadebug {
             if (m_mask != 0) {
                 std::free(m_buckets);
             }
-            m_mask = 0;
+            m_mask    = 0;
             m_maxsize = 0;
-            m_size = 0;
+            m_size    = 0;
             m_buckets = reinterpret_cast<bucket*>(&m_mask);
         }
 
@@ -346,7 +345,7 @@ namespace luadebug {
         template <size_t REHASH>
         void internal_insert(bucket&& b) {
             size_t slot = KeyHash::operator()(b.key) & m_mask;
-            b.dib = 1;
+            b.dib       = 1;
             return internal_insert<REHASH>(slot, std::forward<bucket>(b));
         }
 
@@ -355,7 +354,7 @@ namespace luadebug {
         }
 
         void rehash(size_t c, bool force) {
-            size_t minsize = (std::max)(c, m_size);
+            size_t minsize    = (std::max)(c, m_size);
             size_t newmaxsize = 8;
             while (calc_maxsize(newmaxsize) < minsize && newmaxsize != 0) {
                 newmaxsize *= 2;
@@ -368,12 +367,12 @@ namespace luadebug {
             }
 
             bucket* oldbuckets = m_buckets;
-            size_t oldmaxsize = m_mask + 1;
+            size_t oldmaxsize  = m_mask + 1;
 
             m_buckets = alloc_bucket(newmaxsize);
-            m_size = 0;
+            m_size    = 0;
             m_maxsize = size_t(newmaxsize * kMaxLoadFactor / 100);
-            m_mask = newmaxsize - 1;
+            m_mask    = newmaxsize - 1;
             if (oldmaxsize <= 1) {
                 return;
             }
@@ -405,9 +404,9 @@ namespace luadebug {
         }
 
     private:
-        size_t m_mask = 0;
-        size_t m_maxsize = 0;
-        size_t m_size = 0;
+        size_t m_mask     = 0;
+        size_t m_maxsize  = 0;
+        size_t m_size     = 0;
         bucket* m_buckets = reinterpret_cast<bucket*>(&m_mask);
     };
 
@@ -415,7 +414,7 @@ namespace luadebug {
     class flatset : public flatmap<Key, uint8_t, KeyHash, KeyEqual> {
     private:
         using key_type = Key;
-        using mybase = flatmap<Key, uint8_t, KeyHash, KeyEqual>;
+        using mybase   = flatmap<Key, uint8_t, KeyHash, KeyEqual>;
 
     public:
         bool insert(const key_type& key) {

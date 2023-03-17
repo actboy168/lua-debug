@@ -1,19 +1,20 @@
-#include <mach/error.h>
-#include <mach/vm_types.h>
-#include <cstddef>  // for ptrdiff_t
-
+#include <fcntl.h>  // for open/close
 #include <mach-o/dyld.h>
+#include <mach-o/fat.h>  // for fat structure decoding
 #include <mach-o/getsect.h>
+#include <mach/error.h>
 #include <mach/mach.h>
 #include <mach/processor.h>
 #include <mach/processor_info.h>
-#include <mach-o/fat.h>  // for fat structure decoding
-#include <fcntl.h>       // for open/close
+#include <mach/vm_types.h>
 #include <sys/sysctl.h>
+
+#include <cstddef>  // for ptrdiff_t
 // for mmap()
 #include <dlfcn.h>
 #include <pthread_spis.h>
 #include <stdio.h>
+
 #include <string_view>
 
 #include "injectdll.h"
@@ -40,7 +41,7 @@ vm_address_t get_symbol_address(void* ptr) {
     Dl_info info = {};
     if (dladdr(ptr, &info)) {
         auto base_address = get_module_address(info.dli_fname);
-        auto offset = (intptr_t)ptr - (intptr_t)info.dli_fbase;
+        auto offset       = (intptr_t)ptr - (intptr_t)info.dli_fbase;
         return (intptr_t)base_address + offset;
     }
     return 0;
@@ -52,9 +53,9 @@ vm_address_t get_symbol_address(void* ptr) {
 #endif
 uint64_t injector__get_system_arch() {
     size_t size;
-    cpu_type_t type = -1;
+    cpu_type_t type      = -1;
     int mib[CTL_MAXNAME] = { 0 };
-    size_t length = CTL_MAXNAME;
+    size_t length        = CTL_MAXNAME;
 
     if (sysctlnametomib("sysctl.proc_cputype", mib, &length) != 0) {
         return CPU_TYPE_ANY;
@@ -73,14 +74,14 @@ uint64_t injector__get_system_arch() {
 #    define P_TRANSLATED 0x00020000
 #endif
 uint64_t injector__get_process_arch(pid_t pid) {
-    int mib[CTL_MAXNAME] = { 0 };
-    mib[0] = CTL_KERN;
-    mib[1] = KERN_PROC;
-    mib[2] = KERN_PROC_PID;
-    mib[3] = pid;
-    size_t length = 4;
+    int mib[CTL_MAXNAME]        = { 0 };
+    mib[0]                      = CTL_KERN;
+    mib[1]                      = KERN_PROC;
+    mib[2]                      = KERN_PROC_PID;
+    mib[3]                      = pid;
+    size_t length               = 4;
     struct kinfo_proc proc_info = {};
-    size_t size = sizeof(proc_info);
+    size_t size                 = sizeof(proc_info);
 
     if (sysctl(mib, (u_int)length, &proc_info, &size, NULL, 0) != 0) {
         return CPU_TYPE_ANY;
@@ -105,7 +106,7 @@ bool mach_inject(
     std::string_view entry
 ) {
     mach_port_t remoteTask = 0;
-    mach_error_t err = task_for_pid(mach_task_self(), targetProcess, &remoteTask);
+    mach_error_t err       = task_for_pid(mach_task_self(), targetProcess, &remoteTask);
     if (err) {
         LOG_MACH("task_for_pid", err);
         return false;
@@ -137,19 +138,19 @@ bool mach_inject(
 #endif
     bzero(&remoteThreadState, sizeof(remoteThreadState));
 
-    vm_address_t remoteStack = (vm_address_t)NULL;
-    vm_address_t remoteCode = (vm_address_t)NULL;
+    vm_address_t remoteStack   = (vm_address_t)NULL;
+    vm_address_t remoteCode    = (vm_address_t)NULL;
     vm_address_t remoteLibPath = (vm_address_t)NULL;
-    vm_address_t remoteArg = (vm_address_t)NULL;
+    vm_address_t remoteArg     = (vm_address_t)NULL;
 
     auto align_fn = [](size_t c) {
         return ((c + 16) / 16) * 16;
     };
 
-    size_t libPathSize = len * sizeof(char) + 1;
+    size_t libPathSize        = len * sizeof(char) + 1;
     constexpr size_t codeSize = sizeof(inject_code);
-    constexpr size_t argSize = sizeof(rmain_arg);
-    size_t want_size = stackSize + align_fn(libPathSize) + align_fn(argSize);
+    constexpr size_t argSize  = sizeof(rmain_arg);
+    size_t want_size          = stackSize + align_fn(libPathSize) + align_fn(argSize);
 
     vm_address_t remoteMem = (vm_address_t)NULL;
     //	Allocate the remoteStack.
@@ -164,10 +165,10 @@ bool mach_inject(
         goto deallocateMem;
     }
 
-    remoteArg = remoteMem;
+    remoteArg     = remoteMem;
     remoteLibPath = remoteArg + align_fn(argSize);
-    remoteStack = remoteLibPath + align_fn(libPathSize);
-    remoteStack = remoteStack - (remoteStack % 16);
+    remoteStack   = remoteLibPath + align_fn(libPathSize);
+    remoteStack   = remoteStack - (remoteStack % 16);
 
     err = vm_allocate(remoteTask, &remoteCode, codeSize, VM_FLAGS_ANYWHERE);
     if (err) {
@@ -192,8 +193,8 @@ bool mach_inject(
     }
 
     arg.sizeofstruct = want_size;
-    arg.name = (const char*)remoteLibPath;
-    arg.dlsym = get_symbol_address((void*)&dlsym);
+    arg.name         = (const char*)remoteLibPath;
+    arg.dlsym        = get_symbol_address((void*)&dlsym);
 
     err = vm_write(remoteTask, remoteArg, (pointer_t)&arg, sizeof(rmain_arg));
     if (err) {

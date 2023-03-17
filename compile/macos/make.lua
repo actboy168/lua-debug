@@ -8,8 +8,14 @@ end
 
 lm.builddir = ("build/%s/%s"):format(lm.platform, lm.mode)
 lm.EXE_DIR = "publish/bin/"
-lm.EXE_NAME = "lua-debug"
 lm:import "3rd/bee.lua/make.lua"
+
+--TODO copy -> move
+lm:copy "lua-debug" {
+    input = "publish/bin/bootstrap",
+    output = "publish/bin/lua-debug",
+    deps = "bootstrap",
+}
 
 lm.runtime_platform = lm.platform
 require "compile.macos.runtime"
@@ -60,10 +66,10 @@ end
 if lm.mode == "debug" then
     lm:executable "test_delayload" {
         sources = "test/delayload.cpp",
-        includes = {"src/launcher","3rd/lua/lua54"},
+        includes = { "src/launcher", "3rd/lua/lua54" },
     }
     lm:phony "tests" {
-        deps = {"test_frida", "test_delayload", "test_symbol"}
+        deps = { "test_frida", "test_delayload", "test_symbol" }
     }
 end
 

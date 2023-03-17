@@ -1,6 +1,8 @@
-#include "thunk_jit.h"
-#include <memory>
 #include <memory.h>
+
+#include <memory>
+
+#include "thunk_jit.h"
 
 thunk* thunk_create_hook(intptr_t dbg, intptr_t hook) {
     // int __cedel thunk_hook(lua_State* L, lua_Debug* ar)

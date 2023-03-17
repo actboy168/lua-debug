@@ -1,6 +1,6 @@
 #pragma once
 
-#include "rlua.h"
+struct lua_State;
 
 namespace luadebug::table {
     unsigned int array_size(const void* t);

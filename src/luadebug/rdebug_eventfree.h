@@ -1,6 +1,6 @@
 #pragma once
 
-#include <lua.hpp>
+struct lua_State;
 
 namespace luadebug::eventfree {
     typedef void (*notify)(void* ud, void* ptr);

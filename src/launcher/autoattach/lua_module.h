@@ -2,6 +2,7 @@
 
 #include <autoattach/autoattach.h>
 #include <resolver/lua_resolver.h>
+
 #include <string>
 
 namespace luadebug::autoattach {
@@ -18,8 +19,8 @@ namespace luadebug::autoattach {
         std::string path;
         std::string name;
         void* memory_address = 0;
-        size_t memory_size = 0;
-        lua_version version = lua_version::unknown;
+        size_t memory_size   = 0;
+        lua_version version  = lua_version::unknown;
         lua_resolver resolver;
         watchdog* watchdog = nullptr;
 
