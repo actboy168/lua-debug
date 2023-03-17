@@ -14,6 +14,7 @@ local filelist <const> = {
 local function compile(v)
     return v
         :gsub("lua", newname)
+        :gsub("lauxlib", newname.."auxlib")
 end
 
 local input = {}
