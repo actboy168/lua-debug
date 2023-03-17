@@ -91,7 +91,7 @@ cTValue* lj_debug_frame(lua_State* L, int level, int* size) {
 
 static int HOOK_MGR      = 0;
 static int HOOK_CALLBACK = 0;
-#if defined(RDEBUG_DISABLE_THUNK)
+#if defined(LUADEBUG_DISABLE_THUNK)
 static int THUNK_MGR = 0;
 #endif
 
@@ -722,7 +722,7 @@ struct hookmgr {
     lua_State* hostL = 0;
     void init(lua_State* hL) {
         hostL = hL;
-#if defined(RDEBUG_DISABLE_THUNK)
+#if defined(LUADEBUG_DISABLE_THUNK)
         thunk_set(hL, &THUNK_MGR, (intptr_t)this);
 #endif
         sc_full_hook.reset(thunk_create_hook(
@@ -757,7 +757,7 @@ struct hookmgr {
     static void freeobj_callback(void* mgr, void* ptr) {
         ((hookmgr*)mgr)->break_freeobj((Proto*)ptr);
     }
-#if !defined(RDEBUG_DISABLE_THUNK)
+#if !defined(LUADEBUG_DISABLE_THUNK)
     static void full_hook_callback(hookmgr* mgr, lua_State* hL, lua_Debug* ar) {
         mgr->full_hook(hL, ar);
     }
