@@ -1,4 +1,7 @@
 #pragma once
+
+#include <lua.hpp>
+
 #ifdef LUAJIT_VERSION
 #    include <lj_obj.h>
 #    include <lj_tab.h>

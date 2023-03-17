@@ -1,6 +1,7 @@
+#include "common.h"
 #include <lua.hpp>
 #include "lua_compat.h"
-#include "rlua.h"
+#include "luadbg/inc/rlua.hpp"
 #include "rdebug_table.h"
 #include <stdint.h>
 #include <string.h>

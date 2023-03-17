@@ -1,6 +1,9 @@
-﻿#include "rlua.h"
-#include "rdebug_cmodule.h"
+﻿#include "common.h"
+#include "luadbg/inc/rlua.hpp"
+#include <lua.hpp>
+#include "luadbg/bee_module.h"
 #include "rdebug_putenv.h"
+#include "lua_compat.h"
 #include <stdlib.h>
 
 static int DEBUG_HOST = 0;    // host L in client VM

@@ -1,5 +1,7 @@
 local lm = require "luamake"
+
 require "compile.common.detect_platform"
+require "compile.luadbg.build"
 
 local runtimes = {}
 
@@ -8,8 +10,11 @@ lm.cxx = "c++17"
 local bindir = "publish/runtime/"..lm.runtime_platform
 
 lm:source_set 'onelua' {
-    includes = "3rd/bee.lua/3rd/lua",
-    sources = "src/luadebug/onelua.c",
+    includes = {
+        "3rd/bee.lua/3rd/lua",
+        "src/luadebug/",
+    },
+    sources = "src/luadebug/luadbg/onelua.c",
     linux = {
         flags = "-fPIC"
     },

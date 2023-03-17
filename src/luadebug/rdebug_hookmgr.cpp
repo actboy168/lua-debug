@@ -1,4 +1,5 @@
-#include "rlua.h"
+#include "common.h"
+#include "luadbg/inc/rlua.hpp"
 #include <assert.h>
 #include <stdint.h>
 #include <new>
@@ -229,7 +230,7 @@ struct hookmgr {
         rlua_pushstring(cL, "newproto");
         rlua_pushlightuserdata(cL, p);
         rlua_pushinteger(cL, event != LUA_HOOKRET ? 0 : 1);
-        if (rlua_pcall(cL, 3, 0, 0) != LUA_OK) {
+        if (rlua_pcall(cL, 3, 0, 0) != RLUA_OK) {
             rlua_pop(cL, 1);
             return false;
         }
@@ -299,7 +300,7 @@ struct hookmgr {
         set_host(cL, hL);
         rlua_pushstring(cL, "funcbp");
         rlua_pushfstring(cL, "function: %p", function);
-        if (rlua_pcall(cL, 2, 0, 0) != LUA_OK) {
+        if (rlua_pcall(cL, 2, 0, 0) != RLUA_OK) {
             rlua_pop(cL, 1);
         }
     }
@@ -453,7 +454,7 @@ struct hookmgr {
 #    endif
         int ref = copy_value(hL, cL, true);
         rlua_pushinteger(cL, errcode);
-        if (rlua_pcall(cL, 3, 0, 0) != LUA_OK) {
+        if (rlua_pcall(cL, 3, 0, 0) != RLUA_OK) {
             rlua_pop(cL, 1);
         }
         unref_value(hL, ref);
@@ -509,7 +510,7 @@ struct hookmgr {
         : cL(L) {}
 
     int call_event(int nargs) {
-        if (rlua_pcall(cL, 1 + nargs, 1, 0) != LUA_OK) {
+        if (rlua_pcall(cL, 1 + nargs, 1, 0) != RLUA_OK) {
             rlua_pop(cL, 1);
             return -1;
         }
@@ -636,7 +637,7 @@ struct hookmgr {
         if ((step_mask & LUA_MASKLINE) && (!stepL || stepL == hL)) {
             rlua_pushstring(cL, "step");
             rlua_pushinteger(cL, ar->currentline);
-            if (rlua_pcall(cL, 2, 0, 0) != LUA_OK) {
+            if (rlua_pcall(cL, 2, 0, 0) != RLUA_OK) {
                 rlua_pop(cL, 1);
                 return;
             }
@@ -644,7 +645,7 @@ struct hookmgr {
         else {
             rlua_pushstring(cL, "bp");
             rlua_pushinteger(cL, ar->currentline);
-            if (rlua_pcall(cL, 2, 0, 0) != LUA_OK) {
+            if (rlua_pcall(cL, 2, 0, 0) != RLUA_OK) {
                 rlua_pop(cL, 1);
                 return;
             }
@@ -731,7 +732,7 @@ struct hookmgr {
         }
         set_host(cL, hL);
         rlua_pushstring(cL, "update");
-        if (rlua_pcall(cL, 1, 0, 0) != LUA_OK) {
+        if (rlua_pcall(cL, 1, 0, 0) != RLUA_OK) {
             rlua_pop(cL, 1);
             return;
         }
