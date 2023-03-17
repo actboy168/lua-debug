@@ -96,7 +96,14 @@ static int HOOK_CALLBACK = 0;
 static int THUNK_MGR = 0;
 #endif
 
-lua_State* luadebug::debughost::get(luadbg_State* L);
+static bool get_callback(luadbg_State* cL) {
+    if (luadbg_rawgetp(cL, LUADBG_REGISTRYINDEX, &HOOK_CALLBACK) != LUADBG_TFUNCTION) {
+        luadbg_pop(cL, 1);
+        return false;
+    }
+    return true;
+}
+
 int copy_value(lua_State* from, luadbg_State* to, bool ref);
 void unref_value(lua_State* from, int ref);
 
@@ -203,8 +210,7 @@ struct hookmgr {
         break_del(hL, p);
 
         luadbgL_checkstack(cL, 4, NULL);
-        if (luadbg_rawgetp(cL, LUADBG_REGISTRYINDEX, &HOOK_CALLBACK) != LUA_TFUNCTION) {
-            luadbg_pop(cL, 1);
+        if (!get_callback(cL)) {
             return false;
         }
         luadebug::debughost::set(cL, hL);
@@ -274,8 +280,7 @@ struct hookmgr {
         const void* function = lua_topointer(hL, -1);
         lua_pop(hL, 1);
 
-        if (luadbg_rawgetp(cL, LUADBG_REGISTRYINDEX, &HOOK_CALLBACK) != LUA_TFUNCTION) {
-            luadbg_pop(cL, 1);
+        if (!get_callback(cL)) {
             return;
         }
         luadebug::debughost::set(cL, hL);
@@ -420,8 +425,7 @@ struct hookmgr {
         exception_hookmask(hL, enable ? LUA_MASKEXCEPTION : 0);
     }
     void exception_hook(lua_State* hL, lua_Debug* ar) {
-        if (luadbg_rawgetp(cL, LUADBG_REGISTRYINDEX, &HOOK_CALLBACK) != LUA_TFUNCTION) {
-            luadbg_pop(cL, 1);
+        if (!get_callback(cL)) {
             return;
         }
         int errcode;
@@ -490,44 +494,6 @@ struct hookmgr {
     hookmgr(luadbg_State* L)
         : cL(L) {}
 
-    int call_event(int nargs) {
-        if (luadbg_pcall(cL, 1 + nargs, 1, 0) != LUADBG_OK) {
-            luadbg_pop(cL, 1);
-            return -1;
-        }
-        if (luadbg_type(cL, -1) == LUA_TBOOLEAN) {
-            int ok = luadbg_toboolean(cL, -1) ? 1 : 0;
-            luadbg_pop(cL, 1);
-            return ok;
-        }
-        luadbg_pop(cL, 1);
-        return -1;
-    }
-
-    int event(lua_State* hL, const char* name, int start) {
-        if (luadbg_rawgetp(cL, LUADBG_REGISTRYINDEX, &HOOK_CALLBACK) != LUA_TFUNCTION) {
-            luadbg_pop(cL, 1);
-            return -1;
-        }
-        int nargs = lua_gettop(hL) - start + 1;
-        luadebug::debughost::set(cL, hL);
-        luadbg_pushstring(cL, name);
-        if (nargs <= 0) {
-            return call_event(0);
-        }
-        std::vector<int> refs;
-        refs.resize(nargs);
-        for (int i = 0; i < nargs; ++i) {
-            lua_pushvalue(hL, start + i);
-            refs[i] = copy_value(hL, cL, true);
-            lua_pop(hL, 1);
-        }
-        int nres = call_event(nargs);
-        for (int i = 0; i < nargs; ++i) {
-            unref_value(hL, refs[i]);
-        }
-        return nres;
-    }
 #ifdef LUAJIT_VERSION
     bool last_hook_call_in_c = false;
 #endif
@@ -610,8 +576,7 @@ struct hookmgr {
         default:
             return;
         }
-        if (luadbg_rawgetp(cL, LUADBG_REGISTRYINDEX, &HOOK_CALLBACK) != LUA_TFUNCTION) {
-            luadbg_pop(cL, 1);
+        if (!get_callback(cL)) {
             return;
         }
         luadebug::debughost::set(cL, hL);
@@ -707,8 +672,7 @@ struct hookmgr {
         if (!update_timer.update(200)) {
             return;
         }
-        if (luadbg_rawgetp(cL, LUADBG_REGISTRYINDEX, &HOOK_CALLBACK) != LUA_TFUNCTION) {
-            luadbg_pop(cL, 1);
+        if (!get_callback(cL)) {
             return;
         }
         luadebug::debughost::set(cL, hL);
@@ -887,7 +851,7 @@ int luaopen_luadebug_hookmgr(luadbg_State* L) {
     luadebug::debughost::get(L);
 
     luadbg_newtable(L);
-    if (LUA_TUSERDATA != luadbg_rawgetp(L, LUADBG_REGISTRYINDEX, &HOOK_MGR)) {
+    if (LUADBG_TUSERDATA != luadbg_rawgetp(L, LUADBG_REGISTRYINDEX, &HOOK_MGR)) {
         luadbg_pop(L, 1);
         hookmgr* thd = (hookmgr*)luadbg_newuserdata(L, sizeof(hookmgr));
         new (thd) hookmgr(L);
@@ -930,30 +894,40 @@ int luaopen_luadebug_hookmgr(luadbg_State* L) {
     return 1;
 }
 
-int event(luadbg_State* cL, lua_State* hL, const char* name, int start) {
-    if (LUA_TUSERDATA != luadbg_rawgetp(cL, LUADBG_REGISTRYINDEX, &HOOK_MGR)) {
+static int call_event(luadbg_State* cL, int nargs) {
+    if (luadbg_pcall(cL, 1 + nargs, 1, 0) != LUADBG_OK) {
         luadbg_pop(cL, 1);
         return -1;
     }
-    int ok = ((hookmgr*)luadbg_touserdata(cL, -1))->event(hL, name, start);
+    if (luadbg_type(cL, -1) == LUA_TBOOLEAN) {
+        int ok = luadbg_toboolean(cL, -1) ? 1 : 0;
+        luadbg_pop(cL, 1);
+        return ok;
+    }
     luadbg_pop(cL, 1);
-    return ok;
+    return -1;
 }
 
-int debug_pcall(lua_State* L, int nargs, int nresults, int errfunc) {
-#ifdef LUAJIT_VERSION
-    global_State* g = G(L);
-    bool needClean  = !hook_active(g);
-    hook_enter(g);
-    int ok = lua_pcall(L, nargs, nresults, errfunc);
-    if (needClean)
-        hook_leave(g);
-#else
-    lu_byte oldah = L->allowhook;
-    L->allowhook  = 0;
-    int ok        = lua_pcall(L, nargs, nresults, errfunc);
-    L->allowhook  = oldah;
-#endif
-
-    return ok;
+int event(luadbg_State* cL, lua_State* hL, const char* name, int start) {
+    if (!get_callback(cL)) {
+        return -1;
+    }
+    int nargs = lua_gettop(hL) - start + 1;
+    luadebug::debughost::set(cL, hL);
+    luadbg_pushstring(cL, name);
+    if (nargs <= 0) {
+        return call_event(cL, 0);
+    }
+    std::vector<int> refs;
+    refs.resize(nargs);
+    for (int i = 0; i < nargs; ++i) {
+        lua_pushvalue(hL, start + i);
+        refs[i] = copy_value(hL, cL, true);
+        lua_pop(hL, 1);
+    }
+    int nres = call_event(cL, nargs);
+    for (int i = 0; i < nargs; ++i) {
+        unref_value(hL, refs[i]);
+    }
+    return nres;
 }

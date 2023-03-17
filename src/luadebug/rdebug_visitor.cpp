@@ -10,7 +10,23 @@
 #include "rdebug_lua.h"
 #include "rdebug_table.h"
 
-int debug_pcall(lua_State* L, int nargs, int nresults, int errfunc);
+static int debug_pcall(lua_State* L, int nargs, int nresults, int errfunc) {
+#ifdef LUAJIT_VERSION
+    global_State* g = G(L);
+    bool needClean  = !hook_active(g);
+    hook_enter(g);
+    int ok = lua_pcall(L, nargs, nresults, errfunc);
+    if (needClean)
+        hook_leave(g);
+#else
+    lu_byte oldah = L->allowhook;
+    L->allowhook  = 0;
+    int ok        = lua_pcall(L, nargs, nresults, errfunc);
+    L->allowhook  = oldah;
+#endif
+
+    return ok;
+}
 
 enum class VAR : uint8_t {
     FRAME_LOCAL,  // stack(frame, index)
