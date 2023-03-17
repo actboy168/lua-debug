@@ -1,13 +1,9 @@
 #include "common.h"
 #include "luadbg/inc/rlua.hpp"
-#include <assert.h>
-#include <stdint.h>
-#include <new>
+#include <cstdint>
 #include <memory>
-#include <array>
 #include <chrono>
 #include <vector>
-#include <unordered_map>
 #include "rdebug_eventfree.h"
 #include "thunk/thunk.h"
 #include "rdebug_flatmap.h"
@@ -451,7 +447,7 @@ struct hookmgr {
     // thread
     //
     int thread_mask = 0;
-    std::unordered_map<lua_State*, lua_State*> coroutine_tree;
+    luadebug::flatmap<lua_State*, lua_State*> coroutine_tree;
 #if defined(LUA_HOOKTHREAD)
     void thread_hookmask(lua_State* hL, int mask) {
         if (thread_mask != mask) {
@@ -467,7 +463,7 @@ struct hookmgr {
         if (from) {
             int type = ar->currentline;
             if (type == 0) {
-                coroutine_tree[co] = from;
+                coroutine_tree.insert_or_assign(co, from);
             }
             else if (type == 1) {
                 coroutine_tree.erase(from);
@@ -476,11 +472,11 @@ struct hookmgr {
         updatehookmask(co);
     }
     lua_State* coroutine_from(lua_State* co) {
-        auto it = coroutine_tree.find(co);
-        if (it == coroutine_tree.end()) {
+        auto r = coroutine_tree.find(co);
+        if (!r) {
             return nullptr;
         }
-        return it->second;
+        return *r;
     }
 #endif
 
