@@ -8,16 +8,22 @@
 
 #include "injectdll.h"
 
+inline std::string_view checkstrview(lua_State* L, int idx) {
+    size_t len      = 0;
+    const char* buf = luaL_checklstring(L, idx, &len);
+    return { buf, len };
+}
+
 static int injectdll(lua_State* L) {
     if (lua_type(L, 1) == LUA_TNUMBER) {
         DWORD pid = (DWORD)luaL_checkinteger(L, 1);
-        bool ok   = injectdll(pid, bee::lua::checkstring(L, 2), bee::lua::checkstring(L, 3), bee::lua::checkstrview(L, 4));
+        bool ok   = injectdll(pid, bee::lua::checkstring(L, 2), bee::lua::checkstring(L, 3), checkstrview(L, 4));
         lua_pushboolean(L, ok);
         return 1;
     }
     else {
         auto& self = *(bee::subprocess::process*)luaL_checkudata(L, 1, "bee::subprocess");
-        bool ok    = injectdll(self.info(), bee::lua::checkstring(L, 2), bee::lua::checkstring(L, 3), bee::lua::checkstrview(L, 4));
+        bool ok    = injectdll(self.info(), bee::lua::checkstring(L, 2), bee::lua::checkstring(L, 3), checkstrview(L, 4));
         lua_pushboolean(L, ok);
         return 1;
     }

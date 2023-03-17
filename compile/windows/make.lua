@@ -16,12 +16,18 @@ lm:build "x86_64" {
 }
 
 lm.EXE_DIR = "publish/bin/"
-lm.EXE_NAME = "lua-debug"
 lm.EXE_RESOURCE = "../../compile/windows/lua-debug.rc"
 lm:import "3rd/bee.lua/make.lua"
+
+--TODO copy -> move
+lm:copy "lua-debug" {
+    input = "publish/bin/bootstrap.exe",
+    output = "publish/bin/lua-debug.exe",
+    deps = "bootstrap",
+}
+
 lm:lua_dll 'inject' {
     bindir = "publish/bin",
-    deps = "lua54",
     defines = "BEE_INLINE",
     includes = {
         "3rd/bee.lua",
@@ -38,10 +44,10 @@ lm:lua_dll 'inject' {
 if lm.mode == "debug" then
     lm:executable "test_delayload" {
         sources = "test/delayload.cpp",
-        includes = {"src/launcher","3rd/lua/lua54/"},
+        includes = { "src/launcher", "3rd/lua/lua54/" },
     }
     lm:phony "tests" {
-        deps = {"test_frida", "test_delayload", "test_symbol"}
+        deps = { "test_frida", "test_delayload", "test_symbol" }
     }
 end
 

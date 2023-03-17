@@ -2,10 +2,10 @@
 #    include <winsock2.h>
 #endif
 
+#include <3rd/fmt/format.cc>
 #include <bee/error.cpp>
 #include <bee/net/endpoint.cpp>
 #include <bee/net/socket.cpp>
-#include <bee/nonstd/3rd/format.cc>
 #include <bee/utility/file_handle.cpp>
 #include <bee/utility/path_helper.cpp>
 
