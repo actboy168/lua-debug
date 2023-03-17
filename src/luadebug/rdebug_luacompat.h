@@ -152,13 +152,7 @@ inline int lua_setiuservalue(lua_State* L, int idx, int n) {
 #    include <lj_ctype.h>
 #    include <lj_obj.h>
 #    include <lj_tab.h>
-using Table   = GCtab;
-using Closure = GCfunc;
-using UpVal   = GCupval;
-using Proto   = GCproto;
-using UDate   = GCudata;
-using TString = GCstr;
-using StkId   = TValue*;
+using Proto = GCproto;
 
 inline TValue* index2adr(lua_State* L, int idx) {
     if (idx > 0) {

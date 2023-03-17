@@ -882,11 +882,7 @@ tablehash(luadbg_State* L, int ref) {
         lua_pop(cL, 1);
         return 0;
     }
-#ifdef LUAJIT_VERSION
-    const GCtab* t = &((const GCobj*)lua_topointer(cL, -1))->tab;
-#else
     const void* t = lua_topointer(cL, -1);
-#endif
     if (!t) {
         lua_pop(cL, 1);
         return 0;
@@ -944,11 +940,7 @@ lclient_tablesize(luadbg_State* L) {
         lua_pop(cL, 1);
         return 0;
     }
-#ifdef LUAJIT_VERSION
-    const GCtab* t = &((const GCobj*)lua_topointer(cL, -1))->tab;
-#else
     const void* t = lua_topointer(cL, -1);
-#endif
     if (!t) {
         lua_pop(cL, 1);
         return 0;
@@ -971,11 +963,7 @@ lclient_tablekey(luadbg_State* L) {
         lua_pop(cL, 1);
         return 0;
     }
-#ifdef LUAJIT_VERSION
-    const GCtab* t = &((const GCobj*)lua_topointer(cL, -1))->tab;
-#else
     const void* t = lua_topointer(cL, -1);
-#endif
     if (!t) {
         lua_pop(cL, 1);
         return 0;
