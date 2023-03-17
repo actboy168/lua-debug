@@ -1,5 +1,4 @@
-#include "common.h"
-#include "luadbg/inc/rlua.hpp"
+#include "rdebug_lua.h"
 #include <cstdint>
 #include <memory>
 #include <chrono>
@@ -47,7 +46,6 @@ private:
     luadebug::flatmap<intptr_t, bool> m_flatmap;
 };
 
-#include "rluaobject.h"
 #ifdef LUAJIT_VERSION
 #    include <lj_arch.h>
 #    include <lj_frame.h>

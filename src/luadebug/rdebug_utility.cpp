@@ -1,5 +1,4 @@
-#include "common.h"
-#include "luadbg/inc/rlua.hpp"
+#include "rdebug_lua.h"
 #if defined(_WIN32)
 #    include <Windows.h>
 #    include <tlhelp32.h>

@@ -1,7 +1,4 @@
-#include "common.h"
-#include <lua.hpp>
-#include "lua_compat.h"
-#include "luadbg/inc/rlua.hpp"
+#include "rdebug_lua.h"
 #include "rdebug_table.h"
 #include <stdint.h>
 #include <string.h>
@@ -9,10 +6,6 @@
 #include <limits>
 #include <algorithm>
 #include "rdebug_table.h"
-
-#ifdef LUAJIT_VERSION
-#    include "rluaobject.h"
-#endif
 #include <symbolize/symbolize.h>
 
 int debug_pcall(lua_State* L, int nargs, int nresults, int errfunc);

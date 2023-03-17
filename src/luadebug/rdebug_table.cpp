@@ -1,5 +1,5 @@
+#include "rdebug_luacompat.h"
 #include "rdebug_table.h"
-#include "rluaobject.h"
 
 namespace luadebug::table {
 

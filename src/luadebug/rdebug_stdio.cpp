@@ -1,10 +1,7 @@
-#include "common.h"
-#include "luadbg/inc/rlua.hpp"
-#include <lua.hpp>
+#include "rdebug_lua.h"
 #include <new>
 #include <limits>
 #include "rdebug_redirect.h"
-#include "lua_compat.h"
 
 lua_State* get_host(rlua_State* L);
 rlua_State* get_client(lua_State* L);
