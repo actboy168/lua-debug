@@ -1,5 +1,3 @@
-#include <lua.hpp>
-
 #include "rdebug_luacompat.h"
 #include "thunk_nojit.h"
 

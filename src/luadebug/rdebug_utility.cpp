@@ -5,7 +5,7 @@
 #endif
 #include <signal.h>
 
-namespace rdebug_utility {
+namespace luadebug::utility {
 #if defined(_WIN32)
     static bool closeWindow() {
         bool ok  = false;
@@ -63,16 +63,19 @@ namespace rdebug_utility {
         raise(SIGINT);
         return 0;
     }
+    static int luaopen(luadbg_State* L) {
+        luadbg_newtable(L);
+        luadbgL_Reg lib[] = {
+            { "closewindow", closewindow },
+            { "closeprocess", closeprocess },
+            { NULL, NULL }
+        };
+        luadbgL_setfuncs(L, lib, 0);
+        return 1;
+    }
 }
 
 LUADEBUG_FUNC
 int luaopen_luadebug_utility(luadbg_State* L) {
-    luadbg_newtable(L);
-    luadbgL_Reg lib[] = {
-        { "closewindow", rdebug_utility::closewindow },
-        { "closeprocess", rdebug_utility::closeprocess },
-        { NULL, NULL }
-    };
-    luadbgL_setfuncs(L, lib, 0);
-    return 1;
+    return luadebug::utility::luaopen(L);
 }

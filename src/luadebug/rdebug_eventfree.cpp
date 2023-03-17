@@ -2,6 +2,7 @@
 
 #include <memory>
 
+#include "rdebug_luacompat.h"
 #include "thunk/thunk.h"
 
 namespace luadebug::eventfree {

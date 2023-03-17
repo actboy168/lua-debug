@@ -6,12 +6,11 @@
 #include <algorithm>
 #include <limits>
 
+#include "rdebug_debughost.h"
 #include "rdebug_lua.h"
 #include "rdebug_table.h"
 
 int debug_pcall(lua_State* L, int nargs, int nresults, int errfunc);
-
-lua_State* get_host(luadbg_State* L);
 
 enum class VAR : uint8_t {
     FRAME_LOCAL,  // stack(frame, index)
@@ -786,7 +785,7 @@ client_getlocal(luadbg_State* L, int getref) {
     if (index == 0 || index > (std::numeric_limits<uint8_t>::max)() || -index > (std::numeric_limits<uint8_t>::max)()) {
         return luadbgL_error(L, "index must be `uint8_t`");
     }
-    lua_State* cL    = get_host(L);
+    lua_State* cL    = luadebug::debughost::get(L);
     const char* name = get_frame_local(L, cL, (uint16_t)frame, (int16_t)index, getref);
     if (name) {
         luadbg_pushstring(L, name);
@@ -809,7 +808,7 @@ lclient_getlocalv(luadbg_State* L) {
 
 static int
 client_index(luadbg_State* L, int getref) {
-    lua_State* cL = get_host(L);
+    lua_State* cL = luadebug::debughost::get(L);
     if (luadbg_gettop(L) != 2) {
         return luadbgL_error(L, "need table key");
     }
@@ -844,7 +843,7 @@ lclient_indexv(luadbg_State* L) {
 
 static int
 client_field(luadbg_State* L, int getref) {
-    lua_State* cL = get_host(L);
+    lua_State* cL = luadebug::debughost::get(L);
     if (luadbg_gettop(L) != 2) {
         return luadbgL_error(L, "need table key");
     }
@@ -872,7 +871,7 @@ lclient_fieldv(luadbg_State* L) {
 
 static int
 tablehash(luadbg_State* L, int ref) {
-    lua_State* cL       = get_host(L);
+    lua_State* cL       = luadebug::debughost::get(L);
     luadbg_Integer maxn = luadbgL_optinteger(L, 2, std::numeric_limits<unsigned int>::max());
     luadbg_settop(L, 1);
     if (lua_checkstack(cL, 4) == 0) {
@@ -935,7 +934,7 @@ lclient_tablehashv(luadbg_State* L) {
 
 static int
 lclient_tablesize(luadbg_State* L) {
-    lua_State* cL = get_host(L);
+    lua_State* cL = luadebug::debughost::get(L);
     if (copy_fromR(L, cL) != LUA_TTABLE) {
         lua_pop(cL, 1);
         return 0;
@@ -953,7 +952,7 @@ lclient_tablesize(luadbg_State* L) {
 
 static int
 lclient_tablekey(luadbg_State* L) {
-    lua_State* cL    = get_host(L);
+    lua_State* cL    = luadebug::debughost::get(L);
     unsigned int idx = (unsigned int)luadbgL_optinteger(L, 2, 0);
     luadbg_settop(L, 1);
     if (lua_checkstack(cL, 2) == 0) {
@@ -988,7 +987,7 @@ lclient_tablekey(luadbg_State* L) {
 
 static int
 lclient_udread(luadbg_State* L) {
-    lua_State* cL         = get_host(L);
+    lua_State* cL         = luadebug::debughost::get(L);
     luadbg_Integer offset = luadbgL_checkinteger(L, 2);
     luadbg_Integer count  = luadbgL_checkinteger(L, 3);
     luadbg_settop(L, 1);
@@ -1015,7 +1014,7 @@ lclient_udread(luadbg_State* L) {
 
 static int
 lclient_udwrite(luadbg_State* L) {
-    lua_State* cL         = get_host(L);
+    lua_State* cL         = luadebug::debughost::get(L);
     luadbg_Integer offset = luadbgL_checkinteger(L, 2);
     size_t count          = 0;
     const char* data      = luadbgL_checklstring(L, 3, &count);
@@ -1057,7 +1056,7 @@ lclient_udwrite(luadbg_State* L) {
 
 static int
 lclient_value(luadbg_State* L) {
-    lua_State* cL = get_host(L);
+    lua_State* cL = luadebug::debughost::get(L);
     luadbg_settop(L, 1);
     if (copy_fromR(L, cL) == LUA_TNONE) {
         luadbg_pop(L, 1);
@@ -1075,7 +1074,7 @@ lclient_value(luadbg_State* L) {
 // ref = value
 static int
 lclient_assign(luadbg_State* L) {
-    lua_State* cL = get_host(L);
+    lua_State* cL = luadebug::debughost::get(L);
     if (lua_checkstack(cL, 2) == 0)
         return luadbgL_error(L, "stack overflow");
     luadbg_settop(L, 2);
@@ -1096,7 +1095,7 @@ lclient_assign(luadbg_State* L) {
 
 static int
 lclient_type(luadbg_State* L) {
-    lua_State* cL = get_host(L);
+    lua_State* cL = luadebug::debughost::get(L);
     switch (luadbg_type(L, 1)) {
     case LUA_TNIL:
         luadbg_pushstring(L, "nil");
@@ -1184,7 +1183,7 @@ static int
 client_getupvalue(luadbg_State* L, int getref) {
     int index = (int)luadbgL_checkinteger(L, 2);
     luadbg_settop(L, 1);
-    lua_State* cL = get_host(L);
+    lua_State* cL = luadebug::debughost::get(L);
 
     const char* name = get_upvalue(L, cL, index, getref);
     if (name) {
@@ -1209,7 +1208,7 @@ lclient_getupvaluev(luadbg_State* L) {
 static int
 client_getmetatable(luadbg_State* L, int getref) {
     luadbg_settop(L, 1);
-    lua_State* cL = get_host(L);
+    lua_State* cL = luadebug::debughost::get(L);
     if (get_metatable(L, cL, getref)) {
         return 1;
     }
@@ -1230,7 +1229,7 @@ static int
 client_getuservalue(luadbg_State* L, int getref) {
     int n = (int)luadbgL_optinteger(L, 2, 1);
     luadbg_settop(L, 1);
-    lua_State* cL = get_host(L);
+    lua_State* cL = luadebug::debughost::get(L);
     if (get_uservalue(L, cL, n, getref)) {
         luadbg_pushboolean(L, 1);
         return 2;
@@ -1302,7 +1301,7 @@ lclient_getinfo(luadbg_State* L) {
         luadbg_createtable(L, 0, size);
     }
 
-    lua_State* cL = get_host(L);
+    lua_State* cL = luadebug::debughost::get(L);
     lua_Debug ar;
 
     switch (luadbg_type(L, 1)) {
@@ -1410,7 +1409,7 @@ static int
 lclient_load(luadbg_State* L) {
     size_t len       = 0;
     const char* func = luadbgL_checklstring(L, 1, &len);
-    lua_State* cL    = get_host(L);
+    lua_State* cL    = luadebug::debughost::get(L);
     if (luaL_loadbuffer(cL, func, len, "=")) {
         luadbg_pushnil(L);
         luadbg_pushstring(L, lua_tostring(cL, -1));
@@ -1450,7 +1449,7 @@ eval_copy_args(luadbg_State* from, lua_State* to) {
 
 static int
 lclient_eval(luadbg_State* L) {
-    lua_State* cL = get_host(L);
+    lua_State* cL = luadebug::debughost::get(L);
     int nargs     = luadbg_gettop(L);
     if (lua_checkstack(cL, nargs) == 0) {
         return luadbgL_error(L, "stack overflow");
@@ -1493,7 +1492,7 @@ addwatch(lua_State* cL, int idx) {
 
 static int
 lclient_watch(luadbg_State* L) {
-    lua_State* cL = get_host(L);
+    lua_State* cL = luadebug::debughost::get(L);
     int n         = lua_gettop(cL);
     int nargs     = luadbg_gettop(L);
     if (lua_checkstack(cL, nargs) == 0) {
@@ -1529,7 +1528,7 @@ lclient_watch(luadbg_State* L) {
 
 static int
 lclient_cleanwatch(luadbg_State* L) {
-    lua_State* cL = get_host(L);
+    lua_State* cL = luadebug::debughost::get(L);
     lua_pushnil(cL);
     lua_setfield(cL, LUA_REGISTRYINDEX, "__debugger_watch");
     return 0;
@@ -1553,7 +1552,7 @@ static const char* costatus(lua_State* L, lua_State* co) {
 
 static int
 lclient_costatus(luadbg_State* L) {
-    lua_State* cL = get_host(L);
+    lua_State* cL = luadebug::debughost::get(L);
     if (copy_fromR(L, cL) == LUA_TNONE) {
         luadbg_pushstring(L, "invalid");
         return 1;
@@ -1571,7 +1570,7 @@ lclient_costatus(luadbg_State* L) {
 
 static int
 lclient_gccount(luadbg_State* L) {
-    lua_State* cL = get_host(L);
+    lua_State* cL = luadebug::debughost::get(L);
     int k         = lua_gc(cL, LUA_GCCOUNT, 0);
     int b         = lua_gc(cL, LUA_GCCOUNTB, 0);
     size_t m      = ((size_t)k << 10) & (size_t)b;
@@ -1580,7 +1579,7 @@ lclient_gccount(luadbg_State* L) {
 }
 
 static int lclient_cfunctioninfo(luadbg_State* L) {
-    lua_State* cL = get_host(L);
+    lua_State* cL = luadebug::debughost::get(L);
     if (copy_fromR(L, cL) == LUA_TNONE) {
         luadbg_pushnil(L);
         return 1;
@@ -1676,6 +1675,6 @@ int init_visitor(luadbg_State* L) {
 
 LUADEBUG_FUNC
 int luaopen_luadebug_visitor(luadbg_State* L) {
-    get_host(L);
+    luadebug::debughost::get(L);
     return init_visitor(L);
 }

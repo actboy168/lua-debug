@@ -3,6 +3,7 @@
 #include <memory>
 #include <vector>
 
+#include "rdebug_debughost.h"
 #include "rdebug_eventfree.h"
 #include "rdebug_flatmap.h"
 #include "rdebug_lua.h"
@@ -95,8 +96,7 @@ static int HOOK_CALLBACK = 0;
 static int THUNK_MGR = 0;
 #endif
 
-void set_host(luadbg_State* L, lua_State* hL);
-lua_State* get_host(luadbg_State* L);
+lua_State* luadebug::debughost::get(luadbg_State* L);
 int copy_value(lua_State* from, luadbg_State* to, bool ref);
 void unref_value(lua_State* from, int ref);
 
@@ -207,7 +207,7 @@ struct hookmgr {
             luadbg_pop(cL, 1);
             return false;
         }
-        set_host(cL, hL);
+        luadebug::debughost::set(cL, hL);
         luadbg_pushstring(cL, "newproto");
         luadbg_pushlightuserdata(cL, p);
         luadbg_pushinteger(cL, event != LUA_HOOKRET ? 0 : 1);
@@ -278,7 +278,7 @@ struct hookmgr {
             luadbg_pop(cL, 1);
             return;
         }
-        set_host(cL, hL);
+        luadebug::debughost::set(cL, hL);
         luadbg_pushstring(cL, "funcbp");
         luadbg_pushfstring(cL, "function: %p", function);
         if (luadbg_pcall(cL, 2, 0, 0) != LUADBG_OK) {
@@ -425,7 +425,7 @@ struct hookmgr {
             return;
         }
         int errcode;
-        set_host(cL, hL);
+        luadebug::debughost::set(cL, hL);
         luadbg_pushstring(cL, "exception");
 #    if LUA_VERSION_NUM >= 504
         LUA_STKID(hL->top) = LUA_STKID(hL->stack) + ar->currentline;
@@ -510,7 +510,7 @@ struct hookmgr {
             return -1;
         }
         int nargs = lua_gettop(hL) - start + 1;
-        set_host(cL, hL);
+        luadebug::debughost::set(cL, hL);
         luadbg_pushstring(cL, name);
         if (nargs <= 0) {
             return call_event(0);
@@ -614,7 +614,7 @@ struct hookmgr {
             luadbg_pop(cL, 1);
             return;
         }
-        set_host(cL, hL);
+        luadebug::debughost::set(cL, hL);
         if ((step_mask & LUA_MASKLINE) && (!stepL || stepL == hL)) {
             luadbg_pushstring(cL, "step");
             luadbg_pushinteger(cL, ar->currentline);
@@ -711,7 +711,7 @@ struct hookmgr {
             luadbg_pop(cL, 1);
             return;
         }
-        set_host(cL, hL);
+        luadebug::debughost::set(cL, hL);
         luadbg_pushstring(cL, "update");
         if (luadbg_pcall(cL, 1, 0, 0) != LUADBG_OK) {
             luadbg_pop(cL, 1);
@@ -781,7 +781,7 @@ struct hookmgr {
 static int init(luadbg_State* L) {
     luadbgL_checktype(L, 1, LUA_TFUNCTION);
     luadbg_settop(L, 1);
-    lua_State* hL = get_host(L);
+    lua_State* hL = luadebug::debughost::get(L);
     hookmgr::get_self(L)->init(hL);
     luadbg_rawsetp(L, LUADBG_REGISTRYINDEX, &HOOK_CALLBACK);
     return 0;
@@ -789,12 +789,12 @@ static int init(luadbg_State* L) {
 
 static int sethost(luadbg_State* L) {
     luadbgL_checktype(L, 1, LUA_TLIGHTUSERDATA);
-    set_host(L, (lua_State*)luadbg_touserdata(L, 1));
+    luadebug::debughost::set(L, (lua_State*)luadbg_touserdata(L, 1));
     return 0;
 }
 
 static int gethost(luadbg_State* L) {
-    luadbg_pushlightuserdata(L, get_host(L));
+    luadbg_pushlightuserdata(L, luadebug::debughost::get(L));
     return 1;
 }
 
@@ -804,71 +804,71 @@ static int updatehookmask(luadbg_State* L) {
 }
 
 static int stacklevel(luadbg_State* L) {
-    lua_State* hL = get_host(L);
+    lua_State* hL = luadebug::debughost::get(L);
     luadbg_pushinteger(L, hookmgr::stacklevel(hL));
     return 1;
 }
 
 static int break_add(luadbg_State* L) {
-    hookmgr::get_self(L)->break_add(get_host(L), checklightudata<Proto>(L, 1));
+    hookmgr::get_self(L)->break_add(luadebug::debughost::get(L), checklightudata<Proto>(L, 1));
     return 0;
 }
 
 static int break_del(luadbg_State* L) {
-    hookmgr::get_self(L)->break_del(get_host(L), checklightudata<Proto>(L, 1));
+    hookmgr::get_self(L)->break_del(luadebug::debughost::get(L), checklightudata<Proto>(L, 1));
     return 0;
 }
 
 static int break_open(luadbg_State* L) {
-    hookmgr::get_self(L)->break_open(get_host(L), luadbg_toboolean(L, 1));
+    hookmgr::get_self(L)->break_open(luadebug::debughost::get(L), luadbg_toboolean(L, 1));
     return 0;
 }
 
 static int break_closeline(luadbg_State* L) {
-    hookmgr::get_self(L)->break_closeline(get_host(L));
+    hookmgr::get_self(L)->break_closeline(luadebug::debughost::get(L));
     return 0;
 }
 
 static int funcbp_open(luadbg_State* L) {
-    hookmgr::get_self(L)->funcbp_open(get_host(L), luadbg_toboolean(L, 1));
+    hookmgr::get_self(L)->funcbp_open(luadebug::debughost::get(L), luadbg_toboolean(L, 1));
     return 0;
 }
 
 static int step_in(luadbg_State* L) {
-    hookmgr::get_self(L)->step_in(get_host(L));
+    hookmgr::get_self(L)->step_in(luadebug::debughost::get(L));
     return 0;
 }
 
 static int step_out(luadbg_State* L) {
-    hookmgr::get_self(L)->step_out(get_host(L));
+    hookmgr::get_self(L)->step_out(luadebug::debughost::get(L));
     return 0;
 }
 
 static int step_over(luadbg_State* L) {
-    hookmgr::get_self(L)->step_over(get_host(L));
+    hookmgr::get_self(L)->step_over(luadebug::debughost::get(L));
     return 0;
 }
 
 static int step_cancel(luadbg_State* L) {
-    hookmgr::get_self(L)->step_cancel(get_host(L));
+    hookmgr::get_self(L)->step_cancel(luadebug::debughost::get(L));
     return 0;
 }
 
 static int update_open(luadbg_State* L) {
-    hookmgr::get_self(L)->update_open(get_host(L), luadbg_toboolean(L, 1));
+    hookmgr::get_self(L)->update_open(luadebug::debughost::get(L), luadbg_toboolean(L, 1));
     return 0;
 }
 
 #if defined(LUA_HOOKEXCEPTION)
 static int exception_open(luadbg_State* L) {
-    hookmgr::get_self(L)->exception_open(get_host(L), luadbg_toboolean(L, 1));
+    hookmgr::get_self(L)->exception_open(luadebug::debughost::get(L), luadbg_toboolean(L, 1));
     return 0;
 }
 #endif
 
 #if defined(LUA_HOOKTHREAD)
 static int thread_open(luadbg_State* L) {
-    hookmgr::get_self(L)->thread_open(get_host(L), luadbg_toboolean(L, 1));
+    hookmgr::get_self(L)->thread_open(luadebug::debughost::get(L), luadbg_toboolean(L, 1));
     return 0;
 }
 static int coroutine_from(luadbg_State* L) {
@@ -884,7 +884,7 @@ static int coroutine_from(luadbg_State* L) {
 
 LUADEBUG_FUNC
 int luaopen_luadebug_hookmgr(luadbg_State* L) {
-    get_host(L);
+    luadebug::debughost::get(L);
 
     luadbg_newtable(L);
     if (LUA_TUSERDATA != luadbg_rawgetp(L, LUADBG_REGISTRYINDEX, &HOOK_MGR)) {
