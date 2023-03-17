@@ -8,4 +8,4 @@ struct thunk {
 struct lua_State;
 intptr_t thunk_get(lua_State* L, void* key);
 void thunk_set(lua_State* L, void* key, intptr_t v);
-#define RDEBUG_DISABLE_THUNK 1
+#define LUADEBUG_DISABLE_THUNK 1
