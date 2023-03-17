@@ -244,7 +244,7 @@ function resolveConfig(folder, config) {
         }
     }
     if (config.signature != null) {
-      config.signature.lua_version = config.lua_version
+      config.signature.version = config.lua_version
     }
     config.configuration = {
         variables: vscode.workspace.getConfiguration("lua.debug.variables")

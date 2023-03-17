@@ -2,6 +2,7 @@ local lm = require "luamake"
 
 require "compile.common.runtime"
 require "compile.common.frida"
+require "compile.macos.compiler_signature"
 
 lm:source_set "launcher_hook_luajit" {
     includes = {

@@ -34,7 +34,7 @@ namespace luadebug::autoattach {
     Config config;
 
     lua_version Config::get_lua_version() const {
-        const auto key = "lua_version"sv;
+        const auto key = "version"sv;
 
         auto it = values->find(key);
         if (!values || it == values->end()) {
@@ -67,7 +67,7 @@ namespace luadebug::autoattach {
     }
 
     std::string Config::get_lua_module() const {
-        const auto key = "lua_module"sv;
+        const auto key = "module"sv;
 
         auto it = values->find(key);
         if (it == values->end()) {

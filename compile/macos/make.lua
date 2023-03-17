@@ -3,7 +3,7 @@ local lm = require "luamake"
 if lm.platform == "darwin-arm64" then
     lm.target = "arm64-apple-macos11"
 else
-    lm.target = "x86_64-apple-macos10.12"
+    lm.target = "x86_64-apple-macos10.15"
 end
 
 lm.builddir = ("build/%s/%s"):format(lm.platform, lm.mode)
@@ -23,7 +23,7 @@ if lm.platform == "darwin-arm64" then
         args = {
             "-builddir", "build/darwin-x64/"..lm.mode,
             "-runtime_platform", "darwin-x64",
-            "-target", "x86_64-apple-macos10.12",
+            "-target", "x86_64-apple-macos10.15",
         },
     }
 end
@@ -60,10 +60,10 @@ end
 if lm.mode == "debug" then
     lm:executable "test_delayload" {
         sources = "test/delayload.cpp",
-        includes = {"src/launcher","3rd/lua/lua54"},
+        includes = { "src/launcher", "3rd/lua/lua54" },
     }
     lm:phony "tests" {
-        deps = {"test_frida", "test_delayload", "test_symbol"}
+        deps = { "test_frida", "test_delayload", "test_symbol" }
     }
 end
 
@@ -74,5 +74,6 @@ lm:default {
     "process_inject_helper",
     "merge_launcher",
     lm.platform == "darwin-arm64" and "x86_64",
-    lm.mode == "debug" and "tests"
+    lm.mode == "debug" and "tests",
+    "signature_compiler"
 }

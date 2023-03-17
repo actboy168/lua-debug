@@ -257,7 +257,7 @@ Debugger address.
         type = "object",
         markdownDescription = "signature info",
         properties = {
-            lua_module = {
+            module = {
                 default = "null",
                 type = "string",
                 markdownDescription = "lua module path or name",
