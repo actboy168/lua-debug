@@ -1,5 +1,7 @@
 #include <autoattach/lua_module.h>
 #include <bee/nonstd/format.h>
+#include <bee/utility/path_helper.h>
+#include <config/config.h>
 #include <hook/create_watchdog.h>
 #include <util/log.h>
 
@@ -7,20 +9,6 @@
 #include <gumpp.hpp>
 
 namespace luadebug::autoattach {
-    static lua_version lua_version_from_string [[maybe_unused]] (const std::string_view& v) {
-        if (v == "luajit")
-            return lua_version::luajit;
-        if (v == "lua51")
-            return lua_version::lua51;
-        if (v == "lua52")
-            return lua_version::lua52;
-        if (v == "lua53")
-            return lua_version::lua53;
-        if (v == "lua54")
-            return lua_version::lua54;
-        return lua_version::unknown;
-    }
-
     static const char* lua_version_to_string(lua_version v) {
         switch (v) {
         case lua_version::lua51:
@@ -39,10 +27,13 @@ namespace luadebug::autoattach {
     }
 
     static bool in_module(const lua_module& m, void* addr) {
-        return addr > m.memory_address && addr <= (void*)((intptr_t)m.memory_address + m.memory_size);
+        return addr >= m.memory_address && addr <= (void*)((intptr_t)m.memory_address + m.memory_size);
     }
 
     static lua_version get_lua_version(const lua_module& m) {
+        auto version = config.get_lua_version();
+        if (version != lua_version::unknown)
+            return version;
         /*
             luaJIT_version_2_1_0_beta3
             luaJIT_version_2_1_0_beta2
