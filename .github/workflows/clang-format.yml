@@ -11,6 +11,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - run: sudo apt-get install -y clang-format
-      - run: find src -iname *.cpp -o -iname *.c -o -iname *.h -o -iname *.inl | xargs clang-format --dry-run --Werror
+      - run: sudo apt-get install -y clang-format-15
+      - run: find src -iname *.cpp -o -iname *.c -o -iname *.h -o -iname *.inl | xargs clang-format-15 --dry-run --Werror
  
