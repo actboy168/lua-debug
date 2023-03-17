@@ -10,9 +10,9 @@
 #define _LUALIB_H
 #define _LUAJIT_H
 
-#include "luadbg/inc/rlua.hpp"
-#include "luadbg/inc/rluaexports.h"
-#include "luadbg/inc/rluarename.h"
+#include "luadbg/inc/luadbg.hpp"
+#include "luadbg/inc/luadbgexports.h"
+#include "luadbg/inc/luadbgrename.h"
 #include "luadbg/bee_module.h"
 
 #include <binding/file.h>
@@ -24,18 +24,18 @@
 #    include <binding/lua_unicode.cpp>
 #endif
 
-extern "C" int luaopen_luadebug_hookmgr(rlua_State* L);
-extern "C" int luaopen_luadebug_stdio(rlua_State* L);
-extern "C" int luaopen_luadebug_utility(rlua_State* L);
-extern "C" int luaopen_luadebug_visitor(rlua_State* L);
-extern "C" int luaopen_bee_socket(rlua_State* L);
-extern "C" int luaopen_bee_thread(rlua_State* L);
-extern "C" int luaopen_bee_filesystem(rlua_State* L);
+extern "C" int luaopen_luadebug_hookmgr(luadbg_State* L);
+extern "C" int luaopen_luadebug_stdio(luadbg_State* L);
+extern "C" int luaopen_luadebug_utility(luadbg_State* L);
+extern "C" int luaopen_luadebug_visitor(luadbg_State* L);
+extern "C" int luaopen_bee_socket(luadbg_State* L);
+extern "C" int luaopen_bee_thread(luadbg_State* L);
+extern "C" int luaopen_bee_filesystem(luadbg_State* L);
 #if defined(_WIN32)
-extern "C" int luaopen_bee_unicode(rlua_State* L);
+extern "C" int luaopen_bee_unicode(luadbg_State* L);
 #endif
 
-static rluaL_Reg cmodule[] = {
+static luadbgL_Reg cmodule[] = {
     { "luadebug.hookmgr", luaopen_luadebug_hookmgr },
     { "luadebug.stdio", luaopen_luadebug_stdio },
     { "luadebug.utility", luaopen_luadebug_utility },
@@ -51,12 +51,12 @@ static rluaL_Reg cmodule[] = {
 
 namespace luadebug {
     static void require_cmodule() {
-        for (const rluaL_Reg* l = cmodule; l->name != NULL; l++) {
+        for (const luadbgL_Reg* l = cmodule; l->name != NULL; l++) {
             ::bee::lua::register_module(l->name, l->func);
         }
     }
     static ::bee::lua::callfunc _init(require_cmodule);
-    int require_all(rlua_State* L) {
+    int require_all(luadbg_State* L) {
         ::bee::lua::preload_module(L);
         return 0;
     }

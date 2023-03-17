@@ -1,9 +1,11 @@
+//clang-format off
+#include <Windows.h>
+//clang-format on
 #include <DbgHelp.h>
 #include <bee/nonstd/filesystem.h>
 #include <bee/nonstd/format.h>
 #include <bee/subprocess.h>
 #include <symbolize/symbolize.h>
-#include <windows.h>
 
 #include <memory>
 

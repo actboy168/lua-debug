@@ -1,6 +1,6 @@
 local lm = require "luamake"
 
-local newname <const> = "rlua"
+local newname <const> = "luadbg"
 local luapath <const> = [[3rd/bee.lua/3rd/lua/]]
 local outpath <const> = [[src/luadebug/luadbg/inc/]]
 local filelist <const> = {

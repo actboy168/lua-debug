@@ -1,7 +1,7 @@
 #pragma once
 
-struct rlua_State;
+struct luadbg_State;
 
 namespace luadebug {
-    int require_all(rlua_State* L);
+    int require_all(luadbg_State* L);
 }

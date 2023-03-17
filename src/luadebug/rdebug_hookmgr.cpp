@@ -95,9 +95,9 @@ static int HOOK_CALLBACK = 0;
 static int THUNK_MGR = 0;
 #endif
 
-void set_host(rlua_State* L, lua_State* hL);
-lua_State* get_host(rlua_State* L);
-int copy_value(lua_State* from, rlua_State* to, bool ref);
+void set_host(luadbg_State* L, lua_State* hL);
+lua_State* get_host(luadbg_State* L);
+int copy_value(lua_State* from, luadbg_State* to, bool ref);
 void unref_value(lua_State* from, int ref);
 
 #define LOG(...)                         \
@@ -108,9 +108,9 @@ void unref_value(lua_State* from, int ref);
     } while (0)
 
 template <class T>
-static T* checklightudata(rlua_State* L, int idx) {
-    rluaL_checktype(L, idx, LUA_TLIGHTUSERDATA);
-    return (T*)rlua_touserdata(L, idx);
+static T* checklightudata(luadbg_State* L, int idx) {
+    luadbgL_checktype(L, idx, LUA_TLIGHTUSERDATA);
+    return (T*)luadbg_touserdata(L, idx);
 }
 
 static Proto* ci2proto(CallInfo* ci) {
@@ -202,17 +202,17 @@ struct hookmgr {
     bool break_new(lua_State* hL, Proto* p, int event) {
         break_del(hL, p);
 
-        rluaL_checkstack(cL, 4, NULL);
-        if (rlua_rawgetp(cL, RLUA_REGISTRYINDEX, &HOOK_CALLBACK) != LUA_TFUNCTION) {
-            rlua_pop(cL, 1);
+        luadbgL_checkstack(cL, 4, NULL);
+        if (luadbg_rawgetp(cL, LUADBG_REGISTRYINDEX, &HOOK_CALLBACK) != LUA_TFUNCTION) {
+            luadbg_pop(cL, 1);
             return false;
         }
         set_host(cL, hL);
-        rlua_pushstring(cL, "newproto");
-        rlua_pushlightuserdata(cL, p);
-        rlua_pushinteger(cL, event != LUA_HOOKRET ? 0 : 1);
-        if (rlua_pcall(cL, 3, 0, 0) != RLUA_OK) {
-            rlua_pop(cL, 1);
+        luadbg_pushstring(cL, "newproto");
+        luadbg_pushlightuserdata(cL, p);
+        luadbg_pushinteger(cL, event != LUA_HOOKRET ? 0 : 1);
+        if (luadbg_pcall(cL, 3, 0, 0) != LUADBG_OK) {
+            luadbg_pop(cL, 1);
             return false;
         }
         return break_has(hL, p, event);
@@ -274,15 +274,15 @@ struct hookmgr {
         const void* function = lua_topointer(hL, -1);
         lua_pop(hL, 1);
 
-        if (rlua_rawgetp(cL, RLUA_REGISTRYINDEX, &HOOK_CALLBACK) != LUA_TFUNCTION) {
-            rlua_pop(cL, 1);
+        if (luadbg_rawgetp(cL, LUADBG_REGISTRYINDEX, &HOOK_CALLBACK) != LUA_TFUNCTION) {
+            luadbg_pop(cL, 1);
             return;
         }
         set_host(cL, hL);
-        rlua_pushstring(cL, "funcbp");
-        rlua_pushfstring(cL, "function: %p", function);
-        if (rlua_pcall(cL, 2, 0, 0) != RLUA_OK) {
-            rlua_pop(cL, 1);
+        luadbg_pushstring(cL, "funcbp");
+        luadbg_pushfstring(cL, "function: %p", function);
+        if (luadbg_pcall(cL, 2, 0, 0) != LUADBG_OK) {
+            luadbg_pop(cL, 1);
         }
     }
     void funcbp_open(lua_State* hL, bool enable) {
@@ -420,13 +420,13 @@ struct hookmgr {
         exception_hookmask(hL, enable ? LUA_MASKEXCEPTION : 0);
     }
     void exception_hook(lua_State* hL, lua_Debug* ar) {
-        if (rlua_rawgetp(cL, RLUA_REGISTRYINDEX, &HOOK_CALLBACK) != LUA_TFUNCTION) {
-            rlua_pop(cL, 1);
+        if (luadbg_rawgetp(cL, LUADBG_REGISTRYINDEX, &HOOK_CALLBACK) != LUA_TFUNCTION) {
+            luadbg_pop(cL, 1);
             return;
         }
         int errcode;
         set_host(cL, hL);
-        rlua_pushstring(cL, "exception");
+        luadbg_pushstring(cL, "exception");
 #    if LUA_VERSION_NUM >= 504
         LUA_STKID(hL->top) = LUA_STKID(hL->stack) + ar->currentline;
         errcode            = ar->i_ci->u2.transferinfo.ntransfer;
@@ -434,9 +434,9 @@ struct hookmgr {
         errcode = ar->currentline;
 #    endif
         int ref = copy_value(hL, cL, true);
-        rlua_pushinteger(cL, errcode);
-        if (rlua_pcall(cL, 3, 0, 0) != RLUA_OK) {
-            rlua_pop(cL, 1);
+        luadbg_pushinteger(cL, errcode);
+        if (luadbg_pcall(cL, 3, 0, 0) != LUADBG_OK) {
+            luadbg_pop(cL, 1);
         }
         unref_value(hL, ref);
     }
@@ -482,36 +482,36 @@ struct hookmgr {
     //
     // common
     //
-    rlua_State* cL = 0;
+    luadbg_State* cL = 0;
     std::unique_ptr<thunk> sc_full_hook;
     std::unique_ptr<thunk> sc_idle_hook;
     void* eventfree = nullptr;
 
-    hookmgr(rlua_State* L)
+    hookmgr(luadbg_State* L)
         : cL(L) {}
 
     int call_event(int nargs) {
-        if (rlua_pcall(cL, 1 + nargs, 1, 0) != RLUA_OK) {
-            rlua_pop(cL, 1);
+        if (luadbg_pcall(cL, 1 + nargs, 1, 0) != LUADBG_OK) {
+            luadbg_pop(cL, 1);
             return -1;
         }
-        if (rlua_type(cL, -1) == LUA_TBOOLEAN) {
-            int ok = rlua_toboolean(cL, -1) ? 1 : 0;
-            rlua_pop(cL, 1);
+        if (luadbg_type(cL, -1) == LUA_TBOOLEAN) {
+            int ok = luadbg_toboolean(cL, -1) ? 1 : 0;
+            luadbg_pop(cL, 1);
             return ok;
         }
-        rlua_pop(cL, 1);
+        luadbg_pop(cL, 1);
         return -1;
     }
 
     int event(lua_State* hL, const char* name, int start) {
-        if (rlua_rawgetp(cL, RLUA_REGISTRYINDEX, &HOOK_CALLBACK) != LUA_TFUNCTION) {
-            rlua_pop(cL, 1);
+        if (luadbg_rawgetp(cL, LUADBG_REGISTRYINDEX, &HOOK_CALLBACK) != LUA_TFUNCTION) {
+            luadbg_pop(cL, 1);
             return -1;
         }
         int nargs = lua_gettop(hL) - start + 1;
         set_host(cL, hL);
-        rlua_pushstring(cL, name);
+        luadbg_pushstring(cL, name);
         if (nargs <= 0) {
             return call_event(0);
         }
@@ -610,24 +610,24 @@ struct hookmgr {
         default:
             return;
         }
-        if (rlua_rawgetp(cL, RLUA_REGISTRYINDEX, &HOOK_CALLBACK) != LUA_TFUNCTION) {
-            rlua_pop(cL, 1);
+        if (luadbg_rawgetp(cL, LUADBG_REGISTRYINDEX, &HOOK_CALLBACK) != LUA_TFUNCTION) {
+            luadbg_pop(cL, 1);
             return;
         }
         set_host(cL, hL);
         if ((step_mask & LUA_MASKLINE) && (!stepL || stepL == hL)) {
-            rlua_pushstring(cL, "step");
-            rlua_pushinteger(cL, ar->currentline);
-            if (rlua_pcall(cL, 2, 0, 0) != RLUA_OK) {
-                rlua_pop(cL, 1);
+            luadbg_pushstring(cL, "step");
+            luadbg_pushinteger(cL, ar->currentline);
+            if (luadbg_pcall(cL, 2, 0, 0) != LUADBG_OK) {
+                luadbg_pop(cL, 1);
                 return;
             }
         }
         else {
-            rlua_pushstring(cL, "bp");
-            rlua_pushinteger(cL, ar->currentline);
-            if (rlua_pcall(cL, 2, 0, 0) != RLUA_OK) {
-                rlua_pop(cL, 1);
+            luadbg_pushstring(cL, "bp");
+            luadbg_pushinteger(cL, ar->currentline);
+            if (luadbg_pcall(cL, 2, 0, 0) != LUADBG_OK) {
+                luadbg_pop(cL, 1);
                 return;
             }
         }
@@ -707,14 +707,14 @@ struct hookmgr {
         if (!update_timer.update(200)) {
             return;
         }
-        if (rlua_rawgetp(cL, RLUA_REGISTRYINDEX, &HOOK_CALLBACK) != LUA_TFUNCTION) {
-            rlua_pop(cL, 1);
+        if (luadbg_rawgetp(cL, LUADBG_REGISTRYINDEX, &HOOK_CALLBACK) != LUA_TFUNCTION) {
+            luadbg_pop(cL, 1);
             return;
         }
         set_host(cL, hL);
-        rlua_pushstring(cL, "update");
-        if (rlua_pcall(cL, 1, 0, 0) != RLUA_OK) {
-            rlua_pop(cL, 1);
+        luadbg_pushstring(cL, "update");
+        if (luadbg_pcall(cL, 1, 0, 0) != LUADBG_OK) {
+            luadbg_pop(cL, 1);
             return;
         }
     }
@@ -746,13 +746,13 @@ struct hookmgr {
 #endif
         hostL = 0;
     }
-    static int clear(rlua_State* L) {
-        hookmgr* self = (hookmgr*)rlua_touserdata(L, 1);
+    static int clear(luadbg_State* L) {
+        hookmgr* self = (hookmgr*)luadbg_touserdata(L, 1);
         self->~hookmgr();
         return 0;
     }
-    static hookmgr* get_self(rlua_State* L) {
-        return (hookmgr*)rlua_touserdata(L, rlua_upvalueindex(1));
+    static hookmgr* get_self(luadbg_State* L) {
+        return (hookmgr*)luadbg_touserdata(L, luadbg_upvalueindex(1));
     }
     static void freeobj_callback(void* mgr, void* ptr) {
         ((hookmgr*)mgr)->break_freeobj((Proto*)ptr);
@@ -778,130 +778,130 @@ struct hookmgr {
 #endif
 };
 
-static int init(rlua_State* L) {
-    rluaL_checktype(L, 1, LUA_TFUNCTION);
-    rlua_settop(L, 1);
+static int init(luadbg_State* L) {
+    luadbgL_checktype(L, 1, LUA_TFUNCTION);
+    luadbg_settop(L, 1);
     lua_State* hL = get_host(L);
     hookmgr::get_self(L)->init(hL);
-    rlua_rawsetp(L, RLUA_REGISTRYINDEX, &HOOK_CALLBACK);
+    luadbg_rawsetp(L, LUADBG_REGISTRYINDEX, &HOOK_CALLBACK);
     return 0;
 }
 
-static int sethost(rlua_State* L) {
-    rluaL_checktype(L, 1, LUA_TLIGHTUSERDATA);
-    set_host(L, (lua_State*)rlua_touserdata(L, 1));
+static int sethost(luadbg_State* L) {
+    luadbgL_checktype(L, 1, LUA_TLIGHTUSERDATA);
+    set_host(L, (lua_State*)luadbg_touserdata(L, 1));
     return 0;
 }
 
-static int gethost(rlua_State* L) {
-    rlua_pushlightuserdata(L, get_host(L));
+static int gethost(luadbg_State* L) {
+    luadbg_pushlightuserdata(L, get_host(L));
     return 1;
 }
 
-static int updatehookmask(rlua_State* L) {
-    hookmgr::get_self(L)->updatehookmask((lua_State*)rlua_touserdata(L, 1));
+static int updatehookmask(luadbg_State* L) {
+    hookmgr::get_self(L)->updatehookmask((lua_State*)luadbg_touserdata(L, 1));
     return 0;
 }
 
-static int stacklevel(rlua_State* L) {
+static int stacklevel(luadbg_State* L) {
     lua_State* hL = get_host(L);
-    rlua_pushinteger(L, hookmgr::stacklevel(hL));
+    luadbg_pushinteger(L, hookmgr::stacklevel(hL));
     return 1;
 }
 
-static int break_add(rlua_State* L) {
+static int break_add(luadbg_State* L) {
     hookmgr::get_self(L)->break_add(get_host(L), checklightudata<Proto>(L, 1));
     return 0;
 }
 
-static int break_del(rlua_State* L) {
+static int break_del(luadbg_State* L) {
     hookmgr::get_self(L)->break_del(get_host(L), checklightudata<Proto>(L, 1));
     return 0;
 }
 
-static int break_open(rlua_State* L) {
-    hookmgr::get_self(L)->break_open(get_host(L), rlua_toboolean(L, 1));
+static int break_open(luadbg_State* L) {
+    hookmgr::get_self(L)->break_open(get_host(L), luadbg_toboolean(L, 1));
     return 0;
 }
 
-static int break_closeline(rlua_State* L) {
+static int break_closeline(luadbg_State* L) {
     hookmgr::get_self(L)->break_closeline(get_host(L));
     return 0;
 }
 
-static int funcbp_open(rlua_State* L) {
-    hookmgr::get_self(L)->funcbp_open(get_host(L), rlua_toboolean(L, 1));
+static int funcbp_open(luadbg_State* L) {
+    hookmgr::get_self(L)->funcbp_open(get_host(L), luadbg_toboolean(L, 1));
     return 0;
 }
 
-static int step_in(rlua_State* L) {
+static int step_in(luadbg_State* L) {
     hookmgr::get_self(L)->step_in(get_host(L));
     return 0;
 }
 
-static int step_out(rlua_State* L) {
+static int step_out(luadbg_State* L) {
     hookmgr::get_self(L)->step_out(get_host(L));
     return 0;
 }
 
-static int step_over(rlua_State* L) {
+static int step_over(luadbg_State* L) {
     hookmgr::get_self(L)->step_over(get_host(L));
     return 0;
 }
 
-static int step_cancel(rlua_State* L) {
+static int step_cancel(luadbg_State* L) {
     hookmgr::get_self(L)->step_cancel(get_host(L));
     return 0;
 }
 
-static int update_open(rlua_State* L) {
-    hookmgr::get_self(L)->update_open(get_host(L), rlua_toboolean(L, 1));
+static int update_open(luadbg_State* L) {
+    hookmgr::get_self(L)->update_open(get_host(L), luadbg_toboolean(L, 1));
     return 0;
 }
 
 #if defined(LUA_HOOKEXCEPTION)
-static int exception_open(rlua_State* L) {
-    hookmgr::get_self(L)->exception_open(get_host(L), rlua_toboolean(L, 1));
+static int exception_open(luadbg_State* L) {
+    hookmgr::get_self(L)->exception_open(get_host(L), luadbg_toboolean(L, 1));
     return 0;
 }
 #endif
 
 #if defined(LUA_HOOKTHREAD)
-static int thread_open(rlua_State* L) {
-    hookmgr::get_self(L)->thread_open(get_host(L), rlua_toboolean(L, 1));
+static int thread_open(luadbg_State* L) {
+    hookmgr::get_self(L)->thread_open(get_host(L), luadbg_toboolean(L, 1));
     return 0;
 }
-static int coroutine_from(rlua_State* L) {
-    rluaL_checktype(L, 1, LUA_TLIGHTUSERDATA);
-    lua_State* from = hookmgr::get_self(L)->coroutine_from((lua_State*)rlua_touserdata(L, 1));
+static int coroutine_from(luadbg_State* L) {
+    luadbgL_checktype(L, 1, LUA_TLIGHTUSERDATA);
+    lua_State* from = hookmgr::get_self(L)->coroutine_from((lua_State*)luadbg_touserdata(L, 1));
     if (!from) {
         return 0;
     }
-    rlua_pushlightuserdata(L, from);
+    luadbg_pushlightuserdata(L, from);
     return 1;
 }
 #endif
 
-RLUA_FUNC
-int luaopen_luadebug_hookmgr(rlua_State* L) {
+LUADEBUG_FUNC
+int luaopen_luadebug_hookmgr(luadbg_State* L) {
     get_host(L);
 
-    rlua_newtable(L);
-    if (LUA_TUSERDATA != rlua_rawgetp(L, RLUA_REGISTRYINDEX, &HOOK_MGR)) {
-        rlua_pop(L, 1);
-        hookmgr* thd = (hookmgr*)rlua_newuserdata(L, sizeof(hookmgr));
+    luadbg_newtable(L);
+    if (LUA_TUSERDATA != luadbg_rawgetp(L, LUADBG_REGISTRYINDEX, &HOOK_MGR)) {
+        luadbg_pop(L, 1);
+        hookmgr* thd = (hookmgr*)luadbg_newuserdata(L, sizeof(hookmgr));
         new (thd) hookmgr(L);
 
-        rlua_createtable(L, 0, 1);
-        rlua_pushcfunction(L, hookmgr::clear);
-        rlua_setfield(L, -2, "__gc");
-        rlua_setmetatable(L, -2);
+        luadbg_createtable(L, 0, 1);
+        luadbg_pushcfunction(L, hookmgr::clear);
+        luadbg_setfield(L, -2, "__gc");
+        luadbg_setmetatable(L, -2);
 
-        rlua_pushvalue(L, -1);
-        rlua_rawsetp(L, RLUA_REGISTRYINDEX, &HOOK_MGR);
+        luadbg_pushvalue(L, -1);
+        luadbg_rawsetp(L, LUADBG_REGISTRYINDEX, &HOOK_MGR);
     }
 
-    static rluaL_Reg lib[] = {
+    static luadbgL_Reg lib[] = {
         { "init", init },
         { "sethost", sethost },
         { "gethost", gethost },
@@ -926,17 +926,17 @@ int luaopen_luadebug_hookmgr(rlua_State* L) {
 #endif
         { NULL, NULL },
     };
-    rluaL_setfuncs(L, lib, 1);
+    luadbgL_setfuncs(L, lib, 1);
     return 1;
 }
 
-int event(rlua_State* cL, lua_State* hL, const char* name, int start) {
-    if (LUA_TUSERDATA != rlua_rawgetp(cL, RLUA_REGISTRYINDEX, &HOOK_MGR)) {
-        rlua_pop(cL, 1);
+int event(luadbg_State* cL, lua_State* hL, const char* name, int start) {
+    if (LUA_TUSERDATA != luadbg_rawgetp(cL, LUADBG_REGISTRYINDEX, &HOOK_MGR)) {
+        luadbg_pop(cL, 1);
         return -1;
     }
-    int ok = ((hookmgr*)rlua_touserdata(cL, -1))->event(hL, name, start);
-    rlua_pop(cL, 1);
+    int ok = ((hookmgr*)luadbg_touserdata(cL, -1))->event(hL, name, start);
+    luadbg_pop(cL, 1);
     return ok;
 }
 

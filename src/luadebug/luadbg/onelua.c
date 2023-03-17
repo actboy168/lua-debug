@@ -1,5 +1,5 @@
 // clang-format off
-#include "luadbg/inc/rluaexports.h"
+#include "luadbg/inc/luadbgexports.h"
 
 #if defined(__linux__)
 #    define LUA_USE_LINUX
