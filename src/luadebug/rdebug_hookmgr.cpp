@@ -10,9 +10,7 @@
 #include <unordered_map>
 #include "rdebug_eventfree.h"
 #include "thunk/thunk.h"
-#if !defined(RDEBUG_USE_STDMAP)
-#    include "rdebug_flatmap.h"
-#endif
+#include "rdebug_flatmap.h"
 
 class bpmap {
 public:
@@ -37,19 +35,11 @@ public:
     }
 
     status get(void* proto) const noexcept {
-#if defined(RDEBUG_USE_STDMAP)
-        auto v = m_flatmap.find(tokey(proto));
-        if (v != m_flatmap.end()) {
-            return v->second ? status::Break : status::Ignore;
-        }
-        return status::None;
-#else
         const bool* v = m_flatmap.find(tokey(proto));
         if (v) {
             return *v ? status::Break : status::Ignore;
         }
         return status::None;
-#endif
     }
 
 private:
@@ -57,12 +47,8 @@ private:
         return reinterpret_cast<intptr_t>(proto);
     }
 
-#if defined(RDEBUG_USE_STDMAP)
-    std::unordered_map<intptr_t, bool> m_flatmap;
-#else
     // TODO: bullet size可以压缩到一个int64_t
     luadebug::flatmap<intptr_t, bool> m_flatmap;
-#endif
 };
 
 #include "rluaobject.h"

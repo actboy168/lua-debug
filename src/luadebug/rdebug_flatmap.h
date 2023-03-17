@@ -8,7 +8,6 @@
 #include <cstring>
 
 namespace luadebug {
-
     template <typename T>
     struct flatmap_hash {
         size_t operator()(T v) const noexcept {

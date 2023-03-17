@@ -17,7 +17,6 @@
 #else
 #    include <bee/thread/simplethread_posix.cpp>
 #    include <bee/utility/file_handle_posix.cpp>
-#    include <bee/subprocess/subprocess_posix.cpp>
 #endif
 
 #if defined(__APPLE__)

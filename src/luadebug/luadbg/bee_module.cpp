@@ -51,12 +51,12 @@ static rluaL_Reg cmodule[] = {
 namespace luadebug {
     static void require_cmodule() {
         for (const rluaL_Reg* l = cmodule; l->name != NULL; l++) {
-            ::bee::lua::register_module(l->name, (lua_CFunction)l->func);
+            ::bee::lua::register_module(l->name, l->func);
         }
     }
     static ::bee::lua::callfunc _init(require_cmodule);
     int require_all(rlua_State* L) {
-        ::bee::lua::preload_module((lua_State*)L);
+        ::bee::lua::preload_module(L);
         return 0;
     }
 }
