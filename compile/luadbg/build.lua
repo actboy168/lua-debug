@@ -42,7 +42,7 @@ lm:phony {
     input = outpath..compile("lua.hpp"),
     output = {
         "src/luadebug/rdebug_hookmgr.cpp",
-        "src/luadebug/rdebug_hook.cpp",
+        "src/luadebug/rdebug_host.cpp",
         "src/luadebug/rdebug_stdio.cpp",
         "src/luadebug/rdebug_utility.cpp",
         "src/luadebug/rdebug_visitor.cpp",
