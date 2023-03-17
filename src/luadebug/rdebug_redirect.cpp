@@ -2,10 +2,10 @@
 
 #if defined(_WIN32)
 
-#    include <windows.h>
 #    include <fcntl.h>
 #    include <io.h>
 #    include <stdio.h>
+#    include <windows.h>
 
 namespace luadebug {
 
@@ -50,7 +50,7 @@ namespace luadebug {
             return false;
         }
         m_type = type;
-        m_old = GetStdHandle(handles[(int)type]);
+        m_old  = GetStdHandle(handles[(int)type]);
         if (type == std_fd::STDIN) {
             set_handle(type, m_pipe[0]);
             m_pipe[0] = kInvalidHandle;
@@ -122,7 +122,7 @@ namespace luadebug {
 #    if defined(__APPLE__)
     static void no_blocking(int s) {
         int flags = fcntl(s, F_GETFL, 0);
-        int rc = fcntl(s, F_SETFL, flags | O_NONBLOCK);
+        int rc    = fcntl(s, F_SETFL, flags | O_NONBLOCK);
         (void)rc;
         assert(rc == 0);
     }
@@ -142,7 +142,7 @@ namespace luadebug {
         if (pipe2(m_pipe, O_NONBLOCK) == -1) {
             return false;
         }
-        m_old = ::dup((int)type);
+        m_old  = ::dup((int)type);
         m_type = type;
         if (m_type == std_fd::STDIN) {
             ::dup2(m_pipe[0], (int)m_type);

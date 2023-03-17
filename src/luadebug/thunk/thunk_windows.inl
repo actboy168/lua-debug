@@ -1,5 +1,6 @@
-#include "thunk_jit.h"
 #include <Windows.h>
+
+#include "thunk_jit.h"
 
 bool thunk::create(size_t s) {
     data = VirtualAllocEx(GetCurrentProcess(), NULL, s, MEM_COMMIT, PAGE_EXECUTE_READWRITE);
@@ -13,7 +14,7 @@ bool thunk::create(size_t s) {
 
 bool thunk::write(void* buf) {
     SIZE_T written = 0;
-    BOOL ok = WriteProcessMemory(GetCurrentProcess(), data, buf, size, &written);
+    BOOL ok        = WriteProcessMemory(GetCurrentProcess(), data, buf, size, &written);
     if (!ok || written != size) {
         return false;
     }

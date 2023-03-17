@@ -1,12 +1,13 @@
+#include <stdint.h>
+#include <stdio.h>
+#include <string.h>
+#include <symbolize/symbolize.h>
+
+#include <algorithm>
+#include <limits>
+
 #include "rdebug_lua.h"
 #include "rdebug_table.h"
-#include <stdint.h>
-#include <string.h>
-#include <stdio.h>
-#include <limits>
-#include <algorithm>
-#include "rdebug_table.h"
-#include <symbolize/symbolize.h>
 
 int debug_pcall(lua_State* L, int nargs, int nresults, int errfunc);
 
@@ -68,16 +69,16 @@ sizeof_value(struct value* v) {
 static struct value*
 create_value(rlua_State* L, VAR type) {
     struct value* v = (struct value*)rlua_newuserdata(L, sizeof(struct value));
-    v->type = type;
+    v->type         = type;
     return v;
 }
 
 static struct value*
 create_value(rlua_State* L, VAR type, int t, size_t extrasz = 0) {
     struct value* f = (struct value*)rlua_touserdata(L, t);
-    int sz = sizeof_value(f);
+    int sz          = sizeof_value(f);
     struct value* v = (struct value*)rlua_newuserdata(L, sz + sizeof(struct value) + extrasz);
-    v->type = type;
+    v->type         = type;
     memcpy((char*)(v + 1) + extrasz, f, sz);
     return v;
 }
@@ -122,19 +123,19 @@ copy_toR(lua_State* from, rlua_State* to) {
 
 static void
 get_registry_value(rlua_State* L, const char* name, int ref) {
-    size_t len = strlen(name);
+    size_t len      = strlen(name);
     struct value* v = (struct value*)rlua_newuserdata(L, 3 * sizeof(struct value) + len);
-    v->type = VAR::INDEX_INT;
-    v->index = ref;
+    v->type         = VAR::INDEX_INT;
+    v->index        = ref;
     v++;
 
-    v->type = VAR::INDEX_STR;
+    v->type  = VAR::INDEX_STR;
     v->index = (int)len;
     v++;
     memcpy(v, name, len);
     v = (struct value*)((char*)v + len);
 
-    v->type = VAR::REGISTRY;
+    v->type  = VAR::REGISTRY;
     v->index = 0;
 }
 
@@ -528,15 +529,15 @@ get_frame_local(rlua_State* L, lua_State* cL, uint16_t frame, int16_t n, int get
     }
     lua_pop(cL, 1);
     struct value* v = create_value(L, VAR::FRAME_LOCAL);
-    v->local.frame = frame;
-    v->local.n = n;
+    v->local.frame  = frame;
+    v->local.n      = n;
     return name;
 }
 
 static void
 get_frame_func(rlua_State* L, int frame) {
     struct value* v = create_value(L, VAR::FRAME_FUNC);
-    v->index = frame;
+    v->index        = frame;
 }
 
 // table key
@@ -564,8 +565,8 @@ table_key(rlua_State* L, lua_State* cL) {
 static void
 new_index(rlua_State* L) {
     struct value* v = create_value(L, VAR::INDEX_INT, -2);
-    v->type = VAR::INDEX_INT;
-    v->index = (int)rlua_tointeger(L, -2);
+    v->type         = VAR::INDEX_INT;
+    v->index        = (int)rlua_tointeger(L, -2);
 }
 
 // input cL : table key [value]
@@ -592,10 +593,10 @@ combine_index(rlua_State* L, lua_State* cL, int getref) {
 // table key
 static void
 new_field(rlua_State* L) {
-    size_t len = 0;
+    size_t len      = 0;
     const char* str = rlua_tolstring(L, -1, &len);
     struct value* v = create_value(L, VAR::INDEX_STR, -2, len);
-    v->index = (int)len;
+    v->index        = (int)len;
     memcpy(v + 1, str, len);
 }
 
@@ -650,7 +651,7 @@ get_upvalue(rlua_State* L, lua_State* cL, int index, int getref) {
     }
     lua_pop(cL, 2);  // remove func / upvalue
     struct value* v = create_value(L, VAR::UPVALUE, -1);
-    v->index = index;
+    v->index        = index;
     rlua_replace(L, -2);  // remove function object
     return name;
 }
@@ -665,7 +666,7 @@ get_registry(rlua_State* L, VAR type) {
         return 0;
     }
     struct value* v = create_value(L, type);
-    v->index = 0;
+    v->index        = 0;
     return 1;
 }
 
@@ -691,15 +692,15 @@ get_metatable(rlua_State* L, lua_State* cL, int getref) {
     }
     if (t == LUA_TTABLE || t == LUA_TUSERDATA) {
         struct value* v = create_value(L, VAR::METATABLE, -1);
-        v->type = VAR::METATABLE;
-        v->index = t;
+        v->type         = VAR::METATABLE;
+        v->index        = t;
         rlua_replace(L, -2);
         return 1;
     }
     else {
         rlua_pop(L, 1);
         struct value* v = create_value(L, VAR::METATABLE);
-        v->index = t;
+        v->index        = t;
         return 1;
     }
 }
@@ -739,7 +740,7 @@ get_uservalue(rlua_State* L, lua_State* cL, int index, int getref) {
     // L : value
     // cL : value uservalue
     struct value* v = create_value(L, VAR::USERVALUE, -1);
-    v->index = index;
+    v->index        = index;
     rlua_replace(L, -2);
     return 1;
 }
@@ -752,14 +753,14 @@ combine_key(rlua_State* L, lua_State* cL, int t, int index) {
     }
     lua_pop(cL, 1);
     struct value* v = create_value(L, VAR::INDEX_KEY, t);
-    v->index = index;
+    v->index        = index;
 }
 
 static void
 combine_val(rlua_State* L, lua_State* cL, int t, int index, int ref) {
     if (ref) {
         struct value* v = create_value(L, VAR::INDEX_VAL, t);
-        v->index = index;
+        v->index        = index;
         if (copy_toR(cL, L) == LUA_TNONE) {
             rlua_pushvalue(L, -1);
         }
@@ -768,7 +769,7 @@ combine_val(rlua_State* L, lua_State* cL, int t, int index, int ref) {
     }
     if (copy_toR(cL, L) == LUA_TNONE) {
         struct value* v = create_value(L, VAR::INDEX_VAL, t);
-        v->index = index;
+        v->index        = index;
     }
     lua_pop(cL, 1);
 }
@@ -785,7 +786,7 @@ client_getlocal(rlua_State* L, int getref) {
     if (index == 0 || index > (std::numeric_limits<uint8_t>::max)() || -index > (std::numeric_limits<uint8_t>::max)()) {
         return rluaL_error(L, "index must be `uint8_t`");
     }
-    lua_State* cL = get_host(L);
+    lua_State* cL    = get_host(L);
     const char* name = get_frame_local(L, cL, (uint16_t)frame, (int16_t)index, getref);
     if (name) {
         rlua_pushstring(L, name);
@@ -871,7 +872,7 @@ lclient_fieldv(rlua_State* L) {
 
 static int
 tablehash(rlua_State* L, int ref) {
-    lua_State* cL = get_host(L);
+    lua_State* cL     = get_host(L);
     rlua_Integer maxn = rluaL_optinteger(L, 2, std::numeric_limits<unsigned int>::max());
     rlua_settop(L, 1);
     if (lua_checkstack(cL, 4) == 0) {
@@ -891,9 +892,9 @@ tablehash(rlua_State* L, int ref) {
         return 0;
     }
     rlua_newtable(L);
-    rlua_Integer n = 0;
+    rlua_Integer n     = 0;
     unsigned int hsize = luadebug::table::hash_size(t);
-    unsigned int i = 0;
+    unsigned int i     = 0;
     for (; i < hsize; ++i) {
         if (luadebug::table::get_kv(cL, t, i)) {
             if (--maxn < 0) {
@@ -960,7 +961,7 @@ lclient_tablesize(rlua_State* L) {
 
 static int
 lclient_tablekey(rlua_State* L) {
-    lua_State* cL = get_host(L);
+    lua_State* cL    = get_host(L);
     unsigned int idx = (unsigned int)rluaL_optinteger(L, 2, 0);
     rlua_settop(L, 1);
     if (lua_checkstack(cL, 2) == 0) {
@@ -999,9 +1000,9 @@ lclient_tablekey(rlua_State* L) {
 
 static int
 lclient_udread(rlua_State* L) {
-    lua_State* cL = get_host(L);
+    lua_State* cL       = get_host(L);
     rlua_Integer offset = rluaL_checkinteger(L, 2);
-    rlua_Integer count = rluaL_checkinteger(L, 3);
+    rlua_Integer count  = rluaL_checkinteger(L, 3);
     rlua_settop(L, 1);
     if (copy_fromR(L, cL) == LUA_TNONE) {
         return rluaL_error(L, "Need userdata");
@@ -1011,7 +1012,7 @@ lclient_udread(rlua_State* L) {
         return rluaL_error(L, "Need userdata");
     }
     const char* memory = (const char*)lua_touserdata(cL, -1);
-    size_t len = (size_t)lua_rawlen(cL, -1);
+    size_t len         = (size_t)lua_rawlen(cL, -1);
     if (offset < 0 || (size_t)offset >= len || count <= 0) {
         lua_pop(cL, 1);
         return 0;
@@ -1026,11 +1027,11 @@ lclient_udread(rlua_State* L) {
 
 static int
 lclient_udwrite(rlua_State* L) {
-    lua_State* cL = get_host(L);
+    lua_State* cL       = get_host(L);
     rlua_Integer offset = rluaL_checkinteger(L, 2);
-    size_t count = 0;
-    const char* data = rluaL_checklstring(L, 3, &count);
-    int allowPartial = rlua_toboolean(L, 4);
+    size_t count        = 0;
+    const char* data    = rluaL_checklstring(L, 3, &count);
+    int allowPartial    = rlua_toboolean(L, 4);
     rlua_settop(L, 1);
     if (copy_fromR(L, cL) == LUA_TNONE) {
         return rluaL_error(L, "Need userdata");
@@ -1040,7 +1041,7 @@ lclient_udwrite(rlua_State* L) {
         return rluaL_error(L, "Need userdata");
     }
     const char* memory = (const char*)lua_touserdata(cL, -1);
-    size_t len = (size_t)lua_rawlen(cL, -1);
+    size_t len         = (size_t)lua_rawlen(cL, -1);
     if (allowPartial) {
         if (offset < 0 || (size_t)offset >= len) {
             lua_pop(cL, 1);
@@ -1100,7 +1101,7 @@ lclient_assign(rlua_State* L) {
         return rluaL_error(L, "stack overflow");
     rluaL_checktype(L, 1, LUA_TUSERDATA);
     struct value* ref = (struct value*)rlua_touserdata(L, 1);
-    int r = assign_value(ref, cL);
+    int r             = assign_value(ref, cL);
     rlua_pushboolean(L, r);
     return 1;
 }
@@ -1143,7 +1144,7 @@ lclient_type(rlua_State* L) {
         return rluaL_error(L, "stack overflow");
     rlua_settop(L, 1);
     struct value* v = (struct value*)rlua_touserdata(L, 1);
-    int t = eval_value_(cL, v);
+    int t           = eval_value_(cL, v);
     switch (t) {
     case LUA_TNONE:
         rlua_pushstring(L, "unknown");
@@ -1173,7 +1174,7 @@ lclient_type(rlua_State* L) {
         break;
 #ifdef LUAJIT_VERSION
     case LUA_TCDATA: {
-        cTValue* o = index2adr(cL, -1);
+        cTValue* o  = index2adr(cL, -1);
         GCcdata* cd = cdataV(o);
         if (cd->ctypeid == CTID_CTYPEID) {
             rlua_pushstring(L, "ctype");
@@ -1262,14 +1263,14 @@ lclient_getuservaluev(rlua_State* L) {
 static int
 lclient_getinfo(rlua_State* L) {
     rlua_settop(L, 3);
-    size_t optlen = 0;
+    size_t optlen       = 0;
     const char* options = rluaL_checklstring(L, 2, &optlen);
     if (optlen > 7) {
         return rluaL_error(L, "invalid option");
     }
     bool hasf = false;
     int frame = 0;
-    int size = 0;
+    int size  = 0;
 #ifdef LUAJIT_VERSION
     bool hasSFlag = false;
 #endif
@@ -1419,9 +1420,9 @@ lclient_getinfo(rlua_State* L) {
 
 static int
 lclient_load(rlua_State* L) {
-    size_t len = 0;
+    size_t len       = 0;
     const char* func = rluaL_checklstring(L, 1, &len);
-    lua_State* cL = get_host(L);
+    lua_State* cL    = get_host(L);
     if (luaL_loadbuffer(cL, func, len, "=")) {
         rlua_pushnil(L);
         rlua_pushstring(L, lua_tostring(cL, -1));
@@ -1462,7 +1463,7 @@ eval_copy_args(rlua_State* from, lua_State* to) {
 static int
 lclient_eval(rlua_State* L) {
     lua_State* cL = get_host(L);
-    int nargs = rlua_gettop(L);
+    int nargs     = rlua_gettop(L);
     if (lua_checkstack(cL, nargs) == 0) {
         return rluaL_error(L, "stack overflow");
     }
@@ -1505,8 +1506,8 @@ addwatch(lua_State* cL, int idx) {
 static int
 lclient_watch(rlua_State* L) {
     lua_State* cL = get_host(L);
-    int n = lua_gettop(cL);
-    int nargs = rlua_gettop(L);
+    int n         = lua_gettop(cL);
+    int nargs     = rlua_gettop(L);
     if (lua_checkstack(cL, nargs) == 0) {
         return rluaL_error(L, "stack overflow");
     }
@@ -1583,9 +1584,9 @@ lclient_costatus(rlua_State* L) {
 static int
 lclient_gccount(rlua_State* L) {
     lua_State* cL = get_host(L);
-    int k = lua_gc(cL, LUA_GCCOUNT, 0);
-    int b = lua_gc(cL, LUA_GCCOUNTB, 0);
-    size_t m = ((size_t)k << 10) & (size_t)b;
+    int k         = lua_gc(cL, LUA_GCCOUNT, 0);
+    int b         = lua_gc(cL, LUA_GCCOUNTB, 0);
+    size_t m      = ((size_t)k << 10) & (size_t)b;
     rlua_pushinteger(L, (rlua_Integer)m);
     return 1;
 }
@@ -1598,13 +1599,13 @@ static int lclient_cfunctioninfo(rlua_State* L) {
     }
 #ifdef LUAJIT_VERSION
     cTValue* o = index2adr(cL, -1);
-    void* cfn = nullptr;
+    void* cfn  = nullptr;
     if (tvisfunc(o)) {
         GCfunc* fn = funcV(o);
-        cfn = (void*)(isluafunc(fn) ? NULL : fn->c.f);
+        cfn        = (void*)(isluafunc(fn) ? NULL : fn->c.f);
     }
     else if (tviscdata(o)) {
-        GCcdata* cd = cdataV(o);
+        GCcdata* cd  = cdataV(o);
         CTState* cts = ctype_cts(cL);
         if (cd->ctypeid != CTID_CTYPEID) {
             cfn = cdataptr(cd);
@@ -1612,7 +1613,7 @@ static int lclient_cfunctioninfo(rlua_State* L) {
                 CType* ct = ctype_get(cts, cd->ctypeid);
                 if (ctype_isref(ct->info) || ctype_isptr(ct->info)) {
                     cfn = cdata_getptr(cfn, ct->size);
-                    ct = ctype_rawchild(cts, ct);
+                    ct  = ctype_rawchild(cts, ct);
                 }
                 if (!ctype_isfunc(ct->info)) {
                     cfn = nullptr;

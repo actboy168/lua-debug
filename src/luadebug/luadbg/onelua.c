@@ -1,3 +1,4 @@
+// clang-format off
 #include "luadbg/inc/rluaexports.h"
 
 #if defined(__linux__)

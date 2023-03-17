@@ -1,11 +1,12 @@
-#include "rdebug_lua.h"
+#include <chrono>
 #include <cstdint>
 #include <memory>
-#include <chrono>
 #include <vector>
+
 #include "rdebug_eventfree.h"
-#include "thunk/thunk.h"
 #include "rdebug_flatmap.h"
+#include "rdebug_lua.h"
+#include "thunk/thunk.h"
 
 class bpmap {
 public:
@@ -48,10 +49,10 @@ private:
 
 #ifdef LUAJIT_VERSION
 #    include <lj_arch.h>
+#    include <lj_debug.h>
 #    include <lj_frame.h>
 #    include <lj_obj.h>
-#    include <lj_debug.h>
-using lu_byte = uint8_t;
+using lu_byte  = uint8_t;
 using CallInfo = TValue;
 cTValue* lj_debug_frame(lua_State* L, int level, int* size) {
     cTValue *frame, *nextframe, *bot = tvref(L->stack) + LJ_FR2;
@@ -88,7 +89,7 @@ cTValue* lj_debug_frame(lua_State* L, int level, int* size) {
 #    define LUA_STKID(s) s
 #endif
 
-static int HOOK_MGR = 0;
+static int HOOK_MGR      = 0;
 static int HOOK_CALLBACK = 0;
 #if defined(RDEBUG_DISABLE_THUNK)
 static int THUNK_MGR = 0;
@@ -160,7 +161,7 @@ CallInfo* get_callinfo(lua_State* L, uint16_t level = 0) {
 struct timer {
     std::chrono::time_point<std::chrono::system_clock> last = std::chrono::system_clock::now();
     bool update(int ms) {
-        auto now = std::chrono::system_clock::now();
+        auto now  = std::chrono::system_clock::now();
         auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(now - last);
         if (diff.count() > ms) {
             last = now;
@@ -297,10 +298,10 @@ struct hookmgr {
     //
     // step
     //
-    lua_State* stepL = 0;
+    lua_State* stepL       = 0;
     int step_current_level = 0;
-    int step_target_level = 0;
-    int step_mask = 0;
+    int step_target_level  = 0;
+    int step_mask          = 0;
 
     static int stacklevel(lua_State* L) {
         int level = 0;
@@ -337,8 +338,8 @@ struct hookmgr {
     }
     void step_in(lua_State* hL) {
         step_current_level = 0;
-        step_target_level = 0;
-        stepL = 0;
+        step_target_level  = 0;
+        stepL              = 0;
 #if LUA_VERSION_NUM >= 504
         step_hookmask(hL, LUA_MASKCALL | LUA_MASKRET | LUA_MASKLINE);
 #else
@@ -347,20 +348,20 @@ struct hookmgr {
     }
     void step_out(lua_State* hL) {
         step_current_level = stacklevel(hL);
-        step_target_level = step_current_level - 1;
-        stepL = hL;
+        step_target_level  = step_current_level - 1;
+        stepL              = hL;
         step_hookmask(hL, LUA_MASKCALL | LUA_MASKRET);
     }
     void step_over(lua_State* hL) {
         step_current_level = stacklevel(hL);
-        step_target_level = step_current_level;
-        stepL = hL;
+        step_target_level  = step_current_level;
+        stepL              = hL;
         step_hookmask(hL, LUA_MASKCALL | LUA_MASKRET | LUA_MASKLINE);
     }
     void step_cancel(lua_State* hL) {
         step_current_level = 0;
-        step_target_level = 0;
-        stepL = 0;
+        step_target_level  = 0;
+        stepL              = 0;
         step_hookmask(hL, 0);
     }
     void step_hook_call(lua_State* hL, lua_Debug* ar) {
@@ -428,7 +429,7 @@ struct hookmgr {
         rlua_pushstring(cL, "exception");
 #    if LUA_VERSION_NUM >= 504
         LUA_STKID(hL->top) = LUA_STKID(hL->stack) + ar->currentline;
-        errcode = ar->i_ci->u2.transferinfo.ntransfer;
+        errcode            = ar->i_ci->u2.transferinfo.ntransfer;
 #    else
         errcode = ar->currentline;
 #    endif
@@ -942,16 +943,16 @@ int event(rlua_State* cL, lua_State* hL, const char* name, int start) {
 int debug_pcall(lua_State* L, int nargs, int nresults, int errfunc) {
 #ifdef LUAJIT_VERSION
     global_State* g = G(L);
-    bool needClean = !hook_active(g);
+    bool needClean  = !hook_active(g);
     hook_enter(g);
     int ok = lua_pcall(L, nargs, nresults, errfunc);
     if (needClean)
         hook_leave(g);
 #else
     lu_byte oldah = L->allowhook;
-    L->allowhook = 0;
-    int ok = lua_pcall(L, nargs, nresults, errfunc);
-    L->allowhook = oldah;
+    L->allowhook  = 0;
+    int ok        = lua_pcall(L, nargs, nresults, errfunc);
+    L->allowhook  = oldah;
 #endif
 
     return ok;

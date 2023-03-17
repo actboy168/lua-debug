@@ -1,7 +1,7 @@
 #pragma once
 
-#include <stdint.h>
 #include <stddef.h>
+#include <stdint.h>
 
 struct thunk;
 thunk* thunk_create_hook(intptr_t dbg, intptr_t hook);

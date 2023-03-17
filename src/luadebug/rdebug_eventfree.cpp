@@ -1,6 +1,8 @@
 #include "rdebug_eventfree.h"
-#include "thunk/thunk.h"
+
 #include <memory>
+
+#include "thunk/thunk.h"
 
 namespace luadebug::eventfree {
     struct userdata {
@@ -21,8 +23,8 @@ namespace luadebug::eventfree {
     }
     void* create(lua_State* L, notify cb, void* ud) {
         userdata* self = new userdata;
-        self->cb = cb;
-        self->ud = ud;
+        self->cb       = cb;
+        self->ud       = ud;
         self->l_allocf = lua_getallocf(L, &self->l_ud);
 #if defined(RDEBUG_DISABLE_THUNK)
         lua_setallocf(L, fake_allocf, self);

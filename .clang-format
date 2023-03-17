@@ -1,6 +1,8 @@
 BasedOnStyle: Google
 AccessModifierOffset: -4
 AlignAfterOpenBracket: BlockIndent
+AlignConsecutiveAssignments:
+  Enabled: true
 BreakConstructorInitializers: BeforeComma
 BreakInheritanceList: BeforeComma
 ColumnLimit: 0
@@ -11,7 +13,6 @@ IndentPPDirectives: AfterHash
 IndentWidth: 4
 NamespaceIndentation: All
 PackConstructorInitializers: Never
-SortIncludes: Never
 SpaceBeforeCpp11BracedList: true
 
 BreakBeforeBraces: Custom

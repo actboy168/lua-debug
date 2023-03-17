@@ -8,7 +8,7 @@
 namespace rdebug_utility {
 #if defined(_WIN32)
     static bool closeWindow() {
-        bool ok = false;
+        bool ok  = false;
         HANDLE h = CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, 0);
         if (h != INVALID_HANDLE_VALUE) {
             THREADENTRY32 te;
@@ -16,7 +16,7 @@ namespace rdebug_utility {
             for (BOOL ok = Thread32First(h, &te); ok; ok = Thread32Next(h, &te)) {
                 if (te.th32OwnerProcessID == GetCurrentProcessId()) {
                     BOOL suc = PostThreadMessageW(te.th32ThreadID, WM_QUIT, 0, 0);
-                    ok = ok || suc;
+                    ok       = ok || suc;
                 }
             }
             CloseHandle(h);

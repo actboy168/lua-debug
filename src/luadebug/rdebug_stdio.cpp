@@ -1,6 +1,7 @@
-#include "rdebug_lua.h"
-#include <new>
 #include <limits>
+#include <new>
+
+#include "rdebug_lua.h"
 #include "rdebug_redirect.h"
 
 lua_State* get_host(rlua_State* L);
@@ -17,7 +18,7 @@ static int getIoOutput(lua_State* L) {
 
 static int redirect_read(rlua_State* L) {
     luadebug::redirect& self = *(luadebug::redirect*)rluaL_checkudata(L, 1, "redirect");
-    rlua_Integer len = rluaL_optinteger(L, 2, LUAL_BUFFERSIZE);
+    rlua_Integer len         = rluaL_optinteger(L, 2, LUAL_BUFFERSIZE);
     if (len > (std::numeric_limits<int>::max)()) {
         return rluaL_error(L, "bad argument #1 to 'read' (invalid number)");
     }
@@ -59,7 +60,7 @@ static int redirect_gc(rlua_State* L) {
 }
 
 static int redirect(rlua_State* L) {
-    const char* lst[] = { "stdin", "stdout", "stderr", NULL };
+    const char* lst[]     = { "stdin", "stdout", "stderr", NULL };
     luadebug::std_fd type = (luadebug::std_fd)(rluaL_checkoption(L, 1, "stdout", lst));
     switch (type) {
     case luadebug::std_fd::STDIN:
@@ -152,7 +153,7 @@ static bool openhook(lua_State* L, bool enable, lua_CFunction f) {
 }
 
 static int open_print(rlua_State* L) {
-    bool enable = rlua_toboolean(L, 1);
+    bool enable   = rlua_toboolean(L, 1);
     lua_State* hL = get_host(L);
     lua_getglobal(hL, "print");
     if (openhook(hL, enable, redirect_print)) {
@@ -162,7 +163,7 @@ static int open_print(rlua_State* L) {
 }
 
 static int open_iowrite(rlua_State* L) {
-    bool enable = rlua_toboolean(L, 1);
+    bool enable   = rlua_toboolean(L, 1);
     lua_State* hL = get_host(L);
     if (LUA_TUSERDATA == getIoOutput(hL)) {
         if (lua_getmetatable(hL, -1)) {

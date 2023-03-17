@@ -1,6 +1,7 @@
 #pragma once
 
 #include <resolver/lua_delayload.h>
+
 #include <string_view>
 
 namespace luadebug::autoattach {

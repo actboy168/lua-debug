@@ -1,5 +1,6 @@
-#include "rdebug_luacompat.h"
 #include "rdebug_table.h"
+
+#include "rdebug_luacompat.h"
 
 namespace luadebug::table {
 
@@ -40,7 +41,7 @@ namespace luadebug::table {
     }
 
     unsigned int array_size(const void* tv) {
-        const Table* t = (const Table*)tv;
+        const Table* t      = (const Table*)tv;
         unsigned int alimit = array_limit(t);
         if (alimit) {
             for (unsigned int i = alimit; i > 0; --i) {
@@ -103,7 +104,7 @@ namespace luadebug::table {
 
 #ifdef LUAJIT_VERSION
         Node* node = noderef(t->node);
-        Node* n = &node[i];
+        Node* n    = &node[i];
         if (tvisnil(&n->val)) {
             return 0;
         }
@@ -137,8 +138,8 @@ namespace luadebug::table {
         }
 #ifdef LUAJIT_VERSION
         const Table* ct = (const Table*)t;
-        Node* node = noderef(ct->node);
-        Node* n = &node[i];
+        Node* node      = noderef(ct->node);
+        Node* n         = &node[i];
         if (tvisnil(&n->val)) {
             return 0;
         }
@@ -164,7 +165,7 @@ namespace luadebug::table {
 #ifdef LUAJIT_VERSION
         const GCtab* t = &((const GCobj*)lua_topointer(L, idx))->tab;
 #else
-        const void* t = lua_topointer(L, idx);
+        const void* t  = lua_topointer(L, idx);
 #endif
         if (!t) {
             return 0;
@@ -186,13 +187,13 @@ namespace luadebug::table {
         }
 #ifdef LUAJIT_VERSION
         Node* node = noderef(t->node);
-        Node* n = &node[i];
+        Node* n    = &node[i];
         if (tvisnil(&n->val)) {
             return 0;
         }
         copyTV(L, L->top, &n->val);
 #else
-        Node* n = &t->node[i];
+        Node* n        = &t->node[i];
         if (ttisnil(gval(n))) {
             return 0;
         }
@@ -217,13 +218,13 @@ namespace luadebug::table {
 
 #ifdef LUAJIT_VERSION
         Node* node = noderef(t->node);
-        Node* n = &node[i];
+        Node* n    = &node[i];
         if (tvisnil(&n->val)) {
             return 0;
         }
         copyTV(L, &n->val, L->top - 1);
 #else
-        Node* n = &t->node[i];
+        Node* n        = &t->node[i];
         if (ttisnil(gval(n))) {
             return 0;
         }

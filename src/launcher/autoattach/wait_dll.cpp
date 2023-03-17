@@ -2,9 +2,9 @@
 
 #ifdef _WIN32
 
+#    include <bee/nonstd/filesystem.h>
 #    include <windows.h>
 #    include <winternl.h>
-#    include <bee/nonstd/filesystem.h>
 
 namespace luadebug::autoattach {
     bool wait_dll(bool (*loaded)(std::string const&)) {
@@ -66,7 +66,7 @@ namespace luadebug::autoattach {
             0, [](LdrDllNotificationReason NotificationReason, PLDR_DLL_NOTIFICATION_DATA const NotificationData, PVOID Context) {
                 if (NotificationReason == LdrDllNotificationReason::LDR_DLL_NOTIFICATION_REASON_LOADED) {
                     auto path = fs::path(std::wstring(NotificationData->Loaded.FullDllName->Buffer, NotificationData->Loaded.FullDllName->Length)).string();
-                    auto f = (decltype(loaded))Context;
+                    auto f    = (decltype(loaded))Context;
                     if (f(path)) {
                         if (dllNotification.Cookie)
                             dllNotification.dllUnregisterNotification(dllNotification.Cookie);

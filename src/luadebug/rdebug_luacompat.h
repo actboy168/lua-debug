@@ -56,7 +56,7 @@ inline const char* luaL_tolstring(lua_State* L, int idx, size_t* len) {
                 lua_pushliteral(L, "false");
             break;
         default:
-            tt = luaL_getmetafield(L, idx, "__name");
+            tt   = luaL_getmetafield(L, idx, "__name");
             name = (tt == LUA_TSTRING) ? lua_tostring(L, -1) : lua_typename(L, t);
             lua_pushfstring(L, "%s: %p", name, lua_topointer(L, idx));
             if (tt != LUA_TNIL)
@@ -148,17 +148,17 @@ inline int lua_setiuservalue(lua_State* L, int idx, int n) {
 #endif
 
 #ifdef LUAJIT_VERSION
-#    include <lj_obj.h>
-#    include <lj_tab.h>
 #    include <lj_cdata.h>
 #    include <lj_ctype.h>
-using Table = GCtab;
+#    include <lj_obj.h>
+#    include <lj_tab.h>
+using Table   = GCtab;
 using Closure = GCfunc;
-using UpVal = GCupval;
-using Proto = GCproto;
-using UDate = GCudata;
+using UpVal   = GCupval;
+using Proto   = GCproto;
+using UDate   = GCudata;
 using TString = GCstr;
-using StkId = TValue*;
+using StkId   = TValue*;
 
 inline TValue* index2adr(lua_State* L, int idx) {
     if (idx > 0) {

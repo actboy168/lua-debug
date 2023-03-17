@@ -1,6 +1,7 @@
-#include "thunk_nojit.h"
 #include <lua.hpp>
+
 #include "../lua_compat.h"
+#include "thunk_nojit.h"
 
 intptr_t thunk_get(lua_State* L, void* key) {
     if (LUA_TLIGHTUSERDATA != lua::rawgetp(L, LUA_REGISTRYINDEX, key)) {
@@ -19,6 +20,6 @@ void thunk_set(lua_State* L, void* key, intptr_t v) {
 
 thunk* thunk_create_hook(intptr_t dbg, intptr_t hook) {
     thunk* t = new thunk;
-    t->data = (void*)hook;
+    t->data  = (void*)hook;
     return t;
 }

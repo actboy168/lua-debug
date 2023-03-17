@@ -3,17 +3,17 @@
 #endif
 
 #include <bee/error.cpp>
-#include <bee/net/socket.cpp>
 #include <bee/net/endpoint.cpp>
+#include <bee/net/socket.cpp>
 #include <bee/nonstd/3rd/format.cc>
-#include <bee/utility/path_helper.cpp>
 #include <bee/utility/file_handle.cpp>
+#include <bee/utility/path_helper.cpp>
 
 #if defined(_WIN32)
 #    include <bee/platform/win/unicode_win.cpp>
 #    include <bee/platform/win/unlink_win.cpp>
-#    include <bee/utility/file_handle_win.cpp>
 #    include <bee/thread/simplethread_win.cpp>
+#    include <bee/utility/file_handle_win.cpp>
 #else
 #    include <bee/thread/simplethread_posix.cpp>
 #    include <bee/utility/file_handle_posix.cpp>

@@ -1,14 +1,14 @@
 #pragma once
 
-#include <hook/watch_point.h>
-#include <hook/listener.h>
 #include <autoattach/autoattach.h>
+#include <hook/listener.h>
+#include <hook/watch_point.h>
 #include <resolver/lua_delayload.h>
 
-#include <gumpp.hpp>
-#include <vector>
-#include <string>
 #include <atomic>
+#include <gumpp.hpp>
+#include <string>
+#include <vector>
 
 namespace luadebug::autoattach {
     struct watchdog {

@@ -1,10 +1,12 @@
-﻿#include "rdebug_lua.h"
-#include <lua.hpp>
-#include "luadbg/bee_module.h"
-#include "rdebug_putenv.h"
-#include <stdlib.h>
+﻿#include <stdlib.h>
 
-static int DEBUG_HOST = 0;    // host L in client VM
+#include <lua.hpp>
+
+#include "luadbg/bee_module.h"
+#include "rdebug_lua.h"
+#include "rdebug_putenv.h"
+
+static int DEBUG_HOST   = 0;  // host L in client VM
 static int DEBUG_CLIENT = 0;  // client L in host VM for hook
 
 int event(rlua_State* cL, lua_State* hL, const char* name, int start);
@@ -89,7 +91,7 @@ push_errmsg(lua_State* L, rlua_State* cL) {
         lua_pushstring(L, "Unknown Error");
     }
     else {
-        size_t sz = 0;
+        size_t sz       = 0;
         const char* err = rlua_tolstring(cL, -1, &sz);
         lua_pushlstring(L, err, sz);
     }
@@ -99,7 +101,7 @@ static int
 lhost_start(lua_State* L) {
     clear_client(L);
     lua_CFunction preprocessor = NULL;
-    const char* mainscript = luaL_checkstring(L, 1);
+    const char* mainscript     = luaL_checkstring(L, 1);
     if (lua_type(L, 2) == LUA_TFUNCTION) {
         preprocessor = lua_tocfunction(L, 2);
         if (preprocessor == NULL) {
@@ -158,7 +160,7 @@ lhost_event(lua_State* L) {
 
 static std::string_view
 to_strview(lua_State* L, int idx) {
-    size_t len = 0;
+    size_t len      = 0;
     const char* buf = luaL_checklstring(L, idx, &len);
     return std::string_view(buf, len);
 }
@@ -172,7 +174,7 @@ la2u(lua_State* L) {
 #endif
 
 static int lsetenv(lua_State* L) {
-    const char* name = luaL_checkstring(L, 1);
+    const char* name  = luaL_checkstring(L, 1);
     const char* value = luaL_checkstring(L, 2);
 #if defined(_WIN32)
     lua_pushfstring(L, "%s=%s", name, value);

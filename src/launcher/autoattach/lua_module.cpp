@@ -1,8 +1,8 @@
 #include <autoattach/lua_module.h>
+#include <bee/nonstd/format.h>
 #include <hook/create_watchdog.h>
 #include <util/log.h>
 
-#include <bee/nonstd/format.h>
 #include <charconv>
 #include <gumpp.hpp>
 
@@ -90,7 +90,7 @@ namespace luadebug::autoattach {
 
     bool lua_module::initialize(fn_attach attach_lua_vm) {
         resolver.module_name = path;
-        auto error_msg = lua::initialize(resolver);
+        auto error_msg       = lua::initialize(resolver);
         if (error_msg) {
             log::fatal("lua initialize failed, can't find {}", error_msg);
             return false;
