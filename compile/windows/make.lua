@@ -15,16 +15,8 @@ lm:build "x86_64" {
     },
 }
 
-lm.EXE_DIR = "publish/bin/"
-lm.EXE_RESOURCE = "../../compile/windows/lua-debug.rc"
 lm:import "3rd/bee.lua/make.lua"
-
---TODO copy -> move
-lm:copy "lua-debug" {
-    input = "publish/bin/bootstrap.exe",
-    output = "publish/bin/lua-debug.exe",
-    deps = "bootstrap",
-}
+require "compile.common.lua-debug"
 
 lm:lua_dll 'inject' {
     bindir = "publish/bin",
