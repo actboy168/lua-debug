@@ -16,8 +16,8 @@ using namespace std::literals;
 const char* module_name;
 struct Pattern {
     std::string name;
-    std::string pattern;
-    size_t scan_count;
+    Gum::signature signature;
+    size_t hit_offset;
 };
 
 int imports(std::string file_path, bool is_string, std::set<std::string>& imports_names) {
@@ -61,9 +61,11 @@ int imports(std::string file_path, bool is_string, std::set<std::string>& import
             return true;
         });
     }
+#ifndef NDEBUG
     for (const auto& name : imports_names) {
         std::cerr << name << std::endl;
     }
+#endif
     return 0;
 }
 bool starts_with(std::string_view _this, std::string_view __s) _NOEXCEPT {
@@ -72,8 +74,9 @@ bool starts_with(std::string_view _this, std::string_view __s) _NOEXCEPT {
                0;
 }
 
-bool compiler_pattern(const char* name, void* address, std::list<Pattern>& patterns) {
-    auto pattern = Gum::to_signature_pattern(address, 255);
+bool compiler_signature(const char* name, void* address, std::list<Pattern>& patterns) {
+    auto signature = Gum::get_function_signature(address, 255);
+    const auto& pattern = signature.pattern;
     std::vector<void*> find_address = Gum::search_module_function(module_name, pattern.c_str());
     if (find_address.size() != 1) {
         std::cerr << name << " address:" << address << " pattern:" << pattern << std::endl;
@@ -93,11 +96,13 @@ bool compiler_pattern(const char* name, void* address, std::list<Pattern>& patte
         }
     }
     bool isvalid = false;
+    size_t offset = 0;
     for (auto addr : find_address) {
-        if (addr == address) {
+        if ((void*)((uint8_t*)addr + signature.offset) == address) {
             isvalid = true;
             break;
         }
+        offset++;
     }
 
     if (!isvalid) {
@@ -105,7 +110,7 @@ bool compiler_pattern(const char* name, void* address, std::list<Pattern>& patte
         return false;
     }
     else {
-        patterns.emplace_back(Pattern { name, pattern, find_address.size() });
+        patterns.emplace_back(Pattern { name, signature, offset });
         return true;
     }
 }
@@ -136,24 +141,49 @@ int main(int narg, const char* argvs[]) {
         return 1;
     }
 
+    // imports_names remove lua_ident luaJIT_version_*
+    {
+        auto iter = imports_names.begin();
+        while (iter != imports_names.end()) {
+            const auto& name = *iter;
+            if (name == "lua_ident" || starts_with(name, "luaJIT_version_")) {
+                iter = imports_names.erase(iter);
+            }
+            else {
+                ++iter;
+            }
+        }
+    }
+
     std::list<Pattern> patterns;
     if (is_export) {
         Gum::Process::module_enumerate_export(module_name, [&](const Gum::ExportDetails& details) {
-            if (imports_names.find(details.name) != imports_names.end())
-                compiler_pattern(details.name, details.address, patterns);
+            if (imports_names.find(details.name) != imports_names.end()) {
+                if (compiler_signature(details.name, details.address, patterns)) {
+                    imports_names.erase(details.name);
+                }
+            }
             return true;
         });
     }
     else {
         Gum::Process::module_enumerate_symbols(module_name, [&](const Gum::SymbolDetails& details) {
-            if (imports_names.find(details.name) != imports_names.end())
-                compiler_pattern(details.name, details.address, patterns);
+            if (imports_names.find(details.name) != imports_names.end()) {
+                if (compiler_signature(details.name, details.address, patterns)) {
+                    imports_names.erase(details.name);
+                }
+            }
             return true;
         });
     }
 
     for (const auto& pattern : patterns) {
-        std::cout << pattern.name << ":" << pattern.pattern << "-" << pattern.scan_count << std::endl;
+        std::cout << pattern.name << ":" << pattern.signature.pattern << "(" << (intptr_t)pattern.signature.offset << ")"
+                  << "@" << pattern.hit_offset << std::endl;
     }
+    for (auto name : imports_names) {
+        std::cerr << "can't find signature: " << name << std::endl;
+    }
+
     return 0;
 }

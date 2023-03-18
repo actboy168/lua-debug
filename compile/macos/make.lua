@@ -67,6 +67,11 @@ if lm.mode == "debug" then
     }
 end
 
+lm:phony "compile_signature" {
+    deps = { "signature_compiler", "merge_launcher", "runtime", "lua-debug" },
+    "$luamake", "lua", "compile/signature_compiler.lua"
+}
+
 lm:default {
     "common",
     "lua-debug",
@@ -75,5 +80,5 @@ lm:default {
     "merge_launcher",
     lm.platform == "darwin-arm64" and "x86_64",
     lm.mode == "debug" and "tests",
-    "signature_compiler"
+    "compile_signature"
 }
