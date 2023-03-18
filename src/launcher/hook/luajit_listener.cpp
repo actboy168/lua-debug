@@ -1,7 +1,6 @@
+#include <hook/luajit_listener.h>
 #include <lj_jit.h>
 #include <lj_obj.h>
-
-#include <hook/luajit_listener.h>
 
 namespace luadebug::autoattach {
     uintptr_t jit2state(void* ctx) {

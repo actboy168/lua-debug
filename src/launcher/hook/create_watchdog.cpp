@@ -1,9 +1,10 @@
-#include <vector>
-#include <string_view>
-#include <string>
-#include <hook/watchdog.h>
 #include <autoattach/lua_module.h>
 #include <bee/nonstd/unreachable.h>
+#include <hook/watchdog.h>
+
+#include <string>
+#include <string_view>
+#include <vector>
 
 namespace luadebug::autoattach {
     static std::vector<watch_point> get_watch_points(lua_version version) {

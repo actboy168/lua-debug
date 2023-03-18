@@ -1,6 +1,7 @@
 #if defined(_MSC_VER)
 
 #    include <lua.hpp>
+
 #    include "rdebug_delayload.h"
 
 extern "C" __declspec(dllexport) int init(lua_State* L) {

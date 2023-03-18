@@ -45,7 +45,7 @@ namespace luadebug::lua {
             return std::string_view {};
 #else
             size_t i = name.find('[');
-            i = name.find("lua", i);
+            i        = name.find("lua", i);
             name.remove_prefix(i);
             i = name.find(']');
             name.remove_suffix(name.size() - i);

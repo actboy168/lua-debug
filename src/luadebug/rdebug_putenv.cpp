@@ -1,7 +1,8 @@
 #if defined(_MSC_VER)
-#    include "rdebug_delayload.h"
 #    include <Windows.h>
 #    include <stdint.h>
+
+#    include "rdebug_delayload.h"
 
 namespace luadebug {
     static uintptr_t rva_to_addr(HMODULE module, uintptr_t rva) {
@@ -13,15 +14,15 @@ namespace luadebug {
         if (!module) {
             return 0;
         }
-        PIMAGE_DOS_HEADER dos_header = (PIMAGE_DOS_HEADER)(module);
-        PIMAGE_NT_HEADERS nt_headers = (PIMAGE_NT_HEADERS)((uintptr_t)(dos_header) + dos_header->e_lfanew);
+        PIMAGE_DOS_HEADER dos_header    = (PIMAGE_DOS_HEADER)(module);
+        PIMAGE_NT_HEADERS nt_headers    = (PIMAGE_NT_HEADERS)((uintptr_t)(dos_header) + dos_header->e_lfanew);
         PIMAGE_IMPORT_DESCRIPTOR import = (PIMAGE_IMPORT_DESCRIPTOR)rva_to_addr(module, nt_headers->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress);
-        uint32_t size = nt_headers->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].Size;
+        uint32_t size                   = nt_headers->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].Size;
         if (import == NULL || size < sizeof(IMAGE_IMPORT_DESCRIPTOR)) {
             return 0;
         }
         for (; import->FirstThunk; ++import) {
-            PIMAGE_THUNK_DATA pitd = (PIMAGE_THUNK_DATA)rva_to_addr(module, import->OriginalFirstThunk);
+            PIMAGE_THUNK_DATA pitd  = (PIMAGE_THUNK_DATA)rva_to_addr(module, import->OriginalFirstThunk);
             PIMAGE_THUNK_DATA pitd2 = (PIMAGE_THUNK_DATA)rva_to_addr(module, import->FirstThunk);
             for (; pitd->u1.Function; ++pitd, ++pitd2) {
                 PIMAGE_IMPORT_BY_NAME pi_import_by_name = (PIMAGE_IMPORT_BY_NAME)(rva_to_addr(module, *(uintptr_t*)pitd));

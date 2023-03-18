@@ -2,12 +2,12 @@
 
 #if defined(_WIN32)
 
-#    include <windows.h>
 #    include <fcntl.h>
 #    include <io.h>
 #    include <stdio.h>
+#    include <windows.h>
 
-namespace luadebug {
+namespace luadebug::stdio {
 
     static DWORD handles[] = {
         STD_INPUT_HANDLE,
@@ -33,24 +33,24 @@ namespace luadebug {
         }
     }
 
-    redirect::handle_t kInvalidHandle = INVALID_HANDLE_VALUE;
+    std_redirect::handle_t kInvalidHandle = INVALID_HANDLE_VALUE;
 
-    redirect::redirect()
+    std_redirect::std_redirect()
         : m_pipe { kInvalidHandle, kInvalidHandle }
         , m_old(kInvalidHandle)
         , m_type(std_fd::STDOUT) {}
 
-    redirect::~redirect() {
+    std_redirect::~std_redirect() {
         close();
     }
 
-    bool redirect::open(std_fd type) {
+    bool std_redirect::open(std_fd type) {
         SECURITY_ATTRIBUTES attr = { sizeof(SECURITY_ATTRIBUTES), 0, true };
         if (!::CreatePipe(&m_pipe[0], &m_pipe[1], &attr, 0)) {
             return false;
         }
         m_type = type;
-        m_old = GetStdHandle(handles[(int)type]);
+        m_old  = GetStdHandle(handles[(int)type]);
         if (type == std_fd::STDIN) {
             set_handle(type, m_pipe[0]);
             m_pipe[0] = kInvalidHandle;
@@ -62,7 +62,7 @@ namespace luadebug {
         return true;
     }
 
-    void redirect::close() {
+    void std_redirect::close() {
         if (m_old != kInvalidHandle) {
             SetStdHandle(handles[(int)m_type], m_old);
             m_old = kInvalidHandle;
@@ -79,7 +79,7 @@ namespace luadebug {
         }
     }
 
-    size_t redirect::peek() {
+    size_t std_redirect::peek() {
         DWORD rlen = 0;
         if (!PeekNamedPipe(m_pipe[0], 0, 0, 0, &rlen, 0)) {
             return 0;
@@ -87,7 +87,7 @@ namespace luadebug {
         return rlen;
     }
 
-    size_t redirect::read(char* buf, size_t len) {
+    size_t std_redirect::read(char* buf, size_t len) {
         if (!peek()) {
             return 0;
         }
@@ -107,22 +107,22 @@ namespace luadebug {
 #        include <assert.h>
 #    endif
 
-namespace luadebug {
-    redirect::handle_t kInvalidHandle = -1;
+namespace luadebug::stdio {
+    std_redirect::handle_t kInvalidHandle = -1;
 
-    redirect::redirect()
+    std_redirect::std_redirect()
         : m_pipe { kInvalidHandle, kInvalidHandle }
         , m_old(kInvalidHandle)
         , m_type(std_fd::STDOUT) {}
 
-    redirect::~redirect() {
+    std_redirect::~std_redirect() {
         close();
     }
 
 #    if defined(__APPLE__)
     static void no_blocking(int s) {
         int flags = fcntl(s, F_GETFL, 0);
-        int rc = fcntl(s, F_SETFL, flags | O_NONBLOCK);
+        int rc    = fcntl(s, F_SETFL, flags | O_NONBLOCK);
         (void)rc;
         assert(rc == 0);
     }
@@ -138,11 +138,11 @@ namespace luadebug {
     }
 #    endif
 
-    bool redirect::open(std_fd type) {
+    bool std_redirect::open(std_fd type) {
         if (pipe2(m_pipe, O_NONBLOCK) == -1) {
             return false;
         }
-        m_old = ::dup((int)type);
+        m_old  = ::dup((int)type);
         m_type = type;
         if (m_type == std_fd::STDIN) {
             ::dup2(m_pipe[0], (int)m_type);
@@ -157,7 +157,7 @@ namespace luadebug {
         return true;
     }
 
-    void redirect::close() {
+    void std_redirect::close() {
         if (m_old != kInvalidHandle) {
             ::dup2(m_old, (int)m_type);
             ::close(m_old);
@@ -173,7 +173,7 @@ namespace luadebug {
         }
     }
 
-    size_t redirect::read(char* buf, size_t len) {
+    size_t std_redirect::read(char* buf, size_t len) {
         ssize_t r = ::read(m_pipe[0], (void*)buf, len);
         return r <= 0 ? 0 : r;
     }

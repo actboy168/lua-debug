@@ -2,14 +2,14 @@
 
 #include <stddef.h>
 
-namespace luadebug {
+namespace luadebug::stdio {
     enum class std_fd {
         STDIN = 0,
         STDOUT,
         STDERR,
     };
 
-    class redirect {
+    class std_redirect {
     public:
 #if defined(_WIN32)
         typedef void* handle_t;
@@ -17,8 +17,8 @@ namespace luadebug {
         typedef int handle_t;
 #endif
     public:
-        redirect();
-        ~redirect();
+        std_redirect();
+        ~std_redirect();
         bool open(std_fd type);
         void close();
         size_t read(char* buf, size_t len);

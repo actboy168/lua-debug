@@ -1,9 +1,12 @@
-#include <symbolize/symbolize.h>
-#include <windows.h>
+//clang-format off
+#include <Windows.h>
+//clang-format on
 #include <DbgHelp.h>
-#include <bee/subprocess.h>
 #include <bee/nonstd/filesystem.h>
 #include <bee/nonstd/format.h>
+#include <bee/subprocess.h>
+#include <symbolize/symbolize.h>
+
 #include <memory>
 
 namespace luadebug {
@@ -73,7 +76,7 @@ namespace luadebug {
 
     inline HANDLE createSymHandler(bool SymBuildPath, bool SymUseSymSrv) {
         HANDLE proc = GetCurrentProcess();
-        auto path = searchpath(SymBuildPath, SymUseSymSrv);
+        auto path   = searchpath(SymBuildPath, SymUseSymSrv);
         if (!SymInitialize(proc, path.c_str(), TRUE)) {
             if (GetLastError() != 87) {
                 return nullptr;
@@ -123,12 +126,12 @@ namespace luadebug {
 #else
             DWORD;
 #endif
-        PTR_T dwAddress = PTR_T(pObject);
+        PTR_T dwAddress        = PTR_T(pObject);
         DWORD64 dwDisplacement = 0;
 
         MY_SYMBOL_INFO sym = {};
-        sym.SizeOfStruct = sizeof(SYMBOL_INFO);
-        sym.MaxNameLen = max_sym_name;
+        sym.SizeOfStruct   = sizeof(SYMBOL_INFO);
+        sym.MaxNameLen     = max_sym_name;
         if (!SymFromAddr(handler.hProcess, dwAddress, &dwDisplacement, &sym)) {
             return std::nullopt;
         }
@@ -152,13 +155,13 @@ namespace luadebug {
                 sb.function_name = sym.Name;
         }
         IMAGEHLP_MODULE md = {};
-        md.SizeOfStruct = sizeof(IMAGEHLP_MODULE);
+        md.SizeOfStruct    = sizeof(IMAGEHLP_MODULE);
         if (SymGetModuleInfo(handler.hProcess, dwAddress, &md)) {
 #if defined(_WIN64)
             if (md.LineNumbers) {
 #endif
-                IMAGEHLP_LINE line = {};
-                line.SizeOfStruct = sizeof(IMAGEHLP_LINE);
+                IMAGEHLP_LINE line     = {};
+                line.SizeOfStruct      = sizeof(IMAGEHLP_LINE);
                 DWORD lineDisplacement = 0;
                 if (SymGetLineFromAddr(handler.hProcess, dwAddress, &lineDisplacement, &line)) {
                     sb.file = { line.FileName, line.LineNumber };

@@ -7,9 +7,8 @@ else
 end
 
 lm.builddir = ("build/%s/%s"):format(lm.platform, lm.mode)
-lm.EXE_DIR = "publish/bin/"
-lm.EXE_NAME = "lua-debug"
 lm:import "3rd/bee.lua/make.lua"
+require "compile.common.lua-debug"
 
 lm.runtime_platform = lm.platform
 require "compile.macos.runtime"

@@ -1,5 +1,5 @@
-#define RLUA_INTERNAL
-#include "rlua.h"
+// clang-format off
+#include "luadbg/inc/luadbgexports.h"
 
 #if defined(__linux__)
 #    define LUA_USE_LINUX

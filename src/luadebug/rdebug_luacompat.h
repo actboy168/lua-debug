@@ -1,5 +1,7 @@
 #pragma once
 
+#include <lua.hpp>
+
 #if LUA_VERSION_NUM == 501
 
 #    undef lua_setglobal
@@ -54,7 +56,7 @@ inline const char* luaL_tolstring(lua_State* L, int idx, size_t* len) {
                 lua_pushliteral(L, "false");
             break;
         default:
-            tt = luaL_getmetafield(L, idx, "__name");
+            tt   = luaL_getmetafield(L, idx, "__name");
             name = (tt == LUA_TSTRING) ? lua_tostring(L, -1) : lua_typename(L, t);
             lua_pushfstring(L, "%s: %p", name, lua_topointer(L, idx));
             if (tt != LUA_TNIL)
@@ -143,4 +145,54 @@ inline int lua_setiuservalue(lua_State* L, int idx, int n) {
     lua_setuservalue(L, idx);
     return 1;
 }
+#endif
+
+#ifdef LUAJIT_VERSION
+#    include <lj_cdata.h>
+#    include <lj_ctype.h>
+#    include <lj_obj.h>
+#    include <lj_tab.h>
+using Proto = GCproto;
+
+inline TValue* index2adr(lua_State* L, int idx) {
+    if (idx > 0) {
+        TValue* o = L->base + (idx - 1);
+        return o < L->top ? o : niltv(L);
+    }
+    else if (idx > LUA_REGISTRYINDEX) {
+        lj_checkapi(idx != 0 && -idx <= L->top - L->base, "bad stack slot %d", idx);
+        return L->top + idx;
+    }
+    else if (idx == LUA_GLOBALSINDEX) {
+        TValue* o = &G(L)->tmptv;
+        settabV(L, o, tabref(L->env));
+        return o;
+    }
+    else if (idx == LUA_REGISTRYINDEX) {
+        return registry(L);
+    }
+    else {
+        GCfunc* fn = curr_func(L);
+        lj_checkapi(fn->c.gct == ~LJ_TFUNC && !isluafunc(fn), "calling frame is not a C function");
+        if (idx == LUA_ENVIRONINDEX) {
+            TValue* o = &G(L)->tmptv;
+            settabV(L, o, tabref(fn->c.env));
+            return o;
+        }
+        else {
+            idx = LUA_GLOBALSINDEX - idx;
+            return idx <= fn->c.nupvalues ? &fn->c.upvalue[idx - 1] : niltv(L);
+        }
+    }
+}
+inline int lua_isinteger(lua_State* L, int idx) {
+    cTValue* o = index2adr(L, idx);
+    return tvisint(o);
+}
+#else
+#    include <lapi.h>
+#    include <lgc.h>
+#    include <lobject.h>
+#    include <lstate.h>
+#    include <ltable.h>
 #endif

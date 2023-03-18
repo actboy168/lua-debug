@@ -1,9 +1,8 @@
+#include <bee/nonstd/format.h>
+#include <bee/nonstd/unreachable.h>
 #include <hook/watchdog.h>
 #include <resolver/lua_delayload.h>
 #include <util/log.h>
-
-#include <bee/nonstd/format.h>
-#include <bee/nonstd/unreachable.h>
 
 namespace luadebug::autoattach {
     watchdog::watchdog(fn_attach attach_lua_vm)
@@ -139,8 +138,8 @@ namespace luadebug::autoattach {
     }
 
     void watchdog::set_luahook(lua::state L, lua::hook fn) {
-        origin_hook = lua::call<lua_gethook>(L);
-        origin_hookmask = lua::call<lua_gethookmask>(L);
+        origin_hook      = lua::call<lua_gethook>(L);
+        origin_hookmask  = lua::call<lua_gethookmask>(L);
         origin_hookcount = lua::call<lua_gethookcount>(L);
         lua::call<lua_sethook>(L, fn, 0 | 1 | 2, 0);
     }
