@@ -93,7 +93,7 @@ namespace luadebug::autoattach {
 #endif
             ;
         auto platform = std::format("{}-{}", os, arch);
-        auto path     = dllpath.value().parent_path().parent_path() / "runtime" / platform / lua_version_to_string(version);
+        auto path     = (dllpath.value().parent_path().parent_path() / "runtime" / platform / lua_version_to_string(version)).string();
         std::string error;
         if (!Gum::Process::module_load(path.c_str(), &error)) {
             log::fatal("load remotedebug dll failed: {}", error);

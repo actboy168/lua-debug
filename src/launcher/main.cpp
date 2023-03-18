@@ -3,11 +3,9 @@
 #include <bee/utility/path_helper.h>
 #include <util/log.h>
 #ifndef _WIN32
-#    include <unistd.h>
 #    define DLLEXPORT __attribute__((visibility("default")))
 #    define DLLEXPORT_DECLARATION
 #else
-#    include <windows.h>
 #    define DLLEXPORT __declspec(dllexport)
 #    define DLLEXPORT_DECLARATION __cdecl
 #endif
@@ -16,9 +14,9 @@
 #include <string_view>
 
 namespace luadebug::autoattach {
-    static std::string readfile(const fs::path& filename) {
+    static std::string readfile(const fs::path &filename) {
 #ifdef _WIN32
-        FILE* f = _wfopen(filename.c_str(), L"rb");
+        FILE *f = _wfopen(filename.c_str(), L"rb");
 #else
         FILE* f = fopen(filename.c_str(), "rb");
 #endif
@@ -43,7 +41,7 @@ namespace luadebug::autoattach {
             return attach_status::fatal;
         }
         auto root = r.value().parent_path().parent_path();
-        auto buf  = readfile(root / "script" / "attach.lua");
+        auto buf = readfile(root / "script" / "attach.lua");
         if (lua::loadbuffer(L, buf.data(), buf.size(), "=(attach.lua)")) {
             log::fatal("load attach.lua error: {}", lua::tostring(L, -1));
             lua::pop(L, 1);
