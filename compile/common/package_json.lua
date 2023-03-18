@@ -252,6 +252,11 @@ Debugger address.
         },
         type = "string",
     },
+    module = {
+        defualt = "null",
+        markdownDescription = "specify lua module path/name",
+        type = "string",
+    }
 }
 
 if OS == "win32" then
