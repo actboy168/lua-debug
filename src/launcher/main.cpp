@@ -11,6 +11,7 @@
 #    define DLLEXPORT __declspec(dllexport)
 #    define DLLEXPORT_DECLARATION __cdecl
 #endif
+#include <gumpp.hpp>
 #include <string>
 #include <string_view>
 
@@ -34,7 +35,7 @@ namespace luadebug::autoattach {
         return tmp;
     }
 
-    static attach_status attach(lua::state L) {
+    static attach_status attach(lua::state L, lua_version verison) {
         log::info("attach lua vm entry");
         auto r = bee::path_helper::dll_path();
         if (!r) {
@@ -49,12 +50,10 @@ namespace luadebug::autoattach {
             return attach_status::fatal;
         }
         lua::call<lua_pushstring>(L, root.generic_u8string().c_str());
-#ifdef _WIN32
-        lua::call<lua_pushstring>(L, std::to_string(GetCurrentProcessId()).c_str());
-#else
-        lua::call<lua_pushstring>(L, std::to_string(getpid()).c_str());
-#endif
-        if (lua::pcall(L, 2, 1, 0)) {
+        lua::call<lua_pushstring>(L, std::to_string(Gum::Process::get_id()).c_str());
+        lua::call<lua_pushstring>(L, verison == lua_version::unknown ? "" : lua_version_to_string(verison));
+
+        if (lua::pcall(L, 3, 1, 0)) {
             /*
                 这里失败无法调用log::fatal，因为无法知道调试器已经加载到哪一步才失败的。
                 所以调试器不应该把错误抛到这里。

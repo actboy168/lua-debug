@@ -31,8 +31,8 @@ namespace luadebug::autoattach {
         return false;
     }
 
-    attach_status attach_lua_vm(lua::state L) {
-        return debuggerAttach(L);
+    attach_status attach_lua_vm(lua::state L, lua_version version) {
+        return debuggerAttach(L, version);
     }
 
     void start() {

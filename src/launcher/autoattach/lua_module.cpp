@@ -9,23 +9,6 @@
 #include <gumpp.hpp>
 
 namespace luadebug::autoattach {
-    static const char* lua_version_to_string(lua_version v) {
-        switch (v) {
-        case lua_version::lua51:
-            return "lua51";
-        case lua_version::lua52:
-            return "lua52";
-        case lua_version::lua53:
-            return "lua53";
-        case lua_version::lua54:
-            return "lua54";
-        case lua_version::luajit:
-            return "luajit";
-        default:
-            return "unknown";
-        }
-    }
-
     static bool in_module(const lua_module& m, void* addr) {
         return addr >= m.memory_address && addr <= (void*)((intptr_t)m.memory_address + m.memory_size);
     }
