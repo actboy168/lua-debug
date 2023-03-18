@@ -2,6 +2,7 @@
 #include <bee/nonstd/filesystem.h>
 #include <bee/utility/path_helper.h>
 #include <util/log.h>
+
 #ifndef _WIN32
 #    define DLLEXPORT __attribute__((visibility("default")))
 #    define DLLEXPORT_DECLARATION
@@ -9,6 +10,7 @@
 #    define DLLEXPORT __declspec(dllexport)
 #    define DLLEXPORT_DECLARATION __cdecl
 #endif
+
 #include <gumpp.hpp>
 #include <string>
 #include <string_view>
