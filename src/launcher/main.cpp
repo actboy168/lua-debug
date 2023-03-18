@@ -43,7 +43,7 @@ namespace luadebug::autoattach {
             return attach_status::fatal;
         }
         auto root = r.value().parent_path().parent_path();
-        auto buf = readfile(root / "script" / "attach.lua");
+        auto buf  = readfile(root / "script" / "attach.lua");
         if (lua::loadbuffer(L, buf.data(), buf.size(), "=(attach.lua)")) {
             log::fatal("load attach.lua error: {}", lua::tostring(L, -1));
             lua::pop(L, 1);
