@@ -252,18 +252,6 @@ Debugger address.
         },
         type = "string",
     },
-    signature = {
-        default = "null",
-        type = "object",
-        markdownDescription = "signature info",
-        properties = {
-            module = {
-                default = "null",
-                type = "string",
-                markdownDescription = "lua module path or name",
-            },
-        },
-    }
 }
 
 if OS == "win32" then
