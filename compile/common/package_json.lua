@@ -296,7 +296,7 @@ if OS == "win32" or OS == "darwin" then
         markdownDescription = "Name of process to attach to.",
         type = "string",
     }
-    json.activationEvents[#json.activationEvents + 1] = "onCommand:extension.lua-debug.pickProcess"
+    json.activationEvents[#json.activationEvents+1] = "onCommand:extension.lua-debug.pickProcess"
     json.contributes.debuggers[1].variables = {
         pickProcess = "extension.lua-debug.pickProcess",
     }
@@ -366,8 +366,7 @@ attributes.launch = {
         default = {
             PATH = "${workspaceFolder}",
         },
-        markdownDescription =
-        "Environment variables passed to the program. The value `null` removes thevariable from the environment.",
+        markdownDescription = "Environment variables passed to the program. The value `null` removes thevariable from the environment.",
         type = "object",
     },
     console = {
@@ -406,7 +405,7 @@ attributes.launch = {
 
 if OS == "win32" or OS == "darwin" then
     local snippets = json.contributes.debuggers[1].configurationSnippets
-    snippets[#snippets + 1] = {
+    snippets[#snippets+1] = {
         label = "Lua Debug: Launch Process",
         description = "A new configuration for launching a lua process",
         body = {
@@ -418,7 +417,7 @@ if OS == "win32" or OS == "darwin" then
             runtimeArgs = "^\"\\${workspaceFolder}/${2:main.lua}\"",
         }
     }
-    snippets[#snippets + 1] = {
+    snippets[#snippets+1] = {
         label = "Lua Debug: Attach Process",
         description = "A new configuration for attaching a lua debug program",
         body = {
@@ -471,7 +470,7 @@ local function SupportedArchs()
     end
 end
 
-local Archs = { SupportedArchs() }
+local Archs = {SupportedArchs()}
 attributes.launch.luaArch.default = Archs[1]
 attributes.launch.luaArch.enum = Archs
 
@@ -480,12 +479,12 @@ for k, v in pairs(attributes.common) do
     attributes.launch[k] = v
 end
 json.contributes.debuggers[1].configurationAttributes = {
-    launch = { properties = attributes.launch },
-    attach = { properties = attributes.attach },
+    launch = {properties=attributes.launch},
+    attach = {properties=attributes.attach},
 }
 
 local configuration = json.contributes.configuration.properties
-for _, name in ipairs { "luaArch", "luaVersion", "sourceCoding", "path", "cpath", "console" } do
+for _, name in ipairs {"luaArch", "luaVersion", "sourceCoding", "path", "cpath","console"} do
     local attr = attributes.launch[name] or attributes.attach[name]
     if attr then
         local cfg = {}
