@@ -1,16 +1,15 @@
 #include <autoattach/autoattach.h>
 #include <autoattach/lua_module.h>
 #include <autoattach/wait_dll.h>
-#include <util/log.h>
-#include <resolver/lua_resolver.h>
-#include <config/config.h>
-
 #include <bee/nonstd/format.h>
-#include <string>
-#include <memory>
-#include <thread>
+#include <resolver/lua_resolver.h>
+#include <util/log.h>
+
 #include <atomic>
 #include <gumpp.hpp>
+#include <memory>
+#include <string>
+#include <thread>
 
 namespace luadebug::autoattach {
     fn_attach debuggerAttach;
@@ -34,8 +33,8 @@ namespace luadebug::autoattach {
         return false;
     }
 
-    attach_status attach_lua_vm(lua::state L) {
-        return debuggerAttach(L);
+    attach_status attach_lua_vm(lua::state L, lua_version version) {
+        return debuggerAttach(L, version);
     }
 
     void start() {
@@ -43,7 +42,7 @@ namespace luadebug::autoattach {
             log::info("can't load config");
             return;
         }
-        bool found = false;
+        bool found    = false;
         lua_module rm = {};
         Gum::Process::enumerate_modules([&rm, &found](const Gum::ModuleDetails& details) -> bool {
             if (is_lua_module(details.path())) {

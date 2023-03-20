@@ -16,18 +16,14 @@ local function getUnixAddress(pid)
     return "@"..(path / ("pid_%d"):format(pid)):string()
 end
 
-local function ipc_send_latest(pid)
-    fs.create_directories(WORKDIR / "tmp")
-    local ipc = require "common.ipc"
-    local fd = assert(ipc(WORKDIR, pid, "luaVersion", "w"))
-    fd:write("latest")
-    fd:close()
-end
-
-local function ipc_send_config(pid, config)
+local function ipc_send_config(pid, args)
     fs.create_directories(WORKDIR / "tmp")
     local ipc = require "common.ipc"
     local fd = assert(ipc(WORKDIR, pid, "config", "w"))
+    local config = {
+        version = args.luaVersion,
+        module = args.module
+    }
     fd:write(json.encode(config))
     fd:close()
 end
@@ -65,10 +61,7 @@ end
 
 local function attach_process(pkg, pid)
     local args = pkg.arguments
-    if args.luaVersion == "latest" then
-        ipc_send_latest(pid)
-    end
-    ipc_send_config(pid, args.signature)
+    ipc_send_config(pid, args)
     local ok, errmsg = process_inject.inject(pid, "attach", args)
     if not ok then
         return false, errmsg
@@ -173,10 +166,7 @@ local function proxy_launch_console(pkg)
             server, address = create_server(args, process:get_id())
 
             if type(address) == "number" then
-                if args.luaVersion == "latest" then
-                    ipc_send_latest(address)
-                end
-                ipc_send_config(address, args.signature)
+                ipc_send_config(address, args)
             end
         end)
         if not process then
