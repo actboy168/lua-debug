@@ -85,8 +85,8 @@ local function get_executable(platform_arch)
     local bin_dir = fs.path("build") / platform_arch
 
     local modes = {
-        "debug",
         "release",
+        "debug",
     }
     for _, mode in ipairs(modes) do
         local executable = bin_dir / mode / "bin" / "signature_compiler"
