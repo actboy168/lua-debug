@@ -106,7 +106,7 @@ function visitor.getuservaluev(ud, index)
 end
 
 ---
----@param t refvalue
+---@param t any
 ---@param key integer
 ---@return refvalue
 ---访问表，key的类型必须是整数。等同于t[key]。
@@ -115,7 +115,7 @@ function visitor.index(t, key)
 end
 
 ---
----@param t refvalue
+---@param t any
 ---@param key integer
 ---@return light-refvalue
 ---访问表，key的类型必须是整数。等同于t[key]。
@@ -124,7 +124,7 @@ function visitor.indexv(t, key)
 end
 
 ---
----@param t refvalue
+---@param t any
 ---@param key string
 ---@return refvalue
 ---访问表，key的类型必须是字符串。等同于t[key]。
@@ -133,7 +133,7 @@ function visitor.field(t, key)
 end
 
 ---
----@param t refvalue
+---@param t any
 ---@param key string
 ---@return light-refvalue
 ---访问表，key的类型必须是字符串。等同于t[key]。
@@ -142,7 +142,7 @@ function visitor.fieldv(t, key)
 end
 
 ---
----@param t refvalue
+---@param t any
 ---@param limit integer | nil
 ---@return refvalue[]
 ---返回table哈希部分的值，返回最多limit个，如果没有limit则返回所有的值。
@@ -152,7 +152,7 @@ function visitor.tablehash(t, limit)
 end
 
 ---
----@param t refvalue
+---@param t any
 ---@param limit integer | nil
 ---@return light-refvalue[]
 ---返回table哈希部分的值，返回最多limit个，如果没有limit则返回所有的值。
@@ -162,7 +162,7 @@ function visitor.tablehashv(t, limit)
 end
 
 ---
----@param t refvalue
+---@param t any
 ---@return integer
 ---@return integer
 ---返回table数组部分和哈希部分的长度。
@@ -171,7 +171,7 @@ function visitor.tablesize(t)
 end
 
 ---
----@param t refvalue
+---@param t any
 ---@param i integer
 ---@return string
 ---@return integer

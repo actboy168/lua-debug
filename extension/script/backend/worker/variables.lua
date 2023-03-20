@@ -105,9 +105,6 @@ local function getGlobal(frameId)
     rdebug.getinfo(frameId, "f", info)
     local name, value = rdebug.getupvaluev(info.func, 1)
     if name == "_ENV" then
-        if rdebug.type(value) ~= "table" then
-            return
-        end
         return value, "_ENV"
     end
     return rdebug._G, "_G"
@@ -155,7 +152,7 @@ end
 
 function special_has.Global(frameId)
     local global = getGlobal(frameId)
-    if not global then
+    if global == nil or rdebug.type(global) ~= "table" then
         return false
     end
     local asize, hsize = rdebug.tablesize(global)
@@ -597,7 +594,7 @@ local function varCreateScopes(frameId, scopes, name, expensive)
     }
     if name == "Global" then
         local global, eval = getGlobal(frameId)
-        if global then
+        if global ~= nil and rdebug.type(global) == "table" then
             local scope = scopes[#scopes]
             local asize, hsize = rdebug.tablesize(global)
             scope.indexedVariables = asize + 1
@@ -1021,7 +1018,7 @@ local function extandGlobalNamed(varRef)
     local frameId = varRef.frameId
     local vars = {}
     local global, eval = getGlobal(frameId)
-    if not global then
+    if global == nil or rdebug.type(global) ~= "table" then
         return vars
     end
     local loct = rdebug.tablehash(global, MAX_TABLE_FIELD)
@@ -1056,7 +1053,7 @@ function special_extand.Standard(varRef)
     local frameId = varRef.frameId
     local vars = {}
     local global, eval = getGlobal(frameId)
-    if not global then
+    if global == nil or rdebug.type(global) ~= "table" then
         return vars
     end
     for name in pairs(standard) do
@@ -1390,7 +1387,7 @@ end
 
 function m.tostring(v)
     local meta = rdebug.getmetatablev(v)
-    if rdebug.type(meta) == "table" then
+    if meta ~= nil then
         local fn = rdebug.fieldv(meta, '__tostring')
         if fn ~= nil and (rdebug.type(fn) == 'function' or rdebug.type(fn) == 'c function') then
             local ok, res = rdebug.eval(fn, v)
@@ -1408,7 +1405,7 @@ function m.tostring(v)
     then
         return tostring(rdebug.value(v))
     end
-    if rdebug.type(meta) == "table" then
+    if meta ~= nil then
         local name = rdebug.fieldv(meta, '__name')
         if name ~= nil then
             type = tostring(rdebug.value(name))

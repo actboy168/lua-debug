@@ -348,47 +348,59 @@ eval_value_(lua_State* cL, struct value* v) {
     return LUA_TNONE;
 }
 
-static int
-copy_from_dbg(luadbg_State* from, lua_State* to) {
-    if (lua_checkstack(to, 1) == 0) {
-        return luadbgL_error(from, "stack overflow");
+static void checkstack(luadbg_State* L, lua_State* cL, int sz) {
+    if (lua_checkstack(cL, 1) == 0) {
+        luadbgL_error(L, "stack overflow");
     }
-    int t = luadbg_type(from, -1);
+}
+
+static int copy_from_dbg(luadbg_State* from, lua_State* to, int idx = -1) {
+    checkstack(from, to, 1);
+    int t = luadbg_type(from, idx);
     switch (t) {
     case LUA_TNIL:
         lua_pushnil(to);
         break;
     case LUA_TBOOLEAN:
-        lua_pushboolean(to, luadbg_toboolean(from, -1));
+        lua_pushboolean(to, luadbg_toboolean(from, idx));
         break;
     case LUA_TNUMBER:
-        if (luadbg_isinteger(from, -1)) {
-            lua_pushinteger(to, (lua_Integer)luadbg_tointeger(from, -1));
+        if (luadbg_isinteger(from, idx)) {
+            lua_pushinteger(to, (lua_Integer)luadbg_tointeger(from, idx));
         }
         else {
-            lua_pushnumber(to, luadbg_tonumber(from, -1));
+            lua_pushnumber(to, (lua_Number)luadbg_tonumber(from, idx));
         }
         break;
     case LUA_TSTRING: {
         size_t sz;
-        const char* str = luadbg_tolstring(from, -1, &sz);
+        const char* str = luadbg_tolstring(from, idx, &sz);
         lua_pushlstring(to, str, sz);
         break;
     }
     case LUA_TLIGHTUSERDATA:
-        lua_pushlightuserdata(to, luadbg_touserdata(from, -1));
+        lua_pushlightuserdata(to, luadbg_touserdata(from, idx));
         break;
     case LUA_TUSERDATA: {
-        if (lua_checkstack(to, 3) == 0) {
-            return luadbgL_error(from, "stack overflow");
-        }
-        struct value* v = (struct value*)luadbg_touserdata(from, -1);
+        checkstack(from, to, 3);
+        struct value* v = (struct value*)luadbg_touserdata(from, idx);
         return eval_value_(to, v);
     }
     default:
         return LUA_TNONE;
     }
     return t;
+}
+
+static bool copy_from_dbg(luadbg_State* from, lua_State* to, int idx, int type) {
+    int t = copy_from_dbg(from, to, 1);
+    if (t == type) {
+        return true;
+    }
+    if (t != LUA_TNONE) {
+        lua_pop(to, 1);
+    }
+    return false;
 }
 
 // assign cL top into ref object in L. pop cL.
@@ -532,9 +544,7 @@ get_frame_local(luadbg_State* L, lua_State* cL, uint16_t frame, int16_t n, int g
     if (lua_getstack(cL, frame, &ar) == 0) {
         return NULL;
     }
-    if (lua_checkstack(cL, 1) == 0) {
-        luadbgL_error(L, "stack overflow");
-    }
+    checkstack(L, cL, 1);
     const char* name = lua_getlocal(cL, &ar, n);
     if (name == NULL)
         return NULL;
@@ -553,27 +563,6 @@ static void
 get_frame_func(luadbg_State* L, int frame) {
     struct value* v = create_value(L, VAR::FRAME_FUNC);
     v->index        = frame;
-}
-
-// table key
-static int
-table_key(luadbg_State* L, lua_State* cL) {
-    if (lua_checkstack(cL, 3) == 0) {
-        return luadbgL_error(L, "stack overflow");
-    }
-    luadbg_insert(L, -2);  // L : key table
-    if (copy_from_dbg(L, cL) != LUA_TTABLE) {
-        lua_pop(cL, 1);    // pop table
-        luadbg_pop(L, 2);  // pop k/t
-        return 0;
-    }
-    luadbg_insert(L, -2);                     // L : table key
-    if (copy_from_dbg(L, cL) == LUA_TNONE) {  // key
-        lua_pop(cL, 1);                       // pop table
-        luadbg_pop(L, 2);                     // pop k/t
-        return 0;
-    }
-    return 1;
 }
 
 // table key
@@ -687,8 +676,7 @@ get_registry(luadbg_State* L, VAR type) {
 
 static int
 get_metatable(luadbg_State* L, lua_State* cL, int getref) {
-    if (lua_checkstack(cL, 2) == 0)
-        luadbgL_error(L, "stack overflow");
+    checkstack(L, cL, 2);
     int t = copy_from_dbg(L, cL);
     if (t == LUA_TNONE) {
         luadbg_pop(L, 1);
@@ -722,8 +710,7 @@ get_metatable(luadbg_State* L, lua_State* cL, int getref) {
 
 static int
 get_uservalue(luadbg_State* L, lua_State* cL, int index, int getref) {
-    if (lua_checkstack(cL, 2) == 0)
-        return luadbgL_error(L, "stack overflow");
+    checkstack(L, cL, 2);
     int t = copy_from_dbg(L, cL);
     if (t == LUA_TNONE) {
         luadbg_pop(L, 1);
@@ -824,25 +811,14 @@ lclient_getlocalv(luadbg_State* L) {
 
 static int
 client_index(luadbg_State* L, int getref) {
-    lua_State* cL = luadebug::debughost::get(L);
-    if (luadbg_gettop(L) != 2) {
-        return luadbgL_error(L, "need table key");
-    }
-    luadbg_Integer i = luadbgL_checkinteger(L, 2);
-#ifdef LUAJIT_VERSION
-    if (i < 0 || i > (std::numeric_limits<int>::max)()) {
-#else
-    if (i <= 0 || i > (std::numeric_limits<int>::max)()) {
-#endif
-        return luadbgL_error(L, "must be `unsigned int`");
-    }
-    if (table_key(L, cL) == 0)
+    lua_State* cL        = luadebug::debughost::get(L);
+    luadbg_Integer index = luadbgL_checkinteger(L, 2);
+    if (!copy_from_dbg(L, cL, 1, LUA_TTABLE)) {
         return 0;
-    if (lua_type(cL, -2) != LUA_TTABLE) {
-        lua_pop(cL, 2);
-        return luadbgL_error(L, "#1 is not a table");
     }
-    lua_rawget(cL, -2);  // cL : table value
+    checkstack(L, cL, 1);
+    lua_pushinteger(cL, (lua_Integer)index);
+    lua_rawget(cL, -2);
     combine_index(L, cL, getref);
     return 1;
 }
@@ -859,18 +835,15 @@ lclient_indexv(luadbg_State* L) {
 
 static int
 client_field(luadbg_State* L, int getref) {
-    lua_State* cL = luadebug::debughost::get(L);
-    if (luadbg_gettop(L) != 2) {
-        return luadbgL_error(L, "need table key");
-    }
-    luadbgL_checktype(L, 2, LUA_TSTRING);
-    if (table_key(L, cL) == 0)
+    lua_State* cL     = luadebug::debughost::get(L);
+    size_t field_sz   = 0;
+    const char* field = luadbgL_checklstring(L, 2, &field_sz);
+    if (!copy_from_dbg(L, cL, 1, LUA_TTABLE)) {
         return 0;
-    if (lua_type(cL, -2) != LUA_TTABLE) {
-        lua_pop(cL, 2);
-        return luadbgL_error(L, "#1 is not a table");
     }
-    lua_rawget(cL, -2);  // cL : table value
+    checkstack(L, cL, 1);
+    lua_pushlstring(cL, field, field_sz);
+    lua_rawget(cL, -2);
     combine_field(L, cL, getref);
     return 1;
 }
@@ -890,11 +863,8 @@ tablehash(luadbg_State* L, int ref) {
     lua_State* cL       = luadebug::debughost::get(L);
     luadbg_Integer maxn = luadbgL_optinteger(L, 2, std::numeric_limits<unsigned int>::max());
     luadbg_settop(L, 1);
-    if (lua_checkstack(cL, 4) == 0) {
-        return luadbgL_error(L, "stack overflow");
-    }
-    if (copy_from_dbg(L, cL) != LUA_TTABLE) {
-        lua_pop(cL, 1);
+    checkstack(L, cL, 4);
+    if (!copy_from_dbg(L, cL, 1, LUA_TTABLE)) {
         return 0;
     }
     const void* t = lua_topointer(cL, -1);
@@ -951,8 +921,7 @@ lclient_tablehashv(luadbg_State* L) {
 static int
 lclient_tablesize(luadbg_State* L) {
     lua_State* cL = luadebug::debughost::get(L);
-    if (copy_from_dbg(L, cL) != LUA_TTABLE) {
-        lua_pop(cL, 1);
+    if (!copy_from_dbg(L, cL, 1, LUA_TTABLE)) {
         return 0;
     }
     const void* t = lua_topointer(cL, -1);
@@ -971,11 +940,8 @@ lclient_tablekey(luadbg_State* L) {
     lua_State* cL    = luadebug::debughost::get(L);
     unsigned int idx = (unsigned int)luadbgL_optinteger(L, 2, 0);
     luadbg_settop(L, 1);
-    if (lua_checkstack(cL, 2) == 0) {
-        return luadbgL_error(L, "stack overflow");
-    }
-    if (copy_from_dbg(L, cL) != LUA_TTABLE) {
-        lua_pop(cL, 1);
+    checkstack(L, cL, 2);
+    if (!copy_from_dbg(L, cL, 1, LUA_TTABLE)) {
         return 0;
     }
     const void* t = lua_topointer(cL, -1);
@@ -1091,8 +1057,7 @@ lclient_value(luadbg_State* L) {
 static int
 lclient_assign(luadbg_State* L) {
     lua_State* cL = luadebug::debughost::get(L);
-    if (lua_checkstack(cL, 2) == 0)
-        return luadbgL_error(L, "stack overflow");
+    checkstack(L, cL, 2);
     luadbg_settop(L, 2);
     if (copy_from_dbg(L, cL) == LUA_TNONE) {
         if (luadbg_type(L, 2) != LUA_TUSERDATA) {
@@ -1100,8 +1065,7 @@ lclient_assign(luadbg_State* L) {
         }
         lua_pushnil(cL);
     }
-    if (lua_checkstack(cL, 3) == 0)
-        return luadbgL_error(L, "stack overflow");
+    checkstack(L, cL, 3);
     luadbgL_checktype(L, 1, LUA_TUSERDATA);
     struct value* ref = (struct value*)luadbg_touserdata(L, 1);
     int r             = assign_value(ref, cL);
@@ -1143,8 +1107,7 @@ lclient_type(luadbg_State* L) {
         luadbgL_error(L, "unexpected type: %s", luadbg_typename(L, luadbg_type(L, 1)));
         return 1;
     }
-    if (lua_checkstack(cL, 3) == 0)
-        return luadbgL_error(L, "stack overflow");
+    checkstack(L, cL, 3);
     luadbg_settop(L, 1);
     struct value* v = (struct value*)luadbg_touserdata(L, 1);
     int t           = eval_value_(cL, v);
@@ -1442,9 +1405,7 @@ eval_copy_args(luadbg_State* from, lua_State* to) {
     int t = copy_from_dbg(from, to);
     if (t == LUA_TNONE) {
         if (luadbg_type(from, -1) == LUA_TTABLE) {
-            if (lua_checkstack(to, 3) == 0) {
-                return luadbgL_error(from, "stack overflow");
-            }
+            checkstack(from, to, 3);
             lua_newtable(to);
             luadbg_pushnil(from);
             while (luadbg_next(from, -2)) {
@@ -1467,9 +1428,7 @@ static int
 lclient_eval(luadbg_State* L) {
     lua_State* cL = luadebug::debughost::get(L);
     int nargs     = luadbg_gettop(L);
-    if (lua_checkstack(cL, nargs) == 0) {
-        return luadbgL_error(L, "stack overflow");
-    }
+    checkstack(L, cL, nargs);
     for (int i = 1; i <= nargs; ++i) {
         luadbg_pushvalue(L, i);
         int t = eval_copy_args(L, cL);
@@ -1511,9 +1470,7 @@ lclient_watch(luadbg_State* L) {
     lua_State* cL = luadebug::debughost::get(L);
     int n         = lua_gettop(cL);
     int nargs     = luadbg_gettop(L);
-    if (lua_checkstack(cL, nargs) == 0) {
-        return luadbgL_error(L, "stack overflow");
-    }
+    checkstack(L, cL, nargs);
     for (int i = 1; i <= nargs; ++i) {
         luadbg_pushvalue(L, i);
         int t = eval_copy_args(L, cL);
@@ -1529,9 +1486,7 @@ lclient_watch(luadbg_State* L) {
         lua_pop(cL, 1);
         return 2;
     }
-    if (lua_checkstack(cL, 3) == 0) {
-        return luadbgL_error(L, "stack overflow");
-    }
+    checkstack(L, cL, 3);
     luadbg_pushboolean(L, 1);
     int rets = lua_gettop(cL) - n;
     luadbgL_checkstack(L, rets, NULL);
