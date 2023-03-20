@@ -11,6 +11,7 @@ local MAX_TABLE_FIELD <const> = 1000
 local TABLE_VALUE_MAXLEN <const> = 32
 local LUAVERSION = 54
 local isjit = false
+local arrayBase = 1
 
 local info = {}
 local varPool = {}
@@ -91,6 +92,7 @@ ev.on('initializing', function(config)
     showIntegerAsHex = config.configuration.variables.showIntegerAsHex
     LUAVERSION = luaver.LUAVERSION
     isjit = luaver.isjit
+    arrayBase = isjit and 0 or 1
     init_standard()
 end)
 
@@ -370,10 +372,10 @@ local function varGetShortValue(value)
 end
 
 local function varGetTableValue(t)
-    local asize = rdebug.tablesize(t)
     local str = ''
-    for i = 1, asize do
-        local v = rdebug.indexv(t, i)
+    local loct = rdebug.tablearrayv(t)
+    for i = 1, #loct do
+        local v = loct[i]
         if str == '' then
             str = varGetShortValue(v)
         else
@@ -384,7 +386,7 @@ local function varGetTableValue(t)
         end
     end
 
-    local loct = rdebug.tablehashv(t, SHORT_TABLE_FIELD)
+    local loct = rdebug.tablehashv(t, 0, SHORT_TABLE_FIELD)
     local kvs = {}
     for i = 1, #loct, 2 do
         local key, value = loct[i], loct[i + 1]
@@ -571,7 +573,7 @@ local function varCreateReference(value, evaluateName, presentationHint, context
         result.variablesReference = #varPool
         if type == "table" then
             local asize, hsize = rdebug.tablesize(value)
-            result.indexedVariables = asize + 1
+            result.indexedVariables = arrayBase + asize
             result.namedVariables = hsize
         end
     end
@@ -597,7 +599,7 @@ local function varCreateScopes(frameId, scopes, name, expensive)
         if global ~= nil and rdebug.type(global) == "table" then
             local scope = scopes[#scopes]
             local asize, hsize = rdebug.tablesize(global)
-            scope.indexedVariables = asize + 1
+            scope.indexedVariables = arrayBase + asize
             scope.namedVariables = hsize
             local var = varPool[#varPool]
             var.v = global
@@ -692,20 +694,21 @@ local function extandTableIndexed(varRef, start, count)
     local evaluateName = varRef.eval
     local vars = {}
     local last = start + count - 1
-    if start <= 0 then
-        start = 1
+    if start < arrayBase then
+        start = arrayBase
     end
-    for key = start, last do
-        local value = rdebug.indexv(t, key)
+    local loct = rdebug.tablearray(t, start, last)
+    for i = 1, #loct, 2 do
+        local value, valueref = loct[i], loct[i + 1]
         if value ~= nil then
-            local name = (key > 0 and key < 1000) and ('[%03d]'):format(key) or ('%d'):format(key)
+            local name = (i < 1000) and ('[%03d]'):format(i) or ('%d'):format(i)
             varCreate {
                 vars = vars,
                 varRef = varRef,
                 name = name,
                 value = value,
-                evaluateName = evaluateName and ('%s[%d]'):format(evaluateName, key),
-                calcValue = function() return rdebug.index(t, key) end,
+                evaluateName = evaluateName and ('%s[%d]'):format(evaluateName, i),
+                calcValue = function() return valueref end,
             }
         end
     end
@@ -717,7 +720,7 @@ local function extandTableNamed(varRef)
     local t = varRef.v
     local evaluateName = varRef.eval
     local vars = {}
-    local loct = rdebug.tablehash(t, MAX_TABLE_FIELD)
+    local loct = rdebug.tablehash(t, 0, MAX_TABLE_FIELD)
     for i = 1, #loct, 3 do
         local key, value, valueref = loct[i], loct[i + 1], loct[i + 2]
         local key_type = rdebug.type(key)
@@ -1021,7 +1024,7 @@ local function extandGlobalNamed(varRef)
     if global == nil or rdebug.type(global) ~= "table" then
         return vars
     end
-    local loct = rdebug.tablehash(global, MAX_TABLE_FIELD)
+    local loct = rdebug.tablehash(global, 0, MAX_TABLE_FIELD)
     for i = 1, #loct, 3 do
         local key, value, valueref = loct[i], loct[i + 1], loct[i + 2]
         if not isStandardName(key) then

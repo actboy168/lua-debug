@@ -41,9 +41,9 @@ enum class VAR : uint8_t {
     METATABLE,    // table.metatable
     USERVALUE,    // userdata.uservalue
     STACK,
-    INDEX_KEY,
-    INDEX_VAL,
-    INDEX_INT,
+    TABLE_ARRAY,
+    TABLE_HASH_KEY,
+    TABLE_HASH_VAL,
     INDEX_STR,
 };
 
@@ -77,9 +77,9 @@ sizeof_value(struct value* v) {
         // go through
     case VAR::UPVALUE:
     case VAR::USERVALUE:
-    case VAR::INDEX_KEY:
-    case VAR::INDEX_VAL:
-    case VAR::INDEX_INT:
+    case VAR::TABLE_ARRAY:
+    case VAR::TABLE_HASH_KEY:
+    case VAR::TABLE_HASH_VAL:
         return sizeof_value(v + 1) + sizeof(struct value);
     }
     return 0;
@@ -144,7 +144,7 @@ static void
 get_registry_value(luadbg_State* L, const char* name, int ref) {
     size_t len      = strlen(name);
     struct value* v = (struct value*)luadbg_newuserdata(L, 3 * sizeof(struct value) + len);
-    v->type         = VAR::INDEX_INT;
+    v->type         = VAR::TABLE_ARRAY;
     v->index        = ref;
     v++;
 
@@ -217,20 +217,6 @@ eval_value_(lua_State* cL, struct value* v) {
             break;
         return LUA_TFUNCTION;
     }
-    case VAR::INDEX_INT: {
-        int t = eval_value_(cL, v + 1);
-        if (t == LUA_TNONE)
-            break;
-        if (t != LUA_TTABLE) {
-            // only table can be index
-            lua_pop(cL, 1);
-            break;
-        }
-        lua_pushinteger(cL, (lua_Integer)v->index);
-        lua_rawget(cL, -2);
-        lua_replace(cL, -2);
-        return lua_type(cL, -1);
-    }
     case VAR::INDEX_STR: {
         int t = eval_value_(cL, (struct value*)((const char*)(v + 1) + v->index));
         if (t == LUA_TNONE)
@@ -245,19 +231,27 @@ eval_value_(lua_State* cL, struct value* v) {
         lua_replace(cL, -2);
         return lua_type(cL, -1);
     }
-    case VAR::INDEX_KEY:
-    case VAR::INDEX_VAL: {
+    case VAR::TABLE_ARRAY:
+    case VAR::TABLE_HASH_KEY:
+    case VAR::TABLE_HASH_VAL: {
         int t = eval_value_(cL, v + 1);
         if (t == LUA_TNONE)
             break;
         if (t != LUA_TTABLE) {
-            // only table can be index
             lua_pop(cL, 1);
             break;
         }
-        bool ok = v->type == VAR::INDEX_KEY
-                      ? luadebug::table::get_k(cL, -1, v->index)
-                      : luadebug::table::get_v(cL, -1, v->index);
+        const void* tv = lua_topointer(cL, -1);
+        if (!tv) {
+            lua_pop(cL, 1);
+            break;
+        }
+        bool ok = v->type == VAR::TABLE_ARRAY
+                      ? luadebug::table::get_array(cL, tv, v->index)
+                      : (v->type == VAR::TABLE_HASH_KEY
+                             ? luadebug::table::get_hash_k(cL, tv, v->index)
+                             : luadebug::table::get_hash_v(cL, tv, v->index)
+                        );
         if (!ok) {
             lua_pop(cL, 1);
             break;
@@ -429,20 +423,6 @@ assign_value(struct value* v, lua_State* cL) {
     case VAR::STACK:
         // Can't assign frame func, etc.
         break;
-    case VAR::INDEX_INT: {
-        int t = eval_value_(cL, v + 1);
-        if (t == LUA_TNONE)
-            break;
-        if (t != LUA_TTABLE) {
-            // only table can be index
-            break;
-        }
-        lua_pushinteger(cL, (lua_Integer)v->index);  // key, table, value, ...
-        lua_pushvalue(cL, -3);                       // value, key, table, value, ...
-        lua_rawset(cL, -3);                          // table, value, ...
-        lua_pop(cL, 2);
-        return 1;
-    }
     case VAR::INDEX_STR: {
         int t = eval_value_(cL, (struct value*)((const char*)(v + 1) + v->index));
         if (t == LUA_TNONE)
@@ -457,9 +437,10 @@ assign_value(struct value* v, lua_State* cL) {
         lua_pop(cL, 2);
         return 1;
     }
-    case VAR::INDEX_KEY:
+    case VAR::TABLE_HASH_KEY:
         break;
-    case VAR::INDEX_VAL: {
+    case VAR::TABLE_ARRAY:
+    case VAR::TABLE_HASH_VAL: {
         int t = eval_value_(cL, v + 1);
         if (t == LUA_TNONE)
             break;
@@ -467,7 +448,14 @@ assign_value(struct value* v, lua_State* cL) {
             break;
         }
         lua_insert(cL, -2);
-        if (!luadebug::table::set_v(cL, -2, v->index)) {
+        const void* tv = lua_topointer(cL, -2);
+        if (!tv) {
+            break;
+        }
+        bool ok = v->type == VAR::TABLE_ARRAY
+                      ? luadebug::table::set_array(cL, tv, v->index)
+                      : luadebug::table::set_hash_v(cL, tv, v->index);
+        if (!ok) {
             break;
         }
         lua_pop(cL, 1);
@@ -569,33 +557,10 @@ get_frame_func(luadbg_State* L, int frame) {
     v->index        = frame;
 }
 
-// table key
-static void
-new_index(luadbg_State* L) {
-    struct value* v = create_value(L, VAR::INDEX_INT, -2);
-    v->type         = VAR::INDEX_INT;
-    v->index        = (int)luadbg_tointeger(L, -2);
-}
-
-// input cL : table key [value]
-// input L :  table key
-// output cL :
-// output L : v(key or value)
-static void
-combine_index(luadbg_State* L, lua_State* cL, int getref) {
-    if (!getref && copy_to_dbg(cL, L) != LUA_TNONE) {
-        lua_pop(cL, 2);
-        // L : t, k, v
-        luadbg_replace(L, -3);
-        luadbg_pop(L, 1);
-        return;
-    }
-    lua_pop(cL, 2);  // pop t v from cL
-    // L : t, k
-    new_index(L);
-    // L : t, k, v
-    luadbg_replace(L, -3);
-    luadbg_pop(L, 1);
+static void new_table_array(luadbg_State* L, unsigned int index) {
+    struct value* v = create_value(L, VAR::TABLE_ARRAY, -2);
+    v->type         = VAR::TABLE_ARRAY;
+    v->index        = index;
 }
 
 // table key
@@ -758,14 +723,14 @@ combine_key(luadbg_State* L, lua_State* cL, int t, int index) {
         return;
     }
     lua_pop(cL, 1);
-    struct value* v = create_value(L, VAR::INDEX_KEY, t);
+    struct value* v = create_value(L, VAR::TABLE_HASH_KEY, t);
     v->index        = index;
 }
 
 static void
 combine_val(luadbg_State* L, lua_State* cL, int t, int index, int ref) {
     if (ref) {
-        struct value* v = create_value(L, VAR::INDEX_VAL, t);
+        struct value* v = create_value(L, VAR::TABLE_HASH_VAL, t);
         v->index        = index;
         if (copy_to_dbg(cL, L) == LUA_TNONE) {
             luadbg_pushvalue(L, -1);
@@ -774,7 +739,7 @@ combine_val(luadbg_State* L, lua_State* cL, int t, int index, int ref) {
         return;
     }
     if (copy_to_dbg(cL, L) == LUA_TNONE) {
-        struct value* v = create_value(L, VAR::INDEX_VAL, t);
+        struct value* v = create_value(L, VAR::TABLE_HASH_VAL, t);
         v->index        = index;
     }
     lua_pop(cL, 1);
@@ -804,29 +769,6 @@ lclient_getlocalv(luadbg_State* L, lua_State* cL) {
 }
 
 static int
-client_index(luadbg_State* L, lua_State* cL, int getref) {
-    auto index = protected_area::checkinteger<lua_Integer>(L, 2);
-    if (!copy_from_dbg(L, cL, 1, LUA_TTABLE)) {
-        return 0;
-    }
-    checkstack(L, cL, 1);
-    lua_pushinteger(cL, index);
-    lua_rawget(cL, -2);
-    combine_index(L, cL, getref);
-    return 1;
-}
-
-static int
-lclient_index(luadbg_State* L, lua_State* cL) {
-    return client_index(L, cL, 1);
-}
-
-static int
-lclient_indexv(luadbg_State* L, lua_State* cL) {
-    return client_index(L, cL, 0);
-}
-
-static int
 client_field(luadbg_State* L, lua_State* cL, int getref) {
     auto field = protected_area::checkstring(L, 2);
     if (!copy_from_dbg(L, cL, 1, LUA_TTABLE)) {
@@ -850,28 +792,76 @@ lclient_fieldv(luadbg_State* L, lua_State* cL) {
 }
 
 static int
-tablehash(luadbg_State* L, lua_State* cL, int ref) {
-    luadbg_Integer maxn = luadbgL_optinteger(L, 2, std::numeric_limits<unsigned int>::max());
+client_tablearray(luadbg_State* L, lua_State* cL, int ref) {
+    unsigned int base = luadebug::table::array_base_zero() ? 0 : 1;
+    unsigned int i    = protected_area::optinteger<unsigned int>(L, 2, base);
+    unsigned int j    = protected_area::optinteger<unsigned int>(L, 3, std::numeric_limits<unsigned int>::max());
     luadbg_settop(L, 1);
     checkstack(L, cL, 4);
     if (!copy_from_dbg(L, cL, 1, LUA_TTABLE)) {
         return 0;
     }
-    const void* t = lua_topointer(cL, -1);
-    if (!t) {
+    const void* tv = lua_topointer(cL, -1);
+    if (!tv) {
         lua_pop(cL, 1);
         return 0;
     }
     luadbg_newtable(L);
-    luadbg_Integer n   = 0;
-    unsigned int hsize = luadebug::table::hash_size(t);
-    unsigned int i     = 0;
-    for (; i < hsize; ++i) {
-        if (luadebug::table::get_kv(cL, t, i)) {
-            if (--maxn < 0) {
-                lua_pop(cL, 3);
-                return 1;
+    luadbg_Integer n = 0;
+    i                = std::max(i, base);
+    j                = std::min(j, luadebug::table::array_size(tv));
+    for (; i < j; ++i) {
+        bool ok = luadebug::table::get_array(cL, tv, i);
+        (void)ok;
+        assert(ok);
+        if (ref) {
+            new_table_array(L, i);
+            if (copy_to_dbg(cL, L) == LUA_TNONE) {
+                luadbg_pushvalue(L, -1);
             }
+            luadbg_rawseti(L, -3, ++n);
+        }
+        else {
+            if (copy_to_dbg(cL, L) == LUA_TNONE) {
+                new_table_array(L, i);
+            }
+        }
+        luadbg_rawseti(L, -2, ++n);
+        lua_pop(cL, 1);
+    }
+    lua_pop(cL, 1);
+    return 1;
+}
+
+static int
+lclient_tablearray(luadbg_State* L, lua_State* cL) {
+    return client_tablearray(L, cL, 1);
+}
+
+static int
+lclient_tablearrayv(luadbg_State* L, lua_State* cL) {
+    return client_tablearray(L, cL, 0);
+}
+
+static int
+tablehash(luadbg_State* L, lua_State* cL, int ref) {
+    unsigned int i = protected_area::optinteger<unsigned int>(L, 2, 0);
+    unsigned int j = protected_area::optinteger<unsigned int>(L, 3, std::numeric_limits<unsigned int>::max());
+    luadbg_settop(L, 1);
+    checkstack(L, cL, 4);
+    if (!copy_from_dbg(L, cL, 1, LUA_TTABLE)) {
+        return 0;
+    }
+    const void* tv = lua_topointer(cL, -1);
+    if (!tv) {
+        lua_pop(cL, 1);
+        return 0;
+    }
+    luadbg_newtable(L);
+    luadbg_Integer n = 0;
+    j                = std::min(j, luadebug::table::hash_size(tv));
+    for (; i < j; ++i) {
+        if (luadebug::table::get_hash_kv(cL, tv, i)) {
             combine_key(L, cL, 1, i);
             luadbg_rawseti(L, -2, ++n);
             combine_val(L, cL, 1, i, ref);
@@ -880,19 +870,6 @@ tablehash(luadbg_State* L, lua_State* cL, int ref) {
             }
             luadbg_rawseti(L, -2, ++n);
         }
-    }
-    if (luadebug::table::get_zero(cL, t)) {
-        if (--maxn < 0) {
-            lua_pop(cL, 3);
-            return 1;
-        }
-        combine_key(L, cL, 1, i);
-        luadbg_rawseti(L, -2, ++n);
-        combine_val(L, cL, 1, i, ref);
-        if (ref) {
-            luadbg_rawseti(L, -3, ++n);
-        }
-        luadbg_rawseti(L, -2, ++n);
     }
     lua_pop(cL, 1);
     return 1;
@@ -919,7 +896,7 @@ lclient_tablesize(luadbg_State* L, lua_State* cL) {
         return 0;
     }
     luadbg_pushinteger(L, luadebug::table::array_size(t));
-    luadbg_pushinteger(L, luadebug::table::hash_size(t) + (luadebug::table::has_zero(t) ? 1 : 0));
+    luadbg_pushinteger(L, luadebug::table::hash_size(t));
     lua_pop(cL, 1);
     return 2;
 }
@@ -939,7 +916,7 @@ lclient_tablekey(luadbg_State* L, lua_State* cL) {
     }
     unsigned int hsize = luadebug::table::hash_size(t);
     for (unsigned int i = idx; i < hsize; ++i) {
-        if (luadebug::table::get_k(cL, t, i)) {
+        if (luadebug::table::get_hash_k(cL, t, i)) {
             if (lua_type(cL, -1) == LUA_TSTRING) {
                 size_t sz;
                 const char* str = lua_tolstring(cL, -1, &sz);
@@ -1565,10 +1542,10 @@ int init_visitor(luadbg_State* L) {
         { "getmetatablev", protected_call<lclient_getmetatablev> },
         { "getuservalue", protected_call<lclient_getuservalue> },
         { "getuservaluev", protected_call<lclient_getuservaluev> },
-        { "index", protected_call<lclient_index> },
-        { "indexv", protected_call<lclient_indexv> },
         { "field", protected_call<lclient_field> },
         { "fieldv", protected_call<lclient_fieldv> },
+        { "tablearray", protected_call<lclient_tablearray> },
+        { "tablearrayv", protected_call<lclient_tablearrayv> },
         { "tablehash", protected_call<lclient_tablehash> },
         { "tablehashv", protected_call<lclient_tablehashv> },
         { "tablesize", protected_call<lclient_tablesize> },

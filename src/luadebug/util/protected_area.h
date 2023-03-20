@@ -75,6 +75,31 @@ namespace luadebug {
             }
         }
 
+        template <typename T>
+        static T optinteger(luadbg_State* L, int arg, T def) {
+            static_assert(std::is_trivial_v<T>);
+            if constexpr (std::is_enum_v<T>) {
+                using UT = std::underlying_type_t<T>;
+                return static_cast<T>(optinteger<UT>(L, arg, std::to_underlying(def)));
+            }
+            else if constexpr (sizeof(T) != sizeof(luadbg_Integer)) {
+                static_assert(std::is_integral_v<T>);
+                static_assert(sizeof(T) < sizeof(luadbg_Integer));
+                luadbg_Integer r = optinteger<luadbg_Integer>(L, arg, static_cast<luadbg_Integer>(def));
+                if (checklimit<T>(r)) {
+                    return static_cast<T>(r);
+                }
+                luadbgL_error(L, "bad argument '#%d' limit exceeded", arg);
+                std::unreachable();
+            }
+            else if constexpr (!std::is_same_v<T, luadbg_Integer>) {
+                return std::bit_cast<T>(optinteger<luadbg_Integer>(L, arg, std::bit_cast<luadbg_Integer>(def)));
+            }
+            else {
+                return luadbgL_optinteger(L, arg, def);
+            }
+        }
+
         static inline bee::zstring_view checkstring(luadbg_State* L, int arg) {
             size_t sz;
             const char* s = luadbg_tolstring(L, arg, &sz);

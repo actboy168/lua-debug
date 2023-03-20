@@ -107,24 +107,6 @@ end
 
 ---
 ---@param t any
----@param key integer
----@return refvalue
----访问表，key的类型必须是整数。等同于t[key]。
----
-function visitor.index(t, key)
-end
-
----
----@param t any
----@param key integer
----@return light-refvalue
----访问表，key的类型必须是整数。等同于t[key]。
----
-function visitor.indexv(t, key)
-end
-
----
----@param t any
 ---@param key string
 ---@return refvalue
 ---访问表，key的类型必须是字符串。等同于t[key]。
@@ -143,22 +125,46 @@ end
 
 ---
 ---@param t any
----@param limit integer | nil
----@return refvalue[]
----返回table哈希部分的值，返回最多limit个，如果没有limit则返回所有的值。
----返回值是一个数组，tablehash每三个值分别为key/value/value(ref)；tablehashv每两个值分别为key/value。
+---@param i? integer
+---@param j? integer
+---@return refvalue
+---返回table数组部分的值，从i到j。
+---返回值是一个数组，tablearray每两个个值分别为value/value(ref)；tablehashv的值为value。
 ---
-function visitor.tablehash(t, limit)
+function visitor.tablearray(t, i, j)
 end
 
 ---
 ---@param t any
----@param limit integer | nil
----@return light-refvalue[]
----返回table哈希部分的值，返回最多limit个，如果没有limit则返回所有的值。
+---@param i? integer
+---@param j? integer
+---@return light-refvalue
+---返回table数组部分的值，从i到j。
+---返回值是一个数组，tablearray每两个个值分别为value/value(ref)；tablehashv的值为value。
+---
+function visitor.tablearrayv(t, i, j)
+end
+
+---
+---@param t any
+---@param i? integer
+---@param j? integer
+---@return refvalue[]
+---返回table哈希部分的值，从i到j。
 ---返回值是一个数组，tablehash每三个值分别为key/value/value(ref)；tablehashv每两个值分别为key/value。
 ---
-function visitor.tablehashv(t, limit)
+function visitor.tablehash(t, i, j)
+end
+
+---
+---@param t any
+---@param i? integer
+---@param j? integer
+---@return light-refvalue[]
+---返回table哈希部分的值，从i到j。
+---返回值是一个数组，tablehash每三个值分别为key/value/value(ref)；tablehashv每两个值分别为key/value。
+---
+function visitor.tablehashv(t, i, j)
 end
 
 ---
