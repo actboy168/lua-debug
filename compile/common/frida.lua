@@ -24,6 +24,11 @@ lm:source_set "frida" {
             '/wd5051',
         }
     },
+    macos = {
+        frameworks = {
+            "CoreFoundation",
+        }
+    },
     sources = {
         "3rd/frida_gum/gumpp/src/*.cpp",
     },

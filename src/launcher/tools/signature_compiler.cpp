@@ -1,10 +1,11 @@
+#include <bee/nonstd/filesystem.h>
+
 #include <gumpp.hpp>
 #include <iostream>
 #include <list>
+#include <set>
 #include <string>
 #include <string_view>
-#include <bee/nonstd/filesystem.h>
-#include <set>
 
 #ifdef _WIN32
 
@@ -73,15 +74,27 @@ bool starts_with(std::string_view _this, std::string_view __s) _NOEXCEPT {
            _this.compare(0, __s.size(), __s) ==
                0;
 }
+constexpr auto insn_max_limit = 100;
+constexpr auto insn_min_limit = 4;
 
-bool compiler_signature(const char* name, void* address, std::list<Pattern>& patterns) {
-    auto signature = Gum::get_function_signature(address, 255);
-    const auto& pattern = signature.pattern;
+bool compiler_signature(const char* name, void* address, std::list<Pattern>& patterns, int limit = insn_min_limit) {
+    auto signature                  = Gum::get_function_signature(address, limit);
+    auto& pattern                   = signature.pattern;
     std::vector<void*> find_address = Gum::search_module_function(module_name, pattern.c_str());
+    if (find_address.size() > 1 && limit <= insn_max_limit) {
+        return compiler_signature(name, address, patterns, limit + 1);
+    }
     if (find_address.size() != 1) {
         std::cerr << name << " address:" << address << " pattern:" << pattern << std::endl;
         if (find_address.empty()) {
-            std::cerr << name << ": invalid pattern[can't search pattern]" << std::endl;
+            for (size_t i = 0; i < pattern.size(); i += 9) {
+                if (i + 8 < pattern.size()) {
+                    pattern.insert(i + 8, "\n");
+                }
+            }
+            std::cerr << name << ": invalid pattern[can't search pattern]\n"
+                      << pattern << std::endl;
+            exit(1);
         }
         else {
             if (find_address.size() > 8) {
@@ -95,7 +108,7 @@ bool compiler_signature(const char* name, void* address, std::list<Pattern>& pat
             }
         }
     }
-    bool isvalid = false;
+    bool isvalid  = false;
     size_t offset = 0;
     for (auto addr : find_address) {
         if ((void*)((uint8_t*)addr + signature.offset) == address) {
@@ -125,13 +138,13 @@ int main(int narg, const char* argvs[]) {
 
     Gum::runtime_init();
     auto import_file = std::filesystem::absolute(argvs[1]).generic_string();
-    auto is_string = argvs[2] == "true"sv ? true : false;
+    auto is_string   = argvs[2] == "true"sv ? true : false;
     std::set<std::string> imports_names;
     if (auto ec = imports(import_file, is_string, imports_names); ec != 0) {
         return ec;
     }
     auto target_path = std::filesystem::absolute(argvs[3]).generic_string();
-    auto is_export = argvs[4] == "true"sv ? true : false;
+    auto is_export   = argvs[4] == "true"sv ? true : false;
     std::string error;
     module_name = target_path.c_str();
     std::cerr << "signature:" << module_name << std::endl;
