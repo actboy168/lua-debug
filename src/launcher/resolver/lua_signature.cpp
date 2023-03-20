@@ -30,7 +30,7 @@ namespace luadebug::autoattach {
             });
 
             auto hit_index = all_address.size() > hit_offset ? hit_offset : 0;
-            find_address = all_address[hit_index];
+            find_address   = all_address[hit_index];
         }
         if (find_address != 0)
             return (uintptr_t)((uint8_t*)find_address + pattern_offset);

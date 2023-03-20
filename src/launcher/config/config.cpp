@@ -1,19 +1,16 @@
-#include <config/config.h>
 #include <autoattach/lua_module.h>
+#include <bee/nonstd/filesystem.h>
+#include <bee/nonstd/format.h>
+#include <bee/utility/path_helper.h>
+#include <config/config.h>
 #include <resolver/lua_signature.h>
 #include <util/log.h>
 
 #include <fstream>
-#include <iostream>
-#include <string_view>
-
-#include <bee/nonstd/filesystem.h>
-#include <bee/nonstd/format.h>
-#include <bee/utility/path_helper.h>
-
 #include <gumpp.hpp>
-
+#include <iostream>
 #include <nlohmann/json.hpp>
+#include <string_view>
 
 using namespace std::string_view_literals;
 namespace luadebug::autoattach {
@@ -32,7 +29,7 @@ namespace luadebug::autoattach {
 
     std::optional<signture> Config::get_lua_signature(const std::string& key) const {
         const auto signture_key = "functions"sv;
-        auto it = values->find(signture_key);
+        auto it                 = values->find(signture_key);
         if (it == values->end()) {
             return std::nullopt;
         }
@@ -72,7 +69,7 @@ namespace luadebug::autoattach {
 
     bool Config::init_from_file() {
         config.values = std::make_unique<nlohmann::json>();
-        auto dllpath = bee::path_helper::dll_path();
+        auto dllpath  = bee::path_helper::dll_path();
         if (!dllpath) {
             return false;
         }

@@ -1,9 +1,9 @@
+#include <config/config.h>
 #include <resolver/lua_resolver.h>
+#include <resolver/lua_signature.h>
 
 #include <gumpp.hpp>
 #include <string_view>
-#include <resolver/lua_signature.h>
-#include <config/config.h>
 
 namespace luadebug {
     static int (*_lua_pcall)(intptr_t L, int nargs, int nresults, int errfunc);

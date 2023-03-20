@@ -25,7 +25,7 @@ local function scan(dir, platform_arch)
                 else
                     t.lua_modlue = dir_path / "lua"
                 end
-                luadebug_files[#luadebug_files + 1] = t
+                luadebug_files[#luadebug_files+1] = t
             end
         end
     end
@@ -59,7 +59,9 @@ local function compiler(executable, import_file, is_string, lua_modlue)
     local res = {}
     for line in process.stdout:lines() do
         local name, pattern, offset, hit_offset = line:match([[(.+):([0-9a-f%?]+)%(([%-%+]?%d+)%)@([%-%+]?%d+)]])
-        res[#res + 1] = {
+        offset = offset ~= "0" and tonumber(offset) or nil
+        hit_offset = hit_offset ~= "0" and tonumber(hit_offset) or nil
+        res[#res+1] = {
             name = name,
             pattern = pattern,
             offset = offset,
@@ -78,7 +80,6 @@ local function compiler(executable, import_file, is_string, lua_modlue)
 end
 
 local output_dir = fs.path("publish") / "signature"
-fs.create_directories(output_dir)
 
 local function get_executable(platform_arch)
     local bin_dir = fs.path("build") / platform_arch
@@ -98,22 +99,22 @@ local function get_executable(platform_arch)
 end
 
 for _, t in ipairs(luadebug_files) do
-    if t.platform_arch:find("arm64") then
-        local lua_modlue = t.lua_modlue
-        local executable = get_executable(t.platform_arch)
-        local t1 = compiler(executable, launcher_path, true, lua_modlue)
-        local t2 = compiler(executable, t.luadebug, false, lua_modlue)
-        local signatures = table.pack(table.unpack(t1), table.unpack(t2))
-        local output = {}
-        for i, signature in ipairs(signatures) do
-            output[signature.name] = {
-                pattern = signature.pattern,
-                offset = signature.offset,
-                hit_offset = signature.hit_offset,
-            }
-        end
-        local file = io.open((output_dir / (t.version..".json")):string(), "w")
-        file:write(json.beautify(output))
-        file:close()
+    local output_dir = output_dir / t.platform_arch
+    fs.create_directories(output_dir)
+    local lua_modlue = t.lua_modlue
+    local executable = get_executable(t.platform_arch)
+    local t1 = compiler(executable, launcher_path, true, lua_modlue)
+    local t2 = compiler(executable, t.luadebug, false, lua_modlue)
+    local signatures = table.pack(table.unpack(t1), table.unpack(t2))
+    local output = {}
+    for _, signature in ipairs(signatures) do
+        output[signature.name] = {
+            pattern = signature.pattern,
+            offset = signature.offset,
+            hit_offset = signature.hit_offset,
+        }
     end
+    local file = io.open((output_dir / (t.version..".json")):string(), "w")
+    file:write(json.beautify(output))
+    file:close()
 end
