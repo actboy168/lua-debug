@@ -253,7 +253,7 @@ Debugger address.
         type = "string",
     },
     module = {
-        defualt = "null",
+        default = "null",
         markdownDescription = "specify lua module path/name",
         type = "string",
     }
