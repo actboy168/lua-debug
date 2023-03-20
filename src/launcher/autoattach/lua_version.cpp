@@ -13,6 +13,8 @@ namespace luadebug::autoattach {
             return "lua54";
         case lua_version::luajit:
             return "luajit";
+        case lua_version::latest:
+            return "lua-latest";
         default:
             return "unknown";
         }
@@ -28,6 +30,8 @@ namespace luadebug::autoattach {
             return lua_version::lua53;
         else if (v == "5.4" || v == "lua54")
             return lua_version::lua54;
+        else if (v == "latest" || v == "lua-latest")
+            return lua_version::latest;
         return lua_version::unknown;
     }
 }
