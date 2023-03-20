@@ -69,7 +69,7 @@ int imports(std::string file_path, bool is_string, std::set<std::string>& import
 #endif
     return 0;
 }
-bool starts_with(std::string_view _this, std::string_view __s) _NOEXCEPT {
+bool starts_with(std::string_view _this, std::string_view __s) noexcept {
     return _this.size() >= __s.size() &&
            _this.compare(0, __s.size(), __s) ==
                0;
