@@ -9,6 +9,10 @@
 #include "rdebug_debughost.h"
 #include "rdebug_lua.h"
 #include "rdebug_table.h"
+#include "util/protected_area.h"
+
+using luadebug::protected_area;
+using luadebug::protected_call;
 
 static int debug_pcall(lua_State* L, int nargs, int nresults, int errfunc) {
 #ifdef LUAJIT_VERSION
@@ -349,8 +353,8 @@ eval_value_(lua_State* cL, struct value* v) {
 }
 
 static void checkstack(luadbg_State* L, lua_State* cL, int sz) {
-    if (lua_checkstack(cL, 1) == 0) {
-        luadbgL_error(L, "stack overflow");
+    if (lua_checkstack(cL, sz) == 0) {
+        protected_area::raise_error(L, cL, "stack overflow");
     }
 }
 
@@ -393,7 +397,7 @@ static int copy_from_dbg(luadbg_State* from, lua_State* to, int idx = -1) {
 }
 
 static bool copy_from_dbg(luadbg_State* from, lua_State* to, int idx, int type) {
-    int t = copy_from_dbg(from, to, 1);
+    int t = copy_from_dbg(from, to, idx);
     if (t == type) {
         return true;
     }
@@ -650,7 +654,7 @@ get_upvalue(luadbg_State* L, lua_State* cL, int index, int getref) {
 
     if (!getref && copy_to_dbg(cL, L) != LUA_TNONE) {
         luadbg_replace(L, -2);  // remove function object
-        lua_pop(cL, 1);
+        lua_pop(cL, 2);
         return name;
     }
     lua_pop(cL, 2);  // remove func / upvalue
@@ -776,20 +780,10 @@ combine_val(luadbg_State* L, lua_State* cL, int t, int index, int ref) {
     lua_pop(cL, 1);
 }
 
-// frame, index
-// return value, name
-static int
-client_getlocal(luadbg_State* L, int getref) {
-    luadbg_Integer frame = luadbgL_checkinteger(L, 1);
-    luadbg_Integer index = luadbgL_checkinteger(L, 2);
-    if (frame < 0 || frame > (std::numeric_limits<uint16_t>::max)()) {
-        return luadbgL_error(L, "frame must be `uint16_t`");
-    }
-    if (index == 0 || index > (std::numeric_limits<uint8_t>::max)() || -index > (std::numeric_limits<uint8_t>::max)()) {
-        return luadbgL_error(L, "index must be `uint8_t`");
-    }
-    lua_State* cL    = luadebug::debughost::get(L);
-    const char* name = get_frame_local(L, cL, (uint16_t)frame, (int16_t)index, getref);
+static int client_getlocal(luadbg_State* L, lua_State* cL, int getref) {
+    auto frame       = protected_area::checkinteger<uint16_t>(L, 1);
+    auto index       = protected_area::checkinteger<int16_t>(L, 2);
+    const char* name = get_frame_local(L, cL, frame, index, getref);
     if (name) {
         luadbg_pushstring(L, name);
         luadbg_insert(L, -2);
@@ -800,67 +794,63 @@ client_getlocal(luadbg_State* L, int getref) {
 }
 
 static int
-lclient_getlocal(luadbg_State* L) {
-    return client_getlocal(L, 1);
+lclient_getlocal(luadbg_State* L, lua_State* cL) {
+    return client_getlocal(L, cL, 1);
 }
 
 static int
-lclient_getlocalv(luadbg_State* L) {
-    return client_getlocal(L, 0);
+lclient_getlocalv(luadbg_State* L, lua_State* cL) {
+    return client_getlocal(L, cL, 0);
 }
 
 static int
-client_index(luadbg_State* L, int getref) {
-    lua_State* cL        = luadebug::debughost::get(L);
-    luadbg_Integer index = luadbgL_checkinteger(L, 2);
+client_index(luadbg_State* L, lua_State* cL, int getref) {
+    auto index = protected_area::checkinteger<lua_Integer>(L, 2);
     if (!copy_from_dbg(L, cL, 1, LUA_TTABLE)) {
         return 0;
     }
     checkstack(L, cL, 1);
-    lua_pushinteger(cL, (lua_Integer)index);
+    lua_pushinteger(cL, index);
     lua_rawget(cL, -2);
     combine_index(L, cL, getref);
     return 1;
 }
 
 static int
-lclient_index(luadbg_State* L) {
-    return client_index(L, 1);
+lclient_index(luadbg_State* L, lua_State* cL) {
+    return client_index(L, cL, 1);
 }
 
 static int
-lclient_indexv(luadbg_State* L) {
-    return client_index(L, 0);
+lclient_indexv(luadbg_State* L, lua_State* cL) {
+    return client_index(L, cL, 0);
 }
 
 static int
-client_field(luadbg_State* L, int getref) {
-    lua_State* cL     = luadebug::debughost::get(L);
-    size_t field_sz   = 0;
-    const char* field = luadbgL_checklstring(L, 2, &field_sz);
+client_field(luadbg_State* L, lua_State* cL, int getref) {
+    auto field = protected_area::checkstring(L, 2);
     if (!copy_from_dbg(L, cL, 1, LUA_TTABLE)) {
         return 0;
     }
     checkstack(L, cL, 1);
-    lua_pushlstring(cL, field, field_sz);
+    lua_pushlstring(cL, field.data(), field.size());
     lua_rawget(cL, -2);
     combine_field(L, cL, getref);
     return 1;
 }
 
 static int
-lclient_field(luadbg_State* L) {
-    return client_field(L, 1);
+lclient_field(luadbg_State* L, lua_State* cL) {
+    return client_field(L, cL, 1);
 }
 
 static int
-lclient_fieldv(luadbg_State* L) {
-    return client_field(L, 0);
+lclient_fieldv(luadbg_State* L, lua_State* cL) {
+    return client_field(L, cL, 0);
 }
 
 static int
-tablehash(luadbg_State* L, int ref) {
-    lua_State* cL       = luadebug::debughost::get(L);
+tablehash(luadbg_State* L, lua_State* cL, int ref) {
     luadbg_Integer maxn = luadbgL_optinteger(L, 2, std::numeric_limits<unsigned int>::max());
     luadbg_settop(L, 1);
     checkstack(L, cL, 4);
@@ -909,18 +899,17 @@ tablehash(luadbg_State* L, int ref) {
 }
 
 static int
-lclient_tablehash(luadbg_State* L) {
-    return tablehash(L, 1);
+lclient_tablehash(luadbg_State* L, lua_State* cL) {
+    return tablehash(L, cL, 1);
 }
 
 static int
-lclient_tablehashv(luadbg_State* L) {
-    return tablehash(L, 0);
+lclient_tablehashv(luadbg_State* L, lua_State* cL) {
+    return tablehash(L, cL, 0);
 }
 
 static int
-lclient_tablesize(luadbg_State* L) {
-    lua_State* cL = luadebug::debughost::get(L);
+lclient_tablesize(luadbg_State* L, lua_State* cL) {
     if (!copy_from_dbg(L, cL, 1, LUA_TTABLE)) {
         return 0;
     }
@@ -936,8 +925,7 @@ lclient_tablesize(luadbg_State* L) {
 }
 
 static int
-lclient_tablekey(luadbg_State* L) {
-    lua_State* cL    = luadebug::debughost::get(L);
+lclient_tablekey(luadbg_State* L, lua_State* cL) {
     unsigned int idx = (unsigned int)luadbgL_optinteger(L, 2, 0);
     luadbg_settop(L, 1);
     checkstack(L, cL, 2);
@@ -968,17 +956,12 @@ lclient_tablekey(luadbg_State* L) {
 }
 
 static int
-lclient_udread(luadbg_State* L) {
-    lua_State* cL         = luadebug::debughost::get(L);
-    luadbg_Integer offset = luadbgL_checkinteger(L, 2);
-    luadbg_Integer count  = luadbgL_checkinteger(L, 3);
+lclient_udread(luadbg_State* L, lua_State* cL) {
+    auto offset = protected_area::checkinteger<luadbg_Integer>(L, 2);
+    auto count  = protected_area::checkinteger<luadbg_Integer>(L, 3);
     luadbg_settop(L, 1);
-    if (copy_from_dbg(L, cL) == LUA_TNONE) {
-        return luadbgL_error(L, "Need userdata");
-    }
-    if (lua_type(cL, -1) != LUA_TUSERDATA) {
-        lua_pop(cL, 1);
-        return luadbgL_error(L, "Need userdata");
+    if (!copy_from_dbg(L, cL, 1, LUA_TUSERDATA)) {
+        return 0;
     }
     const char* memory = (const char*)lua_touserdata(cL, -1);
     size_t len         = (size_t)lua_rawlen(cL, -1);
@@ -995,19 +978,13 @@ lclient_udread(luadbg_State* L) {
 }
 
 static int
-lclient_udwrite(luadbg_State* L) {
-    lua_State* cL         = luadebug::debughost::get(L);
-    luadbg_Integer offset = luadbgL_checkinteger(L, 2);
-    size_t count          = 0;
-    const char* data      = luadbgL_checklstring(L, 3, &count);
-    int allowPartial      = luadbg_toboolean(L, 4);
+lclient_udwrite(luadbg_State* L, lua_State* cL) {
+    auto offset      = protected_area::checkinteger<luadbg_Integer>(L, 2);
+    auto data        = protected_area::checkstring(L, 3);
+    int allowPartial = luadbg_toboolean(L, 4);
     luadbg_settop(L, 1);
-    if (copy_from_dbg(L, cL) == LUA_TNONE) {
-        return luadbgL_error(L, "Need userdata");
-    }
-    if (lua_type(cL, -1) != LUA_TUSERDATA) {
-        lua_pop(cL, 1);
-        return luadbgL_error(L, "Need userdata");
+    if (!copy_from_dbg(L, cL, 1, LUA_TUSERDATA)) {
+        return 0;
     }
     const char* memory = (const char*)lua_touserdata(cL, -1);
     size_t len         = (size_t)lua_rawlen(cL, -1);
@@ -1017,19 +994,18 @@ lclient_udwrite(luadbg_State* L) {
             luadbg_pushinteger(L, 0);
             return 1;
         }
-        size_t bytesWritten = std::min(count, (size_t)(len - offset));
-        memcpy((void*)(memory + offset), data, bytesWritten);
+        size_t bytesWritten = std::min(data.size(), (size_t)(len - offset));
+        memcpy((void*)(memory + offset), data.data(), bytesWritten);
         lua_pop(cL, 1);
         luadbg_pushinteger(L, bytesWritten);
         return 1;
     }
     else {
-        if (offset < 0 || (size_t)offset + count > len) {
+        if (offset < 0 || (size_t)offset + data.size() > len) {
             lua_pop(cL, 1);
-            luadbg_pushboolean(L, 0);
             return 0;
         }
-        memcpy((void*)(memory + offset), data, count);
+        memcpy((void*)(memory + offset), data.data(), data.size());
         lua_pop(cL, 1);
         luadbg_pushboolean(L, 1);
         return 1;
@@ -1037,8 +1013,7 @@ lclient_udwrite(luadbg_State* L) {
 }
 
 static int
-lclient_value(luadbg_State* L) {
-    lua_State* cL = luadebug::debughost::get(L);
+lclient_value(luadbg_State* L, lua_State* cL) {
     luadbg_settop(L, 1);
     if (copy_from_dbg(L, cL) == LUA_TNONE) {
         luadbg_pop(L, 1);
@@ -1055,18 +1030,13 @@ lclient_value(luadbg_State* L) {
 // any value
 // ref = value
 static int
-lclient_assign(luadbg_State* L) {
-    lua_State* cL = luadebug::debughost::get(L);
-    checkstack(L, cL, 2);
-    luadbg_settop(L, 2);
-    if (copy_from_dbg(L, cL) == LUA_TNONE) {
-        if (luadbg_type(L, 2) != LUA_TUSERDATA) {
-            return luadbgL_error(L, "Invalid value type %s", luadbg_typename(L, luadbg_type(L, 2)));
-        }
-        lua_pushnil(cL);
-    }
+lclient_assign(luadbg_State* L, lua_State* cL) {
     checkstack(L, cL, 3);
+    luadbg_settop(L, 2);
     luadbgL_checktype(L, 1, LUA_TUSERDATA);
+    if (copy_from_dbg(L, cL) == LUA_TNONE) {
+        return 0;
+    }
     struct value* ref = (struct value*)luadbg_touserdata(L, 1);
     int r             = assign_value(ref, cL);
     luadbg_pushboolean(L, r);
@@ -1074,8 +1044,7 @@ lclient_assign(luadbg_State* L) {
 }
 
 static int
-lclient_type(luadbg_State* L) {
-    lua_State* cL = luadebug::debughost::get(L);
+lclient_type(luadbg_State* L, lua_State* cL) {
     switch (luadbg_type(L, 1)) {
     case LUA_TNIL:
         luadbg_pushstring(L, "nil");
@@ -1104,7 +1073,7 @@ lclient_type(luadbg_State* L) {
     case LUA_TUSERDATA:
         break;
     default:
-        luadbgL_error(L, "unexpected type: %s", luadbg_typename(L, luadbg_type(L, 1)));
+        luadbg_pushstring(L, "unexpected");
         return 1;
     }
     checkstack(L, cL, 3);
@@ -1159,10 +1128,9 @@ lclient_type(luadbg_State* L) {
 }
 
 static int
-client_getupvalue(luadbg_State* L, int getref) {
-    int index = (int)luadbgL_checkinteger(L, 2);
+client_getupvalue(luadbg_State* L, lua_State* cL, int getref) {
+    auto index = protected_area::checkinteger<int>(L, 2);
     luadbg_settop(L, 1);
-    lua_State* cL = luadebug::debughost::get(L);
 
     const char* name = get_upvalue(L, cL, index, getref);
     if (name) {
@@ -1175,19 +1143,18 @@ client_getupvalue(luadbg_State* L, int getref) {
 }
 
 static int
-lclient_getupvalue(luadbg_State* L) {
-    return client_getupvalue(L, 1);
+lclient_getupvalue(luadbg_State* L, lua_State* cL) {
+    return client_getupvalue(L, cL, 1);
 }
 
 static int
-lclient_getupvaluev(luadbg_State* L) {
-    return client_getupvalue(L, 0);
+lclient_getupvaluev(luadbg_State* L, lua_State* cL) {
+    return client_getupvalue(L, cL, 0);
 }
 
 static int
-client_getmetatable(luadbg_State* L, int getref) {
+client_getmetatable(luadbg_State* L, lua_State* cL, int getref) {
     luadbg_settop(L, 1);
-    lua_State* cL = luadebug::debughost::get(L);
     if (get_metatable(L, cL, getref)) {
         return 1;
     }
@@ -1195,20 +1162,19 @@ client_getmetatable(luadbg_State* L, int getref) {
 }
 
 static int
-lclient_getmetatable(luadbg_State* L) {
-    return client_getmetatable(L, 1);
+lclient_getmetatable(luadbg_State* L, lua_State* cL) {
+    return client_getmetatable(L, cL, 1);
 }
 
 static int
-lclient_getmetatablev(luadbg_State* L) {
-    return client_getmetatable(L, 0);
+lclient_getmetatablev(luadbg_State* L, lua_State* cL) {
+    return client_getmetatable(L, cL, 0);
 }
 
 static int
-client_getuservalue(luadbg_State* L, int getref) {
+client_getuservalue(luadbg_State* L, lua_State* cL, int getref) {
     int n = (int)luadbgL_optinteger(L, 2, 1);
     luadbg_settop(L, 1);
-    lua_State* cL = luadebug::debughost::get(L);
     if (get_uservalue(L, cL, n, getref)) {
         luadbg_pushboolean(L, 1);
         return 2;
@@ -1217,30 +1183,26 @@ client_getuservalue(luadbg_State* L, int getref) {
 }
 
 static int
-lclient_getuservalue(luadbg_State* L) {
-    return client_getuservalue(L, 1);
+lclient_getuservalue(luadbg_State* L, lua_State* cL) {
+    return client_getuservalue(L, cL, 1);
 }
 
 static int
-lclient_getuservaluev(luadbg_State* L) {
-    return client_getuservalue(L, 0);
+lclient_getuservaluev(luadbg_State* L, lua_State* cL) {
+    return client_getuservalue(L, cL, 0);
 }
 
 static int
-lclient_getinfo(luadbg_State* L) {
+lclient_getinfo(luadbg_State* L, lua_State* cL) {
     luadbg_settop(L, 3);
-    size_t optlen       = 0;
-    const char* options = luadbgL_checklstring(L, 2, &optlen);
-    if (optlen > 7) {
-        return luadbgL_error(L, "invalid option");
-    }
-    bool hasf = false;
-    int frame = 0;
-    int size  = 0;
+    auto options = protected_area::checkstring(L, 2);
+    bool hasf    = false;
+    int frame    = 0;
+    int size     = 0;
 #ifdef LUAJIT_VERSION
     bool hasSFlag = false;
 #endif
-    for (const char* what = options; *what; what++) {
+    for (const char* what = options.data(); *what; what++) {
         switch (*what) {
         case 'S':
             size += 5;
@@ -1272,7 +1234,7 @@ lclient_getinfo(luadbg_State* L) {
             break;
 #endif
         default:
-            return luadbgL_error(L, "invalid option");
+            return protected_area::raise_error(L, cL, "invalid option");
         }
     }
     if (luadbg_type(L, 3) != LUA_TTABLE) {
@@ -1280,15 +1242,14 @@ lclient_getinfo(luadbg_State* L) {
         luadbg_createtable(L, 0, size);
     }
 
-    lua_State* cL = luadebug::debughost::get(L);
     lua_Debug ar;
 
     switch (luadbg_type(L, 1)) {
     case LUA_TNUMBER:
-        frame = (int)luadbgL_checkinteger(L, 1);
+        frame = protected_area::checkinteger<int>(L, 1);
         if (lua_getstack(cL, frame, &ar) == 0)
             return 0;
-        if (lua_getinfo(cL, options, &ar) == 0)
+        if (lua_getinfo(cL, options.data(), &ar) == 0)
             return 0;
         if (hasf) lua_pop(cL, 1);
         break;
@@ -1297,23 +1258,23 @@ lclient_getinfo(luadbg_State* L) {
         int t = copy_from_dbg(L, cL);
         if (t != LUA_TFUNCTION) {
             if (t != LUA_TNONE) {
-                lua_pop(cL, 1);  // remove none function
+                lua_pop(cL, 1);
             }
-            return luadbgL_error(L, "Need a function ref, It's %s", luadbg_typename(L, t));
+            return protected_area::raise_error(L, cL, "Need a function ref");
         }
         if (hasf) {
-            return luadbgL_error(L, "invalid option");
+            return protected_area::raise_error(L, cL, "invalid option");
         }
         luadbg_pop(L, 1);
         char what[8];
         what[0] = '>';
-        strcpy(what + 1, options);
+        strcpy(what + 1, options.data());
         if (lua_getinfo(cL, what, &ar) == 0)
             return 0;
         break;
     }
     default:
-        return luadbgL_error(L, "Need stack level (integer) or function ref, It's %s", luadbg_typename(L, luadbg_type(L, 1)));
+        return protected_area::raise_error(L, cL, "Need stack level (integer) or function ref");
     }
 #ifdef LUAJIT_VERSION
     if (hasSFlag && strcmp(ar.what, "main") == 0) {
@@ -1323,7 +1284,7 @@ lclient_getinfo(luadbg_State* L) {
     }
 #endif
 
-    for (const char* what = options; *what; what++) {
+    for (const char* what = options.data(); *what; what++) {
         switch (*what) {
         case 'S':
 #if LUA_VERSION_NUM >= 504
@@ -1385,11 +1346,9 @@ lclient_getinfo(luadbg_State* L) {
 }
 
 static int
-lclient_load(luadbg_State* L) {
-    size_t len       = 0;
-    const char* func = luadbgL_checklstring(L, 1, &len);
-    lua_State* cL    = luadebug::debughost::get(L);
-    if (luaL_loadbuffer(cL, func, len, "=")) {
+lclient_load(luadbg_State* L, lua_State* cL) {
+    auto func = protected_area::checkstring(L, 1);
+    if (luaL_loadbuffer(cL, func.data(), func.size(), "=")) {
         luadbg_pushnil(L);
         luadbg_pushstring(L, lua_tostring(cL, -1));
         lua_pop(cL, 2);
@@ -1425,9 +1384,8 @@ eval_copy_args(luadbg_State* from, lua_State* to) {
 }
 
 static int
-lclient_eval(luadbg_State* L) {
-    lua_State* cL = luadebug::debughost::get(L);
-    int nargs     = luadbg_gettop(L);
+lclient_eval(luadbg_State* L, lua_State* cL) {
+    int nargs = luadbg_gettop(L);
     checkstack(L, cL, nargs);
     for (int i = 1; i <= nargs; ++i) {
         luadbg_pushvalue(L, i);
@@ -1435,7 +1393,7 @@ lclient_eval(luadbg_State* L) {
         luadbg_pop(L, 1);
         if (i == 1 && t != LUA_TFUNCTION) {
             lua_pop(cL, 1);
-            return luadbgL_error(L, "need function");
+            return protected_area::raise_error(L, cL, "need function");
         }
     }
     if (debug_pcall(cL, nargs - 1, 1, 0)) {
@@ -1466,10 +1424,9 @@ addwatch(lua_State* cL, int idx) {
 }
 
 static int
-lclient_watch(luadbg_State* L) {
-    lua_State* cL = luadebug::debughost::get(L);
-    int n         = lua_gettop(cL);
-    int nargs     = luadbg_gettop(L);
+lclient_watch(luadbg_State* L, lua_State* cL) {
+    int n     = lua_gettop(cL);
+    int nargs = luadbg_gettop(L);
     checkstack(L, cL, nargs);
     for (int i = 1; i <= nargs; ++i) {
         luadbg_pushvalue(L, i);
@@ -1477,7 +1434,7 @@ lclient_watch(luadbg_State* L) {
         luadbg_pop(L, 1);
         if (i == 1 && t != LUA_TFUNCTION) {
             lua_pop(cL, 1);
-            return luadbgL_error(L, "need function");
+            return protected_area::raise_error(L, cL, "need function");
         }
     }
     if (debug_pcall(cL, nargs - 1, LUA_MULTRET, 0)) {
@@ -1498,8 +1455,7 @@ lclient_watch(luadbg_State* L) {
 }
 
 static int
-lclient_cleanwatch(luadbg_State* L) {
-    lua_State* cL = luadebug::debughost::get(L);
+lclient_cleanwatch(luadbg_State* L, lua_State* cL) {
     lua_pushnil(cL);
     lua_setfield(cL, LUA_REGISTRYINDEX, "__debugger_watch");
     return 0;
@@ -1522,8 +1478,7 @@ static const char* costatus(lua_State* L, lua_State* co) {
 }
 
 static int
-lclient_costatus(luadbg_State* L) {
-    lua_State* cL = luadebug::debughost::get(L);
+lclient_costatus(luadbg_State* L, lua_State* cL) {
     if (copy_from_dbg(L, cL) == LUA_TNONE) {
         luadbg_pushstring(L, "invalid");
         return 1;
@@ -1540,17 +1495,15 @@ lclient_costatus(luadbg_State* L) {
 }
 
 static int
-lclient_gccount(luadbg_State* L) {
-    lua_State* cL = luadebug::debughost::get(L);
-    int k         = lua_gc(cL, LUA_GCCOUNT, 0);
-    int b         = lua_gc(cL, LUA_GCCOUNTB, 0);
-    size_t m      = ((size_t)k << 10) & (size_t)b;
+lclient_gccount(luadbg_State* L, lua_State* cL) {
+    int k    = lua_gc(cL, LUA_GCCOUNT, 0);
+    int b    = lua_gc(cL, LUA_GCCOUNTB, 0);
+    size_t m = ((size_t)k << 10) & (size_t)b;
     luadbg_pushinteger(L, (luadbg_Integer)m);
     return 1;
 }
 
-static int lclient_cfunctioninfo(luadbg_State* L) {
-    lua_State* cL = luadebug::debughost::get(L);
+static int lclient_cfunctioninfo(luadbg_State* L, lua_State* cL) {
     if (copy_from_dbg(L, cL) == LUA_TNONE) {
         luadbg_pushnil(L);
         return 1;
@@ -1604,35 +1557,35 @@ static int lclient_cfunctioninfo(luadbg_State* L) {
 
 int init_visitor(luadbg_State* L) {
     luadbgL_Reg l[] = {
-        { "getlocal", lclient_getlocal },
-        { "getlocalv", lclient_getlocalv },
-        { "getupvalue", lclient_getupvalue },
-        { "getupvaluev", lclient_getupvaluev },
-        { "getmetatable", lclient_getmetatable },
-        { "getmetatablev", lclient_getmetatablev },
-        { "getuservalue", lclient_getuservalue },
-        { "getuservaluev", lclient_getuservaluev },
-        { "index", lclient_index },
-        { "indexv", lclient_indexv },
-        { "field", lclient_field },
-        { "fieldv", lclient_fieldv },
-        { "tablehash", lclient_tablehash },
-        { "tablehashv", lclient_tablehashv },
-        { "tablesize", lclient_tablesize },
-        { "tablekey", lclient_tablekey },
-        { "udread", lclient_udread },
-        { "udwrite", lclient_udwrite },
-        { "value", lclient_value },
-        { "assign", lclient_assign },
-        { "type", lclient_type },
-        { "getinfo", lclient_getinfo },
-        { "load", lclient_load },
-        { "eval", lclient_eval },
-        { "watch", lclient_watch },
-        { "cleanwatch", lclient_cleanwatch },
-        { "costatus", lclient_costatus },
-        { "gccount", lclient_gccount },
-        { "cfunctioninfo", lclient_cfunctioninfo },
+        { "getlocal", protected_call<lclient_getlocal> },
+        { "getlocalv", protected_call<lclient_getlocalv> },
+        { "getupvalue", protected_call<lclient_getupvalue> },
+        { "getupvaluev", protected_call<lclient_getupvaluev> },
+        { "getmetatable", protected_call<lclient_getmetatable> },
+        { "getmetatablev", protected_call<lclient_getmetatablev> },
+        { "getuservalue", protected_call<lclient_getuservalue> },
+        { "getuservaluev", protected_call<lclient_getuservaluev> },
+        { "index", protected_call<lclient_index> },
+        { "indexv", protected_call<lclient_indexv> },
+        { "field", protected_call<lclient_field> },
+        { "fieldv", protected_call<lclient_fieldv> },
+        { "tablehash", protected_call<lclient_tablehash> },
+        { "tablehashv", protected_call<lclient_tablehashv> },
+        { "tablesize", protected_call<lclient_tablesize> },
+        { "tablekey", protected_call<lclient_tablekey> },
+        { "udread", protected_call<lclient_udread> },
+        { "udwrite", protected_call<lclient_udwrite> },
+        { "value", protected_call<lclient_value> },
+        { "assign", protected_call<lclient_assign> },
+        { "type", protected_call<lclient_type> },
+        { "getinfo", protected_call<lclient_getinfo> },
+        { "load", protected_call<lclient_load> },
+        { "eval", protected_call<lclient_eval> },
+        { "watch", protected_call<lclient_watch> },
+        { "cleanwatch", protected_call<lclient_cleanwatch> },
+        { "costatus", protected_call<lclient_costatus> },
+        { "gccount", protected_call<lclient_gccount> },
+        { "cfunctioninfo", protected_call<lclient_cfunctioninfo> },
         { NULL, NULL },
     };
     luadbg_newtable(L);

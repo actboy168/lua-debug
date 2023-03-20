@@ -1358,11 +1358,11 @@ function m.writeMemory(memoryReference, offset, data, allowPartial)
     elseif memoryRef.type == "userdata" then
         data = base64.decode(data)
         local res = rdebug.udwrite(memoryRef.value, offset, data, allowPartial)
-        if allowPartial then
-            return { bytesWritten = res }
-        end
         if not res then
             return nil, 'Write failed'
+        end
+        if allowPartial then
+            return { bytesWritten = res }
         end
         return {}
     else
