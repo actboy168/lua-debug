@@ -562,7 +562,7 @@ table_key(luadbg_State* L, lua_State* cL) {
         return luadbgL_error(L, "stack overflow");
     }
     luadbg_insert(L, -2);  // L : key table
-    if (s(L, cL) != LUA_TTABLE) {
+    if (copy_from_dbg(L, cL) != LUA_TTABLE) {
         lua_pop(cL, 1);    // pop table
         luadbg_pop(L, 2);  // pop k/t
         return 0;
