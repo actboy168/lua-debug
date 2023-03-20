@@ -9,7 +9,7 @@ namespace luadebug {
         intptr_t find(std::string_view name) const override;
         intptr_t find_export(std::string_view name) const;
         intptr_t find_symbol(std::string_view name) const;
-        intptr_t find_signture(std::string_view name) const;
+        intptr_t find_signature(std::string_view name) const;
         std::string_view module_name;
         std::string version;
     };

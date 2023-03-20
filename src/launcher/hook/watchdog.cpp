@@ -116,7 +116,7 @@ namespace luadebug::autoattach {
 
     void watchdog::attach_lua(lua::state L, lua::debug ar, lua::hook fn) {
         reset_luahook(L, ar);
-        switch (attach_lua_vm(L)) {
+        switch (attach_lua_vm(L, version)) {
         case attach_status::fatal:
         case attach_status::success:
             // TODO: how to free so

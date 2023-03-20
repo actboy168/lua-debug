@@ -23,7 +23,7 @@ namespace luadebug {
         return (intptr_t)Gum::Process::module_find_symbol_by_name(module_name.data(), name.data());
     }
 
-    intptr_t lua_resolver::find_signture(std::string_view name) const {
+    intptr_t lua_resolver::find_signature(std::string_view name) const {
         if (!version.empty()) {
             if (auto signature = autoattach::config.get_lua_signature(version + "." + std::string(name))) {
                 return signature->find(module_name.data());
@@ -38,7 +38,7 @@ namespace luadebug {
 
     intptr_t lua_resolver::find(std::string_view name) const {
         using namespace std::string_view_literals;
-        for (auto& finder : { &lua_resolver::find_export, &lua_resolver::find_symbol, &lua_resolver::find_signture }) {
+        for (auto& finder : { &lua_resolver::find_export, &lua_resolver::find_symbol, &lua_resolver::find_signature }) {
             if (auto result = (this->*finder)(name)) {
                 return result;
             }

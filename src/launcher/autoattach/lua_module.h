@@ -7,14 +7,6 @@
 
 namespace luadebug::autoattach {
     struct watchdog;
-    enum class lua_version {
-        unknown,
-        luajit,
-        lua51,
-        lua52,
-        lua53,
-        lua54,
-    };
     struct lua_module {
         std::string path;
         std::string name;

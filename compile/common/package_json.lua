@@ -252,16 +252,16 @@ Debugger address.
         },
         type = "string",
     },
+    module = {
+        default = "null",
+        markdownDescription = "specify lua module path/name",
+        type = "string",
+    },
     signature = {
         default = "null",
         type = "object",
         markdownDescription = "signature info",
         properties = {
-            module = {
-                default = "null",
-                type = "string",
-                markdownDescription = "lua module path or name",
-            },
             functions = {
                 type = "object",
                 additionalProperties = {
@@ -495,7 +495,7 @@ local function SupportedArchs()
     end
 end
 
-local Archs = {SupportedArchs()}
+local Archs = { SupportedArchs() }
 attributes.launch.luaArch.default = Archs[1]
 attributes.launch.luaArch.enum = Archs
 
@@ -504,12 +504,12 @@ for k, v in pairs(attributes.common) do
     attributes.launch[k] = v
 end
 json.contributes.debuggers[1].configurationAttributes = {
-    launch = {properties=attributes.launch},
-    attach = {properties=attributes.attach},
+    launch = { properties = attributes.launch },
+    attach = { properties = attributes.attach },
 }
 
 local configuration = json.contributes.configuration.properties
-for _, name in ipairs {"luaArch", "luaVersion", "sourceCoding", "path", "cpath","console"} do
+for _, name in ipairs { "luaArch", "luaVersion", "sourceCoding", "path", "cpath", "console" } do
     local attr = attributes.launch[name] or attributes.attach[name]
     if attr then
         local cfg = {}

@@ -38,5 +38,8 @@ namespace luadebug::autoattach {
         int origin_hookmask;
         int origin_hookcount;
         fn_attach attach_lua_vm;
+
+    public:
+        lua_version version;
     };
 }
