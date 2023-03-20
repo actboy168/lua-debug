@@ -252,16 +252,16 @@ Debugger address.
         },
         type = "string",
     },
+    module = {
+        default = "null",
+        markdownDescription = "specify lua module path/name",
+        type = "string",
+    },
     signature = {
         default = "null",
         type = "object",
         markdownDescription = "signature info",
         properties = {
-            lua_module = {
-                default = "null",
-                type = "string",
-                markdownDescription = "lua module path or name",
-            },
             functions = {
                 type = "object",
                 additionalProperties = {

@@ -2,7 +2,7 @@
 #include <autoattach/lua_module.h>
 #include <autoattach/wait_dll.h>
 #include <bee/nonstd/format.h>
-#include <resolver/lua_resolver.h>
+#include <config/config.h>
 #include <util/log.h>
 
 #include <atomic>
@@ -46,12 +46,12 @@ namespace luadebug::autoattach {
         lua_module rm = {};
         Gum::Process::enumerate_modules([&rm, &found](const Gum::ModuleDetails& details) -> bool {
             if (is_lua_module(details.path())) {
-                auto range = details.range();
+                auto range        = details.range();
                 rm.memory_address = range.base_address;
-                rm.memory_size = range.size;
-                rm.path = details.path();
-                rm.name = details.name();
-                found = true;
+                rm.memory_size    = range.size;
+                rm.path           = details.path();
+                rm.name           = details.name();
+                found             = true;
                 return false;
             }
             return true;

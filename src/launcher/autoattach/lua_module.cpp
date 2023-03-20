@@ -1,32 +1,15 @@
 #include <autoattach/lua_module.h>
-#include <hook/create_watchdog.h>
-#include <util/log.h>
-#include <config/config.h>
-
 #include <bee/nonstd/format.h>
 #include <bee/utility/path_helper.h>
+#include <config/config.h>
+#include <dlfcn.h>
+#include <hook/create_watchdog.h>
+#include <util/log.h>
+
 #include <charconv>
 #include <gumpp.hpp>
 
-#include <dlfcn.h>
-
 namespace luadebug::autoattach {
-    static const char* lua_version_to_string(lua_version v) {
-        switch (v) {
-        case lua_version::lua51:
-            return "lua51";
-        case lua_version::lua52:
-            return "lua52";
-        case lua_version::lua53:
-            return "lua53";
-        case lua_version::lua54:
-            return "lua54";
-        case lua_version::luajit:
-            return "luajit";
-        default:
-            return "unknown";
-        }
-    }
 
     static bool in_module(const lua_module& m, void* addr) {
         return addr >= m.memory_address && addr <= (void*)((intptr_t)m.memory_address + m.memory_size);
@@ -82,61 +65,7 @@ namespace luadebug::autoattach {
         // TODO: from signature
     }
 
-    bool load_remotedebug_dll(lua_version version, const lua_resolver& resolver) {
-        if (version != lua_version::unknown)
-            return false;
-
-        auto dllpath = bee::path_helper::dll_path();
-        if (!dllpath) {
-            return false;
-        }
-        auto os =
-#if defined(_WIN32)
-            "windows"
-#elif defined(__ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__)
-            "darwin"
-#else
-            ;
-        return false;
-#endif
-            ;
-        auto arch =
-#if defined(_M_ARM64) || defined(__aarch64__)
-            "arm64"
-#elif defined(_M_IX86) || defined(__i386__)
-            "x86"
-#elif defined(_M_X64) || defined(__x86_64__)
-            "x86_64"
-#elif defined(__arm__)
-            "arm"
-#elif defined(__riscv)
-            "riscv"
-#else
-            ;
-        return false;
-#endif
-            ;
-        auto platform = std::format("{}-{}", os, arch);
-        auto path = dllpath.value().parent_path().parent_path() / "runtime" / platform / lua_version_to_string(version);
-#ifdef _WIN32
-
-#else
-        dlopen(path.c_str(), RTLD_LAZY | RTLD_LOCAL);
-#endif
-        Gum::Process::module_enumerate_import(path.c_str(), [&](const Gum::ImportDetails& details) -> bool {
-            if (std::string_view(details.name).find_first_of("lua") != 0) {
-                return true;
-            }
-            if (auto address = (void*)resolver.find_signture(details.name)) {
-                *(void**)details.slot = address;
-                log::info("find signture {} to {}", details.name, address);
-            }
-            return true;
-        });
-        return true;
-    }
-
-    bool load_luadebug_dll(lua_version version) {
+    bool load_luadebug_dll(lua_version version, lua_resolver& resolver) {
         if (version != lua_version::unknown)
             return false;
 
@@ -168,16 +97,27 @@ namespace luadebug::autoattach {
             ;
         auto platform = std::format("{}-{}", os, arch);
         auto path     = (dllpath.value().parent_path().parent_path() / "runtime" / platform / lua_version_to_string(version)).string();
-        std::string error;
-        if (!Gum::Process::module_load(path.c_str(), &error)) {
-            log::fatal("load remotedebug dll failed: {}", error);
-        }
+#ifdef _WIN32
+
+#else
+        dlopen(path.c_str(), RTLD_LAZY | RTLD_LOCAL);
+#endif
+        Gum::Process::module_enumerate_import(path.c_str(), [&](const Gum::ImportDetails& details) -> bool {
+            if (std::string_view(details.name).find_first_of("lua") != 0) {
+                return true;
+            }
+            if (auto address = (void*)resolver.find_signature(details.name)) {
+                *(void**)details.slot = address;
+                log::info("find signture {} to {}", details.name, address);
+            }
+            return true;
+        });
         return true;
     }
 
     bool lua_module::initialize(fn_attach attach_lua_vm) {
         resolver.module_name = path;
-        auto error_msg = lua::initialize(resolver);
+        auto error_msg       = lua::initialize(resolver);
         if (error_msg) {
             log::fatal("lua initialize failed, can't find {}", error_msg);
             return false;
@@ -188,12 +128,11 @@ namespace luadebug::autoattach {
             resolver.version = lua_version_to_string(version);
 
         if (config.is_signature_mode()) {
-            load_remotedebug_dll(version, resolver);
+            if (!load_luadebug_dll(version, resolver)) {
+                return false;
+            }
         }
 
-        if (!load_luadebug_dll(version)) {
-            return false;
-        }
         watchdog = create_watchdog(attach_lua_vm, version, resolver);
         if (!watchdog) {
             // TODO: more errmsg

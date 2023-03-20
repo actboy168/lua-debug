@@ -17,24 +17,10 @@
 
 using namespace std::string_view_literals;
 namespace luadebug::autoattach {
-    static lua_version lua_version_from_string [[maybe_unused]] (const std::string_view& v) {
-        if (v == "jit" || v == "luajit")
-            return lua_version::luajit;
-        else if (v == "5.1" || v == "lua51")
-            return lua_version::lua51;
-        else if (v == "5.2" || v == "lua52")
-            return lua_version::lua52;
-        else if (v == "5.3" || v == "lua53")
-            return lua_version::lua53;
-        else if (v == "5.4" || v == "lua54")
-            return lua_version::lua54;
-        return lua_version::unknown;
-    }
-
     Config config;
 
     lua_version Config::get_lua_version() const {
-        const auto key = "lua_version"sv;
+        const auto key = "version"sv;
 
         auto it = values->find(key);
         if (!values || it == values->end()) {
@@ -67,7 +53,7 @@ namespace luadebug::autoattach {
     }
 
     std::string Config::get_lua_module() const {
-        const auto key = "lua_module"sv;
+        const auto key = "module"sv;
 
         auto it = values->find(key);
         if (it == values->end()) {
