@@ -98,28 +98,27 @@ local function NormalizeErrorMessage(what, err)
     return ("%s: %s."):format(what, err:gsub("^:%d+: %(EVAL%):%d+: (.*)$", "%1"))
 end
 
+local function setBreakPointUnverified(bp, errmsg)
+    bp.unverified = true
+    ev.emit('breakpoint', 'changed', {
+        id = bp.id,
+        message = errmsg,
+        verified = false,
+    })
+end
+
 local function valid(bp)
     if bp.condition then
         local ok, err = eval.verify(bp.condition)
         if not ok then
-            bp.verified = false
-            ev.emit('breakpoint', 'changed', {
-                id = bp.id,
-                verified = false,
-                message = NormalizeErrorMessage("Condition Error", err),
-            })
+            setBreakPointUnverified(bp, NormalizeErrorMessage("Condition Error", err))
             return false
         end
     end
     if bp.hitCondition then
         local ok, err = eval.verify('0 '..bp.hitCondition)
         if not ok then
-            bp.verified = false
-            ev.emit('breakpoint', 'changed', {
-                id = bp.id,
-                verified = false,
-                message = NormalizeErrorMessage("HitCondition Error", err),
-            })
+            setBreakPointUnverified(bp, NormalizeErrorMessage("HitCondition Error", err))
             return false
         end
     end
@@ -155,18 +154,13 @@ local function verifyBreakpointByLineInfo(src, breakpoints)
         return
     end
     for _, bp in ipairs(breakpoints) do
-        if bp.verified ~= nil then
+        if bp.unverified ~= nil then
             goto continue
         end
         local activeline = lineinfo[bp.line]
         if not activeline then
             if not src.startline then
-                bp.verified = false
-                ev.emit('breakpoint', 'changed', {
-                    id = bp.id,
-                    verified = false,
-                    message = "The breakpoint didn't hit a valid line.",
-                })
+                setBreakPointUnverified(bp, "The breakpoint didn't hit a valid line.")
             end
             goto continue
         end
@@ -229,11 +223,7 @@ end
 
 local function cantVerifyBreakpoints(breakpoints)
     for _, bp in ipairs(breakpoints) do
-        ev.emit('breakpoint', 'changed', {
-            id = bp.id,
-            message = "The source file has no line information.",
-            verified = false,
-        })
+        setBreakPointUnverified(bp, "The source file has no line information.")
     end
 end
 
@@ -323,11 +313,7 @@ function m.set_funcbp(breakpoints)
     for _, bp in ipairs(breakpoints) do
         local ok, err = eval.verify(bp.name)
         if not ok then
-            ev.emit('breakpoint', 'changed', {
-                id = bp.id,
-                message = NormalizeErrorMessage("Error", err),
-                verified = false,
-            })
+            setBreakPointUnverified(bp, NormalizeErrorMessage("Error", err))
             goto continue
         end
         if not valid(bp) then
@@ -390,11 +376,7 @@ function m.setExceptionBreakpoints(breakpoints)
         end
         local ok, err = eval.verify(filter.condition)
         if not ok then
-            ev.emit('breakpoint', 'changed', {
-                id = filter.id,
-                message = NormalizeErrorMessage("Error", err),
-                verified = false,
-            })
+            setBreakPointUnverified(filter, NormalizeErrorMessage("Error", err))
             goto continue
         end
         exceptionFilters[filter.filterId] = {
