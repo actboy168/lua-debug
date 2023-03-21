@@ -10,11 +10,14 @@
 #include "rdebug_lua.h"
 #include "rdebug_table.h"
 #include "util/protected_area.h"
+#include "util/refvalue.h"
 
 using luadebug::protected_area;
 using luadebug::protected_call;
+namespace refvalue = luadebug::refvalue;
 
-static int debug_pcall(lua_State* L, int nargs, int nresults, int errfunc) {
+static int
+debug_pcall(lua_State* L, int nargs, int nresults, int errfunc) {
 #ifdef LUAJIT_VERSION
     global_State* g = G(L);
     bool needClean  = !hook_active(g);
@@ -30,54 +33,6 @@ static int debug_pcall(lua_State* L, int nargs, int nresults, int errfunc) {
 #endif
 
     return ok;
-}
-
-enum class VAR : uint8_t {
-    FRAME_LOCAL,
-    FRAME_FUNC,
-    GLOBAL,
-    REGISTRY,
-    STACK,
-    UPVALUE,
-    METATABLE,
-    USERVALUE,
-    TABLE_ARRAY,
-    TABLE_HASH_KEY,
-    TABLE_HASH_VAL,
-};
-
-enum class REGISTRY_TYPE {
-    REGISTRY,
-    DEBUG_REF,
-    DEBUG_WATCH,
-};
-
-struct value {
-    VAR type;
-    union {
-        struct {
-            uint16_t frame;
-            int16_t n;
-        } local;
-        int index;
-    };
-};
-
-static struct value*
-create_value(luadbg_State* L, VAR type) {
-    struct value* v = (struct value*)luadbg_newuserdata(L, sizeof(struct value));
-    v->type         = type;
-    return v;
-}
-
-static struct value*
-create_value(luadbg_State* L, VAR type, int t) {
-    struct value* f = (struct value*)luadbg_touserdata(L, t);
-    size_t sz       = static_cast<size_t>(luadbg_rawlen(L, t));
-    struct value* v = (struct value*)luadbg_newuserdata(L, sz + sizeof(struct value));
-    v->type         = type;
-    memcpy((char*)(v + 1), f, sz);
-    return v;
 }
 
 // copy a value from -> to, return the lua type of copied or LUA_TNONE
@@ -118,32 +73,54 @@ copy_to_dbg(lua_State* from, luadbg_State* to) {
     return t;
 }
 
-static void
-get_registry_value(luadbg_State* L, REGISTRY_TYPE type, int ref) {
-    struct value* v = (struct value*)luadbg_newuserdata(L, 2 * sizeof(struct value));
-    v->type         = VAR::TABLE_ARRAY;
-    v->index        = ref;
-    v++;
-    v->type  = VAR::REGISTRY;
-    v->index = (int)type;
+static void registry_table(lua_State* cL, refvalue::REGISTRY_TYPE type) {
+    switch (type) {
+    case refvalue::REGISTRY_TYPE::REGISTRY:
+        lua_pushvalue(cL, LUA_REGISTRYINDEX);
+        break;
+    case refvalue::REGISTRY_TYPE::DEBUG_REF:
+        if (lua::getfield(cL, LUA_REGISTRYINDEX, "__debugger_ref") == LUA_TNIL) {
+            lua_pop(cL, 1);
+            lua_newtable(cL);
+            lua_pushvalue(cL, -1);
+            lua_setfield(cL, LUA_REGISTRYINDEX, "__debugger_ref");
+        }
+        break;
+    case refvalue::REGISTRY_TYPE::DEBUG_WATCH:
+        if (lua::getfield(cL, LUA_REGISTRYINDEX, "__debugger_ref") == LUA_TNIL) {
+            lua_pop(cL, 1);
+            lua_newtable(cL);
+            lua_pushvalue(cL, -1);
+            lua_setfield(cL, LUA_REGISTRYINDEX, "__debugger_ref");
+        }
+        break;
+    default:
+        std::unreachable();
+    }
 }
 
-static int
-ref_value(lua_State* from, luadbg_State* to) {
-    if (lua::getfield(from, LUA_REGISTRYINDEX, "__debugger_ref") == LUA_TNIL) {
-        lua_pop(from, 1);
-        lua_newtable(from);
-        lua_pushvalue(from, -1);
-        lua_setfield(from, LUA_REGISTRYINDEX, "__debugger_ref");
+static int registry_ref(luadbg_State* L, lua_State* cL, refvalue::REGISTRY_TYPE type) {
+    int ref = luaL_ref(cL, -2);
+    if (ref < 0) {
+        return LUA_NOREF;
     }
-    lua_pushvalue(from, -2);
-    int ref = luaL_ref(from, -2);
-    get_registry_value(to, REGISTRY_TYPE::DEBUG_REF, ref);
-    lua_pop(from, 1);
+    const void* tv = lua_topointer(cL, -1);
+    if (!tv || (unsigned int)ref > luadebug::table::array_size(tv)) {
+        return LUA_NOREF;
+    }
+    refvalue::create(L, refvalue::TABLE_ARRAY { (unsigned int)ref }, refvalue::REGISTRY { type });
     return ref;
 }
 
-void unref_value(lua_State* from, int ref) {
+static int registry_ref_simple(luadbg_State* L, lua_State* cL, refvalue::REGISTRY_TYPE type) {
+    registry_table(cL, type);
+    lua_pushvalue(cL, -2);
+    int ref = registry_ref(L, cL, type);
+    lua_pop(cL, 1);
+    return ref;
+}
+
+void registry_unref(lua_State* from, int ref) {
     if (ref >= 0) {
         if (lua::getfield(from, LUA_REGISTRYINDEX, "__debugger_ref") == LUA_TTABLE) {
             luaL_unref(from, -1, ref);
@@ -155,7 +132,7 @@ void unref_value(lua_State* from, int ref) {
 int copy_value(lua_State* from, luadbg_State* to, bool ref) {
     if (copy_to_dbg(from, to) == LUA_TNONE) {
         if (ref) {
-            return ref_value(from, to);
+            return registry_ref_simple(to, from, refvalue::REGISTRY_TYPE::DEBUG_REF);
         }
         else {
             luadbg_pushfstring(to, "%s: %p", lua_typename(from, lua_type(from, -1)), lua_topointer(from, -1));
@@ -163,154 +140,6 @@ int copy_value(lua_State* from, luadbg_State* to, bool ref) {
         }
     }
     return LUA_NOREF;
-}
-
-// L top : value, uservalue
-static int
-eval_value_(lua_State* cL, struct value* v) {
-    switch (v->type) {
-    case VAR::FRAME_LOCAL: {
-        lua_Debug ar;
-        if (lua_getstack(cL, v->local.frame, &ar) == 0)
-            break;
-        const char* name = lua_getlocal(cL, &ar, v->local.n);
-        if (name) {
-            return lua_type(cL, -1);
-        }
-        break;
-    }
-    case VAR::FRAME_FUNC: {
-        lua_Debug ar;
-        if (lua_getstack(cL, v->index, &ar) == 0)
-            break;
-        if (lua_getinfo(cL, "f", &ar) == 0)
-            break;
-        return LUA_TFUNCTION;
-    }
-    case VAR::TABLE_ARRAY:
-    case VAR::TABLE_HASH_KEY:
-    case VAR::TABLE_HASH_VAL: {
-        int t = eval_value_(cL, v + 1);
-        if (t == LUA_TNONE)
-            break;
-        if (t != LUA_TTABLE) {
-            lua_pop(cL, 1);
-            break;
-        }
-        const void* tv = lua_topointer(cL, -1);
-        if (!tv) {
-            lua_pop(cL, 1);
-            break;
-        }
-        bool ok = v->type == VAR::TABLE_ARRAY
-                      ? luadebug::table::get_array(cL, tv, v->index)
-                      : (v->type == VAR::TABLE_HASH_KEY
-                             ? luadebug::table::get_hash_k(cL, tv, v->index)
-                             : luadebug::table::get_hash_v(cL, tv, v->index)
-                        );
-        if (!ok) {
-            lua_pop(cL, 1);
-            break;
-        }
-        lua_remove(cL, -2);
-        return lua_type(cL, -1);
-    }
-    case VAR::UPVALUE: {
-        int t = eval_value_(cL, v + 1);
-        if (t == LUA_TNONE)
-            break;
-        if (t != LUA_TFUNCTION) {
-            // only function has upvalue
-            lua_pop(cL, 1);
-            break;
-        }
-        if (lua_getupvalue(cL, -1, v->index)) {
-            lua_replace(cL, -2);  // remove function
-            return lua_type(cL, -1);
-        }
-        else {
-            lua_pop(cL, 1);
-            break;
-        }
-    }
-    case VAR::GLOBAL:
-#if LUA_VERSION_NUM == 501
-        lua_pushvalue(cL, LUA_GLOBALSINDEX);
-        return LUA_TTABLE;
-#else
-        return lua::rawgeti(cL, LUA_REGISTRYINDEX, LUA_RIDX_GLOBALS);
-#endif
-    case VAR::REGISTRY:
-        switch ((REGISTRY_TYPE)v->index) {
-        case REGISTRY_TYPE::REGISTRY:
-            lua_pushvalue(cL, LUA_REGISTRYINDEX);
-            return LUA_TTABLE;
-        case REGISTRY_TYPE::DEBUG_REF:
-            lua::getfield(cL, LUA_REGISTRYINDEX, "__debugger_ref");
-            return lua_type(cL, -1);
-        case REGISTRY_TYPE::DEBUG_WATCH:
-            lua::getfield(cL, LUA_REGISTRYINDEX, "__debugger_watch");
-            return lua_type(cL, -1);
-        default:
-            return LUA_TNONE;
-        }
-    case VAR::METATABLE:
-        if (v->index != LUA_TTABLE && v->index != LUA_TUSERDATA) {
-            switch (v->index) {
-            case LUA_TNIL:
-                lua_pushnil(cL);
-                break;
-            case LUA_TBOOLEAN:
-                lua_pushboolean(cL, 0);
-                break;
-            case LUA_TNUMBER:
-                lua_pushinteger(cL, 0);
-                break;
-            case LUA_TSTRING:
-                lua_pushstring(cL, "");
-                break;
-            case LUA_TLIGHTUSERDATA:
-                lua_pushlightuserdata(cL, NULL);
-                break;
-            default:
-                return LUA_TNONE;
-            }
-        }
-        else {
-            int t = eval_value_(cL, v + 1);
-            if (t == LUA_TNONE)
-                break;
-            if (t != LUA_TTABLE && t != LUA_TUSERDATA) {
-                lua_pop(cL, 1);
-                break;
-            }
-        }
-        if (lua_getmetatable(cL, -1)) {
-            lua_replace(cL, -2);
-            return LUA_TTABLE;
-        }
-        else {
-            lua_pop(cL, 1);
-            lua_pushnil(cL);
-            return LUA_TNIL;
-        }
-    case VAR::USERVALUE: {
-        int t = eval_value_(cL, v + 1);
-        if (t == LUA_TNONE)
-            break;
-        if (t != LUA_TUSERDATA) {
-            lua_pop(cL, 1);
-            break;
-        }
-        t = lua_getiuservalue(cL, -1, v->index);
-        lua_replace(cL, -2);
-        return t;
-    }
-    case VAR::STACK:
-        lua_pushvalue(cL, v->index);
-        return lua_type(cL, -1);
-    }
-    return LUA_TNONE;
 }
 
 static void checkstack(luadbg_State* L, lua_State* cL, int sz) {
@@ -348,8 +177,8 @@ static int copy_from_dbg(luadbg_State* from, lua_State* to, int idx = -1) {
         break;
     case LUA_TUSERDATA: {
         checkstack(from, to, 3);
-        struct value* v = (struct value*)luadbg_touserdata(from, idx);
-        return eval_value_(to, v);
+        refvalue::value* v = (refvalue::value*)luadbg_touserdata(from, idx);
+        return refvalue::eval(v, to);
     }
     default:
         return LUA_TNONE;
@@ -368,121 +197,6 @@ static bool copy_from_dbg(luadbg_State* from, lua_State* to, int idx, int type) 
     return false;
 }
 
-// assign cL top into ref object in L. pop cL.
-// return 0 failed
-static int
-assign_value(struct value* v, lua_State* cL) {
-    int top = lua_gettop(cL);
-    switch (v->type) {
-    case VAR::FRAME_LOCAL: {
-        lua_Debug ar;
-        if (lua_getstack(cL, v->local.frame, &ar) == 0) {
-            break;
-        }
-        if (lua_setlocal(cL, &ar, v->local.n) != NULL) {
-            return 1;
-        }
-        break;
-    }
-    case VAR::GLOBAL:
-    case VAR::REGISTRY:
-    case VAR::FRAME_FUNC:
-    case VAR::STACK:
-        // Can't assign frame func, etc.
-        break;
-    case VAR::TABLE_HASH_KEY:
-        break;
-    case VAR::TABLE_ARRAY:
-    case VAR::TABLE_HASH_VAL: {
-        int t = eval_value_(cL, v + 1);
-        if (t == LUA_TNONE)
-            break;
-        if (t != LUA_TTABLE) {
-            break;
-        }
-        lua_insert(cL, -2);
-        const void* tv = lua_topointer(cL, -2);
-        if (!tv) {
-            break;
-        }
-        bool ok = v->type == VAR::TABLE_ARRAY
-                      ? luadebug::table::set_array(cL, tv, v->index)
-                      : luadebug::table::set_hash_v(cL, tv, v->index);
-        if (!ok) {
-            break;
-        }
-        lua_pop(cL, 1);
-        return 1;
-    }
-    case VAR::UPVALUE: {
-        int t = eval_value_(cL, v + 1);
-        if (t == LUA_TNONE)
-            break;
-        if (t != LUA_TFUNCTION) {
-            // only function has upvalue
-            break;
-        }
-        // swap function and value
-        lua_insert(cL, -2);
-        if (lua_setupvalue(cL, -2, v->index) != NULL) {
-            lua_pop(cL, 1);
-            return 1;
-        }
-        break;
-    }
-    case VAR::METATABLE: {
-        if (v->index != LUA_TTABLE && v->index != LUA_TUSERDATA) {
-            switch (v->index) {
-            case LUA_TNIL:
-                lua_pushnil(cL);
-                break;
-            case LUA_TBOOLEAN:
-                lua_pushboolean(cL, 0);
-                break;
-            case LUA_TNUMBER:
-                lua_pushinteger(cL, 0);
-                break;
-            case LUA_TSTRING:
-                lua_pushstring(cL, "");
-                break;
-            case LUA_TLIGHTUSERDATA:
-                lua_pushlightuserdata(cL, NULL);
-                break;
-            default:
-                // Invalid
-                return 0;
-            }
-        }
-        else {
-            int t = eval_value_(cL, v + 1);
-            if (t != LUA_TTABLE && t != LUA_TUSERDATA) {
-                break;
-            }
-        }
-        lua_insert(cL, -2);
-        int metattype = lua_type(cL, -1);
-        if (metattype != LUA_TNIL && metattype != LUA_TTABLE) {
-            break;
-        }
-        lua_setmetatable(cL, -2);
-        lua_pop(cL, 1);
-        return 1;
-    }
-    case VAR::USERVALUE: {
-        int t = eval_value_(cL, v + 1);
-        if (t != LUA_TUSERDATA) {
-            break;
-        }
-        lua_insert(cL, -2);
-        lua_setiuservalue(cL, -2, v->index);
-        lua_pop(cL, 1);
-        return 1;
-    }
-    }
-    lua_settop(cL, top - 1);
-    return 0;
-}
-
 static const char*
 get_frame_local(luadbg_State* L, lua_State* cL, uint16_t frame, int16_t n, int getref) {
     lua_Debug ar;
@@ -498,22 +212,8 @@ get_frame_local(luadbg_State* L, lua_State* cL, uint16_t frame, int16_t n, int g
         return name;
     }
     lua_pop(cL, 1);
-    struct value* v = create_value(L, VAR::FRAME_LOCAL);
-    v->local.frame  = frame;
-    v->local.n      = n;
+    refvalue::create(L, refvalue::FRAME_LOCAL { frame, n });
     return name;
-}
-
-static void
-get_frame_func(luadbg_State* L, int frame) {
-    struct value* v = create_value(L, VAR::FRAME_FUNC);
-    v->index        = frame;
-}
-
-static void new_table_array(luadbg_State* L, unsigned int index) {
-    struct value* v = create_value(L, VAR::TABLE_ARRAY, -2);
-    v->type         = VAR::TABLE_ARRAY;
-    v->index        = index;
 }
 
 static const char*
@@ -545,58 +245,9 @@ get_upvalue(luadbg_State* L, lua_State* cL, int index, int getref) {
         return name;
     }
     lua_pop(cL, 2);  // remove func / upvalue
-    struct value* v = create_value(L, VAR::UPVALUE, -1);
-    v->index        = index;
+    refvalue::create(L, -1, refvalue::UPVALUE { index });
     luadbg_replace(L, -2);  // remove function object
     return name;
-}
-
-static int
-get_registry(luadbg_State* L, VAR type) {
-    switch (type) {
-    case VAR::GLOBAL:
-    case VAR::REGISTRY:
-        break;
-    default:
-        return 0;
-    }
-    struct value* v = create_value(L, type);
-    v->index        = 0;
-    return 1;
-}
-
-static int
-get_metatable(luadbg_State* L, lua_State* cL, int getref) {
-    checkstack(L, cL, 2);
-    int t = copy_from_dbg(L, cL);
-    if (t == LUA_TNONE) {
-        luadbg_pop(L, 1);
-        return 0;
-    }
-    if (!getref) {
-        if (lua_getmetatable(cL, -1) == 0) {
-            luadbg_pop(L, 1);
-            lua_pop(cL, 1);
-            return 0;
-        }
-        lua_pop(cL, 2);
-    }
-    else {
-        lua_pop(cL, 1);
-    }
-    if (t == LUA_TTABLE || t == LUA_TUSERDATA) {
-        struct value* v = create_value(L, VAR::METATABLE, -1);
-        v->type         = VAR::METATABLE;
-        v->index        = t;
-        luadbg_replace(L, -2);
-        return 1;
-    }
-    else {
-        luadbg_pop(L, 1);
-        struct value* v = create_value(L, VAR::METATABLE);
-        v->index        = t;
-        return 1;
-    }
 }
 
 static int
@@ -632,37 +283,29 @@ get_uservalue(luadbg_State* L, lua_State* cL, int index, int getref) {
 
     // L : value
     // cL : value uservalue
-    struct value* v = create_value(L, VAR::USERVALUE, -1);
-    v->index        = index;
+    refvalue::create(L, refvalue::USERVALUE { index });
     luadbg_replace(L, -2);
     return 1;
 }
 
-static void
-combine_key(luadbg_State* L, lua_State* cL, int t, int index) {
-    if (copy_to_dbg(cL, L) != LUA_TNONE) {
-        lua_pop(cL, 1);
-        return;
+static void combine_key(luadbg_State* L, lua_State* cL, int t, unsigned int index) {
+    if (copy_to_dbg(cL, L) == LUA_TNONE) {
+        refvalue::create(L, refvalue::TABLE_HASH_KEY { index });
     }
     lua_pop(cL, 1);
-    struct value* v = create_value(L, VAR::TABLE_HASH_KEY, t);
-    v->index        = index;
 }
 
-static void
-combine_val(luadbg_State* L, lua_State* cL, int t, int index, int ref) {
+static void combine_val(luadbg_State* L, lua_State* cL, int t, unsigned int index, int ref) {
     if (ref) {
-        struct value* v = create_value(L, VAR::TABLE_HASH_VAL, t);
-        v->index        = index;
+        refvalue::create(L, t, refvalue::TABLE_HASH_VAL { index });
         if (copy_to_dbg(cL, L) == LUA_TNONE) {
             luadbg_pushvalue(L, -1);
         }
-        lua_pop(cL, 1);
-        return;
     }
-    if (copy_to_dbg(cL, L) == LUA_TNONE) {
-        struct value* v = create_value(L, VAR::TABLE_HASH_VAL, t);
-        v->index        = index;
+    else {
+        if (copy_to_dbg(cL, L) == LUA_TNONE) {
+            refvalue::create(L, t, refvalue::TABLE_HASH_VAL { index });
+        }
     }
     lua_pop(cL, 1);
 }
@@ -719,8 +362,7 @@ client_field(luadbg_State* L, lua_State* cL, int getref) {
     for (unsigned int i = 0; i < hsize; ++i) {
         if (luadebug::table::get_hash_k(cL, tv, i)) {
             if (lua_rawequal(cL, -1, -3) == 0) {
-                struct value* v = create_value(L, VAR::TABLE_HASH_VAL, 1);
-                v->index        = i;
+                refvalue::create(L, 1, refvalue::TABLE_HASH_VAL { i });
                 lua_pop(cL, 3);
                 return 1;
             }
@@ -765,7 +407,7 @@ client_tablearray(luadbg_State* L, lua_State* cL, int ref) {
         (void)ok;
         assert(ok);
         if (ref) {
-            new_table_array(L, i);
+            refvalue::create(L, 1, refvalue::TABLE_ARRAY { i });
             if (copy_to_dbg(cL, L) == LUA_TNONE) {
                 luadbg_pushvalue(L, -1);
             }
@@ -773,7 +415,7 @@ client_tablearray(luadbg_State* L, lua_State* cL, int ref) {
         }
         else {
             if (copy_to_dbg(cL, L) == LUA_TNONE) {
-                new_table_array(L, i);
+                refvalue::create(L, 1, refvalue::TABLE_ARRAY { i });
             }
         }
         luadbg_rawseti(L, -2, ++n);
@@ -933,9 +575,8 @@ lclient_assign(luadbg_State* L, lua_State* cL) {
     if (copy_from_dbg(L, cL) == LUA_TNONE) {
         return 0;
     }
-    struct value* ref = (struct value*)luadbg_touserdata(L, 1);
-    int r             = assign_value(ref, cL);
-    luadbg_pushboolean(L, r);
+    refvalue::value* ref = (refvalue::value*)luadbg_touserdata(L, 1);
+    luadbg_pushboolean(L, refvalue::assign(ref, cL));
     return 1;
 }
 
@@ -974,8 +615,8 @@ lclient_type(luadbg_State* L, lua_State* cL) {
     }
     checkstack(L, cL, 3);
     luadbg_settop(L, 1);
-    struct value* v = (struct value*)luadbg_touserdata(L, 1);
-    int t           = eval_value_(cL, v);
+    refvalue::value* v = (refvalue::value*)luadbg_touserdata(L, 1);
+    int t              = refvalue::eval(v, cL);
     switch (t) {
     case LUA_TNONE:
         luadbg_pushstring(L, "unknown");
@@ -1051,10 +692,33 @@ lclient_getupvaluev(luadbg_State* L, lua_State* cL) {
 static int
 client_getmetatable(luadbg_State* L, lua_State* cL, int getref) {
     luadbg_settop(L, 1);
-    if (get_metatable(L, cL, getref)) {
+    checkstack(L, cL, 2);
+    int t = copy_from_dbg(L, cL);
+    if (t == LUA_TNONE) {
+        luadbg_pop(L, 1);
+        return 0;
+    }
+    if (!getref) {
+        if (lua_getmetatable(cL, -1) == 0) {
+            luadbg_pop(L, 1);
+            lua_pop(cL, 1);
+            return 0;
+        }
+        lua_pop(cL, 2);
+    }
+    else {
+        lua_pop(cL, 1);
+    }
+    if (t == LUA_TTABLE || t == LUA_TUSERDATA) {
+        refvalue::create(L, -1, refvalue::METATABLE { t });
+        luadbg_replace(L, -2);
         return 1;
     }
-    return 0;
+    else {
+        luadbg_pop(L, 1);
+        refvalue::create(L, refvalue::METATABLE { t });
+        return 1;
+    }
 }
 
 static int
@@ -1214,7 +878,7 @@ lclient_getinfo(luadbg_State* L, lua_State* cL) {
             luadbg_setfield(L, 3, "namewhat");
             break;
         case 'f':
-            get_frame_func(L, frame);
+            refvalue::create(L, refvalue::FRAME_FUNC { (uint16_t)frame });
             luadbg_setfield(L, 3, "func");
             break;
 #if LUA_VERSION_NUM >= 502
@@ -1250,9 +914,9 @@ lclient_load(luadbg_State* L, lua_State* cL) {
         lua_pop(cL, 2);
         return 2;
     }
-    ref_value(cL, L);
+    int ref = registry_ref_simple(L, cL, refvalue::REGISTRY_TYPE::DEBUG_REF);
     lua_pop(cL, 1);
-    return 1;
+    return ref == LUA_NOREF ? 0 : 1;
 }
 
 static int
@@ -1305,21 +969,6 @@ lclient_eval(luadbg_State* L, lua_State* cL) {
 }
 
 static int
-addwatch(lua_State* cL, int idx) {
-    lua_pushvalue(cL, idx);
-    if (lua::getfield(cL, LUA_REGISTRYINDEX, "__debugger_watch") == LUA_TNIL) {
-        lua_pop(cL, 1);
-        lua_newtable(cL);
-        lua_pushvalue(cL, -1);
-        lua_setfield(cL, LUA_REGISTRYINDEX, "__debugger_watch");
-    }
-    lua_insert(cL, -2);
-    int ref = luaL_ref(cL, -2);
-    lua_pop(cL, 1);
-    return ref;
-}
-
-static int
 lclient_watch(luadbg_State* L, lua_State* cL) {
     int n     = lua_gettop(cL);
     int nargs = luadbg_gettop(L);
@@ -1343,8 +992,12 @@ lclient_watch(luadbg_State* L, lua_State* cL) {
     luadbg_pushboolean(L, 1);
     int rets = lua_gettop(cL) - n;
     luadbgL_checkstack(L, rets, NULL);
+    registry_table(cL, refvalue::REGISTRY_TYPE::DEBUG_WATCH);
     for (int i = 0; i < rets; ++i) {
-        get_registry_value(L, REGISTRY_TYPE::DEBUG_WATCH, addwatch(cL, i - rets));
+        lua_pushvalue(cL, i - rets - 1);
+        if (LUA_NOREF == registry_ref(L, cL, refvalue::REGISTRY_TYPE::DEBUG_WATCH)) {
+            luadbg_pushnil(L);
+        }
     }
     lua_settop(cL, n);
     return 1 + rets;
@@ -1485,9 +1138,9 @@ int init_visitor(luadbg_State* L) {
     };
     luadbg_newtable(L);
     luadbgL_setfuncs(L, l, 0);
-    get_registry(L, VAR::GLOBAL);
+    refvalue::create(L, refvalue::GLOBAL {});
     luadbg_setfield(L, -2, "_G");
-    get_registry(L, VAR::REGISTRY);
+    refvalue::create(L, refvalue::REGISTRY { refvalue::REGISTRY_TYPE::REGISTRY });
     luadbg_setfield(L, -2, "_REGISTRY");
     return 1;
 }
