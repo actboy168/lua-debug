@@ -1050,8 +1050,9 @@ function special_extand.Global(varRef, filter, start, count)
         return extandTableIndexed(varRef, start, count)
     elseif filter == 'named' then
         return extandGlobalNamed(varRef)
+    else
+        return extandGlobalNamed(varRef)
     end
-    return {}
 end
 
 function special_extand.Standard(varRef)
