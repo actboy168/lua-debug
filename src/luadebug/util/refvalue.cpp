@@ -318,13 +318,13 @@ namespace luadebug::refvalue {
     }
 
     value* create_userdata(luadbg_State* L, int n) {
-        return (value*)luadbg_newuserdata(L, n * sizeof(value));
+        return (value*)luadbg_newuserdatauv(L, n * sizeof(value), 0);
     }
 
     value* create_userdata(luadbg_State* L, int n, int parent) {
         void* parent_data  = luadbg_touserdata(L, parent);
         size_t parent_size = static_cast<size_t>(luadbg_rawlen(L, parent));
-        value* v           = (value*)luadbg_newuserdata(L, n * sizeof(value) + parent_size);
+        value* v           = (value*)luadbg_newuserdatauv(L, n * sizeof(value) + parent_size, 0);
         memcpy((std::byte*)(v + n), parent_data, parent_size);
         return v;
     }

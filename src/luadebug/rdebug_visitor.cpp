@@ -362,7 +362,7 @@ client_field(luadbg_State* L, lua_State* cL, int getref) {
     unsigned int hsize = luadebug::table::hash_size(tv);
     for (unsigned int i = 0; i < hsize; ++i) {
         if (luadebug::table::get_hash_k(cL, tv, i)) {
-            if (lua_rawequal(cL, -1, -3) == 0) {
+            if (lua_rawequal(cL, -1, -3)) {
                 refvalue::create(L, 1, refvalue::TABLE_HASH_VAL { i });
                 lua_pop(cL, 3);
                 return 1;
