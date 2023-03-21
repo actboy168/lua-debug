@@ -774,8 +774,9 @@ local function extandTable(varRef, filter, start, count)
         return extandTableIndexed(varRef, start, count)
     elseif filter == 'named' then
         return extandTableNamed(varRef)
+    else
+        return extandTableNamed(varRef)
     end
-    return {}
 end
 
 local function extandFunction(varRef)

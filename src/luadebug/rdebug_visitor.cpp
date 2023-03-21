@@ -277,6 +277,7 @@ get_uservalue(luadbg_State* L, lua_State* cL, int index, int getref) {
             luadbg_replace(L, -2);
             return 1;
         }
+        lua_pop(cL, 1);
     }
 
     // pop full userdata
