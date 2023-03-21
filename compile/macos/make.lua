@@ -3,7 +3,7 @@ local lm = require "luamake"
 if lm.platform == "darwin-arm64" then
     lm.target = "arm64-apple-macos11"
 else
-    lm.target = "x86_64-apple-macos10.15"
+    lm.target = "x86_64-apple-macos10.12"
 end
 
 lm.builddir = ("build/%s/%s"):format(lm.platform, lm.mode)
@@ -22,7 +22,7 @@ if lm.platform == "darwin-arm64" then
         args = {
             "-builddir", "build/darwin-x64/"..lm.mode,
             "-runtime_platform", "darwin-x64",
-            "-target", "x86_64-apple-macos10.15",
+            "-target", "x86_64-apple-macos10.12",
         },
     }
 end

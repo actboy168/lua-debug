@@ -7,12 +7,6 @@
 #include <string>
 #include <string_view>
 
-#ifdef _WIN32
-
-#else
-#    include <dlfcn.h>
-#endif
-
 using namespace std::literals;
 const char* module_name;
 struct Pattern {
@@ -22,16 +16,11 @@ struct Pattern {
 };
 
 int imports(std::string file_path, bool is_string, std::set<std::string>& imports_names) {
-#ifdef _WIN32
-
-#else
-    auto handle = dlopen(file_path.c_str(), RTLD_LAZY | RTLD_LOCAL);
-    if (!handle) {
-        std::cerr << "dlopen " << file_path << " failed: " << dlerror() << std::endl;
+    std::string error;
+    if (Gum::Process::module_load(file_path.c_str(), &error)) {
+        std::cerr << "module_load " << file_path << " failed: " << error << std::endl;
         return 1;
     }
-#endif
-
     if (is_string) {
         // check address is a string begin
         for (auto str : Gum::search_module_string(file_path.c_str(), "lua")) {
@@ -137,13 +126,13 @@ int main(int narg, const char* argvs[]) {
     }
 
     Gum::runtime_init();
-    auto import_file = std::filesystem::absolute(argvs[1]).generic_string();
+    auto import_file = fs::absolute(argvs[1]).generic_string();
     auto is_string   = argvs[2] == "true"sv ? true : false;
     std::set<std::string> imports_names;
     if (auto ec = imports(import_file, is_string, imports_names); ec != 0) {
         return ec;
     }
-    auto target_path = std::filesystem::absolute(argvs[3]).generic_string();
+    auto target_path = fs::absolute(argvs[3]).generic_string();
     auto is_export   = argvs[4] == "true"sv ? true : false;
     std::string error;
     module_name = target_path.c_str();
