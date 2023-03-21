@@ -707,15 +707,16 @@ local function extandTableIndexed(varRef, start, count)
     end
     local loct = rdebug.tablearray(t, start, last)
     for i = 1, #loct, 2 do
+        local key = start + i // 2
         local value, valueref = loct[i], loct[i + 1]
         if value ~= nil then
-            local name = (i < 1000) and ('[%03d]'):format(i) or ('%d'):format(i)
+            local name = (key < 1000) and ('[%03d]'):format(key) or ('%d'):format(key)
             varCreate {
                 vars = vars,
                 varRef = varRef,
                 name = name,
                 value = value,
-                evaluateName = evaluateName and ('%s[%d]'):format(evaluateName, i),
+                evaluateName = evaluateName and ('%s[%d]'):format(evaluateName, key),
                 calcValue = function() return valueref end,
             }
         end

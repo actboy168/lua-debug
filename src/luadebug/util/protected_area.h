@@ -21,6 +21,13 @@ namespace luadebug {
             return luadbg_error(L);
         }
 
+        static inline void check_type(luadbg_State* L, int arg, int t) {
+            if (luadbg_type(L, arg) != t) {
+                leave(L);
+                luadbgL_typeerror(L, arg, luadbg_typename(L, t));
+            }
+        }
+
         template <typename T, typename I>
         static inline constexpr bool checklimit(I i) {
             static_assert(std::is_integral_v<I>);

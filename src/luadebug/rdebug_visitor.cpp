@@ -387,7 +387,7 @@ static int
 client_tablearray(luadbg_State* L, lua_State* cL, int ref) {
     unsigned int base = luadebug::table::array_base_zero() ? 0 : 1;
     unsigned int i    = protected_area::optinteger<unsigned int>(L, 2, base);
-    unsigned int j    = protected_area::optinteger<unsigned int>(L, 3, std::numeric_limits<unsigned int>::max());
+    unsigned int j    = protected_area::optinteger<unsigned int>(L, 3, (std::numeric_limits<unsigned int>::max)());
     luadbg_settop(L, 1);
     checkstack(L, cL, 4);
     if (!copy_from_dbg(L, cL, 1, LUA_TTABLE)) {
@@ -400,8 +400,8 @@ client_tablearray(luadbg_State* L, lua_State* cL, int ref) {
     }
     luadbg_newtable(L);
     luadbg_Integer n = 0;
-    i                = std::max(i, base);
-    j                = std::min(j, luadebug::table::array_size(tv));
+    i                = (std::max)(i, base);
+    j                = (std::min)(j, luadebug::table::array_size(tv));
     for (; i < j; ++i) {
         bool ok = luadebug::table::get_array(cL, tv, i);
         (void)ok;
@@ -438,7 +438,7 @@ lclient_tablearrayv(luadbg_State* L, lua_State* cL) {
 static int
 tablehash(luadbg_State* L, lua_State* cL, int ref) {
     unsigned int i = protected_area::optinteger<unsigned int>(L, 2, 0);
-    unsigned int j = protected_area::optinteger<unsigned int>(L, 3, std::numeric_limits<unsigned int>::max());
+    unsigned int j = protected_area::optinteger<unsigned int>(L, 3, (std::numeric_limits<unsigned int>::max)());
     luadbg_settop(L, 1);
     checkstack(L, cL, 4);
     if (!copy_from_dbg(L, cL, 1, LUA_TTABLE)) {
@@ -451,7 +451,7 @@ tablehash(luadbg_State* L, lua_State* cL, int ref) {
     }
     luadbg_newtable(L);
     luadbg_Integer n = 0;
-    j                = std::min(j, luadebug::table::hash_size(tv));
+    j                = (std::min)(j, luadebug::table::hash_size(tv));
     for (; i < j; ++i) {
         if (luadebug::table::get_hash_kv(cL, tv, i)) {
             combine_key(L, cL, 1, i);
@@ -532,7 +532,7 @@ lclient_udwrite(luadbg_State* L, lua_State* cL) {
             luadbg_pushinteger(L, 0);
             return 1;
         }
-        size_t bytesWritten = std::min(data.size(), (size_t)(len - offset));
+        size_t bytesWritten = (std::min)(data.size(), (size_t)(len - offset));
         memcpy((void*)(memory + offset), data.data(), bytesWritten);
         lua_pop(cL, 1);
         luadbg_pushinteger(L, bytesWritten);
@@ -569,9 +569,9 @@ lclient_value(luadbg_State* L, lua_State* cL) {
 // ref = value
 static int
 lclient_assign(luadbg_State* L, lua_State* cL) {
-    checkstack(L, cL, 3);
     luadbg_settop(L, 2);
-    luadbgL_checktype(L, 1, LUA_TUSERDATA);
+    protected_area::check_type(L, 1, LUA_TUSERDATA);
+    checkstack(L, cL, 3);
     if (copy_from_dbg(L, cL) == LUA_TNONE) {
         return 0;
     }
