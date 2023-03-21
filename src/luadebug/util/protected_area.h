@@ -96,6 +96,7 @@ namespace luadebug {
                 if (checklimit<T>(r)) {
                     return static_cast<T>(r);
                 }
+                leave(L);
                 luadbgL_error(L, "bad argument '#%d' limit exceeded", arg);
                 std::unreachable();
             }

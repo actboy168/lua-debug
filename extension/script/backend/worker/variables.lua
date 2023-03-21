@@ -608,7 +608,7 @@ local function varCreateScopes(frameId, scopes, name, expensive)
         local cache = globalCache[frameId]
         local scope = scopes[#scopes]
         local asize, hsize = rdebug.tablesize(cache.value)
-        scope.indexedVariables = arrayBase + asize
+        scope.indexedVariables = asize == 0 and 0 or (arrayBase + asize)
         scope.namedVariables = hsize
         local var = varPool[#varPool]
         var.v = cache.value
@@ -704,6 +704,9 @@ local function extandTableIndexed(varRef, start, count)
     local last = start + count - 1
     if start < arrayBase then
         start = arrayBase
+    end
+    if last < start then
+        return vars
     end
     local loct = rdebug.tablearray(t, start-arrayBase, last-arrayBase)
     for i = 1, #loct, 2 do
