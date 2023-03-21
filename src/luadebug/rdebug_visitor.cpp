@@ -919,10 +919,8 @@ lclient_load(luadbg_State* L, lua_State* cL) {
     return ref == LUA_NOREF ? 0 : 1;
 }
 
-static int
-eval_copy_args(luadbg_State* from, lua_State* to) {
-    int t = copy_from_dbg(from, to);
-    if (t == LUA_TNONE) {
+static void eval_copy_args(luadbg_State* from, lua_State* to) {
+    if (copy_from_dbg(from, to) == LUA_TNONE) {
         if (luadbg_type(from, -1) == LUA_TTABLE) {
             checkstack(from, to, 3);
             lua_newtable(to);
@@ -934,27 +932,24 @@ eval_copy_args(luadbg_State* from, lua_State* to) {
                 lua_insert(to, -2);
                 lua_rawset(to, -3);
             }
-            return LUA_TTABLE;
         }
         else {
             lua_pushnil(to);
         }
     }
-    return t;
 }
 
 static int
 lclient_eval(luadbg_State* L, lua_State* cL) {
     int nargs = luadbg_gettop(L);
     checkstack(L, cL, nargs);
-    for (int i = 1; i <= nargs; ++i) {
+    if (!copy_from_dbg(L, cL, 1, LUA_TFUNCTION)) {
+        return 0;
+    }
+    for (int i = 2; i <= nargs; ++i) {
         luadbg_pushvalue(L, i);
-        int t = eval_copy_args(L, cL);
+        eval_copy_args(L, cL);
         luadbg_pop(L, 1);
-        if (i == 1 && t != LUA_TFUNCTION) {
-            lua_pop(cL, 1);
-            return protected_area::raise_error(L, cL, "need function");
-        }
     }
     if (debug_pcall(cL, nargs - 1, 1, 0)) {
         luadbg_pushboolean(L, 0);
@@ -973,14 +968,13 @@ lclient_watch(luadbg_State* L, lua_State* cL) {
     int n     = lua_gettop(cL);
     int nargs = luadbg_gettop(L);
     checkstack(L, cL, nargs);
-    for (int i = 1; i <= nargs; ++i) {
+    if (!copy_from_dbg(L, cL, 1, LUA_TFUNCTION)) {
+        return 0;
+    }
+    for (int i = 2; i <= nargs; ++i) {
         luadbg_pushvalue(L, i);
-        int t = eval_copy_args(L, cL);
+        eval_copy_args(L, cL);
         luadbg_pop(L, 1);
-        if (i == 1 && t != LUA_TFUNCTION) {
-            lua_pop(cL, 1);
-            return protected_area::raise_error(L, cL, "need function");
-        }
     }
     if (debug_pcall(cL, nargs - 1, LUA_MULTRET, 0)) {
         luadbg_pushboolean(L, 0);

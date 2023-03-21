@@ -476,7 +476,7 @@ local function varGetUserdata(value)
     local meta = rdebug.getmetatablev(value)
     if meta ~= nil then
         local fn = rdebug.fieldv(meta, '__debugger_tostring')
-        if fn ~= nil and (rdebug.type(fn) == 'function' or rdebug.type(fn) == 'c function') then
+        if fn ~= nil then
             local ok, res = rdebug.eval(fn, value)
             if ok then
                 return res
@@ -1388,7 +1388,7 @@ function m.tostring(v)
     local meta = rdebug.getmetatablev(v)
     if meta ~= nil then
         local fn = rdebug.fieldv(meta, '__tostring')
-        if fn ~= nil and (rdebug.type(fn) == 'function' or rdebug.type(fn) == 'c function') then
+        if fn ~= nil then
             local ok, res = rdebug.eval(fn, v)
             if ok then
                 return res
