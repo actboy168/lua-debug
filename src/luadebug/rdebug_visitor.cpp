@@ -1,4 +1,4 @@
-#include <stdint.h>
+﻿#include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 #include <symbolize/symbolize.h>
@@ -58,33 +58,6 @@ struct value {
     };
 };
 
-// return record number of value
-static int
-sizeof_value(struct value* v) {
-    switch (v->type) {
-    case VAR::FRAME_LOCAL:
-    case VAR::FRAME_FUNC:
-    case VAR::GLOBAL:
-    case VAR::REGISTRY:
-    case VAR::STACK:
-        return sizeof(struct value);
-    case VAR::INDEX_STR:
-        return sizeof_value((struct value*)((const char*)(v + 1) + v->index)) + sizeof(struct value) + v->index;
-    case VAR::METATABLE:
-        if (v->index != LUA_TTABLE && v->index != LUA_TUSERDATA) {
-            return sizeof(struct value);
-        }
-        // go through
-    case VAR::UPVALUE:
-    case VAR::USERVALUE:
-    case VAR::TABLE_ARRAY:
-    case VAR::TABLE_HASH_KEY:
-    case VAR::TABLE_HASH_VAL:
-        return sizeof_value(v + 1) + sizeof(struct value);
-    }
-    return 0;
-}
-
 static struct value*
 create_value(luadbg_State* L, VAR type) {
     struct value* v = (struct value*)luadbg_newuserdata(L, sizeof(struct value));
@@ -95,7 +68,7 @@ create_value(luadbg_State* L, VAR type) {
 static struct value*
 create_value(luadbg_State* L, VAR type, int t, size_t extrasz = 0) {
     struct value* f = (struct value*)luadbg_touserdata(L, t);
-    int sz          = sizeof_value(f);
+    size_t sz       = static_cast<size_t>(luadbg_rawlen(L, t));
     struct value* v = (struct value*)luadbg_newuserdata(L, sz + sizeof(struct value) + extrasz);
     v->type         = type;
     memcpy((char*)(v + 1) + extrasz, f, sz);
@@ -899,37 +872,6 @@ lclient_tablesize(luadbg_State* L, lua_State* cL) {
 }
 
 static int
-lclient_tablekey(luadbg_State* L, lua_State* cL) {
-    unsigned int idx = (unsigned int)luadbgL_optinteger(L, 2, 0);
-    luadbg_settop(L, 1);
-    checkstack(L, cL, 2);
-    if (!copy_from_dbg(L, cL, 1, LUA_TTABLE)) {
-        return 0;
-    }
-    const void* t = lua_topointer(cL, -1);
-    if (!t) {
-        lua_pop(cL, 1);
-        return 0;
-    }
-    unsigned int hsize = luadebug::table::hash_size(t);
-    for (unsigned int i = idx; i < hsize; ++i) {
-        if (luadebug::table::get_hash_k(cL, t, i)) {
-            if (lua_type(cL, -1) == LUA_TSTRING) {
-                size_t sz;
-                const char* str = lua_tolstring(cL, -1, &sz);
-                luadbg_pushlstring(L, str, sz);
-                luadbg_pushinteger(L, i + 1);
-                lua_pop(cL, 2);
-                return 2;
-            }
-            lua_pop(cL, 1);
-        }
-    }
-    lua_pop(cL, 1);
-    return 0;
-}
-
-static int
 lclient_udread(luadbg_State* L, lua_State* cL) {
     auto offset = protected_area::checkinteger<luadbg_Integer>(L, 2);
     auto count  = protected_area::checkinteger<luadbg_Integer>(L, 3);
@@ -1546,7 +1488,6 @@ int init_visitor(luadbg_State* L) {
         { "tablehash", protected_call<lclient_tablehash> },
         { "tablehashv", protected_call<lclient_tablehashv> },
         { "tablesize", protected_call<lclient_tablesize> },
-        { "tablekey", protected_call<lclient_tablekey> },
         { "udread", protected_call<lclient_udread> },
         { "udwrite", protected_call<lclient_udwrite> },
         { "value", protected_call<lclient_value> },
