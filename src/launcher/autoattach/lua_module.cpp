@@ -2,7 +2,6 @@
 #include <bee/nonstd/format.h>
 #include <bee/utility/path_helper.h>
 #include <config/config.h>
-#include <dlfcn.h>
 #include <hook/create_watchdog.h>
 #include <util/log.h>
 
@@ -97,18 +96,18 @@ namespace luadebug::autoattach {
             ;
         auto platform = std::format("{}-{}", os, arch);
         auto path     = (dllpath.value().parent_path().parent_path() / "runtime" / platform / lua_version_to_string(version)).string();
-#ifdef _WIN32
-
-#else
-        dlopen(path.c_str(), RTLD_LAZY | RTLD_LOCAL);
-#endif
+        std::string error;
+        if (Gum::Process::module_load(path.c_str(), &error)) {
+            log::fatal("load luadebug module failed: {}", error);
+            return false;
+        }
         Gum::Process::module_enumerate_import(path.c_str(), [&](const Gum::ImportDetails& details) -> bool {
             if (std::string_view(details.name).find_first_of("lua") != 0) {
                 return true;
             }
             if (auto address = (void*)resolver.find_signature(details.name)) {
                 *(void**)details.slot = address;
-                log::info("find signture {} to {}", details.name, address);
+                log::info("find signature {} to {}", details.name, address);
             }
             return true;
         });
