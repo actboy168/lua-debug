@@ -563,37 +563,6 @@ static void new_table_array(luadbg_State* L, unsigned int index) {
     v->index        = index;
 }
 
-// table key
-static void
-new_field(luadbg_State* L) {
-    size_t len      = 0;
-    const char* str = luadbg_tolstring(L, -1, &len);
-    struct value* v = create_value(L, VAR::INDEX_STR, -2, len);
-    v->index        = (int)len;
-    memcpy(v + 1, str, len);
-}
-
-// input cL : table key [value]
-// input L :  table key
-// output cL :
-// output L : v(key or value)
-static void
-combine_field(luadbg_State* L, lua_State* cL, int getref) {
-    if (!getref && copy_to_dbg(cL, L) != LUA_TNONE) {
-        lua_pop(cL, 2);
-        // L : t, k, v
-        luadbg_replace(L, -3);
-        luadbg_pop(L, 1);
-        return;
-    }
-    lua_pop(cL, 2);  // pop t v from cL
-    // L : t, k
-    new_field(L);
-    // L : t, k, v
-    luadbg_replace(L, -3);
-    luadbg_pop(L, 1);
-}
-
 static const char*
 get_upvalue(luadbg_State* L, lua_State* cL, int index, int getref) {
     if (luadbg_type(L, -1) != LUA_TUSERDATA) {
@@ -777,8 +746,36 @@ client_field(luadbg_State* L, lua_State* cL, int getref) {
     checkstack(L, cL, 1);
     lua_pushlstring(cL, field.data(), field.size());
     lua_rawget(cL, -2);
-    combine_field(L, cL, getref);
-    return 1;
+    if (!getref && copy_to_dbg(cL, L) != LUA_TNONE) {
+        lua_pop(cL, 2);
+        return 1;
+    }
+    lua_pop(cL, 1);
+    const void* tv = lua_topointer(cL, -1);
+    if (!tv) {
+        lua_pop(cL, 1);
+        return 0;
+    }
+    //
+    // 使用简单的O(n)算法查找field，可以更好地保证兼容性。
+    // field目前只在很少的场景使用，所以不用在意性能。
+    //
+    lua_pushlstring(cL, field.data(), field.size());
+    lua_insert(cL, -2);
+    unsigned int hsize = luadebug::table::hash_size(tv);
+    for (unsigned int i = 0; i < hsize; ++i) {
+        if (luadebug::table::get_hash_k(cL, tv, i)) {
+            if (lua_rawequal(cL, -1, -3) == 0) {
+                struct value* v = create_value(L, VAR::TABLE_HASH_VAL, 1);
+                v->index        = i;
+                lua_pop(cL, 3);
+                return 1;
+            }
+            lua_pop(cL, 1);
+        }
+    }
+    lua_pop(cL, 2);
+    return 0;
 }
 
 static int

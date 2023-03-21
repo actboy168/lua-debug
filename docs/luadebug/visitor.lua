@@ -217,7 +217,7 @@ end
 
 ---
 ---@param v refvalue
----@param new refvalue
+---@param new light-refvalue
 ---@return boolean
 ---赋值new或者newv引用的值到v引用的值，返回是否成功。
 ---
