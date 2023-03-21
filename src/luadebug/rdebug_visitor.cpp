@@ -669,7 +669,7 @@ static int client_getuservalue(luadbg_State* L, lua_State* cL, int getref) {
         lua_pop(cL, 1);
     }
     lua_pop(cL, 1);
-    refvalue::create(L, refvalue::USERVALUE { n });
+    refvalue::create(L, 1, refvalue::USERVALUE { n });
     luadbg_pushboolean(L, 1);
     return 2;
 }
