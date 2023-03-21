@@ -2,6 +2,8 @@
 
 #include <bee/nonstd/unreachable.h>
 
+#include <cstring>
+
 #include "rdebug_lua.h"
 #include "rdebug_table.h"
 
