@@ -33,18 +33,23 @@ static int debug_pcall(lua_State* L, int nargs, int nresults, int errfunc) {
 }
 
 enum class VAR : uint8_t {
-    FRAME_LOCAL,  // stack(frame, index)
-    FRAME_FUNC,   // stack(frame).func
-    UPVALUE,      // func[index]
-    GLOBAL,       // _G
-    REGISTRY,     // REGISTRY
-    METATABLE,    // table.metatable
-    USERVALUE,    // userdata.uservalue
+    FRAME_LOCAL,
+    FRAME_FUNC,
+    GLOBAL,
+    REGISTRY,
     STACK,
+    UPVALUE,
+    METATABLE,
+    USERVALUE,
     TABLE_ARRAY,
     TABLE_HASH_KEY,
     TABLE_HASH_VAL,
-    INDEX_STR,
+};
+
+enum class REGISTRY_TYPE {
+    REGISTRY,
+    DEBUG_REF,
+    DEBUG_WATCH,
 };
 
 struct value {
@@ -66,12 +71,12 @@ create_value(luadbg_State* L, VAR type) {
 }
 
 static struct value*
-create_value(luadbg_State* L, VAR type, int t, size_t extrasz = 0) {
+create_value(luadbg_State* L, VAR type, int t) {
     struct value* f = (struct value*)luadbg_touserdata(L, t);
     size_t sz       = static_cast<size_t>(luadbg_rawlen(L, t));
-    struct value* v = (struct value*)luadbg_newuserdata(L, sz + sizeof(struct value) + extrasz);
+    struct value* v = (struct value*)luadbg_newuserdata(L, sz + sizeof(struct value));
     v->type         = type;
-    memcpy((char*)(v + 1) + extrasz, f, sz);
+    memcpy((char*)(v + 1), f, sz);
     return v;
 }
 
@@ -114,21 +119,13 @@ copy_to_dbg(lua_State* from, luadbg_State* to) {
 }
 
 static void
-get_registry_value(luadbg_State* L, const char* name, int ref) {
-    size_t len      = strlen(name);
-    struct value* v = (struct value*)luadbg_newuserdata(L, 3 * sizeof(struct value) + len);
+get_registry_value(luadbg_State* L, REGISTRY_TYPE type, int ref) {
+    struct value* v = (struct value*)luadbg_newuserdata(L, 2 * sizeof(struct value));
     v->type         = VAR::TABLE_ARRAY;
     v->index        = ref;
     v++;
-
-    v->type  = VAR::INDEX_STR;
-    v->index = (int)len;
-    v++;
-    memcpy(v, name, len);
-    v = (struct value*)((char*)v + len);
-
     v->type  = VAR::REGISTRY;
-    v->index = 0;
+    v->index = (int)type;
 }
 
 static int
@@ -141,7 +138,7 @@ ref_value(lua_State* from, luadbg_State* to) {
     }
     lua_pushvalue(from, -2);
     int ref = luaL_ref(from, -2);
-    get_registry_value(to, "__debugger_ref", ref);
+    get_registry_value(to, REGISTRY_TYPE::DEBUG_REF, ref);
     lua_pop(from, 1);
     return ref;
 }
@@ -189,20 +186,6 @@ eval_value_(lua_State* cL, struct value* v) {
         if (lua_getinfo(cL, "f", &ar) == 0)
             break;
         return LUA_TFUNCTION;
-    }
-    case VAR::INDEX_STR: {
-        int t = eval_value_(cL, (struct value*)((const char*)(v + 1) + v->index));
-        if (t == LUA_TNONE)
-            break;
-        if (t != LUA_TTABLE) {
-            // only table can be index
-            lua_pop(cL, 1);
-            break;
-        }
-        lua_pushlstring(cL, (const char*)(v + 1), (size_t)v->index);
-        lua_rawget(cL, -2);
-        lua_replace(cL, -2);
-        return lua_type(cL, -1);
     }
     case VAR::TABLE_ARRAY:
     case VAR::TABLE_HASH_KEY:
@@ -258,8 +241,19 @@ eval_value_(lua_State* cL, struct value* v) {
         return lua::rawgeti(cL, LUA_REGISTRYINDEX, LUA_RIDX_GLOBALS);
 #endif
     case VAR::REGISTRY:
-        lua_pushvalue(cL, LUA_REGISTRYINDEX);
-        return LUA_TTABLE;
+        switch ((REGISTRY_TYPE)v->index) {
+        case REGISTRY_TYPE::REGISTRY:
+            lua_pushvalue(cL, LUA_REGISTRYINDEX);
+            return LUA_TTABLE;
+        case REGISTRY_TYPE::DEBUG_REF:
+            lua::getfield(cL, LUA_REGISTRYINDEX, "__debugger_ref");
+            return lua_type(cL, -1);
+        case REGISTRY_TYPE::DEBUG_WATCH:
+            lua::getfield(cL, LUA_REGISTRYINDEX, "__debugger_watch");
+            return lua_type(cL, -1);
+        default:
+            return LUA_TNONE;
+        }
     case VAR::METATABLE:
         if (v->index != LUA_TTABLE && v->index != LUA_TUSERDATA) {
             switch (v->index) {
@@ -396,20 +390,6 @@ assign_value(struct value* v, lua_State* cL) {
     case VAR::STACK:
         // Can't assign frame func, etc.
         break;
-    case VAR::INDEX_STR: {
-        int t = eval_value_(cL, (struct value*)((const char*)(v + 1) + v->index));
-        if (t == LUA_TNONE)
-            break;
-        if (t != LUA_TTABLE) {
-            // only table can be index
-            break;
-        }
-        lua_pushlstring(cL, (const char*)(v + 1), (size_t)v->index);  // key, table, value, ...
-        lua_pushvalue(cL, -3);                                        // value, key, table, value, ...
-        lua_rawset(cL, -3);                                           // table, value, ...
-        lua_pop(cL, 2);
-        return 1;
-    }
     case VAR::TABLE_HASH_KEY:
         break;
     case VAR::TABLE_ARRAY:
@@ -1364,7 +1344,7 @@ lclient_watch(luadbg_State* L, lua_State* cL) {
     int rets = lua_gettop(cL) - n;
     luadbgL_checkstack(L, rets, NULL);
     for (int i = 0; i < rets; ++i) {
-        get_registry_value(L, "__debugger_watch", addwatch(cL, i - rets));
+        get_registry_value(L, REGISTRY_TYPE::DEBUG_WATCH, addwatch(cL, i - rets));
     }
     lua_settop(cL, n);
     return 1 + rets;
