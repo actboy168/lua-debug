@@ -705,7 +705,7 @@ local function extandTableIndexed(varRef, start, count)
     if start < arrayBase then
         start = arrayBase
     end
-    local loct = rdebug.tablearray(t, start, last)
+    local loct = rdebug.tablearray(t, start-arrayBase, last-arrayBase)
     for i = 1, #loct, 2 do
         local key = start + i // 2
         local value, valueref = loct[i], loct[i + 1]

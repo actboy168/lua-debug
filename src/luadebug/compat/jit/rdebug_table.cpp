@@ -15,7 +15,7 @@ namespace luadebug::table {
             for (unsigned int i = alimit; i > 0; --i) {
                 TValue* arr = tvref(t->array);
                 if (!tvisnil(&arr[i - 1])) {
-                    return i - 1;
+                    return i;
                 }
             }
         }
@@ -99,7 +99,7 @@ namespace luadebug::table {
             return false;
         }
         TValue* value = arrayslot(t, i);
-        copyTV(L, value, L->top - 1);
+        copyTV(L, L->top, value);
         L->top += 1;
         return true;
     }

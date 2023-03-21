@@ -1,4 +1,4 @@
-#include <stdint.h>
+﻿#include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 #include <symbolize/symbolize.h>
@@ -386,9 +386,8 @@ lclient_fieldv(luadbg_State* L, lua_State* cL) {
 
 static int
 client_tablearray(luadbg_State* L, lua_State* cL, int ref) {
-    unsigned int base = luadebug::table::array_base_zero() ? 0 : 1;
-    unsigned int i    = protected_area::optinteger<unsigned int>(L, 2, base);
-    unsigned int j    = protected_area::optinteger<unsigned int>(L, 3, (std::numeric_limits<unsigned int>::max)());
+    unsigned int i = protected_area::optinteger<unsigned int>(L, 2, 0);
+    unsigned int j = protected_area::optinteger<unsigned int>(L, 3, (std::numeric_limits<unsigned int>::max)());
     luadbg_settop(L, 1);
     checkstack(L, cL, 4);
     if (!copy_from_dbg(L, cL, 1, LUA_TTABLE)) {
@@ -400,10 +399,14 @@ client_tablearray(luadbg_State* L, lua_State* cL, int ref) {
         return 0;
     }
     luadbg_newtable(L);
-    luadbg_Integer n = 0;
-    i                = (std::max)(i, base);
-    j                = (std::min)(j, luadebug::table::array_size(tv));
-    for (; i < j; ++i) {
+    luadbg_Integer n  = 0;
+    unsigned int maxn = luadebug::table::array_size(tv);
+    if (maxn == 0) {
+        lua_pop(cL, 1);
+        return 1;
+    }
+    j = (std::min)(j, maxn - 1);
+    for (; i <= j; ++i) {
         bool ok = luadebug::table::get_array(cL, tv, i);
         (void)ok;
         assert(ok);
@@ -451,9 +454,14 @@ tablehash(luadbg_State* L, lua_State* cL, int ref) {
         return 0;
     }
     luadbg_newtable(L);
-    luadbg_Integer n = 0;
-    j                = (std::min)(j, luadebug::table::hash_size(tv));
-    for (; i < j; ++i) {
+    luadbg_Integer n  = 0;
+    unsigned int maxn = luadebug::table::hash_size(tv);
+    if (maxn == 0) {
+        lua_pop(cL, 1);
+        return 1;
+    }
+    j = (std::min)(j, maxn - 1);
+    for (; i <= j; ++i) {
         if (luadebug::table::get_hash_kv(cL, tv, i)) {
             combine_key(L, cL, 1, i);
             luadbg_rawseti(L, -2, ++n);
