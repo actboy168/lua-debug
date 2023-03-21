@@ -1,4 +1,4 @@
-﻿#include <stdint.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 #include <symbolize/symbolize.h>
@@ -87,11 +87,11 @@ static void registry_table(lua_State* cL, refvalue::REGISTRY_TYPE type) {
         }
         break;
     case refvalue::REGISTRY_TYPE::DEBUG_WATCH:
-        if (lua::getfield(cL, LUA_REGISTRYINDEX, "__debugger_ref") == LUA_TNIL) {
+        if (lua::getfield(cL, LUA_REGISTRYINDEX, "__debugger_watch") == LUA_TNIL) {
             lua_pop(cL, 1);
             lua_newtable(cL);
             lua_pushvalue(cL, -1);
-            lua_setfield(cL, LUA_REGISTRYINDEX, "__debugger_ref");
+            lua_setfield(cL, LUA_REGISTRYINDEX, "__debugger_watch");
         }
         break;
     default:
@@ -101,14 +101,15 @@ static void registry_table(lua_State* cL, refvalue::REGISTRY_TYPE type) {
 
 static int registry_ref(luadbg_State* L, lua_State* cL, refvalue::REGISTRY_TYPE type) {
     int ref = luaL_ref(cL, -2);
-    if (ref < 0) {
+    if (ref <= 0) {
         return LUA_NOREF;
     }
-    const void* tv = lua_topointer(cL, -1);
-    if (!tv || (unsigned int)ref > luadebug::table::array_size(tv)) {
+    unsigned int index = (unsigned int)(ref - 1);
+    const void* tv     = lua_topointer(cL, -1);
+    if (!tv || index >= luadebug::table::array_size(tv)) {
         return LUA_NOREF;
     }
-    refvalue::create(L, refvalue::TABLE_ARRAY { (unsigned int)ref }, refvalue::REGISTRY { type });
+    refvalue::create(L, refvalue::TABLE_ARRAY { index }, refvalue::REGISTRY { type });
     return ref;
 }
 
