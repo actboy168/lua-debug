@@ -95,7 +95,7 @@ namespace luadebug::table {
 
     bool get_array(lua_State* L, const void* tv, unsigned int i) {
         const GCtab* t = &((const GCobj*)tv)->tab;
-        if (i >= array_size(t)) {
+        if (i >= array_limit(t)) {
             return false;
         }
         TValue* value = arrayslot(t, i);
@@ -106,7 +106,7 @@ namespace luadebug::table {
 
     bool set_array(lua_State* L, const void* tv, unsigned int i) {
         const GCtab* t = &((const GCobj*)tv)->tab;
-        if (i >= array_size(t)) {
+        if (i >= array_limit(t)) {
             return false;
         }
         TValue* value = arrayslot(t, i);

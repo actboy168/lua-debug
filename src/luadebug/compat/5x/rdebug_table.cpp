@@ -127,7 +127,7 @@ namespace luadebug::table {
 
     bool get_array(lua_State* L, const void* tv, unsigned int i) {
         const Table* t = (const Table*)tv;
-        if (i >= array_size(t)) {
+        if (i >= array_limit(t)) {
             return false;
         }
         TValue* value = &t->array[i];
@@ -138,7 +138,7 @@ namespace luadebug::table {
 
     bool set_array(lua_State* L, const void* tv, unsigned int i) {
         const Table* t = (const Table*)tv;
-        if (i >= array_size(t)) {
+        if (i >= array_limit(t)) {
             return false;
         }
         TValue* value = &t->array[i];
