@@ -2,6 +2,7 @@
 
 #include <bee/nonstd/unreachable.h>
 
+#include <cassert>
 #include <cstring>
 
 #include "rdebug_lua.h"
@@ -322,10 +323,11 @@ namespace luadebug::refvalue {
     }
 
     value* create_userdata(luadbg_State* L, int n, int parent) {
+        assert(luadbg_type(L, parent) == LUA_TUSERDATA);
         void* parent_data  = luadbg_touserdata(L, parent);
         size_t parent_size = static_cast<size_t>(luadbg_rawlen(L, parent));
-        value* v           = (value*)luadbg_newuserdatauv(L, n * sizeof(value) + parent_size, 0);
-        memcpy((std::byte*)(v + n), parent_data, parent_size);
-        return v;
+        void* v            = luadbg_newuserdatauv(L, n * sizeof(value) + parent_size, 0);
+        memcpy((std::byte*)v + n * sizeof(value), parent_data, parent_size);
+        return (value*)v;
     }
 }
