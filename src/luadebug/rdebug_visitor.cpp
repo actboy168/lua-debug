@@ -176,7 +176,7 @@ static int registry_ref(luadbg_State* L, lua_State* cL, refvalue::REGISTRY_TYPE 
     if (ref <= 0) {
         return LUA_NOREF;
     }
-    unsigned int index = (unsigned int)(ref - 1);
+    unsigned int index = luadebug::table::array_base_zero() ? (unsigned int)(ref) : (unsigned int)(ref - 1);
     const void* tv     = lua_topointer(cL, -1);
     if (!tv || index >= luadebug::table::array_size(tv)) {
         return LUA_NOREF;
