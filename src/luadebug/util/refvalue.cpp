@@ -2,6 +2,7 @@
 
 #include <bee/nonstd/unreachable.h>
 
+#include <cassert>
 #include <cstring>
 
 #include "rdebug_lua.h"
@@ -206,7 +207,7 @@ namespace luadebug::refvalue {
     }
 
     int eval(value* v, lua_State* cL) {
-        return std::visit([cL, v](auto&& arg) { return eval(arg, cL, v + 1); }, *v);
+        return visit([cL, v](auto&& arg) { return eval(arg, cL, v + 1); }, *v);
     }
 
     template <typename T>
@@ -312,7 +313,7 @@ namespace luadebug::refvalue {
 
     bool assign(value* v, lua_State* cL) {
         int top = lua_gettop(cL);
-        bool ok = std::visit([cL, v](auto&& arg) { return assign(arg, cL, v + 1); }, *v);
+        bool ok = visit([cL, v](auto&& arg) { return assign(arg, cL, v + 1); }, *v);
         lua_settop(cL, top - 1);
         return ok;
     }
@@ -322,10 +323,11 @@ namespace luadebug::refvalue {
     }
 
     value* create_userdata(luadbg_State* L, int n, int parent) {
+        assert(luadbg_type(L, parent) == LUA_TUSERDATA);
         void* parent_data  = luadbg_touserdata(L, parent);
         size_t parent_size = static_cast<size_t>(luadbg_rawlen(L, parent));
-        value* v           = (value*)luadbg_newuserdatauv(L, n * sizeof(value) + parent_size, 0);
-        memcpy((std::byte*)(v + n), parent_data, parent_size);
-        return v;
+        void* v            = luadbg_newuserdatauv(L, n * sizeof(value) + parent_size, 0);
+        memcpy((std::byte*)v + n * sizeof(value), parent_data, parent_size);
+        return (value*)v;
     }
 }
