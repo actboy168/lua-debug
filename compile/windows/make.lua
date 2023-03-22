@@ -36,7 +36,7 @@ lm:lua_dll 'inject' {
 
 lm:default {
     "common",
-    "copy_vcredist",
+    lm.mode ~= "debug" and "copy_vcredist",
     "lua-debug",
     "inject",
     "launcher",

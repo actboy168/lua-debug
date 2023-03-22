@@ -10,10 +10,12 @@ lm.builddir = ("build/%s/%s"):format(platform, lm.mode)
 require "compile.common.runtime"
 require "compile.common.launcher"
 
-lm:msvc_copydll "copy_vcredist" {
-    type = "vcrt",
-    output = 'publish/vcredist/'..platform
-}
+if lm.mode ~= "debug" then
+    lm:msvc_copydll "copy_vcredist" {
+        type = "vcrt",
+        output = 'publish/vcredist/'..platform
+    }
+end
 
 local ArchAlias = {
     ["win32-x64"] = "x64",
