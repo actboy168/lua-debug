@@ -602,7 +602,7 @@ static int client_getupvalue(luadbg_State* L, lua_State* cL, int getref) {
     }
     lua_pop(cL, 2);
     luadbg_pushstring(L, name);
-    refvalue::create(L, -1, refvalue::UPVALUE { index });
+    refvalue::create(L, 1, refvalue::UPVALUE { index });
     return 2;
 }
 
@@ -632,7 +632,7 @@ static int client_getmetatable(luadbg_State* L, lua_State* cL, int getref) {
         lua_pop(cL, 1);
     }
     if (t == LUA_TTABLE || t == LUA_TUSERDATA) {
-        refvalue::create(L, -1, refvalue::METATABLE { t });
+        refvalue::create(L, 1, refvalue::METATABLE { t });
         return 1;
     }
     else {
@@ -658,7 +658,7 @@ static int client_getuservalue(luadbg_State* L, lua_State* cL, int getref) {
     }
     if (!getref) {
         if (lua_getiuservalue(cL, -1, n) == LUA_TNONE) {
-            lua_pop(cL, 1);
+            lua_pop(cL, 2);
             return 0;
         }
         if (copy_to_dbg(cL, L) != LUA_TNONE) {
