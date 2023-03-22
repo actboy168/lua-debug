@@ -294,10 +294,15 @@ Debugger address.
 if OS == "win32" then
     attributes.common.inject.default = "hook"
     table.insert(attributes.common.inject.enum, "hook")
-elseif OS == "darwin" then
-    attributes.common.inject.default = "lldb"
-    table.insert(attributes.common.inject.enum, "hook")
+else
+    if OS == "darwin" then
+        attributes.common.inject.default = "lldb"
+        table.insert(attributes.common.inject.enum, "hook")
+    else
+        attributes.common.inject.default = "gdb"
+    end
     table.insert(attributes.common.inject.enum, "lldb")
+    table.insert(attributes.common.inject.enum, "gdb")
     attributes.common.inject_executable = {
         markdownDescription = "inject executable path",
         type = {

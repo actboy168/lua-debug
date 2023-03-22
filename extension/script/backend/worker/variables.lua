@@ -344,6 +344,17 @@ local function varGetName(value)
     return tostring(rdebug.value(value))
 end
 
+local function varGetShortUserdata(value)
+    local meta = rdebug.getmetatablev(value)
+    if meta ~= nil then
+        local name = rdebug.fieldv(meta, '__name')
+        if name ~= nil then
+            return tostring(rdebug.value(name))
+        end
+    end
+    return 'userdata'
+end
+
 local function varGetShortValue(value)
     local type = rdebug.type(value)
     if type == 'string' then
@@ -373,6 +384,8 @@ local function varGetShortValue(value)
             return "..."
         end
         return '{}'
+    elseif type == 'userdata' then
+        return varGetShortUserdata(value)
     elseif type == 'cdata' then
         return eval.ffi_reflect("shortvalue", value)
     end
@@ -382,7 +395,7 @@ end
 local function varGetTableValue(t)
     local str = ''
     do
-        local loct = rdebug.tablearrayv(t, 1, SHORT_TABLE_ARRAY)
+        local loct = rdebug.tablearrayv(t, 1 - arrayBase, SHORT_TABLE_ARRAY)
         for i = 1, #loct do
             local v = loct[i]
             if str == '' then

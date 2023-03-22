@@ -48,7 +48,7 @@ luamake lua compile/download_deps.lua
 
 4. Build
 ```
-luamake
+luamake -mode release
 ```
 
 ## Install to VSCode

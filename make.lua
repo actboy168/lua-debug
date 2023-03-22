@@ -6,12 +6,14 @@ lm.compile_commands = "build"
 lm.c = "c11"
 lm.cxx = "c++17"
 
+lm.mode = "debug"
+
 lm.msvc = {
     flags = "/wd5105"
 }
 
-if lm.enable_sanitize then
-    lm.mode = "debug"
+if lm.mode == "debug" then
+    lm.enable_sanitize = true
     lm.flags = "-fsanitize=address"
     lm.gcc = {
         ldflags = "-fsanitize=address"
