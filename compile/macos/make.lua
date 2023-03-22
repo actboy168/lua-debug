@@ -13,6 +13,7 @@ require "compile.common.lua-debug"
 lm.runtime_platform = lm.platform
 require "compile.macos.runtime"
 require "compile.macos.shellcode"
+require "compile.macos.signature_compiler"
 
 if lm.platform == "darwin-arm64" then
     require "compile.common.run_luamake"
