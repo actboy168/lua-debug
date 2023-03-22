@@ -6,8 +6,9 @@ local ev = require 'backend.event'
 local base64 = require 'common.base64'
 local eval = require 'backend.worker.eval'
 
-local SHORT_TABLE_FIELD <const> = 100
-local MAX_TABLE_FIELD <const> = 1000
+local SHORT_TABLE_ARRAY <const> = 15
+local SHORT_TABLE_HASH <const> = 100
+local MAX_TABLE_HASH <const> = 1000
 local TABLE_VALUE_MAXLEN <const> = 32
 local LUAVERSION = 54
 local isjit = false
@@ -158,7 +159,7 @@ function special_has.Global(frameId)
     end
     local t = { global = {}, standard = {}, eval = eval, value = value }
     local asize = 0
-    local loct = rdebug.tablehash(value, 0, MAX_TABLE_FIELD)
+    local loct = rdebug.tablehash(value, 0, MAX_TABLE_HASH)
     if loct then
         asize = rdebug.tablesize(value)
         for i = 1, #loct, 3 do
@@ -381,7 +382,7 @@ end
 local function varGetTableValue(t)
     local str = ''
     do
-        local loct = rdebug.tablearrayv(t)
+        local loct = rdebug.tablearrayv(t, 1, SHORT_TABLE_ARRAY)
         for i = 1, #loct do
             local v = loct[i]
             if str == '' then
@@ -396,7 +397,7 @@ local function varGetTableValue(t)
     end
 
     do
-        local loct = rdebug.tablehashv(t, 0, SHORT_TABLE_FIELD)
+        local loct = rdebug.tablehashv(t, 0, SHORT_TABLE_HASH)
         local kvs = {}
         for i = 1, #loct, 2 do
             local key, value = loct[i], loct[i + 1]
@@ -732,7 +733,7 @@ local function extandTableNamed(varRef)
     local t = varRef.v
     local evaluateName = varRef.eval
     local vars = {}
-    local loct = rdebug.tablehash(t, 0, MAX_TABLE_FIELD)
+    local loct = rdebug.tablehash(t, 0, MAX_TABLE_HASH)
     for i = 1, #loct, 3 do
         local key, value, valueref = loct[i], loct[i + 1], loct[i + 2]
         local key_type = rdebug.type(key)
