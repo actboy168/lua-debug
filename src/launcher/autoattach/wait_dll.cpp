@@ -125,6 +125,7 @@ namespace luadebug::autoattach {
                     if (loaded(info[i].imageFilePath)) {
                         interceptor->detach(this);
                         delete this;
+                        return;
                     }
                 }
             }

@@ -23,7 +23,12 @@ namespace luadebug::autoattach {
 
     static void start();
     static bool load_lua_module(const std::string& path) {
+#ifdef __APPLE__
+        // FIXME: can't call is_lua_module in macos when dyld_image_notifier
+        if (true) {
+#else
         if (is_lua_module(path.c_str())) {
+#endif
             // find lua module lazy
             std::thread(start).detach();
             return true;
