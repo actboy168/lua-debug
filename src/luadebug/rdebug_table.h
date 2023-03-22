@@ -5,11 +5,11 @@ struct lua_State;
 namespace luadebug::table {
     unsigned int array_size(const void* t);
     unsigned int hash_size(const void* t);
-    bool has_zero(const void* t);
-    int get_zero(lua_State* L, const void* t);
-    int get_kv(lua_State* L, const void* tv, unsigned int i);
-    int get_k(lua_State* L, const void* t, unsigned int i);
-    int get_k(lua_State* L, int idx, unsigned int i);
-    int get_v(lua_State* L, int idx, unsigned int i);
-    int set_v(lua_State* L, int idx, unsigned int i);
+    bool array_base_zero();
+    bool get_hash_kv(lua_State* L, const void* tv, unsigned int i);
+    bool get_hash_k(lua_State* L, const void* tv, unsigned int i);
+    bool get_hash_v(lua_State* L, const void* tv, unsigned int i);
+    bool set_hash_v(lua_State* L, const void* tv, unsigned int i);
+    bool get_array(lua_State* L, const void* tv, unsigned int i);
+    bool set_array(lua_State* L, const void* tv, unsigned int i);
 }

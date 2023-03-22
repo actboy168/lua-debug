@@ -79,11 +79,11 @@ local function putTable(t)
         level = level + 1
 
         local count = 0
-        local asize = rdebug.tablesize(t)
-        for i = 1, asize do
+        local loct = rdebug.tablearrayv(t)
+        for i = 1, #loct do
             if count > 0 then puts(',') end
             puts(' ')
-            putValue(rdebug.index(t, i))
+            putValue(loct[i])
             count = count + 1
         end
 

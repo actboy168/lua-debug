@@ -11,11 +11,13 @@ local MAX_TABLE_FIELD <const> = 1000
 local TABLE_VALUE_MAXLEN <const> = 32
 local LUAVERSION = 54
 local isjit = false
+local arrayBase = 1
+local standard = {}
 
 local info = {}
 local varPool = {}
 local memoryRefPool = {}
-local standard = {}
+local globalCache = {}
 
 local isWindows = package.config:sub(1, 1) == "\\"
 local showIntegerAsHex = false
@@ -91,6 +93,7 @@ ev.on('initializing', function(config)
     showIntegerAsHex = config.configuration.variables.showIntegerAsHex
     LUAVERSION = luaver.LUAVERSION
     isjit = luaver.isjit
+    arrayBase = isjit and 0 or 1
     init_standard()
 end)
 
@@ -99,18 +102,6 @@ local function isTemporary(name)
         return name == "(C temporary)" or name == "(temporary)"
     end
     return name == "(*temporary)"
-end
-
-local function getGlobal(frameId)
-    rdebug.getinfo(frameId, "f", info)
-    local name, value = rdebug.getupvaluev(info.func, 1)
-    if name == "_ENV" then
-        if rdebug.type(value) ~= "table" then
-            return
-        end
-        return value, "_ENV"
-    end
-    return rdebug._G, "_G"
 end
 
 local special_has = {}
@@ -154,30 +145,45 @@ function special_has.Return(frameId)
 end
 
 function special_has.Global(frameId)
-    local global = getGlobal(frameId)
-    if not global then
-        return false
+    rdebug.getinfo(frameId, "f", info)
+    local eval, value = rdebug.getupvaluev(info.func, 1)
+    if eval ~= "_ENV" then
+        eval = "_G"
+        value = rdebug._G
     end
-    local asize, hsize = rdebug.tablesize(global)
-    if asize ~= 0 then
-        return true
+    if eval == "_G" and globalCache._G then
+        local t = globalCache._G
+        globalCache[frameId] = t
+        return #t.global > 0
     end
-    local key = nil
-    local next = 0
-    while next < hsize do
-        key, next = rdebug.tablekey(global, next)
-        if not key then
-            break
+    local t = { global = {}, standard = {}, eval = eval, value = value }
+    local asize = 0
+    local loct = rdebug.tablehash(value, 0, MAX_TABLE_FIELD)
+    if loct then
+        asize = rdebug.tablesize(value)
+        for i = 1, #loct, 3 do
+            local key = loct[i]
+            if standard[key] then
+                t.standard[#t.standard+1] = loct[i]
+                t.standard[#t.standard+1] = loct[i+1]
+                t.standard[#t.standard+1] = loct[i+2]
+            else
+                t.global[#t.global+1] = loct[i]
+                t.global[#t.global+1] = loct[i+1]
+                t.global[#t.global+1] = loct[i+2]
+            end
         end
-        if not standard[key] then
-            return true
-        end
     end
-    return false
+    globalCache[frameId] = t
+    if eval == "_G" then
+        globalCache._G = t
+    end
+    return asize ~= 0 or #t.global > 0
 end
 
-function special_has.Standard()
-    return true
+function special_has.Standard(frameId)
+    local t = globalCache[frameId]
+    return #t.standard > 0
 end
 
 local function floatNormalize(str)
@@ -373,37 +379,40 @@ local function varGetShortValue(value)
 end
 
 local function varGetTableValue(t)
-    local asize = rdebug.tablesize(t)
     local str = ''
-    for i = 1, asize do
-        local v = rdebug.indexv(t, i)
-        if str == '' then
-            str = varGetShortValue(v)
-        else
-            str = str..","..varGetShortValue(v)
-        end
-        if #str >= TABLE_VALUE_MAXLEN then
-            return ("{%s,...}"):format(str)
+    do
+        local loct = rdebug.tablearrayv(t)
+        for i = 1, #loct do
+            local v = loct[i]
+            if str == '' then
+                str = varGetShortValue(v)
+            else
+                str = str..","..varGetShortValue(v)
+            end
+            if #str >= TABLE_VALUE_MAXLEN then
+                return ("{%s,...}"):format(str)
+            end
         end
     end
 
-    local loct = rdebug.tablehashv(t, SHORT_TABLE_FIELD)
-    local kvs = {}
-    for i = 1, #loct, 2 do
-        local key, value = loct[i], loct[i + 1]
-        local kn = varGetShortName(key)
-        kvs[#kvs + 1] = { kn, value }
-    end
-    table.sort(kvs, function(a, b) return a[1] < b[1] end)
-
-    for _, kv in ipairs(kvs) do
-        if str == '' then
-            str = kv[1]..'='..varGetShortValue(kv[2])
-        else
-            str = str..','..kv[1]..'='..varGetShortValue(kv[2])
+    do
+        local loct = rdebug.tablehashv(t, 0, SHORT_TABLE_FIELD)
+        local kvs = {}
+        for i = 1, #loct, 2 do
+            local key, value = loct[i], loct[i + 1]
+            local kn = varGetShortName(key)
+            kvs[#kvs + 1] = { kn, value }
         end
-        if #str >= TABLE_VALUE_MAXLEN then
-            return ("{%s,...}"):format(str)
+        table.sort(kvs, function(a, b) return a[1] < b[1] end)
+        for _, kv in ipairs(kvs) do
+            if str == '' then
+                str = kv[1]..'='..varGetShortValue(kv[2])
+            else
+                str = str..','..kv[1]..'='..varGetShortValue(kv[2])
+            end
+            if #str >= TABLE_VALUE_MAXLEN then
+                return ("{%s,...}"):format(str)
+            end
         end
     end
     return ("{%s}"):format(str)
@@ -467,7 +476,7 @@ local function varGetUserdata(value)
     local meta = rdebug.getmetatablev(value)
     if meta ~= nil then
         local fn = rdebug.fieldv(meta, '__debugger_tostring')
-        if fn ~= nil and (rdebug.type(fn) == 'function' or rdebug.type(fn) == 'c function') then
+        if fn ~= nil then
             local ok, res = rdebug.eval(fn, value)
             if ok then
                 return res
@@ -574,7 +583,7 @@ local function varCreateReference(value, evaluateName, presentationHint, context
         result.variablesReference = #varPool
         if type == "table" then
             local asize, hsize = rdebug.tablesize(value)
-            result.indexedVariables = asize + 1
+            result.indexedVariables = arrayBase + asize
             result.namedVariables = hsize
         end
     end
@@ -596,16 +605,14 @@ local function varCreateScopes(frameId, scopes, name, expensive)
         expensive = expensive,
     }
     if name == "Global" then
-        local global, eval = getGlobal(frameId)
-        if global then
-            local scope = scopes[#scopes]
-            local asize, hsize = rdebug.tablesize(global)
-            scope.indexedVariables = asize + 1
-            scope.namedVariables = hsize
-            local var = varPool[#varPool]
-            var.v = global
-            var.eval = eval
-        end
+        local cache = globalCache[frameId]
+        local scope = scopes[#scopes]
+        local asize, hsize = rdebug.tablesize(cache.value)
+        scope.indexedVariables = asize == 0 and 0 or (arrayBase + asize)
+        scope.namedVariables = hsize
+        local var = varPool[#varPool]
+        var.v = cache.value
+        var.eval = cache.eval
     end
 end
 
@@ -695,20 +702,25 @@ local function extandTableIndexed(varRef, start, count)
     local evaluateName = varRef.eval
     local vars = {}
     local last = start + count - 1
-    if start <= 0 then
-        start = 1
+    if start < arrayBase then
+        start = arrayBase
     end
-    for key = start, last do
-        local value = rdebug.indexv(t, key)
+    if last < start then
+        return vars
+    end
+    local loct = rdebug.tablearray(t, start-arrayBase, last-arrayBase)
+    for i = 1, #loct, 2 do
+        local key = start + i // 2
+        local value, valueref = loct[i], loct[i + 1]
         if value ~= nil then
-            local name = (key > 0 and key < 1000) and ('[%03d]'):format(key) or ('%d'):format(key)
+            local name = (key < 1000) and ('[%03d]'):format(key) or ('%d'):format(key)
             varCreate {
                 vars = vars,
                 varRef = varRef,
                 name = name,
                 value = value,
                 evaluateName = evaluateName and ('%s[%d]'):format(evaluateName, key),
-                calcValue = function() return rdebug.index(t, key) end,
+                calcValue = function() return valueref end,
             }
         end
     end
@@ -720,7 +732,7 @@ local function extandTableNamed(varRef)
     local t = varRef.v
     local evaluateName = varRef.eval
     local vars = {}
-    local loct = rdebug.tablehash(t, MAX_TABLE_FIELD)
+    local loct = rdebug.tablehash(t, 0, MAX_TABLE_FIELD)
     for i = 1, #loct, 3 do
         local key, value, valueref = loct[i], loct[i + 1], loct[i + 2]
         local key_type = rdebug.type(key)
@@ -762,8 +774,9 @@ local function extandTable(varRef, filter, start, count)
         return extandTableIndexed(varRef, start, count)
     elseif filter == 'named' then
         return extandTableNamed(varRef)
+    else
+        return extandTableNamed(varRef)
     end
-    return {}
 end
 
 local function extandFunction(varRef)
@@ -1012,31 +1025,22 @@ function special_extand.Return(varRef)
     return vars
 end
 
-local function isStandardName(v)
-    return rdebug.type(v) == 'string' and standard[rdebug.value(v)]
-end
-
 local function extandGlobalNamed(varRef)
     varRef.extand = varRef.extand or {}
     local frameId = varRef.frameId
     local vars = {}
-    local global, eval = getGlobal(frameId)
-    if not global then
-        return vars
-    end
-    local loct = rdebug.tablehash(global, MAX_TABLE_FIELD)
+    local cache = globalCache[frameId]
+    local loct = cache.global
     for i = 1, #loct, 3 do
         local key, value, valueref = loct[i], loct[i + 1], loct[i + 2]
-        if not isStandardName(key) then
-            varCreate {
-                vars = vars,
-                varRef = varRef,
-                name = varGetName(key),
-                value = value,
-                evaluateName = evaluateTabelKey(eval, key),
-                calcValue = function() return valueref end,
-            }
-        end
+        varCreate {
+            vars = vars,
+            varRef = varRef,
+            name = varGetName(key),
+            value = value,
+            evaluateName = evaluateTabelKey(cache.eval, key),
+            calcValue = function() return valueref end,
+        }
     end
     table.sort(vars, function(a, b) return a.name < b.name end)
     return vars
@@ -1047,30 +1051,27 @@ function special_extand.Global(varRef, filter, start, count)
         return extandTableIndexed(varRef, start, count)
     elseif filter == 'named' then
         return extandGlobalNamed(varRef)
+    else
+        return extandGlobalNamed(varRef)
     end
-    return {}
 end
 
 function special_extand.Standard(varRef)
     varRef.extand = varRef.extand or {}
     local frameId = varRef.frameId
     local vars = {}
-    local global, eval = getGlobal(frameId)
-    if not global then
-        return vars
-    end
-    for name in pairs(standard) do
-        local value = rdebug.fieldv(global, name)
-        if value ~= nil then
-            varCreate {
-                vars = vars,
-                varRef = varRef,
-                name = name,
-                value = value,
-                evaluateName = ("%s.%s"):format(eval, name),
-                calcValue = function() return rdebug.field(global, name) end,
-            }
-        end
+    local cache = globalCache[frameId]
+    local loct = cache.standard
+    for i = 1, #loct, 3 do
+        local key, value, valueref = loct[i], loct[i + 1], loct[i + 2]
+        varCreate {
+            vars = vars,
+            varRef = varRef,
+            name = varGetName(key),
+            value = value,
+            evaluateName = evaluateTabelKey(cache.eval, key),
+            calcValue = function() return valueref end,
+        }
     end
     table.sort(vars, function(a, b) return a.name < b.name end)
     return vars
@@ -1361,11 +1362,11 @@ function m.writeMemory(memoryReference, offset, data, allowPartial)
     elseif memoryRef.type == "userdata" then
         data = base64.decode(data)
         local res = rdebug.udwrite(memoryRef.value, offset, data, allowPartial)
-        if allowPartial then
-            return { bytesWritten = res }
-        end
         if not res then
             return nil, 'Write failed'
+        end
+        if allowPartial then
+            return { bytesWritten = res }
         end
         return {}
     else
@@ -1376,6 +1377,7 @@ end
 function m.clean()
     varPool = {}
     memoryRefPool = {}
+    globalCache = {}
     rdebug.cleanwatch()
 end
 
@@ -1390,9 +1392,9 @@ end
 
 function m.tostring(v)
     local meta = rdebug.getmetatablev(v)
-    if rdebug.type(meta) == "table" then
+    if meta ~= nil then
         local fn = rdebug.fieldv(meta, '__tostring')
-        if fn ~= nil and (rdebug.type(fn) == 'function' or rdebug.type(fn) == 'c function') then
+        if fn ~= nil then
             local ok, res = rdebug.eval(fn, v)
             if ok then
                 return res
@@ -1408,7 +1410,7 @@ function m.tostring(v)
     then
         return tostring(rdebug.value(v))
     end
-    if rdebug.type(meta) == "table" then
+    if meta ~= nil then
         local name = rdebug.fieldv(meta, '__name')
         if name ~= nil then
             type = tostring(rdebug.value(name))

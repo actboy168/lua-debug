@@ -56,22 +56,16 @@ namespace luadebug::table {
         return (unsigned int)(1 << t->lsizenode);
     }
 
-    bool has_zero(const void* tv) {
+    bool array_base_zero() {
         return false;
     }
 
-    int get_zero(lua_State* L, const void* tv) {
-        return 0;
-    }
-
-    int get_kv(lua_State* L, const void* tv, unsigned int i) {
+    bool get_hash_kv(lua_State* L, const void* tv, unsigned int i) {
         const Table* t = (const Table*)tv;
-
-        Node* n = &t->node[i];
+        Node* n        = &t->node[i];
         if (ttisnil(gval(n))) {
-            return 0;
+            return false;
         }
-
         LUA_STKID(L->top) += 2;
         StkId key = LUA_STKID(L->top) - 1;
         StkId val = LUA_STKID(L->top) - 2;
@@ -81,16 +75,17 @@ namespace luadebug::table {
         setobj2s(L, key, &n->i_key.tvk);
 #endif
         setobj2s(L, val, gval(n));
-        return 1;
+        return true;
     }
 
-    int get_k(lua_State* L, const void* t, unsigned int i) {
+    bool get_hash_k(lua_State* L, const void* tv, unsigned int i) {
+        const Table* t = (const Table*)tv;
         if (i >= hash_size(t)) {
-            return 0;
+            return false;
         }
-        Node* n = &((const Table*)t)->node[i];
+        Node* n = &t->node[i];
         if (ttisnil(gval(n))) {
-            return 0;
+            return false;
         }
         StkId key = LUA_STKID(L->top);
 #if LUA_VERSION_NUM >= 504
@@ -99,54 +94,56 @@ namespace luadebug::table {
         setobj2s(L, key, &n->i_key.tvk);
 #endif
         LUA_STKID(L->top) += 1;
-        return 1;
+        return true;
     }
 
-    int get_k(lua_State* L, int idx, unsigned int i) {
-        const void* t = lua_topointer(L, idx);
-        if (!t) {
-            return 0;
-        }
-        return get_k(L, t, i);
-    }
-
-    int get_v(lua_State* L, int idx, unsigned int i) {
-        const Table* t = (const Table*)lua_topointer(L, idx);
-        if (!t) {
-            return 0;
-        }
+    bool get_hash_v(lua_State* L, const void* tv, unsigned int i) {
+        const Table* t = (const Table*)tv;
         if (i >= hash_size(t)) {
-            return 0;
+            return false;
         }
-
         Node* n = &t->node[i];
         if (ttisnil(gval(n))) {
-            return 0;
+            return false;
         }
         setobj2s(L, LUA_STKID(L->top), gval(n));
-
         LUA_STKID(L->top) += 1;
-        return 1;
+        return true;
     }
 
-    int set_v(lua_State* L, int idx, unsigned int i) {
-        const Table* t = (const Table*)lua_topointer(L, idx);
-
-        if (!t) {
-            return 0;
-        }
+    bool set_hash_v(lua_State* L, const void* tv, unsigned int i) {
+        const Table* t = (const Table*)tv;
         if (i >= hash_size(t)) {
-            return 0;
+            return false;
         }
-
         Node* n = &t->node[i];
         if (ttisnil(gval(n))) {
-            return 0;
+            return false;
         }
         setobj2t(L, gval(n), s2v(LUA_STKID(L->top) - 1));
-
         LUA_STKID(L->top) -= 1;
-        return 1;
+        return true;
     }
 
+    bool get_array(lua_State* L, const void* tv, unsigned int i) {
+        const Table* t = (const Table*)tv;
+        if (i >= array_limit(t)) {
+            return false;
+        }
+        TValue* value = &t->array[i];
+        setobj2s(L, LUA_STKID(L->top), value);
+        LUA_STKID(L->top) += 1;
+        return true;
+    }
+
+    bool set_array(lua_State* L, const void* tv, unsigned int i) {
+        const Table* t = (const Table*)tv;
+        if (i >= array_limit(t)) {
+            return false;
+        }
+        TValue* value = &t->array[i];
+        setobj2t(L, value, s2v(LUA_STKID(L->top) - 1));
+        LUA_STKID(L->top) -= 1;
+        return true;
+    }
 }

@@ -15,7 +15,7 @@ namespace luadebug::table {
             for (unsigned int i = alimit; i > 0; --i) {
                 TValue* arr = tvref(t->array);
                 if (!tvisnil(&arr[i - 1])) {
-                    return i - 1;
+                    return i;
                 }
             }
         }
@@ -28,102 +28,90 @@ namespace luadebug::table {
         return t->hmask + 1;
     }
 
-    bool has_zero(const void* tv) {
-        const GCtab* t = &((const GCobj*)tv)->tab;
-        return t->asize > 0 && !tvisnil(arrayslot(t, 0));
+    bool array_base_zero() {
+        return true;
     }
 
-    int get_zero(lua_State* L, const void* tv) {
+    bool get_hash_kv(lua_State* L, const void* tv, unsigned int i) {
         const GCtab* t = &((const GCobj*)tv)->tab;
-        if (t->asize == 0) {
-            return 0;
-        }
-        TValue* v = arrayslot(t, 0);
-        if (tvisnil(v)) {
-            return 0;
-        }
-        L->top += 2;
-        TValue* key = L->top - 1;
-        TValue* val = L->top - 2;
-        setintptrV(key, 0);
-        copyTV(L, val, v);
-        return 1;
-    }
-
-    int get_kv(lua_State* L, const void* tv, unsigned int i) {
-        const GCtab* t = &((const GCobj*)tv)->tab;
-
-        Node* node = noderef(t->node);
-        Node* n    = &node[i];
+        Node* node     = noderef(t->node);
+        Node* n        = &node[i];
         if (tvisnil(&n->val)) {
-            return 0;
+            return false;
         }
         L->top += 2;
         TValue* key = L->top - 1;
         TValue* val = L->top - 2;
         copyTV(L, key, &n->key);
         copyTV(L, val, &n->val);
-        return 1;
+        return true;
     }
 
-    int get_k(lua_State* L, const void* tv, unsigned int i) {
+    bool get_hash_k(lua_State* L, const void* tv, unsigned int i) {
         if (i >= hash_size(tv)) {
-            return 0;
+            return false;
         }
         const GCtab* t = &((const GCobj*)tv)->tab;
         Node* node     = noderef(t->node);
         Node* n        = &node[i];
         if (tvisnil(&n->val)) {
-            return 0;
+            return false;
         }
         TValue* key = L->top;
         copyTV(L, key, &n->key);
         L->top += 1;
-        return 1;
+        return true;
     }
 
-    int get_k(lua_State* L, int idx, unsigned int i) {
-        const GCtab* t = &((const GCobj*)lua_topointer(L, idx))->tab;
-        if (!t) {
-            return 0;
-        }
-        return get_k(L, t, i);
-    }
-
-    int get_v(lua_State* L, int idx, unsigned int i) {
-        const GCtab* t = &((const GCobj*)lua_topointer(L, idx))->tab;
-        if (!t) {
-            return 0;
-        }
+    bool get_hash_v(lua_State* L, const void* tv, unsigned int i) {
+        const GCtab* t = &((const GCobj*)tv)->tab;
         if (i >= hash_size(t)) {
-            return 0;
+            return false;
         }
         Node* node = noderef(t->node);
         Node* n    = &node[i];
         if (tvisnil(&n->val)) {
-            return 0;
+            return false;
         }
         copyTV(L, L->top, &n->val);
         L->top += 1;
-        return 1;
+        return true;
     }
 
-    int set_v(lua_State* L, int idx, unsigned int i) {
-        const GCtab* t = &((const GCobj*)lua_topointer(L, idx))->tab;
-        if (!t) {
-            return 0;
-        }
+    bool set_hash_v(lua_State* L, const void* tv, unsigned int i) {
+        const GCtab* t = &((const GCobj*)tv)->tab;
         if (i >= hash_size(t)) {
-            return 0;
+            return false;
         }
         Node* node = noderef(t->node);
         Node* n    = &node[i];
         if (tvisnil(&n->val)) {
-            return 0;
+            return false;
         }
         copyTV(L, &n->val, L->top - 1);
         L->top -= 1;
-        return 1;
+        return true;
     }
 
+    bool get_array(lua_State* L, const void* tv, unsigned int i) {
+        const GCtab* t = &((const GCobj*)tv)->tab;
+        if (i >= array_limit(t)) {
+            return false;
+        }
+        TValue* value = arrayslot(t, i);
+        copyTV(L, L->top, value);
+        L->top += 1;
+        return true;
+    }
+
+    bool set_array(lua_State* L, const void* tv, unsigned int i) {
+        const GCtab* t = &((const GCobj*)tv)->tab;
+        if (i >= array_limit(t)) {
+            return false;
+        }
+        TValue* value = arrayslot(t, i);
+        copyTV(L, value, L->top - 1);
+        L->top -= 1;
+        return true;
+    }
 }

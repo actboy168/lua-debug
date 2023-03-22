@@ -66,7 +66,7 @@ local function findfield(t, f, level)
     if level == 0 then
         return
     end
-    local loct = rdebug.tablehashv(t, 5000)
+    local loct = rdebug.tablehashv(t, 0, 5000)
     for i = 1, #loct, 2 do
         local key, value = loct[i], loct[i + 1]
         if rdebug.type(key) == 'string' then
