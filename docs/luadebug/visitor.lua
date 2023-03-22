@@ -177,16 +177,6 @@ function visitor.tablesize(t)
 end
 
 ---
----@param t any
----@param i integer
----@return string
----@return integer
----搜索下一个类型为string的key。
----
-function visitor.tablekey(t, i)
-end
-
----
 ---@param ud refvalue
 ---@param offset integer
 ---@param count integer
@@ -217,7 +207,7 @@ end
 
 ---
 ---@param v refvalue
----@param new refvalue
+---@param new light-refvalue
 ---@return boolean
 ---赋值new或者newv引用的值到v引用的值，返回是否成功。
 ---

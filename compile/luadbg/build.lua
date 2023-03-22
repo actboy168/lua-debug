@@ -46,6 +46,7 @@ lm:phony {
         "src/luadebug/rdebug_stdio.cpp",
         "src/luadebug/rdebug_utility.cpp",
         "src/luadebug/rdebug_visitor.cpp",
+        "src/luadebug/util/refvalue.cpp",
     },
 }
 
