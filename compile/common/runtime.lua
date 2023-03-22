@@ -183,6 +183,7 @@ for _, luaver in ipairs { "lua51", "lua52", "lua53", "lua54", "lua-latest", "lua
             "src/luadebug/luadbg/*.cpp",
             "src/luadebug/symbolize/*.cpp",
             "src/luadebug/thunk/*.cpp",
+            "src/luadebug/util/*.cpp",
             "src/luadebug/"..compat[luaver].."/**/*.cpp",
         },
         windows = {

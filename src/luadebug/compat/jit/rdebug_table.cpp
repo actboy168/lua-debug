@@ -15,7 +15,7 @@ namespace luadebug::table {
             for (unsigned int i = alimit; i > 0; --i) {
                 TValue* arr = tvref(t->array);
                 if (!tvisnil(&arr[i - 1])) {
-                    return i - 1;
+                    return i;
                 }
             }
         }
@@ -95,18 +95,18 @@ namespace luadebug::table {
 
     bool get_array(lua_State* L, const void* tv, unsigned int i) {
         const GCtab* t = &((const GCobj*)tv)->tab;
-        if (i >= array_size(t)) {
+        if (i >= array_limit(t)) {
             return false;
         }
         TValue* value = arrayslot(t, i);
-        copyTV(L, value, L->top - 1);
+        copyTV(L, L->top, value);
         L->top += 1;
         return true;
     }
 
     bool set_array(lua_State* L, const void* tv, unsigned int i) {
         const GCtab* t = &((const GCobj*)tv)->tab;
-        if (i >= array_size(t)) {
+        if (i >= array_limit(t)) {
             return false;
         }
         TValue* value = arrayslot(t, i);

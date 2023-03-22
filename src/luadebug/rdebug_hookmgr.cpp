@@ -105,7 +105,7 @@ static bool get_callback(luadbg_State* cL) {
 }
 
 int copy_value(lua_State* from, luadbg_State* to, bool ref);
-void unref_value(lua_State* from, int ref);
+void registry_unref(lua_State* from, int ref);
 
 #define LOG(...)                         \
     do {                                 \
@@ -442,7 +442,7 @@ struct hookmgr {
         if (luadbg_pcall(cL, 3, 0, 0) != LUADBG_OK) {
             luadbg_pop(cL, 1);
         }
-        unref_value(hL, ref);
+        registry_unref(hL, ref);
     }
 #endif
 
@@ -927,7 +927,7 @@ int event(luadbg_State* cL, lua_State* hL, const char* name, int start) {
     }
     int nres = call_event(cL, nargs);
     for (int i = 0; i < nargs; ++i) {
-        unref_value(hL, refs[i]);
+        registry_unref(hL, refs[i]);
     }
     return nres;
 }
