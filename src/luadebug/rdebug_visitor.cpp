@@ -658,7 +658,7 @@ static int client_getuservalue(luadbg_State* L, lua_State* cL, int getref) {
     }
     if (!getref) {
         if (lua_getiuservalue(cL, -1, n) == LUA_TNONE) {
-            lua_pop(cL, 1);
+            lua_pop(cL, 2);
             return 0;
         }
         if (copy_to_dbg(cL, L) != LUA_TNONE) {
