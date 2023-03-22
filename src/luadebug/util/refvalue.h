@@ -2,7 +2,8 @@
 
 #include <array>
 #include <type_traits>
-#include <variant>
+
+#include "util/variant.h"
 
 struct lua_State;
 struct luadbg_State;
@@ -45,7 +46,7 @@ namespace luadebug::refvalue {
     struct TABLE_HASH_VAL {
         unsigned int index;
     };
-    using value = std::variant<
+    using value = variant<
         FRAME_LOCAL,
         FRAME_FUNC,
         GLOBAL,
@@ -57,6 +58,7 @@ namespace luadebug::refvalue {
         TABLE_ARRAY,
         TABLE_HASH_KEY,
         TABLE_HASH_VAL>;
+    static_assert(std::is_trivially_copyable_v<value>);
 
     template <typename T>
     struct allow_as_root : public std::false_type {};
@@ -88,7 +90,6 @@ namespace luadebug::refvalue {
     template <>
     struct allow_as_child<TABLE_HASH_VAL> : public std::true_type {};
 
-    static_assert(std::is_trivially_copyable_v<value>);
     int eval(value* v, lua_State* cL);
     bool assign(value* v, lua_State* cL);
     value* create_userdata(luadbg_State* L, int n);

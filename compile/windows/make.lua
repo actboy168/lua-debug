@@ -18,6 +18,13 @@ lm:build "x86_64" {
 lm:import "3rd/bee.lua/make.lua"
 require "compile.common.lua-debug"
 
+if lm.enable_sanitize then
+    lm:msvc_copydll "copy_asan_to_bin" {
+        type = "asan",
+        output = "publish/bin/",
+    }
+end
+
 lm:lua_dll 'inject' {
     bindir = "publish/bin",
     defines = "BEE_INLINE",
@@ -51,5 +58,6 @@ lm:default {
     "launcher",
     "runtime",
     "x86_64",
+    lm.enable_sanitize and "copy_asan_to_bin",
     lm.mode == "debug" and "tests"
 }
