@@ -27,6 +27,11 @@ if lm.mode == "debug" then
     }
 end
 
+if lm.test then
+    require "compile.test.make"
+    return
+end
+
 require "compile.common.make"
 
 if lm.os == "windows" then

@@ -30,18 +30,3 @@ lm:source_set "frida" {
     linkdirs = dir,
     links = "frida-gum",
 }
-
-if lm.mode == "debug" then
-    lm:executable("test_frida") {
-        bindir = lm.builddir.."/tests",
-        deps = "frida",
-        includes = "3rd/frida_gum/gumpp",
-        sources = "test/interceptor.cpp",
-    }
-    lm:executable ("test_symbol") {
-        bindir = lm.builddir.."/tests",
-        deps = "frida",
-        sources = "test/symbol/*.c",
-        includes = {dir, "3rd/frida_gum/gumpp"},
-    }
-end

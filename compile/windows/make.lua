@@ -40,15 +40,6 @@ lm:lua_dll 'inject' {
     },
     links = "advapi32",
 }
-if lm.mode == "debug" then
-    lm:executable "test_delayload" {
-        sources = "test/delayload.cpp",
-        includes = { "src/launcher", "3rd/lua/lua54/" },
-    }
-    lm:phony "tests" {
-        deps = { "test_frida", "test_delayload", "test_symbol" }
-    }
-end
 
 lm:default {
     "common",
@@ -59,5 +50,4 @@ lm:default {
     "runtime",
     "x86_64",
     lm.enable_sanitize and "copy_asan_to_bin",
-    lm.mode == "debug" and "tests"
 }
