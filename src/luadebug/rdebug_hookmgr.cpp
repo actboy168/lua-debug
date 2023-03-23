@@ -13,6 +13,11 @@
 
 #if LUA_VERSION_NUM >= 502
 #    include <lstate.h>
+#    if defined(LUA_VERSION_LATEST)
+#        define LUA_STKID(s) s.p
+#    else
+#        define LUA_STKID(s) s
+#    endif
 #endif
 
 class bpmap {
@@ -53,16 +58,6 @@ private:
     // TODO: bullet size可以压缩到一个int64_t
     luadebug::flatmap<intptr_t, bool> m_flatmap;
 };
-
-#if LUA_VERSION_NUM < 504
-#    define s2v(o) (o)
-#endif
-
-#if defined(LUA_VERSION_LATEST)
-#    define LUA_STKID(s) s.p
-#else
-#    define LUA_STKID(s) s
-#endif
 
 static int HOOK_MGR      = 0;
 static int HOOK_CALLBACK = 0;
