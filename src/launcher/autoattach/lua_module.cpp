@@ -64,7 +64,7 @@ namespace luadebug::autoattach {
         // TODO: from signature
     }
 
-    bool load_luadebug_dll(lua_version version) {
+    bool load_luadebug_dll(lua_version version, lua_resolver& resolver) {
         auto dllpath = bee::path_helper::dll_path();
         if (!dllpath) {
             return false;
@@ -128,7 +128,7 @@ namespace luadebug::autoattach {
             resolver.version = lua_version_to_string(version);
 
         if (version != lua_version::unknown) {
-            if (!load_luadebug_dll(version))
+            if (!load_luadebug_dll(version, resolver))
                 return false;
         }
 

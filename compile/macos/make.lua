@@ -57,6 +57,11 @@ else
     }
 end
 
+lm:phony "compile_signature" {
+    deps = { "signature_compiler", "merge_launcher", "runtime", "lua-debug" },
+    "$luamake", "lua", "compile/signature_compiler.lua"
+}
+
 lm:default {
     "common",
     "lua-debug",
