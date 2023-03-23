@@ -5,9 +5,9 @@
 
 #include "rdebug_debughost.h"
 #include "rdebug_eventfree.h"
-#include "rdebug_flatmap.h"
 #include "rdebug_lua.h"
 #include "thunk/thunk.h"
+#include "util/flatmap.h"
 
 #ifdef LUAJIT_VERSION
 #    include <lj_obj.h>
