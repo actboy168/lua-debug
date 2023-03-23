@@ -79,18 +79,18 @@ local function putTable(t)
         level = level + 1
 
         local count = 0
-        local loct = rdebug.tablearrayv(t)
-        for i = 1, #loct do
+        local arrayt = rdebug.tablearrayv(t)
+        for i = 1, #arrayt do
             if count > 0 then puts(',') end
             puts(' ')
-            putValue(loct[i])
+            putValue(arrayt[i])
             count = count + 1
         end
 
-        local loct = rdebug.tablehashv(t)
+        local hasht = rdebug.tablehashv(t)
         local kvs = {}
-        for i = 1, #loct, 2 do
-            local key, value = loct[i], loct[i + 1]
+        for i = 1, #hasht, 2 do
+            local key, value = hasht[i], hasht[i + 1]
             kvs[#kvs + 1] = { key, value }
         end
         table.sort(kvs, sortKeys)
@@ -116,7 +116,7 @@ local function putTable(t)
         level = level - 1
         if #kvs > 0 or metatable then
             newline()
-        elseif asize > 0 then
+        elseif #arrayt > 0 then
             puts(' ')
         end
         puts('}')

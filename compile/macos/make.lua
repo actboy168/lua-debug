@@ -56,20 +56,6 @@ else
     }
 end
 
-if lm.mode == "debug" then
-    lm:executable "test_delayload" {
-        sources = "test/delayload.cpp",
-        includes = { "src/launcher", "3rd/lua/lua54" },
-    }
-    lm:executable "testwaitdll" {
-        sources = "test/waitdll.cpp",
-        includes = { "3rd/lua/lua51" },
-    }
-    lm:phony "tests" {
-        deps = { "test_frida", "test_delayload", "test_symbol", "testwaitdll" }
-    }
-end
-
 lm:default {
     "common",
     "lua-debug",
@@ -77,5 +63,4 @@ lm:default {
     "process_inject_helper",
     "merge_launcher",
     lm.platform == "darwin-arm64" and "x86_64",
-    lm.mode == "debug" and "tests"
 }

@@ -18,13 +18,6 @@ lm:build "x86_64" {
 lm:import "3rd/bee.lua/make.lua"
 require "compile.common.lua-debug"
 
-if lm.enable_sanitize then
-    lm:msvc_copydll "copy_asan_to_bin" {
-        type = "asan",
-        output = "publish/bin/",
-    }
-end
-
 lm:lua_dll 'inject' {
     bindir = "publish/bin",
     defines = "BEE_INLINE",
@@ -40,24 +33,13 @@ lm:lua_dll 'inject' {
     },
     links = "advapi32",
 }
-if lm.mode == "debug" then
-    lm:executable "test_delayload" {
-        sources = "test/delayload.cpp",
-        includes = { "src/launcher", "3rd/lua/lua54/" },
-    }
-    lm:phony "tests" {
-        deps = { "test_frida", "test_delayload", "test_symbol" }
-    }
-end
 
 lm:default {
     "common",
-    "copy_vcredist",
+    lm.mode ~= "debug" and "copy_vcredist",
     "lua-debug",
     "inject",
     "launcher",
     "runtime",
     "x86_64",
-    lm.enable_sanitize and "copy_asan_to_bin",
-    lm.mode == "debug" and "tests"
 }
