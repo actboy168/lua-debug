@@ -107,7 +107,7 @@ namespace luadebug::autoattach {
                 return true;
             }
             if (auto address = (void*)resolver.find_signature(details.name)) {
-                *(void**)details.slot = address;
+                *details.slot = address;
                 log::info("find signature {} to {}", details.name, address);
             }
             return true;
