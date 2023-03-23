@@ -104,8 +104,10 @@ static bool get_callback(luadbg_State* cL) {
     return true;
 }
 
-int copy_value(lua_State* from, luadbg_State* to, bool ref);
-void registry_unref(lua_State* from, int ref);
+namespace luadebug::visitor {
+    int copy_value(lua_State* from, luadbg_State* to, bool ref);
+    void registry_unref(lua_State* from, int ref);
+}
 
 #define LOG(...)                         \
     do {                                 \
@@ -437,12 +439,12 @@ struct hookmgr {
 #    else
         errcode = ar->currentline;
 #    endif
-        int ref = copy_value(hL, cL, true);
+        int ref = luadebug::visitor::copy_value(hL, cL, true);
         luadbg_pushinteger(cL, errcode);
         if (luadbg_pcall(cL, 3, 0, 0) != LUADBG_OK) {
             luadbg_pop(cL, 1);
         }
-        registry_unref(hL, ref);
+        luadebug::visitor::registry_unref(hL, ref);
     }
 #endif
 
@@ -922,12 +924,12 @@ int event(luadbg_State* cL, lua_State* hL, const char* name, int start) {
     refs.resize(nargs);
     for (int i = 0; i < nargs; ++i) {
         lua_pushvalue(hL, start + i);
-        refs[i] = copy_value(hL, cL, true);
+        refs[i] = luadebug::visitor::copy_value(hL, cL, true);
         lua_pop(hL, 1);
     }
     int nres = call_event(cL, nargs);
     for (int i = 0; i < nargs; ++i) {
-        registry_unref(hL, refs[i]);
+        luadebug::visitor::registry_unref(hL, refs[i]);
     }
     return nres;
 }
