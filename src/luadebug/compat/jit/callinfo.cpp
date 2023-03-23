@@ -5,7 +5,7 @@
 
 #include "compat/internal.h"
 
-static cTValue* lj_debug_frame(lua_State* L, int level, int* size) {
+static cTValue* debug_frame(lua_State* L, int level, int* size) {
     cTValue *frame, *nextframe, *bot = tvref(L->stack) + LJ_FR2;
     /* Traverse frames backwards. */
     for (nextframe = frame = L->base - 1; frame > bot;) {
@@ -31,7 +31,7 @@ static cTValue* lj_debug_frame(lua_State* L, int level, int* size) {
 
 CallInfo* lua_getcallinfo(lua_State* L) {
     int size;
-    return const_cast<CallInfo*>(lj_debug_frame(L, 0, &size));
+    return const_cast<CallInfo*>(debug_frame(L, 0, &size));
 }
 
 Proto* lua_ci2proto(CallInfo* ci) {
