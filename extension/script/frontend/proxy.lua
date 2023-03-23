@@ -11,12 +11,14 @@ local initReq
 local m = {}
 
 local function getUnixAddress(pid)
+    --TODO: clear unix file
     local path = WORKDIR / "tmp"
     fs.create_directories(path)
     return "@"..(path / ("pid_%d"):format(pid)):string()
 end
 
 local function ipc_send_config(pid, args)
+    --TODO: clear config file
     fs.create_directories(WORKDIR / "tmp")
     local ipc = require "common.ipc"
     local fd = assert(ipc(WORKDIR, pid, "config", "w"))

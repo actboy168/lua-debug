@@ -73,10 +73,9 @@ namespace luadebug::autoattach {
         if (!dllpath) {
             return false;
         }
+        auto filename = (dllpath.value().parent_path().parent_path() / "tmp" / std::format("ipc_{}_config", Gum::Process::get_id())).string();
 
-        auto filename = std::format("{}/tmp/pid_{}_config", dllpath.value().parent_path().parent_path().generic_string(), Gum::Process::get_id());
-
-        std::ifstream s(filename, s.in);
+        std::ifstream s(filename, s.binary);
         if (!s.is_open())
             return false;
         try {

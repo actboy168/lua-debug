@@ -64,24 +64,26 @@ namespace luadebug::autoattach {
         // TODO: from signature
     }
 
-    bool load_luadebug_dll(lua_version version, lua_resolver& resolver) {
-        if (version != lua_version::unknown)
-            return false;
-
+    bool load_luadebug_dll(lua_version version) {
         auto dllpath = bee::path_helper::dll_path();
         if (!dllpath) {
             return false;
         }
-        auto os =
+#define LUADEBUG_FILE "luadebug"
 #if defined(_WIN32)
-            "windows"
+        auto os = "windows";
+        auto luadebug_name =
+            LUADEBUG_FILE
+            ".dll";
 #elif defined(__ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__)
-            "darwin"
+        auto os = "darwin";
+        auto luadebug_name =
+            LUADEBUG_FILE
+            ".so";
 #else
-            ;
         return false;
 #endif
-            ;
+        ;
         auto arch =
 #if defined(_M_ARM64) || defined(__aarch64__)
             "arm64"
@@ -95,11 +97,10 @@ namespace luadebug::autoattach {
 #endif
             ;
         auto platform = std::format("{}-{}", os, arch);
-        auto path     = (dllpath.value().parent_path().parent_path() / "runtime" / platform / lua_version_to_string(version)).string();
+        auto path     = (dllpath.value().parent_path().parent_path() / "runtime" / platform / lua_version_to_string(version) / luadebug_name).string();
         std::string error;
-        if (Gum::Process::module_load(path.c_str(), &error)) {
-            log::fatal("load luadebug module failed: {}", error);
-            return false;
+        if (!Gum::Process::module_load(path.c_str(), &error)) {
+            log::fatal("load debugger [{}] failed: {}", path, error);
         }
         Gum::Process::module_enumerate_import(path.c_str(), [&](const Gum::ImportDetails& details) -> bool {
             if (std::string_view(details.name).find_first_of("lua") != 0) {
@@ -126,10 +127,9 @@ namespace luadebug::autoattach {
         if (version != lua_version::unknown)
             resolver.version = lua_version_to_string(version);
 
-        if (config.is_signature_mode()) {
-            if (!load_luadebug_dll(version, resolver)) {
+        if (version != lua_version::unknown) {
+            if (!load_luadebug_dll(version))
                 return false;
-            }
         }
 
         watchdog = create_watchdog(attach_lua_vm, version, resolver);

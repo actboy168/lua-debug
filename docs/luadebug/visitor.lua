@@ -36,6 +36,7 @@ visitor._REGISTRY = nil
 ---
 ---@param frame integer
 ---@param index integer
+---@return string | nil
 ---@return refvalue
 ---局部变量。等同于debug.getlocal(frame, index)。
 ---
@@ -45,6 +46,7 @@ end
 ---
 ---@param frame integer
 ---@param index integer
+---@return string | nil
 ---@return light-refvalue
 ---局部变量。等同于debug.getlocal(frame, index)。
 ---
@@ -246,7 +248,7 @@ function visitor.load(script)
 end
 
 ---
----@param f refvalue
+---@param f any
 ---@vararg any
 ---@return boolean
 ---@return ...
@@ -256,7 +258,7 @@ function visitor.watch(f, ...)
 end
 
 ---
----@param f refvalue
+---@param f any
 ---@vararg any
 ---@return boolean
 ---@return string | integer | number | boolean | nil
