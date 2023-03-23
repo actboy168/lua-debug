@@ -63,23 +63,25 @@ namespace luadebug::autoattach {
     }
 
     bool load_luadebug_dll(lua_version version) {
-        if (version != lua_version::unknown)
-            return false;
-
         auto dllpath = bee::path_helper::dll_path();
         if (!dllpath) {
             return false;
         }
-        auto os =
+#define LUADEBUG_FILE "luadebug"
 #if defined(_WIN32)
-            "windows"
+        auto os = "windows";
+        auto luadebug_name =
+            LUADEBUG_FILE
+            ".dll";
 #elif defined(__ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__)
-            "darwin"
+        auto os = "darwin";
+        auto luadebug_name =
+            LUADEBUG_FILE
+            ".so";
 #else
-            ;
         return false;
 #endif
-            ;
+        ;
         auto arch =
 #if defined(_M_ARM64) || defined(__aarch64__)
             "arm64"
@@ -93,10 +95,10 @@ namespace luadebug::autoattach {
 #endif
             ;
         auto platform = std::format("{}-{}", os, arch);
-        auto path     = (dllpath.value().parent_path().parent_path() / "runtime" / platform / lua_version_to_string(version)).string();
+        auto path     = (dllpath.value().parent_path().parent_path() / "runtime" / platform / lua_version_to_string(version) / luadebug_name).string();
         std::string error;
         if (!Gum::Process::module_load(path.c_str(), &error)) {
-            log::fatal("load remotedebug dll failed: {}", error);
+            log::fatal("load debugger [{}] failed: {}", path, error);
         }
         return true;
     }
@@ -111,8 +113,9 @@ namespace luadebug::autoattach {
         version = get_lua_version(*this);
         log::info("current lua version: {}", lua_version_to_string(version));
 
-        if (!load_luadebug_dll(version)) {
-            return false;
+        if (version != lua_version::unknown) {
+            if (!load_luadebug_dll(version))
+                return false;
         }
         watchdog = create_watchdog(attach_lua_vm, version, resolver);
         if (!watchdog) {
