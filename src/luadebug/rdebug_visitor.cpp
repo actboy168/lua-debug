@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <limits>
 
+#include "compat/internal.h"
 #include "compat/table.h"
 #include "rdebug_debughost.h"
 #include "rdebug_lua.h"

@@ -146,10 +146,3 @@ inline int lua_setiuservalue(lua_State* L, int idx, int n) {
     return 1;
 }
 #endif
-
-#ifdef LUAJIT_VERSION
-const char* lua_cdatatype(lua_State* L, int idx);
-int lua_isinteger(lua_State* L, int idx);
-#endif
-
-const void* lua_tocfunction_pointer(lua_State* L, int idx);
