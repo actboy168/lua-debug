@@ -1,6 +1,6 @@
 ﻿#include "rdebug_debughost.h"
 
-#include <stdlib.h>
+#include <cstdlib>
 
 #include "luadbg/bee_module.h"
 #include "rdebug_lua.h"

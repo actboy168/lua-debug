@@ -1,7 +1,8 @@
+#include <bee/utility/dynarray.h>
+
 #include <chrono>
 #include <cstdint>
 #include <memory>
-#include <vector>
 
 #include "rdebug_debughost.h"
 #include "rdebug_eventfree.h"
@@ -10,6 +11,9 @@
 #include "util/flatmap.h"
 
 #ifdef LUAJIT_VERSION
+#    include <lj_arch.h>
+#    include <lj_debug.h>
+#    include <lj_frame.h>
 #    include <lj_obj.h>
 using Proto = GCproto;
 #else
@@ -57,10 +61,6 @@ private:
 };
 
 #ifdef LUAJIT_VERSION
-#    include <lj_arch.h>
-#    include <lj_debug.h>
-#    include <lj_frame.h>
-#    include <lj_obj.h>
 using lu_byte  = uint8_t;
 using CallInfo = TValue;
 cTValue* lj_debug_frame(lua_State* L, int level, int* size) {
@@ -325,7 +325,6 @@ struct hookmgr {
             level++;
         }
 #elif defined(LUAJIT_VERSION)
-
         cTValue *frame, *nextframe, *bot = tvref(L->stack) + LJ_FR2;
         /* Traverse frames backwards. */
         for (nextframe = frame = L->base - 1; frame > bot;) {
@@ -928,8 +927,7 @@ int event(luadbg_State* cL, lua_State* hL, const char* name, int start) {
     if (nargs <= 0) {
         return call_event(cL, 0);
     }
-    std::vector<int> refs;
-    refs.resize(nargs);
+    bee::dynarray<int> refs(nargs);
     for (int i = 0; i < nargs; ++i) {
         lua_pushvalue(hL, start + i);
         refs[i] = luadebug::visitor::registry_copy_value(hL, cL);

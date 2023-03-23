@@ -1,6 +1,5 @@
 #pragma once
 
-#include <assert.h>
 #include <bee/nonstd/bit.h>
 #include <bee/nonstd/to_underlying.h>
 #include <bee/nonstd/unreachable.h>
