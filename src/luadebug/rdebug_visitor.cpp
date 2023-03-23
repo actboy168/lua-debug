@@ -5,12 +5,18 @@
 #include <algorithm>
 #include <limits>
 
+#include "compat/table.h"
 #include "rdebug_debughost.h"
 #include "rdebug_lua.h"
-#include "rdebug_table.h"
 #include "symbolize/symbolize.h"
 #include "util/protected_area.h"
 #include "util/refvalue.h"
+
+#ifdef LUAJIT_VERSION
+#    include <lj_cdata.h>
+#else
+#    include <lstate.h>
+#endif
 
 namespace luadebug::visitor {
     static int debug_pcall(lua_State* L, int nargs, int nresults, int errfunc) {
@@ -558,16 +564,9 @@ namespace luadebug::visitor {
             luadbg_pushstring(L, "lightuserdata");
             break;
 #ifdef LUAJIT_VERSION
-        case LUA_TCDATA: {
-            cTValue* o  = index2adr(cL, -1);
-            GCcdata* cd = cdataV(o);
-            if (cd->ctypeid == CTID_CTYPEID) {
-                luadbg_pushstring(L, "ctype");
-            }
-            else {
-                luadbg_pushstring(L, "cdata");
-            }
-        } break;
+        case LUA_TCDATA:
+            luadbg_pushstring(L, lua_cdatatype(cL, -1));
+            break;
 #endif
         default:
             luadbg_pushstring(L, lua_typename(cL, t));
@@ -935,45 +934,9 @@ namespace luadebug::visitor {
             luadbg_pushnil(L);
             return 1;
         }
-#ifdef LUAJIT_VERSION
-        cTValue* o = index2adr(cL, -1);
-        void* cfn  = nullptr;
-        if (tvisfunc(o)) {
-            GCfunc* fn = funcV(o);
-            cfn        = (void*)(isluafunc(fn) ? NULL : fn->c.f);
-        }
-        else if (tviscdata(o)) {
-            GCcdata* cd  = cdataV(o);
-            CTState* cts = ctype_cts(cL);
-            if (cd->ctypeid != CTID_CTYPEID) {
-                cfn = cdataptr(cd);
-                if (cfn) {
-                    CType* ct = ctype_get(cts, cd->ctypeid);
-                    if (ctype_isref(ct->info) || ctype_isptr(ct->info)) {
-                        cfn = cdata_getptr(cfn, ct->size);
-                        ct  = ctype_rawchild(cts, ct);
-                    }
-                    if (!ctype_isfunc(ct->info)) {
-                        cfn = nullptr;
-                    }
-                    else if (cfn) {
-                        cfn = cdata_getptr(cfn, ct->size);
-                    }
-                }
-            }
-        }
-#else
-        if (lua_type(cL, -1) != LUA_TFUNCTION) {
-            lua_pop(cL, 1);
-            luadbg_pushnil(L);
-            return 1;
-        }
-        lua_CFunction cfn = lua_tocfunction(cL, -1);
-#endif
-
+        const void* cfn = lua_tocfunction_pointer(cL, -1);
         lua_pop(cL, 1);
-
-        auto info = symbolize((void*)cfn);
+        auto info = symbolize(cfn);
         if (!info.has_value()) {
             luadbg_pushnil(L);
             return 1;

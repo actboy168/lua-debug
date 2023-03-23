@@ -5,8 +5,8 @@
 #include <cassert>
 #include <cstring>
 
+#include "compat/table.h"
 #include "rdebug_lua.h"
-#include "rdebug_table.h"
 
 namespace luadebug::refvalue {
     template <typename T>

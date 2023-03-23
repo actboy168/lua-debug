@@ -9,6 +9,14 @@
 #include "rdebug_lua.h"
 #include "thunk/thunk.h"
 
+#ifdef LUAJIT_VERSION
+#    include <lj_obj.h>
+using Proto = GCproto;
+#else
+#    include <lobject.h>
+#    include <lstate.h>
+#endif
+
 class bpmap {
 public:
     enum class status {
