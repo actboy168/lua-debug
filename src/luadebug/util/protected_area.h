@@ -16,7 +16,7 @@ namespace luadebug {
     struct protected_area {
         using visitor = int (*)(luadbg_State* L, lua_State* cL);
         static int raise_error(luadbg_State* L, lua_State* cL, const char* msg) {
-            leave(cL);
+            leave(L, cL);
             luadbg_pushstring(L, msg);
             return luadbg_error(L);
         }
@@ -122,44 +122,73 @@ namespace luadebug {
             lua_State* cL = entry(L);
             try {
                 int r = func(L, cL);
-                assert(top == lua_gettop(cL));
-                leave(cL);
+                check_leave(L, cL);
                 return r;
             } catch (const std::exception& e) {
                 fprintf(stderr, "catch std::exception: %s\n", e.what());
-                leave(cL);
+                leave(L, cL);
                 return 0;
             } catch (...) {
                 fprintf(stderr, "catch unknown exception\n");
-                leave(cL);
+                leave(L, cL);
                 return 0;
             }
         }
 
     private:
-        static inline int top = -1;
+        static inline int CLIENT_TOP;
         static inline lua_State* entry(luadbg_State* L) {
-            if (top >= 0) {
-                luadbgL_error(L, "can't recursive");
+            if (luadbg_rawgetp(L, LUADBG_REGISTRYINDEX, &CLIENT_TOP) != LUA_TNIL) {
+                luadbg_Integer top = luadbg_tointeger(L, -1);
+                if (top >= 0) {
+                    luadbgL_error(L, "can't recursive");
+                }
             }
+            luadbg_pop(L, 1);
             lua_State* cL = debughost::get(L);
-            top           = lua_gettop(cL);
+            luadbg_pushinteger(L, (luadbg_Integer)lua_gettop(cL));
+            luadbg_rawsetp(L, LUADBG_REGISTRYINDEX, &CLIENT_TOP);
             return cL;
         }
-        static inline void leave(lua_State* cL) {
-            if (top < 0) {
+        static inline void check_leave(luadbg_State* L, lua_State* cL) {
+            if (luadbg_rawgetp(L, LUADBG_REGISTRYINDEX, &CLIENT_TOP) == LUA_TNIL) {
+                luadbgL_error(L, "not expected");
                 return;
             }
-            lua_settop(cL, top);
-            top = -1;
+            luadbg_Integer top = luadbg_tointeger(L, -1);
+            luadbg_pop(L, 1);
+            if (top != lua_gettop(cL)) {
+                luadbgL_error(L, "not expected");
+            }
+            luadbg_pushnil(L);
+            luadbg_rawsetp(L, LUADBG_REGISTRYINDEX, &CLIENT_TOP);
+        }
+        static inline void leave(luadbg_State* L, lua_State* cL) {
+            if (luadbg_rawgetp(L, LUADBG_REGISTRYINDEX, &CLIENT_TOP) == LUA_TNIL) {
+                luadbg_pop(L, 1);
+                return;
+            }
+            luadbg_Integer top = luadbg_tointeger(L, -1);
+            luadbg_pop(L, 1);
+            if (top >= 0) {
+                lua_settop(cL, static_cast<int>(top));
+            }
+            luadbg_pushnil(L);
+            luadbg_rawsetp(L, LUADBG_REGISTRYINDEX, &CLIENT_TOP);
         }
         static inline void leave(luadbg_State* L) {
-            if (top < 0) {
+            if (luadbg_rawgetp(L, LUADBG_REGISTRYINDEX, &CLIENT_TOP) == LUA_TNIL) {
+                luadbg_pop(L, 1);
                 return;
             }
-            lua_State* cL = debughost::get(L);
-            lua_settop(cL, top);
-            top = -1;
+            luadbg_Integer top = luadbg_tointeger(L, -1);
+            luadbg_pop(L, 1);
+            if (top >= 0) {
+                lua_State* cL = debughost::get(L);
+                lua_settop(cL, static_cast<int>(top));
+            }
+            luadbg_pushnil(L);
+            luadbg_rawsetp(L, LUADBG_REGISTRYINDEX, &CLIENT_TOP);
         }
     };
 
