@@ -193,17 +193,11 @@ namespace luadebug::visitor {
         }
     }
 
-    int copy_value(lua_State* from, luadbg_State* to, bool ref) {
-        if (copy_to_dbg(from, to) == LUA_TNONE) {
-            if (ref) {
-                return registry_ref_simple(to, from, refvalue::REGISTRY_TYPE::DEBUG_REF);
-            }
-            else {
-                luadbg_pushfstring(to, "%s: %p", lua_typename(from, lua_type(from, -1)), lua_topointer(from, -1));
-                return LUA_NOREF;
-            }
+    int registry_copy_value(lua_State* from, luadbg_State* to) {
+        if (copy_to_dbg(from, to) != LUA_TNONE) {
+            return LUA_NOREF;
         }
-        return LUA_NOREF;
+        return registry_ref_simple(to, from, refvalue::REGISTRY_TYPE::DEBUG_REF);
     }
 
     static int client_getlocal(luadbg_State* L, lua_State* cL, protected_area& area, int getref) {
@@ -460,11 +454,29 @@ namespace luadebug::visitor {
     }
 
     static int lclient_value(luadbg_State* L, lua_State* cL, protected_area& area) {
-        if (copy_from_dbg(L, cL, area, 1) == LUA_TNONE) {
+        switch (luadbg_type(L, 1)) {
+        case LUA_TNIL:
+        case LUA_TBOOLEAN:
+        case LUA_TNUMBER:
+        case LUA_TSTRING:
+        case LUA_TLIGHTUSERDATA:
+            luadbg_settop(L, 1);
+            return 1;
+        default:
+            luadbg_pushnil(L);
+            return 1;
+        case LUA_TUSERDATA:
+            break;
+        }
+        area.check_client_stack(3);
+        refvalue::value* v = (refvalue::value*)luadbg_touserdata(L, 1);
+        if (refvalue::eval(v, cL) == LUA_TNONE) {
             luadbg_pushnil(L);
             return 1;
         }
-        copy_value(cL, L, false);
+        if (copy_to_dbg(cL, L) == LUA_TNONE) {
+            luadbg_pushfstring(L, "%s: %p", lua_typename(cL, lua_type(cL, -1)), lua_topointer(cL, -1));
+        }
         lua_pop(cL, 1);
         return 1;
     }
@@ -837,7 +849,9 @@ namespace luadebug::visitor {
             return 2;
         }
         luadbg_pushboolean(L, 1);
-        copy_value(cL, L, false);
+        if (copy_to_dbg(cL, L) == LUA_TNONE) {
+            luadbg_pushfstring(L, "%s: %p", lua_typename(cL, lua_type(cL, -1)), lua_topointer(cL, -1));
+        }
         lua_pop(cL, 1);
         return 2;
     }
