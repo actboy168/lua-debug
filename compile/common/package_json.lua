@@ -476,6 +476,10 @@ for k, v in pairs(attributes.common) do
     attributes.attach[k] = v
     attributes.launch[k] = v
 end
+
+table.insert(attributes.attach.luaVersion.enum, "unknown")
+attributes.attach.luaVersion.default = "unknown"
+
 json.contributes.debuggers[1].configurationAttributes = {
     launch = { properties = attributes.launch },
     attach = { properties = attributes.attach },
