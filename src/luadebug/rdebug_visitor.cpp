@@ -207,7 +207,8 @@ namespace luadebug::visitor {
         return registry_ref_simple(to, from, refvalue::REGISTRY_TYPE::DEBUG_REF);
     }
 
-    static int client_getlocal(luadbg_State* L, lua_State* cL, protected_area& area, int getref) {
+    template <bool getref = true>
+    static int client_getlocal(luadbg_State* L, lua_State* cL, protected_area& area) {
         auto frame = area.checkinteger<uint16_t>(L, 1);
         auto n     = area.checkinteger<int16_t>(L, 2);
         lua_Debug ar;
@@ -230,15 +231,8 @@ namespace luadebug::visitor {
         return 2;
     }
 
-    static int lclient_getlocal(luadbg_State* L, lua_State* cL, protected_area& area) {
-        return client_getlocal(L, cL, area, 1);
-    }
-
-    static int lclient_getlocalv(luadbg_State* L, lua_State* cL, protected_area& area) {
-        return client_getlocal(L, cL, area, 0);
-    }
-
-    static int client_field(luadbg_State* L, lua_State* cL, protected_area& area, int getref) {
+    template <bool getref = true>
+    static int client_field(luadbg_State* L, lua_State* cL, protected_area& area) {
         auto field = area.checkstring(L, 2);
         if (!copy_from_dbg(L, cL, area, 1, LUADBG_TTABLE)) {
             return 0;
@@ -277,15 +271,8 @@ namespace luadebug::visitor {
         return 0;
     }
 
-    static int lclient_field(luadbg_State* L, lua_State* cL, protected_area& area) {
-        return client_field(L, cL, area, 1);
-    }
-
-    static int lclient_fieldv(luadbg_State* L, lua_State* cL, protected_area& area) {
-        return client_field(L, cL, area, 0);
-    }
-
-    static int client_tablearray(luadbg_State* L, lua_State* cL, protected_area& area, int getref) {
+    template <bool getref = true>
+    static int client_tablearray(luadbg_State* L, lua_State* cL, protected_area& area) {
         unsigned int i = area.optinteger<unsigned int>(L, 2, 0);
         unsigned int j = area.optinteger<unsigned int>(L, 3, (std::numeric_limits<unsigned int>::max)());
         area.check_client_stack(4);
@@ -328,15 +315,8 @@ namespace luadebug::visitor {
         return 1;
     }
 
-    static int lclient_tablearray(luadbg_State* L, lua_State* cL, protected_area& area) {
-        return client_tablearray(L, cL, area, 1);
-    }
-
-    static int lclient_tablearrayv(luadbg_State* L, lua_State* cL, protected_area& area) {
-        return client_tablearray(L, cL, area, 0);
-    }
-
-    static int client_tablehash(luadbg_State* L, lua_State* cL, protected_area& area, int getref) {
+    template <bool getref = true>
+    static int client_tablehash(luadbg_State* L, lua_State* cL, protected_area& area) {
         unsigned int i = area.optinteger<unsigned int>(L, 2, 0);
         unsigned int j = area.optinteger<unsigned int>(L, 3, (std::numeric_limits<unsigned int>::max)());
         area.check_client_stack(4);
@@ -382,14 +362,6 @@ namespace luadebug::visitor {
         }
         lua_pop(cL, 1);
         return 1;
-    }
-
-    static int lclient_tablehash(luadbg_State* L, lua_State* cL, protected_area& area) {
-        return client_tablehash(L, cL, area, 1);
-    }
-
-    static int lclient_tablehashv(luadbg_State* L, lua_State* cL, protected_area& area) {
-        return client_tablehash(L, cL, area, 0);
     }
 
     static int lclient_tablesize(luadbg_State* L, lua_State* cL, protected_area& area) {
@@ -488,9 +460,6 @@ namespace luadebug::visitor {
         return 1;
     }
 
-    // userdata ref
-    // any value
-    // ref = value
     static int lclient_assign(luadbg_State* L, lua_State* cL, protected_area& area) {
         area.check_type(L, 1, LUADBG_TUSERDATA);
         area.check_client_stack(3);
@@ -577,7 +546,8 @@ namespace luadebug::visitor {
         return 1;
     }
 
-    static int client_getupvalue(luadbg_State* L, lua_State* cL, protected_area& area, int getref) {
+    template <bool getref = true>
+    static int client_getupvalue(luadbg_State* L, lua_State* cL, protected_area& area) {
         auto index = area.checkinteger<int>(L, 2);
         if (!copy_from_dbg(L, cL, area, 1, LUADBG_TFUNCTION)) {
             return 0;
@@ -600,15 +570,8 @@ namespace luadebug::visitor {
         return 2;
     }
 
-    static int lclient_getupvalue(luadbg_State* L, lua_State* cL, protected_area& area) {
-        return client_getupvalue(L, cL, area, 1);
-    }
-
-    static int lclient_getupvaluev(luadbg_State* L, lua_State* cL, protected_area& area) {
-        return client_getupvalue(L, cL, area, 0);
-    }
-
-    static int client_getmetatable(luadbg_State* L, lua_State* cL, protected_area& area, int getref) {
+    template <bool getref = true>
+    static int client_getmetatable(luadbg_State* L, lua_State* cL, protected_area& area) {
         area.check_client_stack(2);
         int t = copy_from_dbg(L, cL, area, 1);
         if (t == LUADBG_TNONE) {
@@ -635,15 +598,8 @@ namespace luadebug::visitor {
         }
     }
 
-    static int lclient_getmetatable(luadbg_State* L, lua_State* cL, protected_area& area) {
-        return client_getmetatable(L, cL, area, 1);
-    }
-
-    static int lclient_getmetatablev(luadbg_State* L, lua_State* cL, protected_area& area) {
-        return client_getmetatable(L, cL, area, 0);
-    }
-
-    static int client_getuservalue(luadbg_State* L, lua_State* cL, protected_area& area, int getref) {
+    template <bool getref = true>
+    static int client_getuservalue(luadbg_State* L, lua_State* cL, protected_area& area) {
         int n = area.optinteger<int>(L, 2, 1);
         area.check_client_stack(2);
         if (!copy_from_dbg(L, cL, area, 1, LUADBG_TUSERDATA)) {
@@ -665,14 +621,6 @@ namespace luadebug::visitor {
         refvalue::create(L, 1, refvalue::USERVALUE { n });
         luadbg_pushboolean(L, 1);
         return 2;
-    }
-
-    static int lclient_getuservalue(luadbg_State* L, lua_State* cL, protected_area& area) {
-        return client_getuservalue(L, cL, area, 1);
-    }
-
-    static int lclient_getuservaluev(luadbg_State* L, lua_State* cL, protected_area& area) {
-        return client_getuservalue(L, cL, area, 0);
     }
 
     static int lclient_getinfo(luadbg_State* L, lua_State* cL, protected_area& area) {
@@ -941,20 +889,20 @@ namespace luadebug::visitor {
 
     static int luaopen(luadbg_State* L) {
         luadbgL_Reg l[] = {
-            { "getlocal", protected_call<lclient_getlocal> },
-            { "getlocalv", protected_call<lclient_getlocalv> },
-            { "getupvalue", protected_call<lclient_getupvalue> },
-            { "getupvaluev", protected_call<lclient_getupvaluev> },
-            { "getmetatable", protected_call<lclient_getmetatable> },
-            { "getmetatablev", protected_call<lclient_getmetatablev> },
-            { "getuservalue", protected_call<lclient_getuservalue> },
-            { "getuservaluev", protected_call<lclient_getuservaluev> },
-            { "field", protected_call<lclient_field> },
-            { "fieldv", protected_call<lclient_fieldv> },
-            { "tablearray", protected_call<lclient_tablearray> },
-            { "tablearrayv", protected_call<lclient_tablearrayv> },
-            { "tablehash", protected_call<lclient_tablehash> },
-            { "tablehashv", protected_call<lclient_tablehashv> },
+            { "getlocal", protected_call<client_getlocal> },
+            { "getlocalv", protected_call<client_getlocal<false>> },
+            { "getupvalue", protected_call<client_getupvalue> },
+            { "getupvaluev", protected_call<client_getupvalue<false>> },
+            { "getmetatable", protected_call<client_getmetatable> },
+            { "getmetatablev", protected_call<client_getmetatable<false>> },
+            { "getuservalue", protected_call<client_getuservalue> },
+            { "getuservaluev", protected_call<client_getuservalue<false>> },
+            { "field", protected_call<client_field> },
+            { "fieldv", protected_call<client_field<false>> },
+            { "tablearray", protected_call<client_tablearray> },
+            { "tablearrayv", protected_call<client_tablearray<false>> },
+            { "tablehash", protected_call<client_tablehash> },
+            { "tablehashv", protected_call<client_tablehash<false>> },
             { "tablesize", protected_call<lclient_tablesize> },
             { "udread", protected_call<lclient_udread> },
             { "udwrite", protected_call<lclient_udwrite> },
