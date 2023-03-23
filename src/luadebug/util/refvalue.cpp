@@ -323,7 +323,7 @@ namespace luadebug::refvalue {
     }
 
     value* create_userdata(luadbg_State* L, int n, int parent) {
-        assert(luadbg_type(L, parent) == LUA_TUSERDATA);
+        assert(luadbg_type(L, parent) == LUADBG_TUSERDATA);
         void* parent_data  = luadbg_touserdata(L, parent);
         size_t parent_size = static_cast<size_t>(luadbg_rawlen(L, parent));
         void* v            = luadbg_newuserdatauv(L, n * sizeof(value) + parent_size, 0);
