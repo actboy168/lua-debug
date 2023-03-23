@@ -123,18 +123,18 @@ namespace luadebug::visitor {
         return false;
     }
 
-    static void eval_copy_args(luadbg_State* from, lua_State* to, protected_area& area) {
-        if (copy_from_dbg(from, to, area, -1) == LUADBG_TNONE) {
-            if (luadbg_type(from, -1) == LUADBG_TTABLE) {
+    static void copy_from_dbg_clonetable(luadbg_State* from, lua_State* to, protected_area& area, int idx) {
+        if (copy_from_dbg(from, to, area, idx) == LUADBG_TNONE) {
+            if (luadbg_type(from, idx) == LUADBG_TTABLE) {
+                idx = luadbg_absindex(from, idx);
                 area.check_client_stack(3);
                 lua_newtable(to);
                 luadbg_pushnil(from);
-                while (luadbg_next(from, -2)) {
-                    copy_from_dbg(from, to, area, -1);
-                    luadbg_pop(from, 1);
-                    copy_from_dbg(from, to, area, -1);
-                    lua_insert(to, -2);
+                while (luadbg_next(from, idx)) {
+                    copy_from_dbg_clonetable(from, to, area, -2);
+                    copy_from_dbg_clonetable(from, to, area, -1);
                     lua_rawset(to, -3);
+                    luadbg_pop(from, 1);
                 }
             }
             else {
@@ -734,8 +734,7 @@ namespace luadebug::visitor {
             if (hasF) lua_pop(cL, 1);
             break;
         case LUADBG_TUSERDATA: {
-            int t = copy_from_dbg(L, cL, area, 1);
-            if (t != LUADBG_TFUNCTION) {
+            if (!copy_from_dbg(L, cL, area, 1, LUADBG_TFUNCTION)) {
                 return area.raise_error("Need a function ref");
             }
             if (hasF) {
@@ -838,9 +837,7 @@ namespace luadebug::visitor {
             return 0;
         }
         for (int i = 2; i <= nargs; ++i) {
-            luadbg_pushvalue(L, i);
-            eval_copy_args(L, cL, area);
-            luadbg_pop(L, 1);
+            copy_from_dbg_clonetable(L, cL, area, i);
         }
         if (debug_pcall(cL, nargs - 1, 1, 0)) {
             luadbg_pushboolean(L, 0);
@@ -864,9 +861,7 @@ namespace luadebug::visitor {
             return 0;
         }
         for (int i = 2; i <= nargs; ++i) {
-            luadbg_pushvalue(L, i);
-            eval_copy_args(L, cL, area);
-            luadbg_pop(L, 1);
+            copy_from_dbg_clonetable(L, cL, area, i);
         }
         if (debug_pcall(cL, nargs - 1, LUA_MULTRET, 0)) {
             luadbg_pushboolean(L, 0);
@@ -931,16 +926,14 @@ namespace luadebug::visitor {
     }
 
     static int lclient_cfunctioninfo(luadbg_State* L, lua_State* cL, protected_area& area) {
-        if (copy_from_dbg(L, cL, area, -1) == LUADBG_TNONE) {
-            luadbg_pushnil(L);
-            return 1;
+        if (copy_from_dbg(L, cL, area, 1) == LUADBG_TNONE) {
+            return 0;
         }
         const void* cfn = lua_tocfunction_pointer(cL, -1);
         lua_pop(cL, 1);
         auto info = symbolize(cfn);
         if (!info.has_value()) {
-            luadbg_pushnil(L);
-            return 1;
+            return 0;
         }
         luadbg_pushlstring(L, info->c_str(), info->size());
         return 1;
