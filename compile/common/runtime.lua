@@ -225,13 +225,6 @@ for _, luaver in ipairs { "lua51", "lua52", "lua53", "lua54", "lua-latest", "lua
             links = "m",
         }
     }
-    if lm.plat == "msvc" and lm.enable_sanitize then
-        lm:msvc_copydll("copy_asan_to_"..luaver) {
-            type = "asan",
-            output = bindir,
-        }
-        runtimes[#runtimes + 1] = "copy_asan_to_"..luaver
-    end
 end
 
 lm:phony "runtime" {
