@@ -65,12 +65,10 @@ static int HOOK_CALLBACK = 0;
 static int THUNK_MGR = 0;
 #endif
 
-static bool get_callback(luadbg_State* L) {
+static void push_callback(luadbg_State* L) {
     if (luadbg_rawgetp(L, LUADBG_REGISTRYINDEX, &HOOK_CALLBACK) != LUADBG_TFUNCTION) {
-        luadbg_pop(L, 1);
-        return false;
+        luadbgL_error(L, "miss hook callback");
     }
-    return true;
 }
 
 namespace luadebug::visitor {
@@ -136,9 +134,7 @@ struct hookmgr {
         break_del(hL, p);
 
         luadbgL_checkstack(L, 4, NULL);
-        if (!get_callback(L)) {
-            return false;
-        }
+        push_callback(L);
         luadebug::debughost::set(L, hL);
         luadbg_pushstring(L, "newproto");
         luadbg_pushlightuserdata(L, p);
@@ -206,9 +202,7 @@ struct hookmgr {
         const void* function = lua_topointer(hL, -1);
         lua_pop(hL, 1);
 
-        if (!get_callback(L)) {
-            return;
-        }
+        push_callback(L);
         luadebug::debughost::set(L, hL);
         luadbg_pushstring(L, "funcbp");
         luadbg_pushfstring(L, "function: %p", function);
@@ -318,9 +312,7 @@ struct hookmgr {
         exception_hookmask(hL, enable ? LUA_MASKEXCEPTION : 0);
     }
     void exception_hook(lua_State* hL, lua_Debug* ar) {
-        if (!get_callback(L)) {
-            return;
-        }
+        push_callback(L);
         int errcode;
         luadebug::debughost::set(L, hL);
         luadbg_pushstring(L, "exception");
@@ -469,9 +461,7 @@ struct hookmgr {
         default:
             return;
         }
-        if (!get_callback(L)) {
-            return;
-        }
+        push_callback(L);
         luadebug::debughost::set(L, hL);
         if ((step_mask & LUA_MASKLINE) && (!stepL || stepL == hL)) {
             luadbg_pushstring(L, "step");
@@ -552,9 +542,7 @@ struct hookmgr {
         if (!update_timer.update(200)) {
             return;
         }
-        if (!get_callback(L)) {
-            return;
-        }
+        push_callback(L);
         luadebug::debughost::set(L, hL);
         luadbg_pushstring(L, "update");
         if (luadbg_pcall(L, 1, 0, 0) != LUADBG_OK) {
@@ -625,9 +613,9 @@ struct hookmgr {
 static int init(luadbg_State* L) {
     luadbgL_checktype(L, 1, LUA_TFUNCTION);
     luadbg_settop(L, 1);
+    luadbg_rawsetp(L, LUADBG_REGISTRYINDEX, &HOOK_CALLBACK);
     lua_State* hL = luadebug::debughost::get(L);
     hookmgr::get_self(L)->init(hL);
-    luadbg_rawsetp(L, LUADBG_REGISTRYINDEX, &HOOK_CALLBACK);
     return 0;
 }
 
@@ -789,7 +777,9 @@ static bool call_event(luadbg_State* L, int nargs) {
 }
 
 bool event(luadbg_State* L, lua_State* hL, const char* name, int start) {
-    if (!get_callback(L)) {
+    if (luadbg_rawgetp(L, LUADBG_REGISTRYINDEX, &HOOK_CALLBACK) != LUADBG_TFUNCTION) {
+        // TODO cache event?
+        luadbg_pop(L, 1);
         return false;
     }
     int nargs = lua_gettop(hL) - start + 1;
