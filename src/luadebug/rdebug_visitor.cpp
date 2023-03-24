@@ -38,35 +38,35 @@ namespace luadebug::visitor {
         return ok;
     }
 
-    static int copy_to_dbg(lua_State* hL, luadbg_State* L) {
-        int t = lua_type(hL, -1);
+    static int copy_to_dbg(lua_State* hL, luadbg_State* L, int idx = -1) {
+        int t = lua_type(hL, idx);
         switch (t) {
         case LUA_TNIL:
             luadbg_pushnil(L);
             break;
         case LUA_TBOOLEAN:
-            luadbg_pushboolean(L, lua_toboolean(hL, -1));
+            luadbg_pushboolean(L, lua_toboolean(hL, idx));
             break;
         case LUA_TNUMBER:
 #if LUA_VERSION_NUM >= 503 || defined(LUAJIT_VERSION)
-            if (lua_isinteger(hL, -1)) {
-                luadbg_pushinteger(L, lua_tointeger(hL, -1));
+            if (lua_isinteger(hL, idx)) {
+                luadbg_pushinteger(L, lua_tointeger(hL, idx));
             }
             else {
-                luadbg_pushnumber(L, lua_tonumber(hL, -1));
+                luadbg_pushnumber(L, lua_tonumber(hL, idx));
             }
 #else
-            luadbg_pushnumber(L, lua_tonumber(hL, -1));
+            luadbg_pushnumber(L, lua_tonumber(hL, idx));
 #endif
             break;
         case LUA_TSTRING: {
             size_t sz;
-            const char* str = lua_tolstring(hL, -1, &sz);
+            const char* str = lua_tolstring(hL, idx, &sz);
             luadbg_pushlstring(L, str, sz);
             break;
         }
         case LUA_TLIGHTUSERDATA:
-            luadbg_pushlightuserdata(L, lua_touserdata(hL, -1));
+            luadbg_pushlightuserdata(L, lua_touserdata(hL, idx));
             break;
         default:
             return LUA_TNONE;

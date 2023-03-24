@@ -5,7 +5,7 @@
 #include "rdebug_lua.h"
 #include "rdebug_redirect.h"
 
-int event(luadbg_State* L, lua_State* hL, const char* name, int start);
+bool event(luadbg_State* L, lua_State* hL, const char* name, int start);
 
 namespace luadebug::stdio {
     static int getIoOutput(lua_State* hL) {
@@ -101,8 +101,8 @@ namespace luadebug::stdio {
     static int redirect_print(lua_State* hL) {
         luadbg_State* L = debughost::get_client(hL);
         if (L) {
-            int ok = event(L, hL, "print", 1);
-            if (ok > 0) {
+            bool ok = event(L, hL, "print", 1);
+            if (ok) {
                 return 0;
             }
         }
@@ -115,8 +115,8 @@ namespace luadebug::stdio {
         if (ok) {
             luadbg_State* L = debughost::get_client(hL);
             if (L) {
-                int ok = event(L, hL, "iowrite", 2);
-                if (ok > 0) {
+                bool ok = event(L, hL, "iowrite", 2);
+                if (ok) {
                     lua_settop(hL, 1);
                     return 1;
                 }
@@ -128,8 +128,8 @@ namespace luadebug::stdio {
     static int redirect_io_write(lua_State* hL) {
         luadbg_State* L = debughost::get_client(hL);
         if (L) {
-            int ok = event(L, hL, "iowrite", 1);
-            if (ok > 0) {
+            bool ok = event(L, hL, "iowrite", 1);
+            if (ok) {
                 getIoOutput(hL);
                 return 1;
             }

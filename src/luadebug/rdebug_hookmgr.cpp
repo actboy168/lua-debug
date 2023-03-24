@@ -774,23 +774,23 @@ int luaopen_luadebug_hookmgr(luadbg_State* L) {
     return 1;
 }
 
-static int call_event(luadbg_State* L, int nargs) {
+static bool call_event(luadbg_State* L, int nargs) {
     if (luadbg_pcall(L, 1 + nargs, 1, 0) != LUADBG_OK) {
         luadbg_pop(L, 1);
-        return -1;
+        return false;
     }
-    if (luadbg_type(L, -1) == LUA_TBOOLEAN) {
-        int ok = luadbg_toboolean(L, -1) ? 1 : 0;
+    if (luadbg_type(L, -1) != LUA_TBOOLEAN) {
         luadbg_pop(L, 1);
-        return ok;
+        return false;
     }
+    bool ok = !!luadbg_toboolean(L, -1);
     luadbg_pop(L, 1);
-    return -1;
+    return ok;
 }
 
-int event(luadbg_State* L, lua_State* hL, const char* name, int start) {
+bool event(luadbg_State* L, lua_State* hL, const char* name, int start) {
     if (!get_callback(L)) {
-        return -1;
+        return false;
     }
     int nargs = lua_gettop(hL) - start + 1;
     luadebug::debughost::set(L, hL);
@@ -804,9 +804,9 @@ int event(luadbg_State* L, lua_State* hL, const char* name, int start) {
         refs[i] = luadebug::visitor::copy_to_dbg_ref(hL, L);
         lua_pop(hL, 1);
     }
-    int nres = call_event(L, nargs);
+    bool ok = call_event(L, nargs);
     for (int i = 0; i < nargs; ++i) {
         luadebug::visitor::registry_unref(hL, refs[i]);
     }
-    return nres;
+    return ok;
 }

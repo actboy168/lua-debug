@@ -13,7 +13,7 @@
 static int DEBUG_HOST   = 0;
 static int DEBUG_CLIENT = 0;
 
-int event(luadbg_State* L, lua_State* hL, const char* name, int start);
+bool event(luadbg_State* L, lua_State* hL, const char* name, int start);
 
 namespace luadebug::debughost {
     luadbg_State* get_client(lua_State* hL) {
@@ -142,8 +142,8 @@ namespace luadebug::debughost {
         if (!L) {
             return 0;
         }
-        int ok = event(L, hL, luaL_checkstring(hL, 1), 2);
-        if (ok < 0) {
+        bool ok = event(L, hL, luaL_checkstring(hL, 1), 2);
+        if (!ok) {
             return 0;
         }
         lua_pushboolean(hL, ok);
