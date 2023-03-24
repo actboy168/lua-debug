@@ -74,8 +74,8 @@ static bool get_callback(luadbg_State* L) {
 }
 
 namespace luadebug::visitor {
-    int copy_to_dbg_ref(lua_State* from, luadbg_State* to);
-    void registry_unref(lua_State* from, int ref);
+    int copy_to_dbg_ref(lua_State* hL, luadbg_State* L);
+    void registry_unref(lua_State* hL, int ref);
 }
 
 #define LOG(...)                         \
@@ -563,9 +563,9 @@ struct hookmgr {
         }
     }
 
-    lua_State* hostL = 0;
+    lua_State* hL = 0;
     void init(lua_State* hL) {
-        hostL = hL;
+        this->hL = hL;
 #if defined(LUADEBUG_DISABLE_THUNK)
         thunk_set(hL, &THUNK_MGR, (intptr_t)this);
 #endif
@@ -580,15 +580,15 @@ struct hookmgr {
         eventfree = luadebug::eventfree::create(hL, freeobj_callback, this);
     }
     ~hookmgr() {
-        if (!hostL) {
+        if (!hL) {
             return;
         }
-        luadebug::eventfree::destroy(hostL, eventfree);
-        lua_sethook(hostL, 0, 0, 0);
+        luadebug::eventfree::destroy(hL, eventfree);
+        lua_sethook(hL, 0, 0, 0);
 #if defined(LUA_HOOKEXCEPTION)
-        exception_open(hostL, 0);
+        exception_open(hL, 0);
 #endif
-        hostL = 0;
+        hL = 0;
     }
     static int clear(luadbg_State* L) {
         hookmgr* self = (hookmgr*)luadbg_touserdata(L, 1);

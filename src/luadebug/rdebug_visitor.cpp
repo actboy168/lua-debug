@@ -20,53 +20,53 @@
 #endif
 
 namespace luadebug::visitor {
-    static int debug_pcall(lua_State* L, int nargs, int nresults, int errfunc) {
+    static int debug_pcall(lua_State* hL, int nargs, int nresults, int errfunc) {
 #ifdef LUAJIT_VERSION
-        global_State* g = G(L);
+        global_State* g = G(hL);
         bool needClean  = !hook_active(g);
         hook_enter(g);
-        int ok = lua_pcall(L, nargs, nresults, errfunc);
+        int ok = lua_pcall(hL, nargs, nresults, errfunc);
         if (needClean)
             hook_leave(g);
 #else
-        lu_byte oldah = L->allowhook;
-        L->allowhook  = 0;
-        int ok        = lua_pcall(L, nargs, nresults, errfunc);
-        L->allowhook  = oldah;
+        lu_byte oldah = hL->allowhook;
+        hL->allowhook = 0;
+        int ok        = lua_pcall(hL, nargs, nresults, errfunc);
+        hL->allowhook = oldah;
 #endif
 
         return ok;
     }
 
-    static int copy_to_dbg(lua_State* from, luadbg_State* to) {
-        int t = lua_type(from, -1);
+    static int copy_to_dbg(lua_State* hL, luadbg_State* L) {
+        int t = lua_type(hL, -1);
         switch (t) {
         case LUA_TNIL:
-            luadbg_pushnil(to);
+            luadbg_pushnil(L);
             break;
         case LUA_TBOOLEAN:
-            luadbg_pushboolean(to, lua_toboolean(from, -1));
+            luadbg_pushboolean(L, lua_toboolean(hL, -1));
             break;
         case LUA_TNUMBER:
 #if LUA_VERSION_NUM >= 503 || defined(LUAJIT_VERSION)
-            if (lua_isinteger(from, -1)) {
-                luadbg_pushinteger(to, lua_tointeger(from, -1));
+            if (lua_isinteger(hL, -1)) {
+                luadbg_pushinteger(L, lua_tointeger(hL, -1));
             }
             else {
-                luadbg_pushnumber(to, lua_tonumber(from, -1));
+                luadbg_pushnumber(L, lua_tonumber(hL, -1));
             }
 #else
-            luadbg_pushnumber(to, lua_tonumber(from, -1));
+            luadbg_pushnumber(L, lua_tonumber(hL, -1));
 #endif
             break;
         case LUA_TSTRING: {
             size_t sz;
-            const char* str = lua_tolstring(from, -1, &sz);
-            luadbg_pushlstring(to, str, sz);
+            const char* str = lua_tolstring(hL, -1, &sz);
+            luadbg_pushlstring(L, str, sz);
             break;
         }
         case LUA_TLIGHTUSERDATA:
-            luadbg_pushlightuserdata(to, lua_touserdata(from, -1));
+            luadbg_pushlightuserdata(L, lua_touserdata(hL, -1));
             break;
         default:
             return LUA_TNONE;
@@ -74,37 +74,37 @@ namespace luadebug::visitor {
         return t;
     }
 
-    static int copy_from_dbg(luadbg_State* from, lua_State* to, protected_area& area, int idx) {
+    static int copy_from_dbg(luadbg_State* L, lua_State* hL, protected_area& area, int idx) {
         area.check_client_stack(1);
-        int t = luadbg_type(from, idx);
+        int t = luadbg_type(L, idx);
         switch (t) {
         case LUADBG_TNIL:
-            lua_pushnil(to);
+            lua_pushnil(hL);
             break;
         case LUADBG_TBOOLEAN:
-            lua_pushboolean(to, luadbg_toboolean(from, idx));
+            lua_pushboolean(hL, luadbg_toboolean(L, idx));
             break;
         case LUADBG_TNUMBER:
-            if (luadbg_isinteger(from, idx)) {
-                lua_pushinteger(to, (lua_Integer)luadbg_tointeger(from, idx));
+            if (luadbg_isinteger(L, idx)) {
+                lua_pushinteger(hL, (lua_Integer)luadbg_tointeger(L, idx));
             }
             else {
-                lua_pushnumber(to, (lua_Number)luadbg_tonumber(from, idx));
+                lua_pushnumber(hL, (lua_Number)luadbg_tonumber(L, idx));
             }
             break;
         case LUADBG_TSTRING: {
             size_t sz;
-            const char* str = luadbg_tolstring(from, idx, &sz);
-            lua_pushlstring(to, str, sz);
+            const char* str = luadbg_tolstring(L, idx, &sz);
+            lua_pushlstring(hL, str, sz);
             break;
         }
         case LUADBG_TLIGHTUSERDATA:
-            lua_pushlightuserdata(to, luadbg_touserdata(from, idx));
+            lua_pushlightuserdata(hL, luadbg_touserdata(L, idx));
             break;
         case LUADBG_TUSERDATA: {
             area.check_client_stack(3);
-            refvalue::value* v = (refvalue::value*)luadbg_touserdata(from, idx);
-            return refvalue::eval(v, to);
+            refvalue::value* v = (refvalue::value*)luadbg_touserdata(L, idx);
+            return refvalue::eval(v, hL);
         }
         default:
             return LUADBG_TNONE;
@@ -112,33 +112,33 @@ namespace luadebug::visitor {
         return t;
     }
 
-    static bool copy_from_dbg(luadbg_State* from, lua_State* to, protected_area& area, int idx, int type) {
-        int t = copy_from_dbg(from, to, area, idx);
+    static bool copy_from_dbg(luadbg_State* L, lua_State* hL, protected_area& area, int idx, int type) {
+        int t = copy_from_dbg(L, hL, area, idx);
         if (t == type) {
             return true;
         }
         if (t != LUADBG_TNONE) {
-            lua_pop(to, 1);
+            lua_pop(hL, 1);
         }
         return false;
     }
 
-    static void copy_from_dbg_clonetable(luadbg_State* from, lua_State* to, protected_area& area, int idx) {
-        if (copy_from_dbg(from, to, area, idx) == LUADBG_TNONE) {
-            if (luadbg_type(from, idx) == LUADBG_TTABLE) {
-                idx = luadbg_absindex(from, idx);
+    static void copy_from_dbg_clonetable(luadbg_State* L, lua_State* hL, protected_area& area, int idx) {
+        if (copy_from_dbg(L, hL, area, idx) == LUADBG_TNONE) {
+            if (luadbg_type(L, idx) == LUADBG_TTABLE) {
+                idx = luadbg_absindex(L, idx);
                 area.check_client_stack(3);
-                lua_newtable(to);
-                luadbg_pushnil(from);
-                while (luadbg_next(from, idx)) {
-                    copy_from_dbg_clonetable(from, to, area, -2);
-                    copy_from_dbg_clonetable(from, to, area, -1);
-                    lua_rawset(to, -3);
-                    luadbg_pop(from, 1);
+                lua_newtable(hL);
+                luadbg_pushnil(L);
+                while (luadbg_next(L, idx)) {
+                    copy_from_dbg_clonetable(L, hL, area, -2);
+                    copy_from_dbg_clonetable(L, hL, area, -1);
+                    lua_rawset(hL, -3);
+                    luadbg_pop(L, 1);
                 }
             }
             else {
-                lua_pushnil(to);
+                lua_pushnil(hL);
             }
         }
     }
@@ -185,12 +185,12 @@ namespace luadebug::visitor {
         return ref;
     }
 
-    void registry_unref(lua_State* from, int ref) {
+    void registry_unref(lua_State* hL, int ref) {
         if (ref >= 0) {
-            if (lua::getfield(from, LUA_REGISTRYINDEX, "__debugger_ref") == LUA_TTABLE) {
-                luaL_unref(from, -1, ref);
+            if (lua::getfield(hL, LUA_REGISTRYINDEX, "__debugger_ref") == LUA_TTABLE) {
+                luaL_unref(hL, -1, ref);
             }
-            lua_pop(from, 1);
+            lua_pop(hL, 1);
         }
     }
 
@@ -834,8 +834,8 @@ namespace luadebug::visitor {
         return 0;
     }
 
-    static const char* costatus(lua_State* L, lua_State* co) {
-        if (L == co) return "running";
+    static const char* costatus(lua_State* hL, lua_State* co) {
+        if (hL == co) return "running";
         switch (lua_status(co)) {
         case LUA_YIELD:
             return "suspended";

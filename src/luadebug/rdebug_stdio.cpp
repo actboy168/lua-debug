@@ -8,11 +8,11 @@
 int event(luadbg_State* L, lua_State* hL, const char* name, int start);
 
 namespace luadebug::stdio {
-    static int getIoOutput(lua_State* L) {
+    static int getIoOutput(lua_State* hL) {
 #if LUA_VERSION_NUM >= 502
-        return lua::getfield(L, LUA_REGISTRYINDEX, "_IO_output");
+        return lua::getfield(hL, LUA_REGISTRYINDEX, "_IO_output");
 #else
-        return lua::rawgeti(L, LUA_ENVIRONINDEX, 2);
+        return lua::rawgeti(hL, LUA_ENVIRONINDEX, 2);
 #endif
     }
 
@@ -91,64 +91,64 @@ namespace luadebug::stdio {
         return 1;
     }
 
-    static int callfunc(lua_State* L) {
-        lua_pushvalue(L, lua_upvalueindex(1));
-        lua_insert(L, 1);
-        lua_call(L, lua_gettop(L) - 1, LUA_MULTRET);
-        return lua_gettop(L);
+    static int callfunc(lua_State* hL) {
+        lua_pushvalue(hL, lua_upvalueindex(1));
+        lua_insert(hL, 1);
+        lua_call(hL, lua_gettop(hL) - 1, LUA_MULTRET);
+        return lua_gettop(hL);
     }
 
-    static int redirect_print(lua_State* L) {
-        luadbg_State* clientL = debughost::get_client(L);
-        if (clientL) {
-            int ok = event(clientL, L, "print", 1);
+    static int redirect_print(lua_State* hL) {
+        luadbg_State* L = debughost::get_client(hL);
+        if (L) {
+            int ok = event(L, hL, "print", 1);
             if (ok > 0) {
                 return 0;
             }
         }
-        return callfunc(L);
+        return callfunc(hL);
     }
 
-    static int redirect_f_write(lua_State* L) {
-        bool ok = LUA_TUSERDATA == getIoOutput(L) && lua_rawequal(L, -1, 1);
-        lua_pop(L, 1);
+    static int redirect_f_write(lua_State* hL) {
+        bool ok = LUA_TUSERDATA == getIoOutput(hL) && lua_rawequal(hL, -1, 1);
+        lua_pop(hL, 1);
         if (ok) {
-            luadbg_State* clientL = debughost::get_client(L);
-            if (clientL) {
-                int ok = event(clientL, L, "iowrite", 2);
+            luadbg_State* L = debughost::get_client(hL);
+            if (L) {
+                int ok = event(L, hL, "iowrite", 2);
                 if (ok > 0) {
-                    lua_settop(L, 1);
+                    lua_settop(hL, 1);
                     return 1;
                 }
             }
         }
-        return callfunc(L);
+        return callfunc(hL);
     }
 
-    static int redirect_io_write(lua_State* L) {
-        luadbg_State* clientL = debughost::get_client(L);
-        if (clientL) {
-            int ok = event(clientL, L, "iowrite", 1);
+    static int redirect_io_write(lua_State* hL) {
+        luadbg_State* L = debughost::get_client(hL);
+        if (L) {
+            int ok = event(L, hL, "iowrite", 1);
             if (ok > 0) {
-                getIoOutput(L);
+                getIoOutput(hL);
                 return 1;
             }
         }
-        return callfunc(L);
+        return callfunc(hL);
     }
 
-    static bool openhook(lua_State* L, bool enable, lua_CFunction f) {
+    static bool openhook(lua_State* hL, bool enable, lua_CFunction f) {
         if (enable) {
-            lua_pushcclosure(L, f, 1);
+            lua_pushcclosure(hL, f, 1);
             return true;
         }
-        if (lua_tocfunction(L, -1) == f) {
-            if (lua_getupvalue(L, -1, 1)) {
-                lua_remove(L, -2);
+        if (lua_tocfunction(hL, -1) == f) {
+            if (lua_getupvalue(hL, -1, 1)) {
+                lua_remove(hL, -2);
                 return true;
             }
         }
-        lua_pop(L, 1);
+        lua_pop(hL, 1);
         return false;
     }
 
