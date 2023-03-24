@@ -17,7 +17,7 @@ struct Pattern {
 
 int imports(std::string file_path, bool is_string, std::set<std::string>& imports_names) {
     std::string error;
-    if (Gum::Process::module_load(file_path.c_str(), &error)) {
+    if (!Gum::Process::module_load(file_path.c_str(), &error)) {
         std::cerr << "module_load " << file_path << " failed: " << error << std::endl;
         return 1;
     }

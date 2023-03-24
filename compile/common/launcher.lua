@@ -25,6 +25,7 @@ lm:lua_source 'launcher_source' {
     },
     sources = {
         "src/launcher/**/*.cpp",
+        "!src/launcher/tools",
         "!src/launcher/hook/luajit_listener.cpp",
     },
     defines = {
