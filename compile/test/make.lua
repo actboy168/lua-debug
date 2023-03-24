@@ -38,8 +38,14 @@ lm:executable "test_delayload" {
     },
 }
 
+lm:executable "testwaitdll" {
+    sources = "test/waitdll.cpp",
+    includes = { "3rd/lua/lua51" },
+}
+
 lm:default {
     "test_frida",
     "test_delayload",
-    "test_symbol"
+    "test_symbol",
+    "testwaitdll"
 }
