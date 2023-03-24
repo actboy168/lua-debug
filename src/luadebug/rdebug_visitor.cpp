@@ -172,22 +172,16 @@ namespace luadebug::visitor {
     static int registry_ref(luadbg_State* L, lua_State* cL, refvalue::REGISTRY_TYPE type) {
         int ref = luaL_ref(cL, -2);
         if (ref <= 0) {
+            luadbg_pushnil(L);
             return LUA_NOREF;
         }
         unsigned int index = table::array_base_zero() ? (unsigned int)(ref) : (unsigned int)(ref - 1);
         const void* tv     = lua_topointer(cL, -1);
         if (!tv || index >= table::array_size(tv)) {
+            luadbg_pushnil(L);
             return LUA_NOREF;
         }
         refvalue::create(L, refvalue::TABLE_ARRAY { index }, refvalue::REGISTRY { type });
-        return ref;
-    }
-
-    static int registry_ref_simple(luadbg_State* L, lua_State* cL, refvalue::REGISTRY_TYPE type) {
-        registry_table(cL, type);
-        lua_pushvalue(cL, -2);
-        int ref = registry_ref(L, cL, type);
-        lua_pop(cL, 1);
         return ref;
     }
 
@@ -200,11 +194,15 @@ namespace luadebug::visitor {
         }
     }
 
-    int registry_copy_value(lua_State* from, luadbg_State* to) {
-        if (copy_to_dbg(from, to) != LUA_TNONE) {
+    int copy_to_dbg_ref(lua_State* cL, luadbg_State* L) {
+        if (copy_to_dbg(cL, L) != LUA_TNONE) {
             return LUA_NOREF;
         }
-        return registry_ref_simple(to, from, refvalue::REGISTRY_TYPE::DEBUG_REF);
+        registry_table(cL, refvalue::REGISTRY_TYPE::DEBUG_REF);
+        lua_pushvalue(cL, -2);
+        int ref = registry_ref(L, cL, refvalue::REGISTRY_TYPE::DEBUG_REF);
+        lua_pop(cL, 1);
+        return ref;
     }
 
     template <bool getref = true>
@@ -773,9 +771,9 @@ namespace luadebug::visitor {
             lua_pop(cL, 2);
             return 2;
         }
-        int ref = registry_ref_simple(L, cL, refvalue::REGISTRY_TYPE::DEBUG_REF);
+        copy_to_dbg_ref(cL, L);
         lua_pop(cL, 1);
-        return ref == LUA_NOREF ? 0 : 1;
+        return 1;
     }
 
     static int lclient_eval(luadbg_State* L, lua_State* cL, protected_area& area) {
@@ -824,9 +822,7 @@ namespace luadebug::visitor {
         registry_table(cL, refvalue::REGISTRY_TYPE::DEBUG_WATCH);
         for (int i = 0; i < rets; ++i) {
             lua_pushvalue(cL, i - rets - 1);
-            if (LUA_NOREF == registry_ref(L, cL, refvalue::REGISTRY_TYPE::DEBUG_WATCH)) {
-                luadbg_pushnil(L);
-            }
+            registry_ref(L, cL, refvalue::REGISTRY_TYPE::DEBUG_WATCH);
         }
         lua_settop(cL, n);
         return 1 + rets;
