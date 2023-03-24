@@ -117,7 +117,7 @@ namespace luadebug {
         }
 
         void check_client_stack(int sz) {
-            if (lua_checkstack(cL, sz) == 0) {
+            if (lua_checkstack(hL, sz) == 0) {
                 raise_error("stack overflow");
             }
         }
@@ -130,13 +130,13 @@ namespace luadebug {
 
         protected_area(luadbg_State* L)
             : L(L)
-            , cL(debughost::get(L))
-            , top(lua_gettop(cL)) {
+            , hL(debughost::get(L))
+            , top(lua_gettop(hL)) {
             check_recursive();
         };
         ~protected_area() {
 #if !defined(NDEBUG)
-            if (top != lua_gettop(cL)) {
+            if (top != lua_gettop(hL)) {
                 luadbgL_error(L, "not expected");
             }
 #endif
@@ -146,16 +146,16 @@ namespace luadebug {
             return L;
         }
         lua_State* get_client() const noexcept {
-            return cL;
+            return hL;
         }
 
-        using visitor = int (*)(luadbg_State* L, lua_State* cL, protected_area& area);
+        using visitor = int (*)(luadbg_State* L, lua_State* hL, protected_area& area);
 
         static inline int call(luadbg_State* L, visitor func) {
             protected_area area(L);
-            lua_State* cL = area.get_client();
+            lua_State* hL = area.get_client();
             try {
-                int r = func(L, cL, area);
+                int r = func(L, hL, area);
                 return r;
             } catch (const std::exception& e) {
                 fprintf(stderr, "catch std::exception: %s\n", e.what());
@@ -168,7 +168,7 @@ namespace luadebug {
 
     private:
         luadbg_State* L;
-        lua_State* cL;
+        lua_State* hL;
         int top = -1;
         static inline int CHECK_RECURSIVE;
         inline void check_recursive() {
@@ -187,7 +187,7 @@ namespace luadebug {
                 luadbg_pushnil(L);
                 luadbg_rawsetp(L, LUADBG_REGISTRYINDEX, &CHECK_RECURSIVE);
 #endif
-                lua_settop(cL, top);
+                lua_settop(hL, top);
                 top = -1;
             }
         }

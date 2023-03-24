@@ -5,7 +5,7 @@
 #include "rdebug_lua.h"
 #include "rdebug_redirect.h"
 
-int event(luadbg_State* cL, lua_State* hL, const char* name, int start);
+int event(luadbg_State* L, lua_State* hL, const char* name, int start);
 
 namespace luadebug::stdio {
     static int getIoOutput(lua_State* L) {
