@@ -27,7 +27,7 @@ namespace luadebug::autoattach {
         return lua_version_from_string(it->get<std::string>());
     }
 
-    std::optional<signture> Config::get_lua_signature(const std::string& key) const {
+    std::optional<signature> Config::get_lua_signature(const std::string& key) const {
         const auto signture_key = "functions"sv;
         auto it                 = values->find(signture_key);
         if (it == values->end()) {
@@ -35,8 +35,8 @@ namespace luadebug::autoattach {
         }
         try {
             const auto& json = (*it)[key];
-            // searilize json to signture
-            signture res = {};
+            // searilize json to signature
+            signature res = {};
             json["start_offset"].get_to(res.start_offset);
             json["end_offset"].get_to(res.end_offset);
             json["pattern"].get_to(res.pattern);

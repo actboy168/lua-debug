@@ -3,6 +3,7 @@
 #include <bee/utility/path_helper.h>
 #include <config/config.h>
 #include <hook/create_watchdog.h>
+#include <resolver/lua_signature.h>
 #include <util/log.h>
 
 #include <charconv>
@@ -64,49 +65,56 @@ namespace luadebug::autoattach {
         // TODO: from signature
     }
 
-    bool load_luadebug_dll(lua_version version, lua_resolver& resolver) {
+    std::optional<fs::path> get_luadebug_dir(lua_version version) {
         auto dllpath = bee::path_helper::dll_path();
         if (!dllpath) {
-            return false;
+            return std::nullopt;
         }
-#define LUADEBUG_FILE "luadebug"
+        auto os =
 #if defined(_WIN32)
-        auto os = "windows";
-        auto luadebug_name =
-            LUADEBUG_FILE
-            ".dll";
+            "windows";
 #elif defined(__ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__)
-        auto os = "darwin";
-        auto luadebug_name =
-            LUADEBUG_FILE
-            ".so";
+            "darwin";
 #else
-        return false;
+            "linux";
 #endif
-        ;
         auto arch =
 #if defined(_M_ARM64) || defined(__aarch64__)
-            "arm64"
+            "arm64";
 #elif defined(_M_IX86) || defined(__i386__)
-            "x86"
+            "x86";
 #elif defined(_M_X64) || defined(__x86_64__)
-            "x86_64"
+            "x86_64";
 #else
-            ;
-        return false;
+                return std::nullopt;
 #endif
-            ;
         auto platform = std::format("{}-{}", os, arch);
-        auto path     = (dllpath.value().parent_path().parent_path() / "runtime" / platform / lua_version_to_string(version) / luadebug_name).string();
-        std::string error;
-        if (!Gum::Process::module_load(path.c_str(), &error)) {
-            log::fatal("load debugger [{}] failed: {}", path, error);
+        return dllpath.value().parent_path().parent_path() / "runtime" / platform / lua_version_to_string(version);
+    }
+
+    bool load_luadebug_dll(lua_version version, lua::resolver& resolver) {
+#define LUADEBUG_FILE "luadebug"
+
+#if defined(_WIN32)
+#    define EXT ".dll"
+#else
+#    define EXT ".so"
+#endif
+        auto path = get_luadebug_dir(version);
+        if (!path) {
+            return false;
         }
-        Gum::Process::module_enumerate_import(path.c_str(), [&](const Gum::ImportDetails& details) -> bool {
+
+        auto luadebug = (*path / (LUADEBUG_FILE EXT)).string();
+        std::string error;
+        if (!Gum::Process::module_load(luadebug.c_str(), &error)) {
+            log::fatal("load debugger [{}] failed: {}", luadebug, error);
+        }
+        Gum::Process::module_enumerate_import(luadebug.c_str(), [&](const Gum::ImportDetails& details) -> bool {
             if (std::string_view(details.name).find_first_of("lua") != 0) {
                 return true;
             }
-            if (auto address = (void*)resolver.find_signature(details.name)) {
+            if (auto address = (void*)resolver.find(details.name)) {
                 *details.slot = address;
                 log::info("find signature {} to {}", details.name, address);
             }
@@ -116,23 +124,46 @@ namespace luadebug::autoattach {
     }
 
     bool lua_module::initialize(fn_attach attach_lua_vm) {
-        resolver.module_name = path;
-        auto error_msg       = lua::initialize(resolver);
+        version = get_lua_version(*this);
+        log::info("current lua version: {}", lua_version_to_string(version));
+
+        resolver = std::make_unique<lua_resolver>(path);
+        if (version != lua_version::unknown && config.is_signature_mode()) {
+            // 尝试从自带的库里加载函数
+            auto dir = get_luadebug_dir(version);
+            if (dir) {
+                auto dllpath =
+#ifdef _WIN32
+                    (*dir / lua_version_to_string(version) + std::string(EXT)).string();
+#else
+                    (*dir / "lua" EXT).string();
+#endif
+                std::string error;
+                if (!Gum::Process::module_load(dllpath.c_str(), &error)) {
+                    log::info("load lua module {}, failed: {}", dllpath, error);
+                }
+                else {
+                    auto signature_resolver_ptr      = std::make_unique<signature_resolver>();
+                    signature_resolver_ptr->resolver = std::move(resolver);
+                    signature_resolver_ptr->reserve_resolver =
+                        std::make_unique<lua_resolver>(dllpath);
+                    resolver = std::move(signature_resolver_ptr);
+                }
+            }
+        }
+
+        auto error_msg = lua::initialize(*resolver);
         if (error_msg) {
             log::fatal("lua initialize failed, can't find {}", error_msg);
             return false;
         }
-        version = get_lua_version(*this);
-        log::info("current lua version: {}", lua_version_to_string(version));
-        if (version != lua_version::unknown)
-            resolver.version = lua_version_to_string(version);
 
         if (version != lua_version::unknown) {
-            if (!load_luadebug_dll(version, resolver))
+            if (!load_luadebug_dll(version, *resolver))
                 return false;
         }
 
-        watchdog = create_watchdog(attach_lua_vm, version, resolver);
+        watchdog = create_watchdog(attach_lua_vm, version, *resolver);
         if (!watchdog) {
             // TODO: more errmsg
             log::fatal("watchdog initialize failed");
