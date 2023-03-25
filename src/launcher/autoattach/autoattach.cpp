@@ -41,8 +41,10 @@ namespace luadebug::autoattach {
             if (str.find(s) != std::string_view::npos)
                 return false;
         }
-        if (str.find(config.get_lua_module()) != std::string_view::npos)
-            return true;
+
+        auto target_lua_module = config.get_lua_module();
+        if (!target_lua_module.empty() && str.find(config.get_lua_module()) != std::string_view::npos) return true;
+
         if (check_export && Gum::Process::module_find_export_by_name(module_path, find_lua_module_key)) return true;
         if (Gum::Process::module_find_symbol_by_name(module_path, find_lua_module_key)) return true;
         // TODO: when signature mode, check strings

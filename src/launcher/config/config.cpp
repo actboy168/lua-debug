@@ -32,11 +32,19 @@ namespace luadebug::autoattach {
         if (it == values->end()) {
             return {};
         }
-        const auto& value = it->get<std::string>();
+        auto value = it->get<std::string>();
         if (!fs::exists(value))
-            return {};
+            return value;
 
-        return value;
+        do {
+            if (!fs::is_symlink(value))
+                return value;
+            auto link = fs::read_symlink(value);
+            if (link.is_absolute())
+                value = link.string();
+            else
+                value = (fs::path(value).parent_path() / link).lexically_normal().string();
+        } while (true);
     }
 
     bool Config::init_from_file() {
