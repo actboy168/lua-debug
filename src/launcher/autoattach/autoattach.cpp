@@ -18,8 +18,7 @@ namespace luadebug::autoattach {
 #else
 #    define EXT ".so"
 #endif
-
-    constexpr auto lua_module_backlist[] = {
+    constexpr auto lua_module_backlist = {
         "launcher" EXT,
         "luadebug" EXT,
     };
