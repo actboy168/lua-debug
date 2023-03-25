@@ -41,7 +41,7 @@ namespace luadebug::autoattach {
         return false;
     }
 
-    static void start();
+    static void start_scoped();
     static bool load_lua_module(const std::string& path) {
         constexpr auto check_export =
 #ifdef _WIN32
@@ -54,7 +54,7 @@ namespace luadebug::autoattach {
             return false;
         }
         // find lua module lazy
-        std::thread(start).detach();
+        std::thread(start_scoped).detach();
         return true;
     }
 
@@ -88,6 +88,16 @@ namespace luadebug::autoattach {
             return;
         }
     }
+
+    void start_scoped() {
+        static std::atomic_bool instart;
+        bool test = false;
+        if (instart.compare_exchange_strong(test, true, std::memory_order_acquire)) {
+            start();
+            instart.store(false, std::memory_order_release);
+        }
+    }
+
     void initialize(fn_attach attach, bool ap) {
         static std::atomic_bool injected;
         bool test = false;
