@@ -1,12 +1,37 @@
 #include <autoattach/wait_dll.h>
-
 #ifdef _WIN32
 
 #    include <bee/nonstd/filesystem.h>
 #    include <windows.h>
 #    include <winternl.h>
+#else
+#    include <gumpp.hpp>
+#    ifdef __APPLE__
+#        include <mach-o/dyld.h>
+#        include <mach-o/dyld_images.h>
+#        include <mach/mach.h>
 
+#        include <set>
+struct _GumDarwinAllImageInfos {
+    int format;
+
+    uint64_t info_array_address;
+    size_t info_array_count;
+    size_t info_array_size;
+
+    uint64_t notification_address;
+
+    bool libsystem_initialized;
+
+    uint64_t dyld_image_load_address;
+
+    uint64_t shared_cache_base_address;
+};
+extern "C" bool gum_darwin_query_all_image_infos(mach_port_t task, _GumDarwinAllImageInfos* infos);
+#    endif
+#endif
 namespace luadebug::autoattach {
+#ifdef _WIN32
     bool wait_dll(bool (*loaded)(std::string const&)) {
         typedef struct _LDR_DLL_UNLOADED_NOTIFICATION_DATA {
             ULONG Flags;                   // Reserved.
@@ -77,16 +102,59 @@ namespace luadebug::autoattach {
         );
         return true;
     }
-}
-
+#elif defined(__APPLE__)
+    using WaitDllCallBack_t = bool (*)(std::string const&);
+    struct WaitDllListener : Gum::NoLeaveInvocationListener {
+        WaitDllCallBack_t loaded;
+        Gum::RefPtr<Gum::Interceptor> interceptor;
+        std::set<std::string> loaded_dlls;
+        WaitDllListener() {
+            auto count = _dyld_image_count();
+            for (size_t i = 0; i < count; i++) {
+                loaded_dlls.emplace(_dyld_get_image_name(i));
+            }
+        }
+        ~WaitDllListener() override = default;
+        void dyld_image_notifier(enum dyld_image_mode mode, uint32_t infoCount, const struct dyld_image_info info[]) {
+            if (mode != dyld_image_mode::dyld_image_adding) {
+                return;
+            }
+            for (size_t i = 0; i < infoCount; i++) {
+                auto [iter, created] = loaded_dlls.emplace(info[i].imageFilePath);
+                if (created) {
+                    if (loaded(info[i].imageFilePath)) {
+                        interceptor->detach(this);
+                        delete this;
+                        return;
+                    }
+                }
+            }
+        }
+        void on_enter(Gum::InvocationContext* context) override {
+            auto mode      = (dyld_image_mode)(intptr_t)context->get_nth_argument_ptr(0);
+            auto infoCount = (uint32_t)(intptr_t)context->get_nth_argument_ptr(1);
+            auto info      = (const struct dyld_image_info*)context->get_nth_argument_ptr(2);
+            dyld_image_notifier(mode, infoCount, info);
+        }
+    };
+    bool wait_dll(WaitDllCallBack_t loaded) {
+        _GumDarwinAllImageInfos infos = {};
+        if (!gum_darwin_query_all_image_infos(mach_task_self(), &infos))
+            return false;
+        auto interceptor = Gum::Interceptor_obtain();
+        if (!interceptor)
+            return false;
+        auto listener         = new WaitDllListener;
+        listener->loaded      = loaded;
+        listener->interceptor = interceptor;
+        return interceptor->attach((void*)infos.notification_address, listener, nullptr);
+    }
 #else
 
-// TODO: support linux/macos
+    // TODO: support linux
 
-namespace luadebug::autoattach {
     bool wait_dll(bool (*loaded)(std::string const&)) {
         return false;
     }
-}
-
 #endif
+}

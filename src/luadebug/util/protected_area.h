@@ -1,6 +1,5 @@
 #pragma once
 
-#include <assert.h>
 #include <bee/nonstd/bit.h>
 #include <bee/nonstd/to_underlying.h>
 #include <bee/nonstd/unreachable.h>
@@ -14,22 +13,21 @@
 
 namespace luadebug {
     struct protected_area {
-        using visitor = int (*)(luadbg_State* L, lua_State* cL);
-        static int raise_error(luadbg_State* L, lua_State* cL, const char* msg) {
-            leave(cL);
+        int raise_error(const char* msg) {
+            leave();
             luadbg_pushstring(L, msg);
             return luadbg_error(L);
         }
 
-        static inline void check_type(luadbg_State* L, int arg, int t) {
+        inline void check_type(luadbg_State*, int arg, int t) {
             if (luadbg_type(L, arg) != t) {
-                leave(L);
+                leave();
                 luadbgL_typeerror(L, arg, luadbg_typename(L, t));
             }
         }
 
         template <typename T, typename I>
-        static inline constexpr bool checklimit(I i) {
+        inline constexpr bool checklimit(I i) {
             static_assert(std::is_integral_v<I>);
             static_assert(std::is_integral_v<T>);
             static_assert(sizeof(I) >= sizeof(T));
@@ -48,7 +46,7 @@ namespace luadebug {
         }
 
         template <typename T>
-        static inline T checkinteger(luadbg_State* L, int arg) {
+        inline T checkinteger(luadbg_State*, int arg) {
             static_assert(std::is_trivial_v<T>);
             if constexpr (std::is_enum_v<T>) {
                 using UT = std::underlying_type_t<T>;
@@ -61,7 +59,7 @@ namespace luadebug {
                 if (checklimit<T>(r)) {
                     return static_cast<T>(r);
                 }
-                leave(L);
+                leave();
                 luadbgL_error(L, "bad argument '#%d' limit exceeded", arg);
                 std::unreachable();
             }
@@ -72,7 +70,7 @@ namespace luadebug {
                 int isnum;
                 luadbg_Integer d = luadbg_tointegerx(L, arg, &isnum);
                 if (!isnum) {
-                    leave(L);
+                    leave();
                     if (luadbg_isnumber(L, arg))
                         luadbgL_argerror(L, arg, "number has no integer representation");
                     else
@@ -83,7 +81,7 @@ namespace luadebug {
         }
 
         template <typename T>
-        static T optinteger(luadbg_State* L, int arg, T def) {
+        T optinteger(luadbg_State*, int arg, T def) {
             static_assert(std::is_trivial_v<T>);
             if constexpr (std::is_enum_v<T>) {
                 using UT = std::underlying_type_t<T>;
@@ -96,7 +94,7 @@ namespace luadebug {
                 if (checklimit<T>(r)) {
                     return static_cast<T>(r);
                 }
-                leave(L);
+                leave();
                 luadbgL_error(L, "bad argument '#%d' limit exceeded", arg);
                 std::unreachable();
             }
@@ -108,58 +106,90 @@ namespace luadebug {
             }
         }
 
-        static inline bee::zstring_view checkstring(luadbg_State* L, int arg) {
+        inline bee::zstring_view checkstring(luadbg_State*, int arg) {
             size_t sz;
             const char* s = luadbg_tolstring(L, arg, &sz);
             if (!s) {
-                leave(L);
+                leave();
                 luadbgL_typeerror(L, arg, luadbg_typename(L, LUA_TSTRING));
             }
             return { s, sz };
         }
 
-        static inline int call(luadbg_State* L, visitor func) {
-            lua_State* cL = entry(L);
-            try {
-                int r = func(L, cL);
-                assert(top == lua_gettop(cL));
-                leave(cL);
-                return r;
-            } catch (const std::exception& e) {
-                fprintf(stderr, "catch std::exception: %s\n", e.what());
-                leave(cL);
-                return 0;
-            } catch (...) {
-                fprintf(stderr, "catch unknown exception\n");
-                leave(cL);
-                return 0;
+        void check_client_stack(int sz) {
+            if (lua_checkstack(hL, sz) == 0) {
+                raise_error("stack overflow");
             }
         }
 
+        void check_host_stack(int sz) {
+            if (luadbg_checkstack(L, sz) == 0) {
+                raise_error("stack overflow");
+            }
+        }
+
+        protected_area(luadbg_State* L)
+            : L(L)
+            , hL(debughost::get(L))
+            , top(lua_gettop(hL)) {
+            check_recursive();
+        };
+        ~protected_area() {
+#if !defined(NDEBUG)
+            if (top != lua_gettop(hL)) {
+                luadbgL_error(L, "not expected");
+            }
+#endif
+            leave();
+        };
+        luadbg_State* get_host() const noexcept {
+            return L;
+        }
+        lua_State* get_client() const noexcept {
+            return hL;
+        }
+
+        using visitor = int (*)(luadbg_State* L, lua_State* hL, protected_area& area);
+
+        static inline int call(luadbg_State* L, visitor func) {
+            protected_area area(L);
+            lua_State* hL = area.get_client();
+            try {
+                int r = func(L, hL, area);
+                return r;
+            } catch (const std::exception& e) {
+                fprintf(stderr, "catch std::exception: %s\n", e.what());
+            } catch (...) {
+                fprintf(stderr, "catch unknown exception\n");
+            }
+            area.leave();
+            return 0;
+        }
+
     private:
-        static inline int top = -1;
-        static inline lua_State* entry(luadbg_State* L) {
-            if (top >= 0) {
+        luadbg_State* L;
+        lua_State* hL;
+        int top = -1;
+        static inline int CHECK_RECURSIVE;
+        inline void check_recursive() {
+#if !defined(NDEBUG)
+            if (luadbg_rawgetp(L, LUADBG_REGISTRYINDEX, &CHECK_RECURSIVE) != LUA_TNIL) {
                 luadbgL_error(L, "can't recursive");
             }
-            lua_State* cL = debughost::get(L);
-            top           = lua_gettop(cL);
-            return cL;
+            luadbg_pop(L, 1);
+            luadbg_pushboolean(L, 1);
+            luadbg_rawsetp(L, LUADBG_REGISTRYINDEX, &CHECK_RECURSIVE);
+#endif
         }
-        static inline void leave(lua_State* cL) {
-            if (top < 0) {
-                return;
+        inline void leave() {
+            if (top >= 0) {
+#if !defined(NDEBUG)
+                luadbg_pushnil(L);
+                luadbg_rawsetp(L, LUADBG_REGISTRYINDEX, &CHECK_RECURSIVE);
+#endif
+                lua_settop(hL, top);
+                top = -1;
             }
-            lua_settop(cL, top);
-            top = -1;
-        }
-        static inline void leave(luadbg_State* L) {
-            if (top < 0) {
-                return;
-            }
-            lua_State* cL = debughost::get(L);
-            lua_settop(cL, top);
-            top = -1;
         }
     };
 

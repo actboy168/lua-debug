@@ -1,4 +1,4 @@
-#include "rdebug_luacompat.h"
+#include "compat/lua.h"
 #include "thunk_nojit.h"
 
 intptr_t thunk_get(lua_State* L, void* key) {

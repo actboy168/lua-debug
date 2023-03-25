@@ -1,6 +1,8 @@
-#include "rdebug_table.h"
+#include "compat/table.h"
 
-#include "rdebug_luacompat.h"
+#include <lj_tab.h>
+
+#include "compat/lua.h"
 
 namespace luadebug::table {
 
