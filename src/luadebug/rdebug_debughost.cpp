@@ -1,6 +1,6 @@
 ﻿#include "rdebug_debughost.h"
 
-#include <stdlib.h>
+#include <cstdlib>
 
 #include "luadbg/bee_module.h"
 #include "rdebug_lua.h"
@@ -13,21 +13,21 @@
 static int DEBUG_HOST   = 0;
 static int DEBUG_CLIENT = 0;
 
-int event(luadbg_State* cL, lua_State* hL, const char* name, int start);
+bool event(luadbg_State* L, lua_State* hL, const char* name, int start);
 
 namespace luadebug::debughost {
-    luadbg_State* get_client(lua_State* L) {
-        if (lua::rawgetp(L, LUA_REGISTRYINDEX, &DEBUG_CLIENT) != LUA_TLIGHTUSERDATA) {
-            lua_pop(L, 1);
+    luadbg_State* get_client(lua_State* hL) {
+        if (lua::rawgetp(hL, LUA_REGISTRYINDEX, &DEBUG_CLIENT) != LUA_TLIGHTUSERDATA) {
+            lua_pop(hL, 1);
             return 0;
         }
-        luadbg_State* clientL = (luadbg_State*)lua_touserdata(L, -1);
-        lua_pop(L, 1);
-        return clientL;
+        luadbg_State* L = (luadbg_State*)lua_touserdata(hL, -1);
+        lua_pop(hL, 1);
+        return L;
     }
 
-    void set(luadbg_State* L, lua_State* hostL) {
-        luadbg_pushlightuserdata(L, hostL);
+    void set(luadbg_State* L, lua_State* hL) {
+        luadbg_pushlightuserdata(L, hL);
         luadbg_rawsetp(L, LUADBG_REGISTRYINDEX, &DEBUG_HOST);
     }
 
@@ -42,27 +42,27 @@ namespace luadebug::debughost {
         return hL;
     }
 
-    static void clear_client(lua_State* L) {
-        luadbg_State* clientL = get_client(L);
-        lua_pushnil(L);
-        lua_rawsetp(L, LUA_REGISTRYINDEX, &DEBUG_CLIENT);
-        if (clientL) {
-            luadbg_close(clientL);
+    static void clear_client(lua_State* hL) {
+        luadbg_State* L = get_client(hL);
+        lua_pushnil(hL);
+        lua_rawsetp(hL, LUA_REGISTRYINDEX, &DEBUG_CLIENT);
+        if (L) {
+            luadbg_close(L);
         }
     }
 
-    static int clear(lua_State* L) {
-        luadbg_State* clientL = get_client(L);
-        if (clientL) {
-            event(clientL, L, "exit", 1);
+    static int clear(lua_State* hL) {
+        luadbg_State* L = get_client(hL);
+        if (L) {
+            event(L, hL, "exit", 1);
         }
-        clear_client(L);
+        clear_client(hL);
         return 0;
     }
 
     static int client_main(luadbg_State* L) {
-        lua_State* hostL = (lua_State*)luadbg_touserdata(L, 2);
-        set(L, hostL);
+        lua_State* hL = (lua_State*)luadbg_touserdata(L, 2);
+        set(L, hL);
         luadbg_pushboolean(L, 1);
         luadbg_setfield(L, LUADBG_REGISTRYINDEX, "LUA_NOENV");
         luadbgL_openlibs(L);
@@ -83,99 +83,99 @@ namespace luadebug::debughost {
         return 0;
     }
 
-    static void push_errmsg(lua_State* L, luadbg_State* cL) {
-        if (luadbg_type(cL, -1) != LUA_TSTRING) {
-            lua_pushstring(L, "Unknown Error");
+    static void push_errmsg(lua_State* hL, luadbg_State* L) {
+        if (luadbg_type(L, -1) != LUA_TSTRING) {
+            lua_pushstring(hL, "Unknown Error");
         }
         else {
             size_t sz       = 0;
-            const char* err = luadbg_tolstring(cL, -1, &sz);
-            lua_pushlstring(L, err, sz);
+            const char* err = luadbg_tolstring(L, -1, &sz);
+            lua_pushlstring(hL, err, sz);
         }
     }
 
-    static int start(lua_State* L) {
-        clear_client(L);
+    static int start(lua_State* hL) {
+        clear_client(hL);
         lua_CFunction preprocessor = NULL;
-        const char* mainscript     = luaL_checkstring(L, 1);
-        if (lua_type(L, 2) == LUA_TFUNCTION) {
-            preprocessor = lua_tocfunction(L, 2);
+        const char* mainscript     = luaL_checkstring(hL, 1);
+        if (lua_type(hL, 2) == LUA_TFUNCTION) {
+            preprocessor = lua_tocfunction(hL, 2);
             if (preprocessor == NULL) {
-                lua_pushstring(L, "Preprocessor must be a C function");
-                return lua_error(L);
+                lua_pushstring(hL, "Preprocessor must be a C function");
+                return lua_error(hL);
             }
-            if (lua_getupvalue(L, 2, 1)) {
-                lua_pushstring(L, "Preprocessor must be a light C function (no upvalue)");
-                return lua_error(L);
+            if (lua_getupvalue(hL, 2, 1)) {
+                lua_pushstring(hL, "Preprocessor must be a light C function (no upvalue)");
+                return lua_error(hL);
             }
         }
-        luadbg_State* cL = luadbgL_newstate();
-        if (cL == NULL) {
-            lua_pushstring(L, "Can't new debug client");
-            return lua_error(L);
+        luadbg_State* L = luadbgL_newstate();
+        if (L == NULL) {
+            lua_pushstring(hL, "Can't new debug client");
+            return lua_error(hL);
         }
 
-        lua_pushlightuserdata(L, cL);
-        lua_rawsetp(L, LUA_REGISTRYINDEX, &DEBUG_CLIENT);
+        lua_pushlightuserdata(hL, L);
+        lua_rawsetp(hL, LUA_REGISTRYINDEX, &DEBUG_CLIENT);
 
-        luadbg_pushcfunction(cL, client_main);
-        luadbg_pushlightuserdata(cL, (void*)mainscript);
-        luadbg_pushlightuserdata(cL, (void*)L);
+        luadbg_pushcfunction(L, client_main);
+        luadbg_pushlightuserdata(L, (void*)mainscript);
+        luadbg_pushlightuserdata(L, (void*)hL);
         if (preprocessor) {
             // TODO: convert C function？
-            luadbg_pushcfunction(cL, (luadbg_CFunction)preprocessor);
+            luadbg_pushcfunction(L, (luadbg_CFunction)preprocessor);
         }
         else {
-            luadbg_pushnil(cL);
+            luadbg_pushnil(L);
         }
 
-        if (luadbg_pcall(cL, 3, 0, 0) != LUA_OK) {
-            push_errmsg(L, cL);
-            clear_client(L);
-            return lua_error(L);
+        if (luadbg_pcall(L, 3, 0, 0) != LUA_OK) {
+            push_errmsg(hL, L);
+            clear_client(hL);
+            return lua_error(hL);
         }
         return 0;
     }
 
-    static int event(lua_State* L) {
-        luadbg_State* clientL = get_client(L);
-        if (!clientL) {
+    static int event(lua_State* hL) {
+        luadbg_State* L = get_client(hL);
+        if (!L) {
             return 0;
         }
-        int ok = event(clientL, L, luaL_checkstring(L, 1), 2);
-        if (ok < 0) {
+        bool ok = event(L, hL, luaL_checkstring(hL, 1), 2);
+        if (!ok) {
             return 0;
         }
-        lua_pushboolean(L, ok);
+        lua_pushboolean(hL, ok);
         return 1;
     }
 
 #if defined(_WIN32) && !defined(LUADBG_DISABLE)
-    static bee::zstring_view to_strview(lua_State* L, int idx) {
+    static bee::zstring_view to_strview(lua_State* hL, int idx) {
         size_t len      = 0;
-        const char* buf = luaL_checklstring(L, idx, &len);
+        const char* buf = luaL_checklstring(hL, idx, &len);
         return { buf, len };
     }
 
-    static int a2u(lua_State* L) {
-        std::string r = bee::win::a2u(to_strview(L, 1));
-        lua_pushlstring(L, r.data(), r.size());
+    static int a2u(lua_State* hL) {
+        std::string r = bee::win::a2u(to_strview(hL, 1));
+        lua_pushlstring(hL, r.data(), r.size());
         return 1;
     }
 #endif
 
-    static int setenv(lua_State* L) {
-        const char* name  = luaL_checkstring(L, 1);
-        const char* value = luaL_checkstring(L, 2);
+    static int setenv(lua_State* hL) {
+        const char* name  = luaL_checkstring(hL, 1);
+        const char* value = luaL_checkstring(hL, 2);
 #if defined(_WIN32)
-        lua_pushfstring(L, "%s=%s", name, value);
-        luadebug::putenv(lua_tostring(L, -1));
+        lua_pushfstring(hL, "%s=%s", name, value);
+        luadebug::putenv(lua_tostring(hL, -1));
 #else
         ::setenv(name, value, 1);
 #endif
         return 0;
     }
-    static int luaopen(lua_State* L) {
+    static int luaopen(lua_State* hL) {
         luaL_Reg l[] = {
             { "start", start },
             { "clear", clear },
@@ -187,20 +187,20 @@ namespace luadebug::debughost {
             { NULL, NULL },
         };
 #if LUA_VERSION_NUM == 501
-        luaL_register(L, "luadebug", l);
-        lua_newuserdata(L, 0);
+        luaL_register(hL, "luadebug", l);
+        lua_newuserdata(hL, 0);
 #else
-        luaL_newlibtable(L, l);
-        luaL_setfuncs(L, l, 0);
+        luaL_newlibtable(hL, l);
+        luaL_setfuncs(hL, l, 0);
 #endif
 
-        lua_createtable(L, 0, 1);
-        lua_pushcfunction(L, clear);
-        lua_setfield(L, -2, "__gc");
-        lua_setmetatable(L, -2);
+        lua_createtable(hL, 0, 1);
+        lua_pushcfunction(hL, clear);
+        lua_setfield(hL, -2, "__gc");
+        lua_setmetatable(hL, -2);
 
 #if LUA_VERSION_NUM == 501
-        lua_rawseti(L, -2, 0);
+        lua_rawseti(hL, -2, 0);
 #endif
         return 1;
     }
@@ -208,6 +208,6 @@ namespace luadebug::debughost {
 }
 
 LUADEBUG_FUNC
-int luaopen_luadebug(lua_State* L) {
-    return luadebug::debughost::luaopen(L);
+int luaopen_luadebug(lua_State* hL) {
+    return luadebug::debughost::luaopen(hL);
 }

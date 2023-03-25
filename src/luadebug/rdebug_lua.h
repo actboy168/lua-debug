@@ -6,5 +6,5 @@
 #    define LUADEBUG_FUNC extern "C" __attribute__((visibility("default")))
 #endif
 
+#include "compat/lua.h"
 #include "luadbg/inc/luadbg.hpp"
-#include "rdebug_luacompat.h"

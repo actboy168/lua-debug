@@ -90,8 +90,8 @@ namespace luadebug::refvalue {
     template <>
     struct allow_as_child<TABLE_HASH_VAL> : public std::true_type {};
 
-    int eval(value* v, lua_State* cL);
-    bool assign(value* v, lua_State* cL);
+    int eval(value* v, lua_State* hL);
+    bool assign(value* v, lua_State* hL);
     value* create_userdata(luadbg_State* L, int n);
     value* create_userdata(luadbg_State* L, int n, int parent);
 

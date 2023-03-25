@@ -31,5 +31,6 @@
             "empty-block": "Warning",
             "trailing-space": "Warning"
         }
-    }
+    },
+    "workspace.checkThirdParty": false
 }
