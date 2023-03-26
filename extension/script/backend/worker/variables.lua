@@ -505,7 +505,7 @@ local function varGetUserdata(value)
 end
 
 -- context: variables,hover,watch,repl,clipboard
-local function varGetValue(context, type, value)
+local function varGetValue(context, allow_lazy, type, value)
     if type == 'string' then
         local str = rdebug.value(value)
         if context == "repl" or context == "clipboard" then
@@ -536,6 +536,9 @@ local function varGetValue(context, type, value)
     elseif type == 'function' then
         return varGetFunctionCode(value)
     elseif type == 'c function' then
+        if allow_lazy and lazyShowCFunction then
+            return "C function", true
+        end
         return rdebug.cfunctioninfo(value) or 'C function'
     elseif type == 'table' then
         if context == "clipboard" then
@@ -571,12 +574,7 @@ local function varCreateReference(value, evaluateName, presentationHint, context
         type = type,
         presentationHint = presentationHint,
     }
-    if lazyShowCFunction and type == 'c function' then
-        result.value = "C function"
-        result.presentationHint.lazy = true
-    else
-        result.value = varGetValue(context, type, value)
-    end
+    result.value, result.presentationHint.lazy = varGetValue(context, true, type, value)
     if type == "integer" then
         result.__vscodeVariableMenuContext = showIntegerAsHex and "integer/hex" or "integer/dec"
     end
@@ -639,10 +637,10 @@ local function varCreateTableKV(key, value, context)
     local var = {
         type = 'TableKV',
         name = string.format("[%s]", rdebug.type(key)),
-        value = varGetValue(context, type, value),
         variablesReference = #varPool,
         presentationHint = { kind = 'virtual' }
     }
+    var.value, var.presentationHint.lazy = varGetValue(context, true, type, value)
     return var
 end
 
@@ -1301,7 +1299,7 @@ function m.extand(valueId, filter, start, count)
         table.insert(vars, 1, {
             name = "",
             type = type,
-            value = varGetValue(varRef.context, type, varRef.v),
+            value = varGetValue(varRef.context, false, type, varRef.v),
         })
     end
     return vars
@@ -1397,7 +1395,7 @@ end
 
 function m.createText(value, context)
     local type = rdebug.type(value)
-    return varGetValue(context, type, value)
+    return varGetValue(context, false, type, value)
 end
 
 function m.createRef(value, evaluateName, context)
