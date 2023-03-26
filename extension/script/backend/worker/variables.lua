@@ -486,7 +486,7 @@ local function varGetFunctionCode(value)
     return getFunctionCode(code, info.linedefined, info.lastlinedefined)
 end
 
-local function varGetUserdata(value)
+local function varGetUserdata(value, allow_lazy)
     local meta = rdebug.getmetatablev(value)
     if meta ~= nil then
         local fn = rdebug.fieldv(meta, '__debugger_tostring')
@@ -494,6 +494,21 @@ local function varGetUserdata(value)
             local ok, res = rdebug.eval(fn, value)
             if ok then
                 return res
+            else
+                return "__debugger_tostring error: "..res
+            end
+        end
+        local fn = rdebug.fieldv(meta, '__tostring')
+        if fn ~= nil then
+            if allow_lazy then
+                return 'userdata', true
+            else
+                local ok, res = rdebug.eval(fn, value)
+                if ok then
+                    return res
+                else
+                    return "__tostring error: "..res
+                end
             end
         end
         local name = rdebug.fieldv(meta, '__name')
@@ -546,7 +561,7 @@ local function varGetValue(context, allow_lazy, type, value)
         end
         return varGetTableValue(value)
     elseif type == 'userdata' then
-        return varGetUserdata(value)
+        return varGetUserdata(value, allow_lazy)
     elseif type == 'lightuserdata' then
         return 'light'..tostring(rdebug.value(value))
     elseif type == 'thread' then
