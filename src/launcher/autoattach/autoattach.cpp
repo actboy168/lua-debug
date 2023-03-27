@@ -13,16 +13,6 @@
 namespace luadebug::autoattach {
     fn_attach debuggerAttach;
 
-#ifdef _WIN32
-#    define EXT ".dll"
-#else
-#    define EXT ".so"
-#endif
-    constexpr auto lua_module_backlist = {
-        "launcher" EXT,
-        "luadebug" EXT,
-    };
-
     constexpr auto find_lua_module_key = "lua_newstate";
     constexpr auto lua_module_strings  = std::array<const char*, 3> {
         "luaJIT_BC_%s",  // luajit
@@ -37,8 +27,10 @@ namespace luadebug::autoattach {
     };
     static bool is_lua_module(const char* module_path, const config::Config& config, bool check_export = true, bool check_strings = false) {
         auto str = std::string_view(module_path);
-        for (auto& s : lua_module_backlist) {
-            if (str.find(s) != std::string_view::npos)
+        // black module
+        auto root = config::get_plugin_root();
+        if (root) {
+            if (str.find((*root).string()) != std::string_view::npos)
                 return false;
         }
 
