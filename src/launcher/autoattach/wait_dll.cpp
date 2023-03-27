@@ -91,7 +91,7 @@ namespace luadebug::autoattach {
             0, [](LdrDllNotificationReason NotificationReason, PLDR_DLL_NOTIFICATION_DATA const NotificationData, PVOID Context) {
                 if (NotificationReason == LdrDllNotificationReason::LDR_DLL_NOTIFICATION_REASON_LOADED) {
                     auto path = fs::path(std::wstring(NotificationData->Loaded.FullDllName->Buffer, NotificationData->Loaded.FullDllName->Length)).string();
-                    auto ptr  = (decltype(loaded)*)Context;
+                    auto ptr  = (WaitDllCallBack_t*)Context;
                     if ((*ptr)(path)) {
                         if (dllNotification.Cookie)
                             dllNotification.dllUnregisterNotification(dllNotification.Cookie);
@@ -99,7 +99,7 @@ namespace luadebug::autoattach {
                     }
                 }
             },
-            (void*)new decltype(loaded)(loaded), &dllNotification.Cookie
+            (void*)new WaitDllCallBack_t(std::move(loaded)), &dllNotification.Cookie
         );
         return true;
     }
@@ -145,7 +145,7 @@ namespace luadebug::autoattach {
         if (!interceptor)
             return false;
         auto listener         = new WaitDllListener;
-        listener->loaded      = loaded;
+        listener->loaded      = std::move(loaded);
         listener->interceptor = interceptor;
         return interceptor->attach((void*)infos.notification_address, listener, nullptr);
     }
