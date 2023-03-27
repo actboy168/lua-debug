@@ -11,6 +11,7 @@
 #include <bee/subprocess.h>
 
 #include <memory>
+#include <regex>
 
 namespace luadebug {
     static std::string demangle_name(const char* name) {
@@ -82,7 +83,7 @@ namespace luadebug {
         return std::nullopt;
     }
 
-    std::optional<std::string> symbolize(void* ptr) {
+    std::optional<symbol_info> symbolize(void* ptr) {
         if (!ptr) {
             return std::nullopt;
         }
@@ -95,7 +96,22 @@ namespace luadebug {
             void* calc_address                  = info.dli_saddr == ptr ? info.dli_saddr : ptr;
             std::optional<std::string> funcinfo = get_function_addr2line(info.dli_fname, (intptr_t)calc_address - (intptr_t)info.dli_fbase);
             if (funcinfo.has_value()) {
-                return funcinfo;
+                // function_name at file_name:line_number
+                auto pos = funcinfo->find(" at ");
+                if (pos != std::string::npos) {
+                    symbol_info sinfo {
+                        .module_name = info.dli_fname,
+                        .address     = (void*)calc_address,
+                    };
+                    sinfo.function_name = funcinfo->substr(0, pos);
+                    auto left           = funcinfo->substr(pos + 4);
+                    pos                 = left.find(":");
+                    if (pos != std::string::npos) {
+                        sinfo.file_name   = left.substr(0, pos);
+                        sinfo.line_number = left.substr(pos + 1);
+                    }
+                    return sinfo;
+                }
             }
         }
 
@@ -106,6 +122,11 @@ namespace luadebug {
         std::string filename = fs::path(info.dli_fname).filename();
         std::string realname = demangle_name(info.dli_sname);
         auto addr            = info.dli_saddr;
-        return std::format("`{}`{} {}", filename, realname, addr);
+        return symbol_info {
+            .file_name     = filename,
+            .address       = addr,
+            .function_name = realname,
+            .module_name   = info.dli_fname,
+        };
     }
 }

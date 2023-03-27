@@ -11,6 +11,7 @@
 #include <bee/subprocess.h>
 
 #include <memory>
+#include <regex>
 
 namespace luadebug {
     static std::string demangle_name(const char* name) {
@@ -86,7 +87,7 @@ namespace luadebug {
         return std::nullopt;
     }
 
-    std::optional<std::string> symbolize(const void* ptr) {
+    std::optional<symbol_info> symbolize(const void* ptr) {
         if (!ptr) {
             return std::nullopt;
         }
@@ -98,7 +99,26 @@ namespace luadebug {
             const void* calc_address            = info.dli_saddr == ptr ? info.dli_saddr : ptr;
             std::optional<std::string> funcinfo = get_function_atos(calc_address);
             if (funcinfo.has_value()) {
-                return funcinfo;
+                auto pos = funcinfo->find(" (in ");
+                if (pos != std::string::npos) {
+                    symbol_info info;
+                    info.function_name = funcinfo->substr(0, pos);
+                    auto left          = funcinfo->substr(pos + 5);
+                    pos                = left.find(") (");
+                    if (pos != std::string::npos) {
+                        info.module_name = left.substr(0, pos);
+                        auto right       = left.substr(pos + 3);
+                        pos              = right.find(':');
+                        if (pos != std::string::npos) {
+                            info.file_name = right.substr(0, pos);
+                            // remove end ')'
+                            right.pop_back();
+                            info.line_number = right.substr(pos + 1);
+                        }
+                    }
+                    info.address = (void*)calc_address;
+                    return info;
+                }
             }
         }
         if (info.dli_saddr != ptr) {
@@ -107,6 +127,10 @@ namespace luadebug {
         std::string filename = fs::path(info.dli_fname).filename();
         std::string realname = demangle_name(info.dli_sname);
         auto addr            = info.dli_saddr;
-        return std::format("`{}`{} {}", filename, realname, addr);
+        return symbol_info {
+            .file_name     = filename,
+            .address       = addr,
+            .function_name = realname,
+        };
     }
 }
