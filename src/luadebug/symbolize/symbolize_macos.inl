@@ -62,7 +62,7 @@ namespace luadebug {
         return res;
     }
 
-    static std::optional<std::string> get_function_atos(void* ptr) {
+    static std::optional<std::string> get_function_atos(const void* ptr) {
         struct AtosInfo {
             std::string pid;
             AtosInfo() {
@@ -86,7 +86,7 @@ namespace luadebug {
         return std::nullopt;
     }
 
-    std::optional<std::string> symbolize(void* ptr) {
+    std::optional<std::string> symbolize(const void* ptr) {
         if (!ptr) {
             return std::nullopt;
         }
@@ -95,7 +95,7 @@ namespace luadebug {
             return std::nullopt;
         }
         if (ptr > info.dli_fbase) {
-            void* calc_address                  = info.dli_saddr == ptr ? info.dli_saddr : ptr;
+            const void* calc_address            = info.dli_saddr == ptr ? info.dli_saddr : ptr;
             std::optional<std::string> funcinfo = get_function_atos(calc_address);
             if (funcinfo.has_value()) {
                 return funcinfo;
