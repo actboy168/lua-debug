@@ -14,9 +14,6 @@ namespace luadebug::autoattach {
     }
 
     static lua_version get_lua_version(const lua_module& m) {
-        auto version = config.get_lua_version();
-        if (version != lua_version::unknown)
-            return version;
         /*
             luaJIT_version_2_1_0_beta3
             luaJIT_version_2_1_0_beta2
@@ -63,39 +60,10 @@ namespace luadebug::autoattach {
     }
 
     bool load_luadebug_dll(lua_version version) {
-        auto dllpath = bee::path_helper::dll_path();
-        if (!dllpath) {
+        auto luadebug_path = config::get_luadebug_path(version);
+        if (!luadebug_path)
             return false;
-        }
-#define LUADEBUG_FILE "luadebug"
-#if defined(_WIN32)
-        auto os = "windows";
-        auto luadebug_name =
-            LUADEBUG_FILE
-            ".dll";
-#elif defined(__ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__)
-        auto os = "darwin";
-        auto luadebug_name =
-            LUADEBUG_FILE
-            ".so";
-#else
-        return false;
-#endif
-        ;
-        auto arch =
-#if defined(_M_ARM64) || defined(__aarch64__)
-            "arm64"
-#elif defined(_M_IX86) || defined(__i386__)
-            "x86"
-#elif defined(_M_X64) || defined(__x86_64__)
-            "x86_64"
-#else
-            ;
-        return false;
-#endif
-            ;
-        auto platform = std::format("{}-{}", os, arch);
-        auto path     = (dllpath.value().parent_path().parent_path() / "runtime" / platform / lua_version_to_string(version) / luadebug_name).string();
+        auto path = (*luadebug_path).string();
         std::string error;
         if (!Gum::Process::module_load(path.c_str(), &error)) {
             log::fatal("load debugger [{}] failed: {}", path, error);
@@ -110,7 +78,10 @@ namespace luadebug::autoattach {
             log::fatal("lua initialize failed, can't find {}", error_msg);
             return false;
         }
-        version = get_lua_version(*this);
+        version = config.version;
+        if (version == lua_version::unknown) {
+            version = get_lua_version(*this);
+        }
         log::info("current lua version: {}", lua_version_to_string(version));
 
         if (version != lua_version::unknown) {

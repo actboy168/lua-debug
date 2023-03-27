@@ -1,23 +1,23 @@
+#pragma once
+#include <autoattach/lua_version.h>
+#include <bee/nonstd/filesystem.h>
+
 #include <memory>
-#include <nlohmann/json_fwd.hpp>
 #include <optional>
 #include <string>
 #include <string_view>
 #include <unordered_map>
 
-namespace luadebug::autoattach {
-
-    enum class lua_version;
-    class Config {
-        std::unique_ptr<nlohmann::json> values;
-
-    public:
-        lua_version get_lua_version() const;
-
-        std::string get_lua_module() const;
-
-        static bool init_from_file();
+namespace luadebug::config {
+    using lua_version = autoattach::lua_version;
+    std::optional<fs::path> get_plugin_root();
+    std::optional<fs::path> get_tmp_dir();
+    std::optional<fs::path> get_runtime_dir();
+    std::optional<fs::path> get_lua_runtime_dir(lua_version version);
+    std::optional<fs::path> get_luadebug_path(lua_version version);
+    struct Config {
+        lua_version version = lua_version::unknown;
+        std::string lua_module;
     };
-
-    extern Config config;
+    std::optional<Config> init_from_file();
 }  // namespace luadebug::autoattach
