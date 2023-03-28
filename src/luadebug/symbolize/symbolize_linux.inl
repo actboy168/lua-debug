@@ -82,7 +82,7 @@ namespace luadebug {
         return std::nullopt;
     }
 
-    std::optional<symbol_info> symbolize(void* ptr) {
+    symbol_info symbolize(const void* ptr) {
         if (!ptr) {
             return {};
         }
