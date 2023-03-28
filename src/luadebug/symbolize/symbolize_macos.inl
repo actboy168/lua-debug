@@ -11,7 +11,6 @@
 #include <bee/subprocess.h>
 
 #include <memory>
-#include <regex>
 
 namespace luadebug {
     static std::string demangle_name(const char* name) {

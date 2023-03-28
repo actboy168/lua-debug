@@ -182,22 +182,20 @@ namespace luadebug {
         }
         auto sym = Addr2Symbol(ptr);
         if (sym) {
+            symbol_info info;
             if (sym->file) {
-                return symbol_info {
-                    .module_name   = sym->module_name,
-                    .function_name = sym->function_name,
-                    .file_name     = sym->file->name,
-                    .line_number   = sym->file->lineno,
-                    .address       = ptr,
-                };
+                info.module_name   = sym->module_name,
+                info.function_name = sym->function_name,
+                info.file_name     = sym->file->name,
+                info.line_number   = sym->file->lineno,
+                info.address       = ptr,
             }
             else {
-                return symbol_info {
-                    .module_name   = sym->module_name,
-                    .function_name = sym->function_name,
-                    .address       = ptr,
-                };
+                info.module_name   = sym->module_name,
+                info.function_name = sym->function_name,
+                info.address       = ptr,
             }
+            return info;
         }
         return std::nullopt;
     }
