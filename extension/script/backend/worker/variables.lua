@@ -19,10 +19,9 @@ local info = {}
 local varPool = {}
 local memoryRefPool = {}
 local globalCache = {}
+local cfunctionInfo = {}
 
-local isWindows = package.config:sub(1, 1) == "\\"
 local showIntegerAsHex = false
-local lazyShowCFunction = not isWindows
 
 local function init_standard()
     local lstandard = {
@@ -249,7 +248,7 @@ local function varCanExtand(type, value)
     if type == 'function' then
         return rdebug.getupvaluev(value, 1) ~= nil
     elseif type == 'c function' then
-        return rdebug.getupvaluev(value, 1) ~= nil
+        return true
     elseif type == 'table' then
         local asize, hsize = rdebug.tablesize(value)
         if asize ~= 0 or hsize ~= 0 then
@@ -551,10 +550,7 @@ local function varGetValue(context, allow_lazy, type, value)
     elseif type == 'function' then
         return varGetFunctionCode(value)
     elseif type == 'c function' then
-        if allow_lazy and lazyShowCFunction then
-            return "C function", true
-        end
-        return rdebug.cfunctioninfo(value) or 'C function'
+        return "C function"
     elseif type == 'table' then
         if context == "clipboard" then
             return serialize(value)
@@ -703,6 +699,16 @@ local function varCreate(t)
     }
 end
 
+local function cfunctioninfo(func)
+    local key = tostring(func)
+    if cfunctionInfo[key] then
+        return cfunctionInfo[key]
+    end
+    local info = rdebug.cfunctioninfo(func)
+    cfunctionInfo[key] = info
+    return info
+end
+
 local function getTabelKey(key)
     local type = rdebug.type(key)
     if type == 'string' then
@@ -835,6 +841,25 @@ local function extandFunction(varRef)
             }
         }
         i = i + 1
+    end
+    if isCFunction then
+        local info = cfunctioninfo(f)
+        local function createVar(name, value)
+            vars[#vars+1] = {
+                name = name,
+                value = value,
+                type = 'string',
+                presentationHint = {
+                    kind = "virtual",
+                    attributes = "readOnly",
+                }
+            }
+        end
+        if info then
+            for key, value in pairs(info) do
+                createVar(key, value)
+            end
+        end
     end
     return vars
 end
@@ -1202,12 +1227,12 @@ local function extandCData(varRef)
                 attributes = "readOnly",
             }
         }
-        local cfunctioninfo = rdebug.cfunctioninfo(value)
-        if cfunctioninfo then
+        local info = cfunctioninfo(value)
+        if info then
             vars[3] = {
                 type = "string",
                 name = "[native]",
-                value = cfunctioninfo,
+                value = (info.function_name or 'unknown')..":"..(info.line_number or '?'),
                 presentationHint = {
                     kind = "virtual",
                     attributes = "readOnly",
@@ -1405,6 +1430,7 @@ function m.clean()
     varPool = {}
     memoryRefPool = {}
     globalCache = {}
+    cfunctionInfo = {}
     rdebug.cleanwatch()
 end
 
