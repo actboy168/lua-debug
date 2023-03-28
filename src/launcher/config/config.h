@@ -1,15 +1,17 @@
 #pragma once
 #include <autoattach/lua_version.h>
 #include <bee/nonstd/filesystem.h>
+#include <resolver/lua_signature.h>
 
+#include <map>
 #include <memory>
 #include <optional>
 #include <string>
 #include <string_view>
-#include <unordered_map>
 
 namespace luadebug::config {
     using lua_version = autoattach::lua_version;
+    using signature   = autoattach::signature;
     std::optional<fs::path> get_plugin_root();
     std::optional<fs::path> get_tmp_dir();
     std::optional<fs::path> get_runtime_dir();
@@ -18,8 +20,8 @@ namespace luadebug::config {
     struct Config {
         lua_version version = lua_version::unknown;
         std::string lua_module;
+        std::map<std::string, signature> signatures;
         bool is_signature_mode() const;
-        std::optional<signature> get_lua_signature(const std::string& key) const;
     };
     std::optional<Config> init_from_file();
-}  // namespace luadebug::autoattach
+}  // namespace luadebug::config

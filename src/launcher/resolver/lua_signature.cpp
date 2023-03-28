@@ -43,8 +43,9 @@ namespace luadebug::autoattach {
         auto addr = resolver->find(name);
         if (addr)
             return addr;
-        if (auto signature = config.get_lua_signature(std::string(name))) {
-            addr = signature->find(module_name.data());
+
+        if (auto it = config->signatures.find(std::string(name)); it != config->signatures.end()) {
+            addr = it->second.find(module_name.data());
             if (addr)
                 return addr;
         }

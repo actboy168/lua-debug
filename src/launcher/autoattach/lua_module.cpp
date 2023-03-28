@@ -62,11 +62,11 @@ namespace luadebug::autoattach {
         // TODO: from signature
     }
 
-    bool load_luadebug_dll(lua_version version) {
+    bool load_luadebug_dll(lua_version version, lua::resolver& resolver) {
         auto luadebug_path = config::get_luadebug_path(version);
         if (!luadebug_path)
             return false;
-        auto path = (*luadebug_path).string();
+        auto luadebug = (*luadebug_path).string();
         std::string error;
         if (!Gum::Process::module_load(luadebug.c_str(), &error)) {
             log::fatal("load debugger [{}] failed: {}", luadebug, error);
@@ -91,21 +91,23 @@ namespace luadebug::autoattach {
         resolver = std::make_unique<lua_resolver>(path);
         if (version != lua_version::unknown && config.is_signature_mode()) {
             // 尝试从自带的库里加载函数
-            auto dir = get_luadebug_dir(version);
-            if (dir) {
+            auto runtime_dir = config::get_lua_runtime_dir(version);
+            if (runtime_dir) {
                 auto dllpath =
 #ifdef _WIN32
-                    (*dir / lua_version_to_string(version) + std::string(EXT)).string();
+                    (*runtime_dir / lua_version_to_string(version) + std::string(".dll")).string();
 #else
-                    (*dir / "lua" EXT).string();
+                    (*runtime_dir / "lua.so").string();
 #endif
                 std::string error;
                 if (!Gum::Process::module_load(dllpath.c_str(), &error)) {
                     log::info("load lua module {}, failed: {}", dllpath, error);
                 }
                 else {
-                    auto signature_resolver_ptr      = std::make_unique<signature_resolver>();
-                    signature_resolver_ptr->resolver = std::move(resolver);
+                    auto signature_resolver_ptr         = std::make_unique<signature_resolver>();
+                    signature_resolver_ptr->module_name = dllpath;
+                    signature_resolver_ptr->config      = &config;
+                    signature_resolver_ptr->resolver    = std::move(resolver);
                     signature_resolver_ptr->reserve_resolver =
                         std::make_unique<lua_resolver>(dllpath);
                     resolver = std::move(signature_resolver_ptr);

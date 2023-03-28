@@ -27,29 +27,6 @@ namespace luadebug::config {
     }
 
     static std::string get_lua_module(nlohmann::json& values) {
-    std::optional<signature> Config::get_lua_signature(const std::string& key) const {
-        const auto signture_key = "functions"sv;
-        auto it                 = values->find(signture_key);
-        if (it == values->end()) {
-            return std::nullopt;
-        }
-        try {
-            const auto& json = (*it)[key];
-            // searilize json to signature
-            signature res = {};
-            json["start_offset"].get_to(res.start_offset);
-            json["end_offset"].get_to(res.end_offset);
-            json["pattern"].get_to(res.pattern);
-            json["pattern_offset"].get_to(res.pattern_offset);
-            json["hit_offset"].get_to(res.hit_offset);
-            return res;
-        } catch (const nlohmann::json::exception& e) {
-            log::info("get_lua_signature {} error: {}", key, e.what());
-        }
-        return std::nullopt;
-    }
-
-    std::string Config::get_lua_module() const {
         const auto key = "module"sv;
 
         auto it = values.find(key);
@@ -71,12 +48,37 @@ namespace luadebug::config {
         } while (true);
     }
 
+    static std::map<std::string, signature> get_lua_signature(const nlohmann::json& values) {
+        const auto signture_key = "functions"sv;
+        auto it                 = values.find(signture_key);
+        if (it == values.end()) {
+            return {};
+        }
+        try {
+            std::map<std::string, signature> signatures;
+            for (auto& [key, val] : it->items()) {
+                // searilize json to signature
+                signature res = {};
+                val["start_offset"].get_to(res.start_offset);
+                val["end_offset"].get_to(res.end_offset);
+                val["pattern"].get_to(res.pattern);
+                val["pattern_offset"].get_to(res.pattern_offset);
+                val["hit_offset"].get_to(res.hit_offset);
+
+                signatures.emplace(key, res);
+            }
+            return signatures;
+        } catch (const nlohmann::json::exception& e) {
+            log::info("get_lua_signature error: {}", e.what());
+        }
+        return {};
+    }
+
     bool Config::is_signature_mode() const {
-        return !values->is_null();
+        return !signatures.empty();
     }
 
     std::optional<Config> init_from_file() {
-        Config config;
         nlohmann::json values;
 
         auto tmp = get_tmp_dir();
@@ -93,8 +95,10 @@ namespace luadebug::config {
             log::info("init_from_file error: {}", e.what());
         }
 
+        Config config;
         config.version    = get_lua_version(values);
         config.lua_module = get_lua_module(values);
+        config.signatures = get_lua_signature(values);
 
         return config;
     }
@@ -161,4 +165,4 @@ namespace luadebug::config {
         return (*runtime) / (LUADEBUG_FILE EXT);
     }
 
-}  // namespace luadebug::autoattach
+}  // namespace luadebug::config
