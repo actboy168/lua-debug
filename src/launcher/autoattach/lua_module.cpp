@@ -16,9 +16,6 @@ namespace luadebug::autoattach {
     }
 
     static lua_version get_lua_version(const lua_module& m) {
-        auto version = config.get_lua_version();
-        if (version != lua_version::unknown)
-            return version;
         /*
             luaJIT_version_2_1_0_beta3
             luaJIT_version_2_1_0_beta2
@@ -65,47 +62,11 @@ namespace luadebug::autoattach {
         // TODO: from signature
     }
 
-    std::optional<fs::path> get_luadebug_dir(lua_version version) {
-        auto dllpath = bee::path_helper::dll_path();
-        if (!dllpath) {
-            return std::nullopt;
-        }
-        auto os =
-#if defined(_WIN32)
-            "windows";
-#elif defined(__ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__)
-            "darwin";
-#else
-            "linux";
-#endif
-        auto arch =
-#if defined(_M_ARM64) || defined(__aarch64__)
-            "arm64";
-#elif defined(_M_IX86) || defined(__i386__)
-            "x86";
-#elif defined(_M_X64) || defined(__x86_64__)
-            "x86_64";
-#else
-                return std::nullopt;
-#endif
-        auto platform = std::format("{}-{}", os, arch);
-        return dllpath.value().parent_path().parent_path() / "runtime" / platform / lua_version_to_string(version);
-    }
-
-    bool load_luadebug_dll(lua_version version, lua::resolver& resolver) {
-#define LUADEBUG_FILE "luadebug"
-
-#if defined(_WIN32)
-#    define EXT ".dll"
-#else
-#    define EXT ".so"
-#endif
-        auto path = get_luadebug_dir(version);
-        if (!path) {
+    bool load_luadebug_dll(lua_version version) {
+        auto luadebug_path = config::get_luadebug_path(version);
+        if (!luadebug_path)
             return false;
-        }
-
-        auto luadebug = (*path / (LUADEBUG_FILE EXT)).string();
+        auto path = (*luadebug_path).string();
         std::string error;
         if (!Gum::Process::module_load(luadebug.c_str(), &error)) {
             log::fatal("load debugger [{}] failed: {}", luadebug, error);
@@ -157,6 +118,11 @@ namespace luadebug::autoattach {
             log::fatal("lua initialize failed, can't find {}", error_msg);
             return false;
         }
+        version = config.version;
+        if (version == lua_version::unknown) {
+            version = get_lua_version(*this);
+        }
+        log::info("current lua version: {}", lua_version_to_string(version));
 
         if (version != lua_version::unknown) {
             if (!load_luadebug_dll(version, *resolver))

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <autoattach/autoattach.h>
+#include <config/config.h>
 #include <resolver/lua_resolver.h>
 
 #include <string>
@@ -15,6 +16,7 @@ namespace luadebug::autoattach {
         lua_version version  = lua_version::unknown;
         std::unique_ptr<lua::resolver> resolver;
         watchdog* watchdog = nullptr;
+        config::Config config;
 
         bool initialize(fn_attach attach_lua_vm);
     };
