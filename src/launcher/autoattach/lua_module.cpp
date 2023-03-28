@@ -95,7 +95,7 @@ namespace luadebug::autoattach {
             if (runtime_dir) {
                 auto dllpath =
 #ifdef _WIN32
-                    (*runtime_dir / lua_version_to_string(version) + std::string(".dll")).string();
+                    (*runtime_dir / (lua_version_to_string(version) + std::string(".dll"))).string();
 #else
                     (*runtime_dir / "lua.so").string();
 #endif
