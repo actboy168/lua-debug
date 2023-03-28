@@ -873,12 +873,13 @@ namespace luadebug::visitor {
         if (copy_from_dbg(L, hL, area, 1) == LUADBG_TNONE) {
             return 0;
         }
-        const void* cfn = lua_tocfunction_pointer(hL, -1);
-        lua_pop(hL, 1);
+        const void* cfn      = lua_tocfunction_pointer(hL, -1);
+        std::string tostring = luaL_tolstring(hL, -1, 0);
+        lua_pop(hL, 2);
         auto info = symbolize(cfn);
         luadbg_newtable(L);
-        luadbg_pushfstring(L, "%p", *info.address);
-        luadbg_setfield(L, -2, "address");
+        luadbg_pushlstring(L, tostring.c_str(), tostring.size());
+        luadbg_setfield(L, -2, "tostring");
         if (info.file_name) {
             luadbg_pushlstring(L, info.file_name->c_str(), info.file_name->size());
             luadbg_setfield(L, -2, "file_name");

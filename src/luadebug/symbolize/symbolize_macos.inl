@@ -115,7 +115,6 @@ namespace luadebug {
                             info.line_number = right.substr(pos + 1);
                         }
                     }
-                    info.address = calc_address;
                     return info;
                 }
             }
@@ -125,10 +124,8 @@ namespace luadebug {
         }
         std::string filename = fs::path(info.dli_fname).filename();
         std::string realname = demangle_name(info.dli_sname);
-        auto addr            = info.dli_saddr;
         return symbol_info {
             .file_name     = filename,
-            .address       = addr,
             .function_name = realname,
         };
     }

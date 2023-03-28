@@ -5,7 +5,6 @@
 
 namespace luadebug {
     struct symbol_info {
-        std::optional<const void*> address;
         std::optional<std::string> module_name;
         std::optional<std::string> function_name;
         std::optional<std::string> file_name;

@@ -282,7 +282,7 @@ function visitor.costatus(co)
 end
 
 ---@class visitor.cfunctioninfo
----@field address lightuserdata
+---@field tostring string
 ---@field file_name string
 ---@field function_name string
 ---@field module_name string

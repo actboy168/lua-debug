@@ -99,7 +99,6 @@ namespace luadebug {
                 auto pos = funcinfo->find(" at ");
                 if (pos != std::string::npos) {
                     symbol_info sinfo {
-                        .address     = calc_address,
                         .module_name = info.dli_fname,
                     };
                     sinfo.function_name = funcinfo->substr(0, pos);
@@ -120,9 +119,7 @@ namespace luadebug {
 
         std::string filename = fs::path(info.dli_fname).filename();
         std::string realname = demangle_name(info.dli_sname);
-        auto addr            = info.dli_saddr;
         return symbol_info {
-            .address       = addr,
             .module_name   = info.dli_fname,
             .function_name = realname,
             .file_name     = filename,

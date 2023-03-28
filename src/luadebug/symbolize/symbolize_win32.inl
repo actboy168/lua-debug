@@ -184,19 +184,17 @@ namespace luadebug {
         if (sym) {
             symbol_info info;
             if (sym->file) {
-                info.address       = ptr;
                 info.module_name   = sym->module_name;
                 info.function_name = sym->function_name;
                 info.file_name     = sym->file->name;
                 info.line_number   = std::to_string(sym->file->lineno);
             }
             else {
-                info.address       = ptr;
                 info.module_name   = sym->module_name;
                 info.function_name = sym->function_name;
             }
             return info;
         }
-        return { ptr };
+        return {};
     }
 }
