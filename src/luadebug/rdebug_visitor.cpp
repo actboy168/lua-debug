@@ -873,8 +873,8 @@ namespace luadebug::visitor {
         if (copy_from_dbg(L, hL, area, 1) == LUADBG_TNONE) {
             return 0;
         }
-        const void* cfn      = lua_tocfunction_pointer(hL, -1);
-        lua_pop(hL, 2);
+        const void* cfn = lua_tocfunction_pointer(hL, -1);
+        lua_pop(hL, 1);
         auto info = symbolize(cfn);
         luadbg_newtable(L);
         luadbg_pushfstring(L, "%p", cfn);
