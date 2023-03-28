@@ -859,8 +859,6 @@ local function extandFunction(varRef)
             for key, value in pairs(info) do
                 createVar(key, value)
             end
-        else
-            createVar("", "can't get c function info")
         end
     end
     return vars
