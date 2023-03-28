@@ -86,17 +86,17 @@ namespace luadebug {
         return std::nullopt;
     }
 
-    std::optional<symbol_info> symbolize(const void* ptr) {
+    symbol_info symbolize(const void* ptr) {
         if (!ptr) {
-            return std::nullopt;
+            return {};
         }
         Dl_info info = {};
         if (dladdr(ptr, &info) == 0) {
-            return std::nullopt;
+            return {};
         }
         if (ptr > info.dli_fbase) {
-            const void* calc_address            = info.dli_saddr == ptr ? info.dli_saddr : ptr;
-            std::optional<std::string> funcinfo = get_function_atos(calc_address);
+            auto calc_address = info.dli_saddr == ptr ? info.dli_saddr : ptr;
+            auto funcinfo     = get_function_atos(calc_address);
             if (funcinfo.has_value()) {
                 auto pos = funcinfo->find(" (in ");
                 if (pos != std::string::npos) {
@@ -115,13 +115,13 @@ namespace luadebug {
                             info.line_number = right.substr(pos + 1);
                         }
                     }
-                    info.address = (void*)calc_address;
+                    info.address = calc_address;
                     return info;
                 }
             }
         }
         if (info.dli_saddr != ptr) {
-            return std::nullopt;
+            return {};
         }
         std::string filename = fs::path(info.dli_fname).filename();
         std::string realname = demangle_name(info.dli_sname);

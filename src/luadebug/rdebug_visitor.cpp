@@ -876,28 +876,25 @@ namespace luadebug::visitor {
         const void* cfn = lua_tocfunction_pointer(hL, -1);
         lua_pop(hL, 1);
         auto info = symbolize(cfn);
-        if (!info.has_value()) {
-            return 0;
-        }
         luadbg_newtable(L);
         std::array<char, 10> str;
-        snprintf(str.data(), str.size(), "%p", info->address);
+        snprintf(str.data(), str.size(), "%p", *info.address);
         luadbg_pushstring(L, str.data());
         luadbg_setfield(L, -2, "address");
-        if (info->file_name) {
-            luadbg_pushlstring(L, info->file_name->c_str(), info->file_name->size());
+        if (info.file_name) {
+            luadbg_pushlstring(L, info.file_name->c_str(), info.file_name->size());
             luadbg_setfield(L, -2, "file_name");
         }
-        if (info->function_name) {
-            luadbg_pushlstring(L, info->function_name->c_str(), info->function_name->size());
+        if (info.function_name) {
+            luadbg_pushlstring(L, info.function_name->c_str(), info.function_name->size());
             luadbg_setfield(L, -2, "function_name");
         }
-        if (info->module_name) {
-            luadbg_pushlstring(L, info->module_name->c_str(), info->module_name->size());
+        if (info.module_name) {
+            luadbg_pushlstring(L, info.module_name->c_str(), info.module_name->size());
             luadbg_setfield(L, -2, "module_name");
         }
-        if (info->line_number) {
-            luadbg_pushlstring(L, info->line_number->c_str(), info->line_number->size());
+        if (info.line_number) {
+            luadbg_pushlstring(L, info.line_number->c_str(), info.line_number->size());
             luadbg_setfield(L, -2, "line_number");
         }
 

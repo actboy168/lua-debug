@@ -84,22 +84,22 @@ namespace luadebug {
 
     std::optional<symbol_info> symbolize(void* ptr) {
         if (!ptr) {
-            return std::nullopt;
+            return {};
         }
         Dl_info info = {};
         if (dladdr(ptr, &info) == 0) {
-            return std::nullopt;
+            return {};
         }
 
         if (ptr > info.dli_fbase) {
-            void* calc_address                  = info.dli_saddr == ptr ? info.dli_saddr : ptr;
-            std::optional<std::string> funcinfo = get_function_addr2line(info.dli_fname, (intptr_t)calc_address - (intptr_t)info.dli_fbase);
+            auto calc_address = info.dli_saddr == ptr ? info.dli_saddr : ptr;
+            auto funcinfo     = get_function_addr2line(info.dli_fname, (intptr_t)calc_address - (intptr_t)info.dli_fbase);
             if (funcinfo.has_value()) {
                 // function_name at file_name:line_number
                 auto pos = funcinfo->find(" at ");
                 if (pos != std::string::npos) {
                     symbol_info sinfo {
-                        .address     = (void*)calc_address,
+                        .address     = calc_address,
                         .module_name = info.dli_fname,
                     };
                     sinfo.function_name = funcinfo->substr(0, pos);
@@ -115,7 +115,7 @@ namespace luadebug {
         }
 
         if (info.dli_saddr != ptr) {
-            return std::nullopt;
+            return {};
         }
 
         std::string filename = fs::path(info.dli_fname).filename();
