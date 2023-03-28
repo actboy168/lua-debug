@@ -874,7 +874,6 @@ namespace luadebug::visitor {
             return 0;
         }
         const void* cfn      = lua_tocfunction_pointer(hL, -1);
-        std::string tostring = luaL_tolstring(hL, -1, 0);
         lua_pop(hL, 2);
         auto info = symbolize(cfn);
         luadbg_newtable(L);
