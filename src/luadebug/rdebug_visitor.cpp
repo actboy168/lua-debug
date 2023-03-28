@@ -877,9 +877,7 @@ namespace luadebug::visitor {
         lua_pop(hL, 1);
         auto info = symbolize(cfn);
         luadbg_newtable(L);
-        std::array<char, 10> str;
-        snprintf(str.data(), str.size(), "%p", *info.address);
-        luadbg_pushstring(L, str.data());
+        luadbg_pushfstring(L, "%p", *info.address);
         luadbg_setfield(L, -2, "address");
         if (info.file_name) {
             luadbg_pushlstring(L, info.file_name->c_str(), info.file_name->size());
