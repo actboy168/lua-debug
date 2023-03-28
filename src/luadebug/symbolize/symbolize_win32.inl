@@ -75,7 +75,8 @@ namespace luadebug {
     }
 
     inline HANDLE createSymHandler(bool SymBuildPath, bool SymUseSymSrv) {
-        HANDLE proc = GetCurrentProcess();
+        // magic proc
+        HANDLE proc = (HANDLE)788558665;
         auto path   = searchpath(SymBuildPath, SymUseSymSrv);
         if (!SymInitialize(proc, path.c_str(), TRUE)) {
             if (GetLastError() != 87) {
