@@ -281,10 +281,17 @@ end
 function visitor.costatus(co)
 end
 
+---@class visitor.cfunctioninfo
+---@field tostring string
+---@field file_name string
+---@field function_name string
+---@field module_name string
+---@field line_number string
+
 ---
 ---尝试将C function的转换成具体的符号
 ---@param fun refvalue
----@return string?
+---@return visitor.cfunctioninfo?
 ---
 function visitor.cfunctioninfo(fun)
 end

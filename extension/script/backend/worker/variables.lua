@@ -19,10 +19,9 @@ local info = {}
 local varPool = {}
 local memoryRefPool = {}
 local globalCache = {}
+local cfunctionInfo = {}
 
-local isWindows = package.config:sub(1, 1) == "\\"
 local showIntegerAsHex = false
-local lazyShowCFunction = not isWindows
 
 local function init_standard()
     local lstandard = {
@@ -249,7 +248,7 @@ local function varCanExtand(type, value)
     if type == 'function' then
         return rdebug.getupvaluev(value, 1) ~= nil
     elseif type == 'c function' then
-        return rdebug.getupvaluev(value, 1) ~= nil
+        return true
     elseif type == 'table' then
         local asize, hsize = rdebug.tablesize(value)
         if asize ~= 0 or hsize ~= 0 then
@@ -486,7 +485,7 @@ local function varGetFunctionCode(value)
     return getFunctionCode(code, info.linedefined, info.lastlinedefined)
 end
 
-local function varGetUserdata(value)
+local function varGetUserdata(value, allow_lazy)
     local meta = rdebug.getmetatablev(value)
     if meta ~= nil then
         local fn = rdebug.fieldv(meta, '__debugger_tostring')
@@ -494,6 +493,21 @@ local function varGetUserdata(value)
             local ok, res = rdebug.eval(fn, value)
             if ok then
                 return res
+            else
+                return "__debugger_tostring error: "..res
+            end
+        end
+        local fn = rdebug.fieldv(meta, '__tostring')
+        if fn ~= nil then
+            if allow_lazy then
+                return 'userdata', true
+            else
+                local ok, res = rdebug.eval(fn, value)
+                if ok then
+                    return res
+                else
+                    return "__tostring error: "..res
+                end
             end
         end
         local name = rdebug.fieldv(meta, '__name')
@@ -505,7 +519,7 @@ local function varGetUserdata(value)
 end
 
 -- context: variables,hover,watch,repl,clipboard
-local function varGetValue(context, type, value)
+local function varGetValue(context, allow_lazy, type, value)
     if type == 'string' then
         local str = rdebug.value(value)
         if context == "repl" or context == "clipboard" then
@@ -536,14 +550,14 @@ local function varGetValue(context, type, value)
     elseif type == 'function' then
         return varGetFunctionCode(value)
     elseif type == 'c function' then
-        return rdebug.cfunctioninfo(value) or 'C function'
+        return "C function"
     elseif type == 'table' then
         if context == "clipboard" then
             return serialize(value)
         end
         return varGetTableValue(value)
     elseif type == 'userdata' then
-        return varGetUserdata(value)
+        return varGetUserdata(value, allow_lazy)
     elseif type == 'lightuserdata' then
         return 'light'..tostring(rdebug.value(value))
     elseif type == 'thread' then
@@ -571,12 +585,7 @@ local function varCreateReference(value, evaluateName, presentationHint, context
         type = type,
         presentationHint = presentationHint,
     }
-    if lazyShowCFunction and type == 'c function' then
-        result.value = "C function"
-        result.presentationHint.lazy = true
-    else
-        result.value = varGetValue(context, type, value)
-    end
+    result.value, result.presentationHint.lazy = varGetValue(context, true, type, value)
     if type == "integer" then
         result.__vscodeVariableMenuContext = showIntegerAsHex and "integer/hex" or "integer/dec"
     end
@@ -639,10 +648,10 @@ local function varCreateTableKV(key, value, context)
     local var = {
         type = 'TableKV',
         name = string.format("[%s]", rdebug.type(key)),
-        value = varGetValue(context, type, value),
         variablesReference = #varPool,
         presentationHint = { kind = 'virtual' }
     }
+    var.value, var.presentationHint.lazy = varGetValue(context, true, type, value)
     return var
 end
 
@@ -688,6 +697,16 @@ local function varCreate(t)
         nameidx = t.nameidx,
         memoryReference = var.memoryReference,
     }
+end
+
+local function cfunctioninfo(func)
+    local key = tostring(func)
+    if cfunctionInfo[key] then
+        return cfunctionInfo[key]
+    end
+    local info = rdebug.cfunctioninfo(func)
+    cfunctionInfo[key] = info
+    return info
 end
 
 local function getTabelKey(key)
@@ -822,6 +841,25 @@ local function extandFunction(varRef)
             }
         }
         i = i + 1
+    end
+    if isCFunction then
+        local info = cfunctioninfo(f)
+        local function createVar(name, value)
+            vars[#vars+1] = {
+                name = name,
+                value = value,
+                type = 'string',
+                presentationHint = {
+                    kind = "virtual",
+                    attributes = "readOnly",
+                }
+            }
+        end
+        if info then
+            for key, value in pairs(info) do
+                createVar(key, value)
+            end
+        end
     end
     return vars
 end
@@ -1189,12 +1227,12 @@ local function extandCData(varRef)
                 attributes = "readOnly",
             }
         }
-        local cfunctioninfo = rdebug.cfunctioninfo(value)
-        if cfunctioninfo then
+        local info = cfunctioninfo(value)
+        if info then
             vars[3] = {
                 type = "string",
                 name = "[native]",
-                value = cfunctioninfo,
+                value = (info.function_name or 'unknown')..":"..(info.line_number or '?'),
                 presentationHint = {
                     kind = "virtual",
                     attributes = "readOnly",
@@ -1301,7 +1339,7 @@ function m.extand(valueId, filter, start, count)
         table.insert(vars, 1, {
             name = "",
             type = type,
-            value = varGetValue(varRef.context, type, varRef.v),
+            value = varGetValue(varRef.context, false, type, varRef.v),
         })
     end
     return vars
@@ -1392,12 +1430,13 @@ function m.clean()
     varPool = {}
     memoryRefPool = {}
     globalCache = {}
+    cfunctionInfo = {}
     rdebug.cleanwatch()
 end
 
 function m.createText(value, context)
     local type = rdebug.type(value)
-    return varGetValue(context, type, value)
+    return varGetValue(context, false, type, value)
 end
 
 function m.createRef(value, evaluateName, context)
