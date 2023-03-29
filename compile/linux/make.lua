@@ -5,10 +5,11 @@ lm:import "3rd/bee.lua/make.lua"
 require "compile.common.lua-debug"
 
 lm.runtime_platform = lm.platform
-require "compile.common.runtime"
+require "compile.linux.runtime"
 
 lm:default {
     "common",
     "lua-debug",
     "runtime",
+    "launcher",
 }
