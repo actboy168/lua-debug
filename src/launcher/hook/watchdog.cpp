@@ -10,6 +10,10 @@ namespace luadebug::autoattach {
         : interceptor { ctx::get()->interceptor }
         , attach_lua_vm(attach_lua_vm) {}
 
+    watchdog::~watchdog() {
+        unhook();
+    }
+
     bool watchdog::hook() {
         for (auto& point : watch_points) {
             if (!point.address) {

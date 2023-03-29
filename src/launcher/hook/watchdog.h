@@ -16,6 +16,7 @@ namespace luadebug::autoattach {
 
     public:
         watchdog(fn_attach attach_lua_vm);
+        ~watchdog();
         watchdog(const watchdog&) = delete;
         bool init(const lua::resolver& resolver, std::vector<watch_point>&& points);
         bool hook();
