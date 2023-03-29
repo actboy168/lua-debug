@@ -63,11 +63,11 @@ namespace luadebug::autoattach {
             return;
         }
 
-        // find old one use this module
         if (ctx->lua_module) {
-            if (!ctx->lua_module->initialize(ctx::attach_lua_vm)) {
-                return;
-            }
+            // no watchdog, initialize it when attached success
+            if (!ctx->lua_module->watchdog)
+                ctx->lua_module->initialize(ctx::attach_lua_vm);
+            return;
         }
 
         bool found    = false;

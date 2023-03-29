@@ -122,6 +122,7 @@ namespace luadebug::autoattach {
         case attach_status::success:
             // TODO: how to free so
             // TODO: free all resources
+            ctx::get()->lua_module->watchdog = nullptr;
             break;
         case attach_status::wait:
             set_luahook(L, fn);
