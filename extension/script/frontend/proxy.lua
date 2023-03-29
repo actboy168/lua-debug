@@ -24,7 +24,8 @@ local function ipc_send_config(pid, args)
     local fd = assert(ipc(WORKDIR, pid, "config", "w"))
     local config = {
         version = args.luaVersion,
-        module = args.module
+        module = args.module,
+        signatures = args.signatures
     }
     fd:write(json.encode(config))
     fd:close()

@@ -55,6 +55,7 @@ local function compiler(executable, import_file, is_string, lua_modlue)
         lua_modlue,
         option.is_export and "true" or "false",
         stdout = true,
+        stderr = true,
     })
     local res = {}
     for line in process.stdout:lines() do
@@ -72,10 +73,9 @@ local function compiler(executable, import_file, is_string, lua_modlue)
 
     local code = process:wait()
     if code ~= 0 then
-        print("signature_compiler error", code)
+        print("signature_compiler error:\n", process.stderr:read "a")
         os.exit(code, true)
     end
-
     return res
 end
 
@@ -105,15 +105,19 @@ for _, t in ipairs(luadebug_files) do
     local executable = get_executable(t.platform_arch)
     local t1 = compiler(executable, launcher_path, true, lua_modlue)
     local t2 = compiler(executable, t.luadebug, false, lua_modlue)
-    local signatures = table.pack(table.unpack(t1), table.unpack(t2))
     local output = {}
-    for _, signature in ipairs(signatures) do
-        output[signature.name] = {
-            pattern = signature.pattern,
-            offset = signature.offset,
-            hit_offset = signature.hit_offset,
-        }
+    local function scan_output(signatures)
+        for _, signature in ipairs(signatures) do
+            output[signature.name] = {
+                pattern = signature.pattern,
+                offset = signature.offset,
+                hit_offset = signature.hit_offset,
+            }
+        end
     end
+    scan_output(t1)
+    scan_output(t2)
+
     local file = io.open((output_dir / (t.version..".json")):string(), "w")
     file:write(json.beautify(output))
     file:close()

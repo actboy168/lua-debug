@@ -19,7 +19,7 @@ namespace luadebug::config {
         const auto key = "version"sv;
 
         auto it = values.find(key);
-        if (!values || it == values.end()) {
+        if (it == values.end()) {
             return lua_version::unknown;
         }
 
@@ -49,7 +49,7 @@ namespace luadebug::config {
     }
 
     static std::map<std::string, signature> get_lua_signature(const nlohmann::json& values) {
-        const auto signture_key = "functions"sv;
+        const auto signture_key = "signatures"sv;
         auto it                 = values.find(signture_key);
         if (it == values.end()) {
             return {};

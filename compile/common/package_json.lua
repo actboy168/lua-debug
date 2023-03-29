@@ -257,37 +257,31 @@ Debugger address.
         markdownDescription = "specify lua module path/name",
         type = "string",
     },
-    signature = {
+    signatures = {
         default = "null",
         type = "object",
         markdownDescription = "signature info",
-        properties = {
-            functions = {
-                type = "object",
-                additionalProperties = {
-                    type = "object",
-                    properties = {
-                        start_offset = {
-                            type = "integer"
-                        },
-                        end_offset = {
-                            type = "integer"
-                        },
-                        pattern = {
-                            type = "string"
-                        },
-                        pattern_offset = {
-                            type = "integer"
-                        },
-                        hit_offset = {
-                            type = "integer",
-                        }
-                    },
-                    required = { "pattern" }
+        additionalProperties = {
+            type = "object",
+            properties = {
+                start_offset = {
+                    type = "integer"
+                },
+                end_offset = {
+                    type = "integer"
+                },
+                pattern = {
+                    type = "string"
+                },
+                pattern_offset = {
+                    type = "integer"
+                },
+                hit_offset = {
+                    type = "integer",
                 }
-            }
-        },
-        required = { "functions" }
+            },
+            required = { "pattern" }
+        }
     }
 }
 

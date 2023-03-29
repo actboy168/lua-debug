@@ -32,7 +32,7 @@ int imports(std::string file_path, bool is_string, std::set<std::string>& import
             if (name.find('_') == std::string_view::npos) {
                 continue;
             }
-            if (name.find_first_of(" .*/\\:<>|\"?") != std::string_view::npos) {
+            if (name.find_first_of(" .*/\\:<>|\"?%") != std::string_view::npos) {
                 continue;
             }
             if (name.find("lua") != 0) {
