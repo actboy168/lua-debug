@@ -233,6 +233,7 @@ local function update_once()
             break
         end
         if cmd == "EXIT" then
+            update_redirect()
             exitMaster = true
             if next(threadChannel) == nil then
                 quit = true
