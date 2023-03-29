@@ -33,6 +33,7 @@ namespace luadebug::autoattach {
                 log::info("interceptor attach failed:{}[{}]", point.address, point.funcname);
             }
         }
+        inwatch = false;
         return true;
     }
 
