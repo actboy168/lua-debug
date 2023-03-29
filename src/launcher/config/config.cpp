@@ -17,7 +17,7 @@ namespace luadebug::config {
         const auto key = "version"sv;
 
         auto it = values.find(key);
-        if (!values || it == values.end()) {
+        if (it == values.end()) {
             return lua_version::unknown;
         }
 
