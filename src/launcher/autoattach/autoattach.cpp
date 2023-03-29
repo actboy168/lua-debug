@@ -1,4 +1,4 @@
-#include <autoattach/autoattach.h>
+#include <autoattach/ctx.h>
 #include <autoattach/lua_module.h>
 #include <autoattach/wait_dll.h>
 #include <bee/nonstd/format.h>
@@ -13,8 +13,6 @@
 #include <thread>
 
 namespace luadebug::autoattach {
-    fn_attach debuggerAttach;
-
     constexpr auto find_lua_module_key = "lua_newstate";
     constexpr auto lua_module_strings  = std::array<const char*, 3> {
         "luaJIT_BC_%s",  // luajit
@@ -41,7 +39,7 @@ namespace luadebug::autoattach {
         return false;
     }
 
-    static void start_scoped();
+    static void start();
     static bool load_lua_module(const std::string& path) {
         constexpr auto check_export =
 #ifdef _WIN32
@@ -54,15 +52,24 @@ namespace luadebug::autoattach {
             return false;
         }
         // find lua module lazy
-        std::thread(start_scoped).detach();
+        std::thread(start).detach();
         return true;
     }
 
-    attach_status attach_lua_vm(lua::state L) {
-        return debuggerAttach(L);
-    }
-
     void start() {
+        auto ctx = ctx::get();
+        std::unique_lock lock(ctx->mtx, std::try_to_lock);
+        if (!lock.owns_lock()) {
+            return;
+        }
+
+        // find old one use this module
+        if (ctx->lua_module) {
+            if (!ctx->lua_module->initialize(ctx::attach_lua_vm)) {
+                return;
+            }
+        }
+
         bool found    = false;
         lua_module rm = {};
         Gum::Process::enumerate_modules([&rm, &found](const Gum::ModuleDetails& details) -> bool {
@@ -83,19 +90,12 @@ namespace luadebug::autoattach {
             }
             return;
         }
+
         log::info("find lua module path:{}", rm.path);
-        if (!rm.initialize(attach_lua_vm)) {
+        if (!rm.initialize(ctx::attach_lua_vm)) {
             return;
         }
-    }
-
-    void start_scoped() {
-        static std::atomic_bool instart;
-        bool test = false;
-        if (instart.compare_exchange_strong(test, true, std::memory_order_acquire)) {
-            start();
-            instart.store(false, std::memory_order_release);
-        }
+        ctx->lua_module = rm;
     }
 
     void initialize(fn_attach attach, bool ap) {
@@ -105,8 +105,10 @@ namespace luadebug::autoattach {
             log::init(ap);
             log::info("initialize");
             Gum::runtime_init();
-            debuggerAttach = attach;
-            luadebug::autoattach::start();
+            auto ctx            = ctx::get();
+            ctx->debuggerAttach = attach;
+            ctx->attach_process = ap;
+            start();
             injected.store(false, std::memory_order_release);
         }
     }

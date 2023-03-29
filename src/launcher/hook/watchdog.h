@@ -30,7 +30,7 @@ namespace luadebug::autoattach {
     private:
         std::vector<watch_point> watch_points;
         std::atomic_bool inwatch = false;
-        Gum::RefPtr<Gum::Interceptor> interceptor;
+        Gum::Interceptor* interceptor;
         common_listener listener_common;
         luajit_global_listener listener_luajit_global;
         luajit_jit_listener listener_luajit_jit;

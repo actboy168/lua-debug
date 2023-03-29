@@ -48,8 +48,8 @@ namespace luadebug::autoattach {
         }
     }
 
-    watchdog* create_watchdog(fn_attach attach_lua_vm, lua_version version, const lua::resolver& resolver) {
-        watchdog* context = new watchdog(attach_lua_vm);
+    std::shared_ptr<watchdog> create_watchdog(fn_attach attach_lua_vm, lua_version version, const lua::resolver& resolver) {
+        auto context = std::make_unique<watchdog>(attach_lua_vm);
         if (context->init(resolver, get_watch_points(version))) {
             // TODO: fix other thread pc
             context->hook();

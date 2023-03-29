@@ -1,3 +1,4 @@
+#include <autoattach/ctx.h>
 #include <bee/nonstd/format.h>
 #include <bee/nonstd/unreachable.h>
 #include <hook/watchdog.h>
@@ -6,7 +7,7 @@
 
 namespace luadebug::autoattach {
     watchdog::watchdog(fn_attach attach_lua_vm)
-        : interceptor { Gum::Interceptor_obtain() }
+        : interceptor { ctx::get()->interceptor }
         , attach_lua_vm(attach_lua_vm) {}
 
     bool watchdog::hook() {
