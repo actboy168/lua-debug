@@ -43,5 +43,8 @@ lm:lua_source 'launcher_source' {
         ldflags = {
             "/NODEFAULTLIB:LIBCMT"
         }
+    },
+    linux = {
+        flags = "-fPIC",
     }
 }
