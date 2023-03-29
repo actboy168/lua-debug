@@ -9,8 +9,8 @@
 #else
 
 namespace luadebug {
-    std::optional<std::string> symbolize(const void* ptr) {
-        return std::nullopt;
+    symbol_info symbolize(const void* ptr) {
+        return {};
     }
 }
 

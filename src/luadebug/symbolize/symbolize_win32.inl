@@ -176,19 +176,25 @@ namespace luadebug {
         return std::move(sb);
     };
 
-    std::optional<std::string> symbolize(const void* ptr) {
+    symbol_info symbolize(const void* ptr) {
         if (!ptr) {
-            return std::nullopt;
+            return {};
         }
         auto sym = Addr2Symbol(ptr);
         if (sym) {
+            symbol_info info;
             if (sym->file) {
-                return std::format("{}!{} ({}:{})", sym->module_name, sym->function_name, sym->file->name, sym->file->lineno);
+                info.module_name   = sym->module_name;
+                info.function_name = sym->function_name;
+                info.file_name     = sym->file->name;
+                info.line_number   = std::to_string(sym->file->lineno);
             }
             else {
-                return std::format("{}!{}", sym->module_name, sym->function_name);
+                info.module_name   = sym->module_name;
+                info.function_name = sym->function_name;
             }
+            return info;
         }
-        return std::nullopt;
+        return {};
     }
 }

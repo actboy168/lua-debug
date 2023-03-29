@@ -15,6 +15,7 @@
 #    include <bee/thread/simplethread_win.cpp>
 #    include <bee/utility/file_handle_win.cpp>
 #else
+#    include <bee/subprocess/subprocess_posix.cpp>
 #    include <bee/thread/simplethread_posix.cpp>
 #    include <bee/utility/file_handle_posix.cpp>
 #endif
