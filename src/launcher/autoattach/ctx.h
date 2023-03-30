@@ -15,7 +15,7 @@ namespace luadebug::autoattach {
         bool attach_process;
 
         std::mutex mtx;
-        std::optional<lua_module> lua_module;
+        std::optional<struct lua_module> lua_module;
         std::atomic_bool wait_for_dll             = false;
         Gum::RefPtr<Gum::Interceptor> interceptor = Gum::Interceptor_obtain();
 
