@@ -36,6 +36,7 @@ namespace luadebug::autoattach {
             };
         default:
             return {
+                { watch_point::type::common, "lua_newstate" },
                 { watch_point::type::common, "lua_settop" },
                 { watch_point::type::common, "luaL_openlibs" },
                 { watch_point::type::common, "lua_newthread" },
