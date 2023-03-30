@@ -123,6 +123,11 @@ local function detectLuaDebugPath(cfg)
             lua52 = "lua52",
             lua51 = "lua51",
             luajit = "luajit",
+            ["5.4"] = "lua54",
+            ["5.3"] = "lua53",
+            ["5.2"] = "lua52",
+            ["5.1"] = "lua51",
+            jit = 'luajit'
         }
         if not t[version] then
             error(version.." is not supported.")

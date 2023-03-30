@@ -29,6 +29,9 @@ lm:source_set "frida" {
             "CoreFoundation",
         }
     },
+    linux = {
+        flags = "-fPIC",
+    },
     sources = {
         "3rd/frida_gum/gumpp/src/*.cpp",
     },
