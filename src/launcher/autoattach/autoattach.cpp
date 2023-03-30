@@ -90,7 +90,6 @@ namespace luadebug::autoattach {
         auto config = config::init_from_file();
         if (!config) {
             log::info("can't load config");
-            return;
         }
         bool found    = false;
         lua_module rm = {};
