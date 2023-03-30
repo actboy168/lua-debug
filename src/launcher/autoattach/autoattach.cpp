@@ -2,6 +2,7 @@
 #include <autoattach/lua_module.h>
 #include <autoattach/wait_dll.h>
 #include <bee/nonstd/format.h>
+#include <hook/watchdog.h>
 #include <resolver/lua_resolver.h>
 #include <util/log.h>
 
@@ -64,9 +65,8 @@ namespace luadebug::autoattach {
         }
 
         if (ctx->lua_module) {
-            // no watchdog, initialize it when attached success
-            if (!ctx->lua_module->watchdog)
-                ctx->lua_module->initialize(ctx::attach_lua_vm);
+            // rehook
+            ctx->lua_module->watchdog->hook();
             return;
         }
 
