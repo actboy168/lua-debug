@@ -103,7 +103,7 @@ namespace luadebug::config {
 #elif defined(_M_IX86) || defined(__i386__)
             "x86";
 #elif defined(_M_X64) || defined(__x86_64__)
-            "x86_64";
+            "x64";
 #else
 #    error "Unknown architecture"
 #endif
