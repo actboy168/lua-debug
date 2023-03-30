@@ -23,7 +23,7 @@ namespace luadebug::autoattach {
         size_t memory_size   = 0;
         lua_version version  = lua_version::unknown;
         lua_resolver resolver;
-        std::shared_ptr<watchdog> watchdog;
+        std::shared_ptr<struct watchdog> watchdog;
 
         bool initialize(fn_attach attach_lua_vm);
     };
