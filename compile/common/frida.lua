@@ -24,6 +24,9 @@ lm:source_set "frida" {
             '/wd5051',
         }
     },
+    linux = {
+        flags = "-fPIC",
+    },
     sources = {
         "3rd/frida_gum/gumpp/src/*.cpp",
     },

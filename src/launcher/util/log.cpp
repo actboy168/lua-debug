@@ -6,6 +6,8 @@
 #include <bee/utility/path_helper.h>
 #include <stdio.h>
 
+#include <algorithm>
+
 #if !defined(_WIN32)
 #    include <sys/select.h>
 #    include <unistd.h>
