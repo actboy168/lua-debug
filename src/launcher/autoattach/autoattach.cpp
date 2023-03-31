@@ -65,8 +65,6 @@ namespace luadebug::autoattach {
         }
 
         if (ctx->lua_module) {
-            // rehook
-            ctx->lua_module->watchdog->hook();
             return;
         }
 
