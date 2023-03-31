@@ -100,12 +100,11 @@ namespace luadebug::autoattach {
         static std::atomic_bool injected;
         bool test = false;
         if (injected.compare_exchange_strong(test, true, std::memory_order_acquire)) {
-            log::init(ap);
             log::info("initialize");
             Gum::runtime_init();
             auto ctx            = ctx::get();
             ctx->debuggerAttach = attach;
-            ctx->attach_process = ap;
+            ctx->attach_mode    = ap;
             start();
             injected.store(false, std::memory_order_release);
         }

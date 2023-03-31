@@ -1,3 +1,4 @@
+#include <autoattach/ctx.h>
 #include <bee/net/endpoint.h>
 #include <bee/net/socket.h>
 #include <bee/nonstd/filesystem.h>
@@ -16,13 +17,6 @@
 #endif
 
 namespace luadebug::log {
-
-    static bool attach_mode = false;
-
-    void init(bool attach) {
-        attach_mode = attach;
-    }
-
     using namespace bee::net;
 
     static int nfd(socket::fd_t fd) {
@@ -113,6 +107,7 @@ namespace luadebug::log {
 		"message": "{}"
 	}})";
         jsonfmt.erase(std::remove_if(jsonfmt.begin(), jsonfmt.end(), ::isspace), jsonfmt.end());
+        auto attach_mode = autoattach::ctx::get()->attach_mode;
         std::string json = std::format(jsonfmt, attach_mode ? "attach" : "launch", msg);
         std::string data = std::format("Content-Length: {}\r\n\r\n{}", json.size(), json);
         sendto_frontend(newfd, data.data(), (int)data.size());

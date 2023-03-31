@@ -12,7 +12,7 @@
 namespace luadebug::autoattach {
     struct ctx {
         fn_attach debuggerAttach;
-        bool attach_process;
+        bool attach_mode;
 
         std::mutex mtx;
         std::optional<struct lua_module> lua_module;
