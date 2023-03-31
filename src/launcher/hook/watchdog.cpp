@@ -142,7 +142,7 @@ namespace luadebug::autoattach {
         origin_hook      = lua::call<lua_gethook>(L);
         origin_hookmask  = lua::call<lua_gethookmask>(L);
         origin_hookcount = lua::call<lua_gethookcount>(L);
-        lua::call<lua_sethook>(L, fn, 0 | 1 | 2, 0);
+        lua::call<lua_sethook>(L, fn, LUA_MASKCALL | LUA_MASKLINE | LUA_MASKRET, 0);
     }
 
     void watchdog::watch_entry(lua::state L) {
