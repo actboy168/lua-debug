@@ -6,7 +6,7 @@
 ---
 
 ---
----@alias light-refvalue refvalue | string | number | boolean | nil
+---@alias light-refvalue refvalue | string | number | integer | boolean | nil
 ---如果需要指向的调试目标的值是一个立即值，则它也是一个立即值，否则是指向它的一个引用
 ---
 
@@ -15,7 +15,7 @@
 ---@class LuaDebugVisitor
 ---在调试器VM提供了一套可以访问、修改调试目标的数据以及状态的API。
 ---
----为了避免对调试目标的影响，luadebug尽可能地不持有调试目标的对象，所以visitor只会记录获取对象的路径，每次当调试器VM需要这个对象时，都会通过路径找到这个对象。由于这种方法和直接持有对象比，比较低效，所以visitor的每个访问API都提供了两个版本，例如getlocal和getlocalv。没有v的访问函数，总是会返回一个userdata，它保存了这个对象路径，每次访问都会遍历路径来找到它。有v的访问函数，如果对象是可以跨VM复制的值，例如number/string/boolean等，那么visitor会将这个值复制到调试器VM，并返回它，如果不能复制，则依然是返回保存了路径的userdata。
+---为了避免对调试目标的影响，luadebug尽可能地不持有调试目标的对象，所以visitor只会记录获取对象的路径，每次当调试器VM需要这个对象时，都会通过路径找到这个对象。由于这种方法和直接持有对象比，比较低效，所以visitor的每个访问API都提供了两个版本，例如getlocal和getlocalv。没有v的访问函数，总是会返回一个userdata，它保存了这个对象路径，每次访问都会遍历路径来找到它。有v的访问函数，如果对象是可以跨VM复制的值，例如number/integer/string/boolean等，那么visitor会将这个值复制到调试器VM，并返回它，如果不能复制，则依然是返回保存了路径的userdata。
 ---
 ---如果你只需要访问一些对象，使用v的访问函数就只够了，它会更加高效。只有当你需要修改对象时，才需要用没有v的访问函数。
 ---
@@ -193,7 +193,7 @@ end
 ---@param offset integer
 ---@param data string
 ---@param allowPartial boolean
----@return number | boolean
+---@return integer | boolean
 ---写入userdata的内存。
 ---
 function visitor.udwrite(ud, offset, data, allowPartial)
@@ -201,7 +201,7 @@ end
 
 ---
 ---@param v refvalue | light-refvalue
----@return string | integer | number | boolean | nil
+---@return string | number | integer | boolean | nil
 ---复制v引用的值到调试器VM中，如果v引用的值无法复制，则返回一个"type: lua_topointer(v)"形式的字符串。
 ---
 function visitor.value(v)
@@ -261,7 +261,7 @@ end
 ---@param f any
 ---@vararg any
 ---@return boolean
----@return string | integer | number | boolean | nil
+---@return string | number | integer | boolean | nil
 ---执行函数f，如果成功，则第一个返回值是true，随后会将f的第一个返回值调用`visitor.value`并返回。如果失败，则返回false和错误原因。
 ---
 function visitor.eval(f, ...)

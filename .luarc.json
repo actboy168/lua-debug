@@ -1,5 +1,10 @@
 {
     "runtime.version": "Lua 5.4",
+    "workspace": {
+        "ignoreDir": [
+            "extension/script/backend/worker/eval/ffi_reflect.lua"
+        ]
+    },
     "diagnostics": {
         "globals": [
             "loadstring",

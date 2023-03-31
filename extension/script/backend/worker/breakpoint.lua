@@ -187,6 +187,9 @@ end
 
 local function parserInlineLineinfo(src)
     local old = parser(src.content)
+    if not old then
+        return
+    end
     local new = {}
     local diff = src.startline - 1
     for k, v in pairs(old) do

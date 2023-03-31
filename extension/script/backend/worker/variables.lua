@@ -281,12 +281,14 @@ local function varGetShortName(value)
     local type = rdebug.type(value)
     if LUAVERSION <= 52 and type == "float" then
         local rvalue = rdebug.value(value)
+        ---@cast rvalue number
         if rvalue == math.floor(rvalue) then
             type = 'integer'
         end
     end
     if type == 'string' then
         local str = rdebug.value(value)
+        ---@cast str string
         if #str < 32 then
             return str
         end
@@ -317,6 +319,7 @@ local function varGetName(value)
     local type = rdebug.type(value)
     if LUAVERSION <= 52 and type == "float" then
         local rvalue = rdebug.value(value)
+        ---@cast rvalue number
         if rvalue == math.floor(rvalue) then
             type = 'integer'
         end
@@ -358,6 +361,7 @@ local function varGetShortValue(value)
     local type = rdebug.type(value)
     if type == 'string' then
         local str = rdebug.value(value)
+        ---@cast str string
         if #str < 16 then
             return ("'%s'"):format(quotedString(str))
         end
@@ -522,6 +526,7 @@ end
 local function varGetValue(context, allow_lazy, type, value)
     if type == 'string' then
         local str = rdebug.value(value)
+        ---@cast str string
         if context == "repl" or context == "clipboard" then
             return ("'%s'"):format(str)
         end
@@ -713,6 +718,7 @@ local function getTabelKey(key)
     local type = rdebug.type(key)
     if type == 'string' then
         local str = rdebug.value(key)
+        ---@cast str string
         if str:match '^[_%a][_%w]*$' then
             return ('.%s'):format(str)
         end
@@ -1371,6 +1377,7 @@ function m.readMemory(memoryReference, offset, count)
     offset = offset or 0
     if memoryRef.type == "string" then
         local str = rdebug.value(memoryRef.value)
+        ---@cast str string
         local slice = str:sub(offset + 1, offset + count)
         if not slice then
             return {

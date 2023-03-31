@@ -687,12 +687,12 @@ end
 
 function event.iowrite(...)
     if not debuggeeReady() then return end
-    local res = {}
+    local t = {}
     local args = table.pack(...)
     for i = 1, args.n do
-        res[#res + 1] = variables.tostring(args[i])
+        t[#t + 1] = variables.tostring(args[i])
     end
-    res = table.concat(res, '\t')
+    local res = table.concat(t, '\t')
     rdebug.getinfo(1, "Sl", info)
     stdout(res, info)
     return true
