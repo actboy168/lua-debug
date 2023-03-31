@@ -27,6 +27,7 @@ namespace luadebug::autoattach {
                 { watch_point::type::common, "luaV_gettable" },
                 { watch_point::type::common, "luaV_settable" },
             };
+        case lua_version::latest:
         case lua_version::lua54:
             return {
                 { watch_point::type::common, "luaD_poscall" },
@@ -35,6 +36,7 @@ namespace luadebug::autoattach {
             };
         default:
             return {
+                { watch_point::type::common, "lua_newstate" },
                 { watch_point::type::common, "lua_settop" },
                 { watch_point::type::common, "luaL_openlibs" },
                 { watch_point::type::common, "lua_newthread" },
@@ -53,6 +55,7 @@ namespace luadebug::autoattach {
         if (context->init(resolver, get_watch_points(version))) {
             // TODO: fix other thread pc
             context->hook();
+            context->version = version;
             return context;
         }
         if (version == lua_version::unknown) {
@@ -61,6 +64,7 @@ namespace luadebug::autoattach {
         if (context->init(resolver, get_watch_points(lua_version::unknown))) {
             // TODO: fix other thread pc
             context->hook();
+            context->version = version;
             return context;
         }
         return nullptr;

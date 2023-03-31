@@ -15,6 +15,10 @@
 #    include <WinSock.h>
 #endif
 
+#include <config/config.h>
+
+#include <gumpp.hpp>
+
 namespace luadebug::log {
 
     static bool attach_mode = false;
@@ -57,18 +61,11 @@ namespace luadebug::log {
     }
 
     void notify_frontend(const std::string& msg) {
-        auto dllpath = bee::path_helper::dll_path();
-        if (!dllpath) {
+        auto tmp = config::get_tmp_dir();
+        if (!tmp)
             return;
-        }
-        auto rootpath = dllpath.value().parent_path().parent_path();
-        auto path     = std::format("{}/tmp/pid_{}", rootpath.generic_u8string(),
-#if defined(_WIN32)
-                                GetCurrentProcessId()
-#else
-                                getpid()
-#endif
-        );
+        auto path = ((*tmp) / std::format("pid_{}", Gum::Process::get_id())).string();
+
         if (!socket::initialize()) {
             return;
         }

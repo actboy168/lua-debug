@@ -2,7 +2,7 @@
 #include <autoattach/lua_module.h>
 #include <autoattach/wait_dll.h>
 #include <bee/nonstd/format.h>
-#include <resolver/lua_resolver.h>
+#include <config/config.h>
 #include <util/log.h>
 
 #include <array>
@@ -14,6 +14,16 @@
 
 namespace luadebug::autoattach {
     fn_attach debuggerAttach;
+
+#ifdef _WIN32
+#    define EXT ".dll"
+#else
+#    define EXT ".so"
+#endif
+    constexpr auto lua_module_backlist = {
+        "launcher" EXT,
+        "luadebug" EXT,
+    };
 
     constexpr auto find_lua_module_key = "lua_newstate";
     constexpr auto lua_module_strings  = std::array<const char*, 3> {
@@ -27,7 +37,23 @@ namespace luadebug::autoattach {
          "R. Ierusalimschy, L. H. de Figueiredo, W. Celes"
          " $",  // others
     };
-    static bool is_lua_module(const char* module_path, bool check_export = true, bool check_strings = false) {
+    static bool is_lua_module(const char* module_path, const config::Config& config, bool check_export = true, bool check_strings = false) {
+        auto str = std::string_view(module_path);
+        // blacklist module
+        auto root = config::get_plugin_root();
+        if (root) {
+            if (str.find((*root).string()) != std::string_view::npos) {
+                // in luadebug root dir
+                for (auto& s : lua_module_backlist) {
+                    if (str.find(s) != std::string_view::npos)
+                        return false;
+                }
+            }
+        }
+
+        auto target_lua_module = config.lua_module;
+        if (!target_lua_module.empty() && str.find(target_lua_module) != std::string_view::npos) return true;
+
         if (check_export && Gum::Process::module_find_export_by_name(module_path, find_lua_module_key)) return true;
         if (Gum::Process::module_find_symbol_by_name(module_path, find_lua_module_key)) return true;
         // TODO: when signature mode, check strings
@@ -42,7 +68,7 @@ namespace luadebug::autoattach {
     }
 
     static void start();
-    static bool load_lua_module(const std::string& path) {
+    static bool load_lua_module(const std::string& path, const config::Config& config) {
         constexpr auto check_export =
 #ifdef _WIN32
             true
@@ -50,7 +76,7 @@ namespace luadebug::autoattach {
             false
 #endif
             ;
-        if (!is_lua_module(path.c_str(), check_export, true)) {
+        if (!is_lua_module(path.c_str(), config, check_export, true)) {
             return false;
         }
         // find lua module lazy
@@ -58,15 +84,19 @@ namespace luadebug::autoattach {
         return true;
     }
 
-    attach_status attach_lua_vm(lua::state L) {
-        return debuggerAttach(L);
+    attach_status attach_lua_vm(lua::state L, lua_version version) {
+        return debuggerAttach(L, version);
     }
 
     void start() {
+        auto config = config::init_from_file();
+        if (!config) {
+            log::info("can't load config");
+        }
         bool found    = false;
         lua_module rm = {};
-        Gum::Process::enumerate_modules([&rm, &found](const Gum::ModuleDetails& details) -> bool {
-            if (is_lua_module(details.path())) {
+        Gum::Process::enumerate_modules([&rm, &found, conf = &(*config)](const Gum::ModuleDetails& details) -> bool {
+            if (is_lua_module(details.path(), *conf)) {
                 auto range        = details.range();
                 rm.memory_address = range.base_address;
                 rm.memory_size    = range.size;
@@ -78,12 +108,15 @@ namespace luadebug::autoattach {
             return true;
         });
         if (!found) {
-            if (!wait_dll(load_lua_module)) {
+            if (!wait_dll([conf = std::move(*config)](const std::string& path) {
+                    return load_lua_module(path, conf);
+                })) {
                 log::fatal("can't find lua module");
             }
             return;
         }
         log::info("find lua module path:{}", rm.path);
+        rm.config = std::move(*config);
         if (!rm.initialize(attach_lua_vm)) {
             return;
         }

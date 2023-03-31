@@ -1,4 +1,5 @@
 #include <resolver/lua_resolver.h>
+#include <resolver/lua_signature.h>
 
 #include <gumpp.hpp>
 #include <string_view>
@@ -14,11 +15,11 @@ namespace luadebug {
     }
 
     intptr_t lua_resolver::find_export(std::string_view name) const {
-        return (intptr_t)Gum::Process::module_find_export_by_name(module_name.data(), name.data());
+        return (intptr_t)Gum::Process::module_find_export_by_name(module_name.c_str(), name.data());
     }
 
     intptr_t lua_resolver::find_symbol(std::string_view name) const {
-        return (intptr_t)Gum::Process::module_find_symbol_by_name(module_name.data(), name.data());
+        return (intptr_t)Gum::Process::module_find_symbol_by_name(module_name.c_str(), name.data());
     }
 
     intptr_t lua_resolver::find(std::string_view name) const {
@@ -41,5 +42,8 @@ namespace luadebug {
             }
         }
         return 0;
+    }
+    lua_resolver::lua_resolver(std::string_view name)
+        : module_name(std::string(name)) {
     }
 }

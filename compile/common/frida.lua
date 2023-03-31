@@ -24,6 +24,11 @@ lm:source_set "frida" {
             '/wd5051',
         }
     },
+    macos = {
+        frameworks = {
+            "CoreFoundation",
+        }
+    },
     linux = {
         flags = "-fPIC",
     },

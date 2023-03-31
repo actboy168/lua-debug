@@ -1,45 +1,18 @@
 #include <autoattach/lua_module.h>
 #include <bee/nonstd/format.h>
+#include <bee/utility/path_helper.h>
+#include <config/config.h>
 #include <hook/create_watchdog.h>
+#include <resolver/lua_signature.h>
 #include <util/log.h>
 
 #include <charconv>
 #include <gumpp.hpp>
 
 namespace luadebug::autoattach {
-    static lua_version lua_version_from_string [[maybe_unused]] (const std::string_view& v) {
-        if (v == "luajit")
-            return lua_version::luajit;
-        if (v == "lua51")
-            return lua_version::lua51;
-        if (v == "lua52")
-            return lua_version::lua52;
-        if (v == "lua53")
-            return lua_version::lua53;
-        if (v == "lua54")
-            return lua_version::lua54;
-        return lua_version::unknown;
-    }
-
-    static const char* lua_version_to_string(lua_version v) {
-        switch (v) {
-        case lua_version::lua51:
-            return "lua51";
-        case lua_version::lua52:
-            return "lua52";
-        case lua_version::lua53:
-            return "lua53";
-        case lua_version::lua54:
-            return "lua54";
-        case lua_version::luajit:
-            return "luajit";
-        default:
-            return "unknown";
-        }
-    }
 
     static bool in_module(const lua_module& m, void* addr) {
-        return addr > m.memory_address && addr <= (void*)((intptr_t)m.memory_address + m.memory_size);
+        return addr >= m.memory_address && addr <= (void*)((intptr_t)m.memory_address + m.memory_size);
     }
 
     static lua_version get_lua_version(const lua_module& m) {
@@ -86,19 +59,79 @@ namespace luadebug::autoattach {
         default:
             return lua_version::unknown;
         }
+        // TODO: from signature
+    }
+
+    bool load_luadebug_dll(lua_version version, lua::resolver& resolver) {
+        auto luadebug_path = config::get_luadebug_path(version);
+        if (!luadebug_path)
+            return false;
+        auto luadebug = (*luadebug_path).string();
+        std::string error;
+        if (!Gum::Process::module_load(luadebug.c_str(), &error)) {
+            log::fatal("load debugger [{}] failed: {}", luadebug, error);
+        }
+        Gum::Process::module_enumerate_import(luadebug.c_str(), [&](const Gum::ImportDetails& details) -> bool {
+            if (std::string_view(details.name).find_first_of("lua") != 0) {
+                return true;
+            }
+            if (auto address = (void*)resolver.find(details.name)) {
+                *details.slot = address;
+                log::info("find signature {} to {}", details.name, address);
+            }
+            return true;
+        });
+        return true;
     }
 
     bool lua_module::initialize(fn_attach attach_lua_vm) {
-        resolver.module_name = path;
-        auto error_msg       = lua::initialize(resolver);
+        version = get_lua_version(*this);
+        log::info("current lua version: {}", lua_version_to_string(version));
+
+        resolver = std::make_unique<lua_resolver>(path);
+        if (version != lua_version::unknown && config.is_signature_mode()) {
+            // 尝试从自带的库里加载函数
+            auto runtime_dir = config::get_lua_runtime_dir(version);
+            if (runtime_dir) {
+                auto dllpath =
+#ifdef _WIN32
+                    (*runtime_dir / (lua_version_to_string(version) + std::string(".dll"))).string();
+#else
+                    (*runtime_dir / "lua.so").string();
+#endif
+                std::string error;
+                if (!Gum::Process::module_load(dllpath.c_str(), &error)) {
+                    log::info("load lua module {}, failed: {}", dllpath, error);
+                }
+                else {
+                    auto signature_resolver_ptr         = std::make_unique<signature_resolver>();
+                    signature_resolver_ptr->module_name = dllpath;
+                    signature_resolver_ptr->config      = &config;
+                    signature_resolver_ptr->resolver    = std::move(resolver);
+                    signature_resolver_ptr->reserve_resolver =
+                        std::make_unique<lua_resolver>(dllpath);
+                    resolver = std::move(signature_resolver_ptr);
+                }
+            }
+        }
+
+        auto error_msg = lua::initialize(*resolver);
         if (error_msg) {
             log::fatal("lua initialize failed, can't find {}", error_msg);
             return false;
         }
-        version = get_lua_version(*this);
+        version = config.version;
+        if (version == lua_version::unknown) {
+            version = get_lua_version(*this);
+        }
         log::info("current lua version: {}", lua_version_to_string(version));
 
-        watchdog = create_watchdog(attach_lua_vm, version, resolver);
+        if (version != lua_version::unknown) {
+            if (!load_luadebug_dll(version, *resolver))
+                return false;
+        }
+
+        watchdog = create_watchdog(attach_lua_vm, version, *resolver);
         if (!watchdog) {
             // TODO: more errmsg
             log::fatal("watchdog initialize failed");

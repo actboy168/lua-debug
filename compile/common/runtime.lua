@@ -100,6 +100,8 @@ for _, luaver in ipairs { "lua51", "lua52", "lua53", "lua54", "lua-latest", "lua
                 },
                 visibility = "default",
                 links = "m",
+                flags = "-g",
+                ldflags = "-g",
                 linux = {
                     defines = "LUA_USE_LINUX",
                     links = { "pthread", "dl" },

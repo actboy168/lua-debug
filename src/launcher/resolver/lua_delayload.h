@@ -18,6 +18,7 @@ namespace luadebug::lua {
     using hook      = void (*)(state, debug);
 
     struct resolver {
+        virtual ~resolver()                                = default;
         virtual intptr_t find(std::string_view name) const = 0;
     };
 }

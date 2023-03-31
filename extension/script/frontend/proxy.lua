@@ -4,22 +4,30 @@ local fs = require 'bee.filesystem'
 local sp = require 'bee.subprocess'
 local platform_os = require 'frontend.platform_os'
 local process_inject = require 'frontend.process_inject'
+local json = require 'common.json'
 local server
 local client
 local initReq
 local m = {}
 
 local function getUnixAddress(pid)
+    --TODO: clear unix file
     local path = WORKDIR / "tmp"
     fs.create_directories(path)
     return "@"..(path / ("pid_%d"):format(pid)):string()
 end
 
-local function ipc_send_latest(pid)
+local function ipc_send_config(pid, args)
+    --TODO: clear config file
     fs.create_directories(WORKDIR / "tmp")
     local ipc = require "common.ipc"
-    local fd = assert(ipc(WORKDIR, pid, "luaVersion", "w"))
-    fd:write("latest")
+    local fd = assert(ipc(WORKDIR, pid, "config", "w"))
+    local config = {
+        version = args.luaVersion,
+        module = args.module,
+        signatures = args.signatures
+    }
+    fd:write(json.encode(config))
     fd:close()
 end
 
@@ -56,13 +64,11 @@ end
 
 local function attach_process(pkg, pid)
     local args = pkg.arguments
-    if args.luaVersion == "latest" then
-        ipc_send_latest(pid)
-    end
+    ipc_send_config(pid, args)
     local ok, errmsg = process_inject.inject(pid, "attach", args)
     if not ok then
-		return false, errmsg
-	end
+        return false, errmsg
+    end
 
     server = network(getUnixAddress(pid), true)
     server.sendmsg(initReq)
@@ -80,8 +86,8 @@ local function proxy_attach(pkg)
     local args = pkg.arguments
     platform_os.init(args)
     if platform_os() ~= "Windows" and platform_os() ~= "macOS" then
-		attach_tcp(pkg, args)
-		return
+        attach_tcp(pkg, args)
+        return
     end
     if args.processId then
         local processId = tonumber(args.processId)
@@ -92,7 +98,7 @@ local function proxy_attach(pkg)
         return
     end
     if args.processName then
-        local pids = require "frontend.query_process"(args.processName)
+        local pids = require "frontend.query_process" (args.processName)
         if #pids == 0 then
             response_error(pkg, ('Cannot found process `%s`.'):format(args.processName))
             return
@@ -113,7 +119,7 @@ local function create_server(args, pid)
     local s, address
     if args.address ~= nil then
         s = network(args.address, args.client)
-        address = (args.client and "s:" or "c:") .. args.address
+        address = (args.client and "s:" or "c:")..args.address
     else
         pid = pid or sp.get_id()
         s = network(getUnixAddress(pid), true)
@@ -158,11 +164,12 @@ local function proxy_launch_console(pkg)
             response_error(pkg, "`runtimeExecutable` need specify `inject` or `address`.")
             return
         end
-        local process, err = debuger_factory.create_process_in_console(args, function (process)
+        local process, err = debuger_factory.create_process_in_console(args, function(process)
             local address
             server, address = create_server(args, process:get_id())
-            if args.luaVersion == "latest" and type(address) == "number" then
-                ipc_send_latest(address)
+
+            if type(address) == "number" then
+                ipc_send_config(address, args)
             end
         end)
         if not process then

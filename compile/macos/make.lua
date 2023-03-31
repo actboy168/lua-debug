@@ -13,6 +13,7 @@ require "compile.common.lua-debug"
 lm.runtime_platform = lm.platform
 require "compile.macos.runtime"
 require "compile.macos.shellcode"
+require "compile.macos.signature_compiler"
 
 if lm.platform == "darwin-arm64" then
     require "compile.common.run_luamake"
@@ -56,6 +57,11 @@ else
     }
 end
 
+lm:phony "compile_signature" {
+    deps = { "signature_compiler", "merge_launcher", "runtime", "lua-debug" },
+    "$luamake", "lua", "compile/signature_compiler.lua"
+}
+
 lm:default {
     "common",
     "lua-debug",
@@ -63,4 +69,5 @@ lm:default {
     "process_inject_helper",
     "merge_launcher",
     lm.platform == "darwin-arm64" and "x86_64",
+    "compile_signature"
 }
