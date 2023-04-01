@@ -1,3 +1,4 @@
+#include <autoattach/autoattach.h>
 #include <autoattach/ctx.h>
 #include <autoattach/lua_module.h>
 #include <autoattach/wait_dll.h>
@@ -13,6 +14,8 @@
 #include <thread>
 
 namespace luadebug::autoattach {
+    fn_attach debuggerAttach;
+
     constexpr auto find_lua_module_key = "lua_newstate";
     constexpr auto lua_module_strings  = std::array<const char*, 3> {
         "luaJIT_BC_%s",  // luajit
@@ -56,6 +59,10 @@ namespace luadebug::autoattach {
         return true;
     }
 
+    attach_status attach_lua_vm(lua::state L) {
+        return debuggerAttach(L);
+    }
+
     void start() {
         auto ctx = ctx::get();
         std::lock_guard guard(ctx->mtx);
@@ -86,7 +93,7 @@ namespace luadebug::autoattach {
         }
 
         log::info("find lua module path:{}", rm.path);
-        if (!rm.initialize(ctx::attach_lua_vm)) {
+        if (!rm.initialize(attach_lua_vm)) {
             return;
         }
         ctx->lua_module = rm;
@@ -98,8 +105,8 @@ namespace luadebug::autoattach {
         if (injected.compare_exchange_strong(test, true, std::memory_order_acquire)) {
             log::info("initialize");
             Gum::runtime_init();
+            debuggerAttach = attach;
             auto ctx            = ctx::get();
-            ctx->debuggerAttach = attach;
             ctx->attach_mode    = ap;
             start();
             injected.store(false, std::memory_order_release);

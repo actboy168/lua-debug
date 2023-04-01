@@ -11,7 +11,6 @@
 
 namespace luadebug::autoattach {
     struct ctx {
-        fn_attach debuggerAttach;
         bool attach_mode;
 
         std::mutex mtx;
@@ -20,10 +19,6 @@ namespace luadebug::autoattach {
         static ctx* get() {
             static ctx obj;
             return &obj;
-        }
-
-        static attach_status attach_lua_vm(lua::state L) {
-            return get()->debuggerAttach(L);
         }
     };
 }
