@@ -4,6 +4,8 @@
 #include <resolver/lua_delayload.h>
 #include <util/log.h>
 
+#include <atomic>
+
 namespace luadebug::autoattach {
     watchdog::watchdog(fn_attach attach_lua_vm)
         : interceptor { Gum::Interceptor_obtain() }
