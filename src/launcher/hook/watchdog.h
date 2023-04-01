@@ -5,8 +5,8 @@
 #include <hook/watch_point.h>
 #include <resolver/lua_delayload.h>
 
-#include <atomic>
 #include <gumpp.hpp>
+#include <mutex>
 #include <string>
 #include <vector>
 
@@ -29,8 +29,8 @@ namespace luadebug::autoattach {
         void set_luahook(lua::state L, lua::hook fn);
 
     private:
+        std::mutex mtx;
         std::vector<watch_point> watch_points;
-        std::atomic_bool inwatch = true;  // unlock when hooked
         Gum::RefPtr<Gum::Interceptor> interceptor;
         common_listener listener_common;
         luajit_global_listener listener_luajit_global;

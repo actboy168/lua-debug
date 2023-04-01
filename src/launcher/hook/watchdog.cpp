@@ -10,6 +10,7 @@ namespace luadebug::autoattach {
         , attach_lua_vm(attach_lua_vm) {}
 
     bool watchdog::hook() {
+        std::lock_guard guard(mtx);
         for (auto& point : watch_points) {
             if (!point.address) {
                 continue;
@@ -32,7 +33,6 @@ namespace luadebug::autoattach {
                 log::info("interceptor attach failed:{}[{}]", point.address, point.funcname);
             }
         }
-        inwatch = false;
         return true;
     }
 
@@ -145,16 +145,16 @@ namespace luadebug::autoattach {
     }
 
     void watchdog::watch_entry(lua::state L) {
-        bool test = false;
-        if (inwatch.compare_exchange_strong(test, true, std::memory_order_acquire)) {
-            unhook();
-            lua::hook fn = trampoline::create(this);
-            if (!fn) {
-                log::fatal("Too many watchdog instances.");
-                return;
-            }
-            set_luahook(L, fn);
+        std::unique_lock lock(mtx, std::try_to_lock);
+        if (!lock.owns_lock())
+            return;
+        unhook();
+        lua::hook fn = trampoline::create(this);
+        if (!fn) {
+            log::fatal("Too many watchdog instances.");
+            return;
         }
+        set_luahook(L, fn);
     }
 
     watchdog::~watchdog() {
