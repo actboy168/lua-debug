@@ -105,9 +105,9 @@ namespace luadebug::autoattach {
         if (injected.compare_exchange_strong(test, true, std::memory_order_acquire)) {
             log::info("initialize");
             Gum::runtime_init();
-            debuggerAttach = attach;
-            auto ctx            = ctx::get();
-            ctx->attach_mode    = ap;
+            debuggerAttach   = attach;
+            auto ctx         = ctx::get();
+            ctx->attach_mode = ap;
             start();
             injected.store(false, std::memory_order_release);
         }
