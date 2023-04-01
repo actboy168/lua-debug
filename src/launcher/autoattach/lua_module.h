@@ -3,7 +3,6 @@
 #include <autoattach/autoattach.h>
 #include <resolver/lua_resolver.h>
 
-#include <memory>
 #include <string>
 
 namespace luadebug::autoattach {
@@ -23,8 +22,9 @@ namespace luadebug::autoattach {
         size_t memory_size   = 0;
         lua_version version  = lua_version::unknown;
         lua_resolver resolver;
-        std::shared_ptr<struct watchdog> watchdog;
+        struct watchdog* watchdog = nullptr;
 
         bool initialize(fn_attach attach_lua_vm);
+        ~lua_module();
     };
 }

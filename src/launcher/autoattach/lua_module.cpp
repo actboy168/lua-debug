@@ -1,6 +1,7 @@
 #include <autoattach/lua_module.h>
 #include <bee/nonstd/format.h>
 #include <hook/create_watchdog.h>
+#include <hook/watchdog.h>
 #include <util/log.h>
 
 #include <charconv>
@@ -105,5 +106,11 @@ namespace luadebug::autoattach {
             return false;
         }
         return true;
+    }
+
+    lua_module::~lua_module() {
+        if (watchdog) {
+            delete watchdog;
+        }
     }
 }
