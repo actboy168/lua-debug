@@ -59,10 +59,7 @@ namespace luadebug::autoattach {
 
     void start() {
         auto ctx = ctx::get();
-        std::unique_lock lock(ctx->mtx, std::try_to_lock);
-        if (!lock.owns_lock()) {
-            return;
-        }
+        std::lock_guard guard(ctx->mtx);
 
         if (ctx->lua_module) {
             return;

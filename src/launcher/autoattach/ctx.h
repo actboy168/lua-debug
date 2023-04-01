@@ -16,8 +16,6 @@ namespace luadebug::autoattach {
 
         std::mutex mtx;
         std::optional<struct lua_module> lua_module;
-        std::atomic_bool wait_for_dll             = false;
-        Gum::RefPtr<Gum::Interceptor> interceptor = Gum::Interceptor_obtain();
 
         static ctx* get() {
             static ctx obj;
