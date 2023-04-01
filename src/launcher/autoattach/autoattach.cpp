@@ -2,7 +2,6 @@
 #include <autoattach/lua_module.h>
 #include <autoattach/wait_dll.h>
 #include <bee/nonstd/format.h>
-#include <hook/watchdog.h>
 #include <resolver/lua_resolver.h>
 #include <util/log.h>
 
