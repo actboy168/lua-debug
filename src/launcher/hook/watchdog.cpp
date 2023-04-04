@@ -147,16 +147,16 @@ namespace luadebug::autoattach {
     }
 
     void watchdog::watch_entry(lua::state L) {
-        std::unique_lock lock(mtx, std::try_to_lock);
-        if (!lock.owns_lock())
+        std::lock_guard guard(mtx);
+        if (lua_state_hooked.find(L) != lua_state_hooked.end())
             return;
-        unhook();
         lua::hook fn = trampoline::create(this);
         if (!fn) {
             log::fatal("Too many watchdog instances.");
             return;
         }
         set_luahook(L, fn);
+        lua_state_hooked.emplace(L);
     }
 
     watchdog::~watchdog() {

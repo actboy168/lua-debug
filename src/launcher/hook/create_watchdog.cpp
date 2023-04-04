@@ -1,3 +1,4 @@
+#include <autoattach/ctx.h>
 #include <autoattach/lua_module.h>
 #include <bee/nonstd/unreachable.h>
 #include <hook/watchdog.h>
@@ -8,6 +9,11 @@
 
 namespace luadebug::autoattach {
     static std::vector<watch_point> get_watch_points(lua_version version) {
+        if (!ctx::get()->attach_mode) {
+            return {
+                { watch_point::type::common, "lua_newstate" }
+            };
+        }
         switch (version) {
         case lua_version::luajit:
             return {

@@ -7,6 +7,7 @@
 
 #include <gumpp.hpp>
 #include <mutex>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -39,5 +40,6 @@ namespace luadebug::autoattach {
         int origin_hookmask;
         int origin_hookcount;
         fn_attach attach_lua_vm;
+        std::set<lua::state> lua_state_hooked;
     };
 }
