@@ -86,8 +86,13 @@ namespace luadebug::autoattach {
             return true;
         });
         if (!found) {
+            if (ctx->wait_dll)
+                return;
             if (!wait_dll(load_lua_module)) {
                 log::fatal("can't find lua module");
+            }
+            else {
+                ctx->wait_dll = true;
             }
             return;
         }
