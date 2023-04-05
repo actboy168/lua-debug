@@ -2,6 +2,7 @@
 #include <autoattach/lua_module.h>
 #include <bee/nonstd/unreachable.h>
 #include <hook/watchdog.h>
+#include <util/log.h>
 
 #include <string>
 #include <string_view>
@@ -55,20 +56,27 @@ namespace luadebug::autoattach {
     }
 
     watchdog* create_watchdog(fn_attach attach_lua_vm, lua_version version, const lua::resolver& resolver) {
-        auto context = new watchdog(attach_lua_vm);
-        if (context->init(resolver, get_watch_points(version))) {
-            // TODO: fix other thread pc
-            context->hook();
-            return context;
-        }
-        if (version == lua_version::unknown) {
+        auto context = std::make_unique<watchdog>(attach_lua_vm);
+        if (!context->init()) {
             return nullptr;
         }
-        if (context->init(resolver, get_watch_points(lua_version::unknown))) {
+        if (context->init_watch(resolver, get_watch_points(version))) {
             // TODO: fix other thread pc
             context->hook();
-            return context;
+            return context.release();
         }
+        if (version == lua_version::unknown) {
+            // TODO: more errmsg
+            log::fatal("watchdog initialize failed");
+            return nullptr;
+        }
+        if (context->init_watch(resolver, get_watch_points(lua_version::unknown))) {
+            // TODO: fix other thread pc
+            context->hook();
+            return context.release();
+        }
+        // TODO: more errmsg
+        log::fatal("watchdog initialize failed");
         return nullptr;
     }
 }

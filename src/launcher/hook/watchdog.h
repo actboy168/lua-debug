@@ -19,7 +19,8 @@ namespace luadebug::autoattach {
         watchdog(fn_attach attach_lua_vm);
         ~watchdog();
         watchdog(const watchdog&) = delete;
-        bool init(const lua::resolver& resolver, std::vector<watch_point>&& points);
+        bool init();
+        bool init_watch(const lua::resolver& resolver, std::vector<watch_point>&& points);
         bool hook();
         void unhook();
         void watch_entry(lua::state L);
@@ -41,5 +42,7 @@ namespace luadebug::autoattach {
         int origin_hookcount;
         fn_attach attach_lua_vm;
         std::set<lua::state> lua_state_hooked;
+        uint8_t luahook_index;
+        lua::hook luahook_func = nullptr;
     };
 }

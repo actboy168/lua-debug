@@ -5,11 +5,126 @@
 #include <util/log.h>
 
 #include <atomic>
+#include <cassert>
 
 namespace luadebug::autoattach {
+    template <typename T>
+    constexpr int countl_zero(T v) noexcept {
+        T y            = 0;
+        unsigned int n = std::numeric_limits<T>::digits;
+        unsigned int c = std::numeric_limits<T>::digits / 2;
+        do {
+            y = static_cast<T>(v >> c);
+            if (y != 0) {
+                n -= c;
+                v = y;
+            }
+            c >>= 1;
+        } while (c != 0);
+        return static_cast<int>(n) - static_cast<int>(v);
+    }
+    template <typename T>
+    constexpr int countr_zero(T v) noexcept {
+        constexpr int digits = std::numeric_limits<T>::digits;
+        return digits - countl_zero(static_cast<T>(static_cast<T>(~v) & static_cast<T>(v - 1)));
+    }
+
+    template <typename T>
+    constexpr int countr_one(T v) noexcept {
+        return countr_zero(static_cast<T>(~v));
+    }
+
+    struct trampoline {
+        template <size_t Index>
+        struct callback {
+            static inline watchdog* w = nullptr;
+            static void attach_lua(lua::state L, lua::debug ar) {
+                if (w) {
+                    w->attach_lua(L, ar, attach_lua);
+                }
+            }
+            static lua::hook create(watchdog* _w) {
+                assert(w == nullptr);
+                w = _w;
+                return attach_lua;
+            }
+            static void destroy(watchdog* _w) {
+                assert(w == _w);
+                w = nullptr;
+            }
+        };
+        static inline std::atomic<uint8_t> used = 0;
+        static constexpr uint8_t limit          = 0x3;
+        static uint8_t create_instance_id() {
+            for (;;) {
+                uint8_t mark = used;
+                uint8_t n    = (uint8_t)countr_one(mark);
+                if (n >= limit) {
+                    return limit;
+                }
+                if (used.compare_exchange_weak(mark, mark | (1 << n))) {
+                    return n;
+                }
+            }
+        }
+        static void destroy_instance_id(uint8_t n) {
+            for (;;) {
+                uint8_t mark = used;
+                if (!(mark & (1 << n))) {
+                    return;
+                }
+                if (used.compare_exchange_weak(mark, mark & (~(1 << n)))) {
+                    return;
+                }
+            }
+        }
+        static std::tuple<uint8_t, lua::hook> create(watchdog* w) {
+            uint8_t id = create_instance_id();
+            if (id >= limit) {
+                return { limit, nullptr };
+            }
+            auto fn = [w](size_t id) -> lua::hook {
+                switch (id) {
+                case 0x0:
+                    return callback<0x0>::create(w);
+                case 0x1:
+                    return callback<0x1>::create(w);
+                case 0x2:
+                    return callback<0x2>::create(w);
+                default:
+                    std::unreachable();
+                }
+            };
+            return { id, fn(id) };
+        }
+        static void destroy(watchdog* w, uint8_t index) {
+            switch (index) {
+            case 0x0:
+                callback<0x0>::destroy(w);
+                break;
+            case 0x1:
+                callback<0x1>::destroy(w);
+                break;
+            case 0x2:
+                callback<0x2>::destroy(w);
+                break;
+            default:
+                break;
+            }
+            destroy_instance_id(index);
+        }
+    };
+
     watchdog::watchdog(fn_attach attach_lua_vm)
         : interceptor { Gum::Interceptor_obtain() }
-        , attach_lua_vm(attach_lua_vm) {}
+        , attach_lua_vm(attach_lua_vm) {
+    }
+    watchdog::~watchdog() {
+        if (luahook_func) {
+            trampoline::destroy(this, luahook_index);
+            unhook();
+        }
+    }
 
     bool watchdog::hook() {
         std::lock_guard guard(mtx);
@@ -44,7 +159,18 @@ namespace luadebug::autoattach {
         interceptor->detach(&listener_luajit_jit);
     }
 
-    bool watchdog::init(const lua::resolver& resolver, std::vector<watch_point>&& points) {
+    bool watchdog::init() {
+        auto [index, func] = trampoline::create(this);
+        luahook_index      = index;
+        luahook_func       = func;
+        if (!func) {
+            log::fatal("Too many watchdog instances.");
+            return false;
+        }
+        return true;
+    }
+
+    bool watchdog::init_watch(const lua::resolver& resolver, std::vector<watch_point>&& points) {
         bool ok = false;
         for (auto& point : points) {
             if (point.find_symbol(resolver)) {
@@ -56,65 +182,6 @@ namespace luadebug::autoattach {
         }
         return ok;
     }
-
-    struct trampoline {
-        template <size_t Index>
-        struct callback {
-            static inline watchdog* w;
-            static void attach_lua(lua::state L, lua::debug ar) {
-                if (w) {
-                    w->attach_lua(L, ar, attach_lua);
-                }
-            }
-            static lua::hook create(watchdog* _w) {
-                if (w) return 0;
-                w = _w;
-                return attach_lua;
-            }
-        };
-        static inline std::atomic<size_t> used = 0;
-        static constexpr auto limit            = 0x3;
-        static size_t create_instance_id() {
-            return ++used % limit;
-        }
-        static lua::hook create(watchdog* w) {
-            auto fn = [w]() -> lua::hook {
-                size_t id = create_instance_id();
-                switch (id) {
-                case 0x0:
-                    return callback<0x0>::create(w);
-                case 0x1:
-                    return callback<0x1>::create(w);
-                case 0x2:
-                    return callback<0x2>::create(w);
-                case 0x3:
-                    return callback<0x3>::create(w);
-                default:
-                    return 0;
-                }
-            };
-            for (size_t i = 0; i < limit; i++) {
-                if (auto hook = fn()) {
-                    return hook;
-                }
-            }
-            return 0;
-        }
-        static void destroy(watchdog* w) {
-            if (callback<0x0>::w == w) {
-                callback<0x0>::w = nullptr;
-            }
-            else if (callback<0x1>::w == w) {
-                callback<0x1>::w = nullptr;
-            }
-            else if (callback<0x2>::w == w) {
-                callback<0x2>::w = nullptr;
-            }
-            else if (callback<0x3>::w == w) {
-                callback<0x3>::w = nullptr;
-            }
-        }
-    };
 
     void watchdog::attach_lua(lua::state L, lua::debug ar, lua::hook fn) {
         reset_luahook(L, ar);
@@ -150,17 +217,7 @@ namespace luadebug::autoattach {
         std::lock_guard guard(mtx);
         if (lua_state_hooked.find(L) != lua_state_hooked.end())
             return;
-        lua::hook fn = trampoline::create(this);
-        if (!fn) {
-            log::fatal("Too many watchdog instances.");
-            return;
-        }
-        set_luahook(L, fn);
+        set_luahook(L, luahook_func);
         lua_state_hooked.emplace(L);
-    }
-
-    watchdog::~watchdog() {
-        trampoline::destroy(this);
-        unhook();
     }
 }
