@@ -38,19 +38,36 @@ namespace luadebug::autoattach {
         template <size_t Index>
         struct callback {
             static inline watchdog* w = nullptr;
+            static inline lua::hook origin_hook;
+            static inline int origin_hookmask;
+            static inline int origin_hookcount;
             static void attach_lua(lua::state L, lua::debug ar) {
+                reset_luahook(L, ar);
                 if (w) {
-                    w->attach_lua(L, ar, attach_lua);
+                    w->attach_lua(L, ar);
                 }
             }
-            static lua::hook create(watchdog* _w) {
+            static lua::cfunction create(watchdog* _w) {
                 assert(w == nullptr);
                 w = _w;
-                return attach_lua;
+                return set_luahook;
             }
             static void destroy(watchdog* _w) {
                 assert(w == _w);
                 w = nullptr;
+            }
+            static void reset_luahook(lua::state L, lua::debug ar) {
+                if (origin_hook) {
+                    origin_hook(L, ar);
+                }
+                lua::call<lua_sethook>(L, origin_hook, origin_hookmask, origin_hookcount);
+            }
+            static int set_luahook(lua::state L) {
+                origin_hook      = lua::call<lua_gethook>(L);
+                origin_hookmask  = lua::call<lua_gethookmask>(L);
+                origin_hookcount = lua::call<lua_gethookcount>(L);
+                lua::call<lua_sethook>(L, attach_lua, LUA_MASKCALL | LUA_MASKLINE | LUA_MASKRET, 0);
+                return 0;
             }
         };
         static inline std::atomic<uint8_t> used = 0;
@@ -78,12 +95,12 @@ namespace luadebug::autoattach {
                 }
             }
         }
-        static std::tuple<uint8_t, lua::hook> create(watchdog* w) {
+        static std::tuple<uint8_t, lua::cfunction> create(watchdog* w) {
             uint8_t id = create_instance_id();
             if (id >= limit) {
                 return { limit, nullptr };
             }
-            auto fn = [w](size_t id) -> lua::hook {
+            auto fn = [w](size_t id) -> lua::cfunction {
                 switch (id) {
                 case 0x0:
                     return callback<0x0>::create(w);
@@ -118,7 +135,7 @@ namespace luadebug::autoattach {
     watchdog::watchdog()
         : interceptor { Gum::Interceptor_obtain() } {}
     watchdog::~watchdog() {
-        if (luahook_func) {
+        if (luahook_set) {
             trampoline::destroy(this, luahook_index);
             unhook();
         }
@@ -164,7 +181,7 @@ namespace luadebug::autoattach {
     bool watchdog::init() {
         auto [index, func] = trampoline::create(this);
         luahook_index      = index;
-        luahook_func       = func;
+        luahook_set        = func;
         if (!func) {
             log::fatal("Too many watchdog instances.");
             return false;
@@ -185,8 +202,7 @@ namespace luadebug::autoattach {
         return ok;
     }
 
-    void watchdog::attach_lua(lua::state L, lua::debug ar, lua::hook fn) {
-        reset_luahook(L, ar);
+    void watchdog::attach_lua(lua::state L, lua::debug ar) {
         switch (autoattach::attach_lua(L)) {
         case attach_status::fatal:
         case attach_status::success:
@@ -194,32 +210,18 @@ namespace luadebug::autoattach {
             // TODO: free all resources
             break;
         case attach_status::wait:
-            set_luahook(L, fn);
+            luahook_set(L);
             break;
         default:
             std::unreachable();
         }
     }
 
-    void watchdog::reset_luahook(lua::state L, lua::debug ar) {
-        if (origin_hook) {
-            origin_hook(L, ar);
-        }
-        lua::call<lua_sethook>(L, origin_hook, origin_hookmask, origin_hookcount);
-    }
-
-    void watchdog::set_luahook(lua::state L, lua::hook fn) {
-        origin_hook      = lua::call<lua_gethook>(L);
-        origin_hookmask  = lua::call<lua_gethookmask>(L);
-        origin_hookcount = lua::call<lua_gethookcount>(L);
-        lua::call<lua_sethook>(L, fn, LUA_MASKCALL | LUA_MASKLINE | LUA_MASKRET, 0);
-    }
-
     void watchdog::watch_entry(lua::state L) {
         std::lock_guard guard(mtx);
         if (lua_state_hooked.find(L) != lua_state_hooked.end())
             return;
-        set_luahook(L, luahook_func);
+        luahook_set(L);
         lua_state_hooked.emplace(L);
     }
 }
