@@ -12,7 +12,7 @@ namespace luadebug::autoattach {
     static std::vector<watch_point> get_watch_points(work_mode mode, lua_version version) {
         if (mode == work_mode::launch) {
             return {
-                { watch_point::type::common, "lua_newstate" }
+                { watch_point::type::ret, "lua_newstate" }
             };
         }
         switch (version) {

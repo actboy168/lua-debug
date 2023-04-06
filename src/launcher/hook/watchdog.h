@@ -37,6 +37,7 @@ namespace luadebug::autoattach {
         common_listener listener_common;
         luajit_global_listener listener_luajit_global;
         luajit_jit_listener listener_luajit_jit;
+        ret_listener listener_ret;
         lua::hook origin_hook;
         int origin_hookmask;
         int origin_hookcount;

@@ -141,6 +141,9 @@ namespace luadebug::autoattach {
             case watch_point::type::luajit_jit:
                 ok = interceptor->attach(point.address, &listener_luajit_jit, this);
                 break;
+            case watch_point::type::ret:
+                ok = interceptor->attach(point.address, &listener_ret, this);
+                break;
             default:
                 std::unreachable();
             }
@@ -155,6 +158,7 @@ namespace luadebug::autoattach {
         interceptor->detach(&listener_common);
         interceptor->detach(&listener_luajit_global);
         interceptor->detach(&listener_luajit_jit);
+        interceptor->detach(&listener_ret);
     }
 
     bool watchdog::init() {
