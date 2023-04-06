@@ -10,6 +10,7 @@ namespace luadebug::autoattach {
             common,
             luajit_global,
             luajit_jit,
+            ret,
         };
         type listener;
         std::string_view funcname;

@@ -19,4 +19,8 @@ namespace luadebug::autoattach {
         virtual void on_enter(Gum::InvocationContext* context) override;
     };
 
+    struct ret_listener : Gum::NoEnterInvocationListener {
+        virtual ~ret_listener() = default;
+        virtual void on_leave(Gum::InvocationContext* context) override;
+    };
 }

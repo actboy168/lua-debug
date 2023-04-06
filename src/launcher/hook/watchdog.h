@@ -24,11 +24,7 @@ namespace luadebug::autoattach {
         bool hook();
         void unhook();
         void watch_entry(lua::state L);
-        void attach_lua(lua::state L, lua::debug ar, lua::hook fn);
-
-    private:
-        void reset_luahook(lua::state L, lua::debug ar);
-        void set_luahook(lua::state L, lua::hook fn);
+        void attach_lua(lua::state L, lua::debug ar);
 
     private:
         std::mutex mtx;
@@ -37,11 +33,9 @@ namespace luadebug::autoattach {
         common_listener listener_common;
         luajit_global_listener listener_luajit_global;
         luajit_jit_listener listener_luajit_jit;
-        lua::hook origin_hook;
-        int origin_hookmask;
-        int origin_hookcount;
+        ret_listener listener_ret;
         std::set<lua::state> lua_state_hooked;
         uint8_t luahook_index;
-        lua::hook luahook_func = nullptr;
+        lua::cfunction luahook_set = nullptr;
     };
 }
