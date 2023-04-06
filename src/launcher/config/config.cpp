@@ -101,7 +101,7 @@ namespace luadebug::config {
 #if defined(_M_ARM64) || defined(__aarch64__)
             "arm64";
 #elif defined(_M_IX86) || defined(__i386__)
-            "x86";
+            "ia32";
 #elif defined(_M_X64) || defined(__x86_64__)
             "x64";
 #else
