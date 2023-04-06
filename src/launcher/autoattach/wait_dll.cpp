@@ -32,7 +32,7 @@ extern "C" bool gum_darwin_query_all_image_infos(mach_port_t task, _GumDarwinAll
 #endif
 namespace luadebug::autoattach {
 #ifdef _WIN32
-    bool wait_dll(WaitDllCallBack_t loaded) {
+    bool wait_dll(bool (*loaded)(std::string const&)) {
         typedef struct _LDR_DLL_UNLOADED_NOTIFICATION_DATA {
             ULONG Flags;                   // Reserved.
             PCUNICODE_STRING FullDllName;  // The full path name of the DLL module.
@@ -91,19 +91,19 @@ namespace luadebug::autoattach {
             0, [](LdrDllNotificationReason NotificationReason, PLDR_DLL_NOTIFICATION_DATA const NotificationData, PVOID Context) {
                 if (NotificationReason == LdrDllNotificationReason::LDR_DLL_NOTIFICATION_REASON_LOADED) {
                     auto path = fs::path(std::wstring(NotificationData->Loaded.FullDllName->Buffer, NotificationData->Loaded.FullDllName->Length)).string();
-                    auto ptr  = (WaitDllCallBack_t*)Context;
-                    if ((*ptr)(path)) {
+                    auto f    = (decltype(loaded))Context;
+                    if (f(path)) {
                         if (dllNotification.Cookie)
                             dllNotification.dllUnregisterNotification(dllNotification.Cookie);
-                        delete ptr;
                     }
                 }
             },
-            (void*)new WaitDllCallBack_t(std::move(loaded)), &dllNotification.Cookie
+            loaded, &dllNotification.Cookie
         );
         return true;
     }
 #elif defined(__APPLE__)
+    using WaitDllCallBack_t = bool (*)(std::string const&);
     struct WaitDllListener : Gum::NoLeaveInvocationListener {
         WaitDllCallBack_t loaded;
         Gum::RefPtr<Gum::Interceptor> interceptor;
@@ -145,7 +145,7 @@ namespace luadebug::autoattach {
         if (!interceptor)
             return false;
         auto listener         = new WaitDllListener;
-        listener->loaded      = std::move(loaded);
+        listener->loaded      = loaded;
         listener->interceptor = interceptor;
         return interceptor->attach((void*)infos.notification_address, listener, nullptr);
     }
@@ -153,7 +153,7 @@ namespace luadebug::autoattach {
 
     // TODO: support linux
 
-    bool wait_dll(WaitDllCallBack_t loaded) {
+    bool wait_dll(bool (*loaded)(std::string const&)) {
         return false;
     }
 #endif
