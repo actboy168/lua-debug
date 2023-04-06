@@ -69,7 +69,7 @@ static bool injectdll_x64(const PROCESS_INFORMATION& pi, const std::wstring& dll
         0x41, 0x55,                                                  // push r13
         0x41, 0x56,                                                  // push r14
         0x41, 0x57,                                                  // push r15
-        0x48, 0x83, 0xEC, 0x28,                                      // sub rsp, 0x28
+        0x48, 0x83, 0xEC, 0x00,                                      // sub rsp, 0  // rsp
         0x49, 0xB9, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // mov  r9, 0  // DllHandle
         0x49, 0xB8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // mov  r8, 0  // DllPath
         0x48, 0x31, 0xD2,                                            // xor  rdx,rdx
@@ -86,7 +86,7 @@ static bool injectdll_x64(const PROCESS_INFORMATION& pi, const std::wstring& dll
         0x48, 0xB8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // mov  rax,0  // EntryFunc
         0x48, 0x8B, 0x00,                                            // mov  rax,[rax]
         0xFF, 0xD0,                                                  // call rax
-        0x48, 0x83, 0xC4, 0x28,                                      // add rsp, 0x28
+        0x48, 0x83, 0xC4, 0x00,                                      // add rsp, 0  // rsp
         0x41, 0x5F,                                                  // pop r15
         0x41, 0x5E,                                                  // pop r14
         0x41, 0x5D,                                                  // pop r13
@@ -180,7 +180,7 @@ static bool injectdll_x64(const PROCESS_INFORMATION& pi, const std::wstring& dll
     memcpy(sc + 120, &entryfunc, sizeof(entryfunc));
     memcpy(sc + 171, &ctx.Rip, sizeof(ctx.Rip));
     {
-        uint8_t v = 0x30 + (ctx.Rsp & 0x10);
+        uint8_t v = 0x40 - (ctx.Rsp & 0x0F);
         memcpy(sc + 31, &v, 1);
         memcpy(sc + 136, &v, 1);
     }
