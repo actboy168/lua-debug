@@ -16,7 +16,7 @@ namespace luadebug::lua {
     using kfunction = int (*)(state, int, kcontext);
     using debug     = uintptr_t;
     using hook      = void (*)(state, debug);
-    using newstate = state (*)(void* fn, void* ud);
+    using newstate  = state (*)(void* fn, void* ud);
 
     struct resolver {
         virtual intptr_t find(std::string_view name) const = 0;
