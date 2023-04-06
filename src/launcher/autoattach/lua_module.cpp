@@ -61,7 +61,7 @@ namespace luadebug::autoattach {
         }
     }
 
-    bool load_luadebug_dll(lua_version version) {
+    bool load_luadebug_dll(lua_module* lm, lua_version version) {
         auto luadebug_path = config::get_luadebug_path(version);
         if (!luadebug_path)
             return false;
@@ -70,11 +70,7 @@ namespace luadebug::autoattach {
         if (!Gum::Process::module_load(path.c_str(), &error)) {
             log::fatal("load debugger [{}] failed: {}", path, error);
         }
-#ifdef _WIN32
-        _putenv(std::format("LUA_DEBUG_CORE={}", path).c_str());
-#else
-        setenv("LUA_DEBUG_CORE", path.c_str(), true);
-#endif
+        lm->debugger_path = path;
         return true;
     }
 
@@ -93,7 +89,7 @@ namespace luadebug::autoattach {
 
         watchdog = create_watchdog(mode, version, resolver);
         if (version != lua_version::unknown) {
-            if (!load_luadebug_dll(version))
+            if (!load_luadebug_dll(this, version))
                 return false;
         }
         if (!watchdog) {

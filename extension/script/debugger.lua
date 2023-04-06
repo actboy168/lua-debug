@@ -147,7 +147,7 @@ local function initDebugger(dbg, cfg)
     local luadebug = os.getenv "LUA_DEBUG_CORE"
     local updateenv = false
     if not luadebug then
-        luadebug = detectLuaDebugPath(cfg)
+        luadebug = cfg.debugger_path or detectLuaDebugPath(cfg)
         updateenv = true
     end
     local isWindows = package.config:sub(1, 1) == "\\"

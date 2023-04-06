@@ -17,6 +17,7 @@ namespace luadebug::autoattach {
         lua_resolver resolver;
         work_mode mode;
         struct watchdog* watchdog = nullptr;
+        std::string debugger_path;
 
         lua_module(work_mode mode)
             : mode(mode) {}

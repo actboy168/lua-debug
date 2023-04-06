@@ -54,6 +54,7 @@ namespace luadebug::autoattach {
         lua::call<lua_pushstring>(L, root.generic_u8string().c_str());
         lua::call<lua_pushstring>(L, std::to_string(Gum::Process::get_id()).c_str());
         lua::call<lua_pushstring>(L, version == lua_version::unknown ? "" : lua_version_to_string(version));
+        lua::call<lua_pushstring>(L, ctx::get()->lua_module->debugger_path.c_str());
 
         if (lua::pcall(L, 3, 1, 0)) {
             /*
