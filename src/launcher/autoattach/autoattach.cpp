@@ -1,4 +1,5 @@
 #include <autoattach/autoattach.h>
+#include <autoattach/ctx.h>
 #include <autoattach/lua_module.h>
 #include <autoattach/wait_dll.h>
 #include <bee/nonstd/format.h>
@@ -13,8 +14,6 @@
 #include <thread>
 
 namespace luadebug::autoattach {
-    fn_attach debuggerAttach;
-
     constexpr auto find_lua_module_key = "lua_newstate";
     constexpr auto lua_module_strings  = std::array<const char*, 3> {
         "luaJIT_BC_%s",  // luajit
@@ -58,11 +57,14 @@ namespace luadebug::autoattach {
         return true;
     }
 
-    attach_status attach_lua_vm(lua::state L) {
-        return debuggerAttach(L);
-    }
-
     void start() {
+        auto ctx = ctx::get();
+        std::lock_guard guard(ctx->mtx);
+
+        if (ctx->lua_module) {
+            return;
+        }
+
         bool found    = false;
         lua_module rm = {};
         Gum::Process::enumerate_modules([&rm, &found](const Gum::ModuleDetails& details) -> bool {
@@ -78,25 +80,34 @@ namespace luadebug::autoattach {
             return true;
         });
         if (!found) {
+            if (ctx->wait_dll)
+                return;
             if (!wait_dll(load_lua_module)) {
                 log::fatal("can't find lua module");
             }
+            else {
+                ctx->wait_dll = true;
+            }
             return;
         }
+
         log::info("find lua module path:{}", rm.path);
-        if (!rm.initialize(attach_lua_vm)) {
+        if (!rm.initialize()) {
             return;
         }
+        rm.mode         = ctx->mode;
+        ctx->lua_module = rm;
     }
-    void initialize(fn_attach attach, bool ap) {
+
+    void initialize(work_mode mode) {
         static std::atomic_bool injected;
         bool test = false;
         if (injected.compare_exchange_strong(test, true, std::memory_order_acquire)) {
-            log::init(ap);
             log::info("initialize");
             Gum::runtime_init();
-            debuggerAttach = attach;
-            luadebug::autoattach::start();
+            auto ctx  = ctx::get();
+            ctx->mode = mode;
+            start();
             injected.store(false, std::memory_order_release);
         }
     }
