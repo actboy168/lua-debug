@@ -11,7 +11,6 @@ local initReq
 local m = {}
 
 local function getUnixAddress(pid)
-    --TODO: clear unix file
     local path = WORKDIR / "tmp"
     fs.create_directories(path)
     return "@"..(path / ("pid_%d"):format(pid)):string()
