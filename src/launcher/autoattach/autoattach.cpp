@@ -89,12 +89,9 @@ namespace luadebug::autoattach {
             return;
         }
 
-        auto config = config::init_from_file();
-        if (!config) {
+        ctx->config = config::init_from_file();
+        if (!ctx->config) {
             log::info("can't load config");
-        }
-        else {
-            ctx->config = *config;
         }
 
         bool found    = false;
