@@ -71,7 +71,7 @@ namespace luadebug::autoattach {
             log::fatal("load debugger [{}] failed: {}", path, error);
         }
 #ifdef _WIN32
-        _putenv("LUA_DEBUG_CORE", std::format("LUA_DEBUG_CORE={}", path).c_str());
+        _putenv(std::format("LUA_DEBUG_CORE={}", path).c_str());
 #else
         setenv("LUA_DEBUG_CORE", path.c_str(), true);
 #endif
