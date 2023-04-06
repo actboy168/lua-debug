@@ -70,6 +70,7 @@ namespace luadebug::autoattach {
         if (!Gum::Process::module_load(path.c_str(), &error)) {
             log::fatal("load debugger [{}] failed: {}", path, error);
         }
+        setenv("LUA_DEBUG_CORE", path.c_str(), true);
         return true;
     }
 

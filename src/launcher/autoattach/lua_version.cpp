@@ -20,17 +20,17 @@ namespace luadebug::autoattach {
         }
     }
     lua_version lua_version_from_string(const std::string_view& v) {
-        if (v == "jit" || v == "luajit")
+        if (v == "jit")
             return lua_version::luajit;
-        else if (v == "5.1" || v == "lua51")
+        else if (v == "5.1")
             return lua_version::lua51;
-        else if (v == "5.2" || v == "lua52")
+        else if (v == "5.2")
             return lua_version::lua52;
-        else if (v == "5.3" || v == "lua53")
+        else if (v == "5.3")
             return lua_version::lua53;
-        else if (v == "5.4" || v == "lua54")
+        else if (v == "5.4")
             return lua_version::lua54;
-        else if (v == "latest" || v == "lua-latest")
+        else if (v == "latest")
             return lua_version::latest;
         return lua_version::unknown;
     }
