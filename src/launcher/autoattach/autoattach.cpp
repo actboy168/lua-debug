@@ -65,8 +65,8 @@ namespace luadebug::autoattach {
             return;
         }
 
-        bool found    = false;
-        lua_module rm = {};
+        bool found = false;
+        lua_module rm(ctx->mode);
         Gum::Process::enumerate_modules([&rm, &found](const Gum::ModuleDetails& details) -> bool {
             if (is_lua_module(details.path())) {
                 auto range        = details.range();
@@ -95,8 +95,7 @@ namespace luadebug::autoattach {
         if (!rm.initialize()) {
             return;
         }
-        rm.mode         = ctx->mode;
-        ctx->lua_module = rm;
+        ctx->lua_module = std::move(rm);
     }
 
     void initialize(work_mode mode) {
