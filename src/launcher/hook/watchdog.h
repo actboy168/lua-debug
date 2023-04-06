@@ -43,7 +43,5 @@ namespace luadebug::autoattach {
         std::set<lua::state> lua_state_hooked;
         uint8_t luahook_index;
         lua::hook luahook_func = nullptr;
-    public:
-        lua_version version;
     };
 }

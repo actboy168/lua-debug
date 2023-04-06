@@ -34,7 +34,7 @@ namespace luadebug::autoattach {
          "R. Ierusalimschy, L. H. de Figueiredo, W. Celes"
          " $",  // others
     };
-    static bool is_lua_module(const char* module_path, const config::Config& config, bool check_export = true, bool check_strings = false) {
+    static bool is_lua_module(const char* module_path, bool check_export = true, bool check_strings = false) {
         auto str = std::string_view(module_path);
         // blacklist module
         auto root = config::get_plugin_root();
@@ -48,7 +48,7 @@ namespace luadebug::autoattach {
             }
         }
 
-        auto target_lua_module = config.lua_module;
+        const auto& target_lua_module = ctx::get()->config->lua_module;
         if (!target_lua_module.empty() && str.find(target_lua_module) != std::string_view::npos) return true;
 
         if (check_export && Gum::Process::module_find_export_by_name(module_path, find_lua_module_key)) return true;
@@ -65,7 +65,7 @@ namespace luadebug::autoattach {
     }
 
     static void start();
-    static bool load_lua_module(const std::string& path, const config::Config& config) {
+    static bool load_lua_module(const std::string& path) {
         constexpr auto check_export =
 #ifdef _WIN32
             true
@@ -73,7 +73,7 @@ namespace luadebug::autoattach {
             false
 #endif
             ;
-        if (!is_lua_module(path.c_str(), config, check_export, true)) {
+        if (!is_lua_module(path.c_str(), check_export, true)) {
             return false;
         }
         // find lua module lazy
@@ -93,10 +93,14 @@ namespace luadebug::autoattach {
         if (!config) {
             log::info("can't load config");
         }
+        else {
+            ctx->config = *config;
+        }
+
         bool found    = false;
         lua_module rm = {};
-        Gum::Process::enumerate_modules([&rm, &found, conf = &(*config)](const Gum::ModuleDetails& details) -> bool {
-            if (is_lua_module(details.path(), *conf)) {
+        Gum::Process::enumerate_modules([&rm, &found](const Gum::ModuleDetails& details) -> bool {
+            if (is_lua_module(details.path())) {
                 auto range        = details.range();
                 rm.memory_address = range.base_address;
                 rm.memory_size    = range.size;
@@ -110,9 +114,7 @@ namespace luadebug::autoattach {
         if (!found) {
             if (ctx->wait_dll)
                 return;
-            if (!wait_dll([conf = std::move(*config)](const std::string& path) {
-                    return load_lua_module(path, conf);
-                })) {
+            if (!wait_dll(load_lua_module)) {
                 log::fatal("can't find lua module");
             }
             else {
@@ -122,7 +124,6 @@ namespace luadebug::autoattach {
         }
 
         log::info("find lua module path:{}", rm.path);
-        rm.config = std::move(*config);
         if (!rm.initialize()) {
             return;
         }

@@ -1,6 +1,7 @@
 #pragma once
 #include <autoattach/autoattach.h>
 #include <autoattach/lua_module.h>
+#include <config/config.h>
 
 #include <atomic>
 #include <gumpp.hpp>
@@ -15,6 +16,7 @@ namespace luadebug::autoattach {
         work_mode mode;
         std::optional<struct lua_module> lua_module;
         bool wait_dll = false;
+        std::optional<config::Config> config;
 
         static ctx* get() {
             static ctx obj;

@@ -64,7 +64,6 @@ namespace luadebug::autoattach {
         if (context->init_watch(resolver, get_watch_points(mode, version))) {
             // TODO: fix other thread pc
             context->hook();
-            context->version = version;
             return context.release();
         }
         if (version == lua_version::unknown) {
@@ -75,7 +74,6 @@ namespace luadebug::autoattach {
         if (context->init_watch(resolver, get_watch_points(mode, lua_version::unknown))) {
             // TODO: fix other thread pc
             context->hook();
-            context->version = version;
             return context.release();
         }
         // TODO: more errmsg

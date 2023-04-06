@@ -1,3 +1,4 @@
+#include <autoattach/ctx.h>
 #include <autoattach/lua_module.h>
 #include <bee/nonstd/format.h>
 #include <bee/utility/path_helper.h>
@@ -60,7 +61,6 @@ namespace luadebug::autoattach {
         }
     }
 
-    bool lua_module::initialize() {
     bool load_luadebug_dll(lua_version version) {
         auto luadebug_path = config::get_luadebug_path(version);
         if (!luadebug_path)
@@ -80,7 +80,7 @@ namespace luadebug::autoattach {
             log::fatal("lua initialize failed, can't find {}", error_msg);
             return false;
         }
-        version = config.version;
+        version = ctx::get()->config->version;
         if (version == lua_version::unknown) {
             version = get_lua_version(*this);
         }

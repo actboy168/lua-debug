@@ -1,4 +1,5 @@
 ﻿#include <autoattach/autoattach.h>
+#include <autoattach/ctx.h>
 #include <bee/nonstd/filesystem.h>
 #include <bee/utility/path_helper.h>
 #include <util/log.h>
@@ -35,7 +36,7 @@ namespace luadebug::autoattach {
         return tmp;
     }
 
-    static attach_status attach_lua(lua::state L, lua_version verison) {
+    attach_status attach_lua(lua::state L) {
         log::info("attach lua vm entry");
         auto r = bee::path_helper::dll_path();
         if (!r) {
@@ -49,9 +50,10 @@ namespace luadebug::autoattach {
             lua::pop(L, 1);
             return attach_status::fatal;
         }
+        auto version = ctx::get()->lua_module->version;
         lua::call<lua_pushstring>(L, root.generic_u8string().c_str());
         lua::call<lua_pushstring>(L, std::to_string(Gum::Process::get_id()).c_str());
-        lua::call<lua_pushstring>(L, verison == lua_version::unknown ? "" : lua_version_to_string(verison));
+        lua::call<lua_pushstring>(L, version == lua_version::unknown ? "" : lua_version_to_string(version));
 
         if (lua::pcall(L, 3, 1, 0)) {
             /*

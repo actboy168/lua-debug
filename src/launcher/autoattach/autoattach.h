@@ -13,6 +13,6 @@ namespace luadebug::autoattach {
         launch,
         attach,
     };
-    attach_status attach_lua(lua::state L, lua_version verison);
+    attach_status attach_lua(lua::state L);
     void initialize(work_mode mode);
 }
