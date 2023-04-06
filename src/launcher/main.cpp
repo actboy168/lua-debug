@@ -21,7 +21,7 @@ namespace luadebug::autoattach {
 #ifdef _WIN32
         FILE *f = _wfopen(filename.c_str(), L"rb");
 #else
-        FILE* f = fopen(filename.c_str(), "rb");
+        FILE *f = fopen(filename.c_str(), "rb");
 #endif
         if (!f) {
             return std::string();

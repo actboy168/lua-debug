@@ -1,6 +1,5 @@
 #pragma once
 
-#include <autoattach/lua_version.h>
 #include <resolver/lua_delayload.h>
 
 namespace luadebug::autoattach {

@@ -1,6 +1,5 @@
 #include <autoattach/autoattach.h>
 #include <autoattach/ctx.h>
-#include <autoattach/lua_module.h>
 #include <autoattach/wait_dll.h>
 #include <config/config.h>
 #include <util/log.h>

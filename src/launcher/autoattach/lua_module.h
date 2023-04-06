@@ -1,7 +1,7 @@
 #pragma once
 
 #include <autoattach/autoattach.h>
-#include <config/config.h>
+#include <autoattach/lua_version.h>
 #include <resolver/lua_resolver.h>
 
 #include <string>
