@@ -108,7 +108,7 @@ local function detectLuaDebugPath(cfg)
                 version = "luajit"
                 jit.off()
             else
-                local version_t ={
+                local version_t = {
                     ["Lua 5.4"] = "lua54",
                     ["Lua 5.3"] = "lua53",
                     ["Lua 5.2"] = "lua52",
@@ -226,7 +226,7 @@ function dbg:event(...)
 end
 
 function dbg:set_wait(name, f)
-    _G[name] = function(...)
+    _G[name] = function (...)
         _G[name] = nil
         f(...)
         self:event 'wait'
@@ -238,7 +238,7 @@ function dbg:setup_patch()
     local rawxpcall = xpcall
     function pcall(f, ...)
         return rawxpcall(f,
-            function(msg)
+            function (msg)
                 self:event("exception", msg)
                 return msg
             end,
@@ -247,7 +247,7 @@ function dbg:setup_patch()
 
     function xpcall(f, msgh, ...)
         return rawxpcall(f,
-            function(msg)
+            function (msg)
                 self:event("exception", msg)
                 return msgh and msgh(msg) or msg
             end
@@ -268,7 +268,7 @@ function dbg:setup_patch()
     function coroutine.wrap(f)
         local wf = rawcoroutinewrap(f)
         local _, co = debug.getupvalue(wf, 1)
-        return function(...)
+        return function (...)
             self:event("thread", co, 0)
             return coreturn(co, wf(...))
         end
