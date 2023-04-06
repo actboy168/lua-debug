@@ -230,7 +230,7 @@ local function create_process_in_console(args, callback)
             if process:is_running() then
                 return nil, errmsg
             else
-                return nil, "process is already exited:\n" + errmsg
+                return nil, "process is already exited:\n"..errmsg
             end
         end
     end

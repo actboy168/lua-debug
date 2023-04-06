@@ -3,6 +3,7 @@
 #include <bee/utility/path_helper.h>
 #include <config/config.h>
 #include <hook/create_watchdog.h>
+#include <hook/watchdog.h>
 #include <util/log.h>
 
 #include <charconv>
@@ -59,6 +60,7 @@ namespace luadebug::autoattach {
         }
     }
 
+    bool lua_module::initialize() {
     bool load_luadebug_dll(lua_version version) {
         auto luadebug_path = config::get_luadebug_path(version);
         if (!luadebug_path)
@@ -71,7 +73,7 @@ namespace luadebug::autoattach {
         return true;
     }
 
-    bool lua_module::initialize(fn_attach attach_lua_vm) {
+    bool lua_module::initialize() {
         resolver.module_name = path;
         auto error_msg       = lua::initialize(resolver);
         if (error_msg) {
@@ -84,16 +86,20 @@ namespace luadebug::autoattach {
         }
         log::info("current lua version: {}", lua_version_to_string(version));
 
+        watchdog = create_watchdog(mode, version, resolver);
         if (version != lua_version::unknown) {
             if (!load_luadebug_dll(version))
                 return false;
         }
-        watchdog = create_watchdog(attach_lua_vm, version, resolver);
         if (!watchdog) {
-            // TODO: more errmsg
-            log::fatal("watchdog initialize failed");
             return false;
         }
         return true;
+    }
+
+    lua_module::~lua_module() {
+        if (watchdog) {
+            delete watchdog;
+        }
     }
 }

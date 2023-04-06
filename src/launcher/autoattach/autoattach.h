@@ -9,6 +9,10 @@ namespace luadebug::autoattach {
         fatal,
         wait,
     };
-    typedef attach_status (*fn_attach)(lua::state L, lua_version verison);
-    void initialize(fn_attach attach, bool ap);
+    enum class work_mode {
+        launch,
+        attach,
+    };
+    attach_status attach_lua(lua::state L, lua_version verison);
+    void initialize(work_mode mode);
 }

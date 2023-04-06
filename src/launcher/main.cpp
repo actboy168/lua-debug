@@ -35,7 +35,7 @@ namespace luadebug::autoattach {
         return tmp;
     }
 
-    static attach_status attach(lua::state L, lua_version verison) {
+    static attach_status attach_lua(lua::state L, lua_version verison) {
         log::info("attach lua vm entry");
         auto r = bee::path_helper::dll_path();
         if (!r) {
@@ -71,10 +71,10 @@ namespace luadebug::autoattach {
 
 extern "C" {
 DLLEXPORT void DLLEXPORT_DECLARATION launch() {
-    luadebug::autoattach::initialize(luadebug::autoattach::attach, false);
+    luadebug::autoattach::initialize(luadebug::autoattach::work_mode::launch);
 }
 
 DLLEXPORT void DLLEXPORT_DECLARATION attach() {
-    luadebug::autoattach::initialize(luadebug::autoattach::attach, true);
+    luadebug::autoattach::initialize(luadebug::autoattach::work_mode::attach);
 }
 }
