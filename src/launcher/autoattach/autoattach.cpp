@@ -57,10 +57,7 @@ namespace luadebug::autoattach {
         return true;
     }
 
-    void start() {
-        auto ctx = ctx::get();
-        std::lock_guard guard(ctx->mtx);
-
+    static void start_impl(luadebug::autoattach::ctx* ctx) {
         if (ctx->lua_module) {
             return;
         }
@@ -98,16 +95,25 @@ namespace luadebug::autoattach {
         ctx->lua_module = std::move(rm);
     }
 
+    void start(work_mode mode) {
+        auto ctx = ctx::get();
+        std::lock_guard guard(ctx->mtx);
+        ctx->mode = mode;
+        start_impl(ctx);
+    }
+
+    void start() {
+        auto ctx = ctx::get();
+        std::lock_guard guard(ctx->mtx);
+        start_impl(ctx);
+    }
+
+    std::once_flag initialize_flag;
     void initialize(work_mode mode) {
-        static std::atomic_bool injected;
-        bool test = false;
-        if (injected.compare_exchange_strong(test, true, std::memory_order_acquire)) {
+        std::call_once(initialize_flag, []() {
             log::info("initialize");
             Gum::runtime_init();
-            auto ctx  = ctx::get();
-            ctx->mode = mode;
-            start();
-            injected.store(false, std::memory_order_release);
-        }
+        });
+        start(mode);
     }
 }
