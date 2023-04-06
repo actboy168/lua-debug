@@ -11,9 +11,8 @@
 
 namespace luadebug::autoattach {
     struct ctx {
-        bool attach_mode;
-
         std::mutex mtx;
+        work_mode mode;
         std::optional<struct lua_module> lua_module;
         bool wait_dll = false;
 

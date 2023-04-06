@@ -9,8 +9,8 @@
 #include <vector>
 
 namespace luadebug::autoattach {
-    static std::vector<watch_point> get_watch_points(lua_version version) {
-        if (!ctx::get()->attach_mode) {
+    static std::vector<watch_point> get_watch_points(work_mode mode, lua_version version) {
+        if (mode == work_mode::launch) {
             return {
                 { watch_point::type::common, "lua_newstate" }
             };
@@ -55,12 +55,12 @@ namespace luadebug::autoattach {
         }
     }
 
-    watchdog* create_watchdog(fn_attach attach_lua_vm, lua_version version, const lua::resolver& resolver) {
-        auto context = std::make_unique<watchdog>(attach_lua_vm);
+    watchdog* create_watchdog(work_mode mode, lua_version version, const lua::resolver& resolver) {
+        auto context = std::make_unique<watchdog>();
         if (!context->init()) {
             return nullptr;
         }
-        if (context->init_watch(resolver, get_watch_points(version))) {
+        if (context->init_watch(resolver, get_watch_points(mode, version))) {
             // TODO: fix other thread pc
             context->hook();
             return context.release();
@@ -70,7 +70,7 @@ namespace luadebug::autoattach {
             log::fatal("watchdog initialize failed");
             return nullptr;
         }
-        if (context->init_watch(resolver, get_watch_points(lua_version::unknown))) {
+        if (context->init_watch(resolver, get_watch_points(mode, lua_version::unknown))) {
             // TODO: fix other thread pc
             context->hook();
             return context.release();

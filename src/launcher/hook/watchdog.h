@@ -16,7 +16,7 @@ namespace luadebug::autoattach {
         static_assert(std::is_same_v<lua::state, uintptr_t>);
 
     public:
-        watchdog(fn_attach attach_lua_vm);
+        watchdog();
         ~watchdog();
         watchdog(const watchdog&) = delete;
         bool init();
@@ -40,7 +40,6 @@ namespace luadebug::autoattach {
         lua::hook origin_hook;
         int origin_hookmask;
         int origin_hookcount;
-        fn_attach attach_lua_vm;
         std::set<lua::state> lua_state_hooked;
         uint8_t luahook_index;
         lua::hook luahook_func = nullptr;

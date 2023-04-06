@@ -89,7 +89,7 @@ namespace luadebug::autoattach {
         }
     }
 
-    bool lua_module::initialize(fn_attach attach_lua_vm) {
+    bool lua_module::initialize() {
         resolver.module_name = path;
         auto error_msg       = lua::initialize(resolver);
         if (error_msg) {
@@ -99,7 +99,7 @@ namespace luadebug::autoattach {
         version = get_lua_version(*this);
         log::info("current lua version: {}", lua_version_to_string(version));
 
-        watchdog = create_watchdog(attach_lua_vm, version, resolver);
+        watchdog = create_watchdog(mode, version, resolver);
         if (!watchdog) {
             return false;
         }
