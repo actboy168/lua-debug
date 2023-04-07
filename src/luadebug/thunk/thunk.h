@@ -10,7 +10,7 @@ thunk* thunk_create_allocf(intptr_t dbg, intptr_t allocf);
 #if defined(_WIN32)
 #    define THUNK_JIT 1
 #else
-#    if defined(__ia64__)
+#    if defined(__ia64__) || defined(__aarch64__)
 #        define THUNK_JIT 1
 #    endif
 #endif
