@@ -118,19 +118,19 @@ local function detectLuaDebugPath(cfg)
             end
         end
 
-        local t = {
-            latest = "lua-latest",
-            lua54 = "lua54",
-            lua53 = "lua53",
-            lua52 = "lua52",
-            lua51 = "lua51",
-            luajit = "luajit",
+        local valid = {
+            ["lua-latest"] = true,
+            lua54 = true,
+            lua53 = true,
+            lua52 = true,
+            lua51 = true,
+            luajit = true,
         }
 
-        if not t[version] then
+        if not valid[version] then
             error(tostring(version).." is not supported.")
         end
-        return t[version]
+        return version
     end
 
     local rt = "/runtime/"..PLATFORM.."/"..get_luadebug_dir()

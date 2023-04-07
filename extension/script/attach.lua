@@ -1,4 +1,4 @@
-local path, pid, version, debugger_path = ...
+local path, pid, debugger_path = ...
 if _VERSION == nil
     or type == nil
     or assert == nil
@@ -19,10 +19,6 @@ if is_luajit and jit == nil then
     return "wait initialized"
 end
 
-if version == "" then
-    version = nil
-end
-
 if debugger_path == "" then
     debugger_path = nil
 end
@@ -38,7 +34,6 @@ end
 local dbg = dofile(path.."/script/debugger.lua", path)
 dbg:start {
     address = ("@%s/tmp/pid_%s"):format(path, pid),
-    version = version,
     debugger_path = debugger_path,
 }
 dbg:event "wait"
