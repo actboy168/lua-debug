@@ -101,39 +101,25 @@ local function detectLuaDebugPath(cfg)
         end
     end
 
-    local function get_luadebug_dir()
-        local version = cfg.version
-        if not version then
-            if tostring(assert):match('builtin') ~= nil then
-                version = "luajit"
-                jit.off()
-            else
-                local version_t = {
-                    ["Lua 5.4"] = "lua54",
-                    ["Lua 5.3"] = "lua53",
-                    ["Lua 5.2"] = "lua52",
-                    ["Lua 5.1"] = "lua51",
-                }
-                version = version_t[_VERSION]
-            end
+    local rt = "/runtime/"..PLATFORM
+    if cfg.latest then
+        rt = rt.."/lua-latest"
+    elseif _VERSION == "Lua 5.4" then
+        rt = rt.."/lua54"
+    elseif _VERSION == "Lua 5.3" then
+        rt = rt.."/lua53"
+    elseif _VERSION == "Lua 5.2" then
+        rt = rt.."/lua52"
+    elseif _VERSION == "Lua 5.1" then
+        if (tostring(assert):match('builtin') ~= nil) then
+            rt = rt.."/luajit"
+            jit.off()
+        else
+            rt = rt.."/lua51"
         end
-
-        local valid = {
-            ["lua-latest"] = true,
-            lua54 = true,
-            lua53 = true,
-            lua52 = true,
-            lua51 = true,
-            luajit = true,
-        }
-
-        if not valid[version] then
-            error(tostring(version).." is not supported.")
-        end
-        return version
+    else
+        error(_VERSION.." is not supported.")
     end
-
-    local rt = "/runtime/"..PLATFORM.."/"..get_luadebug_dir()
 
     local ext = isWindows() and "dll" or "so"
     return root..rt..'/luadebug.'..ext
