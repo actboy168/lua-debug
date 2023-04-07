@@ -15,7 +15,7 @@ namespace luadebug::autoattach {
         std::mutex mtx;
         bool wait_dll = false;
         std::optional<struct lua_module> lua_module;
-        std::optional<session> session;
+        std::optional<struct session> session;
 
         static ctx* get() {
             static ctx obj;
