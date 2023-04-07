@@ -13,7 +13,6 @@ thunk* thunk_create_allocf(intptr_t dbg, intptr_t allocf);
 #    if defined(__ia64__)
 #        define THUNK_JIT 1
 #    elif defined(__aarch64__)
-// ios disable jit
 #        if defined(__APPLE__)
 #            include <TargetConditionals.h>
 #            if !TARGET_OS_IPHONE
