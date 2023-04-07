@@ -153,14 +153,14 @@ local attributes = {}
 
 attributes.common = {
     luaVersion = {
-        default = "5.4",
+        default = "lua54",
         enum = {
-            "5.1",
-            "5.2",
-            "5.3",
-            "5.4",
-            "latest",
-            "jit",
+            "lua51",
+            "lua52",
+            "lua53",
+            "lua54",
+            "lua-latest",
+            "luajit",
         },
         markdownDescription = "%lua.debug.launch.luaVersion.description%",
         type = "string",

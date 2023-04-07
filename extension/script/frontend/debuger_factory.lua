@@ -21,20 +21,7 @@ local function towsl(s)
 end
 
 local function getLuaVersion(args)
-    if args.luaVersion == "latest" then
-        return "lua-latest"
-    elseif args.luaVersion == "5.4" then
-        return "lua54"
-    elseif args.luaVersion == "5.3" then
-        return "lua53"
-    elseif args.luaVersion == "5.2" then
-        return "lua52"
-    elseif args.luaVersion == "5.1" then
-        return "lua51"
-    elseif args.luaVersion == "jit" then
-        return "luajit"
-    end
-    return "lua54"
+    return args.luaVersion or "lua54"
 end
 
 local function Is64BitWindows()
@@ -109,7 +96,7 @@ local function bootstrapMakeExe(c, luaexe, args, address, dbg)
     if not useUtf8 then
         params[#params+1] = 'ansi'
     end
-    if args.luaVersion == "latest" then
+    if args.luaVersion == "lua-latest" then
         params[#params+1] = 'latest'
     end
     local script = ("dofile[[%s]];DBG[[%s]]"):format(
