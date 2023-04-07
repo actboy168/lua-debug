@@ -12,11 +12,13 @@
 #include <vector>
 
 namespace luadebug::autoattach {
+    struct lua_module;
+
     struct watchdog {
         static_assert(std::is_same_v<lua::state, uintptr_t>);
 
     public:
-        watchdog();
+        watchdog(struct lua_module& lua_module);
         ~watchdog();
         watchdog(const watchdog&) = delete;
         bool init();
@@ -27,6 +29,7 @@ namespace luadebug::autoattach {
         void attach_lua(lua::state L, lua::debug ar);
 
     private:
+        struct lua_module& lua_module;
         std::mutex mtx;
         std::vector<watch_point> watch_points;
         Gum::RefPtr<Gum::Interceptor> interceptor;

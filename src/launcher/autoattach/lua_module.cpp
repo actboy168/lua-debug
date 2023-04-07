@@ -2,10 +2,10 @@
 #include <autoattach/lua_module.h>
 #include <bee/nonstd/format.h>
 #include <bee/utility/path_helper.h>
-#include <config/config.h>
 #include <hook/create_watchdog.h>
 #include <hook/watchdog.h>
 #include <util/log.h>
+#include <util/path.h>
 
 #include <charconv>
 #include <gumpp.hpp>
@@ -62,7 +62,7 @@ namespace luadebug::autoattach {
     }
 
     bool load_luadebug_dll(lua_module* lm, lua_version version) {
-        auto luadebug_path = config::get_luadebug_path(version);
+        auto luadebug_path = get_luadebug_path(version);
         if (!luadebug_path)
             return false;
         auto path = (*luadebug_path).string();
@@ -81,13 +81,12 @@ namespace luadebug::autoattach {
             log::fatal("lua initialize failed, can't find {}", error_msg);
             return false;
         }
-        version = ctx::get()->config->version;
         if (version == lua_version::unknown) {
             version = get_lua_version(*this);
         }
         log::info("current lua version: {}", lua_version_to_string(version));
 
-        watchdog = create_watchdog(mode, version, resolver);
+        watchdog = create_watchdog(*this);
         if (version != lua_version::unknown) {
             if (!load_luadebug_dll(this, version))
                 return false;

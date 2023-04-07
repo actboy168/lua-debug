@@ -36,7 +36,7 @@ namespace luadebug::autoattach {
         return tmp;
     }
 
-    attach_status attach_lua(lua::state L) {
+    attach_status attach_lua(lua::state L, lua_module &module) {
         log::info("attach lua vm entry");
         auto r = bee::path_helper::dll_path();
         if (!r) {
@@ -52,7 +52,7 @@ namespace luadebug::autoattach {
         }
         lua::call<lua_pushstring>(L, root.generic_u8string().c_str());
         lua::call<lua_pushstring>(L, std::to_string(Gum::Process::get_id()).c_str());
-        lua::call<lua_pushstring>(L, ctx::get()->lua_module->debugger_path.c_str());
+        lua::call<lua_pushstring>(L, module.debugger_path.c_str());
 
         if (lua::pcall(L, 3, 1, 0)) {
             /*

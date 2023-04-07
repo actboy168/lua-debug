@@ -6,6 +6,7 @@
 #include <bee/nonstd/unreachable.h>
 #include <bee/utility/path_helper.h>
 #include <stdio.h>
+#include <util/path.h>
 
 #include <algorithm>
 
@@ -15,8 +16,6 @@
 #else
 #    include <WinSock.h>
 #endif
-
-#include <config/config.h>
 
 #include <gumpp.hpp>
 
@@ -55,7 +54,7 @@ namespace luadebug::log {
     }
 
     void notify_frontend(const std::string& msg) {
-        auto tmp = config::get_tmp_dir();
+        auto tmp = get_tmp_dir();
         if (!tmp)
             return;
         auto path = ((*tmp) / std::format("pid_{}", Gum::Process::get_id())).string();
