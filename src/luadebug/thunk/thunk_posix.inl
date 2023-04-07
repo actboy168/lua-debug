@@ -1,5 +1,7 @@
 #include <sys/mman.h>
 
+#include <cstring>
+
 #include "thunk_jit.h"
 
 bool thunk::create(size_t s) {
