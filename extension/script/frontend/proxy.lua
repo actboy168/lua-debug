@@ -56,7 +56,7 @@ end
 
 local function attach_process(pkg, pid)
     local args = pkg.arguments
-    if args.luaVersion == "latest" then
+    if args.luaVersion == "lua-latest" then
         ipc_send_latest(pid)
     end
     local ok, errmsg = process_inject.inject(pid, "attach", args)
@@ -161,7 +161,7 @@ local function proxy_launch_console(pkg)
         local process, err = debuger_factory.create_process_in_console(args, function (process)
             local address
             server, address = create_server(args, process:get_id())
-            if args.luaVersion == "latest" and type(address) == "number" then
+            if args.luaVersion == "lua-latest" and type(address) == "number" then
                 ipc_send_latest(address)
             end
         end)
