@@ -20,8 +20,19 @@ local function towsl(s)
     end)
 end
 
+local LuaVersionString <const> = {
+    ["luajit"] = true,
+    ["lua51"] = true,
+    ["lua52"] = true,
+    ["lua53"] = true,
+    ["lua54"] = true,
+    ["lua-latest"] = true,
+}
 local function getLuaVersion(args)
-    return args.luaVersion or "lua54"
+    if LuaVersionString[args.luaVersion] then
+        return args.luaVersion
+    end
+    return "lua54"
 end
 
 local function Is64BitWindows()
@@ -69,16 +80,18 @@ local function getLuaExe(args, dbg)
         ARCH = "arm64"
     end
     local platform = PLATFORM[OS.."-"..ARCH]
-    if platform then
-        local luaexe = dbg / "runtime"
-            / platform
-            / getLuaVersion(args)
-            / (OS == "windows" and "lua.exe" or "lua")
-        if fs.exists(luaexe) then
-            return luaexe
-        end
+    if not platform then
+        return nil, ("No runtime (OS: %s, ARCH: %s) is found, you need to compile it yourself."):format(OS, ARCH)
     end
-    return nil, ("No runtime (OS: %s, ARCH: %s) is found, you need to compile it yourself."):format(OS, ARCH)
+    local version = getLuaVersion(args)
+    local luaexe = dbg / "runtime"
+        / platform
+        / version
+        / (OS == "windows" and "lua.exe" or "lua")
+    if fs.exists(luaexe) then
+        return luaexe
+    end
+    return nil, ("No runtime (%s) is found, you need to compile it yourself."):format(luaexe)
 end
 
 local function bootstrapOption(option, luaexe, args)
