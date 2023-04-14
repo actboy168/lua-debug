@@ -8,27 +8,27 @@ const trackerFactory = require("./trackerFactory");
 const pickProcess = require("./pickProcess");
 
 function getExtensionDirectory(context) {
-    const extensionPath = context.extensionPath
-    if (path.basename(extensionPath) != 'extension') {
-        return extensionPath
+    const envExtensionPath = process.env.VSCODE_EXTENSION_PATH;
+    if (envExtensionPath === undefined) {
+        return context.extensionPath
     }
     if (os.platform() == "win32") {
         if (os.arch() == "x64") {
-            return process.env.VSCODE_EXTENSION_PATH + "-win32-x64"
+            return envExtensionPath + "-win32-x64"
         }
-        return process.env.VSCODE_EXTENSION_PATH + "-win32-ia32"
+        return envExtensionPath + "-win32-ia32"
     }
     else if (os.platform() == "darwin") {
         if (os.arch() == "arm64") {
-            return process.env.VSCODE_EXTENSION_PATH + "-darwin-arm64"
+            return envExtensionPath + "-darwin-arm64"
         }
-        return process.env.VSCODE_EXTENSION_PATH + "-darwin-x64"
+        return envExtensionPath + "-darwin-x64"
     }
     else if (os.platform() == "linux") {
         if (os.arch() == "arm64") {
-            return process.env.VSCODE_EXTENSION_PATH + "-linux-arm64"
+            return envExtensionPath + "-linux-arm64"
         }
-        return process.env.VSCODE_EXTENSION_PATH + "-linux-x64"
+        return envExtensionPath + "-linux-x64"
     }
 }
 
