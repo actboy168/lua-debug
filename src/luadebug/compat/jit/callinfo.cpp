@@ -1,9 +1,12 @@
+
 #include <lj_arch.h>
 #include <lj_debug.h>
 #include <lj_frame.h>
 #include <lj_obj.h>
 
 #include "compat/internal.h"
+
+extern TValue* index2adr(lua_State* L, int idx);
 
 static cTValue* debug_frame(lua_State* L, int level, int* size) {
     cTValue *frame, *nextframe, *bot = tvref(L->stack) + LJ_FR2;
@@ -32,6 +35,12 @@ static cTValue* debug_frame(lua_State* L, int level, int* size) {
 CallInfo* lua_getcallinfo(lua_State* L) {
     int size;
     return const_cast<CallInfo*>(debug_frame(L, 0, &size));
+}
+
+Proto* lua_getproto(lua_State* L, int idx) {
+    GCfunc* func = funcV(index2adr(L, idx));
+    if (!isluafunc(func)) return 0;
+    return funcproto(func);
 }
 
 Proto* lua_ci2proto(CallInfo* ci) {

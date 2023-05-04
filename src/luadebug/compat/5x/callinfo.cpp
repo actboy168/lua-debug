@@ -38,3 +38,18 @@ CallInfo* lua_debug2ci(lua_State* L, lua_Debug* ar) {
     return L->base_ci + ar->i_ci;
 #endif
 }
+
+Proto* lua_getproto(lua_State* L, int idx) {
+    auto func = LUA_STKID(L->top) + idx;
+#if LUA_VERSION_NUM >= 502
+    if (!ttisLclosure(s2v(func))) {
+        return 0;
+    }
+    return clLvalue(s2v(func))->p;
+#else
+    if (clvalue(func)->c.isC) {
+        return 0;
+    }
+    return clvalue(func)->l.p;
+#endif
+}

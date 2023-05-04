@@ -15,6 +15,7 @@
 
 #ifdef LUAJIT_VERSION
 #    include <lj_cdata.h>
+#    include <lj_debug.h>
 #else
 #    include <lstate.h>
 #endif
@@ -628,7 +629,22 @@ namespace luadebug::visitor {
         bool hasF    = false;
 #ifdef LUAJIT_VERSION
         bool hasS = false;
+        struct lua_Debug_t : lua_Debug {
+            int nparams;
+            int isvararg;
+        };
+        static_assert(sizeof(lj_Debug) == sizeof(lua_Debug_t));
+        constexpr auto lua_getinfo = [](lua_State* L, const char* what, lua_Debug_t* ar) {
+            return lj_debug_getinfo(L, what, (lj_Debug*)ar, 1);
+        };
+#else
+        constexpr auto lua_getinfo = ::lua_getinfo;
+        using lua_Debug_t          = lua_Debug;
 #endif
+
+        [[maybe_unused]] Proto* proto   = nullptr;
+        [[maybe_unused]] bool needProto = false;
+
         for (const char* what = options.data(); *what; what++) {
             switch (*what) {
             case 'S':
@@ -647,10 +663,13 @@ namespace luadebug::visitor {
                 size += 1;
                 hasF = true;
                 break;
-#if LUA_VERSION_NUM >= 502
             case 'u':
                 size += 1;
+#if LUA_VERSION_NUM == 501 && !defined(LUAJIT_VERSION)
+                needProto = true;
+#endif
                 break;
+#if LUA_VERSION_NUM >= 502
             case 't':
                 size += 1;
                 break;
@@ -669,7 +688,7 @@ namespace luadebug::visitor {
             luadbg_replace(L, 3);
         }
 
-        lua_Debug ar;
+        lua_Debug_t ar;
         switch (luadbg_type(L, 1)) {
         case LUADBG_TNUMBER:
             frame = area.checkinteger<int>(L, 1);
@@ -677,6 +696,9 @@ namespace luadebug::visitor {
                 return 0;
             if (lua_getinfo(hL, options.data(), &ar) == 0)
                 return 0;
+            if (needProto) {
+                proto = lua_ci2proto(lua_debug2ci(hL, &ar));
+            }
             if (hasF) lua_pop(hL, 1);
             break;
         case LUADBG_TUSERDATA: {
@@ -689,6 +711,9 @@ namespace luadebug::visitor {
             char what[8];
             what[0] = '>';
             strcpy(what + 1, options.data());
+            if (needProto) {
+                proto = lua_getproto(hL, -1);
+            }
             if (lua_getinfo(hL, what, &ar) == 0) {
                 return 0;
             }
@@ -739,11 +764,18 @@ namespace luadebug::visitor {
                 refvalue::create(L, refvalue::FRAME_FUNC { (uint16_t)frame });
                 luadbg_setfield(L, 3, "func");
                 break;
-#if LUA_VERSION_NUM >= 502
             case 'u':
+#if LUA_VERSION_NUM >= 502 || defined(LUAJIT_VERSION)
                 luadbg_pushinteger(L, ar.nparams);
                 luadbg_setfield(L, 3, "nparams");
+#else
+                if (proto) {
+                    luadbg_pushinteger(L, proto->numparams);
+                    luadbg_setfield(L, 3, "nparams");
+                }
+#endif
                 break;
+#if LUA_VERSION_NUM >= 502
             case 't':
                 luadbg_pushboolean(L, ar.istailcall ? 1 : 0);
                 luadbg_setfield(L, 3, "istailcall");

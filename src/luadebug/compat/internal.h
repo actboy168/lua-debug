@@ -19,6 +19,7 @@ struct CallInfo;
 struct Proto;
 #endif
 
+Proto* lua_getproto(lua_State* L, int idx);
 CallInfo* lua_getcallinfo(lua_State* L);
 Proto* lua_ci2proto(CallInfo* ci);
 CallInfo* lua_debug2ci(lua_State* L, lua_Debug* ar);
