@@ -43,9 +43,15 @@ lm:executable "testwaitdll" {
     includes = { "3rd/lua/lua51" },
 }
 
+lm:executable "test_thunk" {
+    sources = "test/thunk.cpp",
+    includes = { "src/luadebug" },
+}
+
 lm:default {
     "test_frida",
     "test_delayload",
     "test_symbol",
-    "testwaitdll"
+    "testwaitdll",
+    "test_thunk"
 }

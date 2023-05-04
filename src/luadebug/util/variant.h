@@ -3,6 +3,7 @@
 #include <bee/nonstd/unreachable.h>
 
 #include <functional>
+#include <limits>
 #include <tuple>
 
 namespace luadebug {

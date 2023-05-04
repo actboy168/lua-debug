@@ -387,7 +387,9 @@ struct hookmgr {
         case LUA_HOOKLINE:
 #ifdef LUAJIT_VERSION
             if (last_hook_call_in_c) {
+#    if defined(LUA_HOOKTHREAD)
                 thread_mask &= (~LUA_MASKTHREAD);
+#    endif
                 updatehookmask(hL);
                 last_hook_call_in_c = false;
             }
