@@ -770,6 +770,10 @@ namespace luadebug::visitor {
                 luadbg_setfield(L, 3, "nparams");
 #else
                 if (proto) {
+                    if (proto->is_vararg && !(proto->is_vararg & VARARG_NEEDSARG)) {
+                        luadbg_pushinteger(L, proto->is_vararg);
+                        luadbg_setfield(L, 3, "is_vararg");
+                    }
                     luadbg_pushinteger(L, proto->numparams);
                     luadbg_setfield(L, 3, "nparams");
                 }
