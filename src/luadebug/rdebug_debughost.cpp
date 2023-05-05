@@ -186,7 +186,8 @@ namespace luadebug::debughost {
 #endif
             { NULL, NULL },
         };
-#if LUA_VERSION_NUM == 501 && !defined(LUAJIT_VERSION)
+#if LUA_VERSION_NUM == 501
+        lua_createtable(hL, 0, sizeof(l) / sizeof((l)[0]) - 1);
         luaL_register(hL, nullptr, l);
         lua_newuserdata(hL, 0);
 #else
