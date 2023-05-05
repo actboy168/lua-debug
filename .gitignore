@@ -5,3 +5,4 @@
 /build/
 /extension/package.json
 .DS_Store
+.idea/

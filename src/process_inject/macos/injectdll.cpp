@@ -11,6 +11,7 @@
 #include <sys/sysctl.h>
 
 #include <cstddef>  // for ptrdiff_t
+#include <cassert>
 // for mmap()
 #include <dlfcn.h>
 #include <pthread_spis.h>
