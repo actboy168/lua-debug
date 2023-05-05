@@ -215,7 +215,7 @@ namespace luadebug::visitor {
             return 0;
         }
         area.check_client_stack(1);
-        const char* name = lua_getlocal(hL, &ar, n);
+        const char* name = lua::lua_getlocal(hL, &ar, n);
         if (name == NULL)
             return 0;
         if (!getref && copy_to_dbg(hL, L) != LUA_TNONE) {

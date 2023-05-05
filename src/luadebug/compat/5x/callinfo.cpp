@@ -31,7 +31,7 @@ Proto* lua_ci2proto(CallInfo* ci) {
 #endif
 }
 
-CallInfo* lua_debug2ci(lua_State* L, lua_Debug* ar) {
+CallInfo* lua_debug2ci(lua_State* L, const lua_Debug* ar) {
 #if LUA_VERSION_NUM >= 502
     return ar->i_ci;
 #else

@@ -50,7 +50,7 @@ Proto* lua_ci2proto(CallInfo* ci) {
     return funcproto(func);
 }
 
-CallInfo* lua_debug2ci(lua_State* L, lua_Debug* ar) {
+CallInfo* lua_debug2ci(lua_State* L, const lua_Debug* ar) {
     uint32_t offset = (uint32_t)ar->i_ci & 0xffff;
     return tvref(L->stack) + offset;
 }
