@@ -629,19 +629,7 @@ namespace luadebug::visitor {
         bool hasF    = false;
 #ifdef LUAJIT_VERSION
         bool hasS = false;
-        struct lua_Debug_t : lua_Debug {
-            int nparams;
-            int isvararg;
-        };
-        static_assert(sizeof(lj_Debug) == sizeof(lua_Debug_t));
-        constexpr auto lua_getinfo = [](lua_State* L, const char* what, lua_Debug_t* ar) {
-            return lj_debug_getinfo(L, what, (lj_Debug*)ar, 1);
-        };
-#else
-        constexpr auto lua_getinfo = ::lua_getinfo;
-        using lua_Debug_t          = lua_Debug;
 #endif
-
         [[maybe_unused]] Proto* proto   = nullptr;
         [[maybe_unused]] bool needProto = false;
 
@@ -665,7 +653,7 @@ namespace luadebug::visitor {
                 break;
             case 'u':
                 size += 1;
-#if LUA_VERSION_NUM == 501 && !defined(LUAJIT_VERSION)
+#if LUA_VERSION_NUM == 501
                 needProto = true;
 #endif
                 break;
@@ -688,7 +676,7 @@ namespace luadebug::visitor {
             luadbg_replace(L, 3);
         }
 
-        lua_Debug_t ar;
+        lua_Debug ar;
         switch (luadbg_type(L, 1)) {
         case LUADBG_TNUMBER:
             frame = area.checkinteger<int>(L, 1);
@@ -765,15 +753,11 @@ namespace luadebug::visitor {
                 luadbg_setfield(L, 3, "func");
                 break;
             case 'u':
-#if LUA_VERSION_NUM >= 502 || defined(LUAJIT_VERSION)
+#if LUA_VERSION_NUM >= 502
                 luadbg_pushinteger(L, ar.nparams);
                 luadbg_setfield(L, 3, "nparams");
 #else
                 if (proto) {
-                    if (proto->is_vararg && !(proto->is_vararg & VARARG_NEEDSARG)) {
-                        luadbg_pushinteger(L, proto->is_vararg);
-                        luadbg_setfield(L, 3, "is_vararg");
-                    }
                     luadbg_pushinteger(L, proto->numparams);
                     luadbg_setfield(L, 3, "nparams");
                 }
