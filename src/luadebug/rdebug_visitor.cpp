@@ -15,6 +15,7 @@
 
 #ifdef LUAJIT_VERSION
 #    include <lj_cdata.h>
+#    include <lj_debug.h>
 #else
 #    include <lstate.h>
 #endif
@@ -214,7 +215,7 @@ namespace luadebug::visitor {
             return 0;
         }
         area.check_client_stack(1);
-        const char* name = lua_getlocal(hL, &ar, n);
+        const char* name = lua::lua_getlocal(hL, &ar, n);
         if (name == NULL)
             return 0;
         if (!getref && copy_to_dbg(hL, L) != LUA_TNONE) {
@@ -629,6 +630,9 @@ namespace luadebug::visitor {
 #ifdef LUAJIT_VERSION
         bool hasS = false;
 #endif
+        [[maybe_unused]] Proto* proto   = nullptr;
+        [[maybe_unused]] bool needProto = false;
+
         for (const char* what = options.data(); *what; what++) {
             switch (*what) {
             case 'S':
@@ -647,10 +651,13 @@ namespace luadebug::visitor {
                 size += 1;
                 hasF = true;
                 break;
-#if LUA_VERSION_NUM >= 502
             case 'u':
                 size += 1;
+#if LUA_VERSION_NUM == 501
+                needProto = true;
+#endif
                 break;
+#if LUA_VERSION_NUM >= 502
             case 't':
                 size += 1;
                 break;
@@ -677,6 +684,9 @@ namespace luadebug::visitor {
                 return 0;
             if (lua_getinfo(hL, options.data(), &ar) == 0)
                 return 0;
+            if (needProto) {
+                proto = lua_ci2proto(lua_debug2ci(hL, &ar));
+            }
             if (hasF) lua_pop(hL, 1);
             break;
         case LUADBG_TUSERDATA: {
@@ -689,6 +699,9 @@ namespace luadebug::visitor {
             char what[8];
             what[0] = '>';
             strcpy(what + 1, options.data());
+            if (needProto) {
+                proto = lua_getproto(hL, -1);
+            }
             if (lua_getinfo(hL, what, &ar) == 0) {
                 return 0;
             }
@@ -739,11 +752,18 @@ namespace luadebug::visitor {
                 refvalue::create(L, refvalue::FRAME_FUNC { (uint16_t)frame });
                 luadbg_setfield(L, 3, "func");
                 break;
-#if LUA_VERSION_NUM >= 502
             case 'u':
+#if LUA_VERSION_NUM >= 502
                 luadbg_pushinteger(L, ar.nparams);
                 luadbg_setfield(L, 3, "nparams");
+#else
+                if (proto) {
+                    luadbg_pushinteger(L, proto->numparams);
+                    luadbg_setfield(L, 3, "nparams");
+                }
+#endif
                 break;
+#if LUA_VERSION_NUM >= 502
             case 't':
                 luadbg_pushboolean(L, ar.istailcall ? 1 : 0);
                 luadbg_setfield(L, 3, "istailcall");
