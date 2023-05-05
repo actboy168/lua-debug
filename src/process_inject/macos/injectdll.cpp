@@ -10,8 +10,8 @@
 #include <mach/vm_types.h>
 #include <sys/sysctl.h>
 
-#include <cstddef>  // for ptrdiff_t
 #include <cassert>
+#include <cstddef>  // for ptrdiff_t
 // for mmap()
 #include <dlfcn.h>
 #include <pthread_spis.h>
