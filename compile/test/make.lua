@@ -1,6 +1,11 @@
 local lm = require "luamake"
+local platform =  require 'bee.platform'
 
 lm.builddir = ("build/test/%s"):format(lm.mode)
+
+if not lm.runtime_platform then
+    lm.runtime_platform = lm.os..'-'..platform.Arch
+end
 
 local arch = lm.arch
 if not arch then
