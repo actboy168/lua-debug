@@ -10,7 +10,6 @@
 #include <mach/vm_types.h>
 #include <sys/sysctl.h>
 
-#include <cassert>
 #include <cstddef>  // for ptrdiff_t
 // for mmap()
 #include <dlfcn.h>
