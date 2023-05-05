@@ -22,8 +22,34 @@ namespace luadebug::autoattach {
         size_t memory_size   = 0;
         lua_version version  = lua_version::unknown;
         lua_resolver resolver;
-        watchdog* watchdog = nullptr;
+        work_mode mode;
+        struct watchdog* watchdog = nullptr;
 
-        bool initialize(fn_attach attach_lua_vm);
+        lua_module(work_mode mode)
+            : mode(mode) {}
+        lua_module(const lua_module&)            = delete;
+        lua_module& operator=(const lua_module&) = delete;
+
+        lua_module(lua_module&& rhs) {
+            swap(std::forward<lua_module>(rhs));
+        };
+        lua_module& operator=(lua_module&& rhs) {
+            swap(std::forward<lua_module>(rhs));
+            return *this;
+        };
+
+        void swap(lua_module&& rhs) {
+            std::swap(path, rhs.path);
+            std::swap(name, rhs.name);
+            std::swap(memory_address, rhs.memory_address);
+            std::swap(memory_size, rhs.memory_size);
+            std::swap(version, rhs.version);
+            std::swap(resolver, rhs.resolver);
+            std::swap(mode, rhs.mode);
+            std::swap(watchdog, rhs.watchdog);
+        }
+
+        bool initialize();
+        ~lua_module();
     };
 }

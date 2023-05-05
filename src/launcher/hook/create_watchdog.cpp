@@ -1,13 +1,20 @@
+#include <autoattach/ctx.h>
 #include <autoattach/lua_module.h>
 #include <bee/nonstd/unreachable.h>
 #include <hook/watchdog.h>
+#include <util/log.h>
 
 #include <string>
 #include <string_view>
 #include <vector>
 
 namespace luadebug::autoattach {
-    static std::vector<watch_point> get_watch_points(lua_version version) {
+    static std::vector<watch_point> get_watch_points(work_mode mode, lua_version version) {
+        if (mode == work_mode::launch) {
+            return {
+                { watch_point::type::ret, "lua_newstate" }
+            };
+        }
         switch (version) {
         case lua_version::luajit:
             return {
@@ -48,21 +55,28 @@ namespace luadebug::autoattach {
         }
     }
 
-    watchdog* create_watchdog(fn_attach attach_lua_vm, lua_version version, const lua::resolver& resolver) {
-        watchdog* context = new watchdog(attach_lua_vm);
-        if (context->init(resolver, get_watch_points(version))) {
-            // TODO: fix other thread pc
-            context->hook();
-            return context;
-        }
-        if (version == lua_version::unknown) {
+    watchdog* create_watchdog(work_mode mode, lua_version version, const lua::resolver& resolver) {
+        auto context = std::make_unique<watchdog>();
+        if (!context->init()) {
             return nullptr;
         }
-        if (context->init(resolver, get_watch_points(lua_version::unknown))) {
+        if (context->init_watch(resolver, get_watch_points(mode, version))) {
             // TODO: fix other thread pc
             context->hook();
-            return context;
+            return context.release();
         }
+        if (version == lua_version::unknown) {
+            // TODO: more errmsg
+            log::fatal("watchdog initialize failed");
+            return nullptr;
+        }
+        if (context->init_watch(resolver, get_watch_points(mode, lua_version::unknown))) {
+            // TODO: fix other thread pc
+            context->hook();
+            return context.release();
+        }
+        // TODO: more errmsg
+        log::fatal("watchdog initialize failed");
         return nullptr;
     }
 }

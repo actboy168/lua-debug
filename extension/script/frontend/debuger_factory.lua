@@ -20,19 +20,17 @@ local function towsl(s)
     end)
 end
 
+local LuaVersionString <const> = {
+    ["luajit"] = true,
+    ["lua51"] = true,
+    ["lua52"] = true,
+    ["lua53"] = true,
+    ["lua54"] = true,
+    ["lua-latest"] = true,
+}
 local function getLuaVersion(args)
-    if args.luaVersion == "latest" then
-        return "lua-latest"
-    elseif args.luaVersion == "5.4" then
-        return "lua54"
-    elseif args.luaVersion == "5.3" then
-        return "lua53"
-    elseif args.luaVersion == "5.2" then
-        return "lua52"
-    elseif args.luaVersion == "5.1" then
-        return "lua51"
-    elseif args.luaVersion == "jit" then
-        return "luajit"
+    if LuaVersionString[args.luaVersion] then
+        return args.luaVersion
     end
     return "lua54"
 end
@@ -82,16 +80,18 @@ local function getLuaExe(args, dbg)
         ARCH = "arm64"
     end
     local platform = PLATFORM[OS.."-"..ARCH]
-    if platform then
-        local luaexe = dbg / "runtime"
-            / platform
-            / getLuaVersion(args)
-            / (OS == "windows" and "lua.exe" or "lua")
-        if fs.exists(luaexe) then
-            return luaexe
-        end
+    if not platform then
+        return nil, ("No runtime (OS: %s, ARCH: %s) is found, you need to compile it yourself."):format(OS, ARCH)
     end
-    return nil, ("No runtime (OS: %s, ARCH: %s) is found, you need to compile it yourself."):format(OS, ARCH)
+    local version = getLuaVersion(args)
+    local luaexe = dbg / "runtime"
+        / platform
+        / version
+        / (OS == "windows" and "lua.exe" or "lua")
+    if fs.exists(luaexe) then
+        return luaexe
+    end
+    return nil, ("No runtime (%s) is found, you need to compile it yourself."):format(luaexe)
 end
 
 local function bootstrapOption(option, luaexe, args)
@@ -109,7 +109,7 @@ local function bootstrapMakeExe(c, luaexe, args, address, dbg)
     if not useUtf8 then
         params[#params+1] = 'ansi'
     end
-    if args.luaVersion == "latest" then
+    if args.luaVersion == "lua-latest" then
         params[#params+1] = 'latest'
     end
     local script = ("dofile[[%s]];DBG[[%s]]"):format(
@@ -227,7 +227,7 @@ local function create_process_in_console(args, callback)
             if process:is_running() then
                 return nil, errmsg
             else
-                return nil, "process is already exited:\n" + errmsg
+                return nil, "process is already exited:\n"..errmsg
             end
         end
     end

@@ -52,7 +52,7 @@ end
 
 local function wait_injected(timeout)
     print("wait injected")
-    for i = 1, timeout do
+    for _ = 1, timeout do
         if fs.exists(dylib) then
             os.execute("sleep 1")
         else
@@ -63,7 +63,7 @@ local function wait_injected(timeout)
 end
 
 local function test_inject(injecter, timeout)
-    local masker = compile_mask_so()
+    local _ = compile_mask_so()
     local pid_t = create_test_lua()
     local pid = pid_t.pid
     assert(pid)

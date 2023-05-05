@@ -13,8 +13,8 @@ local all_os = {
     "macos-x86_64",
     "windows-x86",
     "windows-x86_64",
-    --"linux-x86_64",
-    --"linux-arm64",
+    "linux-x86_64",
+    "linux-arm64",
     --"linux-x86",
     --"freebsd-arm64",
     --"freebsd-x86_64",
@@ -47,15 +47,15 @@ local function download(url, output, dir)
             "-y",
             "-o" .. dir
         }
-        for i, cmd in ipairs(cmds) do
-            local ok, err, ec = os.execute("powershell -Command " .. table.concat(cmd, " "))
+        for _, cmd in ipairs(cmds) do
+            local ok, err = os.execute("powershell -Command " .. table.concat(cmd, " "))
             if not ok then
                 error(err)
             end
         end
         return
     end
-    for i, cmd in ipairs(cmds) do
+    for _, cmd in ipairs(cmds) do
         local p, err = sp.spawn(cmd)
         if not p then
             error(cmd[1], err)

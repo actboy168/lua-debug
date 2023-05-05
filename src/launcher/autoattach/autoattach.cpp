@@ -1,4 +1,5 @@
 #include <autoattach/autoattach.h>
+#include <autoattach/ctx.h>
 #include <autoattach/lua_module.h>
 #include <autoattach/wait_dll.h>
 #include <bee/nonstd/format.h>
@@ -13,8 +14,6 @@
 #include <thread>
 
 namespace luadebug::autoattach {
-    fn_attach debuggerAttach;
-
     constexpr auto find_lua_module_key = "lua_newstate";
     constexpr auto lua_module_strings  = std::array<const char*, 3> {
         "luaJIT_BC_%s",  // luajit
@@ -58,13 +57,13 @@ namespace luadebug::autoattach {
         return true;
     }
 
-    attach_status attach_lua_vm(lua::state L) {
-        return debuggerAttach(L);
-    }
+    static void start_impl(luadebug::autoattach::ctx* ctx) {
+        if (ctx->lua_module) {
+            return;
+        }
 
-    void start() {
-        bool found    = false;
-        lua_module rm = {};
+        bool found = false;
+        lua_module rm(ctx->mode);
         Gum::Process::enumerate_modules([&rm, &found](const Gum::ModuleDetails& details) -> bool {
             if (is_lua_module(details.path())) {
                 auto range        = details.range();
@@ -78,26 +77,43 @@ namespace luadebug::autoattach {
             return true;
         });
         if (!found) {
+            if (ctx->wait_dll)
+                return;
             if (!wait_dll(load_lua_module)) {
                 log::fatal("can't find lua module");
             }
+            else {
+                ctx->wait_dll = true;
+            }
             return;
         }
+
         log::info("find lua module path:{}", rm.path);
-        if (!rm.initialize(attach_lua_vm)) {
+        if (!rm.initialize()) {
             return;
         }
+        ctx->lua_module = std::move(rm);
     }
-    void initialize(fn_attach attach, bool ap) {
-        static std::atomic_bool injected;
-        bool test = false;
-        if (injected.compare_exchange_strong(test, true, std::memory_order_acquire)) {
-            log::init(ap);
+
+    void start(work_mode mode) {
+        auto ctx = ctx::get();
+        std::lock_guard guard(ctx->mtx);
+        ctx->mode = mode;
+        start_impl(ctx);
+    }
+
+    void start() {
+        auto ctx = ctx::get();
+        std::lock_guard guard(ctx->mtx);
+        start_impl(ctx);
+    }
+
+    std::once_flag initialize_flag;
+    void initialize(work_mode mode) {
+        std::call_once(initialize_flag, []() {
             log::info("initialize");
             Gum::runtime_init();
-            debuggerAttach = attach;
-            luadebug::autoattach::start();
-            injected.store(false, std::memory_order_release);
-        }
+        });
+        start(mode);
     }
 }

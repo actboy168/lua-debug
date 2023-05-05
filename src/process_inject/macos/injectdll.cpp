@@ -4,12 +4,14 @@
 #include <mach-o/getsect.h>
 #include <mach/error.h>
 #include <mach/mach.h>
+#include <mach/mach_vm.h>
 #include <mach/processor.h>
 #include <mach/processor_info.h>
 #include <mach/vm_types.h>
 #include <sys/sysctl.h>
 
 #include <cstddef>  // for ptrdiff_t
+#include <cassert>
 // for mmap()
 #include <dlfcn.h>
 #include <pthread_spis.h>
@@ -23,6 +25,15 @@
 #define LOG_FMT(fmt, ...) fprintf(stderr, fmt "\n", __VA_ARGS__)
 #define LOG(msg) fprintf(stderr, "%s\n", msg)
 #define LOG_MACH(msg, err) mach_error(msg, err)
+#ifndef NDEBUG
+#    define DEBUG_LOG_FMT(fmt, ...) LOG_FMT(fmt, __VA_ARGS__)
+#else
+#    define DEBUG_LOG_FMT(fmt, ...) ((void)0)
+#endif
+
+constexpr const char magic[] = "lua_debug.injecto_help.inject_code.magic0x9F332";
+static_assert(sizeof(magic) % 16 == 0);
+constexpr auto code_size = sizeof(magic) + sizeof(inject_code);
 
 struct rmain_arg {  // dealloc
     size_t sizeofstruct;
@@ -99,6 +110,90 @@ uint64_t injector__get_process_arch(pid_t pid) {
         return injector__get_system_arch();
     }
 }
+
+vm_address_t scan_inject_code(mach_port_t task) {
+    kern_return_t kr;
+    mach_vm_address_t address = MACH_VM_MIN_ADDRESS;
+    mach_vm_size_t size       = 0;
+    natural_t depth           = 0;
+
+    while (TRUE) {
+        struct vm_region_submap_info_64 info;
+        mach_msg_type_number_t info_count;
+
+        while (TRUE) {
+            info_count = VM_REGION_SUBMAP_INFO_COUNT_64;
+            kr         = mach_vm_region_recurse(task, &address, &size, &depth, (vm_region_recurse_info_t)&info, &info_count);
+            if (kr != KERN_SUCCESS)
+                break;
+
+            if (info.is_submap) {
+                depth++;
+                continue;
+            }
+            else {
+                break;
+            }
+        }
+
+        if (kr != KERN_SUCCESS)
+            break;
+        constexpr auto target_prot = VM_PROT_EXECUTE | VM_PROT_READ;
+        if ((info.protection & target_prot) == target_prot) {
+            vm_offset_t ptr;
+            mach_msg_type_number_t dataCnt;
+            if (vm_read(task, address, code_size, &ptr, &dataCnt) == KERN_SUCCESS) {
+                if (dataCnt >= code_size && strncmp((const char*)ptr, magic, sizeof(magic)) == 0) {
+                    DEBUG_LOG_FMT("find inject code at %p\n", (void*)address);
+                    auto code_address = (const char*)ptr + sizeof(magic);
+                    auto ec           = strncmp(code_address, inject_code, sizeof(inject_code));
+                    if (ec == 0) {
+                        return (vm_address_t)address + sizeof(magic);
+                    }
+                    else {
+                        // changed version, free old
+                        DEBUG_LOG_FMT("free old inject code at %p\n", (void*)address);
+                        assert(vm_deallocate(task, address, size) == KERN_SUCCESS);
+                        return false;
+                    }
+                }
+            }
+        }
+
+        address += size;
+        size = 0;
+    }
+    return 0;
+}
+
+vm_address_t allocate_inject_code(task_t remoteTask) {
+    mach_error_t err;
+    vm_address_t remoteCode = 0;
+    constexpr auto codeSize = sizeof(inject_code);
+    constexpr auto needSize = code_size;
+    if (err = vm_allocate(remoteTask, &remoteCode, needSize, VM_FLAGS_ANYWHERE); err) {
+        LOG_MACH("vm_allocate", err);
+        return 0;
+    }
+    if (err = vm_write(remoteTask, remoteCode, (pointer_t)magic, sizeof(magic)); err) {
+        LOG_MACH("vm_write", err);
+        goto deallocateCode;
+    }
+    remoteCode += sizeof(magic);
+    if (err = vm_write(remoteTask, remoteCode, (pointer_t)inject_code, codeSize); err) {
+        LOG_MACH("vm_write", err);
+        goto deallocateCode;
+    }
+    if (err = vm_protect(remoteTask, remoteCode, codeSize, FALSE, VM_PROT_EXECUTE | VM_PROT_READ); err) {
+        LOG_MACH("vm_protect", err);
+        goto deallocateCode;
+    }
+    return remoteCode;
+deallocateCode:
+    assert(vm_deallocate(remoteTask, remoteCode, codeSize) == KERN_SUCCESS);
+    return 0;
+}
+
 bool mach_inject(
     pid_t targetProcess,
     const char* dylibPath,
@@ -117,9 +212,14 @@ bool mach_inject(
         LOG("remote can't read all images");
         return false;
     }
-
-    if (injector__get_process_arch(targetProcess) != injector__get_process_arch(getpid())) {
+    auto targetArch = injector__get_process_arch(targetProcess);
+    auto systemArch = injector__get_system_arch();
+    if (targetArch != systemArch) {
         mach_port_deallocate(mach_task_self(), remoteTask);
+        if (targetArch == CPU_TYPE_X86_64 && systemArch == CPU_TYPE_ARM64) {
+            LOG("can't inject x86_64 on rosetta");
+            return false;
+        }
         LOG("diff arch processor");
         return false;
     }
@@ -139,7 +239,6 @@ bool mach_inject(
     bzero(&remoteThreadState, sizeof(remoteThreadState));
 
     vm_address_t remoteStack   = (vm_address_t)NULL;
-    vm_address_t remoteCode    = (vm_address_t)NULL;
     vm_address_t remoteLibPath = (vm_address_t)NULL;
     vm_address_t remoteArg     = (vm_address_t)NULL;
 
@@ -147,20 +246,24 @@ bool mach_inject(
         return ((c + 16) / 16) * 16;
     };
 
-    size_t libPathSize        = len * sizeof(char) + 1;
-    constexpr size_t codeSize = sizeof(inject_code);
-    constexpr size_t argSize  = sizeof(rmain_arg);
-    size_t want_size          = stackSize + align_fn(libPathSize) + align_fn(argSize);
+    size_t libPathSize       = len * sizeof(char) + 1;
+    constexpr size_t argSize = sizeof(rmain_arg);
+    size_t want_size         = stackSize + align_fn(libPathSize) + align_fn(argSize);
 
     vm_address_t remoteMem = (vm_address_t)NULL;
+
+    vm_address_t remoteCode = (vm_address_t)NULL;
+    if (remoteCode = scan_inject_code(remoteTask); remoteCode == 0) {
+        if (remoteCode = allocate_inject_code(remoteTask); remoteCode == 0) {
+            goto freeport;
+        }
+    }
     //	Allocate the remoteStack.
-    err = vm_allocate(remoteTask, &remoteMem, want_size, VM_FLAGS_ANYWHERE);
-    if (err) {
+    if (err = vm_allocate(remoteTask, &remoteMem, want_size, VM_FLAGS_ANYWHERE); err) {
         LOG_MACH("vm_allocate", err);
         goto freeport;
     }
-    err = vm_protect(remoteTask, remoteMem, want_size, TRUE, VM_PROT_WRITE | VM_PROT_READ);
-    if (err) {
+    if (err = vm_protect(remoteTask, remoteMem, want_size, TRUE, VM_PROT_WRITE | VM_PROT_READ); err) {
         LOG_MACH("vm_protect", err);
         goto deallocateMem;
     }
@@ -170,36 +273,18 @@ bool mach_inject(
     remoteStack   = remoteLibPath + align_fn(libPathSize);
     remoteStack   = remoteStack - (remoteStack % 16);
 
-    err = vm_allocate(remoteTask, &remoteCode, codeSize, VM_FLAGS_ANYWHERE);
-    if (err) {
-        LOG_MACH("vm_allocate", err);
-        goto deallocateMem;
-    }
-    err = vm_write(remoteTask, remoteCode, (pointer_t)inject_code, codeSize);
-    if (err) {
-        LOG_MACH("vm_write", err);
-        goto deallocateCode;
-    }
-    err = vm_protect(remoteTask, remoteCode, codeSize, FALSE, VM_PROT_EXECUTE | VM_PROT_READ);
-    if (err) {
-        LOG_MACH("vm_protect", err);
-        goto deallocateCode;
-    }
-
-    err = vm_write(remoteTask, remoteLibPath, (pointer_t)dylibPath, libPathSize);
-    if (err) {
-        LOG_MACH("vm_write", err);
-        goto deallocateCode;
-    }
-
     arg.sizeofstruct = want_size;
     arg.name         = (const char*)remoteLibPath;
     arg.dlsym        = get_symbol_address((void*)&dlsym);
 
-    err = vm_write(remoteTask, remoteArg, (pointer_t)&arg, sizeof(rmain_arg));
-    if (err) {
+    if (err = vm_write(remoteTask, remoteLibPath, (pointer_t)dylibPath, libPathSize); err) {
         LOG_MACH("vm_write", err);
-        goto deallocateCode;
+        goto deallocateMem;
+    }
+
+    if (err = vm_write(remoteTask, remoteArg, (pointer_t)&arg, sizeof(rmain_arg)); err) {
+        LOG_MACH("vm_write", err);
+        goto deallocateMem;
     }
 
     //	Allocate the thread.
@@ -242,15 +327,16 @@ bool mach_inject(
     // create thread and launch it
     err = thread_create_running(remoteTask, x86_THREAD_STATE64, (thread_state_t)&remoteThreadState, x86_THREAD_STATE64_COUNT, &remoteThread);
 #endif
-    if (!err) return true;
+    if (err == KERN_SUCCESS) {
+        assert(mach_port_deallocate(mach_task_self(), remoteThread) == KERN_SUCCESS);
+        goto freeport;
+    }
     LOG_MACH("thread_create_running", err);
-deallocateCode:
-    vm_deallocate(remoteTask, remoteCode, codeSize);
 deallocateMem:
-    vm_deallocate(remoteTask, remoteMem, want_size);
+    assert(vm_deallocate(remoteTask, remoteMem, want_size) == KERN_SUCCESS);
 freeport:
-    mach_port_deallocate(mach_task_self(), remoteTask);
-    return false;
+    assert(mach_port_deallocate(mach_task_self(), remoteTask) == KERN_SUCCESS);
+    return err == KERN_SUCCESS;
 }
 
 bool injectdll(pid_t pid, const std::string& dll, const char* entry) {

@@ -1,6 +1,11 @@
 local lm = require "luamake"
+local platform =  require 'bee.platform'
 
 lm.builddir = ("build/test/%s"):format(lm.mode)
+
+if not lm.runtime_platform then
+    lm.runtime_platform = lm.os..'-'..platform.Arch
+end
 
 local arch = lm.arch
 if not arch then
@@ -43,9 +48,15 @@ lm:executable "testwaitdll" {
     includes = { "3rd/lua/lua51" },
 }
 
+lm:executable "test_thunk" {
+    sources = "test/thunk.cpp",
+    includes = { "src/luadebug" },
+}
+
 lm:default {
     "test_frida",
     "test_delayload",
     "test_symbol",
-    "testwaitdll"
+    "testwaitdll",
+    "test_thunk"
 }

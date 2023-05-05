@@ -189,6 +189,9 @@ function resolveConfig(folder, config) {
                     else if (plat == "macOS") {
                         config.inject = "lldb";
                     }
+                    else if (plat == "Linux") {
+                        config.inject = "gdb";
+                    }
                     else {
                         config.inject = "none";
                     }
@@ -241,6 +244,23 @@ function resolveConfig(folder, config) {
     else if (config.request == 'attach') {
         if (!config.address && !config.processId && !config.processName) {
             throw new Error('Missing `address` to debug');
+        }
+        if (typeof config.inject != 'string') {
+            if (typeof config.address == 'string') {
+                config.inject = "none";
+            }
+            else if (plat == "Windows") {
+                config.inject = "hook";
+            }
+            else if (plat == "macOS") {
+                config.inject = "lldb";
+            }
+            else if (plat == "Linux") {
+                config.inject = "gdb";
+            }
+            else {
+                config.inject = "none";
+            }
         }
     }
     config.configuration = {

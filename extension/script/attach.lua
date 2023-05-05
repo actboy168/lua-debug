@@ -31,7 +31,7 @@ local function isLatest()
     local fd = ipc(path, pid, "luaVersion")
     local result = false
     if fd then
-        result = "latest" == fd:read "a"
+        result = "lua-latest" == fd:read "a"
         fd:close()
     end
     return result
