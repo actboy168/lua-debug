@@ -15,9 +15,6 @@ struct thunkblock_arg2 {
     intptr_t realfn;
 };
 struct thunkblock_arg3 {
-    unsigned int mov_x3_x2;
-    unsigned int mov_x2_x1;
-    unsigned int mov_x1_x0;
     unsigned int ldr_x0_0x0c;
     unsigned int ldr_x4_0x10;
     unsigned int br_x4;
@@ -59,9 +56,6 @@ thunk *thunk_create_allocf(intptr_t dbg, intptr_t allocf) {
     //     return `allocf`(`dbg`, ptr, osize, nsize);
     // }
     thunkblock_arg3 thunkblock;
-    thunkblock.mov_x3_x2   = 0xAA0203E3;  // mov x3,x2
-    thunkblock.mov_x2_x1   = 0xAA0103E2;  // mov x2,x1
-    thunkblock.mov_x1_x0   = 0xAA0003E1;  // mov x1,x0
     thunkblock.ldr_x0_0x0c = 0x58000060;  // ldr x0,#0xc
     thunkblock.ldr_x4_0x10 = 0x58000084;  // ldr x4,#0x10
     thunkblock.br_x4       = 0xD61F0080;  // br x3

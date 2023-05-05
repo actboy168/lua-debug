@@ -1,4 +1,4 @@
-#include "thunk/thunk.h"
+#include "thunk/thunk.cpp"
 
 #include <assert.h>
 struct HHI {
@@ -17,7 +17,7 @@ void* add1(HHI* h, void* a, size_t b, size_t c) {
     assert(a == (void*)0x1);
     assert(b == 2);
     assert(c == 3);
-    return nullptr;
+    return (void*)4;
 }
 
 int main() {
@@ -30,7 +30,7 @@ int main() {
     auto* thunk1 = thunk_create_allocf((intptr_t)&hhi, (intptr_t)&add1);
     auto ret1    = ((void* (*)(void* a, size_t b, size_t c))thunk1->data)((void*)0x1, 2, 3);
     assert(hhi.a == 3);
-    assert(ret1 == nullptr);
+    assert(ret1 == (void*)4);
 
     return 0;
 }
