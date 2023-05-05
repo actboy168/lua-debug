@@ -37,17 +37,20 @@ CallInfo* lua_getcallinfo(lua_State* L) {
     return const_cast<CallInfo*>(debug_frame(L, 0, &size));
 }
 
+inline Proto* func2proto(GCfunc* func) {
+    if (!isluafunc(func))
+        return 0;
+    return funcproto(func);
+}
+
 Proto* lua_getproto(lua_State* L, int idx) {
     GCfunc* func = funcV(index2adr(L, idx));
-    if (!isluafunc(func)) return 0;
-    return funcproto(func);
+    return func2proto(func);
 }
 
 Proto* lua_ci2proto(CallInfo* ci) {
     GCfunc* func = frame_func(ci);
-    if (!isluafunc(func))
-        return 0;
-    return funcproto(func);
+    return func2proto(func);
 }
 
 CallInfo* lua_debug2ci(lua_State* L, const lua_Debug* ar) {
