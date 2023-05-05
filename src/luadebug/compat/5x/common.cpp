@@ -8,6 +8,12 @@ const void* lua_tocfunction_pointer(lua_State* L, int idx) {
 #    include <lobject.h>
 #    include <lstate.h>
 namespace lua {
+#    define api_incr_top(L)                    \
+        {                                      \
+            api_check(L, L->top < L->ci->top); \
+            L->top++;                          \
+        }
+
     const char* lua_getlocal(lua_State* L, const lua_Debug* ar, int n) {
         if (n < 0) {
             auto ci    = lua_debug2ci(L, ar);

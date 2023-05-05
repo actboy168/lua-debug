@@ -30,11 +30,3 @@ int lua_isluafunc(lua_State* L, lua_Debug* ar);
 
 int lua_stacklevel(lua_State* L);
 lua_State* lua_getmainthread(lua_State* L);
-
-#if LUA_VERSION_NUM == 501 && !defined(LUAJIT_VERSION)
-#    define api_incr_top(L)                    \
-        {                                      \
-            api_check(L, L->top < L->ci->top); \
-            L->top++;                          \
-        }
-#endif
