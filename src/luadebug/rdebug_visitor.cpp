@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include <algorithm>
+#include <bitset>
 #include <limits>
 
 #include "compat/internal.h"
@@ -15,6 +16,7 @@
 
 #ifdef LUAJIT_VERSION
 #    include <lj_cdata.h>
+#    include <lj_debug.h>
 #else
 #    include <lstate.h>
 #endif
@@ -214,7 +216,7 @@ namespace luadebug::visitor {
             return 0;
         }
         area.check_client_stack(1);
-        const char* name = lua_getlocal(hL, &ar, n);
+        const char* name = lua::lua_getlocal(hL, &ar, n);
         if (name == NULL)
             return 0;
         if (!getref && copy_to_dbg(hL, L) != LUA_TNONE) {
@@ -623,53 +625,22 @@ namespace luadebug::visitor {
 
     static int visitor_getinfo(luadbg_State* L, lua_State* hL, protected_area& area) {
         auto options = area.checkstring(L, 2);
-        int frame    = 0;
-        int size     = 0;
-        bool hasF    = false;
-#ifdef LUAJIT_VERSION
-        bool hasS = false;
-#endif
-        for (const char* what = options.data(); *what; what++) {
-            switch (*what) {
-            case 'S':
-                size += 5;
-#ifdef LUAJIT_VERSION
-                hasS = true;
-#endif
-                break;
-            case 'l':
-                size += 1;
-                break;
-            case 'n':
-                size += 2;
-                break;
-            case 'f':
-                size += 1;
-                hasF = true;
-                break;
-#if LUA_VERSION_NUM >= 502
-            case 'u':
-                size += 1;
-                break;
-            case 't':
-                size += 1;
-                break;
-#endif
-#if LUA_VERSION_NUM >= 504
-            case 'r':
-                size += 2;
-                break;
-#endif
-            default:
-                return area.raise_error("invalid option");
-            }
-        }
         if (luadbg_type(L, 3) != LUA_TTABLE) {
-            luadbg_createtable(L, 0, size);
+            luadbg_createtable(L, 0, 16);
             luadbg_replace(L, 3);
         }
 
+        std::bitset<128> flags;
+        for (const char* what = options.data(); *what; what++) {
+            flags.set(uint8_t(*what) & 0x7F, true);
+        }
+
         lua_Debug ar;
+        int frame = 0;
+#if LUA_VERSION_NUM == 501
+        uint8_t nparams = 0;
+#endif
+
         switch (luadbg_type(L, 1)) {
         case LUADBG_TNUMBER:
             frame = area.checkinteger<int>(L, 1);
@@ -677,18 +648,34 @@ namespace luadebug::visitor {
                 return 0;
             if (lua_getinfo(hL, options.data(), &ar) == 0)
                 return 0;
-            if (hasF) lua_pop(hL, 1);
+#if LUA_VERSION_NUM == 501
+            if (flags.test('u')) {
+                Proto* proto = lua_ci2proto(lua_debug2ci(hL, &ar));
+                if (proto) {
+                    nparams = proto->numparams;
+                }
+            }
+#endif
+            if (flags.test('f')) lua_pop(hL, 1);
             break;
         case LUADBG_TUSERDATA: {
             if (!copy_from_dbg(L, hL, area, 1, LUADBG_TFUNCTION)) {
                 return area.raise_error("Need a function ref");
             }
-            if (hasF) {
+            if (flags.test('f')) {
                 return area.raise_error("invalid option");
             }
             char what[8];
             what[0] = '>';
             strcpy(what + 1, options.data());
+#if LUA_VERSION_NUM == 501
+            if (flags.test('u')) {
+                Proto* proto = lua_getproto(hL, -1);
+                if (proto) {
+                    nparams = proto->numparams;
+                }
+            }
+#endif
             if (lua_getinfo(hL, what, &ar) == 0) {
                 return 0;
             }
@@ -698,7 +685,7 @@ namespace luadebug::visitor {
             return area.raise_error("Need stack level (integer) or function ref");
         }
 #ifdef LUAJIT_VERSION
-        if (hasS && strcmp(ar.what, "main") == 0) {
+        if (flags.test('S') && strcmp(ar.what, "main") == 0) {
             // carzy bug,luajit is real linedefined in main file,but in lua it's zero
             // maybe fix it is a new bug
             ar.lastlinedefined = 0;
@@ -739,11 +726,15 @@ namespace luadebug::visitor {
                 refvalue::create(L, refvalue::FRAME_FUNC { (uint16_t)frame });
                 luadbg_setfield(L, 3, "func");
                 break;
-#if LUA_VERSION_NUM >= 502
             case 'u':
+#if LUA_VERSION_NUM == 501
+                luadbg_pushinteger(L, nparams);
+#else
                 luadbg_pushinteger(L, ar.nparams);
+#endif
                 luadbg_setfield(L, 3, "nparams");
                 break;
+#if LUA_VERSION_NUM >= 502
             case 't':
                 luadbg_pushboolean(L, ar.istailcall ? 1 : 0);
                 luadbg_setfield(L, 3, "istailcall");
