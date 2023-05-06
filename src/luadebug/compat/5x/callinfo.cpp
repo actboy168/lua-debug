@@ -16,8 +16,7 @@ CallInfo* lua_getcallinfo(lua_State* L) {
     return L->ci;
 }
 
-Proto* lua_ci2proto(CallInfo* ci) {
-    StkId func = LUA_STKID(ci->func);
+inline Proto* func2proto(StkId func) {
 #if LUA_VERSION_NUM >= 502
     if (!ttisLclosure(s2v(func))) {
         return 0;
@@ -31,10 +30,20 @@ Proto* lua_ci2proto(CallInfo* ci) {
 #endif
 }
 
-CallInfo* lua_debug2ci(lua_State* L, lua_Debug* ar) {
+Proto* lua_ci2proto(CallInfo* ci) {
+    StkId func = LUA_STKID(ci->func);
+    return func2proto(func);
+}
+
+CallInfo* lua_debug2ci(lua_State* L, const lua_Debug* ar) {
 #if LUA_VERSION_NUM >= 502
     return ar->i_ci;
 #else
     return L->base_ci + ar->i_ci;
 #endif
+}
+
+Proto* lua_getproto(lua_State* L, int idx) {
+    auto func = LUA_STKID(L->top) + idx;
+    return func2proto(func);
 }
