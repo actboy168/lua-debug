@@ -874,3 +874,5 @@ end)
 sendToMaster 'initWorker' {}
 
 hookmgr.update_open(true)
+
+return event

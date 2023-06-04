@@ -368,6 +368,24 @@ struct hookmgr {
     }
 #endif
 
+#if defined(LUAJIT_VERSION)
+    static void luaJIT_profile_callback(void* data, lua_State* hL, int samples, int vmstate) {
+        auto _this = (decltype(this))data;
+        _this->update_hook(hL);
+    }
+    constexpr auto profile_ms =
+        "i"
+        "100";
+    void enable_jit(lua_State* hL, int enable) {
+        if (enable) {
+            luaJIT_profile_start(hL, profile_ms, luaJIT_profile_callback, this);
+        }
+        else {
+            luaJIT_profile_stop(hL);
+        }
+    }
+#endif
+
     //
     // common
     //
@@ -716,8 +734,13 @@ static int coroutine_from(luadbg_State* L) {
 }
 #endif
 
-LUADEBUG_FUNC
-int luaopen_luadebug_hookmgr(luadbg_State* L) {
+#if defined(LUAJIT_VERSION)
+static int enable_jit(luadbg_State* L) {
+    hookmgr::get_self(L)->enable_jit(luadebug::debughost::get(L)), luadbg_toboolean(L, 1);
+    return 0;
+}
+#endif
+LUADEBUG_FUNC int luaopen_luadebug_hookmgr(luadbg_State* L) {
     luadebug::debughost::get(L);
 
     luadbg_newtable(L);
@@ -757,6 +780,9 @@ int luaopen_luadebug_hookmgr(luadbg_State* L) {
 #if defined(LUA_HOOKTHREAD)
         { "thread_open", thread_open },
         { "coroutine_from", coroutine_from },
+#endif
+#if defined(LUAJIT_VERSION)
+        { "enable_jit", enable_jit }
 #endif
         { NULL, NULL },
     };
