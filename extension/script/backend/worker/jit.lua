@@ -4,6 +4,7 @@ local luaver = require 'backend.worker.luaver'
 local hookmgr = require 'luadebug.hookmgr'
 
 local enable_jit = false
+local disable_vmevent = false
 
 local function set_jitmode(on)
     on = on and "on" or "off"
@@ -19,10 +20,8 @@ local function set_jitmode(on)
 end
 
 local function attach_vmevent()
-    local worker = require 'backend.worker'
-    worker.autoUpdate(false)
     local eval = require 'backend.worker.eval'
-    eval.vmevent(true)
+    return eval.vmevent(true)
 end
 
 local function detach_vmevent()
@@ -34,21 +33,30 @@ ev.on('initializing', function (config)
     if not luaver.isjit then
         return
     end
-    enable_jit = config.enable_jit
+    enable_jit = disable_vmevent or config.enable_jit
     if not enable_jit then
         set_jitmode(false)
+        return
     end
-    attach_vmevent()
+    if not attach_vmevent() then
+        disable_vmevent = true
+        return
+    end
+    local worker = require 'backend.worker'
+    worker.autoUpdate(false)
     hookmgr.enable_jit(true)
 end)
 
-ev.on('terminated', function ()
+local function terminated()
     if not luaver.isjit then
         return
     end
     if not enable_jit then
         set_jitmode(true)
+        return
     end
     detach_vmevent()
     hookmgr.enable_jit(false)
-end)
+end
+
+ev.on('terminated', terminated)

@@ -75,13 +75,17 @@ generate("ffi_reflect", function()
     end
 end)
 
-generate("vmevent", function()
+generate("vmevent", function ()
     if not luaver.isjit then
         return
     end
     local handler = assert(rdebug.load(readfile "backend.worker.eval.vmevent"))
-    return function(...)
-        return rdebug.eval(handler, ...)
+    local ok, fn = rdebug.eval(handler)
+    if not ok then
+        return
+    end
+    return function (...)
+        return rdebug.eval(fn, ...)
     end
 end)
 
