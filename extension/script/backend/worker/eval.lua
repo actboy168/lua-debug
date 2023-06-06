@@ -84,6 +84,10 @@ generate("vmevent", function ()
     if not ok then
         return
     end
+    if rdebug.type(fn) ~= "function" then
+        return function ()
+        end
+    end
     return function (...)
         return rdebug.eval(fn, ...)
     end

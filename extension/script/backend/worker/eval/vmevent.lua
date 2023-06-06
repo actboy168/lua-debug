@@ -1,8 +1,11 @@
 local jit = require("jit")
-if jit.version_num ~= 20100 then
-    return "LuaJIT core/library version mismatch"
+if not jit.status() then
+    return "LuaJIT jit is not enabled"
 end
---TODO:检查是否有luajit profile被启用了
+if not pcall(require, 'jit.profile') then
+    --需要profile来update防止正在运行的代码全部被jit了而不无法update
+    return "LuaJIT profile is not enabled"
+end
 local active = false
 local record_count = 0
 local record_updeta_count = 1024
@@ -32,9 +35,9 @@ local function on()
     active = true
 end
 local function off()
-    jit.attach(update_trace)
-    jit.attach(update_record)
     jit.attach(update_texit)
+    jit.attach(update_record)
+    jit.attach(update_trace)
     active = false
 end
 

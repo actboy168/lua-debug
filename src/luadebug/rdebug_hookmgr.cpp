@@ -115,21 +115,25 @@ struct hookmgr {
     void break_add(lua_State* hL, Proto* p) {
         break_proto.set(p, bpmap::status::Break);
 #ifdef LUAJIT_VERSION
-        auto old_nojit = luajit_set_jitmode(hL, p, false);
-        if (old_nojit) {
-            break_jitblack.insert_or_assign(p, true);
+        if (enable_jit_flag) {
+            auto old_nojit = luajit_set_jitmode(hL, p, false);
+            if (old_nojit) {
+                break_jitblack.insert_or_assign(p, true);
+            }
         }
 #endif
     }
     void break_del(lua_State* hL, Proto* p) {
         break_proto.set(p, bpmap::status::Ignore);
 #ifdef LUAJIT_VERSION
-        // 如果原来就关闭了就不再启用
-        if (break_jitblack.find(p)) {
-            break_jitblack.erase(p);
-        }
-        else {
-            luajit_set_jitmode(hL, p, true);
+        if (enable_jit_flag) {
+            // 如果原来就关闭了就不再启用
+            if (break_jitblack.find(p)) {
+                break_jitblack.erase(p);
+            }
+            else {
+                luajit_set_jitmode(hL, p, true);
+            }
         }
 #endif
     }
@@ -438,8 +442,10 @@ struct hookmgr {
     void enable_jit(lua_State* hL, int enable) {
         constexpr auto profile_ms =
             "i"
-            "100";
+            "200";
         if (enable) {
+            if (enable_jit_flag)
+                luaJIT_profile_stop(hL);
             luaJIT_profile_start(hL, profile_ms, luaJIT_profile_callback, this);
             enable_jit_flag = true;
         }
