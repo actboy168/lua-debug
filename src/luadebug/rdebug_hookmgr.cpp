@@ -390,15 +390,18 @@ struct hookmgr {
 #    if defined(LUA_HOOKTHREAD)
                 thread_mask &= (~LUA_MASKTHREAD);
 #    endif
-                break_update(hL, lua_debug2ci(hL, ar), ar->event);
                 updatehookmask(hL);
                 last_hook_call_in_c = false;
+                if (break_mask)
+                    break_hook_call(hL, ar);
             }
             if (stepL == hL) {
                 if (step_mask & LUA_MASKRET) {
                     step_hook_line(hL, ar);
                 }
             }
+            if (!((step_mask & LUA_MASKLINE) && (!stepL || stepL == hL)) && !(break_mask & LUA_MASKLINE))
+                return;
 #endif
             break;
         case LUA_HOOKCALL:
@@ -464,9 +467,9 @@ struct hookmgr {
         default:
             return;
         }
+        push_callback(L);
+        luadebug::debughost::set(L, hL);
         if ((step_mask & LUA_MASKLINE) && (!stepL || stepL == hL)) {
-            push_callback(L);
-            luadebug::debughost::set(L, hL);
             luadbg_pushstring(L, "step");
             luadbg_pushinteger(L, ar->currentline);
             if (luadbg_pcall(L, 2, 0, 0) != LUADBG_OK) {
@@ -474,9 +477,7 @@ struct hookmgr {
                 return;
             }
         }
-        else if (break_mask & LUA_MASKLINE) {
-            push_callback(L);
-            luadebug::debughost::set(L, hL);
+        else {
             luadbg_pushstring(L, "bp");
             luadbg_pushinteger(L, ar->currentline);
             if (luadbg_pcall(L, 2, 0, 0) != LUADBG_OK) {
