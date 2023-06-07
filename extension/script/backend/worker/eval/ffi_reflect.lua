@@ -1,4 +1,5 @@
---[[ LuaJIT FFI reflection Library ]] --
+--[[ LuaJIT FFI reflection Library ]]
+--
 --[[ Copyright (C) 2014 Peter Cawley <lua@corsix.org>. All rights reserved.
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -16,7 +17,6 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 --]]
-local funcname, v1, v2, v3 = ...
 local ffi = require "ffi"
 local bit = require "bit"
 local reflect = {}
@@ -31,7 +31,7 @@ local function gc_str(gcref) -- Convert a GCref (to a GCstr) into a string
 	end
 end
 
-local typeinfo = ffi.typeinfo or function(id)
+local typeinfo = ffi.typeinfo or function (id)
 	-- ffi.typeof is present in LuaJIT v2.1 since 8th Oct 2014 (d6ff3afc)
 	-- this is an emulation layer for older versions of LuaJIT
 	local ctype = (CTState or init_CTState()).tab[id]
@@ -47,7 +47,7 @@ local function memptr(gcobj)
 	return tonumber(tostring(gcobj):match "%x*$", 16)
 end
 
-init_CTState = function()
+init_CTState = function ()
 	-- Relevant minimal definitions from lj_ctype.h
 	ffi.cdef [[
     typedef struct CType {
@@ -57,7 +57,7 @@ init_CTState = function()
       uint16_t next;
       uint32_t name;
     } CType;
-    
+
     typedef struct CTState {
       CType *tab;
       uint32_t top;
@@ -70,9 +70,9 @@ init_CTState = function()
   ]]
 
 	-- Acquire a pointer to this Lua universe's CTState
-	local co = coroutine.create(function(f, ...) return f(...) end)
+	local co = coroutine.create(function (f, ...) return f(...) end)
 	local uintgc = ffi.abi "gc64" and "uint64_t" or "uint32_t"
-	local uintgc_ptr = ffi.typeof(uintgc .. "*")
+	local uintgc_ptr = ffi.typeof(uintgc.."*")
 	local G = ffi.cast(uintgc_ptr, ffi.cast(uintgc_ptr, memptr(co))[2])
 	-- In global_State, `MRef ctype_state` precedes `GCRef gcroot[GCROOT_MAX]`.
 	-- We first find (an entry in) gcroot by looking for a metamethod name string.
@@ -83,7 +83,7 @@ init_CTState = function()
 	end
 	-- Since Aug 2013, `GCRef cur_L` has preceded `MRef ctype_state`. Try to find it.
 	local ok, i2 = coroutine.resume(co,
-		function(coptr)
+		function (coptr)
 			for i2 = i - 3, i - 20, -1 do
 				if G[i2] == coptr then return i2 end
 			end
@@ -114,7 +114,7 @@ init_CTState = function()
 	end
 end
 
-init_miscmap = function()
+init_miscmap = function ()
 	-- Acquire the CTState's miscmap table as a Lua variable
 	local t = {};
 	t[0] = t
@@ -136,28 +136,29 @@ end
 -- * Roles of the cid and size fields.
 -- * Whether the sib field is meaningful.
 -- * Zero or more applicable boolean flags.
-local CTs = { [0] =
-{ "int",
-	"", "size", false,
-	{ 0x08000000, "bool" },
-	{ 0x04000000, "float", "subwhat" },
-	{ 0x02000000, "const" },
-	{ 0x01000000, "volatile" },
-	{ 0x00800000, "unsigned" },
-	{ 0x00400000, "long" },
-},
+local CTs = {
+	[0] =
+	{ "int",
+		"", "size", false,
+		{ 0x08000000, "bool" },
+		{ 0x04000000, "float",   "subwhat" },
+		{ 0x02000000, "const" },
+		{ 0x01000000, "volatile" },
+		{ 0x00800000, "unsigned" },
+		{ 0x00400000, "long" },
+	},
 	{ "struct",
 		"", "size", true,
 		{ 0x02000000, "const" },
 		{ 0x01000000, "volatile" },
-		{ 0x00800000, "union", "subwhat" },
+		{ 0x00800000, "union",   "subwhat" },
 		{ 0x00100000, "vla" },
 	},
 	{ "ptr",
 		"element_type", "size", false,
 		{ 0x02000000, "const" },
 		{ 0x01000000, "volatile" },
-		{ 0x00800000, "ref", "subwhat" },
+		{ 0x00800000, "ref",     "subwhat" },
 	},
 	{ "array",
 		"element_type", "size", false,
@@ -226,25 +227,27 @@ for _, CT in ipairs(CTs) do
 end
 
 -- Logic for merging an attribute CType onto the annotated CType.
-local CTAs = { [0] =
-function(a, refct) error("TODO: CTA_NONE") end,
-	function(a, refct) error("TODO: CTA_QUAL") end,
-	function(a, refct)
+local CTAs = {
+	[0] =
+		function (a, refct) error("TODO: CTA_NONE") end,
+	function (a, refct) error("TODO: CTA_QUAL") end,
+	function (a, refct)
 		a = 2 ^ a.value
 		refct.alignment = a
 		refct.attributes.align = a
 	end,
-	function(a, refct)
+	function (a, refct)
 		refct.transparent = true
 		refct.attributes.subtype = refct.typeid
 	end,
-	function(a, refct) refct.sym_name = a.name end,
-	function(a, refct) error("TODO: CTA_BAD") end,
+	function (a, refct) refct.sym_name = a.name end,
+	function (a, refct) error("TODO: CTA_BAD") end,
 }
 
 -- C function calling conventions (CTCC_* constants in lj_refct.h)
-local CTCCs = { [0] =
-"cdecl",
+local CTCCs = {
+	[0] =
+	"cdecl",
 	"thiscall",
 	"fastcall",
 	"stdcall",
@@ -383,8 +386,16 @@ metatables.struct.__index.member = find_sibling
 metatables.func.__index.argument = find_sibling
 metatables.enum.__index.value = find_sibling
 
+local ti_cache = {}
+
 local function typeof(id)
-	return refct_from_id(id)
+	local ti = ti_cache[id]
+	if ti then
+		return ti
+	end
+	ti = refct_from_id(id)
+	ti_cache[id] = ti
+	return ti
 end
 
 function reflect.typeof(x) -- refct = reflect.typeof(ct)
@@ -396,7 +407,14 @@ function reflect.getmetatable(x) -- mt = reflect.getmetatable(ct)
 	return (miscmap or init_miscmap())[-tonumber(ffi.typeof(x))]
 end
 
+local linker_cache = {}
+
 local function get_typedef_linker(typeinfo)
+	local id = typeinfo.typeid
+	local linker_id = linker_cache[id]
+	if linker_id then
+		return typeof(linker_id)
+	end
 	for id = 96, 65536, 1 do
 		local ti = typeof(id)
 		if not ti then
@@ -404,6 +422,7 @@ local function get_typedef_linker(typeinfo)
 		end
 		if ti.what == 'typedef' then
 			if ti.element_type.typeid == typeinfo.typeid then
+				linker_cache[id] = ti.typeid
 				return ti
 			end
 		end
@@ -424,7 +443,7 @@ function showtypename.int(intinfo)
 		[4] = "int32",
 		[8] = "int64",
 	}
-	return n .. t[intinfo.size]
+	return n..t[intinfo.size]
 end
 
 ---@param floatinfo ffi.floatinfo
@@ -434,7 +453,7 @@ end
 
 ---@param enuminfo ffi.enuminfo
 function showtypename.enum(enuminfo)
-	return "enum " .. (enuminfo.name or get_typedef_linker(enuminfo).name or "unknown")
+	return "enum "..(enuminfo.name or get_typedef_linker(enuminfo).name or "unknown")
 end
 
 ---@param ptrinfo ffi.ptrinfo
@@ -442,7 +461,7 @@ function showtypename.ptr(ptrinfo)
 	if ptrinfo.element_type.what == 'func' then
 		return showtypename[ptrinfo.element_type.what](ptrinfo.element_type, nil, "*")
 	end
-	return showtypename[ptrinfo.element_type.what](ptrinfo.element_type) .. "*"
+	return showtypename[ptrinfo.element_type.what](ptrinfo.element_type).."*"
 end
 
 function showtypename.void(voidinfo)
@@ -455,17 +474,17 @@ function showtypename.ref(refinfo)
 		return showtypename[refinfo.element_type.what](refinfo.element_type, nil, "&")
 	else
 	end
-	return showtypename[refinfo.element_type.what](refinfo.element_type) .. "&"
+	return showtypename[refinfo.element_type.what](refinfo.element_type).."&"
 end
 
 ---@param arrayinfo ffi.arrayinfo
 function showtypename.array(arrayinfo, value)
 	local name = showtypename[arrayinfo.element_type.what](arrayinfo.element_type)
 	if arrayinfo.vla then
-		return name .. "[" .. (value and ffi.sizeof(value) or "?") .. "]"
+		return name.."["..(value and ffi.sizeof(value) or "?").."]"
 	else
-		return name .. "[" ..
-			arrayinfo.size / arrayinfo.element_type.size .. "]"
+		return name.."["..
+			arrayinfo.size / arrayinfo.element_type.size.."]"
 	end
 end
 
@@ -476,7 +495,7 @@ function showtypename.struct(structinfo)
 		local linker = get_typedef_linker(structinfo)
 		name = linker and linker.name or "[annotated]"
 	end
-	return "struct " .. name
+	return "struct "..name
 end
 
 ---@param unioninfo ffi.unioninfo
@@ -486,7 +505,7 @@ function showtypename.union(unioninfo)
 		local linker = get_typedef_linker(unioninfo)
 		name = linker and linker.name or "[annotated]"
 	end
-	return "union " .. name
+	return "union "..name
 end
 
 ---@param funcinfo ffi.funcinfo
@@ -495,26 +514,26 @@ function showtypename.func(funcinfo, _, attributes)
 	for reflc in funcinfo:arguments() do
 		---@cast reflc + ffi.fieldinfo
 		if arguments then
-			arguments = arguments .. ", "
+			arguments = arguments..", "
 		else
 			arguments = ""
 		end
-		arguments = arguments .. showtypename[reflc.type.what](reflc.type)
+		arguments = arguments..showtypename[reflc.type.what](reflc.type)
 		if reflc.name then
-			arguments = arguments .. " " .. reflc.name
+			arguments = arguments.." "..reflc.name
 		end
 	end
 	local name = (funcinfo.sym_name or funcinfo.name or "unknown")
 	if attributes then
 		if name == 'unknown' then
-			name = "(" .. attributes .. ")"
+			name = "("..attributes..")"
 		else
-			name = "(" .. attributes .. name .. ")"
+			name = "("..attributes..name..")"
 		end
 	end
 	local result = showtypename[funcinfo.return_type.what](funcinfo.return_type)
-	local convention = (funcinfo.convention and funcinfo.convention ~= 'cdecl' and (funcinfo.convention .. " ") or "")
-	return result .. " " .. convention .. name .. "(" .. arguments .. ")"
+	local convention = (funcinfo.convention and funcinfo.convention ~= 'cdecl' and (funcinfo.convention.." ") or "")
+	return result.." "..convention..name.."("..arguments..")"
 end
 
 ---@type table<ffi.typeinfo.what,function>
@@ -636,4 +655,11 @@ function reflect.what(v)
 	return typeinfo and typeinfo.what
 end
 
-return reflect[funcname](v1, v2, v3)
+function reflect.clean()
+	ti_cache = {}
+	linker_cache = {}
+end
+
+return function (funcname, v1, v2, v3)
+	return reflect[funcname](v1, v2, v3)
+end
