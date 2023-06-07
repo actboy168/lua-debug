@@ -65,7 +65,7 @@ generate("ffi_reflect", function ()
         return
     end
     local handler = assert(rdebug.load(readfile "backend.worker.eval.ffi_reflect"))
-    local ok, fn = rdebug.eval(handler)
+    local ok, fn = rdebug.watch(handler)
     if not ok then
         return
     end
