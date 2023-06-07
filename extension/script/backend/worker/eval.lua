@@ -60,14 +60,21 @@ generate("dump", function()
     end
 end)
 
-generate("ffi_reflect", function()
+generate("ffi_reflect", function ()
     if not luaver.isjit then
         return
     end
     local handler = assert(rdebug.load(readfile "backend.worker.eval.ffi_reflect"))
-    return function(name, ...)
+    local ok, fn = rdebug.watch(handler)
+    if not ok then
+        return
+    end
+    require 'backend.event'.on('terminated', function ()
+        rdebug.eval(fn, "clean")
+    end)
+    return function (name, ...)
         local method = (name == "member" or name == "annotated_member") and "watch" or "eval"
-        local res = table.pack(rdebug[method](handler, name, ...))
+        local res = table.pack(rdebug[method](fn, name, ...))
         if not res[1] then
             return
         end
