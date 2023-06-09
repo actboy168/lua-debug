@@ -3,6 +3,7 @@
 #include <chrono>
 #include <cstdint>
 #include <memory>
+#include <string_view>
 
 #include "compat/internal.h"
 #include "rdebug_debughost.h"
@@ -875,6 +876,13 @@ static bool call_event(luadbg_State* L, int nargs) {
 }
 
 bool event(luadbg_State* L, lua_State* hL, const char* name, int start) {
+#ifdef LUAJIT_VERSION
+    using namespace std::string_view_literals;
+    if (name == "create_proto"sv) {
+        hookmgr::get_self(L)->break_updateproto(hL, lua_getproto(hL, start + 1));
+        return true;
+    }
+#endif
     if (luadbg_rawgetp(L, LUADBG_REGISTRYINDEX, &HOOK_CALLBACK) != LUADBG_TFUNCTION) {
         // TODO cache event?
         luadbg_pop(L, 1);

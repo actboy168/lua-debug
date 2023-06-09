@@ -28,7 +28,12 @@ local function update_texit()
     luadebugger:event("update")
 end
 
+local function update_bc(pt)
+    luadebugger:event("create_proto", pt)
+end
+
 local function on()
+    jit.attach(update_bc, "bc")
     jit.attach(update_trace, "trace")
     jit.attach(update_record, "record")
     jit.attach(update_texit, "texit")
@@ -38,6 +43,7 @@ local function off()
     jit.attach(update_texit)
     jit.attach(update_record)
     jit.attach(update_trace)
+    jit.attach(update_bc)
     active = false
 end
 

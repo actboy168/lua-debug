@@ -666,7 +666,10 @@ function event.newproto(proto, level)
     return newprotoimpl(proto, info)
 end
 
-event.newprotoimpl = newprotoimpl
+function event.newprotoimpl(proto, info)
+    if not debuggeeReady() then return end
+    return newprotoimpl(proto, info)
+end
 
 function event.update()
     debuggeeReady()
