@@ -83,11 +83,12 @@ function m.run(frameId, expression, context)
 end
 
 function m.set(frameId, expression, value)
-    local ok, res = eval.readwrite(expression.."="..value, frameId)
+    local ok, res = eval.readwrite(expression.."="..value..";return "..expression, frameId)
     if not ok then
         return false, res
     end
-    return run_watch(frameId, expression)
+    local var = variables.createRef(res, expression, "variables")
+    return true, var
 end
 
 return m
