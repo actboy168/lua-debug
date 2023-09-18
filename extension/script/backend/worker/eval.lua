@@ -42,24 +42,6 @@ local function generate(name, init)
     end
 end
 
-generate("dump", function()
-    if luaver.LUAVERSION <= 52 then
-        local compat_dump = assert(load(readfile 'backend.worker.eval.dump'))
-        return function(content)
-            local res, err = compat_dump(content)
-            if res then
-                return true, res
-            end
-            return false, err
-        end
-    else
-        local eval_dump = assert(rdebug.load(readfile 'backend.worker.eval.dump'))
-        return function(content)
-            return rdebug.eval(eval_dump, content, 0)
-        end
-    end
-end)
-
 generate("ffi_reflect", function ()
     if not luaver.isjit then
         return

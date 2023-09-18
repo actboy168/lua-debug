@@ -3,11 +3,11 @@ local undump = require 'backend.worker.undump'
 local version
 
 local function getproto(content)
-    local eval = require 'backend.worker.eval'
-    local ok, bin = eval.dump(content)
-    if not ok or type(bin) ~= "string" then
+    local f = load(content)
+    if not f then
         return
     end
+    local bin = string.dump(f)
     local cl, v = undump(bin)
     version = v
     return cl.f
