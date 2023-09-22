@@ -20,6 +20,7 @@ lm:lua_source 'launcher_source' {
         "3rd/bee.lua",
         "3rd/frida_gum/gumpp",
         "3rd/lua/lua54",
+        "3rd/json/single_include",
         "src/launcher",
     },
     sources = {

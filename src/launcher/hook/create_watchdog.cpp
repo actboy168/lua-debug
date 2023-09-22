@@ -34,6 +34,7 @@ namespace luadebug::autoattach {
                 { watch_point::type::common, "luaV_gettable" },
                 { watch_point::type::common, "luaV_settable" },
             };
+        case lua_version::latest:
         case lua_version::lua54:
             return {
                 { watch_point::type::common, "luaD_poscall" },
@@ -55,22 +56,22 @@ namespace luadebug::autoattach {
         }
     }
 
-    watchdog* create_watchdog(work_mode mode, lua_version version, const lua::resolver& resolver) {
-        auto context = std::make_unique<watchdog>();
+    watchdog* create_watchdog(lua_module& module) {
+        auto context = std::make_unique<watchdog>(module);
         if (!context->init()) {
             return nullptr;
         }
-        if (context->init_watch(resolver, get_watch_points(mode, version))) {
+        if (context->init_watch(module.resolver, get_watch_points(module.mode, module.version))) {
             // TODO: fix other thread pc
             context->hook();
             return context.release();
         }
-        if (version == lua_version::unknown) {
+        if (module.version == lua_version::unknown) {
             // TODO: more errmsg
             log::fatal("watchdog initialize failed");
             return nullptr;
         }
-        if (context->init_watch(resolver, get_watch_points(mode, lua_version::unknown))) {
+        if (context->init_watch(module.resolver, get_watch_points(module.mode, lua_version::unknown))) {
             // TODO: fix other thread pc
             context->hook();
             return context.release();

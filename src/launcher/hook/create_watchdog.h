@@ -11,5 +11,5 @@ namespace luadebug::lua {
 
 namespace luadebug::autoattach {
     struct watchdog;
-    watchdog* create_watchdog(work_mode mode, lua_version v, const lua::resolver& resolver);
+    watchdog* create_watchdog(lua_module& module);
 }

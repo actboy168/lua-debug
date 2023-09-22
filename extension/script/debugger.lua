@@ -133,7 +133,7 @@ local function initDebugger(dbg, cfg)
     local luadebug = os.getenv "LUA_DEBUG_CORE"
     local updateenv = false
     if not luadebug then
-        luadebug = detectLuaDebugPath(cfg)
+        luadebug = cfg.debugger_path or detectLuaDebugPath(cfg)
         updateenv = true
     end
     local isWindows = package.config:sub(1, 1) == "\\"
@@ -212,7 +212,7 @@ function dbg:event(...)
 end
 
 function dbg:set_wait(name, f)
-    _G[name] = function(...)
+    _G[name] = function (...)
         _G[name] = nil
         f(...)
         self:event 'wait'
@@ -224,7 +224,7 @@ function dbg:setup_patch()
     local rawxpcall = xpcall
     function pcall(f, ...)
         return rawxpcall(f,
-            function(msg)
+            function (msg)
                 self:event("exception", msg)
                 return msg
             end,
@@ -233,7 +233,7 @@ function dbg:setup_patch()
 
     function xpcall(f, msgh, ...)
         return rawxpcall(f,
-            function(msg)
+            function (msg)
                 self:event("exception", msg)
                 return msgh and msgh(msg) or msg
             end
@@ -254,7 +254,7 @@ function dbg:setup_patch()
     function coroutine.wrap(f)
         local wf = rawcoroutinewrap(f)
         local _, co = debug.getupvalue(wf, 1)
-        return function(...)
+        return function (...)
             self:event("thread", co, 0)
             return coreturn(co, wf(...))
         end

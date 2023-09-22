@@ -221,6 +221,9 @@ local function create_process_in_console(args, callback)
     if not process then
         return nil, err
     end
+    if callback then
+        callback(process)
+    end
     if args.inject ~= "none" then
 		local ok, errmsg = process_inject.inject(process, "launch", args)
         if not ok then
@@ -230,9 +233,6 @@ local function create_process_in_console(args, callback)
                 return nil, "process is already exited:\n"..errmsg
             end
         end
-    end
-    if callback then
-        callback(process)
     end
     if need_resume then
         process:resume()

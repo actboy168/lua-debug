@@ -10,4 +10,6 @@
 [submodule "3rd/frida_gum/gumpp"]
 	path = 3rd/frida_gum/gumpp
 	url = https://github.com/fesily/gumpp
-
+[submodule "3rd/json"]
+	path = 3rd/json
+	url = https://github.com/nlohmann/json

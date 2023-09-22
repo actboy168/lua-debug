@@ -1,46 +1,18 @@
+#include <autoattach/ctx.h>
 #include <autoattach/lua_module.h>
 #include <bee/nonstd/format.h>
+#include <bee/utility/path_helper.h>
 #include <hook/create_watchdog.h>
 #include <hook/watchdog.h>
 #include <util/log.h>
+#include <util/path.h>
 
 #include <charconv>
 #include <gumpp.hpp>
 
 namespace luadebug::autoattach {
-    static lua_version lua_version_from_string [[maybe_unused]] (const std::string_view& v) {
-        if (v == "luajit")
-            return lua_version::luajit;
-        if (v == "lua51")
-            return lua_version::lua51;
-        if (v == "lua52")
-            return lua_version::lua52;
-        if (v == "lua53")
-            return lua_version::lua53;
-        if (v == "lua54")
-            return lua_version::lua54;
-        return lua_version::unknown;
-    }
-
-    static const char* lua_version_to_string(lua_version v) {
-        switch (v) {
-        case lua_version::lua51:
-            return "lua51";
-        case lua_version::lua52:
-            return "lua52";
-        case lua_version::lua53:
-            return "lua53";
-        case lua_version::lua54:
-            return "lua54";
-        case lua_version::luajit:
-            return "luajit";
-        default:
-            return "unknown";
-        }
-    }
-
     static bool in_module(const lua_module& m, void* addr) {
-        return addr > m.memory_address && addr <= (void*)((intptr_t)m.memory_address + m.memory_size);
+        return addr >= m.memory_address && addr <= (void*)((intptr_t)m.memory_address + m.memory_size);
     }
 
     static lua_version get_lua_version(const lua_module& m) {
@@ -89,6 +61,19 @@ namespace luadebug::autoattach {
         }
     }
 
+    bool load_luadebug_dll(lua_module* lm, lua_version version) {
+        auto luadebug_path = get_luadebug_path(version);
+        if (!luadebug_path)
+            return false;
+        auto path = (*luadebug_path).string();
+        std::string error;
+        if (!Gum::Process::module_load(path.c_str(), &error)) {
+            log::fatal("load debugger [{}] failed: {}", path, error);
+        }
+        lm->debugger_path = path;
+        return true;
+    }
+
     bool lua_module::initialize() {
         resolver.module_name = path;
         auto error_msg       = lua::initialize(resolver);
@@ -96,10 +81,16 @@ namespace luadebug::autoattach {
             log::fatal("lua initialize failed, can't find {}", error_msg);
             return false;
         }
-        version = get_lua_version(*this);
+        if (version == lua_version::unknown) {
+            version = get_lua_version(*this);
+        }
         log::info("current lua version: {}", lua_version_to_string(version));
 
-        watchdog = create_watchdog(mode, version, resolver);
+        watchdog = create_watchdog(*this);
+        if (version != lua_version::unknown) {
+            if (!load_luadebug_dll(this, version))
+                return false;
+        }
         if (!watchdog) {
             return false;
         }

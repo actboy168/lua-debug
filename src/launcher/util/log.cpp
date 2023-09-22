@@ -6,6 +6,7 @@
 #include <bee/nonstd/unreachable.h>
 #include <bee/utility/path_helper.h>
 #include <stdio.h>
+#include <util/path.h>
 
 #include <algorithm>
 
@@ -15,6 +16,8 @@
 #else
 #    include <WinSock.h>
 #endif
+
+#include <gumpp.hpp>
 
 namespace luadebug::log {
     using namespace bee::net;
@@ -51,18 +54,11 @@ namespace luadebug::log {
     }
 
     void notify_frontend(const std::string& msg) {
-        auto dllpath = bee::path_helper::dll_path();
-        if (!dllpath) {
+        auto tmp = get_tmp_dir();
+        if (!tmp)
             return;
-        }
-        auto rootpath = dllpath.value().parent_path().parent_path();
-        auto path     = std::format("{}/tmp/pid_{}", rootpath.generic_u8string(),
-#if defined(_WIN32)
-                                GetCurrentProcessId()
-#else
-                                getpid()
-#endif
-        );
+        auto path = ((*tmp) / std::format("pid_{}", Gum::Process::get_id())).string();
+
         if (!socket::initialize()) {
             return;
         }

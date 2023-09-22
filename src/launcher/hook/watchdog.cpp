@@ -132,8 +132,9 @@ namespace luadebug::autoattach {
         }
     };
 
-    watchdog::watchdog()
-        : interceptor { Gum::Interceptor_obtain() } {}
+    watchdog::watchdog(struct lua_module& lua_module)
+        : lua_module(lua_module)
+        , interceptor { Gum::Interceptor_obtain() } {}
     watchdog::~watchdog() {
         if (luahook_set) {
             trampoline::destroy(this, luahook_index);
@@ -203,7 +204,7 @@ namespace luadebug::autoattach {
     }
 
     void watchdog::attach_lua(lua::state L, lua::debug ar) {
-        switch (autoattach::attach_lua(L)) {
+        switch (autoattach::attach_lua(L, lua_module)) {
         case attach_status::fatal:
         case attach_status::success:
             // TODO: how to free so
