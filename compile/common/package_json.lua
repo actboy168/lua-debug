@@ -188,6 +188,15 @@ attributes.common = {
         markdownDescription = "Path format",
         type = "string",
     },
+    sourceCoding = {
+        default = "utf8",
+        enum = {
+            "utf8",
+            "ansi",
+        },
+        markdownDescription = "%lua.debug.launch.sourceCoding.description%",
+        type = "string",
+    },
     sourceFormat = {
         default = "path",
         enum = {
@@ -424,15 +433,6 @@ if OS == "win32" or OS == "darwin" then
 end
 
 if OS == "win32" then
-    attributes.common.sourceCoding = {
-        default = "utf8",
-        enum = {
-            "utf8",
-            "ansi",
-        },
-        markdownDescription = "%lua.debug.launch.sourceCoding.description%",
-        type = "string",
-    }
     attributes.common.useWSL = {
         default = true,
         description = "Use Windows Subsystem for Linux.",
