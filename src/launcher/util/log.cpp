@@ -19,7 +19,7 @@
 namespace luadebug::log {
     using namespace bee::net;
 
-    static int nfd(socket::fd_t fd) {
+    static int nfd(fd_t fd) {
 #if defined(_WIN32)
         return 0;
 #else
@@ -27,7 +27,7 @@ namespace luadebug::log {
 #endif
     }
 
-    static bool sendto_frontend(socket::fd_t fd, const char* buf, int len) {
+    static bool sendto_frontend(fd_t fd, const char* buf, int len) {
         fd_set writefds;
         FD_ZERO(&writefds);
         FD_SET(fd, &writefds);
@@ -71,7 +71,7 @@ namespace luadebug::log {
             return;
         }
         socket::unlink(ep);
-        socket::fd_t fd = socket::open(socket::protocol::unix);
+        fd_t fd = socket::open(socket::protocol::unix);
         if (!socket::bind(fd, ep)) {
             socket::close(fd);
             return;
@@ -87,14 +87,14 @@ namespace luadebug::log {
             socket::close(fd);
             return;
         }
-        socket::fd_t newfd;
+        fd_t newfd;
         if (socket::fdstat::success != socket::accept(fd, newfd)) {
             socket::close(fd);
             return;
         }
         socket::close(fd);
-        int err = socket::errcode(newfd);
-        if (err != 0) {
+        auto err = socket::errcode(newfd);
+        if (err) {
             socket::close(newfd);
             return;
         }

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <bee/nonstd/format.h>
+#include <bee/nonstd/print.h>
 
 #if !defined(__cpp_lib_format)
 namespace std {

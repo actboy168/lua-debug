@@ -31,6 +31,9 @@ lm:lua_dll 'inject' {
         "3rd/wow64ext/src/wow64ext.cpp",
         "3rd/bee.lua/bee/platform/win/unicode_win.cpp",
     },
+    msvc = {
+        flags = "/utf-8",
+    },
     links = "advapi32",
 }
 

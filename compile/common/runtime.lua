@@ -15,6 +15,9 @@ lm:source_set 'onelua' {
         "src/luadebug/",
     },
     sources = "src/luadebug/luadbg/onelua.c",
+    msvc = {
+        sources = ("3rd/bee.lua/3rd/lua/fast_setjmp_%s.s"):format(lm.arch)
+    },
     linux = {
         flags = "-fPIC"
     },
@@ -186,6 +189,9 @@ for _, luaver in ipairs { "lua51", "lua52", "lua53", "lua54", "lua-latest", "lua
             "src/luadebug/util/*.cpp",
             "src/luadebug/"..compat[luaver].."/**/*.cpp",
         },
+        msvc = {
+            flags = "/utf-8",
+        },
         windows = {
             deps = luaver..'/'..luaver,
             defines = {
@@ -201,7 +207,8 @@ for _, luaver in ipairs { "lua51", "lua52", "lua53", "lua54", "lua-latest", "lua
                 "ole32",
                 "delayimp",
                 "dbghelp",
-                "ntdll"
+                "ntdll",
+                "synchronization",
             },
             ldflags = {
                 ("/DELAYLOAD:%s.dll"):format(luaver),

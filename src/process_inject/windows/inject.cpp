@@ -23,7 +23,7 @@ static int injectdll(lua_State* L) {
     }
     else {
         auto& self = *(bee::subprocess::process*)luaL_checkudata(L, 1, "bee::subprocess");
-        bool ok    = injectdll(self.info(), bee::lua::checkstring(L, 2), bee::lua::checkstring(L, 3), checkstrview(L, 4));
+        bool ok    = injectdll(self.native_handle(), self.thread_handle(), bee::lua::checkstring(L, 2), bee::lua::checkstring(L, 3), checkstrview(L, 4));
         lua_pushboolean(L, ok);
         return 1;
     }
