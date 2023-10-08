@@ -1,5 +1,7 @@
 #pragma once
 
+#include "rdebug_lua.h"
+
 struct lua_State;
 struct luadbg_State;
 
