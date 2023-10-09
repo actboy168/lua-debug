@@ -130,7 +130,7 @@
 		"CancelRequest": {
 			"allOf": [ { "$ref": "#/definitions/Request" }, {
 				"type": "object",
-				"description": "The `cancel` request is used by the client in two situations:\n- to indicate that it is no longer interested in the result produced by a specific request issued earlier\n- to cancel a progress sequence. Clients should only call this request if the corresponding capability `supportsCancelRequest` is true.\nThis request has a hint characteristic: a debug adapter can only be expected to make a 'best effort' in honoring this request but there are no guarantees.\nThe `cancel` request may return an error if it could not cancel an operation but a client should refrain from presenting this error to end users.\nThe request that got cancelled still needs to send a response back. This can either be a normal result (`success` attribute true) or an error response (`success` attribute false and the `message` set to `cancelled`).\nReturning partial results from a cancelled request is possible but please note that a client has no generic way for detecting that a response is partial or not.\nThe progress that got cancelled still needs to send a `progressEnd` event back.\n A client should not assume that progress just got cancelled after sending the `cancel` request.",
+				"description": "The `cancel` request is used by the client in two situations:\n- to indicate that it is no longer interested in the result produced by a specific request issued earlier\n- to cancel a progress sequence.\nClients should only call this request if the corresponding capability `supportsCancelRequest` is true.\nThis request has a hint characteristic: a debug adapter can only be expected to make a 'best effort' in honoring this request but there are no guarantees.\nThe `cancel` request may return an error if it could not cancel an operation but a client should refrain from presenting this error to end users.\nThe request that got cancelled still needs to send a response back. This can either be a normal result (`success` attribute true) or an error response (`success` attribute false and the `message` set to `cancelled`).\nReturning partial results from a cancelled request is possible but please note that a client has no generic way for detecting that a response is partial or not.\nThe progress that got cancelled still needs to send a `progressEnd` event back.\n A client should not assume that progress just got cancelled after sending the `cancel` request.",
 				"properties": {
 					"command": {
 						"type": "string",
@@ -1202,7 +1202,7 @@
 			"properties": {
 				"source": {
 					"$ref": "#/definitions/Source",
-					"description": "The source location of the breakpoints; either `source.path` or `source.reference` must be specified."
+					"description": "The source location of the breakpoints; either `source.path` or `source.sourceReference` must be specified."
 				},
 				"line": {
 					"type": "integer",
@@ -1414,7 +1414,7 @@
 		"SetExceptionBreakpointsResponse": {
 			"allOf": [ { "$ref": "#/definitions/Response" }, {
 				"type": "object",
-				"description": "Response to `setExceptionBreakpoints` request.\nThe response contains an array of `Breakpoint` objects with information about each exception breakpoint or filter. The `Breakpoint` objects are in the same order as the elements of the `filters`, `filterOptions`, `exceptionOptions` arrays given as arguments. If both `filters` and `filterOptions` are given, the returned array must start with `filters` information first, followed by `filterOptions` information.\nThe `verified` property of a `Breakpoint` object signals whether the exception breakpoint or filter could be successfully created and whether the condition or hit count expressions are valid. In case of an error the `message` property explains the problem. The `id` property can be used to introduce a unique ID for the exception breakpoint or filter so that it can be updated subsequently by sending breakpoint events.\nFor backward compatibility both the `breakpoints` array and the enclosing `body` are optional. If these elements are missing a client is not able to show problems for individual exception breakpoints or filters.",
+				"description": "Response to `setExceptionBreakpoints` request.\nThe response contains an array of `Breakpoint` objects with information about each exception breakpoint or filter. The `Breakpoint` objects are in the same order as the elements of the `filters`, `filterOptions`, `exceptionOptions` arrays given as arguments. If both `filters` and `filterOptions` are given, the returned array must start with `filters` information first, followed by `filterOptions` information.\nThe `verified` property of a `Breakpoint` object signals whether the exception breakpoint or filter could be successfully created and whether the condition is valid. In case of an error the `message` property explains the problem. The `id` property can be used to introduce a unique ID for the exception breakpoint or filter so that it can be updated subsequently by sending breakpoint events.\nFor backward compatibility both the `breakpoints` array and the enclosing `body` are optional. If these elements are missing a client is not able to show problems for individual exception breakpoints or filters.",
 				"properties": {
 					"body": {
 						"type": "object",
@@ -1477,7 +1477,7 @@
 						"properties": {
 							"dataId": {
 								"type": [ "string", "null" ],
-								"description": "An identifier for the data on which a data breakpoint can be registered with the `setDataBreakpoints` request or null if no data breakpoint is available."
+								"description": "An identifier for the data on which a data breakpoint can be registered with the `setDataBreakpoints` request or null if no data breakpoint is available. If a `variablesReference` or `frameId` is passed, the `dataId` is valid in the current suspended state, otherwise it's valid indefinitely. See 'Lifetime of Object References' in the Overview section for details. Breakpoints set using the `dataId` in the `setDataBreakpoints` request may outlive the lifetime of the associated `dataId`."
 							},
 							"description": {
 								"type": "string",
@@ -2126,11 +2126,11 @@
 				},
 				"start": {
 					"type": "integer",
-					"description": "The index of the first variable to return; if omitted children start at 0."
+					"description": "The index of the first variable to return; if omitted children start at 0.\nThe attribute is only honored by a debug adapter if the corresponding capability `supportsVariablePaging` is true."
 				},
 				"count": {
 					"type": "integer",
-					"description": "The number of variables to return. If count is missing or 0, all variables are returned."
+					"description": "The number of variables to return. If count is missing or 0, all variables are returned.\nThe attribute is only honored by a debug adapter if the corresponding capability `supportsVariablePaging` is true."
 				},
 				"format": {
 					"$ref": "#/definitions/ValueFormat",
@@ -2228,6 +2228,10 @@
 							"indexedVariables": {
 								"type": "integer",
 								"description": "The number of indexed child variables.\nThe client can use this information to present the variables in a paged UI and fetch them in chunks.\nThe value should be less than or equal to 2147483647 (2^31-1)."
+							},
+							"memoryReference": {
+								"type": "string",
+								"description": "A memory reference to a location appropriate for this result.\nFor pointer type eval results, this is generally a reference to the memory address contained in the pointer.\nThis attribute may be returned by a debug adapter if corresponding capability `supportsMemoryReferences` is true."
 							}
 						},
 						"required": [ "value" ]
@@ -2545,7 +2549,7 @@
 							},
 							"memoryReference": {
 								"type": "string",
-								"description": "A memory reference to a location appropriate for this result.\nFor pointer type eval results, this is generally a reference to the memory address contained in the pointer.\nThis attribute should be returned by a debug adapter if corresponding capability `supportsMemoryReferences` is true."
+								"description": "A memory reference to a location appropriate for this result.\nFor pointer type eval results, this is generally a reference to the memory address contained in the pointer.\nThis attribute may be returned by a debug adapter if corresponding capability `supportsMemoryReferences` is true."
 							}
 						},
 						"required": [ "result", "variablesReference" ]
@@ -2625,6 +2629,10 @@
 							"indexedVariables": {
 								"type": "integer",
 								"description": "The number of indexed child variables.\nThe client can use this information to present the variables in a paged UI and fetch them in chunks.\nThe value should be less than or equal to 2147483647 (2^31-1)."
+							},
+							"memoryReference": {
+								"type": "string",
+								"description": "A memory reference to a location appropriate for this result.\nFor pointer type eval results, this is generally a reference to the memory address contained in the pointer.\nThis attribute may be returned by a debug adapter if corresponding capability `supportsMemoryReferences` is true."
 							}
 						},
 						"required": [ "value" ]
@@ -3376,20 +3384,6 @@
 			"required": [ "attributeName", "label"]
 		},
 
-		"ModulesViewDescriptor": {
-			"type": "object",
-			"description": "The ModulesViewDescriptor is the container for all declarative configuration options of a module view.\nFor now it only specifies the columns to be shown in the modules view.",
-			"properties": {
-				"columns": {
-					"type": "array",
-					"items": {
-						"$ref": "#/definitions/ColumnDescriptor"
-					}
-				}
-			},
-			"required": [ "columns" ]
-		},
-
 		"Thread": {
 			"type": "object",
 			"description": "A Thread",
@@ -3486,7 +3480,7 @@
 				},
 				"canRestart": {
 					"type": "boolean",
-					"description": "Indicates whether this frame can be restarted with the `restart` request. Clients should only use this if the debug adapter supports the `restart` request and the corresponding capability `supportsRestartRequest` is true."
+					"description": "Indicates whether this frame can be restarted with the `restart` request. Clients should only use this if the debug adapter supports the `restart` request and the corresponding capability `supportsRestartRequest` is true. If a debug adapter has this capability, then `canRestart` defaults to `true` if the property is absent."
 				},
 				"instructionPointerReference": {
 					"type": "string",
@@ -3601,7 +3595,7 @@
 				},
 				"memoryReference": {
 					"type": "string",
-					"description": "The memory reference for the variable if the variable represents executable code, such as a function pointer.\nThis attribute is only required if the corresponding capability `supportsMemoryReferences` is true."
+					"description": "A memory reference associated with this variable.\nFor pointer type variables, this is generally a reference to the memory address contained in the pointer.\nFor executable data, this reference may later be used in a `disassemble` request.\nThis attribute may be returned by a debug adapter if corresponding capability `supportsMemoryReferences` is true."
 				}
 			},
 			"required": [ "name", "value", "variablesReference" ]
@@ -3640,8 +3634,8 @@
 							"Indicates that the object is a constant.",
 							"Indicates that the object is read only.",
 							"Indicates that the object is a raw string.",
-							"Indicates that the object can have an Object ID created for it.",
-							"Indicates that the object has an Object ID associated with it.",
+							"Indicates that the object can have an Object ID created for it. This is a vestigial attribute that is used by some clients; 'Object ID's are not specified in the protocol.",
+							"Indicates that the object has an Object ID associated with it. This is a vestigial attribute that is used by some clients; 'Object ID's are not specified in the protocol.",
 							"Indicates that the evaluation had side effects.",
 							"Indicates that the object has its value tracked by a data breakpoint."
 						]
@@ -3701,11 +3695,11 @@
 				},
 				"hitCondition": {
 					"type": "string",
-					"description": "The expression that controls how many hits of the breakpoint are ignored.\nThe debug adapter is expected to interpret the expression as needed.\nThe attribute is only honored by a debug adapter if the corresponding capability `supportsHitConditionalBreakpoints` is true."
+					"description": "The expression that controls how many hits of the breakpoint are ignored.\nThe debug adapter is expected to interpret the expression as needed.\nThe attribute is only honored by a debug adapter if the corresponding capability `supportsHitConditionalBreakpoints` is true.\nIf both this property and `condition` are specified, `hitCondition` should be evaluated only if the `condition` is met, and the debug adapter should stop only if both conditions are met."
 				},
 				"logMessage": {
 					"type": "string",
-					"description": "If this attribute exists and is non-empty, the debug adapter must not 'break' (stop)\nbut log the message instead. Expressions within `{}` are interpolated.\nThe attribute is only honored by a debug adapter if the corresponding capability `supportsLogPoints` is true."
+					"description": "If this attribute exists and is non-empty, the debug adapter must not 'break' (stop)\nbut log the message instead. Expressions within `{}` are interpolated.\nThe attribute is only honored by a debug adapter if the corresponding capability `supportsLogPoints` is true.\nIf either `hitCondition` or `condition` is specified, then the message should only be logged if those conditions are met."
 				}
 			},
 			"required": [ "line" ]
@@ -3771,7 +3765,7 @@
 				},
 				"offset": {
 					"type": "integer",
-					"description": "The offset from the instruction reference.\nThis can be negative."
+					"description": "The offset from the instruction reference in bytes.\nThis can be negative."
 				},
 				"condition": {
 					"type": "string",
@@ -3828,6 +3822,11 @@
 				"offset": {
 					"type": "integer",
 					"description": "The offset from the instruction reference.\nThis can be negative."
+				},
+				"reason": {
+					"type": "string",
+					"description": "A machine-readable explanation of why a breakpoint may not be verified. If a breakpoint is verified or a specific reason is not known, the adapter should omit this property. Possible values include:\n\n- `pending`: Indicates a breakpoint might be verified in the future, but the adapter cannot verify it in the current state.\n - `failed`: Indicates a breakpoint was not able to be verified, and the adapter does not believe it can be verified without intervention.",
+					"enum": [ "pending", "failed" ]
 				}
 			},
 			"required": [ "verified" ]
@@ -4165,6 +4164,11 @@
 				"endColumn": {
 					"type": "integer",
 					"description": "The end column of the range that corresponds to this instruction, if any."
+				},
+				"presentationHint": {
+					"type": "string",
+					"description": "A hint for how to present the instruction in the UI.\n\nA value of `invalid` may be used to indicate this instruction is 'filler' and cannot be reached by the program. For example, unreadable memory addresses may be presented is 'invalid.'",
+					"enum": [ "normal", "invalid" ]
 				}
 			},
 			"required": [ "address", "instruction" ]
