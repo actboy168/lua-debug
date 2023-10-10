@@ -30,15 +30,13 @@ local json = {
         "Debuggers",
     },
     engines = {
-        vscode = "^1.61.0",
+        vscode = "^1.75.0",
     },
     extensionKind = {
         "workspace",
     },
     main = "./js/extension.js",
     activationEvents = {
-        "onCommand:extension.lua-debug.runEditorContents",
-        "onCommand:extension.lua-debug.debugEditorContents",
         "onDebugInitialConfigurations",
         "onDebugDynamicConfigurations",
         "onDebugResolve:lua",
@@ -289,7 +287,6 @@ if OS == "win32" or OS == "darwin" then
         markdownDescription = "Name of process to attach to.",
         type = "string",
     }
-    json.activationEvents[#json.activationEvents+1] = "onCommand:extension.lua-debug.pickProcess"
     json.contributes.debuggers[1].variables = {
         pickProcess = "extension.lua-debug.pickProcess",
     }
