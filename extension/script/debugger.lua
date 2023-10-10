@@ -1,4 +1,7 @@
-local root = ...
+local selfsource = ...
+local root = selfsource
+                :match "(.+)[/][^/]+$"
+                :match "(.+)[/][^/]+$"
 
 if debug.getregistry()["lua-debug"] then
     local dbg = debug.getregistry()["lua-debug"]
@@ -144,7 +147,7 @@ local function initDebugger(dbg, cfg)
     ---@type LuaDebug
     dbg.rdebug = assert(package.loadlib(luadebug, 'luaopen_luadebug'))()
     if not os.getenv "LUA_DEBUG_PATH" then
-        dbg.rdebug.setenv("LUA_DEBUG_PATH", root)
+        dbg.rdebug.setenv("LUA_DEBUG_PATH", selfsource)
     end
     if updateenv then
         dbg.rdebug.setenv("LUA_DEBUG_CORE", luadebug)
