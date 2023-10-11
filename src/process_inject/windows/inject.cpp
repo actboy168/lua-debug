@@ -29,7 +29,7 @@ static int injectdll(lua_State* L) {
     }
 }
 
-extern "C" __declspec(dllexport) int luaopen_inject(lua_State* L) {
+extern "C" int luaopen_inject(lua_State* L) {
     luaL_Reg lib[] = {
         { "injectdll", injectdll },
         { NULL, NULL },
@@ -37,3 +37,6 @@ extern "C" __declspec(dllexport) int luaopen_inject(lua_State* L) {
     luaL_newlib(L, lib);
     return 1;
 }
+
+#include <binding/binding.h>
+static ::bee::lua::callfunc _init(::bee::lua::register_module, "inject", luaopen_inject);
