@@ -225,11 +225,12 @@ function dbg:set_wait(name, f)
 end
 
 function dbg:setup_patch()
+    local ERREVENT_ERRRUN = 0x02
     local rawxpcall = xpcall
     function pcall(f, ...)
         return rawxpcall(f,
             function(msg)
-                self:event("exception", msg)
+                self:event("exception", msg, ERREVENT_ERRRUN, 3)
                 return msg
             end,
             ...)
@@ -238,7 +239,7 @@ function dbg:setup_patch()
     function xpcall(f, msgh, ...)
         return rawxpcall(f,
             function(msg)
-                self:event("exception", msg)
+                self:event("exception", msg, ERREVENT_ERRRUN, 3)
                 return msgh and msgh(msg) or msg
             end
             , ...)
