@@ -187,6 +187,10 @@ function resolveLaunchConfig(config, platname, settings) {
         if (config.cpath) {
             config.cpath = config.cpath.concat(settings.cpath)
         }
+        //address
+        if (typeof config.address != 'string' && settings.address !== "") {
+            config.address = settings.address;
+        }
     }
 }
 
@@ -270,14 +274,14 @@ function resolveConfig(folder, config) {
             config.pathFormat = "path"
         }
     }
-    if (typeof config.address == 'string' && typeof config.client != 'boolean') {
-        config.client = true;
-    }
     if (config.request == 'launch') {
         resolveLaunchConfig(config, platname, settings)
     }
     else if (config.request == 'attach') {
         resolveAttachConfig(config, platname, settings)
+    }
+    if (typeof config.address == 'string' && typeof config.client != 'boolean') {
+        config.client = true;
     }
     config.configuration = {
         variables: vscode.workspace.getConfiguration("lua.debug.variables")

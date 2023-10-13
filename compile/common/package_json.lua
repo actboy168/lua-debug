@@ -226,16 +226,12 @@ attributes.common = {
         type = "boolean",
     },
     address = {
-        default = "127.0.0.1:4278",
         markdownDescription = [[
 Debugger address.
 1. IPv4 e.g. `127.0.0.1:4278`
 2. IPv6 e.g. `[::1]:4278`
 3. Unix domain socket e.g. `@c:\\unix.sock`]],
-        type = {
-            "string",
-            "null",
-        },
+        type = "string",
     },
     client = {
         default = true,
@@ -474,7 +470,7 @@ json.contributes.debuggers[1].configurationAttributes = {
 }
 
 local configuration = json.contributes.configuration.properties
-for _, name in ipairs { "luaArch", "luaVersion", "sourceCoding", "console", "path", "cpath" } do
+for _, name in ipairs { "luaArch", "luaVersion", "sourceCoding", "console", "path", "cpath", "address" } do
     local attr = attributes.launch[name] or attributes.attach[name]
     if attr then
         local cfg = {}
