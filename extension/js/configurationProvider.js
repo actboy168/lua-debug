@@ -92,15 +92,15 @@ function mergeConfigurations(config) {
     let platname
     let platcfg
     if (os.platform() == "win32" && !config.useWSL) {
-        platname = "Windows"
+        platname = "windows"
         platcfg = config.windows
     }
     else if (os.platform() == "darwin") {
-        platname = "macOS"
+        platname = "macos"
         platcfg = config.osx
     }
     else {
-        platname = "Linux"
+        platname = "linux"
         platcfg = config.linux
     }
     delete config.windows;
@@ -116,7 +116,7 @@ function mergeConfigurations(config) {
 
 function resolveConfig(folder, config) {
     const settings = vscode.workspace.getConfiguration("lua.debug.settings");
-    const plat = mergeConfigurations(config)
+    const platname = mergeConfigurations(config)
     config.type = 'lua';
     if (config.request != 'attach') {
         config.request = 'launch';
@@ -163,7 +163,7 @@ function resolveConfig(folder, config) {
         }
     }
     if (typeof config.pathFormat != 'string') {
-        if (plat == "Linux" && !config.useWSL) {
+        if (platname == "linux" && !config.useWSL) {
             config.pathFormat = "linuxpath"
         }
         else {
@@ -183,13 +183,13 @@ function resolveConfig(folder, config) {
                     if (typeof config.address == 'string') {
                         config.inject = "none";
                     }
-                    else if (plat == "Windows") {
+                    else if (platname == "windows") {
                         config.inject = "hook";
                     }
-                    else if (plat == "macOS") {
+                    else if (platname == "macos") {
                         config.inject = "lldb";
                     }
-                    else if (plat == "Linux") {
+                    else if (platname == "linux") {
                         config.inject = "gdb";
                     }
                     else {
@@ -206,7 +206,7 @@ function resolveConfig(folder, config) {
                 throw new Error('Missing `program` to debug');
             }
             if (typeof config.luaexe != 'string') {
-                config.sourceCoding = plat == "Windows" ? "ansi" : "utf8";
+                config.sourceCoding = platname == "windows" ? "ansi" : "utf8";
             }
             // path
             if (typeof config.path == 'string') {
@@ -230,7 +230,7 @@ function resolveConfig(folder, config) {
             else if (typeof config.cpath == 'object') {
             }
             else {
-                let ext = plat == "Windows"? "dll" : "so"
+                let ext = platname == "windows"? "dll" : "so"
                 config.cpath = ['${cwd}/?.' + ext]
                 if (typeof config.luaexe == 'string') {
                     config.cpath.push(path.dirname(config.luaexe) + '/?.' + ext)
@@ -249,13 +249,13 @@ function resolveConfig(folder, config) {
             if (typeof config.address == 'string') {
                 config.inject = "none";
             }
-            else if (plat == "Windows") {
+            else if (platname == "windows") {
                 config.inject = "hook";
             }
-            else if (plat == "macOS") {
+            else if (platname == "macos") {
                 config.inject = "lldb";
             }
-            else if (plat == "Linux") {
+            else if (platname == "linux") {
                 config.inject = "gdb";
             }
             else {
