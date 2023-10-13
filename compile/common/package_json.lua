@@ -474,7 +474,7 @@ json.contributes.debuggers[1].configurationAttributes = {
 }
 
 local configuration = json.contributes.configuration.properties
-for _, name in ipairs { "luaArch", "luaVersion", "sourceCoding", "path", "cpath", "console" } do
+for _, name in ipairs { "luaArch", "luaVersion", "sourceCoding", "console", "path", "cpath" } do
     local attr = attributes.launch[name] or attributes.attach[name]
     if attr then
         local cfg = {}
