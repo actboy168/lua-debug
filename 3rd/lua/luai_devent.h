@@ -10,16 +10,12 @@
 #error unknown lua version
 #endif
 
-#if defined(LUA_VERSION_LATEST)
-#define LUA_STKID(s) s.p
-#else
-#define LUA_STKID(s) s
-#endif
-
 #if LUA_VERSION_NUM >= 504
+#define LUA_STKID(s) s.p
 #define LUA_S2V(s) s2v(s)
 #else
 #define LUA_S2V(s) (s)
+#define LUA_STKID(s) s
 #endif
 
 #define luai_threadevent(L, from, type)         \
