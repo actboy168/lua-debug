@@ -106,12 +106,9 @@ async function activate(context) {
             if (ds) {
                 ds.customRequest('customRequestShowIntegerAsHex');
             }
-        })
+        }),
+        vscode.commands.registerCommand("extension.lua-debug.pickProcess", pickProcess.pick)
     );
-
-    context.subscriptions.push(
-		vscode.commands.registerCommand("extension.lua-debug.pickProcess", pickProcess.pick)
-	);
 }
 
 exports.activate = activate;
