@@ -168,18 +168,10 @@ local dbg = {}
 function dbg:start(cfg)
     initDebugger(self, cfg)
 
-    local bootstrap_lua = ([[
-        package.path = %q
-        require "bee.thread".bootstrap_lua = debug.getinfo(1, "S").source
-    ]]):format(
-        self.root..'/script/?.lua'
-    )
-    self.rdebug.start(("assert(load(%q))(...)"):format(bootstrap_lua)..([[
-        local logpath = %q
-        local log = require 'common.log'
-        log.file = logpath..'/worker.log'
-        require 'backend.master' .init(logpath, %q..%q)
-        require 'backend.worker'
+    self.rdebug.start(([[
+        local rootpath = %q
+        package.path = rootpath..'/script/?.lua'
+        require 'backend.bootstrap'. start(rootpath, %q..%q)
     ]]):format(
         self.root,
         cfg.client == true and "connect:" or "listen:",
@@ -191,19 +183,10 @@ end
 function dbg:attach(cfg)
     initDebugger(self, cfg)
 
-    local bootstrap_lua = ([[
-        package.path = %q
-        require "bee.thread".bootstrap_lua = debug.getinfo(1, "S").source
-    ]]):format(
-        self.root..'/script/?.lua'
-    )
-    self.rdebug.start(("assert(load(%q))(...)"):format(bootstrap_lua)..([[
-        if require 'backend.master' .has() then
-            local logpath = %q
-            local log = require 'common.log'
-            log.file = logpath..'/worker.log'
-            require 'backend.worker'
-        end
+    self.rdebug.start(([[
+        local rootpath = %q
+        package.path = rootpath..'/script/?.lua'
+        require 'backend.bootstrap'. attach(rootpath)
     ]]):format(
         self.root
     ))
