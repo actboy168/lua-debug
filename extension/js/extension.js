@@ -70,17 +70,10 @@ async function activate(context) {
         console.log(error.stack)
     });
 
-    for (const i in configurationProvider) {
-        let provider = configurationProvider[i];
-        if (provider.type == 'resolver') {
-            vscode.debug.registerDebugConfigurationProvider('lua', provider);
-        }
-        else if (provider.type == 'provider') {
-            vscode.debug.registerDebugConfigurationProvider('lua', provider, provider.triggerKind);
-        }
-    }
-
     context.subscriptions.push(
+        vscode.debug.registerDebugConfigurationProvider('lua', configurationProvider.resolve),
+        vscode.debug.registerDebugConfigurationProvider('lua', configurationProvider.initial, vscode.DebugConfigurationProviderTriggerKind.Initial),
+        vscode.debug.registerDebugConfigurationProvider('lua', configurationProvider.dynamic, vscode.DebugConfigurationProviderTriggerKind.Dynamic),
         vscode.debug.registerDebugAdapterDescriptorFactory('lua', descriptorFactory),
         vscode.debug.registerDebugAdapterTrackerFactory('lua', trackerFactory),
         vscode.commands.registerCommand("extension.lua-debug.runEditorContents", (uri) => {

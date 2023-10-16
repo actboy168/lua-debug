@@ -3,9 +3,6 @@ const path = require("path");
 const os = require('os');
 const fs = require('fs');
 
-const TriggerKindInitial = 1;
-const TriggerKindDynamic = 2;
-
 function createDefaultProgram(folder) {
     const editor = vscode.window.activeTextEditor;
     if (editor && editor.document.languageId === 'lua') {
@@ -38,8 +35,6 @@ function createDefaultProgram(folder) {
 }
 
 exports.initial = {
-    type: "provider",
-    triggerKind: TriggerKindInitial,
     provideDebugConfigurations: function (folder) {
         let program = createDefaultProgram(folder);
         if (!program) {
@@ -56,11 +51,7 @@ exports.initial = {
     }
 };
 
-
-
 exports.dynamic = {
-    type: "provider",
-    triggerKind: TriggerKindDynamic,
     provideDebugConfigurations: function (folder) {
         let configurations = [];
         let program = createDefaultProgram(folder);
@@ -290,7 +281,6 @@ function resolveConfig(folder, config) {
 }
 
 exports.resolve = {
-    type: "resolver",
     resolveDebugConfiguration: async function (folder, config) {
         try {
             return resolveConfig(folder, config);
