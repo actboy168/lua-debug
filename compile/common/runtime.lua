@@ -151,15 +151,6 @@ for _, luaver in ipairs { "lua51", "lua52", "lua53", "lua54", "lua-latest", "lua
         end
     end
 
-    local lua_version_num
-    if luaver == "lua-latest" then
-        lua_version_num = 504
-    elseif luaver == "luajit" then
-        lua_version_num = 501
-    else
-        lua_version_num = 100 * math.tointeger(luaver:sub(4, 4)) + math.tointeger(luaver:sub(5, 5))
-    end
-
     local luaSrcDir = "3rd/lua/"..luaver;
     if luaver == "luajit" then
         luaSrcDir = luaSrcDir.."/src";
@@ -172,7 +163,6 @@ for _, luaver in ipairs { "lua51", "lua52", "lua53", "lua54", "lua-latest", "lua
             "compile_to_luadbg",
         },
         defines = {
-            ("DBG_LUA_VERSION=%d"):format(lua_version_num),
             luaver == "lua-latest" and "LUA_VERSION_LATEST",
         },
         includes = {
