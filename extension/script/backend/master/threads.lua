@@ -74,6 +74,9 @@ function CMD.evaluate(w, req)
     else
         req.body.variablesReference = 0
     end
+    if req.body.memoryReference then
+        req.body.memoryReference = "memory_" .. w .. "x" .. req.body.memoryReference
+    end
     response.success(req, req.body)
 end
 
