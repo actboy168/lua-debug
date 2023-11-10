@@ -45,6 +45,15 @@ lm:source_set 'luadbg' {
     msvc = {
         flags = "/utf-8",
     },
+    linux = {
+        flags = "-fPIC"
+    },
+    netbsd = {
+        flags = "-fPIC"
+    },
+    freebsd = {
+        flags = "-fPIC"
+    },
     windows = {
         defines = {
             "_CRT_SECURE_NO_WARNINGS",
@@ -68,6 +77,15 @@ lm:source_set 'luadbg-compatible' {
     },
     msvc = {
         flags = "/utf-8",
+    },
+    linux = {
+        flags = "-fPIC"
+    },
+    netbsd = {
+        flags = "-fPIC"
+    },
+    freebsd = {
+        flags = "-fPIC"
     },
     windows = {
         defines = {
