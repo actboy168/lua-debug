@@ -3,6 +3,13 @@
 #    include <winsock2.h>
 #endif
 
+#include "luadbg/lua.hpp"
+
+#if !defined(LUADBG_DISABLE)
+
+#include "luadbg/inc/luadbgexports.h"
+#include "luadbg/inc/luadbgrename.h"
+
 #define lua_h
 #define luaconf_h
 #define lualib_h
@@ -10,12 +17,12 @@
 #define _LUALIB_H
 #define _LUAJIT_H
 
-#include "luadbg/inc/luadbg.hpp"
-#include "luadbg/inc/luadbgexports.h"
-#include "luadbg/inc/luadbgrename.h"
+#endif
+
 #include "luadbg/bee_module.h"
 
 #include <binding/file.h>
+#include <binding/binding.h>
 #include <binding/lua_socket.cpp>
 #include <binding/lua_thread.cpp>
 #include <binding/lua_filesystem.cpp>

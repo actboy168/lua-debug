@@ -55,7 +55,7 @@ async function install() {
         return;
     }
     for (const arch of ["win32-ia32", "win32-x64"]) {
-        for (const luaversion of  ["lua51", "lua52", "lua53", "lua54", "lua-latest","luajit"]) {
+        for (const luaversion of  ["lua51", "lua52", "lua53", "lua54","luajit", "lua-latest", "lua-compatible"]) {
             await copyDirectory(path.join(extensionDir, "vcredist", arch), path.join(extensionDir, "runtime", arch, luaversion))
         }
     }
@@ -70,17 +70,10 @@ async function activate(context) {
         console.log(error.stack)
     });
 
-    for (const i in configurationProvider) {
-        let provider = configurationProvider[i];
-        if (provider.type == 'resolver') {
-            vscode.debug.registerDebugConfigurationProvider('lua', provider);
-        }
-        else if (provider.type == 'provider') {
-            vscode.debug.registerDebugConfigurationProvider('lua', provider, provider.triggerKind);
-        }
-    }
-
     context.subscriptions.push(
+        vscode.debug.registerDebugConfigurationProvider('lua', configurationProvider.resolve),
+        vscode.debug.registerDebugConfigurationProvider('lua', configurationProvider.initial, vscode.DebugConfigurationProviderTriggerKind.Initial),
+        vscode.debug.registerDebugConfigurationProvider('lua', configurationProvider.dynamic, vscode.DebugConfigurationProviderTriggerKind.Dynamic),
         vscode.debug.registerDebugAdapterDescriptorFactory('lua', descriptorFactory),
         vscode.debug.registerDebugAdapterTrackerFactory('lua', trackerFactory),
         vscode.commands.registerCommand("extension.lua-debug.runEditorContents", (uri) => {
@@ -113,12 +106,9 @@ async function activate(context) {
             if (ds) {
                 ds.customRequest('customRequestShowIntegerAsHex');
             }
-        })
+        }),
+        vscode.commands.registerCommand("extension.lua-debug.pickProcess", pickProcess.pick)
     );
-
-    context.subscriptions.push(
-		vscode.commands.registerCommand("extension.lua-debug.pickProcess", pickProcess.pick)
-	);
 }
 
 exports.activate = activate;

@@ -27,6 +27,7 @@ local LuaVersionString <const> = {
     ["lua53"] = true,
     ["lua54"] = true,
     ["lua-latest"] = true,
+    ["lua-compatible"] = true,
 }
 local function getLuaVersion(args)
     if LuaVersionString[args.luaVersion] then

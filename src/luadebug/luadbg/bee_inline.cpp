@@ -6,6 +6,9 @@
 #include <bee/error.cpp>
 #include <bee/net/endpoint.cpp>
 #include <bee/net/socket.cpp>
+#include <bee/thread/atomic_semaphore.cpp>
+#include <bee/thread/setname.cpp>
+#include <bee/thread/spinlock.cpp>
 #include <bee/utility/file_handle.cpp>
 #include <bee/utility/path_helper.cpp>
 

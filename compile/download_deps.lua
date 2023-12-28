@@ -58,7 +58,7 @@ local function download(url, output, dir)
     for _, cmd in ipairs(cmds) do
         local p, err = sp.spawn(cmd)
         if not p then
-            error(cmd[1], err)
+            error(cmd[1] .. ":" .. err)
         end
         p:wait()
     end

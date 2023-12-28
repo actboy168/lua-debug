@@ -5,7 +5,7 @@ local OS, ARCH = platform:match "^([^-]+)-([^-]+)$"
 
 local json = {
     name = "lua-debug",
-    version = "1.61.0",
+    version = "2.0.4",
     publisher = "actboy168",
     displayName = "Lua Debug",
     description = "VSCode debugger extension for Lua",
@@ -30,15 +30,13 @@ local json = {
         "Debuggers",
     },
     engines = {
-        vscode = "^1.61.0",
+        vscode = "^1.75.0",
     },
     extensionKind = {
         "workspace",
     },
     main = "./js/extension.js",
     activationEvents = {
-        "onCommand:extension.lua-debug.runEditorContents",
-        "onCommand:extension.lua-debug.debugEditorContents",
         "onDebugInitialConfigurations",
         "onDebugDynamicConfigurations",
         "onDebugResolve:lua",
@@ -160,6 +158,7 @@ attributes.common = {
             "lua53",
             "lua54",
             "lua-latest",
+            "lua-compatible",
             "luajit",
         },
         markdownDescription = "%lua.debug.launch.luaVersion.description%",
@@ -228,16 +227,12 @@ attributes.common = {
         type = "boolean",
     },
     address = {
-        default = "127.0.0.1:4278",
         markdownDescription = [[
 Debugger address.
 1. IPv4 e.g. `127.0.0.1:4278`
 2. IPv6 e.g. `[::1]:4278`
 3. Unix domain socket e.g. `@c:\\unix.sock`]],
-        type = {
-            "string",
-            "null",
-        },
+        type = "string",
     },
     client = {
         default = true,
@@ -289,7 +284,6 @@ if OS == "win32" or OS == "darwin" then
         markdownDescription = "Name of process to attach to.",
         type = "string",
     }
-    json.activationEvents[#json.activationEvents+1] = "onCommand:extension.lua-debug.pickProcess"
     json.contributes.debuggers[1].variables = {
         pickProcess = "extension.lua-debug.pickProcess",
     }
@@ -477,7 +471,7 @@ json.contributes.debuggers[1].configurationAttributes = {
 }
 
 local configuration = json.contributes.configuration.properties
-for _, name in ipairs { "luaArch", "luaVersion", "sourceCoding", "path", "cpath", "console" } do
+for _, name in ipairs { "luaArch", "luaVersion", "sourceCoding", "console", "path", "cpath", "address" } do
     local attr = attributes.launch[name] or attributes.attach[name]
     if attr then
         local cfg = {}

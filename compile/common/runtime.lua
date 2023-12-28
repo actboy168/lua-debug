@@ -15,6 +15,9 @@ lm:source_set 'onelua' {
         "src/luadebug/",
     },
     sources = "src/luadebug/luadbg/onelua.c",
+    msvc = {
+        sources = ("3rd/bee.lua/3rd/lua/fast_setjmp_%s.s"):format(lm.arch)
+    },
     linux = {
         flags = "-fPIC"
     },
@@ -29,22 +32,183 @@ lm:source_set 'onelua' {
     }
 }
 
+lm:source_set 'luadbg' {
+    deps = "onelua",
+    includes = {
+        "src/luadebug",
+        "3rd/bee.lua",
+        "3rd/bee.lua/3rd/lua",
+    },
+    sources = {
+        "src/luadebug/luadbg/*.cpp",
+    },
+    msvc = {
+        flags = "/utf-8",
+    },
+    linux = {
+        flags = "-fPIC"
+    },
+    netbsd = {
+        flags = "-fPIC"
+    },
+    freebsd = {
+        flags = "-fPIC"
+    },
+    windows = {
+        defines = {
+            "_CRT_SECURE_NO_WARNINGS",
+            "_WIN32_WINNT=0x0601",
+        },
+    }
+}
+
+lm:source_set 'luadbg-compatible' {
+    defines = {
+        "LUADBG_DISABLE",
+    },
+    includes = {
+        "src/luadebug",
+        "3rd/bee.lua",
+        "3rd/bee.lua/3rd/lua",
+    },
+    sources = {
+        "src/luadebug/luadbg/*.cpp",
+        "3rd/bee.lua/3rd/lua-seri/lua-seri.c",
+    },
+    msvc = {
+        flags = "/utf-8",
+    },
+    linux = {
+        flags = "-fPIC"
+    },
+    netbsd = {
+        flags = "-fPIC"
+    },
+    freebsd = {
+        flags = "-fPIC"
+    },
+    windows = {
+        defines = {
+            "_CRT_SECURE_NO_WARNINGS",
+            "_WIN32_WINNT=0x0601",
+        },
+    }
+}
+
 local compat <const> = {
     ["lua51"]      = "compat/5x",
     ["lua52"]      = "compat/5x",
     ["lua53"]      = "compat/5x",
     ["lua54"]      = "compat/5x",
     ["lua-latest"] = "compat/5x",
+    ["lua-compatible"] = "compat/5x",
     ["luajit"]     = "compat/jit"
 }
-for _, luaver in ipairs { "lua51", "lua52", "lua53", "lua54", "lua-latest", "luajit" } do
+for _, luaver in ipairs { "lua51", "lua52", "lua53", "lua54", "luajit", "lua-latest", "lua-compatible" } do
     runtimes[#runtimes + 1] = luaver.."/lua"
-    runtimes[#runtimes + 1] = luaver.."/luadebug"
-
-    if luaver ~= "luajit" then
+    if lm.os == "windows" then
+        runtimes[#runtimes + 1] = luaver.."/"..luaver
+    end
+    if luaver == "luajit" then
         if lm.os == "windows" then
-            runtimes[#runtimes + 1] = luaver.."/"..luaver
-            lm:shared_library(luaver..'/'..luaver) {
+            require "compile.luajit.make_windows"
+        else
+            if lm.cross_compile then
+                require "compile.common.run_luamake"
+                lm:build "buildvm" {
+                    rule = "run_luamake",
+                    inputs = "compile/luajit/make_buildtools.lua",
+                    args = {
+                        "-bindir", lm.bindir,
+                        "-runtime_platform", lm.runtime_platform,
+                    },
+                }
+            else
+                require "compile.luajit.make_buildtools"
+            end
+            require "compile.luajit.make"
+        end
+    elseif luaver == "lua-compatible" then
+        if lm.os == "windows" then
+            lm:shared_library(luaver.."/"..luaver) {
+                rootdir = '3rd/lua/lua-latest',
+                bindir = bindir,
+                includes = {
+                    '..',
+                },
+                sources = {
+                    "*.c",
+                    "!lua.c",
+                    "!luac.c",
+                },
+                defines = {
+                    "LUA_BUILD_AS_DLL",
+                    "LUA_VERSION_LATEST",
+                }
+            }
+
+            lm:executable(luaver..'/lua') {
+                rootdir = '3rd/lua/lua-latest',
+                bindir = bindir,
+                output = "lua",
+                deps = luaver..'/'..luaver,
+                includes = {
+                    '..',
+                },
+                sources = {
+                    "lua.c",
+                    "../../../compile/windows/lua-debug.rc",
+                },
+                defines = {
+                    "LUA_VERSION_LATEST",
+                }
+            }
+        else
+            lm:executable(luaver..'/lua') {
+                rootdir = '3rd/lua/lua-latest',
+                bindir = bindir,
+                includes = {
+                    '.',
+                    '..',
+                },
+                sources = {
+                    "*.c",
+                    "!luac.c",
+                },
+                defines = {
+                    "LUA_VERSION_LATEST",
+                },
+                visibility = "default",
+                links = "m",
+                linux = {
+                    defines = "LUA_USE_LINUX",
+                    links = { "pthread", "dl" },
+                    ldflags = "-Wl,-E",
+                },
+                netbsd = {
+                    defines = "LUA_USE_LINUX",
+                    links = "pthread",
+                    ldflags = "-Wl,-E",
+                },
+                freebsd = {
+                    defines = "LUA_USE_LINUX",
+                    links = "pthread",
+                    ldflags = "-Wl,-E",
+                },
+                android = {
+                    defines = "LUA_USE_LINUX",
+                    links = "dl",
+                },
+                macos = {
+                    defines = {
+                        "LUA_USE_MACOSX",
+                    },
+                }
+            }
+        end
+    else
+        if lm.os == "windows" then
+            lm:shared_library(luaver.."/"..luaver) {
                 rootdir = '3rd/lua/'..luaver,
                 bindir = bindir,
                 includes = {
@@ -127,50 +291,28 @@ for _, luaver in ipairs { "lua51", "lua52", "lua53", "lua54", "lua-latest", "lua
                 }
             }
         end
-    else
-        if lm.os == "windows" then
-            require "compile.luajit.make_windows"
+    end
+
+    local luaSrcDir; do
+        if luaver == "luajit" then
+            luaSrcDir = "3rd/lua/luajit/src"
+        elseif luaver == "lua-compatible" then
+            luaSrcDir = "3rd/lua/lua-latest"
         else
-            if lm.cross_compile then
-                require "compile.common.run_luamake"
-                lm:build "buildvm" {
-                    rule = "run_luamake",
-                    inputs = "compile/luajit/make_buildtools.lua",
-                    args = {
-                        "-bindir", lm.bindir,
-                        "-runtime_platform", lm.runtime_platform,
-                    },
-                }
-            else
-                require "compile.luajit.make_buildtools"
-            end
-            require "compile.luajit.make"
+            luaSrcDir = "3rd/lua/"..luaver
         end
     end
 
-    local lua_version_num
-    if luaver == "lua-latest" then
-        lua_version_num = 504
-    elseif luaver == "luajit" then
-        lua_version_num = 501
-    else
-        lua_version_num = 100 * math.tointeger(luaver:sub(4, 4)) + math.tointeger(luaver:sub(5, 5))
-    end
-
-    local luaSrcDir = "3rd/lua/"..luaver;
-    if luaver == "luajit" then
-        luaSrcDir = luaSrcDir.."/src";
-    end
-
+    runtimes[#runtimes + 1] = luaver.."/luadebug"
     lm:shared_library(luaver..'/luadebug') {
         bindir = bindir,
         deps = {
-            "onelua",
+            luaver == "lua-compatible" and "luadbg-compatible" or "luadbg",
             "compile_to_luadbg",
         },
         defines = {
-            ("DBG_LUA_VERSION=%d"):format(lua_version_num),
             luaver == "lua-latest" and "LUA_VERSION_LATEST",
+            luaver == "lua-compatible" and "LUADBG_DISABLE",
         },
         includes = {
             luaSrcDir,
@@ -180,11 +322,13 @@ for _, luaver in ipairs { "lua51", "lua52", "lua53", "lua54", "lua-latest", "lua
         },
         sources = {
             "src/luadebug/*.cpp",
-            "src/luadebug/luadbg/*.cpp",
             "src/luadebug/symbolize/*.cpp",
             "src/luadebug/thunk/*.cpp",
             "src/luadebug/util/*.cpp",
             "src/luadebug/"..compat[luaver].."/**/*.cpp",
+        },
+        msvc = {
+            flags = "/utf-8",
         },
         windows = {
             deps = luaver..'/'..luaver,
@@ -201,7 +345,8 @@ for _, luaver in ipairs { "lua51", "lua52", "lua53", "lua54", "lua-latest", "lua
                 "ole32",
                 "delayimp",
                 "dbghelp",
-                "ntdll"
+                "ntdll",
+                "synchronization",
             },
             ldflags = {
                 ("/DELAYLOAD:%s.dll"):format(luaver),

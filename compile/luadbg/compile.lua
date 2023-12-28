@@ -92,6 +92,30 @@ do
         f:write(("#define %s %s\n"):format(marco, compile(marco)))
     end
 end
+do
+    local f <const> = assert(io.open(outpath..newname.."imports.h", "wb"))
+    local function write(v)
+        f:write(("#define %s %s\n"):format(compile(v), v))
+    end
+    f:write "/* clang-format off */\n"
+    f:write "#pragma once\n"
+    f:write "\n"
+    for _, export in ipairs(exports) do
+        write(export)
+    end
+    f:write "\n"
+    write "lua_State"
+    write "lua_Integer"
+    write "lua_Number"
+    write "lua_CFunction"
+    write "luaL_Stream"
+    write "luaL_Buffer"
+    write "luaL_Reg"
+    f:write "\n"
+    for _, marco in ipairs(marcos) do
+        write(marco)
+    end
+end
 
 compile_to_luadbg("lua.h")
 compile_to_luadbg("luaconf.h")

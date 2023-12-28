@@ -1,4 +1,7 @@
-local root = ...
+local selfsource = ...
+local root = selfsource
+                :match "(.+)[/][^/]+$"
+                :match "(.+)[/][^/]+$"
 
 if debug.getregistry()["lua-debug"] then
     local dbg = debug.getregistry()["lua-debug"]
@@ -143,7 +146,7 @@ local function initDebugger(dbg, cfg)
     ---@type LuaDebug
     dbg.rdebug = assert(package.loadlib(luadebug, 'luaopen_luadebug'))()
     if not os.getenv "LUA_DEBUG_PATH" then
-        dbg.rdebug.setenv("LUA_DEBUG_PATH", root)
+        dbg.rdebug.setenv("LUA_DEBUG_PATH", selfsource)
     end
     if updateenv then
         dbg.rdebug.setenv("LUA_DEBUG_CORE", luadebug)
@@ -164,21 +167,14 @@ local dbg = {}
 function dbg:start(cfg)
     initDebugger(self, cfg)
 
-    local bootstrap_lua = ([[
-        package.path = %q
-        require "bee.thread".bootstrap_lua = debug.getinfo(1, "S").source
+    self.rdebug.start(([[
+        local rootpath = %q
+        package.path = rootpath..'/script/?.lua'
+        require 'backend.bootstrap'. start(rootpath, %q..%q)
     ]]):format(
-        self.root..'/script/?.lua'
-    )
-    self.rdebug.start(("assert(load(%q))(...)"):format(bootstrap_lua)..([[
-        local logpath = %q
-        local log = require 'common.log'
-        log.file = logpath..'/worker.log'
-        require 'backend.master' .init(logpath, %q)
-        require 'backend.worker'
-    ]]):format(
-        self.root
-        , ("%q, %s"):format(dbg.address, cfg.client == true and "true" or "false")
+        self.root,
+        cfg.client == true and "connect:" or "listen:",
+        dbg.address
     ))
     return self
 end
@@ -186,19 +182,10 @@ end
 function dbg:attach(cfg)
     initDebugger(self, cfg)
 
-    local bootstrap_lua = ([[
-        package.path = %q
-        require "bee.thread".bootstrap_lua = debug.getinfo(1, "S").source
-    ]]):format(
-        self.root..'/script/?.lua'
-    )
-    self.rdebug.start(("assert(load(%q))(...)"):format(bootstrap_lua)..([[
-        if require 'backend.master' .has() then
-            local logpath = %q
-            local log = require 'common.log'
-            log.file = logpath..'/worker.log'
-            require 'backend.worker'
-        end
+    self.rdebug.start(([[
+        local rootpath = %q
+        package.path = rootpath..'/script/?.lua'
+        require 'backend.bootstrap'. attach(rootpath)
     ]]):format(
         self.root
     ))
@@ -220,11 +207,12 @@ function dbg:set_wait(name, f)
 end
 
 function dbg:setup_patch()
+    local ERREVENT_ERRRUN = 0x02
     local rawxpcall = xpcall
     function pcall(f, ...)
         return rawxpcall(f,
             function(msg)
-                self:event("exception", msg)
+                self:event("exception", msg, ERREVENT_ERRRUN, 3)
                 return msg
             end,
             ...)
@@ -233,7 +221,7 @@ function dbg:setup_patch()
     function xpcall(f, msgh, ...)
         return rawxpcall(f,
             function(msg)
-                self:event("exception", msg)
+                self:event("exception", msg, ERREVENT_ERRRUN, 3)
                 return msgh and msgh(msg) or msg
             end
             , ...)

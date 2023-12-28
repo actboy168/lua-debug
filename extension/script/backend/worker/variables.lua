@@ -494,101 +494,103 @@ local function varGetUserdata(value, allow_lazy)
         if fn ~= nil then
             local ok, res = rdebug.eval(fn, value)
             if ok then
-                return res
+                return res, "userdata"
             else
-                return "__debugger_tostring error: "..res
+                return "__debugger_tostring error: "..res, "userdata"
             end
         end
         local fn = rdebug.fieldv(meta, '__tostring')
         if fn ~= nil then
             if allow_lazy then
-                return 'userdata', true
+                return 'userdata', "userdata", true
             else
                 local ok, res = rdebug.eval(fn, value)
                 if ok then
                     return res
                 else
-                    return "__tostring error: "..res
+                    return "__tostring error: "..res, "userdata"
                 end
             end
         end
         local name = rdebug.fieldv(meta, '__name')
         if name ~= nil then
-            return tostring(rdebug.value(name))
+            return tostring(rdebug.value(name)), "userdata"
         end
     end
-    return 'userdata'
+    return 'userdata', "userdata"
 end
 
 -- context: variables,hover,watch,repl,clipboard
-local function varGetValue(context, allow_lazy, type, value)
+local function varGetValue(context, allow_lazy, value)
+    local type = rdebug.type(value)
     if type == 'string' then
         local str = rdebug.value(value)
         ---@cast str string
         if context == "repl" or context == "clipboard" then
-            return ("'%s'"):format(str)
+            return ("'%s'"):format(str), 'string'
         end
         if context == "hover" then
             if #str < 2048 then
-                return ("'%s'"):format(str)
+                return ("'%s'"):format(str), 'string'
             end
-            return ("'%s...'"):format(str:sub(1, 2048))
+            return ("'%s...'"):format(str:sub(1, 2048)), 'string'
         end
         if #str < 1024 then
-            return ("'%s'"):format(quotedString(str))
+            return ("'%s'"):format(quotedString(str)), 'string'
         end
-        return ("'%s...'"):format(quotedString(str:sub(1, 1024)))
+        return ("'%s...'"):format(quotedString(str:sub(1, 1024))), 'string'
     elseif type == 'boolean' then
         if rdebug.value(value) then
-            return 'true'
+            return 'true', 'boolean'
         else
-            return 'false'
+            return 'false', 'boolean'
         end
     elseif type == 'nil' then
-        return 'nil'
+        return 'nil', 'nil'
     elseif type == 'integer' then
-        return formatInteger(value)
+        return formatInteger(value), 'integer'
     elseif type == 'float' then
-        return floatToString(rdebug.value(value))
+        return floatToString(rdebug.value(value)), 'float'
     elseif type == 'function' then
-        return varGetFunctionCode(value)
+        return varGetFunctionCode(value), 'function'
     elseif type == 'c function' then
-        return "C function"
+        return "C function", 'c function'
     elseif type == 'table' then
         if context == "clipboard" then
-            return serialize(value)
+            return serialize(value), 'table'
         end
-        return varGetTableValue(value)
+        return varGetTableValue(value), 'table'
     elseif type == 'userdata' then
         return varGetUserdata(value, allow_lazy)
     elseif type == 'lightuserdata' then
-        return 'light'..tostring(rdebug.value(value))
+        return 'light'..tostring(rdebug.value(value)), 'lightuserdata'
     elseif type == 'thread' then
-        return ('thread (%s)'):format(rdebug.costatus(value))
+        return ('thread (%s)'):format(rdebug.costatus(value)), 'thread'
     elseif type == 'cdata' then
         local t = eval.ffi_reflect("shorttypename", value)
         if not t then
-            return "cdata"
+            return "cdata", 'cdata'
         end
         local v = eval.ffi_reflect("shortvalue", value)
         if not v then
-            return t
+            return t, 'cdata'
         end
-        return tostring(v).." ("..t..")"
+        return tostring(v).." ("..t..")", 'cdata'
     elseif type == 'ctype' then
         local name = eval.ffi_reflect("shorttypename", value)
-        return "ctype("..(name or "unknown")..")"
+        return "ctype("..(name or "unknown")..")", 'ctype'
     end
-    return tostring(rdebug.value(value))
+    return tostring(rdebug.value(value)), type
 end
 
 local function varCreateReference(value, evaluateName, presentationHint, context)
-    local type = rdebug.type(value)
+    local valuestr, type, lazy = varGetValue(context, true, value)
     local result = {
         type = type,
+        value = valuestr,
         presentationHint = presentationHint,
     }
-    result.value, result.presentationHint.lazy = varGetValue(context, true, type, value)
+    result.presentationHint.lazy = lazy
     if type == "integer" then
         result.__vscodeVariableMenuContext = showIntegerAsHex and "integer/hex" or "integer/dec"
     end
@@ -647,15 +649,17 @@ local function varCreateTableKV(key, value, context)
         v = { key, value },
         special = "TableKV",
     }
-    local type = rdebug.type(value)
-    local var = {
+    local valuestr, _, lazy = varGetValue(context, true, value)
+    return {
         type = 'TableKV',
+        value = valuestr,
         name = string.format("[%s]", rdebug.type(key)),
         variablesReference = #varPool,
-        presentationHint = { kind = 'virtual' }
+        presentationHint = {
+            kind = 'virtual',
+            lazy = lazy,
+        }
     }
-    var.value, var.presentationHint.lazy = varGetValue(context, true, type, value)
-    return var
 end
 
 local function varCreate(t)
@@ -1336,11 +1340,11 @@ function m.extand(valueId, filter, start, count)
     local vars = extandValue(varRef, filter, start, count)
     if varRef.lazy then
         --TODO: fuck VSCode
-        local type = rdebug.type(varRef.v)
+        local valuestr, type = varGetValue(varRef.context, false, varRef.v)
         table.insert(vars, 1, {
             name = "",
             type = type,
-            value = varGetValue(varRef.context, false, type, varRef.v),
+            value = valuestr,
         })
     end
     return vars
@@ -1437,8 +1441,7 @@ function m.clean()
 end
 
 function m.createText(value, context)
-    local type = rdebug.type(value)
-    return varGetValue(context, false, type, value)
+    return varGetValue(context, false, value)
 end
 
 function m.createRef(value, evaluateName, context)

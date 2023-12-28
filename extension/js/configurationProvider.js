@@ -3,9 +3,6 @@ const path = require("path");
 const os = require('os');
 const fs = require('fs');
 
-const TriggerKindInitial = 1;
-const TriggerKindDynamic = 2;
-
 function createDefaultProgram(folder) {
     const editor = vscode.window.activeTextEditor;
     if (editor && editor.document.languageId === 'lua') {
@@ -38,8 +35,6 @@ function createDefaultProgram(folder) {
 }
 
 exports.initial = {
-    type: "provider",
-    triggerKind: TriggerKindInitial,
     provideDebugConfigurations: function (folder) {
         let program = createDefaultProgram(folder);
         if (!program) {
@@ -56,11 +51,7 @@ exports.initial = {
     }
 };
 
-
-
 exports.dynamic = {
-    type: "provider",
-    triggerKind: TriggerKindDynamic,
     provideDebugConfigurations: function (folder) {
         let configurations = [];
         let program = createDefaultProgram(folder);
@@ -88,19 +79,27 @@ exports.dynamic = {
     }
 };
 
-function mergeConfigurations(config) {
-    let platname
-    let platcfg
+function platformName(config) {
     if (os.platform() == "win32" && !config.useWSL) {
-        platname = "Windows"
-        platcfg = config.windows
+        return "windows"
     }
     else if (os.platform() == "darwin") {
-        platname = "macOS"
+        return "macos"
+    }
+    else {
+        return "linux"
+    }
+}
+
+function mergeConfigurations(config, platname) {
+    let platcfg
+    if (platname == "windows") {
+        platcfg = config.windows
+    }
+    else if (platname == "macos") {
         platcfg = config.osx
     }
     else {
-        platname = "Linux"
         platcfg = config.linux
     }
     delete config.windows;
@@ -111,12 +110,108 @@ function mergeConfigurations(config) {
             config[k] = platcfg[k]
         }
     }
-    return platname
+}
+
+function resolveLaunchConfig(config, platname, settings) {
+    if (typeof config.runtimeExecutable == 'string') {
+        if (config.inject !== 'hook' && config.inject !== 'lldb' && typeof config.address != 'string') {
+            config.console = "internalConsole";
+        }
+        if (typeof config.inject != 'string') {
+            if (config.console == "internalConsole") {
+                if (typeof config.address == 'string') {
+                    config.inject = "none";
+                }
+                else if (platname == "windows") {
+                    config.inject = "hook";
+                }
+                else if (platname == "macos") {
+                    config.inject = "lldb";
+                }
+                else if (platname == "linux") {
+                    config.inject = "gdb";
+                }
+                else {
+                    config.inject = "none";
+                }
+            }
+            else {
+                config.inject = "none";
+            }
+        }
+    }
+    else {
+        if (typeof config.program != 'string') {
+            throw new Error('Missing `program` to debug');
+        }
+        if (typeof config.luaexe != 'string') {
+            config.sourceCoding = platname == "windows" ? "ansi" : "utf8";
+        }
+        // path
+        if (typeof config.path == 'string') {
+            config.path = [config.path]
+        }
+        else if (typeof config.path == 'object') {
+        }
+        else {
+            config.path = ['${cwd}/?.lua']
+            if (typeof config.luaexe == 'string') {
+                config.path.push(path.dirname(config.luaexe) + '/?.lua')
+            }
+        }
+        if (config.path) {
+            config.path = config.path.concat(settings.path)
+        }
+        // cpath
+        if (typeof config.cpath == 'string') {
+            config.cpath = [config.cpath]
+        }
+        else if (typeof config.cpath == 'object') {
+        }
+        else {
+            let ext = platname == "windows"? "dll" : "so"
+            config.cpath = ['${cwd}/?.' + ext]
+            if (typeof config.luaexe == 'string') {
+                config.cpath.push(path.dirname(config.luaexe) + '/?.' + ext)
+            }
+        }
+        if (config.cpath) {
+            config.cpath = config.cpath.concat(settings.cpath)
+        }
+        //address
+        if (typeof config.address != 'string' && settings.address !== "") {
+            config.address = settings.address;
+        }
+    }
+}
+
+function resolveAttachConfig(config, platname, settings) {
+    if (!config.address && !config.processId && !config.processName) {
+        throw new Error('Missing `address` to debug');
+    }
+    if (typeof config.inject != 'string') {
+        if (typeof config.address == 'string') {
+            config.inject = "none";
+        }
+        else if (platname == "windows") {
+            config.inject = "hook";
+        }
+        else if (platname == "macos") {
+            config.inject = "lldb";
+        }
+        else if (platname == "linux") {
+            config.inject = "gdb";
+        }
+        else {
+            config.inject = "none";
+        }
+    }
 }
 
 function resolveConfig(folder, config) {
+    const platname = platformName(config)
     const settings = vscode.workspace.getConfiguration("lua.debug.settings");
-    const plat = mergeConfigurations(config)
+    mergeConfigurations(config, platname)
     config.type = 'lua';
     if (config.request != 'attach') {
         config.request = 'launch';
@@ -163,105 +258,21 @@ function resolveConfig(folder, config) {
         }
     }
     if (typeof config.pathFormat != 'string') {
-        if (plat == "Linux" && !config.useWSL) {
+        if (platname == "linux" && !config.useWSL) {
             config.pathFormat = "linuxpath"
         }
         else {
             config.pathFormat = "path"
         }
     }
-    if (typeof config.address == 'string' && typeof config.client != 'boolean') {
-        config.client = true;
-    }
     if (config.request == 'launch') {
-        if (typeof config.runtimeExecutable == 'string') {
-            if (config.inject !== 'hook' && config.inject !== 'lldb' && typeof config.address != 'string') {
-                config.console = "internalConsole";
-            }
-            if (typeof config.inject != 'string') {
-                if (config.console == "internalConsole") {
-                    if (typeof config.address == 'string') {
-                        config.inject = "none";
-                    }
-                    else if (plat == "Windows") {
-                        config.inject = "hook";
-                    }
-                    else if (plat == "macOS") {
-                        config.inject = "lldb";
-                    }
-                    else if (plat == "Linux") {
-                        config.inject = "gdb";
-                    }
-                    else {
-                        config.inject = "none";
-                    }
-                }
-                else {
-                    config.inject = "none";
-                }
-            }
-        }
-        else {
-            if (typeof config.program != 'string') {
-                throw new Error('Missing `program` to debug');
-            }
-            if (typeof config.luaexe != 'string') {
-                config.sourceCoding = plat == "Windows" ? "ansi" : "utf8";
-            }
-            // path
-            if (typeof config.path == 'string') {
-                config.path = [config.path]
-            }
-            else if (typeof config.path == 'object') {
-            }
-            else {
-                config.path = ['${cwd}/?.lua']
-                if (typeof config.luaexe == 'string') {
-                    config.path.push(path.dirname(config.luaexe) + '/?.lua')
-                }
-            }
-            if (config.path) {
-                config.path = config.path.concat(settings.path)
-            }
-            // cpath
-            if (typeof config.cpath == 'string') {
-                config.cpath = [config.cpath]
-            }
-            else if (typeof config.cpath == 'object') {
-            }
-            else {
-                let ext = plat == "Windows"? "dll" : "so"
-                config.cpath = ['${cwd}/?.' + ext]
-                if (typeof config.luaexe == 'string') {
-                    config.cpath.push(path.dirname(config.luaexe) + '/?.' + ext)
-                }
-            }
-            if (config.cpath) {
-                config.cpath = config.cpath.concat(settings.cpath)
-            }
-        }
+        resolveLaunchConfig(config, platname, settings)
     }
     else if (config.request == 'attach') {
-        if (!config.address && !config.processId && !config.processName) {
-            throw new Error('Missing `address` to debug');
-        }
-        if (typeof config.inject != 'string') {
-            if (typeof config.address == 'string') {
-                config.inject = "none";
-            }
-            else if (plat == "Windows") {
-                config.inject = "hook";
-            }
-            else if (plat == "macOS") {
-                config.inject = "lldb";
-            }
-            else if (plat == "Linux") {
-                config.inject = "gdb";
-            }
-            else {
-                config.inject = "none";
-            }
-        }
+        resolveAttachConfig(config, platname, settings)
+    }
+    if (typeof config.address == 'string' && typeof config.client != 'boolean') {
+        config.client = true;
     }
     config.configuration = {
         variables: vscode.workspace.getConfiguration("lua.debug.variables")
@@ -270,7 +281,6 @@ function resolveConfig(folder, config) {
 }
 
 exports.resolve = {
-    type: "resolver",
     resolveDebugConfiguration: async function (folder, config) {
         try {
             return resolveConfig(folder, config);

@@ -1,12 +1,13 @@
 local select = require 'common.select'
 local proto = require 'common.protocol'
 
-local function parseAddress(address, client)
+local function parseAddress(param)
+    local mode, address = param:match "^([a-z]+):(.*)"
     if address:sub(1,1) == '@' then
         return {
             protocol = 'unix',
             address = address:sub(2),
-            client = client,
+            mode = mode,
         }
     end
     local ipv4, port = address:match("(%d+%.%d+%.%d+%.%d+):(%d+)")
@@ -15,7 +16,7 @@ local function parseAddress(address, client)
             protocol = 'tcp',
             address = ipv4,
             port = tonumber(port),
-            client = client,
+            mode = mode,
         }
     end
     local ipv6, port = address:match("%[([%d:a-fA-F]+)%]:(%d+)")
@@ -24,14 +25,14 @@ local function parseAddress(address, client)
             protocol = 'tcp6',
             address = ipv6,
             port = tonumber(port),
-            client = client,
+            mode = mode,
         }
     end
     error "Invalid address."
 end
 
-local function open(address, client)
-    local t = parseAddress(address, client)
+local function open(param)
+    local t = parseAddress(param)
     local m = {}
     local session
     local srvfd
@@ -41,19 +42,19 @@ local function open(address, client)
     local stat = {}
     function t.event(status, fd)
         if status == 'connect start' then
-            assert(t.client)
+            assert(t.mode == "connect")
             srvfd = fd
             return
         end
         if status == 'connect failed' then
-            assert(t.client)
+            assert(t.mode == "connect")
             select.close(srvfd)
             select.wantconnect(t)
             return
         end
         if status == 'close' then
             if session == fd then
-                if t.client then
+                if t.mode == "connect" then
                     srvfd = nil
                     select.wantconnect(t)
                 end
@@ -70,7 +71,7 @@ local function open(address, client)
         select.send(session, write)
         write = ''
     end
-    if t.client then
+    if t.mode == "connect" then
         select.wantconnect(t)
     else
         srvfd = assert(select.listen(t))

@@ -23,13 +23,13 @@ static int injectdll(lua_State* L) {
     }
     else {
         auto& self = *(bee::subprocess::process*)luaL_checkudata(L, 1, "bee::subprocess");
-        bool ok    = injectdll(self.info(), bee::lua::checkstring(L, 2), bee::lua::checkstring(L, 3), checkstrview(L, 4));
+        bool ok    = injectdll(self.native_handle(), self.thread_handle(), bee::lua::checkstring(L, 2), bee::lua::checkstring(L, 3), checkstrview(L, 4));
         lua_pushboolean(L, ok);
         return 1;
     }
 }
 
-extern "C" __declspec(dllexport) int luaopen_inject(lua_State* L) {
+extern "C" int luaopen_inject(lua_State* L) {
     luaL_Reg lib[] = {
         { "injectdll", injectdll },
         { NULL, NULL },
@@ -37,3 +37,6 @@ extern "C" __declspec(dllexport) int luaopen_inject(lua_State* L) {
     luaL_newlib(L, lib);
     return 1;
 }
+
+#include <binding/binding.h>
+static ::bee::lua::callfunc _init(::bee::lua::register_module, "inject", luaopen_inject);

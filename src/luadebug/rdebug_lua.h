@@ -7,4 +7,4 @@
 #endif
 
 #include "compat/lua.h"
-#include "luadbg/inc/luadbg.hpp"
+#include "luadbg/lua.hpp"

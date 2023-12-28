@@ -57,9 +57,6 @@ local function bpClientKey(src)
 end
 
 local function updateBreakpoint(src, breakpoints)
-    if not src.lineinfo then
-        return
-    end
     local bpkey = bpKey(src)
     local bps
     if breakpoints == nil then
@@ -83,11 +80,17 @@ local function updateBreakpoint(src, breakpoints)
     else
         currentactive[bpkey] = bps
         local lineinfo = src.lineinfo
-        for proto, key in pairs(src.protos) do
-            if hasActiveBreakpoint(bps, lineinfo[key]) then
+        if lineinfo then
+            for proto, key in pairs(src.protos) do
+                if hasActiveBreakpoint(bps, lineinfo[key]) then
+                    hookmgr.break_add(proto)
+                else
+                    hookmgr.break_del(proto)
+                end
+            end
+        else
+            for proto in pairs(src.protos) do
                 hookmgr.break_add(proto)
-            else
-                hookmgr.break_del(proto)
             end
         end
     end
@@ -150,22 +153,21 @@ end
 
 local function verifyBreakpointByLineInfo(src, breakpoints)
     local lineinfo = src.lineinfo
-    if not lineinfo then
-        return
-    end
     for _, bp in ipairs(breakpoints) do
         if bp.unverified ~= nil then
             goto continue
         end
-        local activeline = lineinfo[bp.line]
-        if not activeline then
-            if not src.startline then
-                setBreakPointUnverified(bp, "The breakpoint didn't hit a valid line.")
+        if lineinfo then
+            local activeline = lineinfo[bp.line]
+            if not activeline then
+                if not src.startline then
+                    setBreakPointUnverified(bp, "The breakpoint didn't hit a valid line.")
+                end
+                goto continue
             end
-            goto continue
+            bp.line = activeline
         end
         bp.source = src
-        bp.line = activeline
         bp.verified = true
         ev.emit('breakpoint', 'changed', {
             id = bp.id,
