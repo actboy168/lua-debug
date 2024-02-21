@@ -15,11 +15,11 @@ local function getUnixAddress(pid)
     return "@"..(path / ("pid_%d"):format(pid)):string()
 end
 
-local function ipc_send_latest(pid)
+local function ipc_send_luaversion(pid, luaVersion)
     fs.create_directories(WORKDIR / "tmp")
     local ipc = require "common.ipc"
     local fd = assert(ipc(WORKDIR, pid, "luaVersion", "w"))
-    fd:write("latest")
+    fd:write(luaVersion)
     fd:close()
 end
 
@@ -56,8 +56,8 @@ end
 
 local function attach_process(pkg, pid)
     local args = pkg.arguments
-    if args.luaVersion == "lua-latest" then
-        ipc_send_latest(pid)
+    if args.luaVersion:match "^lua%-" then
+        ipc_send_luaversion(pid, args.luaVersion)
     end
     local ok, errmsg = process_inject.inject(pid, "attach", args)
     if not ok then
@@ -161,8 +161,8 @@ local function proxy_launch_console(pkg)
         local process, err = debuger_factory.create_process_in_console(args, function (process)
             local address
             server, address = create_server(args, process:get_id())
-            if args.luaVersion == "lua-latest" and type(address) == "number" then
-                ipc_send_latest(address)
+            if type(address) == "number" and args.luaVersion:match "^lua%-" then
+                ipc_send_luaversion(address, args.luaVersion)
             end
         end)
         if not process then

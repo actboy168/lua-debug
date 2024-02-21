@@ -110,12 +110,12 @@ local function bootstrapMakeExe(c, luaexe, args, address, dbg)
     if not useUtf8 then
         params[#params+1] = 'ansi'
     end
-    if args.luaVersion == "lua-latest" then
-        params[#params+1] = 'latest'
+    if args.luaVersion:match "^lua%-" then
+        params[#params+1] = args.luaVersion
     end
     local script = ("dofile[[%s]];DBG[[%s]]"):format(
         (dbg / "script" / "launch.lua"):string(),
-        table.concat(params, "-")
+        table.concat(params, "/")
     )
     local bash = platform_os():lower() ~= "windows"
     if bash then

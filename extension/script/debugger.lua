@@ -105,8 +105,8 @@ local function detectLuaDebugPath(cfg)
     end
 
     local rt = "/runtime/"..PLATFORM
-    if cfg.latest then
-        rt = rt.."/lua-latest"
+    if cfg.luaVersion then
+        rt = rt.."/"..cfg.luaVersion
     elseif _VERSION == "Lua 5.4" then
         rt = rt.."/lua54"
     elseif _VERSION == "Lua 5.3" then

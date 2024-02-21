@@ -26,20 +26,20 @@ local function dofile(filename)
     f:close()
     return assert(load(str, "=(debugger.lua)"))(filename)
 end
-local function isLatest()
+local function getLuaVersion()
     local ipc = dofile(path.."/script/common/ipc.lua")
     local fd = ipc(path, pid, "luaVersion")
-    local result = false
-    if fd then
-        result = "lua-latest" == fd:read "a"
-        fd:close()
+    if not fd then
+        return
     end
+    local result = fd:read "a"
+    fd:close()
     return result
 end
 local dbg = dofile(path.."/script/debugger.lua")
 dbg:start {
     address = ("@%s/tmp/pid_%s"):format(path, pid),
-    latest = isLatest(),
+    luaVersion = getLuaVersion(),
 }
 dbg:event "wait"
 return "ok"
