@@ -1,13 +1,13 @@
 local lm = require 'luamake'
 
 lm:copy 'copy_json' {
-    input = '3rd/json.lua/json.lua',
-    output = 'publish/script/common/json.lua'
+    inputs = '3rd/json.lua/json.lua',
+    outputs = 'publish/script/common/json.lua'
 }
 
 lm:copy 'copy_bootstrap' {
-    input = 'extension/script/bootstrap.lua',
-    output = 'publish/bin/main.lua',
+    inputs = 'extension/script/bootstrap.lua',
+    outputs = 'publish/bin/main.lua',
 }
 
 lm:runlua 'update_version' {
@@ -17,8 +17,8 @@ lm:runlua 'update_version' {
 lm:runlua 'package_json' {
     script = 'compile/common/write_json.lua',
     args = {'$in', '$out', lm.platform},
-    input = "compile/common/package_json.lua",
-    output = "extension/package.json",
+    inputs = "compile/common/package_json.lua",
+    outputs = "extension/package.json",
 }
 
 lm:runlua 'copy_extension' {

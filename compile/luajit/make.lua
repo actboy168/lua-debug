@@ -28,11 +28,13 @@ local LJLIB_C = {
 local function buildvmX(value)
     local fileName = string.format("lj_%s.h", value)
     lm:build(fileName) {
-        deps = { "buildvm" },
-        lm.bindir .. "/buildvm",
-        string.format(" -m %s -o ", value), "$out",
-        output = lm.bindir .. "/" .. fileName,
-        LJLIB_C,
+        deps = "buildvm",
+        args = {
+            "$bin/buildvm",
+            string.format(" -m %s -o ", value), "$out",
+            LJLIB_C,
+        },
+        outputs = lm.bindir .. "/" .. fileName,
     }
 end
 
@@ -43,13 +45,15 @@ elseif lm.os == "macos" then
     LJVM_MODE = "machasm"
 end
 
-lm:build("lj_vm.S") {
+lm:build "lj_vm.S" {
     deps = "buildvm",
-    lm.bindir .. "/buildvm",
-    "-m",
-    LJVM_MODE,
-    "-o", "$out",
-    output = lm.bindir .. "/lj_vm.S",
+    args = {
+        "$bin/buildvm",
+        "-m",
+        LJVM_MODE,
+        "-o", "$out",
+    },
+    outputs = lm.bindir .. "/lj_vm.S",
 }
 
 buildvmX("bcdef")
@@ -57,22 +61,14 @@ buildvmX("ffdef")
 buildvmX("libdef")
 buildvmX("recdef")
 
---[[
-lm:build("luajit/vmdef.lua") {
+lm:build "lj_folddef.h" {
     deps = "buildvm",
-    binPath .. "buildvm",
-    " -m vmdef -o ", "$out", "$in",
-    output = binPath .. "/vmdef.lua",
-    input = LJLIB_C,
-}
-]]
-
-lm:build("lj_folddef.h") {
-    deps = "buildvm",
-    lm.bindir .. "/buildvm",
-    " -m folddef -o ", "$out", "$in",
-    output = lm.bindir .. "/lj_folddef.h",
-    input = luajitDir .. "/lj_opt_fold.c",
+    args = {
+        "$bin/buildvm",
+        " -m folddef -o ", "$out", "$in",
+    },
+    inputs = luajitDir .. "/lj_opt_fold.c",
+    outputs = lm.bindir .. "/lj_folddef.h",
 }
 
 
@@ -82,22 +78,24 @@ local U_FORTIFY_SOURCE = "-U_FORTIFY_SOURCE"
 local LUAJIT_UNWIND_EXTERNAL = "LUAJIT_UNWIND_EXTERNAL"
 local LUA_MULTILIB = "LUA_MULTILIB=\"lib\""
 
-lm:build("lj_vm.obj") {
+lm:build "lj_vm.obj" {
     deps = { "lj_vm.S" },
-    "$cc",
-    "-Wall",
-    "-D" .. _FILE_OFFSET_BITS,
-    "-D" .. _LARGEFILE_SOURCE,
-    U_FORTIFY_SOURCE,
-    "-D" .. LUA_MULTILIB,
-    "-D" .. LUAJIT_ENABLE_LUA52COMPAT,
-    "-D" .. LUAJIT_NUMMODE,
-    "-fno-stack-protector",
-    "-D" .. LUAJIT_UNWIND_EXTERNAL,
-    lm.os == "macos" and "-target " .. lm.target,
-    "-c -o", "$out", "$in",
-    output = lm.bindir .. "/lj_vm.obj",
-    input = lm.bindir .. "/lj_vm.S",
+    args = {
+        "$cc",
+        "-Wall",
+        "-D" .. _FILE_OFFSET_BITS,
+        "-D" .. _LARGEFILE_SOURCE,
+        U_FORTIFY_SOURCE,
+        "-D" .. LUA_MULTILIB,
+        "-D" .. LUAJIT_ENABLE_LUA52COMPAT,
+        "-D" .. LUAJIT_NUMMODE,
+        "-fno-stack-protector",
+        "-D" .. LUAJIT_UNWIND_EXTERNAL,
+        lm.os == "macos" and "-target " .. lm.target,
+        "-c -o", "$out", "$in",
+    },
+    inputs = lm.bindir .. "/lj_vm.S",
+    outputs = lm.bindir .. "/lj_vm.obj",
 }
 
 local lj_str_hash_flags = {

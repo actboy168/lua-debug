@@ -15,7 +15,7 @@ lm:build "x86_64" {
     },
 }
 
-lm:import "3rd/bee.lua/make.lua"
+lm:import "compile/common/bee.lua"
 require "compile.common.lua-debug"
 
 lm:default {

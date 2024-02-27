@@ -373,5 +373,5 @@ for _, luaver in ipairs { "lua51", "lua52", "lua53", "lua54", "luajit", "lua-lat
 end
 
 lm:phony "runtime" {
-    input = runtimes
+    inputs = runtimes
 }
