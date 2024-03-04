@@ -38,12 +38,14 @@ local arch_flags = {
 
 lm:build("builvm_arch.h") {
     deps = "minilua",
-    lm.bindir .. "/minilua",
-    luajitDir .. "/../dynasm/dynasm.lua",
-    arch_flags,
-    "-o", "$out", "$in",
-    input = luajitDir .. string.format("/vm_%s.dasc", arch),
-    output = lm.bindir .. "/buildvm_arch.h"
+    args = {
+        lm.bindir .. "/minilua",
+        luajitDir .. "/../dynasm/dynasm.lua",
+        arch_flags,
+        "-o", "$out", "$in",
+    },
+    inputs = luajitDir .. string.format("/vm_%s.dasc", arch),
+    outputs = lm.bindir .. "/buildvm_arch.h"
 }
 
 lm:executable("buildvm") {
