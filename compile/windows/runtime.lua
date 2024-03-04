@@ -13,7 +13,7 @@ require "compile.common.launcher"
 if lm.mode ~= "debug" then
     lm:msvc_copydll "copy_vcredist" {
         type = "vcrt",
-        output = 'publish/vcredist/'..platform
+        outputs = 'publish/vcredist/'..platform
     }
 end
 
