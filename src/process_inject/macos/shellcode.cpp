@@ -37,7 +37,7 @@ static void* rmain(void* ptr) {
     // load lib
     {
         auto _dlopen = (decltype(&dlopen))arg.get_func("dlopen");
-        handler      = _dlopen((const char*)arg.name, RTLD_NOW | RTLD_LOCAL);
+        handler      = _dlopen((const char*)arg.name, RTLD_LAZY | RTLD_LOCAL);
     }
     if (!handler) {
         auto ec       = (const char*)_dlerror();
