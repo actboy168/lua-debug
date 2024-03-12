@@ -135,4 +135,11 @@ end
 function hookmgr.coroutine_from(co)
 end
 
+---
+---@param enable boolean
+---启用luajit的jit支持
+---
+function hookmgr.enable_jit(enable)
+end
+
 return hookmgr
