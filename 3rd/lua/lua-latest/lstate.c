@@ -339,7 +339,7 @@ int luaE_resetthread (lua_State *L, int status) {
 }
 
 
-LUA_API int lua_resetthread (lua_State *L, lua_State *from) {
+LUA_API int lua_closethread (lua_State *L, lua_State *from) {
   int status;
   lua_lock(L);
   luai_threadcall(L, from);
@@ -348,6 +348,14 @@ LUA_API int lua_resetthread (lua_State *L, lua_State *from) {
   luai_threadret(from, L);
   lua_unlock(L);
   return status;
+}
+
+
+/*
+** Deprecated! Use 'lua_closethread' instead.
+*/
+LUA_API int lua_resetthread (lua_State *L) {
+  return lua_closethread(L, NULL);
 }
 
 
