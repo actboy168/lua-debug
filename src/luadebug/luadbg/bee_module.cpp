@@ -27,8 +27,10 @@
 #include <binding/lua_thread.cpp>
 #include <binding/lua_filesystem.cpp>
 
+#include "bee_socket.cpp"
+
 #if defined(_WIN32)
-#    include <binding/lua_unicode.cpp>
+#    include <binding/port/lua_windows.cpp>
 #endif
 
 extern "C" int luaopen_luadebug_hookmgr(luadbg_State* L);
@@ -36,10 +38,11 @@ extern "C" int luaopen_luadebug_stdio(luadbg_State* L);
 extern "C" int luaopen_luadebug_utility(luadbg_State* L);
 extern "C" int luaopen_luadebug_visitor(luadbg_State* L);
 extern "C" int luaopen_bee_socket(luadbg_State* L);
+extern "C" int luaopen_bee_socketlegacy(luadbg_State* L);
 extern "C" int luaopen_bee_thread(luadbg_State* L);
 extern "C" int luaopen_bee_filesystem(luadbg_State* L);
 #if defined(_WIN32)
-extern "C" int luaopen_bee_unicode(luadbg_State* L);
+extern "C" int luaopen_bee_windows(luadbg_State* L);
 #endif
 
 static luadbgL_Reg cmodule[] = {
@@ -48,10 +51,11 @@ static luadbgL_Reg cmodule[] = {
     { "luadebug.utility", luaopen_luadebug_utility },
     { "luadebug.visitor", luaopen_luadebug_visitor },
     { "bee.socket", luaopen_bee_socket },
+    { "bee.socketlegacy", luaopen_bee_socketlegacy },
     { "bee.thread", luaopen_bee_thread },
     { "bee.filesystem", luaopen_bee_filesystem },
 #if defined(_WIN32)
-    { "bee.unicode", luaopen_bee_unicode },
+    { "bee.windows", luaopen_bee_windows },
 #endif
     { NULL, NULL },
 };

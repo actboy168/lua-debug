@@ -1,6 +1,7 @@
 #include <Windows.h>
 #include <bee/platform/win/unicode.h>
 #include <bee/subprocess.h>
+#include <bee/lua/binding.h>
 #include <binding/binding.h>
 
 #include <algorithm>

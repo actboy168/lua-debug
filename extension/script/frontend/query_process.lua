@@ -1,7 +1,7 @@
 local platform = require "bee.platform"
 local COMMAND
 local SKIP = 0
-if platform.OS == "Windows" then
+if platform.os == "windows" then
     local pwsh = require "frontend.powershell"()
     if pwsh then
         COMMAND = pwsh .. " -NoProfile -Command \"Get-CimInstance Win32_Process | Select-Object Name,ProcessId\""
@@ -10,12 +10,12 @@ if platform.OS == "Windows" then
         COMMAND = "wmic process get name,processid"
         SKIP = 1
     end
-elseif platform.OS == "Linux" then
+elseif platform.os == "linux" then
     COMMAND = "ps axww -o comm=,pid="
-elseif platform.OS == "macOS" then
+elseif platform.os == "macos" then
     COMMAND = "ps axww -o comm=,pid= -c"
 else
-    error("Unsupported OS:"..platform.OS)
+    error("Unsupported OS:"..platform.os)
 end
 return function (n)
     local res = {}

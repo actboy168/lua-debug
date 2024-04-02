@@ -41,6 +41,7 @@ lm:source_set 'luadbg' {
     },
     sources = {
         "src/luadebug/luadbg/*.cpp",
+        "!src/luadebug/luadbg/bee_socket.cpp",
     },
     msvc = {
         flags = "/utf-8",

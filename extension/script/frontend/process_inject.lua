@@ -5,8 +5,8 @@ local platform_os = require 'frontend.platform_os' ()
 
 local _M = {}
 
-local macos = "macOS"
-local windows = "Windows"
+local macos = "macos"
+local windows = "windows"
 local entry_launch = "launch"
 
 local function macos_check_rosetta_process(process)

@@ -79,7 +79,7 @@ end
 local function proxy_attach(pkg)
     local args = pkg.arguments
     platform_os.init(args)
-    if platform_os() ~= "Windows" and platform_os() ~= "macOS" then
+    if platform_os() ~= "windows" and platform_os() ~= "macos" then
 		attach_tcp(pkg, args)
 		return
     end

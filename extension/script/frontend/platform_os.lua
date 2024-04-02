@@ -1,17 +1,17 @@
 local platform = require 'bee.platform'
 
 local m = {
-    OS = platform.OS,
+    os = platform.os,
 }
 
 function m.init(args)
-    if platform.OS == "Windows" and args.useWSL then
-        m.OS = "Linux"
+    if platform.os == "windows" and args.useWSL then
+        m.os = "linux"
         args.useWSL = true
         return
     end
-    m.OS = platform.OS
+    m.os = platform.os
     args.useWSL = nil
 end
 
-return setmetatable(m, {__call = function() return m.OS end})
+return setmetatable(m, {__call = function() return m.os end})

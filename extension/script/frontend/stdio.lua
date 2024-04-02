@@ -1,10 +1,14 @@
 local subprocess = require 'bee.subprocess'
+local platform = require 'bee.platform'
 local proto = require 'common.protocol'
 local STDIN = io.stdin
 local STDOUT = io.stdout
 local peek = subprocess.peek
-subprocess.filemode(STDIN, 'b')
-subprocess.filemode(STDOUT, 'b')
+if platform.os == "windows" then
+    local windows = require 'bee.windows'
+    windows.filemode(STDIN, 'b')
+    windows.filemode(STDOUT, 'b')
+end
 STDIN:setvbuf 'no'
 STDOUT:setvbuf 'no'
 

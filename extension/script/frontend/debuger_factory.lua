@@ -47,7 +47,7 @@ local PLATFORM = {
 }
 
 local function getLuaExe(args, dbg)
-    local OS = platform_os():lower()
+    local OS = platform_os()
     local ARCH = args.luaArch
     if OS == "windows" then
         ARCH = ARCH or "x86_64"
@@ -105,7 +105,7 @@ local function bootstrapMakeExe(c, luaexe, args, address, dbg)
         (dbg / "script" / "launch.lua"):string(),
         table.concat(params, "/")
     )
-    local bash = platform_os():lower() ~= "windows"
+    local bash = platform_os() ~= "windows"
     if bash then
         script = script:gsub('%[%[', '"'):gsub('%]%]', '"')
     end
@@ -198,7 +198,7 @@ local function create_luaexe_in_console(args, dbg, address)
 end
 
 local function create_process_in_console(args, callback)
-    local need_resume = platform_os():lower() == "windows"
+    local need_resume = platform_os() == "windows"
     initialize(args)
     local process, err = sp.spawn {
         args.runtimeExecutable, args.runtimeArgs,

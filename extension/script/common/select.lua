@@ -1,4 +1,5 @@
 local socket = require 'bee.socket'
+socket.select = require 'bee.socketlegacy'.select
 
 local listens = {}
 local connects = {}
