@@ -475,6 +475,23 @@ namespace luadebug::visitor {
         return 1;
     }
 
+    static int visitor_assign_field(luadbg_State* L, lua_State* hL, protected_area& area) {
+        area.check_type(L, 1, LUADBG_TUSERDATA);
+        area.check_client_stack(3);
+        auto field = area.checkstring(L, 2);
+        if (copy_from_dbg(L, hL, area, 1) == LUADBG_TNONE) {
+            return 0;
+        }
+        lua_pushlstring(hL, field.data(), field.size());
+        if (copy_from_dbg(L, hL, area, 3) == LUADBG_TNONE) {
+            lua_pop(hL, 2);
+            return 0;
+        }
+        lua_rawset(hL, -3);
+        lua_pop(hL, 1);
+        return 0;
+    }
+
     static int visitor_type(luadbg_State* L, lua_State* hL, protected_area& area) {
         switch (luadbg_type(L, 1)) {
         case LUADBG_TNIL:
@@ -915,6 +932,7 @@ namespace luadebug::visitor {
             { "udwrite", protected_call<visitor_udwrite> },
             { "value", protected_call<visitor_value> },
             { "assign", protected_call<visitor_assign> },
+            { "assign_field", protected_call<visitor_assign_field> },
             { "type", protected_call<visitor_type> },
             { "getinfo", protected_call<visitor_getinfo> },
             { "load", protected_call<visitor_load> },

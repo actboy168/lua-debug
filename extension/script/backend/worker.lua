@@ -544,8 +544,11 @@ function CMD.setSearchPath(pkg)
         else
             value = fs.nativepath(value)
         end
-        local visitor = rdebug.field(rdebug.field(rdebug._G, "package"), name)
-        if not rdebug.assign(visitor, value) then
+        local visitor = rdebug.field(rdebug._G, "package")
+        if visitor == nil then
+            return
+        end
+        if not rdebug.assign_field(visitor, name, value) then
             return
         end
     end
