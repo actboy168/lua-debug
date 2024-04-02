@@ -96,13 +96,13 @@ lm:source_set 'luadbg-compatible' {
 }
 
 local compat <const> = {
-    ["lua51"]      = "compat/5x",
-    ["lua52"]      = "compat/5x",
-    ["lua53"]      = "compat/5x",
-    ["lua54"]      = "compat/5x",
-    ["lua-latest"] = "compat/5x",
+    ["lua51"]          = "compat/5x",
+    ["lua52"]          = "compat/5x",
+    ["lua53"]          = "compat/5x",
+    ["lua54"]          = "compat/5x",
+    ["lua-latest"]     = "compat/5x",
     ["lua-compatible"] = "compat/5x",
-    ["luajit"]     = "compat/jit"
+    ["luajit"]         = "compat/jit"
 }
 for _, luaver in ipairs { "lua51", "lua52", "lua53", "lua54", "luajit", "lua-latest", "lua-compatible" } do
     runtimes[#runtimes + 1] = luaver.."/lua"

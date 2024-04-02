@@ -20,20 +20,8 @@ local function towsl(s)
     end)
 end
 
-local LuaVersionString <const> = {
-    ["luajit"] = true,
-    ["lua51"] = true,
-    ["lua52"] = true,
-    ["lua53"] = true,
-    ["lua54"] = true,
-    ["lua-latest"] = true,
-    ["lua-compatible"] = true,
-}
 local function getLuaVersion(args)
-    if LuaVersionString[args.luaVersion] then
-        return args.luaVersion
-    end
-    return "lua54"
+    return args.luaVersion or "lua54"
 end
 
 local function Is64BitWindows()

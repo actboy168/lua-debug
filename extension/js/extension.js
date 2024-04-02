@@ -55,8 +55,10 @@ async function install() {
         return;
     }
     for (const arch of ["win32-ia32", "win32-x64"]) {
-        for (const luaversion of  ["lua51", "lua52", "lua53", "lua54","luajit", "lua-latest", "lua-compatible"]) {
-            await copyDirectory(path.join(extensionDir, "vcredist", arch), path.join(extensionDir, "runtime", arch, luaversion))
+        for (const stat of await fs.readdir(path.join(extensionDir, "runtime", arch), { withFileTypes: true })) {
+            if (stat.isDirectory()) {
+                await copyDirectory(path.join(extensionDir, "vcredist", arch), stat.name)
+            }
         }
     }
     await copyDirectory(path.join(extensionDir, "vcredist", "win32-ia32"), path.join(extensionDir, "bin"))
