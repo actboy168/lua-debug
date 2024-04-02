@@ -123,7 +123,7 @@ local extensionDir = detectPlatform(extensionPath, extensionDirName)
 
 local sourceDir = fs.path(sourceDir)
 copy_directory(sourceDir, extensionDir, function (path)
-    local ext = path:extension():string():lower()
+    local ext = path:extension()
     return ext ~= '.log' and path ~= sourceDir / "tmp"
 end)
 
