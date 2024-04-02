@@ -104,7 +104,15 @@ local compat <const> = {
     ["lua-compatible"] = "compat/5x",
     ["luajit"]         = "compat/jit"
 }
-for _, luaver in ipairs { "lua51", "lua52", "lua53", "lua54", "luajit", "lua-latest", "lua-compatible" } do
+for _, luaver in ipairs {
+    "lua51",
+    "lua52",
+    "lua53",
+    "lua54",
+    "luajit",
+    "lua-latest",
+    --"lua-compatible"
+} do
     runtimes[#runtimes + 1] = luaver.."/lua"
     if lm.os == "windows" then
         runtimes[#runtimes + 1] = luaver.."/"..luaver
