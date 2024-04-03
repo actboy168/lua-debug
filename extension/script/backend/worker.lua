@@ -577,7 +577,7 @@ local function runLoop(reason, level)
     skipFrame = level or 0
 
     while true do
-        workerThreadUpdate(0.01)
+        workerThreadUpdate(10)
         if state ~= 'stopped' then
             break
         end
@@ -604,7 +604,7 @@ end
 
 local function debuggeeReady()
     while suspend do
-        workerThreadUpdate(0.01)
+        workerThreadUpdate(10)
     end
     if initialized then
         return true

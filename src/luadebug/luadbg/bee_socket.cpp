@@ -75,25 +75,25 @@ namespace bee::lua_socketlegacy {
             write_finish = false;
         else if (!lua_isnoneornil(L, 2))
             luaL_typeerror(L, 2, lua_typename(L, LUA_TTABLE));
-        lua_Number timeo = luaL_optnumber(L, 3, -1);
+        int msec = lua::optinteger<int, -1>(L, 3);
         if (read_finish && write_finish) {
-            if (timeo < 0) {
+            if (msec < 0) {
                 return luaL_error(L, "no open sockets to check and no timeout set");
             }
             else {
-                thread_sleep(static_cast<int>(timeo * 1000));
+                thread_sleep(msec);
                 lua_newtable(L);
                 lua_newtable(L);
                 return 2;
             }
         }
         struct timeval timeout, *timeop = &timeout;
-        if (timeo < 0) {
+        if (msec < 0) {
             timeop = NULL;
         }
         else {
-            timeout.tv_sec  = (long)timeo;
-            timeout.tv_usec = (long)((timeo - timeout.tv_sec) * 1000000);
+            timeout.tv_sec  = (long)(msec / 1000);
+            timeout.tv_usec = (long)(msec % 1000 * 1000);
         }
         lua_settop(L, 3);
         lua_Integer read_n  = read_finish ? 0 : luaL_len(L, 1);
@@ -156,25 +156,25 @@ namespace bee::lua_socketlegacy {
             write_finish = false;
         else if (!lua_isnoneornil(L, 2))
             luaL_typeerror(L, 2, lua_typename(L, LUA_TTABLE));
-        lua_Number timeo = luaL_optnumber(L, 3, -1);
+        int msec = lua::optinteger<int, -1>(L, 3);
         if (read_finish && write_finish) {
-            if (timeo < 0) {
+            if (msec < 0) {
                 return luaL_error(L, "no open sockets to check and no timeout set");
             }
             else {
-                thread_sleep(static_cast<int>(timeo * 1000));
+                thread_sleep(msec);
                 lua_newtable(L);
                 lua_newtable(L);
                 return 2;
             }
         }
         struct timeval timeout, *timeop = &timeout;
-        if (timeo < 0) {
+        if (msec < 0) {
             timeop = NULL;
         }
         else {
-            timeout.tv_sec  = (long)timeo;
-            timeout.tv_usec = (long)((timeo - timeout.tv_sec) * 1000000);
+            timeout.tv_sec  = (long)(msec / 1000);
+            timeout.tv_usec = (long)(msec % 1000 * 1000);
         }
         lua_settop(L, 3);
         int maxfd = 0;
