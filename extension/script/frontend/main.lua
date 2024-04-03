@@ -27,7 +27,7 @@ local function run()
     proxy.init(vscode)
 
     while true do
-        select.update(0.01)
+        select.update(10)
         proxy.update()
         update()
     end
