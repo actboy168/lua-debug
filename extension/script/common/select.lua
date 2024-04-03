@@ -136,7 +136,7 @@ function m.cleanup(fd)
 end
 
 function m.listen(t)
-    local fd, err = socket(t.protocol)
+    local fd, err = socket.create(t.protocol)
     if not fd then
         return nil, err
     end
@@ -160,7 +160,7 @@ function m.listen(t)
 end
 
 function m.connect(t)
-    local fd, err = socket(t.protocol)
+    local fd, err = socket.create(t.protocol)
     if not fd then
         return nil, err
     end
