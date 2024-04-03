@@ -1,4 +1,5 @@
 local socket = require 'bee.socket'
+local fs = require 'bee.filesystem'
 socket.select = require 'bee.socketlegacy'.select
 
 local listens = {}
@@ -141,7 +142,7 @@ function m.listen(t)
         return nil, err
     end
     if t.protocol == "unix" then
-        os.remove(t.address)
+        fs.remove(t.address)
     end
     local ok
     ok, err = fd:bind(t.address, t.port)
