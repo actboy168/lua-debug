@@ -170,8 +170,9 @@ function dbg:start(cfg)
 
     self.rdebug.start(([[
         local rootpath = %q
-        package.path = rootpath..'/script/?.lua'
-        require 'backend.bootstrap'. start(rootpath, %q..%q)
+        package.path = rootpath.."/script/?.lua"
+        dofile(rootpath.."/script/sandbox.lua")
+        require "backend.bootstrap". start(rootpath, %q..%q)
     ]]):format(
         self.root,
         cfg.client == true and "connect:" or "listen:",

@@ -7,15 +7,17 @@ local function hasMaster()
     return ok
 end
 
-local function initMaster(logpath, address)
+local function initMaster(rootpath, address)
     if hasMaster() then
         return
     end
     thread.newchannel "DbgMaster"
     local mt = thread.thread(([[
-        package.path = %q
+        local rootpath = %q
+        package.path = rootpath.."/script/?.lua"
+        dofile(rootpath.."/script/sandbox.lua")
         local log = require "common.log"
-        log.file = %q..'/master.log'
+        log.file = rootpath.."/master.log"
         local ok, err = xpcall(function()
             local network = require "common.network"(%q)
             local master = require "backend.master.mgr"
@@ -26,8 +28,7 @@ local function initMaster(logpath, address)
             log.error("ERROR:" .. err)
         end
     ]]):format(
-        package.path,
-        logpath,
+        rootpath,
         address
     ))
     ExitGuard = setmetatable({}, {__gc=function()
@@ -37,20 +38,20 @@ local function initMaster(logpath, address)
     end})
 end
 
-local function startWorker(logpath)
+local function startWorker(rootpath)
     local log = require 'common.log'
-    log.file = logpath..'/worker.log'
+    log.file = rootpath..'/worker.log'
     require 'backend.worker'
 end
 
-function m.start(logpath, address)
-    initMaster(logpath, address)
-    startWorker(logpath)
+function m.start(rootpath, address)
+    initMaster(rootpath, address)
+    startWorker(rootpath)
 end
 
-function m.attach(logpath)
+function m.attach(rootpath)
     if hasMaster() then
-        startWorker(logpath)
+        startWorker(rootpath)
     end
 end
 
