@@ -255,7 +255,8 @@ namespace bee::lua_socketlegacy {
             { "select", select },
             { NULL, NULL }
         };
-        luaL_newlib(L, lib);
+        luaL_newlibtable(L, lib);
+        luaL_setfuncs(L, lib, 0);
         return 1;
     }
 }

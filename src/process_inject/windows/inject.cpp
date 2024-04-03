@@ -35,7 +35,8 @@ extern "C" int luaopen_inject(lua_State* L) {
         { "injectdll", injectdll },
         { NULL, NULL },
     };
-    luaL_newlib(L, lib);
+    luaL_newlibtable(L, lib);
+    luaL_setfuncs(L, lib, 0);
     return 1;
 }
 
