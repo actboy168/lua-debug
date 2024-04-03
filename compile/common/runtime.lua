@@ -74,6 +74,7 @@ lm:source_set 'luadbg-compatible' {
     },
     sources = {
         "src/luadebug/luadbg/*.cpp",
+        "!src/luadebug/luadbg/bee_socket.cpp",
         "3rd/bee.lua/3rd/lua-seri/lua-seri.c",
     },
     msvc = {
