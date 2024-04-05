@@ -69,17 +69,16 @@ local function findfield(t, f, level)
     local loct = rdebug.tablehashv(t, 0, 5000)
     for i = 1, #loct, 2 do
         local key, value = loct[i], loct[i + 1]
-        if rdebug.type(key) == 'string' then
-            local skey = rdebug.value(key)
-            if not (level == 2 and skey == '_G') then
-                local tvalue = rdebug.type(value)
-                if (tvalue == 'function' or tvalue == 'c function') and rdebug.value(value) == f then
-                    return skey
+        local key_type, key_value = rdebug.value(key)
+        if key_type == 'string' then
+            if not (level == 2 and key_value == '_G') then
+                if rdebug.equal(value, f) then
+                    return key_value
                 end
-                if tvalue == 'table' then
+                if rdebug.type(value) == 'table' then
                     local res = findfield(value, f, level - 1)
                     if res then
-                        return skey..'.'..res
+                        return key_value..'.'..res
                     end
                 end
             end
@@ -88,7 +87,6 @@ local function findfield(t, f, level)
 end
 
 local function pushglobalfuncname(f)
-    f = rdebug.value(f)
     if f ~= nil then
         return findfield(rdebug._G, f, 2)
     end
@@ -136,7 +134,7 @@ local function findfirstlua(message)
 end
 
 local function replacewhere(flags, error)
-    local errormessage = tostring(rdebug.value(error))
+    local errormessage = rdebug.tostring(error)
     if flags[1] == "syntax" then
         return findfirstlua(errormessage)
     end

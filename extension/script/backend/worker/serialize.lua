@@ -66,8 +66,7 @@ local function putKey(k)
     puts("]")
 end
 
-local function putTable(t)
-    local uniquekey = rdebug.value(t)
+local function putTable(t, uniquekey)
     if visited[uniquekey] then
         puts('<table>')
     elseif level >= DEPTH then
@@ -124,17 +123,17 @@ local function putTable(t)
 end
 
 function putValue(v)
-    local tv = rdebug.type(v)
-    if tv == 'string' then
-        puts(("%q"):format(rdebug.value(v)))
-    elseif tv == 'float' then
-        puts(floatToString(rdebug.value(v)))
-    elseif tv == 'integer' or tv == 'boolean' or tv == 'nil' then
-        puts(tostring(rdebug.value(v)))
-    elseif tv == 'table' then
-        putTable(v)
+    local type, value = rdebug.value(v)
+    if type == 'string' then
+        puts(("%q"):format(value))
+    elseif type == 'float' then
+        puts(floatToString(value))
+    elseif type == 'integer' or value == 'boolean' or value == 'nil' then
+        puts(tostring(value))
+    elseif type == 'table' then
+        putTable(v, value)
     else
-        puts('<'..tv..'>')
+        puts('<'..type..'>')
     end
 end
 

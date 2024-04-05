@@ -707,8 +707,8 @@ local ERREVENT_ERRMEM <const> = 0x04
 local ERREVENT_ERRERR <const> = 0x05
 local ERREVENT_PANIC <const> = 0x10
 
-local function GlobalFunction(name)
-    return rdebug.value(rdebug.fieldv(rdebug._G, name))
+local function GlobalFunction(func, name)
+    return rdebug.fieldv(rdebug._G, name)
 end
 
 local function getExceptionType(errcode, skip)
@@ -718,11 +718,10 @@ local function getExceptionType(errcode, skip)
             if info.what ~= 'C' then
                 return "runtime"
             end
-            local raisefunc = rdebug.value(info.func)
-            if raisefunc == GlobalFunction "assert" then
+            if rdebug.eqaul(info.func, GlobalFunction "assert") then
                 return "assert"
             end
-            if raisefunc == GlobalFunction "error" then
+            if rdebug.eqaul(info.func, GlobalFunction "error") then
                 return "error"
             end
         end
@@ -752,11 +751,10 @@ local function getExceptionCaught(errcode, skip)
         if level >= 100 then
             return 'native'
         end
-        local f = rdebug.value(info.func)
-        if f == pcall then
+        if rdebug.eqaul(info.func, pcall) then
             return 'lua'
         end
-        if f == xpcall then
+        if rdebug.eqaul(info.func, xpcall) then
             return 'lua'
         end
         level = level + 1

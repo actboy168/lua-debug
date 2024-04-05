@@ -432,66 +432,6 @@ namespace luadebug::visitor {
         }
     }
 
-    static int visitor_value(luadbg_State* L, lua_State* hL, protected_area& area) {
-        switch (luadbg_type(L, 1)) {
-        case LUADBG_TNIL:
-        case LUADBG_TBOOLEAN:
-        case LUADBG_TNUMBER:
-        case LUADBG_TSTRING:
-        case LUADBG_TLIGHTUSERDATA:
-            luadbg_settop(L, 1);
-            return 1;
-        default:
-            luadbg_pushnil(L);
-            return 1;
-        case LUADBG_TUSERDATA:
-            break;
-        }
-        area.check_client_stack(3);
-        refvalue::value* v = (refvalue::value*)luadbg_touserdata(L, 1);
-        if (refvalue::eval(v, hL) == LUA_TNONE) {
-            luadbg_pushnil(L);
-            return 1;
-        }
-        if (copy_to_dbg(hL, L) == LUA_TNONE) {
-            luadbg_pushfstring(L, "%s: %p", lua_typename(hL, lua_type(hL, -1)), lua_topointer(hL, -1));
-        }
-        lua_pop(hL, 1);
-        return 1;
-    }
-
-    static int visitor_assign(luadbg_State* L, lua_State* hL, protected_area& area) {
-        area.check_type(L, 1, LUADBG_TUSERDATA);
-        area.check_client_stack(3);
-        if (copy_from_dbg(L, hL, area, 1) == LUADBG_TNONE) {
-            return 0;
-        }
-        if (copy_from_dbg(L, hL, area, 2) == LUADBG_TNONE) {
-            lua_pop(hL, 1);
-            return 0;
-        }
-        refvalue::value* ref = (refvalue::value*)luadbg_touserdata(L, 1);
-        luadbg_pushboolean(L, refvalue::assign(ref, hL));
-        return 1;
-    }
-
-    static int visitor_assign_field(luadbg_State* L, lua_State* hL, protected_area& area) {
-        area.check_type(L, 1, LUADBG_TUSERDATA);
-        area.check_client_stack(3);
-        auto field = area.checkstring(L, 2);
-        if (copy_from_dbg(L, hL, area, 1) == LUADBG_TNONE) {
-            return 0;
-        }
-        lua_pushlstring(hL, field.data(), field.size());
-        if (copy_from_dbg(L, hL, area, 3) == LUADBG_TNONE) {
-            lua_pop(hL, 2);
-            return 0;
-        }
-        lua_rawset(hL, -3);
-        lua_pop(hL, 1);
-        return 0;
-    }
-
     static int visitor_type(luadbg_State* L, lua_State* hL, protected_area& area) {
         switch (luadbg_type(L, 1)) {
         case LUADBG_TNIL:
@@ -565,6 +505,213 @@ namespace luadebug::visitor {
         }
         lua_pop(hL, 1);
         return 1;
+    }
+
+    static int visitor_value(luadbg_State* L, lua_State* hL, protected_area& area) {
+        switch (luadbg_type(L, 1)) {
+        case LUADBG_TNIL:
+            luadbg_pushstring(L, "nil");
+            luadbg_pushvalue(L, 1);
+            return 2;
+        case LUADBG_TBOOLEAN:
+            luadbg_pushstring(L, "boolean");
+            luadbg_pushvalue(L, 1);
+            return 2;
+        case LUADBG_TSTRING:
+            luadbg_pushstring(L, "string");
+            luadbg_pushvalue(L, 1);
+            return 2;
+        case LUADBG_TLIGHTUSERDATA:
+            luadbg_pushstring(L, "lightuserdata");
+            luadbg_pushvalue(L, 1);
+            return 2;
+        case LUADBG_TNUMBER:
+#if LUA_VERSION_NUM >= 503 || defined(LUAJIT_VERSION)
+            if (luadbg_isinteger(L, 1)) {
+                luadbg_pushstring(L, "integer");
+                luadbg_pushvalue(L, 1);
+                return 2;
+            }
+#endif
+            luadbg_pushstring(L, "float");
+            luadbg_pushvalue(L, 1);
+            return 2;
+        case LUADBG_TUSERDATA:
+            break;
+        default:
+            luadbg_pushstring(L, "unexpected");
+            luadbg_pushnil(L);
+            return 2;
+        }
+        area.check_client_stack(3);
+        refvalue::value* v = (refvalue::value*)luadbg_touserdata(L, 1);
+        int t              = refvalue::eval(v, hL);
+        switch (t) {
+        case LUA_TNONE:
+            luadbg_pushstring(L, "unknown");
+            luadbg_pushnil(L);
+            return 2;
+        case LUA_TFUNCTION:
+            if (lua_iscfunction(hL, -1)) {
+                luadbg_pushstring(L, "c function");
+            }
+            else {
+                luadbg_pushstring(L, "function");
+            }
+            break;
+        case LUA_TNUMBER:
+#if LUA_VERSION_NUM >= 503 || defined(LUAJIT_VERSION)
+            if (lua_isinteger(hL, -1)) {
+                luadbg_pushstring(L, "integer");
+                break;
+            }
+#endif
+            luadbg_pushstring(L, "float");
+            break;
+        case LUA_TLIGHTUSERDATA:
+            luadbg_pushstring(L, "lightuserdata");
+            break;
+#ifdef LUAJIT_VERSION
+        case LUA_TCDATA:
+            luadbg_pushstring(L, lua_cdatatype(hL, -1));
+            break;
+#endif
+        default:
+            luadbg_pushstring(L, lua_typename(hL, t));
+            break;
+        }
+        if (copy_to_dbg(hL, L) == LUA_TNONE) {
+            luadbg_pushfstring(L, "%p", lua_topointer(hL, -1));
+        }
+        lua_pop(hL, 1);
+        return 1;
+    }
+
+    static int visitor_equal(luadbg_State* L, lua_State* hL, protected_area& area) {
+        if (luadbg_type(L, 1) != luadbg_type(L, 2)) {
+            luadbg_pushboolean(L, 0);
+            return 1;
+        }
+        if (luadbg_type(L, 1) != LUADBG_TUSERDATA) {
+            luadbg_pushboolean(L, luadbg_rawequal(L, 1, 2));
+            return 1;
+        }
+        area.check_client_stack(3);
+        if (refvalue::eval((refvalue::value*)luadbg_touserdata(L, 1), hL) == LUA_TNONE) {
+            luadbg_pushboolean(L, 0);
+            return 1;
+        }
+        if (refvalue::eval((refvalue::value*)luadbg_touserdata(L, 2), hL) == LUA_TNONE) {
+            lua_pop(hL, 1);
+            luadbg_pushboolean(L, 0);
+            return 1;
+        }
+        if (lua_type(hL, -1) != lua_type(hL, -2)) {
+            lua_pop(hL, 2);
+            luadbg_pushboolean(L, 0);
+            return 1;
+        }
+        luadbg_pushboolean(L, lua_rawequal(hL, -1, -2));
+        lua_pop(hL, 2);
+        return 1;
+    }
+
+    static int visitor_tostring(luadbg_State* L, lua_State* hL, protected_area& area) {
+        switch (luadbg_type(L, 1)) {
+        case LUADBG_TNIL:
+            luadbg_pushstring(L, "nil");
+            return 1;
+        case LUADBG_TBOOLEAN:
+            luadbg_pushstring(L, luadbg_toboolean(L, 1)? "true": "false");
+            return 1;
+        case LUADBG_TNUMBER:
+            if (luadbg_isinteger(L, 1)) {
+                luadbg_pushfstring(L, "%d", luadbg_tointeger(L, 1));
+                return 1;
+            }
+            luadbg_pushfstring(L, "%f", luadbg_tonumber(L, 1));
+            return 1;
+        case LUADBG_TSTRING:
+            luadbg_settop(L, 1);
+            return 1;
+        case LUADBG_TLIGHTUSERDATA:
+            luadbg_pushfstring(L, "lightuserdata: %p", luadbg_topointer(L, 1));
+            return 1;
+        default:
+            luadbg_pushnil(L);
+            return 1;
+        case LUADBG_TUSERDATA:
+            break;
+        }
+        area.check_client_stack(3);
+        refvalue::value* v = (refvalue::value*)luadbg_touserdata(L, 1);
+        if (refvalue::eval(v, hL) == LUA_TNONE) {
+            luadbg_pushstring(L, "nil");
+            return 1;
+        }
+        switch (lua_type(hL, -1)) {
+        case LUADBG_TNIL:
+            luadbg_pushstring(L, "nil");
+            break;
+        case LUADBG_TBOOLEAN:
+            luadbg_pushstring(L, lua_toboolean(hL, -1)? "true": "false");
+            break;
+        case LUADBG_TNUMBER:
+#if LUA_VERSION_NUM >= 503 || defined(LUAJIT_VERSION)
+            if (lua_isinteger(hL, -1)) {
+                luadbg_pushfstring(L, "%d", lua_tointeger(hL, -1));
+                break;
+            }
+#endif
+            luadbg_pushfstring(L, "%f", lua_tonumber(hL, -1));
+            break;
+        case LUADBG_TSTRING: {
+            size_t sz;
+            const char* str = lua_tolstring(hL, -1, &sz);
+            luadbg_pushlstring(L, str, sz);
+            break;
+        }
+        case LUADBG_TLIGHTUSERDATA:
+            luadbg_pushfstring(L, "lightuserdata: %p", lua_topointer(hL, -1));
+            break;
+        default:
+            luadbg_pushfstring(L, "%s: %p", lua_typename(hL, lua_type(hL, -1)), lua_topointer(hL, -1));
+            break;
+        }
+        lua_pop(hL, 1);
+        return 1;
+    }
+
+    static int visitor_assign(luadbg_State* L, lua_State* hL, protected_area& area) {
+        area.check_type(L, 1, LUADBG_TUSERDATA);
+        area.check_client_stack(3);
+        if (copy_from_dbg(L, hL, area, 1) == LUADBG_TNONE) {
+            return 0;
+        }
+        if (copy_from_dbg(L, hL, area, 2) == LUADBG_TNONE) {
+            lua_pop(hL, 1);
+            return 0;
+        }
+        refvalue::value* ref = (refvalue::value*)luadbg_touserdata(L, 1);
+        luadbg_pushboolean(L, refvalue::assign(ref, hL));
+        return 1;
+    }
+
+    static int visitor_assign_field(luadbg_State* L, lua_State* hL, protected_area& area) {
+        area.check_type(L, 1, LUADBG_TUSERDATA);
+        area.check_client_stack(3);
+        auto field = area.checkstring(L, 2);
+        if (copy_from_dbg(L, hL, area, 1) == LUADBG_TNONE) {
+            return 0;
+        }
+        lua_pushlstring(hL, field.data(), field.size());
+        if (copy_from_dbg(L, hL, area, 3) == LUADBG_TNONE) {
+            lua_pop(hL, 2);
+            return 0;
+        }
+        lua_rawset(hL, -3);
+        lua_pop(hL, 1);
+        return 0;
     }
 
     template <bool getref = true>
@@ -930,10 +1077,12 @@ namespace luadebug::visitor {
             { "tablesize", protected_call<visitor_tablesize> },
             { "udread", protected_call<visitor_udread> },
             { "udwrite", protected_call<visitor_udwrite> },
+            { "type", protected_call<visitor_type> },
             { "value", protected_call<visitor_value> },
+            { "equal", protected_call<visitor_equal> },
+            { "tostring", protected_call<visitor_tostring> },
             { "assign", protected_call<visitor_assign> },
             { "assign_field", protected_call<visitor_assign_field> },
-            { "type", protected_call<visitor_type> },
             { "getinfo", protected_call<visitor_getinfo> },
             { "load", protected_call<visitor_load> },
             { "eval", protected_call<visitor_eval> },
