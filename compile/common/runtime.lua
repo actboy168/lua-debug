@@ -58,7 +58,7 @@ lm:source_set 'luadbg' {
     windows = {
         defines = {
             "_CRT_SECURE_NO_WARNINGS",
-            "_WIN32_WINNT=0x0601",
+            "_WIN32_WINNT=0x0602",
         },
     }
 }
@@ -92,7 +92,7 @@ lm:source_set 'luadbg-compatible' {
     windows = {
         defines = {
             "_CRT_SECURE_NO_WARNINGS",
-            "_WIN32_WINNT=0x0601",
+            "_WIN32_WINNT=0x0602",
         },
     }
 }
@@ -344,7 +344,7 @@ for _, luaver in ipairs {
             deps = luaver..'/'..luaver,
             defines = {
                 "_CRT_SECURE_NO_WARNINGS",
-                "_WIN32_WINNT=0x0601",
+                "_WIN32_WINNT=0x0602",
                 ("LUA_DLL_VERSION="..luaver)
             },
             links = {

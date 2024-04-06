@@ -4,7 +4,7 @@ require "compile.common.config"
 
 local platform = lm.runtime_platform
 
-lm.defines = "_WIN32_WINNT=0x0601"
+lm.defines = "_WIN32_WINNT=0x0602"
 lm.builddir = ("build/%s/%s"):format(platform, lm.mode)
 
 require "compile.common.runtime"
