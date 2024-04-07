@@ -1,4 +1,4 @@
-local network = require 'common.network'
+local socket = require 'common.socket'
 local debuger_factory = require 'frontend.debuger_factory'
 local fs = require 'bee.filesystem'
 local sp = require 'bee.subprocess'
@@ -64,14 +64,14 @@ local function attach_process(pkg, pid)
 		return false, errmsg
 	end
 
-    server = network("connect:"..getUnixAddress(pid))
+    server = socket("connect:"..getUnixAddress(pid))
     server.sendmsg(initReq)
     server.sendmsg(pkg)
     return true
 end
 
 local function attach_tcp(pkg, args)
-    server = network((args.client and "connect:" or "listen:") .. args.address)
+    server = socket((args.client and "connect:" or "listen:") .. args.address)
     server.sendmsg(initReq)
     server.sendmsg(pkg)
 end
@@ -112,11 +112,11 @@ end
 local function create_server(args, pid)
     local s, address
     if args.address ~= nil then
-        s = network((args.client and "connect:" or "listen:") .. args.address)
+        s = socket((args.client and "connect:" or "listen:") .. args.address)
         address = (args.client and "s:" or "c:") .. args.address
     else
         pid = pid or sp.get_id()
-        s = network("connect:"..getUnixAddress(pid))
+        s = socket("connect:"..getUnixAddress(pid))
         address = pid
     end
     return s, address

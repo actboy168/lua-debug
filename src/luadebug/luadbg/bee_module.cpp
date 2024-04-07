@@ -24,6 +24,7 @@
 #include <binding/file.h>
 #include <binding/binding.h>
 #include <binding/lua_socket.cpp>
+#include <binding/lua_select.cpp>
 #include <binding/lua_thread.cpp>
 #include <binding/lua_filesystem.cpp>
 
@@ -38,6 +39,7 @@ extern "C" int luaopen_luadebug_stdio(luadbg_State* L);
 extern "C" int luaopen_luadebug_utility(luadbg_State* L);
 extern "C" int luaopen_luadebug_visitor(luadbg_State* L);
 extern "C" int luaopen_bee_socket(luadbg_State* L);
+extern "C" int luaopen_bee_select(luadbg_State* L);
 extern "C" int luaopen_bee_socketlegacy(luadbg_State* L);
 extern "C" int luaopen_bee_thread(luadbg_State* L);
 extern "C" int luaopen_bee_filesystem(luadbg_State* L);
@@ -51,6 +53,7 @@ static luadbgL_Reg cmodule[] = {
     { "luadebug.utility", luaopen_luadebug_utility },
     { "luadebug.visitor", luaopen_luadebug_visitor },
     { "bee.socket", luaopen_bee_socket },
+    { "bee.select", luaopen_bee_select },
     { "bee.socketlegacy", luaopen_bee_socketlegacy },
     { "bee.thread", luaopen_bee_thread },
     { "bee.filesystem", luaopen_bee_filesystem },

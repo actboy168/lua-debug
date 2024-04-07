@@ -1,14 +1,13 @@
-local proto = require 'common.protocol'
+local net = require 'common.net'
 local ev = require 'backend.event'
 local thread = require 'bee.thread'
 local stdio = require 'luadebug.stdio'
 
 local redirect = {}
 local mgr = {}
-local network
+local socket
 local seq = 0
 local initialized = false
-local stat = {}
 local queue = {}
 local masterThread
 local client = {}
@@ -26,15 +25,14 @@ local function genThreadId()
     return maxThreadId
 end
 
-local function event_in(data)
-    local msg = proto.recv(data, stat)
-    if msg then
-        queue[#queue + 1] = msg
-        while msg do
-            msg = proto.recv('', stat)
-            if msg then
-                queue[#queue + 1] = msg
-            end
+local function net_update()
+    net.update(0)
+    while true do
+        local msg = socket.recvmsg()
+        if msg then
+            queue[#queue + 1] = msg
+        else
+            break
         end
     end
 end
@@ -49,7 +47,6 @@ local function event_close()
     ev.emit('close')
     initialized = false
     seq = 0
-    stat = {}
     queue = {}
 end
 
@@ -66,10 +63,9 @@ function mgr.newSeq()
 end
 
 function mgr.init(io)
-    network = io
+    socket = io
     masterThread = thread.channel 'DbgMaster'
-    network.event_in(event_in)
-    network.event_close(event_close)
+    socket.event_close(event_close)
     return true
 end
 
@@ -103,7 +99,7 @@ function mgr.clientSend(pkg)
     if not initialized then
         return
     end
-    network.send(proto.send(pkg, stat))
+    socket.sendmsg(pkg)
 end
 
 function mgr.workerSend(w, msg)
@@ -245,9 +241,7 @@ local function update_once()
         end
     end
     update_redirect()
-    if not network.update() then
-        return true
-    end
+    net_update()
     local req = recv()
     if not req then
         return true
@@ -286,7 +280,7 @@ function mgr.update()
     end
     local event = require 'backend.master.event'
     event.terminated()
-    network.closeall()
+    socket.closeall()
 end
 
 function mgr.setClient(c)

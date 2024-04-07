@@ -18,9 +18,9 @@ local function initMaster(rootpath, address)
         local log = require "common.log"
         log.file = rootpath.."/master.log"
         local ok, err = xpcall(function()
-            local network = require "common.network"(%q)
+            local socket = require "common.socket"(%q)
             local master = require "backend.master.mgr"
-            master.init(network)
+            master.init(socket)
             master.update()
         end, debug.traceback)
         if not ok then
