@@ -63,47 +63,12 @@ lm:source_set 'luadbg' {
     }
 }
 
-lm:source_set 'luadbg-compatible' {
-    defines = {
-        "LUADBG_DISABLE",
-    },
-    includes = {
-        "src/luadebug",
-        "3rd/bee.lua",
-        "3rd/bee.lua/3rd/lua",
-    },
-    sources = {
-        "src/luadebug/luadbg/*.cpp",
-        "!src/luadebug/luadbg/bee_socket.cpp",
-        "3rd/bee.lua/3rd/lua-seri/lua-seri.c",
-    },
-    msvc = {
-        flags = "/utf-8",
-    },
-    linux = {
-        flags = "-fPIC"
-    },
-    netbsd = {
-        flags = "-fPIC"
-    },
-    freebsd = {
-        flags = "-fPIC"
-    },
-    windows = {
-        defines = {
-            "_CRT_SECURE_NO_WARNINGS",
-            "_WIN32_WINNT=0x0602",
-        },
-    }
-}
-
 local compat <const> = {
     ["lua51"]          = "compat/5x",
     ["lua52"]          = "compat/5x",
     ["lua53"]          = "compat/5x",
     ["lua54"]          = "compat/5x",
     ["lua-latest"]     = "compat/5x",
-    ["lua-compatible"] = "compat/5x",
     ["luajit"]         = "compat/jit"
 }
 for _, luaver in ipairs {
@@ -113,7 +78,6 @@ for _, luaver in ipairs {
     "lua54",
     "luajit",
     "lua-latest",
-    --"lua-compatible"
 } do
     runtimes[#runtimes + 1] = luaver.."/lua"
     if lm.os == "windows" then
@@ -137,84 +101,6 @@ for _, luaver in ipairs {
                 require "compile.luajit.make_buildtools"
             end
             require "compile.luajit.make"
-        end
-    elseif luaver == "lua-compatible" then
-        if lm.os == "windows" then
-            lm:shared_library(luaver.."/"..luaver) {
-                rootdir = '3rd/lua/lua-latest',
-                bindir = bindir,
-                includes = {
-                    '..',
-                },
-                sources = {
-                    "*.c",
-                    "!lua.c",
-                    "!luac.c",
-                },
-                defines = {
-                    "LUA_BUILD_AS_DLL",
-                    "LUA_VERSION_LATEST",
-                }
-            }
-
-            lm:executable(luaver..'/lua') {
-                rootdir = '3rd/lua/lua-latest',
-                bindir = bindir,
-                output = "lua",
-                deps = luaver..'/'..luaver,
-                includes = {
-                    '..',
-                },
-                sources = {
-                    "lua.c",
-                    "../../../compile/windows/lua-debug.rc",
-                },
-                defines = {
-                    "LUA_VERSION_LATEST",
-                }
-            }
-        else
-            lm:executable(luaver..'/lua') {
-                rootdir = '3rd/lua/lua-latest',
-                bindir = bindir,
-                includes = {
-                    '.',
-                    '..',
-                },
-                sources = {
-                    "*.c",
-                    "!luac.c",
-                },
-                defines = {
-                    "LUA_VERSION_LATEST",
-                },
-                visibility = "default",
-                links = "m",
-                linux = {
-                    defines = "LUA_USE_LINUX",
-                    links = { "pthread", "dl" },
-                    ldflags = "-Wl,-E",
-                },
-                netbsd = {
-                    defines = "LUA_USE_LINUX",
-                    links = "pthread",
-                    ldflags = "-Wl,-E",
-                },
-                freebsd = {
-                    defines = "LUA_USE_LINUX",
-                    links = "pthread",
-                    ldflags = "-Wl,-E",
-                },
-                android = {
-                    defines = "LUA_USE_LINUX",
-                    links = "dl",
-                },
-                macos = {
-                    defines = {
-                        "LUA_USE_MACOSX",
-                    },
-                }
-            }
         end
     else
         if lm.os == "windows" then
@@ -306,8 +192,6 @@ for _, luaver in ipairs {
     local luaSrcDir; do
         if luaver == "luajit" then
             luaSrcDir = "3rd/lua/luajit/src"
-        elseif luaver == "lua-compatible" then
-            luaSrcDir = "3rd/lua/lua-latest"
         else
             luaSrcDir = "3rd/lua/"..luaver
         end
@@ -317,12 +201,11 @@ for _, luaver in ipairs {
     lm:shared_library(luaver..'/luadebug') {
         bindir = bindir,
         deps = {
-            luaver == "lua-compatible" and "luadbg-compatible" or "luadbg",
+            "luadbg",
             "compile_to_luadbg",
         },
         defines = {
             luaver == "lua-latest" and "LUA_VERSION_LATEST",
-            luaver == "lua-compatible" and "LUADBG_DISABLE",
         },
         includes = {
             luaSrcDir,
