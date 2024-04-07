@@ -1,4 +1,5 @@
 local socket = require 'common.socket'
+local net = require "common.net"
 local debuger_factory = require 'frontend.debuger_factory'
 local fs = require 'bee.filesystem'
 local sp = require 'bee.subprocess'
@@ -208,7 +209,7 @@ local function proxy_start(pkg)
     end
 end
 
-function m.send(pkg)
+local function send(pkg)
     if server then
         if pkg.type == 'response' and pkg.command == 'runInTerminal' then
             return
@@ -234,6 +235,7 @@ function m.send(pkg)
 end
 
 function m.update()
+    net.update(10)
     if server then
         server.event_close(function()
             os.exit(0, true)
@@ -245,6 +247,14 @@ function m.update()
             else
                 break
             end
+        end
+    end
+    while true do
+        local pkg = client.recvmsg()
+        if pkg then
+            send(pkg)
+        else
+            break
         end
     end
 end

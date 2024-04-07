@@ -1,4 +1,3 @@
-local net = require 'common.net'
 local ev = require 'backend.event'
 local thread = require 'bee.thread'
 local stdio = require 'luadebug.stdio'
@@ -8,7 +7,6 @@ local mgr = {}
 local socket
 local seq = 0
 local initialized = false
-local queue = {}
 local masterThread
 local client = {}
 local maxThreadId = 0
@@ -25,18 +23,6 @@ local function genThreadId()
     return maxThreadId
 end
 
-local function net_update()
-    net.update(0)
-    while true do
-        local msg = socket.recvmsg()
-        if msg then
-            queue[#queue + 1] = msg
-        else
-            break
-        end
-    end
-end
-
 local function event_close()
     if not initialized then
         return
@@ -47,14 +33,6 @@ local function event_close()
     ev.emit('close')
     initialized = false
     seq = 0
-    queue = {}
-end
-
-local function recv()
-    if #queue == 0 then
-        return
-    end
-    return table.remove(queue, 1)
 end
 
 function mgr.newSeq()
@@ -241,8 +219,8 @@ local function update_once()
         end
     end
     update_redirect()
-    net_update()
-    local req = recv()
+    socket.update(0)
+    local req = socket.recvmsg()
     if not req then
         return true
     end

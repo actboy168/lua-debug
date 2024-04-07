@@ -94,20 +94,21 @@ return function (param)
     function m.debug(v)
         stat.debug = v
     end
-    local function send(data)
+    function m.sendmsg(pkg)
+        local data = proto.send(pkg, stat)
         if session == nil then
             writebuf = writebuf .. data
             return
         end
         session:write(data)
     end
-    function m.sendmsg(pkg)
-        send(proto.send(pkg, stat))
-    end
     function m.recvmsg()
         local data = readbuf
         readbuf = ''
         return proto.recv(data, stat)
+    end
+    function m.update(timeout)
+        net.update(timeout)
     end
     function m.closeall()
         local fds = {}
