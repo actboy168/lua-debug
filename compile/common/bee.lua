@@ -1,15 +1,5 @@
 local lm = require "luamake"
 
-lm:lua_source "source_bee" {
-    rootdir = "../../",
-    includes = "3rd/bee.lua/",
-    defines = "BEE_STATIC",
-    sources = "src/luadebug/luadbg/bee_socket.cpp",
-    windows = {
-        defines = "_CRT_SECURE_NO_WARNINGS",
-    }
-}
-
 lm.rootdir = "../../3rd/bee.lua"
 
 lm:lua_source "source_bee" {
