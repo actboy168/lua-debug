@@ -90,12 +90,8 @@ local function detectPlatform(extensionPath, extensionDirName)
     end
     local arch = what_arch()
     if OS == "windows" then
-        local r = guess('-win32-'..arch)
+        local r = guess '-win32-x64'
         if r then return r end
-        if arch == "x64" then
-            r = guess '-win32-ia32'
-            if r then return r end
-        end
     elseif OS == "linux" then
         if arch == "x86_64" then
             local r = guess '-linux-x64'

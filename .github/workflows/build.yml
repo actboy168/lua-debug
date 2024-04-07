@@ -41,11 +41,3 @@ jobs:
     - run: npx ovsx publish --target ${{ matrix.platform }} -p ${{ secrets.OVSX_KEY }}
       working-directory: publish
       continue-on-error: true
-    - if: matrix.platform == 'win32-x64'
-      run: npx vsce publish --target win32-ia32 -p ${{ secrets.VSCE_KEY }}
-      working-directory: publish
-      continue-on-error: true
-    - if: matrix.platform == 'win32-x64'
-      run: npx ovsx publish --target win32-ia32 -p ${{ secrets.OVSX_KEY }}
-      working-directory: publish
-      continue-on-error: true
