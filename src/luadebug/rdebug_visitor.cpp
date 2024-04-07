@@ -622,7 +622,7 @@ namespace luadebug::visitor {
             luadbg_pushstring(L, "nil");
             return 1;
         case LUADBG_TBOOLEAN:
-            luadbg_pushstring(L, luadbg_toboolean(L, 1)? "true": "false");
+            luadbg_pushstring(L, luadbg_toboolean(L, 1) ? "true" : "false");
             return 1;
         case LUADBG_TNUMBER:
             if (luadbg_isinteger(L, 1)) {
@@ -654,7 +654,7 @@ namespace luadebug::visitor {
             luadbg_pushstring(L, "nil");
             break;
         case LUADBG_TBOOLEAN:
-            luadbg_pushstring(L, lua_toboolean(hL, -1)? "true": "false");
+            luadbg_pushstring(L, lua_toboolean(hL, -1) ? "true" : "false");
             break;
         case LUADBG_TNUMBER:
 #if LUA_VERSION_NUM >= 503 || defined(LUAJIT_VERSION)
