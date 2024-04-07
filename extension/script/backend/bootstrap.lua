@@ -15,7 +15,6 @@ local function initMaster(rootpath, address)
     local mt = thread.thread(([[
         local rootpath = %q
         package.path = rootpath.."/script/?.lua"
-        dofile(rootpath.."/script/sandbox.lua")
         local log = require "common.log"
         log.file = rootpath.."/master.log"
         local ok, err = xpcall(function()
