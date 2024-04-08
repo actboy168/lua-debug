@@ -584,7 +584,7 @@ namespace luadebug::visitor {
             luadbg_pushfstring(L, "%p", lua_topointer(hL, -1));
         }
         lua_pop(hL, 1);
-        return 1;
+        return 2;
     }
 
     static int visitor_equal(luadbg_State* L, lua_State* hL, protected_area& area) {
