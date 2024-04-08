@@ -6,8 +6,10 @@
 #include <functional>
 #include <limits>
 #include <stdexcept>
+#include <type_traits>
 
 namespace luadebug {
+
     template <typename T>
     struct flatmap_hash {
         size_t operator()(T v) const noexcept {
@@ -21,7 +23,7 @@ namespace luadebug {
                 return static_cast<size_t>(x);
             }
             else {
-                static_assert(std::is_trivial_v<T>);
+                static_assert(std::is_trivially_copy_constructible_v<T>);
                 uint64_t i = 0;
                 memcpy(&i, &v, sizeof(v));
                 flatmap_hash<uint64_t> h;
@@ -30,109 +32,134 @@ namespace luadebug {
         }
     };
 
+    template <typename key_type, typename mapped_type>
+    struct flatmap_bucket_kv {
+        key_type key;
+        mapped_type obj;
+        uint8_t dib;
+        flatmap_bucket_kv(const key_type &key, mapped_type &&obj, uint8_t dib)
+            : key(key)
+            , obj(std::forward<mapped_type>(obj))
+            , dib(dib) {
+        }
+    };
+
+    template <typename key_type>
+    struct flatmap_bucket_kv<key_type, void> {
+        key_type key;
+        uint8_t dib;
+        flatmap_bucket_kv(const key_type &key, uint8_t dib)
+            : key(key)
+            , dib(dib) {
+        }
+    };
+
+    template <typename key_type, typename mapped_type>
+    struct flatmap_bucket_vk {
+        mapped_type obj;
+        key_type key;
+        uint8_t dib;
+        flatmap_bucket_vk(const key_type &key, mapped_type &&obj, uint8_t dib)
+            : obj(std::forward<mapped_type>(obj))
+            , key(key)
+            , dib(dib) {
+        }
+    };
+
+    template <typename key_type>
+    struct flatmap_bucket_vk<key_type, void> {
+        key_type key;
+        uint8_t dib;
+        flatmap_bucket_vk(const key_type &key, uint8_t dib)
+            : key(key)
+            , dib(dib) {
+        }
+    };
+
     template <typename Key, typename T, typename KeyHash = flatmap_hash<Key>, typename KeyEqual = std::equal_to<Key>>
     class flatmap
         : public KeyHash
         , public KeyEqual {
     private:
-        using key_type    = Key;
-        using mapped_type = T;
-        struct bucket_kv {
-            key_type key;
-            mapped_type obj;
-            uint8_t dib;
-            bucket_kv(const key_type& key, mapped_type&& obj, uint8_t dib)
-                : key(key)
-                , obj(std::forward<mapped_type>(obj))
-                , dib(dib) {}
-        };
-        struct bucket_vk {
-            mapped_type obj;
-            key_type key;
-            uint8_t dib;
-            bucket_vk(const key_type& key, mapped_type&& obj, uint8_t dib)
-                : obj(std::forward<mapped_type>(obj))
-                , key(key)
-                , dib(dib) {}
-        };
+        using key_type                         = Key;
+        using mapped_type                      = T;
         static constexpr size_t kInvalidSlot   = size_t(-1);
         static constexpr size_t kMaxLoadFactor = 80;
         static constexpr uint8_t kMaxDistance  = 128;
         static constexpr size_t kMaxTryRehash  = 1;
+        using bucket_kv                        = flatmap_bucket_kv<key_type, mapped_type>;
+        using bucket_vk                        = flatmap_bucket_vk<key_type, mapped_type>;
 
     public:
-        using bucket = typename std::conditional<sizeof(bucket_kv) <= sizeof(bucket_vk), bucket_kv, bucket_vk>::type;
+        using bucket = std::conditional_t<sizeof(bucket_kv) <= sizeof(bucket_vk), bucket_kv, bucket_vk>;
         static_assert(sizeof(bucket) <= 3 * sizeof(size_t));
 
         flatmap() noexcept
             : KeyHash()
-            , KeyEqual() {}
-
-        flatmap(flatmap&& rhs) {
-            m_mask    = rhs.m_mask;
-            m_maxsize = rhs.m_maxsize;
-            m_size    = rhs.m_size;
-            if (rhs.m_mask == 0) {
-                m_buckets = reinterpret_cast<bucket*>(&m_mask);
-            }
-            else {
-                m_buckets = rhs.m_buckets;
-            }
-            rhs.m_mask    = 0;
-            rhs.m_maxsize = 0;
-            rhs.m_size    = 0;
-            rhs.m_buckets = reinterpret_cast<bucket*>(&rhs.m_mask);
+            , KeyEqual() {
         }
 
-        flatmap& operator=(flatmap&& rhs) {
-            std::swap(*this, rhs);
+        flatmap(flatmap &&rhs) {
+            std::swap(m_mask, rhs.m_mask);
+            std::swap(m_maxsize, rhs.m_maxsize);
+            std::swap(m_size, rhs.m_size);
+            std::swap(m_buckets, rhs.m_buckets);
+        }
+
+        flatmap &operator=(flatmap &&rhs) {
+            std::swap(m_mask, rhs.m_mask);
+            std::swap(m_maxsize, rhs.m_maxsize);
+            std::swap(m_size, rhs.m_size);
+            std::swap(m_buckets, rhs.m_buckets);
             return *this;
         }
 
-        flatmap(const flatmap&)            = delete;
-        flatmap& operator=(const flatmap&) = delete;
+        flatmap(const flatmap &)            = delete;
+        flatmap &operator=(const flatmap &) = delete;
 
-        ~flatmap() noexcept {
-            if (m_size == 0) {
-                return;
+        ~flatmap() {
+            clear();
+        }
+
+        std::conditional_t<std::is_same_v<mapped_type, void>, bool, std::tuple<bool, mapped_type *>>
+        find_or_insert(const key_type &key) {
+            if (m_size >= m_maxsize) {
+                increase_size();
             }
-            if constexpr (!std::is_trivially_destructible<bucket>::value) {
-                for (size_t i = 0; i < m_mask + 1; ++i) {
-                    if (m_buckets[i].dib != 0) {
-                        m_buckets[i].key.~key_type();
-                        m_buckets[i].obj.~mapped_type();
-                        --m_size;
-                        if (m_size == 0) {
-                            break;
-                        }
+            uint8_t dib = 1;
+            size_t slot = KeyHash::operator()(key) & m_mask;
+            for (;;) {
+                if (m_buckets[slot].dib == 0) {
+                    ++m_size;
+                    new (&m_buckets[slot].key) key_type { key };
+                    m_buckets[slot].dib = dib;
+                    if constexpr (std::is_same_v<mapped_type, void>) {
+                        return false;
+                    }
+                    else {
+                        return { false, &m_buckets[slot].obj };
                     }
                 }
-            }
-            std::free(m_buckets);
-        }
-
-        template <typename MappedType>
-        bool insert(const key_type& key, MappedType obj) {
-            if (m_size >= m_maxsize) {
-                increase_size();
-            }
-            uint8_t dib = 1;
-            size_t slot = KeyHash::operator()(key) & m_mask;
-            for (;;) {
-                if (m_buckets[slot].dib == 0) {
-                    new (&m_buckets[slot]) bucket { key, std::forward<mapped_type>(obj), dib };
-                    ++m_size;
-                    return true;
-                }
                 if (KeyEqual::operator()(m_buckets[slot].key, key)) {
-                    return false;
+                    if constexpr (std::is_same_v<mapped_type, void>) {
+                        return true;
+                    }
+                    else {
+                        return { true, &m_buckets[slot].obj };
+                    }
                 }
                 if (m_buckets[slot].dib < dib) {
-                    bucket tmp { key, std::forward<mapped_type>(obj), dib };
-                    std::swap(tmp, m_buckets[slot]);
+                    bucket tmp = std::move(m_buckets[slot]);
                     ++tmp.dib;
                     internal_insert<kMaxTryRehash>((slot + 1) & m_mask, std::move(tmp));
-                    return true;
+                    new (&m_buckets[slot].key) key_type { key };
+                    m_buckets[slot].dib = dib;
+                    if constexpr (std::is_same_v<mapped_type, void>) {
+                        return false;
+                    }
+                    else {
+                        return { false, &m_buckets[slot].obj };
+                    }
                 }
                 ++dib;
                 slot = (slot + 1) & m_mask;
@@ -140,35 +167,26 @@ namespace luadebug {
         }
 
         template <typename MappedType>
-        void insert_or_assign(const key_type& key, MappedType obj) {
-            if (m_size >= m_maxsize) {
-                increase_size();
+        bool insert(const key_type &key, MappedType obj) {
+            if constexpr (std::is_same_v<mapped_type, void>) {
+                return !find_or_insert(key);
             }
-            uint8_t dib = 1;
-            size_t slot = KeyHash::operator()(key) & m_mask;
-            for (;;) {
-                if (m_buckets[slot].dib == 0) {
-                    new (&m_buckets[slot]) bucket { key, std::forward<mapped_type>(obj), dib };
-                    ++m_size;
-                    return;
+            else {
+                auto [found, value] = find_or_insert(key);
+                if (!found) {
+                    new (value) mapped_type { std::forward<mapped_type>(obj) };
                 }
-                if (KeyEqual::operator()(m_buckets[slot].key, key)) {
-                    m_buckets[slot].obj = std::forward<mapped_type>(obj);
-                    return;
-                }
-                if (m_buckets[slot].dib < dib) {
-                    bucket tmp { key, std::forward<mapped_type>(obj), dib };
-                    std::swap(tmp, m_buckets[slot]);
-                    ++tmp.dib;
-                    internal_insert<kMaxTryRehash>((slot + 1) & m_mask, std::move(tmp));
-                    return;
-                }
-                ++dib;
-                slot = (slot + 1) & m_mask;
+                return !found;
             }
         }
 
-        [[nodiscard]] bool contains(const key_type& key) const noexcept {
+        template <typename MappedType>
+        void insert_or_assign(const key_type &key, MappedType obj) {
+            auto [_, value] = find_or_insert(key);
+            new (value) mapped_type { std::forward<mapped_type>(obj) };
+        }
+
+        [[nodiscard]] bool contains(const key_type &key) const noexcept {
             auto slot = find_key(key);
             return slot != kInvalidSlot;
         }
@@ -181,7 +199,7 @@ namespace luadebug {
             return size() == 0;
         }
 
-        [[nodiscard]] mapped_type* find(const key_type& key) noexcept {
+        [[nodiscard]] mapped_type *find(const key_type &key) noexcept {
             auto slot = find_key(key);
             if (slot == kInvalidSlot) {
                 return nullptr;
@@ -189,11 +207,11 @@ namespace luadebug {
             return &m_buckets[slot].obj;
         }
 
-        [[nodiscard]] const mapped_type* find(const key_type& key) const noexcept {
-            return const_cast<flatmap*>(this)->find(key);
+        [[nodiscard]] const mapped_type *find(const key_type &key) const noexcept {
+            return const_cast<flatmap *>(this)->find(key);
         }
 
-        void erase(const key_type& key) noexcept {
+        void erase(const key_type &key) noexcept {
             auto slot = find_key(key);
             if (slot == kInvalidSlot) {
                 return;
@@ -209,19 +227,36 @@ namespace luadebug {
             }
 
             m_buckets[slot].key.~key_type();
-            m_buckets[slot].obj.~mapped_type();
+            if constexpr (!std::is_same_v<mapped_type, void>) {
+                m_buckets[slot].obj.~mapped_type();
+            }
             m_buckets[slot].dib = 0;
             m_size--;
         }
 
         void clear() {
+            if constexpr (!std::is_trivially_destructible<bucket>::value) {
+                if (m_size != 0) {
+                    for (size_t i = 0; i < m_mask + 1; ++i) {
+                        if (m_buckets[i].dib != 0) {
+                            m_buckets[i].key.~key_type();
+                            m_buckets[i].obj.~mapped_type();
+                            --m_size;
+                            if (m_size == 0) {
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
             if (m_mask != 0) {
                 std::free(m_buckets);
             }
             m_mask    = 0;
             m_maxsize = 0;
             m_size    = 0;
-            m_buckets = reinterpret_cast<bucket*>(&m_mask);
+            m_buckets = reinterpret_cast<bucket *>(&m_mask);
         }
 
         void rehash(size_t c) {
@@ -233,23 +268,32 @@ namespace luadebug {
         }
 
         struct iterator {
-            flatmap const& m;
+            flatmap const &m;
             size_t n;
-            iterator(flatmap const& m, size_t n)
+            iterator(flatmap const &m, size_t n)
                 : m(m)
                 , n(n) {
+                if (m.m_size == 0) {
+                    this->n = m.m_mask + 1;
+                    return;
+                }
                 next_valid();
             }
-            bool operator!=(iterator& rhs) const {
+            bool operator!=(iterator &rhs) const {
                 return &m != &rhs.m || n != rhs.n;
             }
             void operator++() {
                 n++;
                 next_valid();
             }
-            std::pair<key_type, mapped_type> operator*() {
-                auto& bucket = m.m_buckets[n];
-                return { bucket.key, bucket.obj };
+            auto operator*() {
+                auto &bucket = m.m_buckets[n];
+                if constexpr (std::is_same_v<mapped_type, void>) {
+                    return bucket.key;
+                }
+                else {
+                    return std::make_pair(bucket.key, bucket.obj);
+                }
             }
             void next_valid() {
                 while (n != (m.m_mask + 1) && m.m_buckets[n].dib == 0) {
@@ -274,18 +318,19 @@ namespace luadebug {
         }
 
         struct rawdata {
-            struct {
+            struct
+            {
                 size_t mask;
                 size_t maxsize;
                 size_t size;
             } h;
-            bucket* buckets;
+            bucket *buckets;
         };
-        [[nodiscard]] rawdata const& toraw() const {
-            return *reinterpret_cast<const rawdata*>(&m_mask);
+        [[nodiscard]] rawdata const &toraw() const {
+            return *reinterpret_cast<const rawdata *>(&m_mask);
         }
-        [[nodiscard]] rawdata& toraw() {
-            return *reinterpret_cast<rawdata*>(&m_mask);
+        [[nodiscard]] rawdata &toraw() {
+            return *reinterpret_cast<rawdata *>(&m_mask);
         }
 
 #if 0
@@ -299,7 +344,7 @@ namespace luadebug {
 #endif
 
     private:
-        [[nodiscard]] size_t find_key(const key_type& key) const noexcept {
+        [[nodiscard]] size_t find_key(const key_type &key) const noexcept {
             size_t slot = KeyHash::operator()(key) & m_mask;
             for (uint32_t dib = 1;; ++dib) {
                 if (m_buckets[slot].dib != 0 && KeyEqual::operator()(key, m_buckets[slot].key)) {
@@ -320,7 +365,7 @@ namespace luadebug {
         }
 
         template <size_t REHASH>
-        void internal_insert(size_t slot, bucket&& tmp) {
+        void internal_insert(size_t slot, bucket &&tmp) {
             for (;;) {
                 if (m_buckets[slot].dib == 0) {
                     new (&m_buckets[slot]) bucket(std::forward<bucket>(tmp));
@@ -343,7 +388,7 @@ namespace luadebug {
         }
 
         template <size_t REHASH>
-        void internal_insert(bucket&& b) {
+        void internal_insert(bucket &&b) {
             size_t slot = KeyHash::operator()(b.key) & m_mask;
             b.dib       = 1;
             return internal_insert<REHASH>(slot, std::forward<bucket>(b));
@@ -366,7 +411,7 @@ namespace luadebug {
                 return;
             }
 
-            bucket* oldbuckets = m_buckets;
+            bucket *oldbuckets = m_buckets;
             size_t oldmaxsize  = m_mask + 1;
 
             m_buckets = alloc_bucket(newmaxsize);
@@ -387,16 +432,16 @@ namespace luadebug {
 
         struct free_bucket {
             ~free_bucket() { std::free(b); }
-            bucket* b;
+            bucket *b;
         };
 
-        static bucket* alloc_bucket(size_t n) {
-            void* t = std::malloc(n * sizeof(bucket));
+        static bucket *alloc_bucket(size_t n) {
+            void *t = std::malloc(n * sizeof(bucket));
             if (!t) {
                 throw std::bad_alloc {};
             }
             std::memset(t, 0, n * sizeof(bucket));
-            return reinterpret_cast<bucket*>(t);
+            return reinterpret_cast<bucket *>(t);
         }
 
         void throw_overflow() const {
@@ -407,17 +452,17 @@ namespace luadebug {
         size_t m_mask     = 0;
         size_t m_maxsize  = 0;
         size_t m_size     = 0;
-        bucket* m_buckets = reinterpret_cast<bucket*>(&m_mask);
+        bucket *m_buckets = reinterpret_cast<bucket *>(&m_mask);
     };
 
     template <typename Key, typename KeyHash = flatmap_hash<Key>, typename KeyEqual = std::equal_to<Key>>
-    class flatset : public flatmap<Key, uint8_t, KeyHash, KeyEqual> {
+    class flatset : public flatmap<Key, void, KeyHash, KeyEqual> {
     private:
         using key_type = Key;
-        using mybase   = flatmap<Key, uint8_t, KeyHash, KeyEqual>;
+        using mybase   = flatmap<Key, void, KeyHash, KeyEqual>;
 
     public:
-        bool insert(const key_type& key) {
+        bool insert(const key_type &key) {
             return mybase::insert(key, 0);
         }
     };
