@@ -187,7 +187,7 @@ namespace luadebug {
                 info.module_name   = sym->module_name;
                 info.function_name = sym->function_name;
                 info.file_name     = sym->file->name;
-                info.line_number   = std::to_string(sym->file->lineno);
+                info.line_number   = std::format("{}", sym->file->lineno);
             }
             else {
                 info.module_name   = sym->module_name;
