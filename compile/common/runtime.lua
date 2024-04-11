@@ -11,7 +11,8 @@ local bindir = "publish/runtime/"..lm.runtime_platform
 
 lm:source_set 'onelua' {
     includes = {
-        "3rd/bee.lua/3rd/lua",
+        "3rd/bee.lua/3rd/lua/",
+        "3rd/bee.lua/",
         "src/luadebug/",
     },
     sources = "src/luadebug/luadbg/onelua.c",

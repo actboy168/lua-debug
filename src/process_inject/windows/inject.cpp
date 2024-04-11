@@ -1,6 +1,6 @@
 #include <Windows.h>
 #include <bee/lua/binding.h>
-#include <bee/platform/win/unicode.h>
+#include <bee/platform/win/wtf8.h>
 #include <bee/subprocess.h>
 #include <bee/utility/zstring_view.h>
 #include <binding/binding.h>
@@ -18,7 +18,7 @@ static bee::zstring_view checkstrview(lua_State* L, int idx) {
 
 static std::wstring checkstring(lua_State* L, int idx) {
     auto str = checkstrview(L, idx);
-    return bee::win::u2w(str);
+    return bee::wtf8::u2w(str);
 }
 
 static int injectdll(lua_State* L) {
