@@ -15,7 +15,10 @@ lm:source_set 'onelua' {
         "3rd/bee.lua/",
         "src/luadebug/",
     },
-    sources = "src/luadebug/luadbg/onelua.c",
+    sources = {
+        "src/luadebug/luadbg/onelua.c",
+        "3rd/bee.lua/3rd/lua/bee_utf8_crt.cpp",
+    },
     msvc = {
         sources = ("3rd/bee.lua/3rd/lua/fast_setjmp_%s.s"):format(lm.arch)
     },
