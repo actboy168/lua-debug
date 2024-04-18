@@ -192,7 +192,7 @@ function m.listen(protocol, address, port)
     selector:event_add(fd, SELECT_READ, function ()
         local new_fd, err = fd:accept()
         if new_fd == nil then
-            fd:close()
+            s:close()
             on_event(s, "error", err)
             return
         elseif new_fd == false then
@@ -266,20 +266,7 @@ function m.connect(protocol, address, port)
     return setmetatable(s, connect_mt)
 end
 
-local tasks = {}
-
-function m.async(func)
-    tasks[#tasks+1] = func
-end
-
 function m.update(timeout)
-    if #tasks > 0 then
-        local t = tasks
-        tasks = {}
-        for i = 1, #t do
-            t[i]()
-        end
-    end
     for func, event in selector:wait(timeout or 0) do
         func(event)
     end
