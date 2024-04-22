@@ -34,6 +34,7 @@ local function need(lst)
     for _, v in ipairs(OS) do
         if not map[v] then
             t[#t+1] = "!bee/**/*_"..v..".cpp"
+            t[#t+1] = "!bee/"..v.."/**/*.cpp"
         end
     end
     return t
