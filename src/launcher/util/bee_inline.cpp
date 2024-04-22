@@ -10,8 +10,8 @@
 #include <bee/utility/path_helper.cpp>
 
 #if defined(_WIN32)
-#    include <bee/win/wtf8.cpp>
 #    include <bee/utility/file_handle_win.cpp>
+#    include <bee/win/wtf8.cpp>
 #else
 #    include <bee/utility/file_handle_posix.cpp>
 #    if defined(__APPLE__)
