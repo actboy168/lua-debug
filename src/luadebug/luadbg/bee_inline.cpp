@@ -13,9 +13,8 @@
 #include <bee/utility/path_helper.cpp>
 
 #if defined(_WIN32)
-#    include <bee/platform/win/unicode_win.cpp>
-#    include <bee/platform/win/unlink_win.cpp>
-#    include <bee/platform/win/wtf8_win.cpp>
+#    include <bee/win/unicode.cpp>
+#    include <bee/win/wtf8.cpp>
 #    include <bee/thread/simplethread_win.cpp>
 #    include <bee/utility/file_handle_win.cpp>
 #else

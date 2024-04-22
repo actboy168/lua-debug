@@ -66,11 +66,10 @@ namespace luadebug::log {
         if (!socket::initialize()) {
             return;
         }
-        endpoint ep = endpoint::from_unixpath(path);
-        if (!ep.valid()) {
+        endpoint ep;
+        if (!endpoint::ctor_unix(ep, path)) {
             return;
         }
-        socket::unlink(ep);
         fd_t fd = socket::open(socket::protocol::unix);
         if (!socket::bind(fd, ep)) {
             socket::close(fd);
@@ -88,13 +87,13 @@ namespace luadebug::log {
             return;
         }
         fd_t newfd;
-        if (socket::fdstat::success != socket::accept(fd, newfd)) {
+        if (socket::status::success != socket::accept(fd, newfd)) {
             socket::close(fd);
             return;
         }
         socket::close(fd);
-        auto err = socket::errcode(newfd);
-        if (err) {
+        int err = 0;
+        if (!socket::errcode(newfd, err) || err != 0) {
             socket::close(newfd);
             return;
         }

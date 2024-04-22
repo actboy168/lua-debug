@@ -1,6 +1,6 @@
 #include <Windows.h>
 #include <bee/lua/binding.h>
-#include <bee/platform/win/wtf8.h>
+#include <bee/win/wtf8.h>
 #include <bee/subprocess.h>
 #include <bee/utility/zstring_view.h>
 #include <binding/binding.h>
