@@ -1,4 +1,5 @@
 #include <bee/utility/dynarray.h>
+#include <bee/utility/flatmap.h>
 
 #include <chrono>
 #include <cstdint>
@@ -9,7 +10,6 @@
 #include "rdebug_eventfree.h"
 #include "rdebug_lua.h"
 #include "thunk/thunk.h"
-#include <bee/utility/flatmap.h>
 
 #if LUA_VERSION_NUM >= 502
 #    include <lstate.h>
