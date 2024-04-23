@@ -9,7 +9,7 @@
 #include "rdebug_eventfree.h"
 #include "rdebug_lua.h"
 #include "thunk/thunk.h"
-#include "util/flatmap.h"
+#include <bee/utility/flatmap.h>
 
 #if LUA_VERSION_NUM >= 502
 #    include <lstate.h>
@@ -56,7 +56,7 @@ private:
     }
 
     // TODO: bullet size可以压缩到一个int64_t
-    luadebug::flatmap<intptr_t, bool> m_flatmap;
+    bee::flatmap<intptr_t, bool> m_flatmap;
 };
 
 static int HOOK_MGR      = 0;
@@ -335,7 +335,7 @@ struct hookmgr {
     // thread
     //
     int thread_mask = 0;
-    luadebug::flatmap<lua_State*, lua_State*> coroutine_tree;
+    bee::flatmap<lua_State*, lua_State*> coroutine_tree;
 #if defined(LUA_HOOKTHREAD)
     void thread_hookmask(lua_State* hL, int mask) {
         if (thread_mask != mask) {
