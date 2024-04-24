@@ -1,5 +1,6 @@
 #include <bee/utility/dynarray.h>
 #include <bee/utility/flatmap.h>
+#include <bee/nonstd/unreachable.h>
 
 #include <chrono>
 #include <cstdint>
@@ -28,22 +29,24 @@ public:
         Ignore,
     };
 
-    void set(void* proto, status status) {
+    void set(void* proto, status status) noexcept {
         switch (status) {
         case status::None:
-            m_flatmap.erase(tokey(proto));
+            m_flatmap.erase(proto);
             break;
         case status::Break:
-            m_flatmap.insert_or_assign(tokey(proto), true);
+            m_flatmap.insert_or_assign(proto, true);
             break;
         case status::Ignore:
-            m_flatmap.insert_or_assign(tokey(proto), false);
+            m_flatmap.insert_or_assign(proto, false);
             break;
+        default:
+            std::unreachable();
         }
     }
 
     status get(void* proto) const noexcept {
-        const bool* v = m_flatmap.find(tokey(proto));
+        const bool* v = m_flatmap.find(proto);
         if (v) {
             return *v ? status::Break : status::Ignore;
         }
@@ -51,12 +54,7 @@ public:
     }
 
 private:
-    intptr_t tokey(void* proto) const noexcept {
-        return reinterpret_cast<intptr_t>(proto);
-    }
-
-    // TODO: bullet size可以压缩到一个int64_t
-    bee::flatmap<intptr_t, bool> m_flatmap;
+    bee::flatmap<void*, bool> m_flatmap;
 };
 
 static int HOOK_MGR      = 0;
