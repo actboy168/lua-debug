@@ -266,7 +266,20 @@ function m.connect(protocol, address, port)
     return setmetatable(s, connect_mt)
 end
 
+local tasks = {}
+
+function m.async(func)
+    tasks[#tasks+1] = func
+end
+
 function m.update(timeout)
+    if #tasks > 0 then
+        local t = tasks
+        tasks = {}
+        for i = 1, #t do
+            t[i]()
+        end
+    end
     for func, event in selector:wait(timeout or 0) do
         func(event)
     end
