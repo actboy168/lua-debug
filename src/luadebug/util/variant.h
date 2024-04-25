@@ -74,7 +74,7 @@ namespace luadebug {
             return storage_;
         }
 
-        auto const& Storage() const noexcept {
+        const auto& Storage() const noexcept {
             return storage_;
         }
     };

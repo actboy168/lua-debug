@@ -40,7 +40,7 @@ inline void lua_getglobal(lua_State* L, const char* s) {
 inline const char* luaL_tolstring(lua_State* L, int idx, size_t* len) {
     if (!luaL_callmeta(L, idx, "__tostring")) {
         int t = lua_type(L, idx), tt = 0;
-        char const* name = NULL;
+        const char* name = NULL;
         switch (t) {
         case LUA_TNIL:
             lua_pushliteral(L, "nil");
