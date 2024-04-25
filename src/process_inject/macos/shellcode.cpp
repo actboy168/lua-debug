@@ -46,8 +46,7 @@ static void* rmain(void* ptr) {
         _fprintf(_stderr, "%s\n", ec);
         auto _exit = (decltype(&exit))arg.get_func("exit");
         _exit(1);
-    }
-    else {
+    } else {
         void (*func)();
         func = (decltype(func))arg.dlsym(handler, arg.entrypoint);
         if (func)

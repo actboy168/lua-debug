@@ -180,8 +180,7 @@ namespace luadebug::stdio {
                     }
                     lua_pop(hL, 1);
 #if LUA_VERSION_NUM >= 504
-                }
-                else {
+                } else {
                     lua_pop(hL, 1);
                 }
 #endif

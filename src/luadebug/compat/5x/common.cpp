@@ -26,8 +26,7 @@ namespace lua {
             auto nparams = proto->numparams;
             if (n >= ci->base - ci->func - nparams) {
                 return nullptr;  // no such vararg
-            }
-            else {
+            } else {
                 auto o = ci->func + nparams + n;
                 setobj2s(L, L->top, o);
                 api_incr_top(L);

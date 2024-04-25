@@ -53,8 +53,7 @@ namespace luadebug::visitor {
 #if LUA_VERSION_NUM >= 503 || defined(LUAJIT_VERSION)
             if (lua_isinteger(hL, idx)) {
                 luadbg_pushinteger(L, lua_tointeger(hL, idx));
-            }
-            else {
+            } else {
                 luadbg_pushnumber(L, lua_tonumber(hL, idx));
             }
 #else
@@ -89,8 +88,7 @@ namespace luadebug::visitor {
         case LUADBG_TNUMBER:
             if (luadbg_isinteger(L, idx)) {
                 lua_pushinteger(hL, (lua_Integer)luadbg_tointeger(L, idx));
-            }
-            else {
+            } else {
                 lua_pushnumber(hL, (lua_Number)luadbg_tonumber(L, idx));
             }
             break;
@@ -138,8 +136,7 @@ namespace luadebug::visitor {
                     lua_rawset(hL, -3);
                     luadbg_pop(L, 1);
                 }
-            }
-            else {
+            } else {
                 lua_pushnil(hL);
             }
         }
@@ -302,8 +299,7 @@ namespace luadebug::visitor {
                     luadbg_pushvalue(L, -1);
                 }
                 luadbg_rawseti(L, -3, ++n);
-            }
-            else {
+            } else {
                 if (copy_to_dbg(hL, L) == LUA_TNONE) {
                     refvalue::create(L, 1, refvalue::TABLE_ARRAY { i });
                 }
@@ -350,8 +346,7 @@ namespace luadebug::visitor {
                         luadbg_pushvalue(L, -1);
                     }
                     luadbg_rawseti(L, -3, ++n);
-                }
-                else {
+                } else {
                     if (copy_to_dbg(hL, L) == LUA_TNONE) {
                         refvalue::create(L, 1, refvalue::TABLE_HASH_VAL { i });
                     }
@@ -419,8 +414,7 @@ namespace luadebug::visitor {
             lua_pop(hL, 1);
             luadbg_pushinteger(L, bytesWritten);
             return 1;
-        }
-        else {
+        } else {
             if (offset < 0 || (size_t)offset + data.size() > len) {
                 lua_pop(hL, 1);
                 return 0;
@@ -450,8 +444,7 @@ namespace luadebug::visitor {
 #if LUA_VERSION_NUM >= 503 || defined(LUAJIT_VERSION)
             if (luadbg_isinteger(L, 1)) {
                 luadbg_pushstring(L, "integer");
-            }
-            else {
+            } else {
                 luadbg_pushstring(L, "float");
             }
 #else
@@ -474,8 +467,7 @@ namespace luadebug::visitor {
         case LUA_TFUNCTION:
             if (lua_iscfunction(hL, -1)) {
                 luadbg_pushstring(L, "c function");
-            }
-            else {
+            } else {
                 luadbg_pushstring(L, "function");
             }
             break;
@@ -483,8 +475,7 @@ namespace luadebug::visitor {
 #if LUA_VERSION_NUM >= 503 || defined(LUAJIT_VERSION)
             if (lua_isinteger(hL, -1)) {
                 luadbg_pushstring(L, "integer");
-            }
-            else {
+            } else {
                 luadbg_pushstring(L, "float");
             }
 #else
@@ -554,8 +545,7 @@ namespace luadebug::visitor {
         case LUA_TFUNCTION:
             if (lua_iscfunction(hL, -1)) {
                 luadbg_pushstring(L, "c function");
-            }
-            else {
+            } else {
                 luadbg_pushstring(L, "function");
             }
             break;
@@ -751,15 +741,13 @@ namespace luadebug::visitor {
                 return 0;
             }
             lua_pop(hL, 2);
-        }
-        else {
+        } else {
             lua_pop(hL, 1);
         }
         if (t == LUADBG_TTABLE || t == LUADBG_TUSERDATA) {
             refvalue::create(L, 1, refvalue::METATABLE { t });
             return 1;
-        }
-        else {
+        } else {
             luadbg_pop(L, 1);
             refvalue::create(L, refvalue::METATABLE { t });
             return 1;

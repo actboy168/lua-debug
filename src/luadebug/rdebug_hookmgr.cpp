@@ -1,6 +1,6 @@
+#include <bee/nonstd/unreachable.h>
 #include <bee/utility/dynarray.h>
 #include <bee/utility/flatmap.h>
-#include <bee/nonstd/unreachable.h>
 
 #include <chrono>
 #include <cstdint>
@@ -156,8 +156,7 @@ struct hookmgr {
     void break_update(lua_State* hL, CallInfo* ci, int event) {
         if (break_has(hL, lua_ci2proto(ci), event)) {
             break_openline(hL);
-        }
-        else {
+        } else {
             break_closeline(hL);
         }
     }
@@ -263,8 +262,7 @@ struct hookmgr {
         step_current_level++;
         if (step_current_level > step_target_level) {
             step_hookmask(hL, LUA_MASKCALL | LUA_MASKRET);
-        }
-        else {
+        } else {
             step_hookmask(hL, LUA_MASKCALL | LUA_MASKRET | LUA_MASKLINE);
         }
     }
@@ -272,8 +270,7 @@ struct hookmgr {
         step_current_level = lua_stacklevel(hL) - 1;
         if (step_current_level > step_target_level) {
             step_hookmask(hL, LUA_MASKCALL | LUA_MASKRET);
-        }
-        else {
+        } else {
             step_hookmask(hL, LUA_MASKCALL | LUA_MASKRET | LUA_MASKLINE);
         }
     }
@@ -282,8 +279,7 @@ struct hookmgr {
         step_current_level = lua_stacklevel(hL);
         if (step_current_level > step_target_level) {
             step_hookmask(hL, LUA_MASKCALL | LUA_MASKRET);
-        }
-        else {
+        } else {
             step_hookmask(hL, LUA_MASKCALL | LUA_MASKRET | LUA_MASKLINE);
         }
     }
@@ -350,8 +346,7 @@ struct hookmgr {
             int type = ar->currentline;
             if (type == 0) {
                 coroutine_tree.insert_or_assign(co, from);
-            }
-            else if (type == 1) {
+            } else if (type == 1) {
                 coroutine_tree.erase(from);
             }
         }
@@ -474,8 +469,7 @@ struct hookmgr {
                 luadbg_pop(L, 1);
                 return;
             }
-        }
-        else {
+        } else {
             luadbg_pushstring(L, "bp");
             luadbg_pushinteger(L, ar->currentline);
             if (luadbg_pcall(L, 2, 0, 0) != LUADBG_OK) {
@@ -524,14 +518,11 @@ struct hookmgr {
         }
         if (mask) {
             sethook(hL, (lua_Hook)sc_full_hook->data, mask | exception_mask | thread_mask, 0);
-        }
-        else if (update_mask) {
+        } else if (update_mask) {
             sethook(hL, (lua_Hook)sc_idle_hook->data, update_mask | exception_mask | thread_mask, 0xfffff);
-        }
-        else if (exception_mask | thread_mask) {
+        } else if (exception_mask | thread_mask) {
             sethook(hL, (lua_Hook)sc_idle_hook->data, exception_mask | thread_mask, 0);
-        }
-        else {
+        } else {
             sethook(hL, 0, 0, 0);
         }
     }

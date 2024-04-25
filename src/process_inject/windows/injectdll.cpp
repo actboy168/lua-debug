@@ -269,8 +269,7 @@ static bool injectdll_x86(HANDLE process_handle, HANDLE thread_handle, const std
 bool injectdll(HANDLE process_handle, HANDLE thread_handle, const std::wstring& x86dll, const std::wstring& x64dll, const bee::zstring_view& entry) {
     if (is_process64(process_handle)) {
         return !x64dll.empty() && injectdll_x64(process_handle, thread_handle, x64dll, entry);
-    }
-    else {
+    } else {
         return !x86dll.empty() && injectdll_x86(process_handle, thread_handle, x86dll, entry);
     }
 }

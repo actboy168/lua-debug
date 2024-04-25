@@ -65,8 +65,7 @@ namespace luadebug {
                     searchpath.append("SRV*");
                     searchpath.append(szTemp);
                     searchpath.append("\\websymbols*https://msdl.microsoft.com/download/symbols;");
-                }
-                else
+                } else
                     searchpath.append("SRV*c:\\websymbols*https://msdl.microsoft.com/download/symbols;");
             }
             return searchpath;
@@ -188,8 +187,7 @@ namespace luadebug {
                 info.function_name = sym->function_name;
                 info.file_name     = sym->file->name;
                 info.line_number   = std::format("{}", sym->file->lineno);
-            }
-            else {
+            } else {
                 info.module_name   = sym->module_name;
                 info.function_name = sym->function_name;
             }

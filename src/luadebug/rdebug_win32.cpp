@@ -73,8 +73,7 @@ namespace luadebug::win32 {
         static auto lua_putenv = (int(__cdecl*)(const char*))find_putenv();
         if (lua_putenv) {
             lua_putenv(envstr);
-        }
-        else {
+        } else {
             ::_putenv(envstr);
         }
     }
@@ -131,8 +130,7 @@ namespace luadebug::win32 {
                 if (_lua_pcall) {
                     return (FARPROC)_lua_pcallk;
                 }
-            }
-            else if (strcmp(pdli->dlp.szProcName, "luaL_loadbufferx") == 0) {
+            } else if (strcmp(pdli->dlp.szProcName, "luaL_loadbufferx") == 0) {
                 _luaL_loadbuffer = (int(__cdecl*)(lua_State*, const char*, size_t, const char*))::GetProcAddress(pdli->hmodCur, "luaL_loadbuffer");
                 if (_luaL_loadbuffer) {
                     return (FARPROC)_luaL_loadbufferx;

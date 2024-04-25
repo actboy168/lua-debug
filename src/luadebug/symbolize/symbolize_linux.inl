@@ -48,8 +48,7 @@ namespace luadebug {
         while (!::feof(f)) {
             if (::fgets(data, sizeof(data), f)) {
                 res += data;
-            }
-            else {
+            } else {
                 break;
             }
         }

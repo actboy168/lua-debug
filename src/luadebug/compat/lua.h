@@ -63,8 +63,7 @@ inline const char* luaL_tolstring(lua_State* L, int idx, size_t* len) {
                 lua_replace(L, -2);
             break;
         }
-    }
-    else {
+    } else {
         if (!lua_isstring(L, -1))
             luaL_error(L, "'__tostring' must return a string");
     }

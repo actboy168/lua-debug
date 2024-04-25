@@ -40,11 +40,9 @@ namespace luadebug {
         static_assert(sizeof...(Ts) > I, "Type not found in variant");
         if constexpr (I == sizeof...(Ts)) {
             return I;
-        }
-        else if constexpr (std::is_same_v<std::tuple_element_t<I, std::tuple<Ts...>>, T>) {
+        } else if constexpr (std::is_same_v<std::tuple_element_t<I, std::tuple<Ts...>>, T>) {
             return I;
-        }
-        else {
+        } else {
             return VariantIndexImpl<I + 1, T, Ts...>();
         }
     }
@@ -133,8 +131,7 @@ namespace luadebug {
         static VisitResult<Visitor, Variant> Run(Visitor&& vis, Variant&& var) {
             if constexpr (I < EndIndex) {
                 return std::invoke(std::forward<Visitor>(vis), VariantAccess<I>(std::forward<Variant>(var)));
-            }
-            else {
+            } else {
                 std::unreachable();
             }
         }

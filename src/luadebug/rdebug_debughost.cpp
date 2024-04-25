@@ -88,8 +88,7 @@ namespace luadebug::debughost {
     static void push_errmsg(lua_State* hL, luadbg_State* L) {
         if (luadbg_type(L, -1) != LUA_TSTRING) {
             lua_pushstring(hL, "Unknown Error");
-        }
-        else {
+        } else {
             size_t sz       = 0;
             const char* err = luadbg_tolstring(L, -1, &sz);
             lua_pushlstring(hL, err, sz);
@@ -126,8 +125,7 @@ namespace luadebug::debughost {
         if (preprocessor) {
             // TODO: convert C function？
             luadbg_pushcfunction(L, (luadbg_CFunction)preprocessor);
-        }
-        else {
+        } else {
             luadbg_pushnil(L);
         }
 

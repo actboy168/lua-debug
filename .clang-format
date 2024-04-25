@@ -14,7 +14,3 @@ IndentWidth: 4
 NamespaceIndentation: All
 PackConstructorInitializers: Never
 SpaceBeforeCpp11BracedList: true
-
-BreakBeforeBraces: Custom
-BraceWrapping:
-  BeforeElse: true
