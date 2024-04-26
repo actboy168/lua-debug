@@ -55,7 +55,7 @@ namespace luadebug::log {
         if (!dllpath) {
             return;
         }
-        auto rootpath = dllpath.value().parent_path().parent_path();
+        auto rootpath = (*dllpath).parent_path().parent_path();
         auto path     = std::format("{}/tmp/pid_{}", rootpath.generic_u8string(),
 #if defined(_WIN32)
                                 GetCurrentProcessId()
