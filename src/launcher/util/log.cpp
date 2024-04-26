@@ -4,7 +4,7 @@
 #include <bee/nonstd/filesystem.h>
 #include <bee/nonstd/format.h>
 #include <bee/nonstd/unreachable.h>
-#include <bee/utility/path_helper.h>
+#include <bee/sys/path.h>
 #include <stdio.h>
 
 #include <algorithm>
@@ -51,7 +51,7 @@ namespace luadebug::log {
     }
 
     void notify_frontend(const std::string& msg) {
-        auto dllpath = bee::path_helper::dll_path();
+        auto dllpath = bee::sys::dll_path();
         if (!dllpath) {
             return;
         }

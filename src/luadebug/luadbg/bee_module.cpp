@@ -21,8 +21,8 @@
 
 #include "luadbg/bee_module.h"
 
-#include <binding/file.h>
-#include <binding/binding.h>
+#include <bee/lua/file.cpp>
+#include <bee/lua/module.h>
 #include <binding/lua_socket.cpp>
 #include <binding/lua_select.cpp>
 #include <binding/lua_thread.cpp>

@@ -2,7 +2,7 @@ local lm = require "luamake"
 
 lm.rootdir = "../../3rd/bee.lua"
 
-lm:lua_source "source_bee" {
+lm:lua_src "source_bee" {
     sources = "3rd/lua-seri/lua-seri.c",
     msvc = {
         flags = "/wd4244"
@@ -41,7 +41,10 @@ local function need(lst)
 end
 
 lm:source_set "source_bee" {
-    includes = ".",
+    includes = {
+        ".",
+        "3rd/lua/",
+    },
     sources = "bee/**/*.cpp",
     windows = {
         sources = need "win"
@@ -98,7 +101,7 @@ lm:source_set "source_bee" {
     }
 }
 
-lm:lua_source "source_bee" {
+lm:lua_src "source_bee" {
     includes = ".",
     defines = {
         lm.EXE ~= "lua" and "BEE_STATIC",

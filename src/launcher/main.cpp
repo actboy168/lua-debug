@@ -1,6 +1,6 @@
 ﻿#include <autoattach/autoattach.h>
 #include <bee/nonstd/filesystem.h>
-#include <bee/utility/path_helper.h>
+#include <bee/sys/path.h>
 #include <util/log.h>
 #ifndef _WIN32
 #    include <unistd.h>
@@ -36,9 +36,9 @@ namespace luadebug::autoattach {
 
     attach_status attach_lua(lua::state L) {
         log::info("attach lua vm entry");
-        auto r = bee::path_helper::dll_path();
+        auto r = bee::sys::dll_path();
         if (!r) {
-            log::fatal("dll_path error: {}", r.error());
+            log::fatal("dll_path error");
             return attach_status::fatal;
         }
         auto root = r.value().parent_path().parent_path();

@@ -22,7 +22,7 @@ local ArchAlias = {
     ["win32-ia32"] = "x86",
 }
 
-lm:lua_library ('launcher.'..ArchAlias[platform]) {
+lm:lua_dll ('launcher.'..ArchAlias[platform]) {
     bindir = "publish/bin",
     export_luaopen = "off",
     deps = {

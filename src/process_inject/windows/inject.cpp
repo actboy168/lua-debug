@@ -1,9 +1,9 @@
 #include <Windows.h>
 #include <bee/lua/binding.h>
+#include <bee/lua/module.h>
 #include <bee/subprocess.h>
 #include <bee/utility/zstring_view.h>
 #include <bee/win/wtf8.h>
-#include <binding/binding.h>
 
 #include <algorithm>
 #include <lua.hpp>
@@ -45,5 +45,4 @@ extern "C" int luaopen_inject(lua_State* L) {
     return 1;
 }
 
-#include <binding/binding.h>
 static ::bee::lua::callfunc _init(::bee::lua::register_module, "inject", luaopen_inject);

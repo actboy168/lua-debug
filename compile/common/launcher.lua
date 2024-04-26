@@ -11,7 +11,7 @@ lm:source_set "launcher_hook_luajit" {
     sources = "src/launcher/hook/luajit_listener.cpp",
 }
 
-lm:lua_source 'launcher_source' {
+lm:lua_src 'launcher_source' {
     deps = {
         "frida",
         "launcher_hook_luajit",
