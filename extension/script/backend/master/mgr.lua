@@ -1,6 +1,7 @@
 local ev = require 'backend.event'
 local thread = require 'bee.thread'
 local stdio = require 'luadebug.stdio'
+local channel = require "bee.channel"
 
 local redirect = {}
 local mgr = {}
@@ -42,7 +43,7 @@ end
 
 function mgr.init(io)
     socket = io
-    masterThread = thread.channel 'DbgMaster'
+    masterThread = channel.query 'DbgMaster'
     socket.event_close(event_close)
     return true
 end
@@ -131,7 +132,7 @@ end
 function mgr.initWorker(WorkerIdent)
     local workerChannel = ('DbgWorker(%s)'):format(WorkerIdent)
     local threadId = genThreadId()
-    threadChannel[threadId] = assert(thread.channel(workerChannel))
+    threadChannel[threadId] = assert(channel.query(workerChannel))
     threadCatalog[WorkerIdent] = threadId
     threadStatus[threadId] = "disconnect"
     threadName[threadId] = nil

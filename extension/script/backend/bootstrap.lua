@@ -1,9 +1,10 @@
 local thread = require "bee.thread"
+local channel = require "bee.channel"
 
 local m = {}
 
 local function hasMaster()
-    local ok = pcall(thread.channel, "DbgMaster")
+    local ok = pcall(channel.query, "DbgMaster")
     return ok
 end
 
@@ -11,7 +12,7 @@ local function initMaster(rootpath, address)
     if hasMaster() then
         return
     end
-    thread.newchannel "DbgMaster"
+    local chan = channel.create "DbgMaster"
     local mt = thread.thread(([[
         local rootpath = %q
         package.path = rootpath.."/script/?.lua"
@@ -31,8 +32,7 @@ local function initMaster(rootpath, address)
         address
     ))
     ExitGuard = setmetatable({}, {__gc=function()
-        local c = thread.channel "DbgMaster"
-        c:push(nil, "EXIT")
+        chan:push(nil, "EXIT")
         thread.wait(mt)
     end})
 end

@@ -272,6 +272,10 @@ function m.async(func)
     tasks[#tasks+1] = func
 end
 
+function m.add_fd(fd, event, func)
+    selector:event_add(fd, event, func)
+end
+
 function m.update(timeout)
     if #tasks > 0 then
         local t = tasks

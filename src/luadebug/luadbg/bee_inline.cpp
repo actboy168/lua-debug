@@ -5,6 +5,7 @@
 #include <3rd/fmt/format.cc>
 #include <bee/error.cpp>
 #include <bee/net/endpoint.cpp>
+#include <bee/net/event.cpp>
 #include <bee/net/socket.cpp>
 #include <bee/sys/file_handle.cpp>
 #include <bee/thread/atomic_sync.cpp>
