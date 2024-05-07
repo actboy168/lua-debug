@@ -13,7 +13,7 @@ local function initMaster(rootpath, address)
         return
     end
     local chan = channel.create "DbgMaster"
-    local mt = thread.thread(([[
+    local mt = thread.create(([[
         local rootpath = %q
         package.path = rootpath.."/script/?.lua"
         local log = require "common.log"
