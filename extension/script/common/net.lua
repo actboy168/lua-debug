@@ -89,6 +89,7 @@ end
 local function close_write(self)
     fd_clr_write(self)
     if self.shutdown_r then
+        self.shutdown_w = true
         close(self)
     end
 end
