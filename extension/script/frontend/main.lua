@@ -1,9 +1,9 @@
 local port = ...
-local fs = require 'bee.filesystem'
+local sys = require 'bee.sys'
 local socket = require 'common.socket'
 local proxy = require 'frontend.proxy'
 local vscode
-WORKDIR = fs.exe_path():parent_path():parent_path()
+WORKDIR = sys.exe_path():parent_path():parent_path()
 
 local function run()
     if port then

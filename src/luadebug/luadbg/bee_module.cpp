@@ -25,6 +25,7 @@
 #include <binding/lua_filesystem.cpp>
 #include <binding/lua_select.cpp>
 #include <binding/lua_socket.cpp>
+#include <binding/lua_sys.cpp>
 #include <binding/lua_thread.cpp>
 
 #include "luadbg/bee_module.h"
@@ -41,6 +42,7 @@ extern "C" int luaopen_bee_channel(luadbg_State* L);
 extern "C" int luaopen_bee_filesystem(luadbg_State* L);
 extern "C" int luaopen_bee_select(luadbg_State* L);
 extern "C" int luaopen_bee_socket(luadbg_State* L);
+extern "C" int luaopen_bee_sys(luadbg_State* L);
 extern "C" int luaopen_bee_thread(luadbg_State* L);
 #if defined(_WIN32)
 extern "C" int luaopen_bee_windows(luadbg_State* L);
@@ -55,6 +57,7 @@ static luadbgL_Reg cmodule[] = {
     { "bee.filesystem", luaopen_bee_filesystem },
     { "bee.select", luaopen_bee_select },
     { "bee.socket", luaopen_bee_socket },
+    { "bee.sys", luaopen_bee_sys },
     { "bee.thread", luaopen_bee_thread },
 #if defined(_WIN32)
     { "bee.windows", luaopen_bee_windows },

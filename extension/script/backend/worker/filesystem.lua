@@ -1,4 +1,5 @@
 local fs = require 'bee.filesystem'
+local sys = require 'bee.sys'
 local has_windows, windows = pcall(require, 'bee.windows')
 local ev = require 'backend.event'
 local u2a = has_windows and windows.u2a or function (...) return ... end
@@ -144,7 +145,7 @@ function m.path_filename(path)
 end
 
 function m.program_path()
-    return fs.exe_path():string()
+    return sys.exe_path():string()
 end
 
 m.nativepath = nativepath
