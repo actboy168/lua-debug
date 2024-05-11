@@ -59,5 +59,4 @@ luamake -mode release
 
 ## Todo
 
-* Use bee.epoll instead of bee.select.
 * iOS example.

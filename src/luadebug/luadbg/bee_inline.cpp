@@ -13,9 +13,13 @@
 #include <bee/thread/spinlock.cpp>
 
 #if defined(_WIN32)
+#    include <bee/net/bpoll_win.cpp>
 #    include <bee/sys/file_handle_win.cpp>
 #    include <bee/sys/path_win.cpp>
 #    include <bee/thread/simplethread_win.cpp>
+#    include <bee/win/afd/afd.cpp>
+#    include <bee/win/afd/poller.cpp>
+#    include <bee/win/afd/poller_fd.cpp>
 #    include <bee/win/unicode.cpp>
 #    include <bee/win/wtf8.cpp>
 #else
@@ -26,12 +30,15 @@
 #endif
 
 #if defined(__APPLE__)
+#    include <bee/net/bpoll_osx.cpp>
 #    include <bee/sys/file_handle_osx.cpp>
 #    include <bee/sys/path_osx.cpp>
 #elif defined(__linux__)
+#    include <bee/net/bpoll_linux.cpp>
 #    include <bee/sys/file_handle_linux.cpp>
 #    include <bee/sys/path_linux.cpp>
 #elif defined(__NetBSD__) || defined(__FreeBSD__) || defined(__OpenBSD__)
+#    include <bee/net/bpoll_bsd.cpp>
 #    include <bee/sys/file_handle_bsd.cpp>
 #    include <bee/sys/path_bsd.cpp>
 #endif

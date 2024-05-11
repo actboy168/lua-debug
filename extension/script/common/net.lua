@@ -1,41 +1,44 @@
 local socket = require "bee.socket"
-local select = require "bee.select"
+local epoll = require "bee.epoll"
 local fs = require "bee.filesystem"
 
-local selector = select.create()
-local SELECT_READ <const> = select.SELECT_READ
-local SELECT_WRITE <const> = select.SELECT_WRITE
+local epfd = epoll.create(512)
+
+local EPOLLIN <const> = epoll.EPOLLIN
+local EPOLLOUT <const> = epoll.EPOLLOUT
+local EPOLLERR <const> = epoll.EPOLLERR
+local EPOLLHUP <const> = epoll.EPOLLHUP
 
 local function fd_set_read(s)
-    if s._flags & SELECT_READ ~= 0 then
+    if s._flags & EPOLLIN ~= 0 then
         return
     end
-    s._flags = s._flags | SELECT_READ
-    selector:event_mod(s._fd, s._flags)
+    s._flags = s._flags | EPOLLIN
+    epfd:event_mod(s._fd, s._flags)
 end
 
 local function fd_clr_read(s)
-    if s._flags & SELECT_READ == 0 then
+    if s._flags & EPOLLIN == 0 then
         return
     end
-    s._flags = s._flags & (~SELECT_READ)
-    selector:event_mod(s._fd, s._flags)
+    s._flags = s._flags & (~EPOLLIN)
+    epfd:event_mod(s._fd, s._flags)
 end
 
 local function fd_set_write(s)
-    if s._flags & SELECT_WRITE ~= 0 then
+    if s._flags & EPOLLOUT ~= 0 then
         return
     end
-    s._flags = s._flags | SELECT_WRITE
-    selector:event_mod(s._fd, s._flags)
+    s._flags = s._flags | EPOLLOUT
+    epfd:event_mod(s._fd, s._flags)
 end
 
 local function fd_clr_write(s)
-    if s._flags & SELECT_WRITE == 0 then
+    if s._flags & EPOLLOUT == 0 then
         return
     end
-    s._flags = s._flags & (~SELECT_WRITE)
-    selector:event_mod(s._fd, s._flags)
+    s._flags = s._flags & (~EPOLLOUT)
+    epfd:event_mod(s._fd, s._flags)
 end
 
 local function on_event(self, name, ...)
@@ -48,7 +51,7 @@ end
 local function close(self)
     local fd = self._fd
     on_event(self, "close")
-    selector:event_del(fd)
+    epfd:event_del(fd)
     fd:close()
 end
 
@@ -60,6 +63,7 @@ function stream_mt:__newindex(name, func)
         self._event[name:sub(4)] = func
     end
 end
+
 function stream:write(data)
     if self.shutdown_w then
         return
@@ -72,20 +76,23 @@ function stream:write(data)
     end
     self._writebuf = self._writebuf .. data
 end
+
 function stream:is_closed()
     return self.shutdown_w and self.shutdown_r
 end
+
 function stream:close()
     if not self.shutdown_r then
         self.shutdown_r = true
         fd_clr_read(self)
     end
-    if self.shutdown_w or self._writebuf == ""  then
+    if self.shutdown_w or self._writebuf == "" then
         self.shutdown_w = true
         fd_clr_write(self)
         close(self)
     end
 end
+
 local function close_write(self)
     fd_clr_write(self)
     if self.shutdown_r then
@@ -94,7 +101,10 @@ local function close_write(self)
     end
 end
 local function update_stream(s, event)
-    if event & SELECT_READ ~= 0 then
+    if event & (EPOLLERR | EPOLLHUP) ~= 0 then
+        event = event & (EPOLLIN | EPOLLOUT)
+    end
+    if event & EPOLLIN ~= 0 then
         local data = s._fd:recv()
         if data == nil then
             s:close()
@@ -103,7 +113,7 @@ local function update_stream(s, event)
             on_event(s, "data", data)
         end
     end
-    if event & SELECT_WRITE ~= 0 then
+    if event & EPOLLOUT ~= 0 then
         local n = s._fd:send(s._writebuf)
         if n == nil then
             s.shutdown_w = true
@@ -126,9 +136,11 @@ function listen_mt:__newindex(name, func)
         self._event[name:sub(4)] = func
     end
 end
+
 function listen:is_closed()
     return self.shutdown_r
 end
+
 function listen:close()
     self.shutdown_r = true
     close(self)
@@ -142,15 +154,18 @@ function connect_mt:__newindex(name, func)
         self._event[name:sub(4)] = func
     end
 end
+
 function connect:write(data)
     if data == "" then
         return
     end
     self._writebuf = self._writebuf .. data
 end
+
 function connect:is_closed()
     return self.shutdown_w
 end
+
 function connect:close()
     self.shutdown_w = true
     close(self)
@@ -185,12 +200,12 @@ function m.listen(protocol, address, port)
     end
     local s = {
         _fd = fd,
-        _flags = SELECT_READ,
+        _flags = EPOLLIN,
         _event = {},
         shutdown_r = false,
         shutdown_w = true,
     }
-    selector:event_add(fd, SELECT_READ, function ()
+    epfd:event_add(fd, EPOLLIN, function()
         local new_fd, err = fd:accept()
         if new_fd == nil then
             s:close()
@@ -200,18 +215,18 @@ function m.listen(protocol, address, port)
         else
             local new_s = setmetatable({
                 _fd = new_fd,
-                _flags = SELECT_READ,
+                _flags = EPOLLIN,
                 _event = {},
                 _writebuf = "",
                 shutdown_r = false,
                 shutdown_w = false,
             }, stream_mt)
             if on_event(s, "accepted", new_s) then
-                selector:event_add(new_fd, new_s._flags, function (event)
+                epfd:event_add(new_fd, new_s._flags, function(event)
                     update_stream(new_s, event)
                 end)
             else
-                new_fd:close()
+                new_s:close()
             end
         end
     end)
@@ -235,28 +250,28 @@ function m.connect(protocol, address, port)
     end
     local s = {
         _fd = fd,
-        _flags = SELECT_WRITE,
+        _flags = EPOLLOUT,
         _event = {},
         _writebuf = "",
         shutdown_r = false,
         shutdown_w = false,
     }
-    selector:event_add(fd, SELECT_WRITE, function ()
+    epfd:event_add(fd, EPOLLOUT, function()
         local ok, err = fd:status()
         if ok then
             on_event(s, "connected")
             setmetatable(s, stream_mt)
             if s._writebuf ~= "" then
-                update_stream(s, SELECT_WRITE)
+                update_stream(s, EPOLLOUT)
                 if s._writebuf ~= "" then
-                    s._flags = SELECT_READ | SELECT_WRITE
+                    s._flags = EPOLLIN | EPOLLOUT
                 else
-                    s._flags = SELECT_READ
+                    s._flags = EPOLLIN
                 end
             else
-                s._flags = SELECT_READ
+                s._flags = EPOLLIN
             end
-            selector:event_add(s._fd, s._flags, function (event)
+            epfd:event_mod(s._fd, s._flags, function(event)
                 update_stream(s, event)
             end)
         else
@@ -274,7 +289,7 @@ function m.async(func)
 end
 
 function m.add_fd(fd, event, func)
-    selector:event_add(fd, event, func)
+    epfd:event_add(fd, event, func)
 end
 
 function m.update(timeout)
@@ -285,9 +300,10 @@ function m.update(timeout)
             t[i]()
         end
     end
-    for func, event in selector:wait(timeout or 0) do
+    for func, event in epfd:wait(timeout) do
         func(event)
     end
 end
 
 return m
+
