@@ -172,7 +172,6 @@ lm:source_set "source_lua" {
     includes = ".",
     sources = {
         "3rd/lua/onelua.c",
-        "3rd/lua/linit.c",
     },
     defines = "MAKE_LIB",
     windows = {
@@ -220,7 +219,10 @@ lm:source_set "source_bootstrap" {
         "source_lua",
     },
     includes = { "3rd/lua", "." },
-    sources = "bootstrap/main.cpp",
+    sources = {
+        "bootstrap/main.cpp",
+        "bootstrap/bootstrap_init.cpp",
+    },
     macos = {
         defines = "LUA_USE_MACOSX",
         links = { "m", "dl" },
