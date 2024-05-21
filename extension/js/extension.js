@@ -57,7 +57,7 @@ async function install() {
     for (const arch of ["win32-ia32", "win32-x64"]) {
         for (const stat of await fs.readdir(path.join(extensionDir, "runtime", arch), { withFileTypes: true })) {
             if (stat.isDirectory()) {
-                await copyDirectory(path.join(extensionDir, "vcredist", arch), stat.name)
+                await copyDirectory(path.join(extensionDir, "vcredist", arch), path.join(stat.path, stat.name))
             }
         }
     }
