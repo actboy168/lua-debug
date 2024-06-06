@@ -108,19 +108,18 @@ lm:lua_src "source_bee" {
     },
     sources = "binding/*.cpp",
     windows = {
-        sources = "binding/port/lua_windows.cpp",
         defines = "_CRT_SECURE_NO_WARNINGS",
+        sources = {
+            "binding/port/lua_windows.cpp",
+        },
         links = {
-            "advapi32",
+            "ntdll",
             "ws2_32",
             "ole32",
             "user32",
             "version",
-            "wbemuuid",
-            "oleAut32",
-            "shell32",
-            "ntdll",
             "synchronization",
+            lm.arch == "x86" and "dbghelp",
         },
     },
     mingw = {
@@ -130,8 +129,12 @@ lm:lua_src "source_bee" {
         }
     },
     linux = {
-        links = "stdc++fs",
-        ldflags = "-pthread"
+        ldflags = "-pthread",
+        links = {
+            "stdc++fs",
+            "unwind",
+            "bfd",
+        }
     },
     macos = {
         frameworks = {
