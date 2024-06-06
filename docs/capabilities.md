@@ -39,6 +39,8 @@
 | supportsInstructionBreakpoints        |    🟨    |
 | supportsExceptionFilterOptions        |    🟩    |
 | supportsSingleThreadExecutionRequests |    🟥    |
+| supportsDataBreakpointBytes           |    🟨    |
+| breakpointModes                       |    🟨    |
 
 | Capabilities (Client)               | Available |
 |-------------------------------------|-----------|
