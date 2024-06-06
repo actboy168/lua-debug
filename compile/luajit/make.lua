@@ -118,8 +118,7 @@ lm:source_set("lj_str_hash.c") {
         _LARGEFILE_SOURCE,
         LUA_MULTILIB,
         LUAJIT_ENABLE_LUA52COMPAT,
-        LUAJIT_NUMMODE,
-        "_XOPEN_SOURCE=600"
+        LUAJIT_NUMMODE
     },
     flags = lj_str_hash_flags
 }
