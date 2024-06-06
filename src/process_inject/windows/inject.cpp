@@ -1,6 +1,6 @@
 #include <Windows.h>
-#include <bee/lua/udata.h>
 #include <bee/lua/module.h>
+#include <bee/lua/udata.h>
 #include <bee/subprocess.h>
 #include <bee/utility/zstring_view.h>
 #include <bee/win/wtf8.h>
