@@ -102,7 +102,7 @@ local function close_write(self)
 end
 local function update_stream(s, event)
     if event & (EPOLLERR | EPOLLHUP) ~= 0 then
-        event = event & (EPOLLIN | EPOLLOUT)
+        event = event | EPOLLIN | EPOLLOUT
     end
     if event & EPOLLIN ~= 0 then
         local data = s._fd:recv()
