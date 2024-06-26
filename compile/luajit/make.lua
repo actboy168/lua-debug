@@ -127,7 +127,6 @@ lm:source_set("lj_str_hash.c") {
 lm:executable("luajit/lua") {
     rootdir = luajitDir,
     bindir = bindir,
-    c = "c89",
     objdeps = {
         "lj_vm.obj",
         "lj_folddef.h",
