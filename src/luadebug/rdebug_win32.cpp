@@ -24,14 +24,69 @@ namespace luadebug::win32 {
         luaapi = (FindLuaApi)fn;
     }
 
-    void caller_is_luadll(void* callerAddress) {
-        if (luadll) return;
+    bool caller_is_luadll(void* callerAddress) {
+        if (luadll) return true;
         HMODULE caller = NULL;
         if (GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS, (LPCWSTR)callerAddress, &caller) && caller) {
             if (GetProcAddress(caller, "lua_newstate")) {
                 set_luadll(caller);
+                return true;
             }
         }
+        return false;
+    }
+
+    static HMODULE enumerate_modules(HANDLE hProcess, HMODULE hModuleLast, PIMAGE_NT_HEADERS32 pNtHeader) {
+        MEMORY_BASIC_INFORMATION mbi = { 0 };
+        for (PBYTE pbLast = (PBYTE)hModuleLast + 0x10000;; pbLast = (PBYTE)mbi.BaseAddress + mbi.RegionSize) {
+            if (VirtualQueryEx(hProcess, (PVOID)pbLast, &mbi, sizeof(mbi)) <= 0) {
+                break;
+            }
+            if (((PBYTE)mbi.BaseAddress + mbi.RegionSize) < pbLast) {
+                break;
+            }
+            if ((mbi.State != MEM_COMMIT) ||
+                ((mbi.Protect & 0xff) == PAGE_NOACCESS) ||
+                (mbi.Protect & PAGE_GUARD)) {
+                continue;
+            }
+            __try {
+                IMAGE_DOS_HEADER idh;
+                if (!ReadProcessMemory(hProcess, pbLast, &idh, sizeof(idh), NULL)) {
+                    continue;
+                }
+                if (idh.e_magic != IMAGE_DOS_SIGNATURE || (DWORD)idh.e_lfanew > mbi.RegionSize || (DWORD)idh.e_lfanew < sizeof(idh)) {
+                    continue;
+                }
+                if (!ReadProcessMemory(hProcess, pbLast + idh.e_lfanew, pNtHeader, sizeof(*pNtHeader), NULL)) {
+                    continue;
+                }
+                if (pNtHeader->Signature != IMAGE_NT_SIGNATURE) {
+                    continue;
+                }
+                return (HMODULE)pbLast;
+            } __except (EXCEPTION_EXECUTE_HANDLER) {
+                continue;
+            }
+        }
+        return NULL;
+    }
+
+    bool find_luadll() {
+        if (luadll) return true;
+        HANDLE hProcess = GetCurrentProcess();
+        HMODULE hModule = NULL;
+        for (;;) {
+            IMAGE_NT_HEADERS32 inh;
+            if ((hModule = enumerate_modules(hProcess, hModule, &inh)) == NULL) {
+                break;
+            }
+            if (GetProcAddress(hModule, "lua_newstate")) {
+                set_luadll(hModule);
+                return true;
+            }
+        }
+        return false;
     }
 
     static uintptr_t rva_to_addr(HMODULE module, uintptr_t rva) {
