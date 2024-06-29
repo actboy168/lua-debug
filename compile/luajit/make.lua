@@ -119,7 +119,11 @@ lm:source_set("lj_str_hash.c") {
         LUA_MULTILIB,
         LUAJIT_ENABLE_LUA52COMPAT,
         LUAJIT_NUMMODE,
-        "_XOPEN_SOURCE=600"
+    },
+    linux = {
+        defines = {
+            "_GNU_SOURCE",
+        }
     },
     flags = lj_str_hash_flags
 }
@@ -151,6 +155,9 @@ lm:executable("luajit/lua") {
     linux = {
         links = "dl",
         ldflags = "-Wl,-E",
+        defines = {
+            "_GNU_SOURCE",
+        }
     },
     android = {
         links = "dl"
@@ -161,7 +168,7 @@ lm:executable("luajit/lua") {
         _LARGEFILE_SOURCE,
         LUA_MULTILIB,
         LUAJIT_ENABLE_LUA52COMPAT,
-        LUAJIT_NUMMODE
+        LUAJIT_NUMMODE,
     },
     flags = {
         "-fno-stack-protector",
