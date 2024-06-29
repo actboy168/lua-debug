@@ -17,8 +17,6 @@ jobs:
             platform: win32-x64
           - os: ubuntu-20.04
             platform: linux-x64
-          - os: ubuntu-20.04
-            platform: linux-arm64
           - os: macos-latest
             platform: darwin-x64
           - os: macos-latest
@@ -28,13 +26,6 @@ jobs:
       with:
         submodules : recursive
     - uses: actboy168/setup-luamake@master
-    - if: matrix.os == 'ubuntu-20.04'
-      run: |
-        sudo apt update
-        sudo apt install -y binutils-dev libunwind-dev
-    - if: matrix.platform == 'linux-arm64'
-      run: |
-        sudo apt install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
     - run: luamake lua compile/download_deps.lua
     - run: luamake -mode release -platform ${{ matrix.platform }}
     - run: npm install -g vsce ovsx
