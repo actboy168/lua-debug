@@ -2,6 +2,7 @@ local lm = require "luamake"
 
 lm.arch = "x86"
 lm.runtime_platform = "win32-ia32"
+
 require "compile.windows.runtime"
 require "compile.common.run_luamake"
 

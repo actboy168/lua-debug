@@ -29,9 +29,6 @@ lm:lua_src 'launcher_source' {
     defines = {
         "BEE_INLINE",
     },
-    msvc = {
-        flags = "/utf-8",
-    },
     windows = {
         defines = "_CRT_SECURE_NO_WARNINGS",
         links = {

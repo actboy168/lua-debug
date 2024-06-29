@@ -46,9 +46,6 @@ lm:source_set 'luadbg' {
     sources = {
         "src/luadebug/luadbg/*.cpp",
     },
-    msvc = {
-        flags = "/utf-8",
-    },
     linux = {
         flags = "-fPIC"
     },
@@ -222,9 +219,6 @@ for _, luaver in ipairs {
             "src/luadebug/thunk/*.cpp",
             "src/luadebug/util/*.cpp",
             "src/luadebug/"..compat[luaver].."/**/*.cpp",
-        },
-        msvc = {
-            flags = "/utf-8",
         },
         windows = {
             deps = luaver..'/'..luaver,

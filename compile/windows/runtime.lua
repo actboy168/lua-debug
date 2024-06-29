@@ -1,5 +1,9 @@
 local lm = require "luamake"
 
+lm:conf {
+    flags = "/utf-8",
+}
+
 require "compile.common.config"
 
 local platform = lm.runtime_platform

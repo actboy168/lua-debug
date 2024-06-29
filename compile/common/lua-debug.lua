@@ -12,9 +12,6 @@ if lm.os == "windows" then
             "src/process_inject/windows/*.cpp",
             "3rd/wow64ext/src/wow64ext.cpp",
         },
-        msvc = {
-            flags = "/utf-8",
-        },
         links = "advapi32",
     }
 end
