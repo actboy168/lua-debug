@@ -51,8 +51,8 @@ function _M.gdb_inject(pid, entry, injectdll, gdb_path)
 
     local launcher = {
         "-ex",
-        -- 6 = RTDL_NOW|RTDL_LOCAL
-        ('print  (void*)dlopen("%s", 6)'):format(injectdll),
+        -- 5 = RTDL_LAZY|RTDL_LOCAL
+        ('print  (void*)dlopen("%s", 5)'):format(injectdll),
         "-ex",
         ('call ((void(*)())&%s)()'):format(entry),
         "-ex",
@@ -93,8 +93,8 @@ function _M.lldb_inject(pid, entry, injectdll, lldb_path)
 
     local launcher = {
         "-o",
-        -- 6 = RTDL_NOW|RTDL_LOCAL
-        ('expression (void*)dlopen("%s", 6)'):format(injectdll),
+        -- 5 = RTDL_LAZY|RTDL_LOCAL
+        ('expression (void*)dlopen("%s", 5)'):format(injectdll),
         "-o",
         ('expression ((void(*)())&%s)()'):format(entry),
         "-o",
