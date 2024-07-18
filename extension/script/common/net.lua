@@ -113,7 +113,7 @@ local function update_stream(s, event)
             on_event(s, "data", data)
         end
     end
-    if event & EPOLLOUT ~= 0 then
+    if event & EPOLLOUT ~= 0 and not s.shutdown_w then
         local n = s._fd:send(s._writebuf)
         if n == nil then
             s.shutdown_w = true
