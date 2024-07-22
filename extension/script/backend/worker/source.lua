@@ -65,6 +65,9 @@ local function covertPath(p)
         p = knownClientPath[native]
         knownClientPath[native] = nil
     end
+    if not p:match("%.lua$") then
+        return p .. ".lua"
+    end
     return p
 end
 
