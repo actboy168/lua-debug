@@ -16,4 +16,9 @@ extern "C" __declspec(dllexport) int init(lua_State* hL) {
     return 0;
 }
 
+extern "C" __declspec(dllexport) int setflag_debugself(lua_State* hL) {
+    luadebug::win32::setflag_debugself(true);
+    return 0;
+}
+
 #endif

@@ -1,3 +1,10 @@
+---@class common.log
+---@field trace fun(...)
+---@field debug fun(...)
+---@field info fun(...)
+---@field warn fun(...)
+---@field error fun(...)
+---@field fatal fun(...)
 local log = { }
 
 log.file = nil

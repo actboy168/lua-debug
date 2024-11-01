@@ -13,6 +13,7 @@ local thread = require 'bee.thread'
 local fs = require 'backend.worker.filesystem'
 local log = require 'common.log'
 local channel = require "bee.channel"
+local tag = require 'backend.tag'
 
 local initialized = false
 local suspend = false
@@ -34,9 +35,9 @@ local baseL
 local CMD = {}
 
 local WorkerIdent = tostring(thread.id)
-local WorkerChannel = ('DbgWorker(%s)'):format(WorkerIdent)
+local WorkerChannel = tag.getChannelKeyWorker(WorkerIdent)
 
-local masterThread = channel.query 'DbgMaster'
+local masterThread = channel.query (tag.getChannelKeyMaster())
 local workerThread = channel.create(WorkerChannel)
 
 local function workerThreadUpdate(timeout)

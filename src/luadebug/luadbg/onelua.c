@@ -10,7 +10,7 @@
 #define LUAI_MAXCCALLS 1000
 
 /* no need to change anything below this line ----------------------------- */
-
+#define LUA_BUILD_AS_DLL
 #define LUA_CORE
 #define LUA_LIB
 #include "lprefix.h"

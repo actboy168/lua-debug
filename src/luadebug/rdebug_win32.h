@@ -12,6 +12,7 @@ namespace luadebug::win32 {
     bool caller_is_luadll(void* callerAddress);
     bool find_luadll();
     void putenv(const char* envstr);
+    void setflag_debugself(bool flag);
 }
 
 #endif
