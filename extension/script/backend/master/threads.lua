@@ -57,6 +57,9 @@ function CMD.stackTrace(w, req)
     end
     for _, frame in ipairs(req.body.stackFrames) do
         frame.id = (w << 24) | frame.id
+        if frame.instructionPointerReference then
+            frame.instructionPointerReference = frame.id .. '_' .. frame.instructionPointerReference
+        end
         if frame.source and frame.source.sourceReference then
             frame.source.sourceReference = (w << 32) | frame.source.sourceReference
         end
@@ -172,6 +175,15 @@ end
 
 function CMD.setThreadName(w, name)
     mgr.setThreadName(w, name)
+end
+
+function CMD.disassemble(w, req)
+    if not req.success then
+        response.error(req, req.message)
+        return
+    end
+
+    response.success(req, req.body)
 end
 
 return CMD

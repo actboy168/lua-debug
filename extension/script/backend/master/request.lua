@@ -630,6 +630,38 @@ function request.writeMemory(req)
     })
 end
 
+function request.disassemble(req)
+    local args = req.arguments
+    local memoryReference = args.memoryReference
+    if type(memoryReference) ~= 'string' then
+        response.error(req, "No memoryReference:"..memoryReference)
+        return
+    end
+    local pos = memoryReference:find("_")
+    local log = require 'common.log'
+    log.error(memoryReference, pos)
+    memoryReference = tonumber(memoryReference:sub(1, pos - 1))
+    local threadId = memoryReference >> 24
+    local frameId = memoryReference & 0x00FFFFFF
+    if not threadId or not frameId then
+        response.error(req, "Error memoryReference")
+        return
+    end
+    if not checkThreadId(req, threadId) then
+        return
+    end
+    mgr.workerSend(threadId, {
+        cmd = 'disassemble',
+        command = req.command,
+        seq = req.seq,
+        memoryReference = frameId,
+        offset = args.offset,
+        instructionOffset = args.instructionOffset,
+        instructionCount = args.instructionCount,
+        resolveSymbols = args.resolveSymbols,
+    })
+end
+
 function request.customRequestShowIntegerAsDec(req)
     response.success(req)
     mgr.workerBroadcast {
