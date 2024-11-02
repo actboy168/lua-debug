@@ -4,13 +4,14 @@
 
 #    include <Windows.h>
 #    include <stdint.h>
+
 #    include <string>
 
 namespace luadebug::win32 {
     typedef FARPROC (*FindLuaApi)(const char* name);
     static HMODULE luadll    = 0;
     static FindLuaApi luaapi = 0;
-    static bool debugSelf = false;
+    static bool debugSelf    = false;
 
     HMODULE get_luadll() {
         return luadll;
@@ -32,8 +33,8 @@ namespace luadebug::win32 {
         // set lua dll self
         caller_is_luadll(&set_luaapi);
         // set lua api finder
-        luaapi = +[](const char* name){
-            auto n = "luadbg" + std::string{name}.substr(3);
+        luaapi = +[](const char* name) {
+            auto n = "luadbg" + std::string { name }.substr(3);
             return ::GetProcAddress(luadll, n.c_str());
         };
     }

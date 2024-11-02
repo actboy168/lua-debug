@@ -1,8 +1,7 @@
-#include "compat/internal.h"
-
-#include <lstate.h>
 #include <ldebug.h>
+#include <lstate.h>
 
+#include "compat/internal.h"
 
 #if LUA_VERSION_NUM >= 504
 #    define LUA_STKID(s) s.p
@@ -56,9 +55,9 @@ static int currentpc(lua_State* L, CallInfo* ci) {
 }
 
 #else
-#ifndef ci_func
-#define ci_func(ci)		(clLvalue((ci)->func))
-#endif
+#    ifndef ci_func
+#        define ci_func(ci) (clLvalue((ci)->func))
+#    endif
 static int currentpc(CallInfo* ci) {
     lua_assert(isLua(ci));
     return pcRel(ci->u.l.savedpc, ci_func(ci)->p);
@@ -82,5 +81,5 @@ const Instruction* lua_getsavedpc(lua_State* L, CallInfo* ci) {
     return ci->savedpc;
 #else
     return ci->u.l.savedpc;
-#endif 
+#endif
 }

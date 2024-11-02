@@ -35,7 +35,7 @@ static cTValue* debug_frame(lua_State* L, int level, int* size) {
 
 #define NO_BCPOS (~(BCPos)0)
 static const BCIns* debug_frameins(lua_State* L, GCfunc* fn, cTValue* nextframe) {
-   const BCIns* ins;
+    const BCIns* ins;
     lj_assertL(fn->c.gct == ~LJ_TFUNC || fn->c.gct == ~LJ_TTHREAD, "function or frame expected");
     if (!isluafunc(fn)) { /* Cannot derive a PC for non-Lua functions. */
         return nullptr;
@@ -82,7 +82,7 @@ static const BCIns* debug_frameins(lua_State* L, GCfunc* fn, cTValue* nextframe)
 /* Return bytecode position for function/frame or NO_BCPOS. */
 static BCPos debug_framepc(lua_State* L, GCfunc* fn, cTValue* nextframe) {
     const BCIns* ins = debug_frameins(L, fn, nextframe);
-    GCproto *pt;
+    GCproto* pt;
     BCPos pos;
     if (!ins) return NO_BCPOS;
     pt  = funcproto(fn);
@@ -128,9 +128,9 @@ int lua_isluafunc(lua_State* L, lua_Debug* ar) {
 }
 
 int lua_getcurrentpc(lua_State* L, CallInfo* ci) {
-  return debug_framepc(L, frame_func(ci), ci);
+    return debug_framepc(L, frame_func(ci), ci);
 }
 
 const Instruction* lua_getsavedpc(lua_State* L, CallInfo* ci) {
-  return debug_frameins(L, frame_func(ci), ci);
+    return debug_frameins(L, frame_func(ci), ci);
 }

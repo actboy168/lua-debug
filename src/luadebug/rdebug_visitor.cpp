@@ -801,7 +801,7 @@ namespace luadebug::visitor {
             frame = area.checkinteger<int>(L, 1);
             if (lua_getstack(hL, frame, &ar) == 0)
                 return 0;
-            std::array<char, 8> what{};
+            std::array<char, 8> what {};
             auto sz = std::min(what.size() - 1, options.size());
             std::copy_if(options.cbegin(), options.cbegin() + sz, what.begin(), [](auto c) { return c != 'p' && c != 'P'; });
             if (lua_getinfo(hL, what.data(), &ar) == 0)
@@ -824,7 +824,7 @@ namespace luadebug::visitor {
             if (flags.test('f') || flags.test('p') || flags.test('P')) {
                 return area.raise_error("invalid option");
             }
-            std::array<char, 8> what{};
+            std::array<char, 8> what {};
             what[0] = '>';
             auto sz = std::min(what.size() - 2, options.size());
             std::copy_if(options.cbegin(), options.cbegin() + sz, what.begin() + 1, [](auto c) { return c != 'p' && c != 'P'; });
