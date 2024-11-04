@@ -1,6 +1,5 @@
 local lm = require "luamake"
 local fs = require 'bee.filesystem'
-local subprocess = require 'bee.subprocess'
 
 local luaver = "luajit"
 local luajitDir = '3rd/lua/' .. luaver
@@ -168,7 +167,7 @@ if not is_old_version_luajit then
             lm.bindir.."/luajit_relver.txt",
             "$out"
         },
-        outputs = lm.bindir.."/luajit.h"
+        outputs = luajitSrcDir.."/luajit.h"
     }
 end
 
@@ -182,6 +181,7 @@ lm:shared_library "luajit/luajit" {
         "lj_recdef",
         --"lj_vmdef",
         "lj_folddef",
+        "luajit_h",
     },
     defines = {
         "_CRT_SECURE_NO_WARNINGS",
