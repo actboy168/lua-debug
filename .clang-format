@@ -15,3 +15,4 @@ NamespaceIndentation: All
 PackConstructorInitializers: Never
 QualifierAlignment: Left
 SpaceBeforeCpp11BracedList: true
+SortIncludes: false
