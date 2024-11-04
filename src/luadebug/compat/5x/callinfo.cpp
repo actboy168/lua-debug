@@ -1,7 +1,7 @@
+#include "compat/internal.h"
+
 #include <ldebug.h>
 #include <lstate.h>
-
-#include "compat/internal.h"
 
 #if LUA_VERSION_NUM >= 504
 #    define LUA_STKID(s) s.p

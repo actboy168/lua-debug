@@ -1,8 +1,12 @@
 local lm = require "luamake"
+local fs = require 'bee.filesystem'
+local subprocess = require 'bee.subprocess'
 
 local luaver = "luajit"
 local luajitDir = '3rd/lua/' .. luaver
+local luajitSrcDir = luajitDir .. '/src'
 local bindir = "publish/runtime/"..lm.runtime_platform
+local is_old_version_luajit = fs.exists(fs.path(luajitSrcDir) / 'lj_init.c')
 
 lm:exe "minilua" {
     rootdir= luajitDir,
@@ -146,6 +150,27 @@ lm:build "lj_folddef" {
     outputs = lm.bindir.."/lj_folddef.h",
 }
 
+if not is_old_version_luajit then
+    lm:runlua "luajit_relver" {
+        script = 'compile/luajit/relver.lua',
+        args = {
+            luajitDir,
+            "$out"
+        },
+        outputs = lm.bindir.."/luajit_relver.txt"
+    }
+    lm:build "luajit_h" {
+        deps = { "minilua", "luajit_relver" },
+        args = {
+            "$bin/minilua",
+            luajitSrcDir.."/host/genversion.lua",
+            luajitSrcDir.."/luajit_rolling.h",
+            lm.bindir.."/luajit_relver.txt",
+            "$out"
+        },
+        outputs = lm.bindir.."/luajit.h"
+    }
+end
 
 lm:shared_library "luajit/luajit" {
     rootdir= luajitDir,
@@ -164,7 +189,7 @@ lm:shared_library "luajit/luajit" {
     },
     sources = {
         "!src/luajit.c",
-        "!src/lj_init.c",
+        is_old_version_luajit and "!src/lj_init.c",
         "src/lj_*.c",
         "src/lib_*.c",
         "../../../".. lm.bindir.."/lj_vm.obj",
@@ -184,7 +209,7 @@ lm:exe "luajit/lua" {
     },
     sources = {
         "src/luajit.c",
-        "src/lj_init.c",
+        is_old_version_luajit and "src/lj_init.c",
     },
     includes={
         ".",
