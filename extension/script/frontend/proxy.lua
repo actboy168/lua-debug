@@ -80,10 +80,6 @@ end
 local function proxy_attach(pkg)
     local args = pkg.arguments
     platform_os.init(args)
-    if platform_os() ~= "windows" and platform_os() ~= "macos" then
-		attach_tcp(pkg, args)
-		return
-    end
     if args.processId then
         local processId = tonumber(args.processId)
         local ok, errmsg = attach_process(pkg, processId)
