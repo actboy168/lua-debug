@@ -33,6 +33,7 @@ lm:executable "lua-debug" {
     },
     linux = {
         crt = "static",
+        ldflags = "-rdynamic"
     },
     netbsd = {
         crt = "static",

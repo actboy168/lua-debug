@@ -270,23 +270,22 @@ else
 end
 
 attributes.attach = {
-}
-
-if OS == "win32" or OS == "darwin" then
-    attributes.attach.processId = {
+    processId = {
         default = "${command:pickProcess}",
         markdownDescription = "Id of process to attach to.",
         type = "string",
-    }
-    attributes.attach.processName = {
+    },
+    processName = {
         default = "lua.exe",
         markdownDescription = "Name of process to attach to.",
         type = "string",
     }
-    json.contributes.debuggers[1].variables = {
-        pickProcess = "extension.lua-debug.pickProcess",
-    }
-end
+}
+
+json.contributes.debuggers[1].variables = {
+    pickProcess = "extension.lua-debug.pickProcess",
+}
+
 
 attributes.launch = {
     luaexe = {
