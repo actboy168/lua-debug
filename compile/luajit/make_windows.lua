@@ -1,11 +1,10 @@
 local lm = require "luamake"
-local fs = require 'bee.filesystem'
 
 local luaver = "luajit"
 local luajitDir = '3rd/lua/' .. luaver
 local luajitSrcDir = luajitDir .. '/src'
 local bindir = "publish/runtime/"..lm.runtime_platform
-local is_old_version_luajit = fs.exists(fs.path(luajitSrcDir) / 'lj_init.c')
+local is_old_version_luajit = require "compile.luajit.defined".is_old_version_luajit
 
 lm:exe "minilua" {
     rootdir= luajitDir,
@@ -181,7 +180,7 @@ lm:shared_library "luajit/luajit" {
         "lj_recdef",
         --"lj_vmdef",
         "lj_folddef",
-        "luajit_h",
+        not is_old_version_luajit and "luajit_h",
     },
     defines = {
         "_CRT_SECURE_NO_WARNINGS",

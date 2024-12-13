@@ -10,6 +10,7 @@ local arch = defined.arch
 local LUAJIT_ENABLE_LUA52COMPAT = defined.LUAJIT_ENABLE_LUA52COMPAT
 local LUAJIT_NUMMODE = defined.LUAJIT_NUMMODE
 local luajitDir = defined.luajitDir
+local is_old_version_luajit = defined.is_old_version_luajit
 
 local LJLIB_C = {
     luajitDir .. "/lib_base.c ",
@@ -144,7 +145,10 @@ lm:executable("luajit/lua") {
         "lj_libdef.h",
         "lj_recdef.h",
     },
-    deps = has_str_hash and "lj_str_hash.c",
+    deps = {
+        has_str_hash and "lj_str_hash.c",
+        not is_old_version_luajit and "luajit_h"
+    },
     sources = {
         "luajit.c",
         "lj_*.c",
