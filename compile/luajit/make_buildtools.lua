@@ -7,7 +7,6 @@ local arch = defined.arch
 local LUAJIT_ENABLE_LUA52COMPAT = defined.LUAJIT_ENABLE_LUA52COMPAT
 local LUAJIT_NUMMODE = defined.LUAJIT_NUMMODE
 local luajitDir = defined.luajitDir
-local is_old_version_luajit = defined.is_old_version_luajit
 
 local LUAJIT_TARGET = string.format("LUAJIT_TARGET=LUAJIT_ARCH_%s", string.upper(arch))
 local LJ_ARCH_HASFPU = "LJ_ARCH_HASFPU=1"
@@ -69,24 +68,3 @@ lm:executable("buildvm") {
         "../../../../" .. lm.bindir
     }
 }
-if not is_old_version_luajit then
-    lm:runlua "luajit_relver" {
-        script = 'compile/luajit/relver.lua',
-        args = {
-            luajitDir.."/..",
-            "$out"
-        },
-        outputs = lm.bindir.."/luajit_relver.txt"
-    }
-    lm:build "luajit_h" {
-        deps = { "minilua", "luajit_relver" },
-        args = {
-            "$bin/minilua",
-            luajitDir.."/host/genversion.lua",
-            luajitDir.."/luajit_rolling.h",
-            lm.bindir.."/luajit_relver.txt",
-            "$out"
-        },
-        outputs = luajitDir.."/luajit.h"
-    }
-end

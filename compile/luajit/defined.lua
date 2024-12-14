@@ -20,4 +20,25 @@ local _M = {
 	is_old_version_luajit = is_old_version_luajit
 }
 
+if not is_old_version_luajit then
+    local sp = require 'bee.subprocess'
+    local fs = require 'bee.filesystem'
+    local sys = require 'bee.sys'
+    sp.spawn({
+        sys.exe_path(),
+        "lua",
+        'compile/luajit/relver.lua',
+        luajitDir.."/..",
+        luajitDir.."/luajit_relver.txt"
+    }):wait()
+    sp.spawn({
+        sys.exe_path(),
+        "lua",
+        luajitDir.."/host/genversion.lua",
+        luajitDir.."/luajit_rolling.h",
+        luajitDir.."/luajit_relver.txt",
+        luajitDir.."/luajit.h"
+    }):wait()
+end
+
 return _M

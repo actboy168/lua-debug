@@ -148,28 +148,6 @@ lm:build "lj_folddef" {
     outputs = lm.bindir.."/lj_folddef.h",
 }
 
-if not is_old_version_luajit then
-    lm:runlua "luajit_relver" {
-        script = 'compile/luajit/relver.lua',
-        args = {
-            luajitDir,
-            "$out"
-        },
-        outputs = lm.bindir.."/luajit_relver.txt"
-    }
-    lm:build "luajit_h" {
-        deps = { "minilua", "luajit_relver" },
-        args = {
-            "$bin/minilua",
-            luajitSrcDir.."/host/genversion.lua",
-            luajitSrcDir.."/luajit_rolling.h",
-            lm.bindir.."/luajit_relver.txt",
-            "$out"
-        },
-        outputs = luajitSrcDir.."/luajit.h"
-    }
-end
-
 lm:shared_library "luajit/luajit" {
     rootdir= luajitDir,
     bindir = bindir,
@@ -180,7 +158,6 @@ lm:shared_library "luajit/luajit" {
         "lj_recdef",
         --"lj_vmdef",
         "lj_folddef",
-        not is_old_version_luajit and "luajit_h",
     },
     defines = {
         "_CRT_SECURE_NO_WARNINGS",

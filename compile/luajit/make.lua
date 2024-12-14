@@ -147,7 +147,6 @@ lm:executable("luajit/lua") {
     },
     deps = {
         has_str_hash and "lj_str_hash.c",
-        not is_old_version_luajit and "luajit_h"
     },
     sources = {
         "luajit.c",
