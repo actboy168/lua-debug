@@ -101,7 +101,7 @@ local function bootstrapMakeExe(c, luaexe, args, address, dbg)
     if args.luaVersion:match "^lua%-" then
         params[#params+1] = args.luaVersion
     end
-    local script = ("dofile[[%s]];DBG[[%s]]"):format(
+    local script = ("dofile[[%s]] DBG[[%s]]"):format(
         (dbg / "script" / "launch.lua"):string(),
         table.concat(params, "/")
     )
