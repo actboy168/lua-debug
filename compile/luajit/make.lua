@@ -145,7 +145,7 @@ lm:executable("luajit/lua") {
         "lj_*.c",
         "lib_*.c",
         "!lj_str_hash.c",
-        "../../../../" .. lm.bindir .. "/lj_vm.obj",
+        lm.bindir .. "/lj_vm.obj",
     },
     includes = {
         ".",
