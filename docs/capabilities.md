@@ -41,6 +41,7 @@
 | supportsSingleThreadExecutionRequests |    🟥    |
 | supportsDataBreakpointBytes           |    🟨    |
 | breakpointModes                       |    🟨    |
+| supportsANSIStyling                   |    🟨    |
 
 | Capabilities (Client)               | Available |
 |-------------------------------------|-----------|
@@ -53,6 +54,7 @@
 | supportsMemoryEvent                 |    🟥    |
 | supportsArgsCanBeInterpretedByShell |    🟩    |
 | supportsStartDebuggingRequest       |    🟥    |
+| supportsANSIStyling                 |    🟨    |
 
 * 🟩 Already supported.
 * 🟨 LuaDebug is not implemented.
