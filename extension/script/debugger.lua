@@ -1,4 +1,13 @@
 local selfsource = ...
+
+if not selfsource then
+    local source = debug.getinfo(1, "S").source
+    if source:sub(1, 1) == "@" then
+        local filepath = source:sub(2)
+        selfsource = filepath
+    end
+end
+
 local root = selfsource
                 :match "(.+)[/][^/]+$"
                 :match "(.+)[/][^/]+$"

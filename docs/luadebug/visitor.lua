@@ -316,6 +316,13 @@ end
 function visitor.costatus(co)
 end
 
+---
+---@return integer
+---等价于`collectgarbage "count"`。
+---
+function visitor.gccount()
+end
+
 ---@class visitor.cfunctioninfo
 ---@field tostring string
 ---@field file_name string

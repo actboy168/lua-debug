@@ -7,7 +7,7 @@ local bindir = "publish/runtime/"..lm.runtime_platform
 local is_old_version_luajit = require "compile.luajit.defined".is_old_version_luajit
 
 lm:exe "minilua" {
-    rootdir= luajitDir,
+    rootdir = luajitDir,
     defines = "_CRT_SECURE_NO_WARNINGS",
     sources = {
         "src/host/minilua.c"
@@ -26,9 +26,9 @@ local dynasm_flags = {
     "-D", "FFI",
     "-D", "WIN",
 }
-if arch =="x64" then
-    table.insert(dynasm_flags,"-D")
-    table.insert(dynasm_flags,"P64")
+if arch == "x64" then
+    table.insert(dynasm_flags, "-D")
+    table.insert(dynasm_flags, "P64")
 end
 
 
@@ -46,14 +46,14 @@ lm:build "buildvm_arch" {
         "-o", "$out", "$in",
     },
     inputs = luajitDir.."/"..buildvm_arch_input,
-    outputs =  lm.bindir .."/buildvm_arch.h",
+    outputs = lm.bindir.."/buildvm_arch.h",
 }
 
 lm:exe "buildvm" {
-    rootdir= luajitDir,
+    rootdir = luajitDir,
     deps = "buildvm_arch",
-    objdeps={"buildvm_arch"},
-    defines = {"_CRT_SECURE_NO_WARNINGS"},
+    objdeps = { "buildvm_arch" },
+    defines = { "_CRT_SECURE_NO_WARNINGS" },
     includes = {
         "src",
         "../../../"..lm.bindir
@@ -90,7 +90,7 @@ lm:build "lj_peobj" {
 }
 
 lm:build "lj_bcdef" {
-    rootdir=luajitDir,
+    rootdir = luajitDir,
     deps = "buildvm",
     args = {
         "$bin/buildvm",
@@ -102,7 +102,7 @@ lm:build "lj_bcdef" {
 }
 
 lm:build "lj_ffdef" {
-    rootdir=luajitDir,
+    rootdir = luajitDir,
     deps = "buildvm",
     args = {
         "$bin/buildvm",
@@ -114,7 +114,7 @@ lm:build "lj_ffdef" {
 }
 
 lm:build "lj_libdef" {
-    rootdir=luajitDir,
+    rootdir = luajitDir,
     deps = "buildvm",
     args = {
         "$bin/buildvm",
@@ -126,7 +126,7 @@ lm:build "lj_libdef" {
 }
 
 lm:build "lj_recdef" {
-    rootdir=luajitDir,
+    rootdir = luajitDir,
     deps = "buildvm",
     args = {
         "$bin/buildvm",
@@ -148,8 +148,14 @@ lm:build "lj_folddef" {
     outputs = lm.bindir.."/lj_folddef.h",
 }
 
+lm:source_set "lj_vm.obj" {
+    sources = {
+        lm.bindir.."/lj_vm.obj",
+    },
+}
+
 lm:shared_library "luajit/luajit" {
-    rootdir= luajitDir,
+    rootdir = luajitDir,
     bindir = bindir,
     objdeps = {
         "lj_bcdef",
@@ -159,6 +165,7 @@ lm:shared_library "luajit/luajit" {
         --"lj_vmdef",
         "lj_folddef",
     },
+    deps = "lj_vm.obj",
     defines = {
         "_CRT_SECURE_NO_WARNINGS",
         "LUA_BUILD_AS_DLL"
@@ -168,18 +175,17 @@ lm:shared_library "luajit/luajit" {
         is_old_version_luajit and "!src/lj_init.c",
         "src/lj_*.c",
         "src/lib_*.c",
-        "../../../".. lm.bindir.."/lj_vm.obj",
     },
-    includes={
+    includes = {
         ".",
         "../../../"..lm.bindir
     }
 }
 
 lm:exe "luajit/lua" {
-    rootdir= luajitDir,
+    rootdir = luajitDir,
     bindir = bindir,
-   deps="luajit/luajit",
+    deps = "luajit/luajit",
     defines = {
         "_CRT_SECURE_NO_WARNINGS",
     },
@@ -187,7 +193,7 @@ lm:exe "luajit/lua" {
         "src/luajit.c",
         is_old_version_luajit and "src/lj_init.c",
     },
-    includes={
+    includes = {
         ".",
         "../../../"..lm.bindir
     }

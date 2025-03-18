@@ -124,16 +124,15 @@ for _, luaver in ipairs {
             }
 
             lm:executable(luaver..'/lua') {
-                rootdir = '3rd/lua/'..luaver,
                 bindir = bindir,
                 output = "lua",
-                deps = luaver..'/'..luaver,
+                deps = luaver.."/"..luaver,
                 includes = {
-                    '..',
+                    "3rd/lua/",
                 },
                 sources = {
-                    "lua.c",
-                    "../../../compile/windows/lua-debug.rc",
+                    "3rd/lua/"..luaver.."/lua.c",
+                    "compile/windows/lua-debug.rc",
                 },
                 defines = {
                     luaver == "lua51" and "_CRT_SECURE_NO_WARNINGS",

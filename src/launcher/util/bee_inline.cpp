@@ -3,12 +3,13 @@
 #endif
 
 #include <3rd/fmt/format.cc>
-#include <bee/error.cpp>
+#include <bee/lua/error.cpp>
 #include <bee/net/endpoint.cpp>
 #include <bee/net/socket.cpp>
 #include <bee/sys/file_handle.cpp>
 
 #if defined(_WIN32)
+#    include <bee/net/uds_win.cpp>
 #    include <bee/sys/file_handle_win.cpp>
 #    include <bee/sys/path_win.cpp>
 #    include <bee/win/wtf8.cpp>

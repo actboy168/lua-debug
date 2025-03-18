@@ -22,6 +22,7 @@ return {
     supportsClipboardContext = true,
     supportsExceptionFilterOptions = true,
     completionTriggerCharacters = { '.', ':' },
+    supportsANSIStyling = true,
     exceptionBreakpointFilters = {
         {
             default = false,

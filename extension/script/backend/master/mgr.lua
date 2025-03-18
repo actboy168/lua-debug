@@ -43,7 +43,7 @@ end
 
 function mgr.init(io)
     socket = io
-    masterThread = channel.query 'DbgMaster'
+    masterThread = assert(channel.query 'DbgMaster')
     socket.event_close(event_close)
     return true
 end

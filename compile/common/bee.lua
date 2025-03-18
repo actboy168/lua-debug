@@ -3,7 +3,7 @@ local lm = require "luamake"
 lm.rootdir = "../../3rd/bee.lua"
 
 lm:lua_src "source_bee" {
-    sources = "3rd/lua-seri/lua-seri.c",
+    sources = "3rd/lua-seri/lua-seri.cpp",
     msvc = {
         flags = "/wd4244"
     }
