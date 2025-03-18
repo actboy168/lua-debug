@@ -206,6 +206,7 @@ local function create_process_in_console(args, callback)
         console = 'new',
         cwd = args.cwd or fs.path(args.runtimeExecutable):parent_path(),
         suspended = true,
+        searchPath = true,
     }
     if not process then
         return nil, err
