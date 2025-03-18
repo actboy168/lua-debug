@@ -9,14 +9,6 @@ local EPOLLOUT <const> = epoll.EPOLLOUT
 local EPOLLERR <const> = epoll.EPOLLERR
 local EPOLLHUP <const> = epoll.EPOLLHUP
 
-local function fd_set_read(s)
-    if s._flags & EPOLLIN ~= 0 then
-        return
-    end
-    s._flags = s._flags | EPOLLIN
-    epfd:event_mod(s._fd, s._flags)
-end
-
 local function fd_clr_read(s)
     if s._flags & EPOLLIN == 0 then
         return

@@ -686,9 +686,9 @@ function event.print(...)
     for i = 1, args.n do
         res[#res + 1] = variables.tostring(args[i])
     end
-    res = table.concat(res, '\t')..'\n'
+    local str = table.concat(res, '\t')..'\n'
     rdebug.getinfo(1, "Sl", info)
-    stdout(res, info)
+    stdout(str, info)
     return true
 end
 
