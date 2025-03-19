@@ -4,8 +4,8 @@ local tag = require 'backend.tag'
 local m = {}
 
 local function hasMaster()
-    local ok = pcall(channel.query, tag.getChannelKeyMaster())
-    return ok
+    local ok, masterChannel = pcall(channel.query, tag.getChannelKeyMaster())
+    return ok and masterChannel
 end
 
 local function initMaster(rootpath, address)
