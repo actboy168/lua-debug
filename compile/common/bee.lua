@@ -175,7 +175,7 @@ lm:source_set "source_lua" {
 }
 
 lm:source_set "source_lua" {
-    includes = ".",
+    includes = "3rd/lua",
     sources = {
         "3rd/lua/onelua.c",
     },
