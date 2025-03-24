@@ -17,10 +17,10 @@ lm:source_set 'onelua' {
     },
     sources = {
         "src/luadebug/luadbg/onelua.c",
-        "3rd/bee.lua/3rd/lua/bee_utf8_crt.cpp",
+        "3rd/bee.lua/3rd/lua-patch/bee_utf8_crt.cpp",
     },
     msvc = {
-        sources = ("3rd/bee.lua/3rd/lua/fast_setjmp_%s.s"):format(lm.arch)
+        sources = ("3rd/bee.lua/3rd/lua-patch/fast_setjmp_%s.s"):format(lm.arch)
     },
     linux = {
         flags = "-fPIC"
