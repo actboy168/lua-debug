@@ -139,10 +139,7 @@ end
 
 function special_has.Return(frameId)
     rdebug.getinfo(frameId, "r", info)
-    return info.ftransfer ~= nil and
-      info.ntransfer ~= nil and
-      info.ftransfer > 0 and
-      info.ntransfer > 0
+    return info.ftransfer > 0 and info.ntransfer > 0
 end
 
 function special_has.Global(frameId)
