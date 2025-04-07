@@ -28,7 +28,10 @@ ev.on('initializing', function(config)
         end
     end
     if config.sourceMaps then
-        for _, pattern in ipairs(config.sourceMaps) do
+        for i, pattern in ipairs(config.sourceMaps) do
+            if pattern[1] == nil or pattern[2] == nil then
+                error(("Invalid source map entry. Check sourceMaps property in launch.json, entry #%d"):format(i - 1))
+            end
             local sm = {}
             sm[1] = ('^%s$'):format(fs.source_native(fs.source_normalize(pattern[1])):gsub('[%^%$%(%)%%%.%[%]%+%-%?]', '%%%0'))
             if sm[1]:find '%*' then
