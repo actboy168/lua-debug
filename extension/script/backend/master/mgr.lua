@@ -43,7 +43,7 @@ end
 
 function mgr.init(io)
     socket = io
-    masterThread = assert(channel.query 'DbgMaster')
+    masterThread = assert(channel.query(DbgMaster))
     socket.event_close(event_close)
     return true
 end
@@ -260,6 +260,7 @@ function mgr.update()
     local event = require 'backend.master.event'
     event.terminated()
     socket.closeall()
+    channel.destroy(DbgMaster)
 end
 
 function mgr.setClient(c)

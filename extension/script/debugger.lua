@@ -199,6 +199,10 @@ function dbg:attach(cfg)
     return self
 end
 
+function dbg:stop()
+    self.rdebug.clear()
+end
+
 function dbg:event(...)
     self.rdebug.event(...)
     return self
