@@ -24,13 +24,13 @@ jobs:
           - os: macos-latest
             platform: darwin-arm64
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         submodules : recursive
     - uses: actboy168/setup-luamake@master
     - run: luamake lua compile/download_deps.lua
     - run: luamake -mode release -platform ${{ matrix.platform }}
-    - run: npm install -g vsce ovsx
+    - run: npm install -g @vscode/vsce ovsx
     - run: npx vsce publish --target ${{ matrix.platform }} -p ${{ secrets.VSCE_KEY }}
       working-directory: publish
       continue-on-error: true
