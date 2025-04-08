@@ -36,7 +36,7 @@ local CMD = {}
 local WorkerIdent = tostring(thread.id)
 local WorkerChannel = ('DbgWorker(%s)'):format(WorkerIdent)
 
-local masterThread = assert(channel.query(DbgMaster))
+local masterThread = assert(channel.query 'DbgMaster')
 local workerThread = channel.create(WorkerChannel)
 
 local function workerThreadUpdate(timeout)

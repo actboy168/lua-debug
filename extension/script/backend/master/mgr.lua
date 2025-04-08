@@ -43,7 +43,7 @@ end
 
 function mgr.init(io)
     socket = io
-    masterThread = assert(channel.query(DbgMaster))
+    masterThread = assert(channel.query 'DbgMaster')
     socket.event_close(event_close)
     return true
 end
@@ -166,6 +166,8 @@ function mgr.exitWorker(w)
     for WorkerIdent, threadId in pairs(threadCatalog) do
         if threadId == w then
             threadCatalog[WorkerIdent] = nil
+            local workerChannel = ('DbgWorker(%s)'):format(WorkerIdent)
+            channel.destroy(workerChannel)
         end
     end
     threadStatus[w] = nil
@@ -260,7 +262,6 @@ function mgr.update()
     local event = require 'backend.master.event'
     event.terminated()
     socket.closeall()
-    channel.destroy(DbgMaster)
 end
 
 function mgr.setClient(c)
