@@ -119,12 +119,12 @@ return function (param)
             session:close()
             fds[1] = session
         elseif t.mode == "listen" then
-            server:close()
-            fds[1] = server
-            if session ~= nil then
-                session:close()
-                fds[2] = session
-            end
+			fds[1] = server
+			if session ~= nil then
+				session:close()
+				fds[2] = session
+			end
+			server:close()
         end
         local function is_finish()
             for _, fd in ipairs(fds) do

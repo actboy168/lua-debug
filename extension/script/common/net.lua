@@ -176,6 +176,15 @@ function m.listen(protocol, address, port)
             fs.remove(address)
         end
     end
+	do
+        -- set SO_REUSEADDR so we can bind again to the same address
+        -- after a quick restart:
+		local ok, err = fd:option("reuseaddr", 1)
+		if not ok then
+			fd:close()
+			return nil, err
+		end
+	end
     do
         local ok, err = fd:bind(address, port)
         if not ok then
