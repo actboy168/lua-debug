@@ -187,7 +187,7 @@ function dbg:start(cfg)
 end
 
 function dbg:attach(cfg)
-    initDebugger(self, cfg)
+    initDebugger(self, cfg or {})
 
     self.rdebug.start(([[
         local rootpath = %q
