@@ -166,8 +166,6 @@ function mgr.exitWorker(w)
     for WorkerIdent, threadId in pairs(threadCatalog) do
         if threadId == w then
             threadCatalog[WorkerIdent] = nil
-            local workerChannel = ('DbgWorker(%s)'):format(WorkerIdent)
-            channel.destroy(workerChannel)
         end
     end
     threadStatus[w] = nil
