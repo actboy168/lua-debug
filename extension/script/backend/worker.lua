@@ -829,6 +829,7 @@ end
 
 function event.exit()
     sendToMaster 'exitWorker' {}
+    channel.destroy(WorkerChannel)
 end
 
 hookmgr.init(function(name, ...)
