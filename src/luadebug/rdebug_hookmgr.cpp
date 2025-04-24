@@ -568,6 +568,10 @@ struct hookmgr {
         }
         luadebug::eventfree::destroy(hL, eventfree);
         lua_sethook(hL, 0, 0, 0);
+#if defined(LUADEBUG_DISABLE_THUNK)
+        // clear hook manager pointer stored in thunk:
+        thunk_set(hL, &THUNK_MGR, intptr_t(nullptr));
+#endif
 #if defined(LUA_HOOKEXCEPTION)
         exception_open(hL, 0);
 #endif
@@ -594,11 +598,13 @@ struct hookmgr {
 #else
     static int full_hook_callback(lua_State* hL, lua_Debug* ar) {
         hookmgr* mgr = (hookmgr*)thunk_get(hL, &THUNK_MGR);
+        if (!mgr) return 0;
         mgr->full_hook(hL, ar);
         return 0;
     }
     static int idle_hook_callback(lua_State* hL, lua_Debug* ar) {
         hookmgr* mgr = (hookmgr*)thunk_get(hL, &THUNK_MGR);
+        if (!mgr) return 0;
         mgr->idle_hook(hL, ar);
         return 0;
     }
