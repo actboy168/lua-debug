@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <bitset>
+#include <cassert>
 #include <limits>
 
 #include "compat/internal.h"
