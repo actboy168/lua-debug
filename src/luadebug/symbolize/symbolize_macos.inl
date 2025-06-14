@@ -40,7 +40,7 @@ namespace luadebug {
             args.push(*p);
         }
         spawn.redirect(bee::subprocess::stdio::eOutput, pipe.wr);
-        if (!spawn.exec(args, nullptr)) {
+        if (!spawn.exec(args, {})) {
             return std::nullopt;
         }
         std::string res;
