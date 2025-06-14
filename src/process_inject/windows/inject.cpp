@@ -2,15 +2,15 @@
 #include <bee/lua/module.h>
 #include <bee/lua/udata.h>
 #include <bee/subprocess.h>
-#include <bee/utility/zstring_view.h>
 #include <bee/win/wtf8.h>
 
 #include <algorithm>
 #include <lua.hpp>
+#include <string_view>
 
 #include "injectdll.h"
 
-static bee::zstring_view checkstrview(lua_State* L, int idx) {
+static std::string_view checkstrview(lua_State* L, int idx) {
     size_t len      = 0;
     const char* buf = luaL_checklstring(L, idx, &len);
     return { buf, len };

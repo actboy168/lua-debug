@@ -4,8 +4,7 @@ local channel = require "bee.channel"
 local m = {}
 
 local function hasMaster()
-    local ok = pcall(channel.query, "DbgMaster")
-    return ok
+    return channel.query "DbgMaster" ~= nil
 end
 
 local function initMaster(rootpath, address)
@@ -34,6 +33,7 @@ local function initMaster(rootpath, address)
     ExitGuard = setmetatable({}, {__gc=function()
         chan:push(nil, "EXIT")
         thread.wait(mt)
+        channel.destroy("DbgMaster")
     end})
 end
 

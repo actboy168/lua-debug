@@ -9,14 +9,6 @@ local EPOLLOUT <const> = epoll.EPOLLOUT
 local EPOLLERR <const> = epoll.EPOLLERR
 local EPOLLHUP <const> = epoll.EPOLLHUP
 
-local function fd_set_read(s)
-    if s._flags & EPOLLIN ~= 0 then
-        return
-    end
-    s._flags = s._flags | EPOLLIN
-    epfd:event_mod(s._fd, s._flags)
-end
-
 local function fd_clr_read(s)
     if s._flags & EPOLLIN == 0 then
         return
@@ -184,6 +176,15 @@ function m.listen(protocol, address, port)
             fs.remove(address)
         end
     end
+	do
+        -- set SO_REUSEADDR so we can bind again to the same address
+        -- after a quick restart:
+		local ok, err = fd:option("reuseaddr", 1)
+		if not ok then
+			fd:close()
+			return nil, err
+		end
+	end
     do
         local ok, err = fd:bind(address, port)
         if not ok then

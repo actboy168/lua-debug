@@ -32,8 +32,7 @@
                 "lua",
                 "compile/copy.lua",
                 "extension",
-                "extension",
-                "${command:extensionPath}"
+                "${extensionInstallFolder:actboy168.lua-debug}"
             ]
         },
         {
@@ -43,8 +42,7 @@
                 "lua",
                 "compile/copy.lua",
                 "publish",
-                "publish",
-                "${command:extensionPath}"
+                "${extensionInstallFolder:actboy168.lua-debug}"
             ]
         }
     ]

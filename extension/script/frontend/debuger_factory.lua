@@ -101,7 +101,7 @@ local function bootstrapMakeExe(c, luaexe, args, address, dbg)
     if args.luaVersion:match "^lua%-" then
         params[#params+1] = args.luaVersion
     end
-    local script = ("dofile[[%s]];DBG[[%s]]"):format(
+    local script = ("dofile[[%s]] DBG[[%s]]"):format(
         (dbg / "script" / "launch.lua"):string(),
         table.concat(params, "/")
     )
@@ -206,6 +206,7 @@ local function create_process_in_console(args, callback)
         console = 'new',
         cwd = args.cwd or fs.path(args.runtimeExecutable):parent_path(),
         suspended = true,
+        searchPath = true,
     }
     if not process then
         return nil, err

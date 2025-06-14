@@ -17,10 +17,10 @@ lm:source_set 'onelua' {
     },
     sources = {
         "src/luadebug/luadbg/onelua.c",
-        "3rd/bee.lua/3rd/lua/bee_utf8_crt.cpp",
+        "3rd/bee.lua/3rd/lua-patch/bee_utf8_crt.cpp",
     },
     msvc = {
-        sources = ("3rd/bee.lua/3rd/lua/fast_setjmp_%s.s"):format(lm.arch)
+        sources = ("3rd/bee.lua/3rd/lua-patch/fast_setjmp_%s.s"):format(lm.arch)
     },
     linux = {
         flags = "-fPIC"
@@ -124,16 +124,15 @@ for _, luaver in ipairs {
             }
 
             lm:executable(luaver..'/lua') {
-                rootdir = '3rd/lua/'..luaver,
                 bindir = bindir,
                 output = "lua",
-                deps = luaver..'/'..luaver,
+                deps = luaver.."/"..luaver,
                 includes = {
-                    '..',
+                    "3rd/lua/",
                 },
                 sources = {
-                    "lua.c",
-                    "../../../compile/windows/lua-debug.rc",
+                    "3rd/lua/"..luaver.."/lua.c",
+                    "compile/windows/lua-debug.rc",
                 },
                 defines = {
                     luaver == "lua51" and "_CRT_SECURE_NO_WARNINGS",

@@ -20,6 +20,11 @@
 
 #include <bee/lua/module.h>
 
+extern "C" {
+#include <3rd/lua-patch/bee_newstate.c>
+}
+#include <3rd/lua-seri/lua-seri.cpp>
+#include <bee/lua/error.cpp>
 #include <bee/lua/file.cpp>
 #include <bee/lua/luaref.cpp>
 #include <binding/lua_channel.cpp>

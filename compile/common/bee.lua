@@ -3,7 +3,7 @@ local lm = require "luamake"
 lm.rootdir = "../../3rd/bee.lua"
 
 lm:lua_src "source_bee" {
-    sources = "3rd/lua-seri/lua-seri.c",
+    sources = "3rd/lua-seri/lua-seri.cpp",
     msvc = {
         flags = "/wd4244"
     }
@@ -106,7 +106,10 @@ lm:lua_src "source_bee" {
     defines = {
         lm.EXE ~= "lua" and "BEE_STATIC",
     },
-    sources = "binding/*.cpp",
+    sources = {
+        "binding/*.cpp",
+        "3rd/lua-patch/bee_newstate.c",
+    },
     windows = {
         defines = "_CRT_SECURE_NO_WARNINGS",
         sources = {
@@ -168,11 +171,11 @@ lm:lua_src "source_bee" {
 
 lm:source_set "source_lua" {
     includes = ".",
-    sources = "3rd/lua/bee_utf8_crt.cpp",
+    sources = "3rd/lua-patch/bee_utf8_crt.cpp",
 }
 
 lm:source_set "source_lua" {
-    includes = ".",
+    includes = "3rd/lua",
     sources = {
         "3rd/lua/onelua.c",
     },
@@ -209,7 +212,7 @@ lm:source_set "source_lua" {
             "/wd4267",
             "/wd4334",
         },
-        sources = ("3rd/lua/fast_setjmp_%s.s"):format(lm.arch)
+        sources = ("3rd/lua-patch/fast_setjmp_%s.s"):format(lm.arch)
     },
     gcc = {
         flags = "-Wno-maybe-uninitialized",

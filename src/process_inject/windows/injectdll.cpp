@@ -49,7 +49,7 @@ static bool wow64_write_memory(uint64_t nwvm, HANDLE hProcess, uint64_t lpBaseAd
     return true;
 }
 
-static bool injectdll_x64(HANDLE process_handle, HANDLE thread_handle, const std::wstring& dll, const bee::zstring_view& entry) {
+static bool injectdll_x64(HANDLE process_handle, HANDLE thread_handle, const std::wstring& dll, const std::string_view& entry) {
     static unsigned char sc[] = {
         0x9C,                                                        // pushfq
         0x0F, 0xA8,                                                  // push gs
@@ -195,7 +195,7 @@ static bool injectdll_x64(HANDLE process_handle, HANDLE thread_handle, const std
     return true;
 }
 
-static bool injectdll_x86(HANDLE process_handle, HANDLE thread_handle, const std::wstring& dll, const bee::zstring_view& entry) {
+static bool injectdll_x86(HANDLE process_handle, HANDLE thread_handle, const std::wstring& dll, const std::string_view& entry) {
     static unsigned char sc[] = {
         0x68, 0x00, 0x00, 0x00, 0x00,  // push eip
         0x9C,                          // pushfd
@@ -266,7 +266,7 @@ static bool injectdll_x86(HANDLE process_handle, HANDLE thread_handle, const std
     return true;
 }
 
-bool injectdll(HANDLE process_handle, HANDLE thread_handle, const std::wstring& x86dll, const std::wstring& x64dll, const bee::zstring_view& entry) {
+bool injectdll(HANDLE process_handle, HANDLE thread_handle, const std::wstring& x86dll, const std::wstring& x64dll, const std::string_view& entry) {
     if (is_process64(process_handle)) {
         return !x64dll.empty() && injectdll_x64(process_handle, thread_handle, x64dll, entry);
     } else {
@@ -341,7 +341,7 @@ static bool openprocess(DWORD pid, DWORD process_access, DWORD thread_access, PR
     return true;
 }
 
-bool injectdll(DWORD pid, const std::wstring& x86dll, const std::wstring& x64dll, const bee::zstring_view& entry) {
+bool injectdll(DWORD pid, const std::wstring& x86dll, const std::wstring& x64dll, const std::string_view& entry) {
     PROCESS_INFORMATION pi = { 0 };
     if (!openprocess(pid, PROCESS_ALL_ACCESS, THREAD_GET_CONTEXT | THREAD_SET_CONTEXT | THREAD_SUSPEND_RESUME, pi)) {
         return false;
