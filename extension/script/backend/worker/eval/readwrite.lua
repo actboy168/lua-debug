@@ -1,14 +1,21 @@
 local source, level = ...
 level = (level or 0) + 2
 
+local _load
+local _pack
+local _unpack
 if _VERSION == "Lua 5.1" then
-	load = loadstring
-	function table.pack(...)
+	_load = loadstring
+	_pack = function (...)
 		local t = {...}
 		t.n = select("#", ...)
 		return t
 	end
-	table.unpack = unpack
+	_unpack = unpack
+else
+	_load = load
+	_pack = table.pack
+	_unpack = table.unpack
 end
 
 local f = assert(debug.getinfo(level,"f").func, "can't find function")
@@ -81,8 +88,8 @@ end
 end
 
 local compiled = env
-	and assert(load(full_source, '=(EVAL)', "t", env))
-	or  assert(load(full_source, '=(EVAL)'))
+	and assert(_load(full_source, '=(EVAL)', "t", env))
+	or  assert(_load(full_source, '=(EVAL)'))
 local func, update = compiled()
 local found = {}
 do
@@ -114,9 +121,9 @@ do
 			end
 			i = i + 1
 		end
-		rets = table.pack(func(table.unpack(vargs)))
+		rets = _pack(func(_unpack(vargs)))
 	else
-		rets = table.pack(func())
+		rets = _pack(func())
 	end
 end
 for _, info in ipairs(update()) do
@@ -128,4 +135,4 @@ for _, info in ipairs(update()) do
 		end
 	end
 end
-return table.unpack(rets)
+return _unpack(rets)

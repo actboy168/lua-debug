@@ -1,5 +1,10 @@
 local source = ...
+
+local _load
 if _VERSION == "Lua 5.1" then
-	load = loadstring
+	_load = loadstring
+else
+	_load = load
 end
-assert(load("return " .. source, '=(EVAL)'))
+
+assert(_load("return " .. source, '=(EVAL)'))
