@@ -41,6 +41,7 @@ extern "C" {
 
 #if defined(_WIN32)
 #    include <binding/port/lua_windows.cpp>
+#    include <bee/win/module_version.cpp>
 #endif
 
 extern "C" int luaopen_luadebug_hookmgr(luadbg_State* L);
