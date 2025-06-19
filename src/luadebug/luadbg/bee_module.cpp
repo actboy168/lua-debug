@@ -27,9 +27,11 @@ extern "C" {
 #include <bee/lua/error.cpp>
 #include <bee/lua/file.cpp>
 #include <bee/lua/luaref.cpp>
+#include <bee/version.cpp>
 #include <binding/lua_channel.cpp>
 #include <binding/lua_epoll.cpp>
 #include <binding/lua_filesystem.cpp>
+#include <binding/lua_platform.cpp>
 #include <binding/lua_select.cpp>
 #include <binding/lua_socket.cpp>
 #include <binding/lua_sys.cpp>
@@ -49,6 +51,7 @@ extern "C" int luaopen_bee_channel(luadbg_State* L);
 extern "C" int luaopen_bee_epoll(luadbg_State* L);
 extern "C" int luaopen_bee_filesystem(luadbg_State* L);
 extern "C" int luaopen_bee_socket(luadbg_State* L);
+extern "C" int luaopen_bee_platform(luadbg_State* L);
 extern "C" int luaopen_bee_sys(luadbg_State* L);
 extern "C" int luaopen_bee_thread(luadbg_State* L);
 #if defined(_WIN32)
@@ -64,6 +67,7 @@ static luadbgL_Reg cmodule[] = {
     { "bee.epoll", luaopen_bee_epoll },
     { "bee.filesystem", luaopen_bee_filesystem },
     { "bee.socket", luaopen_bee_socket },
+    { "bee.platform", luaopen_bee_platform },
     { "bee.sys", luaopen_bee_sys },
     { "bee.thread", luaopen_bee_thread },
 #if defined(_WIN32)
