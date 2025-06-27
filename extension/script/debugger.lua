@@ -47,8 +47,8 @@ if debug.getregistry()["lua-debug"] then
 end
 
 local function detectLuaDebugPath(cfg)
-    local PLATFORM
-    do
+    local PLATFORM = cfg.platform or os.getenv "LUA_DEBUG_PLATFORM"
+    if not PLATFORM then
         local function shell(command)
             --NOTICE: io.popen可能会多线程不安全
             local f = assert(io.popen(command, 'r'))
