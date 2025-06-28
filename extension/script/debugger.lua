@@ -135,28 +135,35 @@ local function detectLuaDebugPath(cfg)
     return root..rt..'/luadebug.'..ext
 end
 
+---@param cfg luadebugger.config
 local function initDebugger(dbg, cfg)
     if type(cfg) == "string" then
         cfg = { address = cfg }
     end
 
-    local luadebug = os.getenv "LUA_DEBUG_CORE"
+    local key_core = cfg.debug_debugger and "LUA_DEBUG_CORE_DEBUGGER" or "LUA_DEBUG_CORE"..(cfg.tag or '')
+    local key_path = cfg.debug_debugger and "LUA_DEBUG_PATH_DEBUGGER" or "LUA_DEBUG_PATH"..(cfg.tag or '')
+
+    local luadebug = os.getenv (key_core)
     local updateenv = false
     if not luadebug then
         luadebug = detectLuaDebugPath(cfg)
         updateenv = true
     end
     if IsWindows then
+        if cfg.debug_debugger then
+            package.loadlib(luadebug, 'setflag_debugself')()
+        end
         assert(package.loadlib(luadebug, 'init'))(cfg.luaapi)
     end
 
     ---@type LuaDebug
     dbg.rdebug = assert(package.loadlib(luadebug, 'luaopen_luadebug'))()
-    if not os.getenv "LUA_DEBUG_PATH" then
-        dbg.rdebug.setenv("LUA_DEBUG_PATH", selfsource)
+    if not os.getenv(key_path) then
+        dbg.rdebug.setenv(key_path, selfsource)
     end
     if updateenv then
-        dbg.rdebug.setenv("LUA_DEBUG_CORE", luadebug)
+        dbg.rdebug.setenv(key_core, luadebug)
     end
 
     local function utf8(s)
@@ -169,32 +176,48 @@ local function initDebugger(dbg, cfg)
     dbg.address = cfg.address and utf8(cfg.address) or nil
 end
 
+---@class luadebugger.config
+---@field address string
+---@field client? boolean
+---@field luaapi? string notice: buffer of FindLuaApi*
+---@field luaVersion? 'lua51' | 'lua52' | 'lua53' | 'lua54' | 'luajit' | 'lua-latest'
+---@field ansi? boolean
+---@field tag? string channel name tag for multi lua vm
+---@field debug_debugger? true for debug debugger
+---@field debug_debugger_master? true
+---@field debug_debugger_worker? true
+
 local dbg = {}
 
+---@param cfg luadebugger.config
 function dbg:start(cfg)
     initDebugger(self, cfg)
 
     self.rdebug.start(([[
         local rootpath = %q
         package.path = rootpath.."/script/?.lua"
-        require "backend.bootstrap". start(rootpath, %q..%q)
+        require "backend.bootstrap". start(rootpath, %q..%q, %q, %s)
     ]]):format(
         self.root,
         cfg.client == true and "connect:" or "listen:",
-        dbg.address
+        dbg.address,
+        cfg.tag or '',
+        cfg.debug_debugger_master and 'true' or 'false'
     ))
     return self
 end
 
+---@param cfg luadebugger.config
 function dbg:attach(cfg)
     initDebugger(self, cfg or {})
 
     self.rdebug.start(([[
         local rootpath = %q
         package.path = rootpath..'/script/?.lua'
-        require 'backend.bootstrap'. attach(rootpath)
+        require 'backend.bootstrap'. attach(rootpath, %q)
     ]]):format(
-        self.root
+        self.root,
+        cfg.tag or ''
     ))
     return self
 end

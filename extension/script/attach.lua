@@ -36,6 +36,8 @@ local function getLuaVersion()
     fd:close()
     return result
 end
+
+---@module "script.debugger"
 local dbg = dofile(path.."/script/debugger.lua")
 dbg:start {
     address = ("@%s/tmp/pid_%s"):format(path, pid),

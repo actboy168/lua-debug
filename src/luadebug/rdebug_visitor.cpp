@@ -797,13 +797,15 @@ namespace luadebug::visitor {
 #if LUA_VERSION_NUM == 501
         uint8_t nparams = 0;
 #endif
-
         switch (luadbg_type(L, 1)) {
-        case LUADBG_TNUMBER:
+        case LUADBG_TNUMBER: {
             frame = area.checkinteger<int>(L, 1);
             if (lua_getstack(hL, frame, &ar) == 0)
                 return 0;
-            if (lua_getinfo(hL, options.data(), &ar) == 0)
+            std::array<char, 8> what {};
+            auto sz = std::min(what.size() - 1, options.size());
+            std::copy_if(options.cbegin(), options.cbegin() + sz, what.begin(), [](auto c) { return c != 'p' && c != 'P'; });
+            if (lua_getinfo(hL, what.data(), &ar) == 0)
                 return 0;
 #if LUA_VERSION_NUM == 501
             if (flags.test('u')) {
@@ -815,16 +817,18 @@ namespace luadebug::visitor {
 #endif
             if (flags.test('f')) lua_pop(hL, 1);
             break;
+        }
         case LUADBG_TUSERDATA: {
             if (!copy_from_dbg(L, hL, area, 1, LUADBG_TFUNCTION)) {
                 return area.raise_error("Need a function ref");
             }
-            if (flags.test('f')) {
+            if (flags.test('f') || flags.test('p') || flags.test('P')) {
                 return area.raise_error("invalid option");
             }
-            char what[8];
+            std::array<char, 8> what {};
             what[0] = '>';
-            strcpy(what + 1, options.data());
+            auto sz = std::min(what.size() - 2, options.size());
+            std::copy_if(options.cbegin(), options.cbegin() + sz, what.begin() + 1, [](auto c) { return c != 'p' && c != 'P'; });
 #if LUA_VERSION_NUM == 501
             if (flags.test('u')) {
                 Proto* proto = lua_getproto(hL, -1);
@@ -833,7 +837,7 @@ namespace luadebug::visitor {
                 }
             }
 #endif
-            if (lua_getinfo(hL, what, &ar) == 0) {
+            if (lua_getinfo(hL, what.data(), &ar) == 0) {
                 return 0;
             }
             break;
@@ -905,6 +909,20 @@ namespace luadebug::visitor {
                 luadbg_setfield(L, 3, "ntransfer");
                 break;
 #endif
+            case 'p':
+                if (ar.i_ci != 0) {
+                    auto ins = lua_getsavedpc(hL, lua_debug2ci(hL, &ar));
+                    luadbg_pushfstring(L, "%p", ins);
+                    luadbg_setfield(L, 3, "savepc");
+                }
+                break;
+            case 'P':
+                if (ar.i_ci != 0) {
+                    auto pc = lua_getcurrentpc(hL, lua_debug2ci(hL, &ar));
+                    luadbg_pushinteger(L, pc);
+                    luadbg_setfield(L, 3, "cuurentpc");
+                }
+                break;
             }
         }
 
@@ -1047,6 +1065,67 @@ namespace luadebug::visitor {
         return 1;
     }
 
+    static int visitor_funcbc(luadbg_State* L, lua_State* hL, protected_area& area) {
+#ifndef LUAJIT_VERSION
+        lua_Debug ar;
+        int frame    = 0;
+        int pc       = 0;
+        Proto* proto = nullptr;
+        switch (luadbg_type(L, 1)) {
+        case LUADBG_TNUMBER:
+            frame = area.checkinteger<int>(L, 1);
+            if (lua_getstack(hL, frame, &ar) == 0)
+                return 0;
+            {
+                CallInfo* ci = lua_debug2ci(hL, &ar);
+                proto        = lua_ci2proto(ci);
+                pc           = lua_getcurrentpc(hL, ci);
+            }
+            break;
+
+        case LUADBG_TUSERDATA:
+            if (!copy_from_dbg(L, hL, area, 1, LUADBG_TFUNCTION)) {
+                return area.raise_error("Need a function ref");
+            }
+            proto = lua_getproto(hL, -1);
+            break;
+        default:
+            return area.raise_error("Need stack level (integer) or function ref");
+        }
+        if (!proto) {
+            return area.raise_error("Can't get proto");
+        }
+
+        auto pushBc = [&L, &proto](const LuaOpCode& op) {
+            luadbg_createtable(L, 0, 2);
+            luadbg_pushfstring(L, "0x%p", (void*)op.ins);
+            luadbg_setfield(L, -2, "address");
+            luadbg_pushstring(L, op.tostring().c_str());
+            luadbg_setfield(L, -2, "instruction");
+            luadbg_pushnumber(L, op.line(proto));
+            luadbg_setfield(L, -2, "line");
+        };
+        int offset           = area.optinteger(L, 2, 0);
+        luadbg_Integer count = area.optinteger<luadbg_Integer>(L, 3, (luadbg_Integer)(((uint32_t)-1) / 2));
+        int index            = 1;
+        pc += offset;
+        if (pc < 0) pc = 0;
+        luadbg_createtable(L, 1, 0);
+        while (count > 0) {
+            LuaOpCode op = {};
+            if (!lua_getopcode(proto, (lua_Integer)pc, op))
+                break;
+            pushBc(op);
+            luadbg_seti(L, -2, index);
+            index++;
+            pc++;
+            count--;
+        }
+        return 1;
+#endif
+        return 0;
+    }
+
     static int luaopen(luadbg_State* L) {
         luadbgL_Reg l[] = {
             { "getlocal", protected_call<visitor_getlocal> },
@@ -1080,6 +1159,7 @@ namespace luadebug::visitor {
             { "costatus", protected_call<visitor_costatus> },
             { "gccount", protected_call<visitor_gccount> },
             { "cfunctioninfo", protected_call<visitor_cfunctioninfo> },
+            { "funcbc", protected_call<visitor_funcbc> },
             { NULL, NULL },
         };
         debughost::get(L);

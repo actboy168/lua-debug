@@ -9,6 +9,7 @@ local function dofile(filename)
     f:close()
     return assert(load(str, "=(debugger.lua)"))(filename)
 end
+---@module "script.debugger"
 local dbg = dofile(path.."/script/debugger.lua")
 dbg:set_wait("DBG", function(str)
     local params = {}

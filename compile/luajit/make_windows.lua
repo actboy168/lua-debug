@@ -1,8 +1,10 @@
 local lm = require "luamake"
 
 local luaver = "luajit"
-local luajitDir = '3rd/lua/'..luaver
+local luajitDir = '3rd/lua/' .. luaver
+local luajitSrcDir = luajitDir .. '/src'
 local bindir = "publish/runtime/"..lm.runtime_platform
+local is_old_version_luajit = require "compile.luajit.defined".is_old_version_luajit
 
 lm:exe "minilua" {
     rootdir = luajitDir,
@@ -170,7 +172,7 @@ lm:shared_library "luajit/luajit" {
     },
     sources = {
         "!src/luajit.c",
-        "!src/lj_init.c",
+        is_old_version_luajit and "!src/lj_init.c",
         "src/lj_*.c",
         "src/lib_*.c",
     },
@@ -189,7 +191,7 @@ lm:exe "luajit/lua" {
     },
     sources = {
         "src/luajit.c",
-        "src/lj_init.c",
+        is_old_version_luajit and "src/lj_init.c",
     },
     includes = {
         ".",

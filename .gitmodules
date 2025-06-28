@@ -3,7 +3,7 @@
 	url = https://github.com/actboy168/bee.lua.git
 [submodule "3rd/lua/luajit"]
 	path = 3rd/lua/luajit
-	url = https://github.com/fesily/luajit2
+	url = https://github.com/fesily/luajit
 [submodule "3rd/json.lua"]
 	path = 3rd/json.lua
 	url = https://github.com/actboy168/json.lua

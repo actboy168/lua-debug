@@ -5,10 +5,13 @@
 #    include <Windows.h>
 #    include <stdint.h>
 
+#    include <string>
+
 namespace luadebug::win32 {
     typedef FARPROC (*FindLuaApi)(const char* name);
     static HMODULE luadll    = 0;
     static FindLuaApi luaapi = 0;
+    static bool debugSelf    = false;
 
     HMODULE get_luadll() {
         return luadll;
@@ -24,11 +27,27 @@ namespace luadebug::win32 {
         luaapi = (FindLuaApi)fn;
     }
 
+    void setflag_debugself(bool flag) {
+        if (debugSelf == flag) return;
+        debugSelf = flag;
+        // set lua dll self
+        caller_is_luadll(&set_luaapi);
+        // set lua api finder
+        luaapi = +[](const char* name) {
+            auto n = "luadbg" + std::string { name }.substr(3);
+            return ::GetProcAddress(luadll, n.c_str());
+        };
+    }
+
+    const char* get_lua_module_key() {
+        return debugSelf ? "luadbg_newstate" : "lua_newstate";
+    }
+
     bool caller_is_luadll(void* callerAddress) {
         if (luadll) return true;
         HMODULE caller = NULL;
         if (GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS, (LPCWSTR)callerAddress, &caller) && caller) {
-            if (GetProcAddress(caller, "lua_newstate")) {
+            if (GetProcAddress(caller, get_lua_module_key())) {
                 set_luadll(caller);
                 return true;
             }
@@ -81,7 +100,7 @@ namespace luadebug::win32 {
             if ((hModule = enumerate_modules(hProcess, hModule, &inh)) == NULL) {
                 break;
             }
-            if (GetProcAddress(hModule, "lua_newstate")) {
+            if (GetProcAddress(hModule, get_lua_module_key())) {
                 set_luadll(hModule);
                 return true;
             }

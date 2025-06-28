@@ -1,17 +1,18 @@
 local thread = require "bee.thread"
 local channel = require "bee.channel"
-
+local tag = require 'backend.tag'
 local m = {}
 
 local function hasMaster()
-    return channel.query "DbgMaster" ~= nil
+    local ok, masterChannel = pcall(channel.query, tag.getChannelKeyMaster())
+    return ok and masterChannel
 end
 
 local function initMaster(rootpath, address)
     if hasMaster() then
         return
     end
-    local chan = channel.create "DbgMaster"
+    local chan = channel.create (tag.getChannelKeyMaster())
     local mt = thread.create(([[
         local rootpath = %q
         package.path = rootpath.."/script/?.lua"
@@ -43,12 +44,32 @@ local function startWorker(rootpath)
     require 'backend.worker'
 end
 
-function m.start(rootpath, address)
-    initMaster(rootpath, address)
-    startWorker(rootpath)
+local function startDebugger(rootpath)
+    local function mydofile(filename)
+        local load = _VERSION == "Lua 5.1" and loadstring or load
+        local f = assert(io.open(filename))
+        local str = f:read "*a"
+        f:close()
+        return assert(load(str, "=(debugger.lua)"))(filename)
+    end
+    ---@module 'script.debugger'
+    local debugger = mydofile(rootpath.."/script/debugger.lua")
+
+    debugger:start({ address = ('127.0.0.1:44711'):format(rootpath), debug_debugger = true })
+
 end
 
-function m.attach(rootpath)
+function m.start(rootpath, address, worker_tag, debug_debugger)
+    require 'backend.tag'.setTag(worker_tag)
+    initMaster(rootpath, address)
+    startWorker(rootpath)
+    if debug_debugger == 'worker' then
+        startDebugger(rootpath)
+    end
+end
+
+function m.attach(rootpath, worker_tag)
+    require 'backend.tag'.setTag(worker_tag)
     if hasMaster() then
         startWorker(rootpath)
     end

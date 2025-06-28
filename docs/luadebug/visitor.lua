@@ -247,11 +247,28 @@ end
 function visitor.assign(v, new)
 end
 
+---@class visitor.funcinfo
+---@field source string?
+---@field short_src string?
+---@field what string?
+---@field name string?
+---@field namewhat string?
+---@field linedefined integer?
+---@field lastlinedefined integer?
+---@field currentline integer?
+---@field func refvalue?
+---@field nparams integer?
+---@field istailcall boolean?
+---@field ftransfer integer?
+---@field ntransfer integer?    
+---@field savepc string?        'p'
+---@field cuurentpc integer?    'P'
+
 ---
 ---@param frame integer | refvalue
 ---@param what string
----@param result table | nil
----@return table
+---@param result visitor.funcinfo | nil
+---@return visitor.funcinfo
 ---返回关于一个函数信息的表，如果有result则会将信息填在result中并返回。等同于debug.getinfo(frame, what)。
 ---
 function visitor.getinfo(frame, what, result)
@@ -319,6 +336,20 @@ end
 ---@return visitor.cfunctioninfo?
 ---
 function visitor.cfunctioninfo(fun)
+end
+
+---@class visitor.funcbc
+---@field address string
+---@field instruction string
+---@field line? integer
+
+---
+---解析proto的内容
+---@param fun integer | refvalue
+---@param start? integer
+---@param count? integer
+---@return visitor.funcbc[]?, string?
+function visitor.funcbc(fun, start, count)
 end
 
 return visitor

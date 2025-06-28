@@ -1,4 +1,5 @@
 local lm = require "luamake"
+local fs = require 'bee.filesystem'
 
 local bindir = "publish/runtime/" .. lm.runtime_platform
 
@@ -9,6 +10,7 @@ local arch = defined.arch
 local LUAJIT_ENABLE_LUA52COMPAT = defined.LUAJIT_ENABLE_LUA52COMPAT
 local LUAJIT_NUMMODE = defined.LUAJIT_NUMMODE
 local luajitDir = defined.luajitDir
+local is_old_version_luajit = defined.is_old_version_luajit
 
 local LJLIB_C = {
     luajitDir .. "/lib_base.c ",
@@ -98,35 +100,39 @@ lm:build "lj_vm.obj" {
     outputs = lm.bindir .. "/lj_vm.obj",
 }
 
-local lj_str_hash_flags = {
-    "-fno-stack-protector",
-    U_FORTIFY_SOURCE,
-    "-fPIC",
-}
+local has_str_hash = fs.exists(luajitDir.. '/lj_str_hash.c')
+if has_str_hash then
+    local lj_str_hash_flags = {
+        "-fno-stack-protector",
+        U_FORTIFY_SOURCE,
+        "-fPIC",
+    }
 
-if arch == "x64" then
-    table.insert(lj_str_hash_flags, "-msse4.2")
+    if arch == "x64" then
+        table.insert(lj_str_hash_flags, "-msse4.2")
+    end
+
+    lm:source_set("lj_str_hash.c") {
+        rootdir = luajitDir,
+        sources = { "lj_str_hash.c" },
+        includes = { '.' },
+        defines = {
+            LUAJIT_UNWIND_EXTERNAL,
+            _FILE_OFFSET_BITS,
+            _LARGEFILE_SOURCE,
+            LUA_MULTILIB,
+            LUAJIT_ENABLE_LUA52COMPAT,
+            LUAJIT_NUMMODE,
+        },
+        linux = {
+            defines = {
+                "_GNU_SOURCE",
+            }
+        },
+        flags = lj_str_hash_flags
+    }
 end
 
-lm:source_set("lj_str_hash.c") {
-    rootdir = luajitDir,
-    sources = { "lj_str_hash.c" },
-    includes = { '.' },
-    defines = {
-        LUAJIT_UNWIND_EXTERNAL,
-        _FILE_OFFSET_BITS,
-        _LARGEFILE_SOURCE,
-        LUA_MULTILIB,
-        LUAJIT_ENABLE_LUA52COMPAT,
-        LUAJIT_NUMMODE,
-    },
-    linux = {
-        defines = {
-            "_GNU_SOURCE",
-        }
-    },
-    flags = lj_str_hash_flags
-}
 
 lm:executable("luajit/lua") {
     rootdir = luajitDir,
@@ -139,12 +145,14 @@ lm:executable("luajit/lua") {
         "lj_libdef.h",
         "lj_recdef.h",
     },
-    deps = "lj_str_hash.c",
+    deps = {
+        has_str_hash and "lj_str_hash.c",
+    },
     sources = {
         "luajit.c",
         "lj_*.c",
         "lib_*.c",
-        "!lj_str_hash.c",
+        has_str_hash and "!lj_str_hash.c",
         lm.bindir .. "/lj_vm.obj",
     },
     includes = {

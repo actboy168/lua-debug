@@ -1,3 +1,12 @@
 {
     "C_Cpp.autoAddFileAssociations": false,
+    "terminal.integrated.env.linux": {
+        "PATH": "${workspaceFolder}/luamake:${env:PATH}"
+    },
+    "terminal.integrated.env.windows": {
+        "PATH": "${workspaceFolder}/luamake:${env:PATH}"
+    },
+    "terminal.integrated.env.osx": {
+        "PATH": "${workspaceFolder}/luamake:${env:PATH}"
+    }
 }

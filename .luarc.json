@@ -37,5 +37,9 @@
             "trailing-space": "Warning"
         }
     },
-    "workspace.checkThirdParty": false
+    "workspace.checkThirdParty": false,
+    "type.inferParamType": true,
+    "workspace.library": [
+        "${addons}/bee/module/library"
+    ]
 }

@@ -12,6 +12,7 @@ return {
     supportSuspendDebuggee = true,
     supportsDelayedStackTraceLoading = true,
     supportsLoadedSourcesRequest = true,
+    supportsDisassembleRequest  = true,
     supportsLogPoints = true,
     supportsTerminateThreadsRequest = true,
     supportsSetExpression = true,
@@ -20,6 +21,7 @@ return {
     supportsWriteMemoryRequest = true,
     supportsClipboardContext = true,
     supportsExceptionFilterOptions = true,
+    completionTriggerCharacters = { '.', ':' },
     supportsANSIStyling = true,
     exceptionBreakpointFilters = {
         {

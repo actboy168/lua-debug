@@ -13,9 +13,11 @@ local thread = require 'bee.thread'
 local fs = require 'backend.worker.filesystem'
 local log = require 'common.log'
 local channel = require "bee.channel"
+local tag = require 'backend.tag'
 
 local initialized = false
 local suspend = false
+---@type visitor.funcinfo
 local info = {}
 local state = 'running'
 local stopReason = 'step'
@@ -34,9 +36,9 @@ local baseL
 local CMD = {}
 
 local WorkerIdent = tostring(thread.id)
-local WorkerChannel = ('DbgWorker(%s)'):format(WorkerIdent)
+local WorkerChannel = tag.getChannelKeyWorker(WorkerIdent)
 
-local masterThread = assert(channel.query 'DbgMaster')
+local masterThread = assert(channel.query (tag.getChannelKeyMaster()))
 local workerThread = channel.create(WorkerChannel)
 
 local function workerThreadUpdate(timeout)
@@ -188,7 +190,7 @@ end
 
 local function stackTrace(res, coid, start, levels)
     for depth = start, start + levels - 1 do
-        if not rdebug.getinfo(depth, "Slnf", info) then
+        if not rdebug.getinfo(depth, "Slnfp", info) then
             return true, depth - start
         end
         local r = {
@@ -208,6 +210,7 @@ local function stackTrace(res, coid, start, levels)
                 r.line = info.currentline
                 r.presentationHint = 'label'
             end
+            r.instructionPointerReference = info.savepc
         else
             r.presentationHint = 'label'
         end
@@ -411,6 +414,36 @@ function CMD.writeMemory(pkg)
         success = true,
         body = res
     }
+end
+
+function CMD.disassemble(pkg)
+    local coid = (pkg.memoryReference >> 16) + 1
+    local depth = pkg.memoryReference & 0xFFFF
+    local offset = pkg.offset --TODO: offset ~= 0
+    local instructionOffset = pkg.instructionOffset
+    local instructionCount = pkg.instructionCount
+    local resolveSymbols = pkg.resolveSymbols --TODO
+    hookmgr.sethost(assert(findFrame(coid)))
+
+    local instructions, err = rdebug.funcbc(depth, instructionOffset, instructionCount)
+    if not instructions then
+        sendToMaster 'disassemble' {
+            command = pkg.command,
+            seq = pkg.seq,
+            success = false,
+            message = err
+        }
+    end
+
+    sendToMaster 'disassemble' {
+        command = pkg.command,
+        seq = pkg.seq,
+        success = true,
+        body = {
+            instructions = instructions
+        }
+    }
+
 end
 
 function CMD.setExpression(pkg)
