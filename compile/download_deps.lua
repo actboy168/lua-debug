@@ -4,7 +4,7 @@ local sp = require 'bee.subprocess'
 
 local output_dir = "3rd/frida_gum/"
 
-local version = "16.0.10"
+local version = "17.2.6"
 local file_fmt = "%s-%s." .. (platform.os == "windows" and "exe" or "tar.xz")
 local url_fmt = ("https://github.com/frida/frida/releases/download/%s/frida-gum-devkit-%s")
 

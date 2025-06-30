@@ -2,6 +2,7 @@
 
 #include <gumpp.hpp>
 #include <string_view>
+#include <stdexcept>
 
 namespace luadebug {
     static int (*_lua_pcall)(intptr_t L, int nargs, int nresults, int errfunc);
@@ -13,15 +14,26 @@ namespace luadebug {
         return _luaL_loadbuffer(L, buff, size, name);
     }
 
+    static void initluamodule(const lua_resolver* resolver) {
+        if (resolver->luamodule) return;
+        resolver->luamodule = Gum::Process::find_module_by_name(resolver->module_name.data());
+        if (!resolver->luamodule) {
+            throw std::runtime_error("Lua module not found: " + std::string(resolver->module_name));
+        }
+    }
+
     intptr_t lua_resolver::find_export(std::string_view name) const {
-        return (intptr_t)Gum::Process::module_find_export_by_name(module_name.data(), name.data());
+        initluamodule(this);
+        return (intptr_t)luamodule->find_export_by_name(name.data());
     }
 
     intptr_t lua_resolver::find_symbol(std::string_view name) const {
-        return (intptr_t)Gum::Process::module_find_symbol_by_name(module_name.data(), name.data());
+        initluamodule(this);
+        return (intptr_t)luamodule->find_symbol_by_name(name.data());
     }
 
     intptr_t lua_resolver::find(std::string_view name) const {
+        initluamodule(this);
         using namespace std::string_view_literals;
         for (auto& finder : { &lua_resolver::find_export, &lua_resolver::find_symbol }) {
             if (auto result = (this->*finder)(name)) {

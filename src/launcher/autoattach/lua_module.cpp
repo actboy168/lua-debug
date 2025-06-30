@@ -43,7 +43,7 @@ namespace luadebug::autoattach {
         return addr > m.memory_address && addr <= (void*)((intptr_t)m.memory_address + m.memory_size);
     }
 
-    static lua_version get_lua_version(const lua_module& m) {
+    static lua_version get_lua_version(const lua_module& lm) {
         /*
             luaJIT_version_2_1_0_beta3
             luaJIT_version_2_1_0_beta2
@@ -51,11 +51,12 @@ namespace luadebug::autoattach {
             luaJIT_version_2_1_0_alpha
         */
         for (void* addr : Gum::SymbolUtil::find_matching_functions("luaJIT_version_2_1_0*", true)) {
-            if (in_module(m, addr))
+            if (in_module(lm, addr))
                 return lua_version::luajit;
         }
-        auto p = Gum::Process::module_find_symbol_by_name(m.path.c_str(), "lua_ident");
-        ;
+        auto m = Gum::Process::find_module_by_name(lm.path.c_str());
+
+        auto p = m->find_symbol_by_name("lua_ident");
         const char* lua_ident = (const char*)p;
         if (!lua_ident)
             return lua_version::unknown;

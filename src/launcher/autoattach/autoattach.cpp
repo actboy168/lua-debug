@@ -26,13 +26,13 @@ namespace luadebug::autoattach {
          "R. Ierusalimschy, L. H. de Figueiredo, W. Celes"
          " $",  // others
     };
-    static bool is_lua_module(const char* module_path, bool check_export = true, bool check_strings = false) {
-        if (check_export && Gum::Process::module_find_export_by_name(module_path, find_lua_module_key)) return true;
-        if (Gum::Process::module_find_symbol_by_name(module_path, find_lua_module_key)) return true;
+    static bool is_lua_module(const Gum::Module& m, bool check_export = true, bool check_strings = false) {
+        if (check_export && m.find_export_by_name(find_lua_module_key)) return true;
+        if (m.find_symbol_by_name(find_lua_module_key)) return true;
         // TODO: when signature mode, check strings
         if (check_strings) {
             for (auto str : lua_module_strings) {
-                if (!Gum::search_module_string(module_path, str).empty()) {
+                if (!Gum::search_module_string(m, str).empty()) {
                     return true;
                 }
             }
@@ -49,7 +49,8 @@ namespace luadebug::autoattach {
             false
 #endif
             ;
-        if (!is_lua_module(path.c_str(), check_export, true)) {
+        Gum::Module* m = Gum::Process::find_module_by_name(path.c_str());
+        if (!is_lua_module(*m, check_export, true)) {
             return false;
         }
         // find lua module lazy
@@ -63,14 +64,14 @@ namespace luadebug::autoattach {
         }
 
         bool found = false;
-        lua_module rm(ctx->mode);
-        Gum::Process::enumerate_modules([&rm, &found](const Gum::ModuleDetails& details) -> bool {
-            if (is_lua_module(details.path())) {
-                auto range        = details.range();
-                rm.memory_address = range.base_address;
-                rm.memory_size    = range.size;
-                rm.path           = details.path();
-                rm.name           = details.name();
+        lua_module lm(ctx->mode);
+        Gum::Process::enumerate_modules([&lm, &found](const Gum::Module& m) -> bool {
+            if (is_lua_module(m)) {
+                auto range        = m.range();
+                lm.memory_address = range.base_address;
+                lm.memory_size    = range.size;
+                lm.path           = m.path();
+                lm.name           = m.name();
                 found             = true;
                 return false;
             }
@@ -87,11 +88,11 @@ namespace luadebug::autoattach {
             return;
         }
 
-        log::info("find lua module path:{}", rm.path);
-        if (!rm.initialize()) {
+        log::info("find lua module path:{}", lm.path);
+        if (!lm.initialize()) {
             return;
         }
-        ctx->lua_module = std::move(rm);
+        ctx->lua_module = std::move(lm);
     }
 
     void start(work_mode mode) {
