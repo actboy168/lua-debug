@@ -32,7 +32,7 @@ extern "C" bool gum_darwin_query_all_image_infos(mach_port_t task, _GumDarwinAll
 #endif
 namespace luadebug::autoattach {
 #ifdef _WIN32
-    bool wait_dll(bool (*loaded)(std::string const&)) {
+    bool wait_dll(bool (*loaded)(const std::string &)) {
         typedef struct _LDR_DLL_UNLOADED_NOTIFICATION_DATA {
             ULONG Flags;                   // Reserved.
             PCUNICODE_STRING FullDllName;  // The full path name of the DLL module.
@@ -103,7 +103,7 @@ namespace luadebug::autoattach {
         return true;
     }
 #elif defined(__APPLE__)
-    using WaitDllCallBack_t = bool (*)(std::string const&);
+    using WaitDllCallBack_t = bool (*)(const std::string&);
     struct WaitDllListener : Gum::NoLeaveInvocationListener {
         WaitDllCallBack_t loaded;
         Gum::RefPtr<Gum::Interceptor> interceptor;
@@ -153,7 +153,7 @@ namespace luadebug::autoattach {
 
     // TODO: support linux
 
-    bool wait_dll(bool (*loaded)(std::string const&)) {
+    bool wait_dll(bool (*loaded)(const std::string &)) {
         return false;
     }
 #endif

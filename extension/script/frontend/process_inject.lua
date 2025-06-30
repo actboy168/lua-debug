@@ -5,8 +5,8 @@ local platform_os = require 'frontend.platform_os' ()
 
 local _M = {}
 
-local macos = "macOS"
-local windows = "Windows"
+local macos = "macos"
+local windows = "windows"
 local entry_launch = "launch"
 
 local function macos_check_rosetta_process(process)
@@ -51,8 +51,9 @@ function _M.gdb_inject(pid, entry, injectdll, gdb_path)
 
     local launcher = {
         "-ex",
-        -- 6 = RTDL_NOW|RTDL_LOCAL
-        ('print  (void*)dlopen("%s", 6)'):format(injectdll),
+        -- 6 = RTDL_NOW|RTDL_LOCAL macos
+        -- 2 = RTDL_NOW linux
+        ('print  (void*)dlopen("%s", %d)'):format(injectdll, platform_os == macos and 6 or 2),
         "-ex",
         ('call ((void(*)())&%s)()'):format(entry),
         "-ex",
@@ -93,8 +94,9 @@ function _M.lldb_inject(pid, entry, injectdll, lldb_path)
 
     local launcher = {
         "-o",
-        -- 6 = RTDL_NOW|RTDL_LOCAL
-        ('expression (void*)dlopen("%s", 6)'):format(injectdll),
+        -- 6 = RTDL_NOW|RTDL_LOCAL macos
+        -- 2 = RTDL_NOW linux
+        ('expression (void*)dlopen("%s", %d)'):format(injectdll,  platform_os == macos and 6 or 2),
         "-o",
         ('expression ((void(*)())&%s)()'):format(entry),
         "-o",
@@ -153,9 +155,6 @@ function _M.windows_inject(process, entry)
 end
 
 function _M.inject(process, entry, args)
-    if platform_os ~= windows and platform_os ~= macos then
-        return false, "unsupported inject"
-    end
     if platform_os ~= windows and type(process) == "userdata" then
         process = process:get_id()
     end

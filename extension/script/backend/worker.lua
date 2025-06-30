@@ -12,6 +12,7 @@ local stdio = require 'luadebug.stdio'
 local thread = require 'bee.thread'
 local fs = require 'backend.worker.filesystem'
 local log = require 'common.log'
+local channel = require "bee.channel"
 
 local initialized = false
 local suspend = false
@@ -35,13 +36,12 @@ local CMD = {}
 local WorkerIdent = tostring(thread.id)
 local WorkerChannel = ('DbgWorker(%s)'):format(WorkerIdent)
 
-thread.newchannel(WorkerChannel)
-local masterThread = thread.channel 'DbgMaster'
-local workerThread = thread.channel(WorkerChannel)
+local masterThread = assert(channel.query 'DbgMaster')
+local workerThread = channel.create(WorkerChannel)
 
 local function workerThreadUpdate(timeout)
     while true do
-        local ok, msg = workerThread:pop(timeout)
+        local ok, msg = workerThread:pop()
         if not ok then
             break
         end
@@ -54,6 +54,10 @@ local function workerThreadUpdate(timeout)
         if not ok then
             log.error("ERROR:"..err)
         end
+    end
+    if timeout then
+        --TODO
+        thread.sleep(timeout)
     end
 end
 
@@ -544,8 +548,11 @@ function CMD.setSearchPath(pkg)
         else
             value = fs.nativepath(value)
         end
-        local visitor = rdebug.field(rdebug.field(rdebug._G, "package"), name)
-        if not rdebug.assign(visitor, value) then
+        local visitor = rdebug.field(rdebug._G, "package")
+        if visitor == nil then
+            return
+        end
+        if not rdebug.assign_field(visitor, name, value) then
             return
         end
     end
@@ -574,7 +581,7 @@ local function runLoop(reason, level)
     skipFrame = level or 0
 
     while true do
-        workerThreadUpdate(0.01)
+        workerThreadUpdate(10)
         if state ~= 'stopped' then
             break
         end
@@ -601,7 +608,7 @@ end
 
 local function debuggeeReady()
     while suspend do
-        workerThreadUpdate(0.01)
+        workerThreadUpdate(10)
     end
     if initialized then
         return true
@@ -688,9 +695,9 @@ function event.print(...)
     for i = 1, args.n do
         res[#res + 1] = variables.tostring(args[i])
     end
-    res = table.concat(res, '\t')..'\n'
+    local str = table.concat(res, '\t')..'\n'
     rdebug.getinfo(1, "Sl", info)
-    stdout(res, info)
+    stdout(str, info)
     return true
 end
 
@@ -714,7 +721,7 @@ local ERREVENT_ERRERR <const> = 0x05
 local ERREVENT_PANIC <const> = 0x10
 
 local function GlobalFunction(name)
-    return rdebug.value(rdebug.fieldv(rdebug._G, name))
+    return rdebug.fieldv(rdebug._G, name)
 end
 
 local function getExceptionType(errcode, skip)
@@ -724,11 +731,10 @@ local function getExceptionType(errcode, skip)
             if info.what ~= 'C' then
                 return "runtime"
             end
-            local raisefunc = rdebug.value(info.func)
-            if raisefunc == GlobalFunction "assert" then
+            if rdebug.equal(info.func, GlobalFunction "assert") then
                 return "assert"
             end
-            if raisefunc == GlobalFunction "error" then
+            if rdebug.equal(info.func, GlobalFunction "error") then
                 return "error"
             end
         end
@@ -758,11 +764,10 @@ local function getExceptionCaught(errcode, skip)
         if level >= 100 then
             return 'native'
         end
-        local f = rdebug.value(info.func)
-        if f == pcall then
+        if rdebug.equal(info.func, pcall) then
             return 'lua'
         end
-        if f == xpcall then
+        if rdebug.equal(info.func, xpcall) then
             return 'lua'
         end
         level = level + 1
@@ -833,6 +838,7 @@ end
 
 function event.exit()
     sendToMaster 'exitWorker' {}
+    channel.destroy(WorkerChannel)
 end
 
 hookmgr.init(function(name, ...)

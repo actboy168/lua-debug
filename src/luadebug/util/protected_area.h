@@ -3,9 +3,9 @@
 #include <bee/nonstd/bit.h>
 #include <bee/nonstd/to_underlying.h>
 #include <bee/nonstd/unreachable.h>
-#include <bee/utility/zstring_view.h>
 
 #include <stdexcept>
+#include <string_view>
 #include <type_traits>
 
 #include "rdebug_debughost.h"
@@ -33,14 +33,11 @@ namespace luadebug {
             static_assert(sizeof(I) >= sizeof(T));
             if constexpr (sizeof(I) == sizeof(T)) {
                 return true;
-            }
-            else if constexpr (std::numeric_limits<I>::is_signed == std::numeric_limits<T>::is_signed) {
+            } else if constexpr (std::numeric_limits<I>::is_signed == std::numeric_limits<T>::is_signed) {
                 return i >= std::numeric_limits<T>::lowest() && i <= (std::numeric_limits<T>::max)();
-            }
-            else if constexpr (std::numeric_limits<I>::is_signed) {
+            } else if constexpr (std::numeric_limits<I>::is_signed) {
                 return static_cast<std::make_unsigned_t<I>>(i) >= std::numeric_limits<T>::lowest() && static_cast<std::make_unsigned_t<I>>(i) <= (std::numeric_limits<T>::max)();
-            }
-            else {
+            } else {
                 return static_cast<std::make_signed_t<I>>(i) >= std::numeric_limits<T>::lowest() && static_cast<std::make_signed_t<I>>(i) <= (std::numeric_limits<T>::max)();
             }
         }
@@ -51,8 +48,7 @@ namespace luadebug {
             if constexpr (std::is_enum_v<T>) {
                 using UT = std::underlying_type_t<T>;
                 return static_cast<T>(checkinteger<UT>(L, arg));
-            }
-            else if constexpr (sizeof(T) != sizeof(luadbg_Integer)) {
+            } else if constexpr (sizeof(T) != sizeof(luadbg_Integer)) {
                 static_assert(std::is_integral_v<T>);
                 static_assert(sizeof(T) < sizeof(luadbg_Integer));
                 luadbg_Integer r = checkinteger<luadbg_Integer>(L, arg);
@@ -62,11 +58,9 @@ namespace luadebug {
                 leave();
                 luadbgL_error(L, "bad argument '#%d' limit exceeded", arg);
                 std::unreachable();
-            }
-            else if constexpr (!std::is_same_v<T, luadbg_Integer>) {
+            } else if constexpr (!std::is_same_v<T, luadbg_Integer>) {
                 return std::bit_cast<T>(checkinteger<luadbg_Integer>(L, arg));
-            }
-            else {
+            } else {
                 int isnum;
                 luadbg_Integer d = luadbg_tointegerx(L, arg, &isnum);
                 if (!isnum) {
@@ -86,8 +80,7 @@ namespace luadebug {
             if constexpr (std::is_enum_v<T>) {
                 using UT = std::underlying_type_t<T>;
                 return static_cast<T>(optinteger<UT>(L, arg, std::to_underlying(def)));
-            }
-            else if constexpr (sizeof(T) != sizeof(luadbg_Integer)) {
+            } else if constexpr (sizeof(T) != sizeof(luadbg_Integer)) {
                 static_assert(std::is_integral_v<T>);
                 static_assert(sizeof(T) < sizeof(luadbg_Integer));
                 luadbg_Integer r = optinteger<luadbg_Integer>(L, arg, static_cast<luadbg_Integer>(def));
@@ -97,16 +90,14 @@ namespace luadebug {
                 leave();
                 luadbgL_error(L, "bad argument '#%d' limit exceeded", arg);
                 std::unreachable();
-            }
-            else if constexpr (!std::is_same_v<T, luadbg_Integer>) {
+            } else if constexpr (!std::is_same_v<T, luadbg_Integer>) {
                 return std::bit_cast<T>(optinteger<luadbg_Integer>(L, arg, std::bit_cast<luadbg_Integer>(def)));
-            }
-            else {
+            } else {
                 return luadbgL_optinteger(L, arg, def);
             }
         }
 
-        inline bee::zstring_view checkstring(luadbg_State*, int arg) {
+        inline std::string_view checkstring(luadbg_State*, int arg) {
             size_t sz;
             const char* s = luadbg_tolstring(L, arg, &sz);
             if (!s) {

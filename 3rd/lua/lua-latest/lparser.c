@@ -198,7 +198,7 @@ static int new_localvar (LexState *ls, TString *name) {
   checklimit(fs, dyd->actvar.n + 1 - fs->firstlocal,
                  MAXVARS, "local variables");
   luaM_growvector(L, dyd->actvar.arr, dyd->actvar.n + 1,
-                  dyd->actvar.size, Vardesc, USHRT_MAX, "local variables");
+                  dyd->actvar.size, Vardesc, SHRT_MAX, "local variables");
   var = &dyd->actvar.arr[dyd->actvar.n++];
   var->vd.kind = VDKREG;  /* default */
   var->vd.name = name;
@@ -521,12 +521,12 @@ static l_noret jumpscopeerror (LexState *ls, Labeldesc *gt) {
 
 /*
 ** Solves the goto at index 'g' to given 'label' and removes it
-** from the list of pending goto's.
+** from the list of pending gotos.
 ** If it jumps into the scope of some variable, raises an error.
 */
 static void solvegoto (LexState *ls, int g, Labeldesc *label) {
   int i;
-  Labellist *gl = &ls->dyd->gt;  /* list of goto's */
+  Labellist *gl = &ls->dyd->gt;  /* list of gotos */
   Labeldesc *gt = &gl->arr[g];  /* goto to be resolved */
   lua_assert(eqstr(gt->name, label->name));
   if (l_unlikely(gt->nactvar < label->nactvar))  /* enter some scope? */
@@ -580,7 +580,7 @@ static int newgotoentry (LexState *ls, TString *name, int line, int pc) {
 /*
 ** Solves forward jumps. Check whether new label 'lb' matches any
 ** pending gotos in current block and solves them. Return true
-** if any of the goto's need to close upvalues.
+** if any of the gotos need to close upvalues.
 */
 static int solvegotos (LexState *ls, Labeldesc *lb) {
   Labellist *gl = &ls->dyd->gt;
@@ -601,7 +601,7 @@ static int solvegotos (LexState *ls, Labeldesc *lb) {
 /*
 ** Create a new label with the given 'name' at the given 'line'.
 ** 'last' tells whether label is the last non-op statement in its
-** block. Solves all pending goto's to this new label and adds
+** block. Solves all pending gotos to this new label and adds
 ** a close instruction if necessary.
 ** Returns true iff it added a close instruction.
 */
@@ -1022,10 +1022,11 @@ static int explist (LexState *ls, expdesc *v) {
 }
 
 
-static void funcargs (LexState *ls, expdesc *f, int line) {
+static void funcargs (LexState *ls, expdesc *f) {
   FuncState *fs = ls->fs;
   expdesc args;
   int base, nparams;
+  int line = ls->linenumber;
   switch (ls->t.token) {
     case '(': {  /* funcargs -> '(' [ explist ] ')' */
       luaX_next(ls);
@@ -1063,8 +1064,8 @@ static void funcargs (LexState *ls, expdesc *f, int line) {
   }
   init_exp(f, VCALL, luaK_codeABC(fs, OP_CALL, base, nparams+1, 2));
   luaK_fixline(fs, line);
-  fs->freereg = base+1;  /* call remove function and arguments and leaves
-                            (unless changed) one result */
+  fs->freereg = base+1;  /* call removes function and arguments and leaves
+                            one result (unless changed later) */
 }
 
 
@@ -1103,7 +1104,6 @@ static void suffixedexp (LexState *ls, expdesc *v) {
   /* suffixedexp ->
        primaryexp { '.' NAME | '[' exp ']' | ':' NAME funcargs | funcargs } */
   FuncState *fs = ls->fs;
-  int line = ls->linenumber;
   primaryexp(ls, v);
   for (;;) {
     switch (ls->t.token) {
@@ -1123,12 +1123,12 @@ static void suffixedexp (LexState *ls, expdesc *v) {
         luaX_next(ls);
         codename(ls, &key);
         luaK_self(fs, v, &key);
-        funcargs(ls, v, line);
+        funcargs(ls, v);
         break;
       }
       case '(': case TK_STRING: case '{': {  /* funcargs */
         luaK_exp2nextreg(fs, v);
-        funcargs(ls, v, line);
+        funcargs(ls, v);
         break;
       }
       default: return;

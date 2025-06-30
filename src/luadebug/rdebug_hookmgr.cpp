@@ -1,4 +1,6 @@
+#include <bee/nonstd/unreachable.h>
 #include <bee/utility/dynarray.h>
+#include <bee/utility/flatmap.h>
 
 #include <chrono>
 #include <cstdint>
@@ -10,7 +12,6 @@
 #include "rdebug_eventfree.h"
 #include "rdebug_lua.h"
 #include "thunk/thunk.h"
-#include "util/flatmap.h"
 
 #if LUA_VERSION_NUM >= 502
 #    include <lstate.h>
@@ -29,22 +30,24 @@ public:
         Ignore,
     };
 
-    void set(void* proto, status status) {
+    void set(void* proto, status status) noexcept {
         switch (status) {
         case status::None:
-            m_flatmap.erase(tokey(proto));
+            m_flatmap.erase(proto);
             break;
         case status::Break:
-            m_flatmap.insert_or_assign(tokey(proto), true);
+            m_flatmap.insert_or_assign(proto, true);
             break;
         case status::Ignore:
-            m_flatmap.insert_or_assign(tokey(proto), false);
+            m_flatmap.insert_or_assign(proto, false);
             break;
+        default:
+            std::unreachable();
         }
     }
 
     status get(void* proto) const noexcept {
-        const bool* v = m_flatmap.find(tokey(proto));
+        const bool* v = m_flatmap.find(proto);
         if (v) {
             return *v ? status::Break : status::Ignore;
         }
@@ -52,12 +55,7 @@ public:
     }
 
 private:
-    intptr_t tokey(void* proto) const noexcept {
-        return reinterpret_cast<intptr_t>(proto);
-    }
-
-    // TODO: bullet size可以压缩到一个int64_t
-    luadebug::flatmap<intptr_t, bool> m_flatmap;
+    bee::flatmap<void*, bool> m_flatmap;
 };
 
 static int HOOK_MGR      = 0;
@@ -186,8 +184,7 @@ struct hookmgr {
     void break_update(lua_State* hL, CallInfo* ci, int event) {
         if (break_has(hL, lua_ci2proto(ci), event)) {
             break_openline(hL);
-        }
-        else {
+        } else {
             break_closeline(hL);
         }
     }
@@ -331,8 +328,7 @@ struct hookmgr {
         step_current_level++;
         if (step_current_level > step_target_level) {
             step_hookmask(hL, LUA_MASKCALL | LUA_MASKRET);
-        }
-        else {
+        } else {
             step_hookmask(hL, LUA_MASKCALL | LUA_MASKRET | LUA_MASKLINE);
         }
     }
@@ -340,8 +336,7 @@ struct hookmgr {
         step_current_level = lua_stacklevel(hL) - 1;
         if (step_current_level > step_target_level) {
             step_hookmask(hL, LUA_MASKCALL | LUA_MASKRET);
-        }
-        else {
+        } else {
             step_hookmask(hL, LUA_MASKCALL | LUA_MASKRET | LUA_MASKLINE);
         }
     }
@@ -350,8 +345,7 @@ struct hookmgr {
         step_current_level = lua_stacklevel(hL);
         if (step_current_level > step_target_level) {
             step_hookmask(hL, LUA_MASKCALL | LUA_MASKRET);
-        }
-        else {
+        } else {
             step_hookmask(hL, LUA_MASKCALL | LUA_MASKRET | LUA_MASKLINE);
         }
     }
@@ -401,7 +395,7 @@ struct hookmgr {
     // thread
     //
     int thread_mask = 0;
-    luadebug::flatmap<lua_State*, lua_State*> coroutine_tree;
+    bee::flatmap<lua_State*, lua_State*> coroutine_tree;
 #if defined(LUA_HOOKTHREAD)
     void thread_hookmask(lua_State* hL, int mask) {
         if (thread_mask != mask) {
@@ -418,8 +412,7 @@ struct hookmgr {
             int type = ar->currentline;
             if (type == 0) {
                 coroutine_tree.insert_or_assign(co, from);
-            }
-            else if (type == 1) {
+            } else if (type == 1) {
                 coroutine_tree.erase(from);
             }
         }
@@ -565,8 +558,7 @@ struct hookmgr {
                 luadbg_pop(L, 1);
                 return;
             }
-        }
-        else {
+        } else {
             luadbg_pushstring(L, "bp");
             luadbg_pushinteger(L, ar->currentline);
             if (luadbg_pcall(L, 2, 0, 0) != LUADBG_OK) {
@@ -615,14 +607,11 @@ struct hookmgr {
         }
         if (mask) {
             sethook(hL, (lua_Hook)sc_full_hook->data, mask | exception_mask | thread_mask, 0);
-        }
-        else if (update_mask) {
+        } else if (update_mask) {
             sethook(hL, (lua_Hook)sc_idle_hook->data, update_mask | exception_mask | thread_mask, 0xfffff);
-        }
-        else if (exception_mask | thread_mask) {
+        } else if (exception_mask | thread_mask) {
             sethook(hL, (lua_Hook)sc_idle_hook->data, exception_mask | thread_mask, 0);
-        }
-        else {
+        } else {
             sethook(hL, 0, 0, 0);
         }
     }
@@ -668,6 +657,10 @@ struct hookmgr {
         }
         luadebug::eventfree::destroy(hL, eventfree);
         lua_sethook(hL, 0, 0, 0);
+#if defined(LUADEBUG_DISABLE_THUNK)
+        // clear hook manager pointer stored in thunk:
+        thunk_set(hL, &THUNK_MGR, intptr_t(nullptr));
+#endif
 #if defined(LUA_HOOKEXCEPTION)
         exception_open(hL, 0);
 #endif
@@ -694,11 +687,13 @@ struct hookmgr {
 #else
     static int full_hook_callback(lua_State* hL, lua_Debug* ar) {
         hookmgr* mgr = (hookmgr*)thunk_get(hL, &THUNK_MGR);
+        if (!mgr) return 0;
         mgr->full_hook(hL, ar);
         return 0;
     }
     static int idle_hook_callback(lua_State* hL, lua_Debug* ar) {
         hookmgr* mgr = (hookmgr*)thunk_get(hL, &THUNK_MGR);
+        if (!mgr) return 0;
         mgr->idle_hook(hL, ar);
         return 0;
     }

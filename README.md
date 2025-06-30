@@ -59,6 +59,4 @@ luamake -mode release
 
 ## Todo
 
-* `thunk` support arm64.
-* Use [lua-epoll](https://github.com/actboy168/lua-epoll) instead of select.
 * iOS example.

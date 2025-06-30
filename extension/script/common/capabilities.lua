@@ -20,6 +20,7 @@ return {
     supportsWriteMemoryRequest = true,
     supportsClipboardContext = true,
     supportsExceptionFilterOptions = true,
+    supportsANSIStyling = true,
     exceptionBreakpointFilters = {
         {
             default = false,

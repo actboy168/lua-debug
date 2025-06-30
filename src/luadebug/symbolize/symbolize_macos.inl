@@ -30,7 +30,7 @@ namespace luadebug {
         if (!pipe) {
             return std::nullopt;
         }
-        FILE* f = pipe.open_read();
+        FILE* f = pipe.rd.to_file(bee::file_handle::mode::read);
         if (!f) {
             return std::nullopt;
         }
@@ -40,7 +40,7 @@ namespace luadebug {
             args.push(*p);
         }
         spawn.redirect(bee::subprocess::stdio::eOutput, pipe.wr);
-        if (!spawn.exec(args, nullptr)) {
+        if (!spawn.exec(args, {})) {
             return std::nullopt;
         }
         std::string res;
@@ -48,8 +48,7 @@ namespace luadebug {
         while (!::feof(f)) {
             if (::fgets(data, sizeof(data), f)) {
                 res += data;
-            }
-            else {
+            } else {
                 break;
             }
         }

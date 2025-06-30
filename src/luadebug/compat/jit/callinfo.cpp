@@ -21,8 +21,7 @@ static cTValue* debug_frame(lua_State* L, int level, int* size) {
         nextframe = frame;
         if (frame_islua(frame)) {
             frame = frame_prevl(frame);
-        }
-        else {
+        } else {
             if (frame_isvarg(frame))
                 level++; /* Skip vararg pseudo-frame. */
             frame = frame_prevd(frame);

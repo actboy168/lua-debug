@@ -28,18 +28,9 @@ local function posix_arch()
 end
 
 local function detect_windows()
-    local arch = windows_arch()
-    assert(arch ~= "arm64")
-    if arch == "ia32" then
-        if lm.platform then
-            assert(lm.platform == "win32-ia32")
-        else
-            lm.platform = "win32-ia32"
-        end
-        return
-    end
+    assert(windows_arch() == "x64")
     if lm.platform then
-        assert(lm.platform == "win32-ia32" or lm.platform == "win32-x64")
+        assert(lm.platform == "win32-x64")
     else
         lm.platform = "win32-x64"
     end

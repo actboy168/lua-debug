@@ -34,13 +34,13 @@ lm:runlua "compile_to_luadbg" {
         luapath,
         outpath,
     },
-    input = input,
-    output = output,
+    inputs = input,
+    outputs = output,
 }
 
 lm:phony {
-    input = outpath..compile("lua.hpp"),
-    output = {
+    inputs = outpath..compile("lua.hpp"),
+    outputs = {
         "src/luadebug/rdebug_hookmgr.cpp",
         "src/luadebug/rdebug_debughost.cpp",
         "src/luadebug/rdebug_stdio.cpp",
@@ -51,21 +51,21 @@ lm:phony {
 }
 
 lm:phony {
-    input = {
+    inputs = {
         outpath..compile("lua.hpp"),
         outpath..compile("luaexports.h"),
         outpath..compile("luarename.h"),
     },
-    output = {
+    outputs = {
         "src/luadebug/luadbg/bee_module.cpp",
     },
 }
 
 lm:phony {
-    input = {
+    inputs = {
         outpath..compile("luaexports.h"),
     },
-    output = {
+    outputs = {
         "src/luadebug/luadbg/onelua.c",
     },
 }

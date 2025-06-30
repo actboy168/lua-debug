@@ -5,7 +5,7 @@ local OS, ARCH = platform:match "^([^-]+)-([^-]+)$"
 
 local json = {
     name = "lua-debug",
-    version = "2.0.4",
+    version = "2.0.12",
     publisher = "actboy168",
     displayName = "Lua Debug",
     description = "VSCode debugger extension for Lua",
@@ -158,7 +158,6 @@ attributes.common = {
             "lua53",
             "lua54",
             "lua-latest",
-            "lua-compatible",
             "luajit",
         },
         markdownDescription = "%lua.debug.launch.luaVersion.description%",
@@ -271,23 +270,22 @@ else
 end
 
 attributes.attach = {
-}
-
-if OS == "win32" or OS == "darwin" then
-    attributes.attach.processId = {
+    processId = {
         default = "${command:pickProcess}",
         markdownDescription = "Id of process to attach to.",
         type = "string",
-    }
-    attributes.attach.processName = {
+    },
+    processName = {
         default = "lua.exe",
         markdownDescription = "Name of process to attach to.",
         type = "string",
     }
-    json.contributes.debuggers[1].variables = {
-        pickProcess = "extension.lua-debug.pickProcess",
-    }
-end
+}
+
+json.contributes.debuggers[1].variables = {
+    pickProcess = "extension.lua-debug.pickProcess",
+}
+
 
 attributes.launch = {
     luaexe = {

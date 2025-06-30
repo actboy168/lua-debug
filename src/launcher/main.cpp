@@ -1,6 +1,6 @@
 ﻿#include <autoattach/autoattach.h>
 #include <bee/nonstd/filesystem.h>
-#include <bee/utility/path_helper.h>
+#include <bee/sys/path.h>
 #include <util/log.h>
 #ifndef _WIN32
 #    include <unistd.h>
@@ -36,12 +36,12 @@ namespace luadebug::autoattach {
 
     attach_status attach_lua(lua::state L) {
         log::info("attach lua vm entry");
-        auto r = bee::path_helper::dll_path();
+        auto r = bee::sys::dll_path();
         if (!r) {
-            log::fatal("dll_path error: {}", r.error());
+            log::fatal("dll_path error");
             return attach_status::fatal;
         }
-        auto root = r.value().parent_path().parent_path();
+        auto root = (*r).parent_path().parent_path();
         auto buf  = readfile(root / "script" / "attach.lua");
         if (lua::loadbuffer(L, buf.data(), buf.size(), "=(attach.lua)")) {
             log::fatal("load attach.lua error: {}", lua::tostring(L, -1));
@@ -50,9 +50,9 @@ namespace luadebug::autoattach {
         }
         lua::call<lua_pushstring>(L, root.generic_u8string().c_str());
 #ifdef _WIN32
-        lua::call<lua_pushstring>(L, std::to_string(GetCurrentProcessId()).c_str());
+        lua::call<lua_pushstring>(L, std::format("{}", GetCurrentProcessId()).c_str());
 #else
-        lua::call<lua_pushstring>(L, std::to_string(getpid()).c_str());
+        lua::call<lua_pushstring>(L, std::format("{}", getpid()).c_str());
 #endif
         if (lua::pcall(L, 2, 1, 0)) {
             /*

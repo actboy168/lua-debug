@@ -1,56 +1,56 @@
 local thread = require "bee.thread"
+local channel = require "bee.channel"
 
 local m = {}
 
 local function hasMaster()
-    local ok = pcall(thread.channel, "DbgMaster")
-    return ok
+    return channel.query "DbgMaster" ~= nil
 end
 
-local function initMaster(logpath, address)
+local function initMaster(rootpath, address)
     if hasMaster() then
         return
     end
-    thread.newchannel "DbgMaster"
-    local mt = thread.thread(([[
-        package.path = %q
+    local chan = channel.create "DbgMaster"
+    local mt = thread.create(([[
+        local rootpath = %q
+        package.path = rootpath.."/script/?.lua"
         local log = require "common.log"
-        log.file = %q..'/master.log'
+        log.file = rootpath.."/master.log"
         local ok, err = xpcall(function()
-            local network = require "common.network"(%q)
+            local socket = require "common.socket"(%q)
             local master = require "backend.master.mgr"
-            master.init(network)
+            master.init(socket)
             master.update()
         end, debug.traceback)
         if not ok then
             log.error("ERROR:" .. err)
         end
     ]]):format(
-        package.path,
-        logpath,
+        rootpath,
         address
     ))
     ExitGuard = setmetatable({}, {__gc=function()
-        local c = thread.channel "DbgMaster"
-        c:push(nil, "EXIT")
+        chan:push(nil, "EXIT")
         thread.wait(mt)
+        channel.destroy("DbgMaster")
     end})
 end
 
-local function startWorker(logpath)
+local function startWorker(rootpath)
     local log = require 'common.log'
-    log.file = logpath..'/worker.log'
+    log.file = rootpath..'/worker.log'
     require 'backend.worker'
 end
 
-function m.start(logpath, address)
-    initMaster(logpath, address)
-    startWorker(logpath)
+function m.start(rootpath, address)
+    initMaster(rootpath, address)
+    startWorker(rootpath)
 end
 
-function m.attach(logpath)
+function m.attach(rootpath)
     if hasMaster() then
-        startWorker(logpath)
+        startWorker(rootpath)
     end
 end
 

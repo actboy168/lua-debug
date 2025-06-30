@@ -1,7 +1,17 @@
 local selfsource = ...
+
+if not selfsource then
+    local source = debug.getinfo(1, "S").source
+    if source:sub(1, 1) == "@" then
+        local filepath = source:sub(2)
+        selfsource = filepath
+    end
+end
+
+local IsWindows = package.config:sub(1, 1) == "\\"
 local root = selfsource
-                :match "(.+)[/][^/]+$"
-                :match "(.+)[/][^/]+$"
+    :match "(.+)[/][^/]+$"
+    :match "(.+)[/][^/]+$"
 
 if debug.getregistry()["lua-debug"] then
     local dbg = debug.getregistry()["lua-debug"]
@@ -37,11 +47,8 @@ if debug.getregistry()["lua-debug"] then
 end
 
 local function detectLuaDebugPath(cfg)
-    local PLATFORM
-    local function isWindows()
-        return package.config:sub(1, 1) == "\\"
-    end
-    do
+    local PLATFORM = cfg.platform or os.getenv "LUA_DEBUG_PLATFORM"
+    if not PLATFORM then
         local function shell(command)
             --NOTICE: io.popen可能会多线程不安全
             local f = assert(io.popen(command, 'r'))
@@ -84,7 +91,7 @@ local function detectLuaDebugPath(cfg)
                 error "unknown ARCH"
             end
         end
-        if isWindows() then
+        if IsWindows then
             detect_windows()
         else
             local name = shell 'uname -s'
@@ -105,8 +112,8 @@ local function detectLuaDebugPath(cfg)
     end
 
     local rt = "/runtime/"..PLATFORM
-    if cfg.latest then
-        rt = rt.."/lua-latest"
+    if cfg.luaVersion then
+        rt = rt.."/"..cfg.luaVersion
     elseif _VERSION == "Lua 5.4" then
         rt = rt.."/lua54"
     elseif _VERSION == "Lua 5.3" then
@@ -123,7 +130,7 @@ local function detectLuaDebugPath(cfg)
         error(_VERSION.." is not supported.")
     end
 
-    local ext = isWindows() and "dll" or "so"
+    local ext = IsWindows and "dll" or "so"
     return root..rt..'/luadebug.'..ext
 end
 
@@ -138,8 +145,7 @@ local function initDebugger(dbg, cfg)
         luadebug = detectLuaDebugPath(cfg)
         updateenv = true
     end
-    local isWindows = package.config:sub(1, 1) == "\\"
-    if isWindows then
+    if IsWindows then
         assert(package.loadlib(luadebug, 'init'))(cfg.luaapi)
     end
 
@@ -153,7 +159,7 @@ local function initDebugger(dbg, cfg)
     end
 
     local function utf8(s)
-        if cfg.ansi and isWindows then
+        if cfg.ansi and IsWindows then
             return dbg.rdebug.a2u(s)
         end
         return s
@@ -169,8 +175,8 @@ function dbg:start(cfg)
 
     self.rdebug.start(([[
         local rootpath = %q
-        package.path = rootpath..'/script/?.lua'
-        require 'backend.bootstrap'. start(rootpath, %q..%q)
+        package.path = rootpath.."/script/?.lua"
+        require "backend.bootstrap". start(rootpath, %q..%q)
     ]]):format(
         self.root,
         cfg.client == true and "connect:" or "listen:",
@@ -180,7 +186,7 @@ function dbg:start(cfg)
 end
 
 function dbg:attach(cfg)
-    initDebugger(self, cfg)
+    initDebugger(self, cfg or {})
 
     self.rdebug.start(([[
         local rootpath = %q
@@ -192,13 +198,17 @@ function dbg:attach(cfg)
     return self
 end
 
+function dbg:stop()
+    self.rdebug.clear()
+end
+
 function dbg:event(...)
     self.rdebug.event(...)
     return self
 end
 
 function dbg:set_wait(name, f)
-    _G[name] = function(...)
+    _G[name] = function (...)
         _G[name] = nil
         f(...)
         self:event 'wait'
@@ -211,7 +221,7 @@ function dbg:setup_patch()
     local rawxpcall = xpcall
     function pcall(f, ...)
         return rawxpcall(f,
-            function(msg)
+            function (msg)
                 self:event("exception", msg, ERREVENT_ERRRUN, 3)
                 return msg
             end,
@@ -220,7 +230,7 @@ function dbg:setup_patch()
 
     function xpcall(f, msgh, ...)
         return rawxpcall(f,
-            function(msg)
+            function (msg)
                 self:event("exception", msg, ERREVENT_ERRRUN, 3)
                 return msgh and msgh(msg) or msg
             end
@@ -241,7 +251,7 @@ function dbg:setup_patch()
     function coroutine.wrap(f)
         local wf = rawcoroutinewrap(f)
         local _, co = debug.getupvalue(wf, 1)
-        return function(...)
+        return function (...)
             self:event("thread", co, 0)
             return coreturn(co, wf(...))
         end

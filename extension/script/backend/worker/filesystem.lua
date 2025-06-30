@@ -1,8 +1,9 @@
 local fs = require 'bee.filesystem'
-local has_unicode, unicode = pcall(require, 'bee.unicode')
+local sys = require 'bee.sys'
+local has_windows, windows = pcall(require, 'bee.windows')
 local ev = require 'backend.event'
-local u2a = has_unicode and unicode.u2a or function (...) return ... end
-local a2u = has_unicode and unicode.a2u or function (...) return ... end
+local u2a = has_windows and windows.u2a or function (...) return ... end
+local a2u = has_windows and windows.a2u or function (...) return ... end
 
 local isWindows = package.config:sub(1,1) == "\\"
 local sourceFormat = isWindows and "path" or "linuxpath"
@@ -144,7 +145,7 @@ function m.path_filename(path)
 end
 
 function m.program_path()
-    return fs.exe_path():string()
+    return sys.exe_path():string()
 end
 
 m.nativepath = nativepath

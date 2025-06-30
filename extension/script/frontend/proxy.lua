@@ -1,4 +1,5 @@
-local network = require 'common.network'
+local socket = require 'common.socket'
+local net = require "common.net"
 local debuger_factory = require 'frontend.debuger_factory'
 local fs = require 'bee.filesystem'
 local sp = require 'bee.subprocess'
@@ -15,11 +16,11 @@ local function getUnixAddress(pid)
     return "@"..(path / ("pid_%d"):format(pid)):string()
 end
 
-local function ipc_send_latest(pid)
+local function ipc_send_luaversion(pid, luaVersion)
     fs.create_directories(WORKDIR / "tmp")
     local ipc = require "common.ipc"
     local fd = assert(ipc(WORKDIR, pid, "luaVersion", "w"))
-    fd:write("latest")
+    fd:write(luaVersion)
     fd:close()
 end
 
@@ -56,22 +57,22 @@ end
 
 local function attach_process(pkg, pid)
     local args = pkg.arguments
-    if args.luaVersion == "lua-latest" then
-        ipc_send_latest(pid)
+    if args.luaVersion:match "^lua%-" then
+        ipc_send_luaversion(pid, args.luaVersion)
     end
     local ok, errmsg = process_inject.inject(pid, "attach", args)
     if not ok then
 		return false, errmsg
 	end
 
-    server = network("connect:"..getUnixAddress(pid))
+    server = socket("connect:"..getUnixAddress(pid))
     server.sendmsg(initReq)
     server.sendmsg(pkg)
     return true
 end
 
 local function attach_tcp(pkg, args)
-    server = network((args.client and "connect:" or "listen:") .. args.address)
+    server = socket((args.client and "connect:" or "listen:") .. args.address)
     server.sendmsg(initReq)
     server.sendmsg(pkg)
 end
@@ -79,10 +80,6 @@ end
 local function proxy_attach(pkg)
     local args = pkg.arguments
     platform_os.init(args)
-    if platform_os() ~= "Windows" and platform_os() ~= "macOS" then
-		attach_tcp(pkg, args)
-		return
-    end
     if args.processId then
         local processId = tonumber(args.processId)
         local ok, errmsg = attach_process(pkg, processId)
@@ -112,11 +109,11 @@ end
 local function create_server(args, pid)
     local s, address
     if args.address ~= nil then
-        s = network((args.client and "connect:" or "listen:") .. args.address)
+        s = socket((args.client and "connect:" or "listen:") .. args.address)
         address = (args.client and "s:" or "c:") .. args.address
     else
         pid = pid or sp.get_id()
-        s = network("connect:"..getUnixAddress(pid))
+        s = socket("connect:"..getUnixAddress(pid))
         address = pid
     end
     return s, address
@@ -161,8 +158,8 @@ local function proxy_launch_console(pkg)
         local process, err = debuger_factory.create_process_in_console(args, function (process)
             local address
             server, address = create_server(args, process:get_id())
-            if args.luaVersion == "lua-latest" and type(address) == "number" then
-                ipc_send_latest(address)
+            if type(address) == "number" and args.luaVersion:match "^lua%-" then
+                ipc_send_luaversion(address, args.luaVersion)
             end
         end)
         if not process then
@@ -208,7 +205,7 @@ local function proxy_start(pkg)
     end
 end
 
-function m.send(pkg)
+local function send(pkg)
     if server then
         if pkg.type == 'response' and pkg.command == 'runInTerminal' then
             return
@@ -234,6 +231,7 @@ function m.send(pkg)
 end
 
 function m.update()
+    net.update(10)
     if server then
         server.event_close(function()
             os.exit(0, true)
@@ -245,6 +243,14 @@ function m.update()
             else
                 break
             end
+        end
+    end
+    while true do
+        local pkg = client.recvmsg()
+        if pkg then
+            send(pkg)
+        else
+            break
         end
     end
 end

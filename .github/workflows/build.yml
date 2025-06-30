@@ -15,37 +15,25 @@ jobs:
         include:
           - os: windows-latest
             platform: win32-x64
-          - os: ubuntu-20.04
+          - os: ubuntu-22.04
             platform: linux-x64
-          - os: ubuntu-20.04
+          - os: ubuntu-22.04-arm
             platform: linux-arm64
           - os: macos-latest
             platform: darwin-x64
           - os: macos-latest
             platform: darwin-arm64
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         submodules : recursive
     - uses: actboy168/setup-luamake@master
-    - if: matrix.platform == 'linux-arm64'
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
     - run: luamake lua compile/download_deps.lua
     - run: luamake -mode release -platform ${{ matrix.platform }}
-    - run: npm install -g vsce ovsx
+    - run: npm install -g @vscode/vsce ovsx
     - run: npx vsce publish --target ${{ matrix.platform }} -p ${{ secrets.VSCE_KEY }}
       working-directory: publish
       continue-on-error: true
     - run: npx ovsx publish --target ${{ matrix.platform }} -p ${{ secrets.OVSX_KEY }}
-      working-directory: publish
-      continue-on-error: true
-    - if: matrix.platform == 'win32-x64'
-      run: npx vsce publish --target win32-ia32 -p ${{ secrets.VSCE_KEY }}
-      working-directory: publish
-      continue-on-error: true
-    - if: matrix.platform == 'win32-x64'
-      run: npx ovsx publish --target win32-ia32 -p ${{ secrets.OVSX_KEY }}
       working-directory: publish
       continue-on-error: true

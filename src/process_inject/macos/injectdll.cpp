@@ -101,12 +101,10 @@ uint64_t injector__get_process_arch(pid_t pid) {
     if (P_TRANSLATED == (P_TRANSLATED & proc_info.kp_proc.p_flag)) {
         if (P_LP64 == (P_LP64 & proc_info.kp_proc.p_flag)) {
             return CPU_TYPE_X86_64;
-        }
-        else {
+        } else {
             return CPU_TYPE_I386;
         }
-    }
-    else {
+    } else {
         return injector__get_system_arch();
     }
 }
@@ -130,8 +128,7 @@ vm_address_t scan_inject_code(mach_port_t task) {
             if (info.is_submap) {
                 depth++;
                 continue;
-            }
-            else {
+            } else {
                 break;
             }
         }
@@ -149,8 +146,7 @@ vm_address_t scan_inject_code(mach_port_t task) {
                     auto ec           = strncmp(code_address, inject_code, sizeof(inject_code));
                     if (ec == 0) {
                         return (vm_address_t)address + sizeof(magic);
-                    }
-                    else {
+                    } else {
                         // changed version, free old
                         DEBUG_LOG_FMT("free old inject code at %p\n", (void*)address);
                         assert(vm_deallocate(task, address, size) == KERN_SUCCESS);

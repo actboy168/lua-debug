@@ -8,7 +8,7 @@ local function find_directory_test(dir)
             find_directory_test(file)
         else
             local filename = file:filename()
-            local ext = tostring(file:extension())
+            local ext = file:extension()
             if tostring(filename):find("test_") and (ext:find(".exe") or ext == "" or ext == nil )then
                 table.insert(all_tests, tostring(file))
             end

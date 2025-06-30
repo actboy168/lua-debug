@@ -4,7 +4,7 @@
 #include <bee/nonstd/filesystem.h>
 #include <bee/nonstd/format.h>
 #include <bee/nonstd/unreachable.h>
-#include <bee/utility/path_helper.h>
+#include <bee/sys/path.h>
 #include <stdio.h>
 
 #include <algorithm>
@@ -51,11 +51,11 @@ namespace luadebug::log {
     }
 
     void notify_frontend(const std::string& msg) {
-        auto dllpath = bee::path_helper::dll_path();
+        auto dllpath = bee::sys::dll_path();
         if (!dllpath) {
             return;
         }
-        auto rootpath = dllpath.value().parent_path().parent_path();
+        auto rootpath = (*dllpath).parent_path().parent_path();
         auto path     = std::format("{}/tmp/pid_{}", rootpath.generic_u8string(),
 #if defined(_WIN32)
                                 GetCurrentProcessId()
@@ -66,11 +66,10 @@ namespace luadebug::log {
         if (!socket::initialize()) {
             return;
         }
-        endpoint ep = endpoint::from_unixpath(path);
-        if (!ep.valid()) {
+        endpoint ep;
+        if (!endpoint::ctor_unix(ep, path)) {
             return;
         }
-        socket::unlink(ep);
         fd_t fd = socket::open(socket::protocol::unix);
         if (!socket::bind(fd, ep)) {
             socket::close(fd);
@@ -88,13 +87,13 @@ namespace luadebug::log {
             return;
         }
         fd_t newfd;
-        if (socket::fdstat::success != socket::accept(fd, newfd)) {
+        if (socket::status::success != socket::accept(fd, newfd)) {
             socket::close(fd);
             return;
         }
         socket::close(fd);
-        auto err = socket::errcode(newfd);
-        if (err) {
+        int err = 0;
+        if (!socket::errcode(newfd, err) || err != 0) {
             socket::close(newfd);
             return;
         }

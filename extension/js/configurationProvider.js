@@ -169,7 +169,7 @@ function resolveLaunchConfig(config, platname, settings) {
         else if (typeof config.cpath == 'object') {
         }
         else {
-            let ext = platname == "windows"? "dll" : "so"
+            let ext = platname == "windows" ? "dll" : "so"
             config.cpath = ['${cwd}/?.' + ext]
             if (typeof config.luaexe == 'string') {
                 config.cpath.push(path.dirname(config.luaexe) + '/?.' + ext)
@@ -219,7 +219,7 @@ function resolveConfig(folder, config) {
     if (typeof config.name != 'string') {
         config.name = 'Not specified';
     }
-    config.workspaceFolder = folder? folder.uri.fsPath: undefined;
+    config.workspaceFolder = folder ? folder.uri.fsPath : undefined;
     if (typeof config.cwd != 'string') {
         if (!config.workspaceFolder) {
             throw new Error('The `cwd` can not be resolved in a multi folder workspace.\n\tSolution: "cwd" : "${workspaceFolder:name}" ');
@@ -265,6 +265,16 @@ function resolveConfig(folder, config) {
             config.pathFormat = "path"
         }
     }
+    if (Array.isArray(config.sourceMaps)) {
+        for (const sourceMap of config.sourceMaps) {
+            if (!Array.isArray(sourceMap) || sourceMap.length != 2) {
+                throw new Error('Invalid sourceMaps.');
+            }
+        }
+    }
+    else {
+        config.sourceMaps = undefined;
+    }
     if (config.request == 'launch') {
         resolveLaunchConfig(config, platname, settings)
     }
@@ -284,7 +294,7 @@ exports.resolve = {
     resolveDebugConfiguration: async function (folder, config) {
         try {
             return resolveConfig(folder, config);
-        } catch (err) { 
+        } catch (err) {
             let action = await vscode.window.showErrorMessage(
                 err.message,
                 { modal: true },

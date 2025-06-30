@@ -15,7 +15,7 @@ local function scan(dir)
         if fs.is_directory(path) then
             scan(path)
         else
-            local ext = path:extension():string():lower()
+            local ext = path:extension()
             if EXTENSION[ext] then
                 sourcefile[#sourcefile + 1] = path:string()
             end

@@ -1,15 +1,13 @@
-local proto = require 'common.protocol'
 local ev = require 'backend.event'
 local thread = require 'bee.thread'
 local stdio = require 'luadebug.stdio'
+local channel = require "bee.channel"
 
 local redirect = {}
 local mgr = {}
-local network
+local socket
 local seq = 0
 local initialized = false
-local stat = {}
-local queue = {}
 local masterThread
 local client = {}
 local maxThreadId = 0
@@ -26,19 +24,6 @@ local function genThreadId()
     return maxThreadId
 end
 
-local function event_in(data)
-    local msg = proto.recv(data, stat)
-    if msg then
-        queue[#queue + 1] = msg
-        while msg do
-            msg = proto.recv('', stat)
-            if msg then
-                queue[#queue + 1] = msg
-            end
-        end
-    end
-end
-
 local function event_close()
     if not initialized then
         return
@@ -49,15 +34,6 @@ local function event_close()
     ev.emit('close')
     initialized = false
     seq = 0
-    stat = {}
-    queue = {}
-end
-
-local function recv()
-    if #queue == 0 then
-        return
-    end
-    return table.remove(queue, 1)
 end
 
 function mgr.newSeq()
@@ -66,10 +42,9 @@ function mgr.newSeq()
 end
 
 function mgr.init(io)
-    network = io
-    masterThread = thread.channel 'DbgMaster'
-    network.event_in(event_in)
-    network.event_close(event_close)
+    socket = io
+    masterThread = assert(channel.query 'DbgMaster')
+    socket.event_close(event_close)
     return true
 end
 
@@ -103,7 +78,7 @@ function mgr.clientSend(pkg)
     if not initialized then
         return
     end
-    network.send(proto.send(pkg, stat))
+    socket.sendmsg(pkg)
 end
 
 function mgr.workerSend(w, msg)
@@ -157,7 +132,7 @@ end
 function mgr.initWorker(WorkerIdent)
     local workerChannel = ('DbgWorker(%s)'):format(WorkerIdent)
     local threadId = genThreadId()
-    threadChannel[threadId] = assert(thread.channel(workerChannel))
+    threadChannel[threadId] = assert(channel.query(workerChannel))
     threadCatalog[WorkerIdent] = threadId
     threadStatus[threadId] = "disconnect"
     threadName[threadId] = nil
@@ -245,10 +220,8 @@ local function update_once()
         end
     end
     update_redirect()
-    if not network.update() then
-        return true
-    end
-    local req = recv()
+    socket.update(0)
+    local req = socket.recvmsg()
     if not req then
         return true
     end
@@ -281,12 +254,12 @@ end
 function mgr.update()
     while not quit do
         if update_once() then
-            thread.sleep(0.01)
+            thread.sleep(10)
         end
     end
     local event = require 'backend.master.event'
     event.terminated()
-    network.closeall()
+    socket.closeall()
 end
 
 function mgr.setClient(c)

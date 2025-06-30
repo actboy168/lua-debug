@@ -11,7 +11,7 @@ local function find_directory_so(dir)
             find_directory_so(file)
         else
             local extension = file:extension()
-            if tostring(extension) == ".so" then
+            if extension == ".so" then
                 local filepath = tostring(file)
                 local t = filepath:find("x64") and x86_64 or arm64
                 if filepath:find("remote") then

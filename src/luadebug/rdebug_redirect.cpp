@@ -54,8 +54,7 @@ namespace luadebug::stdio {
         if (type == std_fd::STDIN) {
             set_handle(type, m_pipe[0]);
             m_pipe[0] = kInvalidHandle;
-        }
-        else {
+        } else {
             set_handle(type, m_pipe[1]);
             m_pipe[1] = kInvalidHandle;
         }
@@ -148,8 +147,7 @@ namespace luadebug::stdio {
             ::dup2(m_pipe[0], (int)m_type);
             ::close(m_pipe[0]);
             m_pipe[0] = kInvalidHandle;
-        }
-        else {
+        } else {
             ::dup2(m_pipe[1], (int)m_type);
             ::close(m_pipe[1]);
             m_pipe[1] = kInvalidHandle;

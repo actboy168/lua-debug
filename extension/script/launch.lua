@@ -12,7 +12,7 @@ end
 local dbg = dofile(path.."/script/debugger.lua")
 dbg:set_wait("DBG", function(str)
     local params = {}
-    str:gsub('[^-]+', function (w) params[#params+1] = w end)
+    str:gsub('[^/]+', function (w) params[#params+1] = w end)
 
     local cfg
     if  not params[1]:match "^%d+$" then
@@ -22,9 +22,15 @@ dbg:set_wait("DBG", function(str)
         local pid = params[1]
         cfg = { address = ("@%s/tmp/pid_%s"):format(path, pid) }
     end
-    for i = 2, #params do
-        local param = params[i]
-        cfg[param] = true
+    if params[2] == "ansi" then
+        cfg.ansi = true
+        if params[3] then
+            cfg.luaVersion = params[3]
+        end
+    else
+        if params[2] then
+            cfg.luaVersion = params[2]
+        end
     end
     dbg:start(cfg)
 end)

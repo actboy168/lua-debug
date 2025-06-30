@@ -8,7 +8,7 @@
 #if defined(_WIN32)
 #    include "rdebug_win32.h"
 #    if !defined(LUADBG_DISABLE)
-#        include <bee/platform/win/unicode.h>
+#        include <bee/win/unicode.h>
 #    endif
 #endif
 
@@ -88,8 +88,7 @@ namespace luadebug::debughost {
     static void push_errmsg(lua_State* hL, luadbg_State* L) {
         if (luadbg_type(L, -1) != LUA_TSTRING) {
             lua_pushstring(hL, "Unknown Error");
-        }
-        else {
+        } else {
             size_t sz       = 0;
             const char* err = luadbg_tolstring(L, -1, &sz);
             lua_pushlstring(hL, err, sz);
@@ -126,8 +125,7 @@ namespace luadebug::debughost {
         if (preprocessor) {
             // TODO: convert C function？
             luadbg_pushcfunction(L, (luadbg_CFunction)preprocessor);
-        }
-        else {
+        } else {
             luadbg_pushnil(L);
         }
 
@@ -153,7 +151,7 @@ namespace luadebug::debughost {
     }
 
 #if defined(_WIN32) && !defined(LUADBG_DISABLE)
-    static bee::zstring_view to_strview(lua_State* hL, int idx) {
+    static std::string_view to_strview(lua_State* hL, int idx) {
         size_t len      = 0;
         const char* buf = luaL_checklstring(hL, idx, &len);
         return { buf, len };

@@ -77,8 +77,7 @@ namespace luadebug::refvalue {
         if (lua_getupvalue(hL, -1, v.n)) {
             lua_replace(hL, -2);
             return lua_type(hL, -1);
-        }
-        else {
+        } else {
             lua_pop(hL, 1);
             return LUA_TNONE;
         }
@@ -119,8 +118,7 @@ namespace luadebug::refvalue {
         if (lua_getmetatable(hL, -1)) {
             lua_replace(hL, -2);
             return lua_type(hL, -1);
-        }
-        else {
+        } else {
             lua_pop(hL, 1);
             return LUA_TNONE;
         }

@@ -7,7 +7,7 @@ else
 end
 
 lm.builddir = ("build/%s/%s"):format(lm.platform, lm.mode)
-lm:import "3rd/bee.lua/make.lua"
+lm:import "compile/common/bee.lua"
 require "compile.common.lua-debug"
 
 lm.runtime_platform = lm.platform
@@ -43,16 +43,18 @@ lm:executable 'process_inject_helper' {
 if lm.platform == "darwin-arm64" then
     lm:build "merge_launcher" {
         deps = { "x86_64", "launcher" },
-        "lipo", "-create", "-output", "$out", "$in",
-        "build/darwin-x64/"..lm.mode.."/bin/launcher.so", --TODO
-        input = "$bin/launcher.so",
-        output = "publish/bin/launcher.so",
+        args = {
+            "lipo", "-create", "-output", "$out", "$in",
+            "build/darwin-x64/"..lm.mode.."/bin/launcher.so", --TODO
+        },
+        inputs = "$bin/launcher.so",
+        outputs = "publish/bin/launcher.so",
     }
 else
     lm:copy "merge_launcher" {
         deps = "launcher",
-        input = "$bin/launcher.so",
-        output = "publish/bin/launcher.so"
+        inputs = "$bin/launcher.so",
+        outputs = "publish/bin/launcher.so"
     }
 end
 

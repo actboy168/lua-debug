@@ -2,6 +2,7 @@ local lm = require "luamake"
 
 lm.arch = "x86"
 lm.runtime_platform = "win32-ia32"
+
 require "compile.windows.runtime"
 require "compile.common.run_luamake"
 
@@ -15,7 +16,7 @@ lm:build "x86_64" {
     },
 }
 
-lm:import "3rd/bee.lua/make.lua"
+lm:import "compile/common/bee.lua"
 require "compile.common.lua-debug"
 
 lm:default {

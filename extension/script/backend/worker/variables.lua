@@ -218,11 +218,11 @@ local function floatToString(x)
     return floatNormalize(g)
 end
 
-local function formatInteger(v)
+local function formatInteger(value)
     if showIntegerAsHex then
-        return ('0x%x'):format(rdebug.value(v))
+        return ('0x%x'):format(value)
     else
-        return ('%d'):format(rdebug.value(v))
+        return ('%d'):format(value)
     end
 end
 
@@ -275,24 +275,22 @@ local function varCanExtand(type, value)
     return false
 end
 
-local function varGetShortName(value)
-    local type = rdebug.type(value)
+local function varGetShortName(v)
+    local type, value = rdebug.value(v)
     if LUAVERSION <= 52 and type == "float" then
-        local rvalue = rdebug.value(value)
-        ---@cast rvalue number
-        if rvalue == math.floor(rvalue) then
+        ---@cast value number
+        if value == math.floor(value) then
             type = 'integer'
         end
     end
     if type == 'string' then
-        local str = rdebug.value(value)
-        ---@cast str string
-        if #str < 32 then
-            return str
+        ---@cast value string
+        if #value < 32 then
+            return value
         end
-        return quotedString(str:sub(1, 32))..'...'
+        return quotedString(value:sub(1, 32))..'...'
     elseif type == 'boolean' then
-        if rdebug.value(value) then
+        if value then
             return 'true'
         else
             return 'false'
@@ -300,48 +298,45 @@ local function varGetShortName(value)
     elseif type == 'nil' then
         return 'nil'
     elseif type == 'integer' then
-        local rvalue = rdebug.value(value)
-        if rvalue > 0 and rvalue < 1000 then
-            return ('[%03d]'):format(rvalue)
+        if value > 0 and value < 1000 then
+            return ('[%03d]'):format(value)
         end
-        return ('%d'):format(rvalue)
+        return ('%d'):format(value)
     elseif type == 'float' then
-        return floatToShortString(rdebug.value(value))
+        return floatToShortString(value)
     elseif type == 'cdata' or type == 'ctype' then
-        return eval.ffi_reflect("shorttypename", value) or type
+        return eval.ffi_reflect("shorttypename", v) or type
     end
-    return tostring(rdebug.value(value))
+    return ("%s: %s"):format(type, value)
 end
 
-local function varGetName(value)
-    local type = rdebug.type(value)
+local function varGetName(v)
+    local type, value = rdebug.value(v)
     if LUAVERSION <= 52 and type == "float" then
-        local rvalue = rdebug.value(value)
-        ---@cast rvalue number
-        if rvalue == math.floor(rvalue) then
+        ---@cast value number
+        if value == math.floor(value) then
             type = 'integer'
         end
     end
     if type == 'integer' then
-        local rvalue = rdebug.value(value)
-        if rvalue > 0 and rvalue < 1000 then
-            return ('[%03d]'):format(rvalue)
+        if value > 0 and value < 1000 then
+            return ('[%03d]'):format(value)
         end
-        return ('%d'):format(rvalue)
+        return ('%d'):format(value)
     elseif type == 'float' then
-        return floatToString(rdebug.value(value))
+        return floatToString(value)
     elseif type == 'string' then
-        return quotedString(rdebug.value(value))
+        return quotedString(value)
     elseif type == 'cdata' then
-        return eval.ffi_reflect("shorttypename", value) or "cdata"
+        return eval.ffi_reflect("shorttypename", v) or "cdata"
     elseif type == 'ctype' then
-        local tt = eval.ffi_reflect("shorttypename", value)
+        local tt = eval.ffi_reflect("shorttypename", v)
         if not tt then
             return type
         end
         return "ctype("..tt..")"
     end
-    return tostring(rdebug.value(value))
+    return ("%s: %s"):format(type, value)
 end
 
 local function varGetShortUserdata(value)
@@ -349,23 +344,22 @@ local function varGetShortUserdata(value)
     if meta ~= nil then
         local name = rdebug.fieldv(meta, '__name')
         if name ~= nil then
-            return tostring(rdebug.value(name))
+            return rdebug.tostring(name)
         end
     end
     return 'userdata'
 end
 
-local function varGetShortValue(value)
-    local type = rdebug.type(value)
+local function varGetShortValue(v)
+    local type, value = rdebug.value(v)
     if type == 'string' then
-        local str = rdebug.value(value)
-        ---@cast str string
-        if #str < 16 then
-            return ("'%s'"):format(quotedString(str))
+        ---@cast value string
+        if #value < 16 then
+            return ("'%s'"):format(quotedString(value))
         end
-        return ("'%s...'"):format(quotedString(str:sub(1, 16)))
+        return ("'%s...'"):format(quotedString(value:sub(1, 16)))
     elseif type == 'boolean' then
-        if rdebug.value(value) then
+        if value then
             return 'true'
         else
             return 'false'
@@ -375,20 +369,20 @@ local function varGetShortValue(value)
     elseif type == 'integer' then
         return formatInteger(value)
     elseif type == 'float' then
-        return floatToShortString(rdebug.value(value))
+        return floatToShortString(value)
     elseif type == 'function' then
         return 'func'
     elseif type == 'c function' then
         return 'func'
     elseif type == 'table' then
-        if varCanExtand(type, value) then
+        if varCanExtand(type, v) then
             return "..."
         end
         return '{}'
     elseif type == 'userdata' then
-        return varGetShortUserdata(value)
+        return varGetShortUserdata(v)
     elseif type == 'cdata' then
-        return eval.ffi_reflect("shortvalue", value)
+        return eval.ffi_reflect("shortvalue", v)
     end
     return type
 end
@@ -474,11 +468,11 @@ local function getFunctionCode(str, startLn, endLn)
     return str:sub(startPos, endPos)
 end
 
-local function varGetFunctionCode(value)
-    rdebug.getinfo(value, "S", info)
+local function varGetFunctionCode(v, value)
+    rdebug.getinfo(v, "S", info)
     local src = source.create(info.source)
     if not source.valid(src) then
-        return tostring(rdebug.value(value))
+        return ("function: %s"):format(value)
     end
     if not src.sourceReference then
         return ("%s:%d"):format(source.clientPath(src.path), info.linedefined)
@@ -514,33 +508,32 @@ local function varGetUserdata(value, allow_lazy)
         end
         local name = rdebug.fieldv(meta, '__name')
         if name ~= nil then
-            return tostring(rdebug.value(name)), "userdata"
+            return rdebug.tostring(name), "userdata"
         end
     end
     return 'userdata', "userdata"
 end
 
 -- context: variables,hover,watch,repl,clipboard
-local function varGetValue(context, allow_lazy, value)
-    local type = rdebug.type(value)
+local function varGetValue(context, allow_lazy, v)
+    local type, value = rdebug.value(v)
     if type == 'string' then
-        local str = rdebug.value(value)
-        ---@cast str string
+        ---@cast value string
         if context == "repl" or context == "clipboard" then
-            return ("'%s'"):format(str), 'string'
+            return ("'%s'"):format(value), 'string'
         end
         if context == "hover" then
-            if #str < 2048 then
-                return ("'%s'"):format(str), 'string'
+            if #value < 2048 then
+                return ("'%s'"):format(value), 'string'
             end
-            return ("'%s...'"):format(str:sub(1, 2048)), 'string'
+            return ("'%s...'"):format(value:sub(1, 2048)), 'string'
         end
-        if #str < 1024 then
-            return ("'%s'"):format(quotedString(str)), 'string'
+        if #value < 1024 then
+            return ("'%s'"):format(quotedString(value)), 'string'
         end
-        return ("'%s...'"):format(quotedString(str:sub(1, 1024))), 'string'
+        return ("'%s...'"):format(quotedString(value:sub(1, 1024))), 'string'
     elseif type == 'boolean' then
-        if rdebug.value(value) then
+        if value then
             return 'true', 'boolean'
         else
             return 'false', 'boolean'
@@ -550,37 +543,37 @@ local function varGetValue(context, allow_lazy, value)
     elseif type == 'integer' then
         return formatInteger(value), 'integer'
     elseif type == 'float' then
-        return floatToString(rdebug.value(value)), 'float'
+        return floatToString(value), 'float'
     elseif type == 'function' then
-        return varGetFunctionCode(value), 'function'
+        return varGetFunctionCode(v, value), 'function'
     elseif type == 'c function' then
         return "C function", 'c function'
     elseif type == 'table' then
         if context == "clipboard" then
-            return serialize(value), 'table'
+            return serialize(v), 'table'
         end
-        return varGetTableValue(value), 'table'
+        return varGetTableValue(v), 'table'
     elseif type == 'userdata' then
-        return varGetUserdata(value, allow_lazy)
+        return varGetUserdata(v, allow_lazy)
     elseif type == 'lightuserdata' then
-        return 'light'..tostring(rdebug.value(value)), 'lightuserdata'
+        return 'light'..tostring(value), 'lightuserdata'
     elseif type == 'thread' then
-        return ('thread (%s)'):format(rdebug.costatus(value)), 'thread'
+        return ('thread (%s)'):format(rdebug.costatus(v)), 'thread'
     elseif type == 'cdata' then
-        local t = eval.ffi_reflect("shorttypename", value)
+        local t = eval.ffi_reflect("shorttypename", v)
         if not t then
             return "cdata", 'cdata'
         end
-        local v = eval.ffi_reflect("shortvalue", value)
+        local v = eval.ffi_reflect("shortvalue", v)
         if not v then
             return t, 'cdata'
         end
         return tostring(v).." ("..t..")", 'cdata'
     elseif type == 'ctype' then
-        local name = eval.ffi_reflect("shorttypename", value)
+        local name = eval.ffi_reflect("shorttypename", v)
         return "ctype("..(name or "unknown")..")", 'ctype'
     end
-    return tostring(rdebug.value(value)), type
+    return ("%s: %s"):format(type, value), type
 end
 
 local function varCreateReference(value, evaluateName, presentationHint, context)
@@ -717,16 +710,15 @@ local function cfunctioninfo(func)
 end
 
 local function getTabelKey(key)
-    local type = rdebug.type(key)
+    local type, value = rdebug.value(key)
     if type == 'string' then
-        local str = rdebug.value(key)
-        ---@cast str string
-        if str:match '^[_%a][_%w]*$' then
-            return ('.%s'):format(str)
+        ---@cast value string
+        if value:match '^[_%a][_%w]*$' then
+            return ('.%s'):format(value)
         end
-        return ('[%q]'):format(str)
+        return ('[%q]'):format(value)
     elseif type == 'boolean' or type == 'float' or type == 'integer' then
-        return ('[%s]'):format(tostring(rdebug.value(key)))
+        return ('[%s]'):format(tostring(value))
     end
 end
 
@@ -1375,8 +1367,7 @@ function m.readMemory(memoryReference, offset, count)
     end
     offset = offset or 0
     if memoryRef.type == "string" then
-        local str = rdebug.value(memoryRef.value)
-        ---@cast str string
+        local str = rdebug.tostring(memoryRef.value)
         local slice = str:sub(offset + 1, offset + count)
         if not slice then
             return {
@@ -1459,22 +1450,22 @@ function m.tostring(v)
             end
         end
     end
-    local type = rdebug.type(v)
+    local type, value = rdebug.value(v)
     if type == 'integer' or
         type == 'float' or
         type == 'string' or
         type == 'boolean' or
         type == 'nil'
     then
-        return tostring(rdebug.value(v))
+        return tostring(value)
     end
     if meta ~= nil then
         local name = rdebug.fieldv(meta, '__name')
         if name ~= nil then
-            type = tostring(rdebug.value(name))
+            type = rdebug.tostring(name)
         end
     end
-    return tostring(rdebug.value(v))
+    return ("%s: %s"):format(type, value)
 end
 
 function m.showIntegerAsDec()

@@ -32,8 +32,7 @@ namespace luadebug {
                 if (_lua_pcall) {
                     return (intptr_t)_lua_pcallk;
                 }
-            }
-            else if (name == "luaL_loadbufferx"sv) {
+            } else if (name == "luaL_loadbufferx"sv) {
                 _luaL_loadbuffer = (decltype(_luaL_loadbuffer))(this->*finder)("luaL_loadbuffer"sv);
                 if (_luaL_loadbuffer) {
                     return (intptr_t)_luaL_loadbufferx;
