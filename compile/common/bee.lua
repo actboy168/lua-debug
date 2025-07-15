@@ -43,7 +43,7 @@ end
 lm:source_set "source_bee" {
     includes = {
         ".",
-        "3rd/lua/",
+        "3rd/lua54/",
     },
     sources = "bee/**/*.cpp",
     windows = {
@@ -175,9 +175,9 @@ lm:source_set "source_lua" {
 }
 
 lm:source_set "source_lua" {
-    includes = "3rd/lua",
+    includes = "3rd/lua54",
     sources = {
-        "3rd/lua/onelua.c",
+        "3rd/lua54/onelua.c",
     },
     defines = "MAKE_LIB",
     windows = {
@@ -224,7 +224,7 @@ lm:source_set "source_bootstrap" {
         "source_bee",
         "source_lua",
     },
-    includes = { "3rd/lua", "." },
+    includes = { "3rd/lua54", "." },
     sources = {
         "bootstrap/main.cpp",
         "bootstrap/bootstrap_init.cpp",
