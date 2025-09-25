@@ -579,24 +579,8 @@ local function varGetValue(context, allow_lazy, v)
     return ("%s: %s"):format(type, value), type
 end
 
-local function deep_copy(tbl, seen)
-    if type(tbl) ~= 'table' then
-        return tbl
-    end
-    if seen and seen[tbl] then
-        return seen[tbl]
-    end
-    local s = seen or {}
-    local res = {}
-    s[tbl] = res
-    for k, v in pairs(tbl) do
-        res[deep_copy(k, s)] = deep_copy(v, s)
-    end
-    return res
-end
-
-local function varCreateReference(value, evaluateName, presentationHint, context)
-    local valuestr, type, lazy = varGetValue(context, true, value)
+local function varCreateReference(value, evaluateName, presentationHint, context, allow_lazy)
+    local valuestr, type, lazy = varGetValue(context, allow_lazy, value)
     if lazy == nil then
         lazy = false
     end
@@ -621,23 +605,13 @@ local function varCreateReference(value, evaluateName, presentationHint, context
             v = value,
             eval = evaluateName,
             context = context,
+            lazy = result.presentationHint.lazy,
         }
         result.variablesReference = #varPool
         if type == "table" then
             local asize, hsize = rdebug.tablesize(value)
             result.indexedVariables = arrayBase + asize
             result.namedVariables = hsize
-        end
-        if result.presentationHint.lazy then
-            local lazy_result = deep_copy(result)
-            lazy_result.presentationHint.lazy = nil
-            varPool[#varPool + 1] = {
-                v = value,
-                eval = evaluateName,
-                context = context,
-                lazy = lazy_result,
-            }
-            result.variablesReference = #varPool
         end
     end
     return result
@@ -721,7 +695,7 @@ local function varCreate(t)
     if type(t.evaluateName) ~= "string" then
         t.evaluateName = nil
     end
-    local var = varCreateReference(t.value, t.evaluateName, t.presentationHint or {}, "variables")
+    local var = varCreateReference(t.value, t.evaluateName, t.presentationHint or {}, "variables", true)
     var.name = name
     var.evaluateName = t.evaluateName
     vars[#vars + 1] = var
@@ -1288,7 +1262,8 @@ end
 
 local function extandValue(varRef, filter, start, count)
     if varRef.lazy then
-        return { varRef.lazy }
+        local var = varCreateReference(varRef.v, varRef.eval, {}, varRef.context, false)
+        return { var }
     end
     if varRef.special then
         return special_extand[varRef.special](varRef, filter, start, count)
@@ -1344,7 +1319,7 @@ local function setValue(varRef, name, value)
             end
         end
     end
-    return varCreateReference(rvalue, evaluateName, {}, "variables")
+    return varCreateReference(rvalue, evaluateName, {}, "variables", true)
 end
 
 local m = {}
@@ -1464,7 +1439,7 @@ function m.createText(value, context)
 end
 
 function m.createRef(value, evaluateName, context)
-    return varCreateReference(value, evaluateName, {}, context)
+    return varCreateReference(value, evaluateName, {}, context, true)
 end
 
 function m.tostring(v)
