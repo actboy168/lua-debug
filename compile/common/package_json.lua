@@ -5,7 +5,7 @@ local OS, ARCH = platform:match "^([^-]+)-([^-]+)$"
 
 local json = {
     name = "lua-debug",
-    version = "2.1.0",
+    version = "2.1.1",
     publisher = "actboy168",
     displayName = "Lua Debug",
     description = "VSCode debugger extension for Lua",
