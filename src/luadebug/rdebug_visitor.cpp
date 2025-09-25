@@ -291,7 +291,7 @@ namespace luadebug::visitor {
             return 0;
         }
         luadbg_newtable(L);
-        luadbg_Integer n = 0;
+        luadbg_Integer n   = 0;
         unsigned int index = 0;
         for (;;) {
             // next, t, k
