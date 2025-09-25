@@ -8,7 +8,31 @@
 #include "compat/table.h"
 #include "rdebug_lua.h"
 
+#ifdef LUAJIT_VERSION
+#    include <lj_cdata.h>
+#    include <lj_debug.h>
+#else
+#    include <lstate.h>
+#endif
+
 namespace luadebug::refvalue {
+    static int debug_pcall(lua_State* hL, int nargs, int nresults, int errfunc) {
+#ifdef LUAJIT_VERSION
+        global_State* g = G(hL);
+        bool needClean  = !hook_active(g);
+        hook_enter(g);
+        int ok = lua_pcall(hL, nargs, nresults, errfunc);
+        if (needClean)
+            hook_leave(g);
+#else
+        lu_byte oldah = hL->allowhook;
+        hL->allowhook = 0;
+        int ok        = lua_pcall(hL, nargs, nresults, errfunc);
+        hL->allowhook = oldah;
+#endif
+        return ok;
+    }
+
     template <typename T>
     int eval(T&, lua_State*, value*);
 
@@ -202,6 +226,106 @@ namespace luadebug::refvalue {
         }
         lua_replace(hL, -2);
         return lua_type(hL, -1);
+    }
+
+    template <>
+    int eval<USERDATA_KEY>(USERDATA_KEY& v, lua_State* hL, value* parent) {
+        int t = eval(parent, hL);
+        if (t == LUA_TNONE)
+            return LUA_TNONE;
+        if (t != LUA_TUSERDATA) {
+            lua_pop(hL, 1);
+            return LUA_TNONE;
+        }
+        if (lua_getmetatable(hL, -1) == 0) {
+            lua_pop(hL, 1);
+            return LUA_TNONE;
+        }
+        lua_getfield(hL, -1, "__pairs");
+        if (LUA_TFUNCTION == lua_type(hL, -1)) {
+            lua_pop(hL, 3);
+            return LUA_TNONE;
+        }
+        lua_remove(hL, -2);
+        lua_insert(hL, -2);
+        if (!debug_pcall(hL, 1, 3, 0)) {
+            lua_pop(hL, 1);
+            return LUA_TNONE;
+        }
+        for (auto i = 0;; ++i) {
+            // next, t, k
+            lua_pushvalue(hL, -3);
+            lua_pushvalue(hL, -3);
+            lua_pushvalue(hL, -3);
+            lua_remove(hL, -4);
+            // next, t, next, t, k
+            if (!debug_pcall(hL, 2, 2, 0)) {
+                lua_pop(hL, 3);
+                return LUA_TNONE;
+            }
+            // next, t, k, v
+            if (lua_isnoneornil(hL, -2)) {
+                lua_pop(hL, 4);
+                return LUA_TNONE;
+            }
+            if (i == v.index) {
+                lua_pop(hL, 1);
+                lua_remove(hL, -2);
+                lua_remove(hL, -2);
+                return lua_type(hL, -1);
+            }
+            lua_pop(hL, 1);
+        }
+    }
+
+    template <>
+    int eval<USERDATA_VAL>(USERDATA_VAL& v, lua_State* hL, value* parent) {
+        int t = eval(parent, hL);
+        if (t == LUA_TNONE)
+            return LUA_TNONE;
+        if (t != LUA_TUSERDATA) {
+            lua_pop(hL, 1);
+            return LUA_TNONE;
+        }
+        if (lua_getmetatable(hL, -1) == 0) {
+            lua_pop(hL, 1);
+            return LUA_TNONE;
+        }
+        lua_getfield(hL, -1, "__pairs");
+        if (LUA_TFUNCTION == lua_type(hL, -1)) {
+            lua_pop(hL, 3);
+            return LUA_TNONE;
+        }
+        lua_remove(hL, -2);
+        lua_insert(hL, -2);
+        if (!debug_pcall(hL, 1, 3, 0)) {
+            lua_pop(hL, 1);
+            return LUA_TNONE;
+        }
+        for (auto i = 0;; ++i) {
+            // next, t, k
+            lua_pushvalue(hL, -3);
+            lua_pushvalue(hL, -3);
+            lua_pushvalue(hL, -3);
+            lua_remove(hL, -4);
+            // next, t, next, t, k
+            if (!debug_pcall(hL, 2, 2, 0)) {
+                lua_pop(hL, 3);
+                return LUA_TNONE;
+            }
+            // next, t, k, v
+            if (lua_isnoneornil(hL, -2)) {
+                lua_pop(hL, 4);
+                return LUA_TNONE;
+            }
+            if (i == v.index) {
+                lua_remove(hL, -2);
+                lua_remove(hL, -2);
+                lua_remove(hL, -2);
+                return lua_type(hL, -1);
+            }
+            lua_pop(hL, 1);
+        }
     }
 
     int eval(value* v, lua_State* hL) {

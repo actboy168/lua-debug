@@ -270,6 +270,69 @@ namespace luadebug::visitor {
     }
 
     template <bool getref = true>
+    static int visitor_userdata_pairs(luadbg_State* L, lua_State* hL, protected_area& area) {
+        area.check_client_stack(4);
+        if (!copy_from_dbg(L, hL, area, 1, LUADBG_TUSERDATA)) {
+            return 0;
+        }
+        if (lua_getmetatable(hL, -1) == 0) {
+            lua_pop(hL, 1);
+            return 0;
+        }
+        lua_getfield(hL, -1, "__pairs");
+        if (LUA_TFUNCTION == lua_type(hL, -1)) {
+            lua_pop(hL, 3);
+            return 0;
+        }
+        lua_remove(hL, -2);
+        lua_insert(hL, -2);
+        if (!debug_pcall(hL, 1, 3, 0)) {
+            lua_pop(hL, 1);
+            return 0;
+        }
+        luadbg_newtable(L);
+        luadbg_Integer n = 0;
+        unsigned int index = 0;
+        for (;;) {
+            // next, t, k
+            lua_pushvalue(hL, -3);
+            lua_pushvalue(hL, -3);
+            lua_pushvalue(hL, -3);
+            lua_remove(hL, -4);
+            // next, t, next, t, k
+            if (!debug_pcall(hL, 2, 2, 0)) {
+                lua_pop(hL, 3);
+                return 0;
+            }
+            // next, t, k, v
+            if (lua_isnoneornil(hL, -2)) {
+                lua_pop(hL, 4);
+                return 1;
+            }
+            if (copy_to_dbg(hL, L) == LUA_TNONE) {
+                refvalue::create(L, 1, refvalue::USERDATA_KEY { index });
+            }
+            luadbg_rawseti(L, -2, ++n);
+            lua_pop(hL, 1);
+
+            if (getref) {
+                refvalue::create(L, 1, refvalue::USERDATA_VAL { index });
+                if (copy_to_dbg(hL, L) == LUA_TNONE) {
+                    luadbg_pushvalue(L, -1);
+                }
+                luadbg_rawseti(L, -3, ++n);
+            } else {
+                if (copy_to_dbg(hL, L) == LUA_TNONE) {
+                    refvalue::create(L, 1, refvalue::USERDATA_VAL { index });
+                }
+            }
+            ++index;
+            luadbg_rawseti(L, -2, ++n);
+        }
+        return 1;
+    }
+
+    template <bool getref = true>
     static int visitor_tablearray(luadbg_State* L, lua_State* hL, protected_area& area) {
         unsigned int i = area.optinteger<unsigned int>(L, 2, 0);
         unsigned int j = area.optinteger<unsigned int>(L, 3, (std::numeric_limits<unsigned int>::max)());
@@ -1059,6 +1122,8 @@ namespace luadebug::visitor {
             { "getuservaluev", protected_call<visitor_getuservalue<false>> },
             { "field", protected_call<visitor_field> },
             { "fieldv", protected_call<visitor_field<false>> },
+            { "userdata_pairs", protected_call<visitor_userdata_pairs> },
+            { "userdata_pairsv", protected_call<visitor_userdata_pairs<false>> },
             { "tablearray", protected_call<visitor_tablearray> },
             { "tablearrayv", protected_call<visitor_tablearray<false>> },
             { "tablehash", protected_call<visitor_tablehash> },

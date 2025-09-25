@@ -933,6 +933,30 @@ local function extandUserdata(varRef)
             }
         end
     end
+
+    local members = {}
+    local loct = rdebug.userdata_pairs(u)
+    if loct then
+        for i = 1, #loct, 3 do
+            local key, value, valueref = loct[i], loct[i + 1], loct[i + 2]
+            local key_type = rdebug.type(key)
+            if varCanExtand(key_type, key) then
+                members[#members + 1] = varCreateTableKV(key, value, "variables")
+            else
+                varCreate {
+                    vars = members,
+                    varRef = varRef,
+                    name = varGetName(key),
+                    value = value,
+                    evaluateName = evaluateTabelKey(evaluateName, key),
+                    calcValue = function() return valueref end,
+                }
+            end
+        end
+        table.sort(members, function(a, b) return a.name < b.name end)
+        table.move(members, 1, #members, #vars + 1)
+    end
+
     return vars
 end
 
