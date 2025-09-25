@@ -275,18 +275,18 @@ namespace luadebug::visitor {
         if (!copy_from_dbg(L, hL, area, 1, LUADBG_TUSERDATA)) {
             return 0;
         }
-        if (lua_getmetatable(hL, -1) == 0) {
+        if (!lua_getmetatable(hL, -1)) {
             lua_pop(hL, 1);
             return 0;
         }
         lua_getfield(hL, -1, "__pairs");
-        if (LUA_TFUNCTION == lua_type(hL, -1)) {
+        if (LUA_TFUNCTION != lua_type(hL, -1)) {
             lua_pop(hL, 3);
             return 0;
         }
         lua_remove(hL, -2);
         lua_insert(hL, -2);
-        if (!debug_pcall(hL, 1, 3, 0)) {
+        if (debug_pcall(hL, 1, 3, 0)) {
             lua_pop(hL, 1);
             return 0;
         }
@@ -300,7 +300,7 @@ namespace luadebug::visitor {
             lua_pushvalue(hL, -3);
             lua_remove(hL, -4);
             // next, t, next, t, k
-            if (!debug_pcall(hL, 2, 2, 0)) {
+            if (debug_pcall(hL, 2, 2, 0)) {
                 lua_pop(hL, 3);
                 return 0;
             }
@@ -309,27 +309,27 @@ namespace luadebug::visitor {
                 lua_pop(hL, 4);
                 return 1;
             }
-            if (copy_to_dbg(hL, L) == LUA_TNONE) {
+            if (copy_to_dbg(hL, L, -2) == LUA_TNONE) {
                 refvalue::create(L, 1, refvalue::USERDATA_KEY { index });
             }
             luadbg_rawseti(L, -2, ++n);
-            lua_pop(hL, 1);
 
             if (getref) {
                 refvalue::create(L, 1, refvalue::USERDATA_VAL { index });
-                if (copy_to_dbg(hL, L) == LUA_TNONE) {
+                if (copy_to_dbg(hL, L, -1) == LUA_TNONE) {
                     luadbg_pushvalue(L, -1);
                 }
                 luadbg_rawseti(L, -3, ++n);
             } else {
-                if (copy_to_dbg(hL, L) == LUA_TNONE) {
+                if (copy_to_dbg(hL, L, -1) == LUA_TNONE) {
                     refvalue::create(L, 1, refvalue::USERDATA_VAL { index });
                 }
             }
-            ++index;
             luadbg_rawseti(L, -2, ++n);
+            lua_pop(hL, 1);
+
+            ++index;
         }
-        return 1;
     }
 
     template <bool getref = true>

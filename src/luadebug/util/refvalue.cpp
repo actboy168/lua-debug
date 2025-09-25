@@ -237,18 +237,18 @@ namespace luadebug::refvalue {
             lua_pop(hL, 1);
             return LUA_TNONE;
         }
-        if (lua_getmetatable(hL, -1) == 0) {
+        if (!lua_getmetatable(hL, -1)) {
             lua_pop(hL, 1);
             return LUA_TNONE;
         }
         lua_getfield(hL, -1, "__pairs");
-        if (LUA_TFUNCTION == lua_type(hL, -1)) {
+        if (LUA_TFUNCTION != lua_type(hL, -1)) {
             lua_pop(hL, 3);
             return LUA_TNONE;
         }
         lua_remove(hL, -2);
         lua_insert(hL, -2);
-        if (!debug_pcall(hL, 1, 3, 0)) {
+        if (debug_pcall(hL, 1, 3, 0)) {
             lua_pop(hL, 1);
             return LUA_TNONE;
         }
@@ -259,7 +259,7 @@ namespace luadebug::refvalue {
             lua_pushvalue(hL, -3);
             lua_remove(hL, -4);
             // next, t, next, t, k
-            if (!debug_pcall(hL, 2, 2, 0)) {
+            if (debug_pcall(hL, 2, 2, 0)) {
                 lua_pop(hL, 3);
                 return LUA_TNONE;
             }
@@ -287,18 +287,18 @@ namespace luadebug::refvalue {
             lua_pop(hL, 1);
             return LUA_TNONE;
         }
-        if (lua_getmetatable(hL, -1) == 0) {
+        if (!lua_getmetatable(hL, -1)) {
             lua_pop(hL, 1);
             return LUA_TNONE;
         }
         lua_getfield(hL, -1, "__pairs");
-        if (LUA_TFUNCTION == lua_type(hL, -1)) {
+        if (LUA_TFUNCTION != lua_type(hL, -1)) {
             lua_pop(hL, 3);
             return LUA_TNONE;
         }
         lua_remove(hL, -2);
         lua_insert(hL, -2);
-        if (!debug_pcall(hL, 1, 3, 0)) {
+        if (debug_pcall(hL, 1, 3, 0)) {
             lua_pop(hL, 1);
             return LUA_TNONE;
         }
@@ -309,7 +309,7 @@ namespace luadebug::refvalue {
             lua_pushvalue(hL, -3);
             lua_remove(hL, -4);
             // next, t, next, t, k
-            if (!debug_pcall(hL, 2, 2, 0)) {
+            if (debug_pcall(hL, 2, 2, 0)) {
                 lua_pop(hL, 3);
                 return LUA_TNONE;
             }

@@ -934,9 +934,9 @@ local function extandUserdata(varRef)
         end
     end
 
-    local members = {}
     local loct = rdebug.userdata_pairs(u)
     if loct then
+        local members = {}
         for i = 1, #loct, 3 do
             local key, value, valueref = loct[i], loct[i + 1], loct[i + 2]
             local key_type = rdebug.type(key)
@@ -954,9 +954,8 @@ local function extandUserdata(varRef)
             end
         end
         table.sort(members, function(a, b) return a.name < b.name end)
-        table.move(members, 1, #members, #vars + 1)
+        table.move(members, 1, #members, #vars + 1, vars)
     end
-
     return vars
 end
 
