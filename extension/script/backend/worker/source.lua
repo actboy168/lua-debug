@@ -32,7 +32,7 @@ ev.on('initializing', function(config)
             local sm = {}
             sm[1] = ('^%s$'):format(fs.source_native(fs.source_normalize(pattern[1])):gsub('[%^%$%(%)%%%.%[%]%+%-%?]', '%%%0'))
             if sm[1]:find '%*' then
-                sm[1] = sm[1]:gsub('%*', '(.*)')
+                sm[1] = sm[1]:gsub('%*', '().*')
             end
             sm[2] = fs.path_normalize(pattern[2])
             sourceMaps[#sourceMaps + 1] = sm
@@ -50,12 +50,13 @@ local function glob_match(pattern, target)
     return target:match(pattern) ~= nil
 end
 
-local function glob_replace(pattern, target)
-    local res = table.pack(target:match(pattern[1]))
+local function glob_replace(pattern, path, nativePath)
+    local res = table.pack(nativePath:match(pattern[1]))
     if res[1] == nil then
         return false
     end
-    return pattern[2]:gsub("%*", res[1])
+    local sz = res[1]
+    return pattern[2]:gsub("%*", path:sub(sz))
 end
 
 local function covertPath(p)
@@ -73,7 +74,8 @@ local function serverPathToClientPath(p)
         p = fs.a2u(p)
     end
     local skip = false
-    local nativePath = fs.source_native(fs.source_normalize(p))
+    local path = fs.source_normalize(p)
+    local nativePath = fs.source_native(path)
     for _, pattern in ipairs(skipFiles) do
         if glob_match(pattern, nativePath) then
             skip = true
@@ -81,7 +83,7 @@ local function serverPathToClientPath(p)
         end
     end
     for _, pattern in ipairs(sourceMaps) do
-        local res = glob_replace(pattern, nativePath)
+        local res = glob_replace(pattern, path, nativePath)
         if res then
             return skip, covertPath(res)
         end
