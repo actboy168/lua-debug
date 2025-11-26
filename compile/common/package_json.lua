@@ -279,7 +279,12 @@ attributes.attach = {
         default = "lua.exe",
         markdownDescription = "Name of process to attach to.",
         type = "string",
-    }
+    },
+    waitForDebugger = {
+        default = false,
+        markdownDescription = "Wait for debugger to attach. (It needs to be implemented in the debugging host.)",
+        type = "boolean",
+    },
 }
 
 json.contributes.debuggers[1].variables = {
