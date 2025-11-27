@@ -5,7 +5,7 @@ local OS, ARCH = platform:match "^([^-]+)-([^-]+)$"
 
 local json = {
     name = "lua-debug",
-    version = "2.1.2",
+    version = "2.1.3",
     publisher = "actboy168",
     displayName = "Lua Debug",
     description = "VSCode debugger extension for Lua",
@@ -280,7 +280,12 @@ attributes.attach = {
         default = "lua.exe",
         markdownDescription = "Name of process to attach to.",
         type = "string",
-    }
+    },
+    waitForDebugger = {
+        default = false,
+        markdownDescription = "Wait for debugger to attach. (It needs to be implemented in the debugging host.)",
+        type = "boolean",
+    },
 }
 
 json.contributes.debuggers[1].variables = {
