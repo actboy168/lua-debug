@@ -21,7 +21,9 @@ namespace luadebug::table {
     }
 
     static unsigned int array_limit(const Table* t) {
-#if LUA_VERSION_NUM >= 504
+#if LUA_VERSION_NUM >= 505
+        return t->asize;
+#elif LUA_VERSION_NUM == 504
         if ((!(t->marked & BITRAS) || (t->alimit & (t->alimit - 1)) == 0)) {
             return t->alimit;
         }
@@ -46,9 +48,16 @@ namespace luadebug::table {
         unsigned int alimit = array_limit(t);
         if (alimit) {
             for (unsigned int i = alimit; i > 0; --i) {
+#if LUA_VERSION_NUM >= 505
+                int tag = *getArrTag(t, i - 1);
+                if (!tagisempty(tag)) {
+                    return i;
+                }
+#else
                 if (!ttisnil(&t->array[i - 1])) {
                     return i;
                 }
+#endif
             }
         }
         return 0;
@@ -129,24 +138,50 @@ namespace luadebug::table {
     }
 
     bool get_array(lua_State* L, const void* tv, unsigned int i) {
+#if LUA_VERSION_NUM >= 505
+        Table* t   = (Table*)tv;
+        unsigned k = (i - 1 < t->asize) ? i : 0;
+        if (k == 0) {
+            return false;
+        }
+        lu_byte tag = *getArrTag(t, k - 1);
+        if (tagisempty(tag)) {
+            return false;
+        }
+        farr2val(t, k - 1, tag, s2v(LUA_STKID(L->top)));
+        LUA_STKID(L->top) += 1;
+        return true;
+#else
         const Table* t = (const Table*)tv;
         if (i >= array_limit(t)) {
             return false;
         }
-        TValue* value = &t->array[i];
-        setobj2s(L, LUA_STKID(L->top), value);
+        TValue& value = t->array[i];
+        setobj2s(L, LUA_STKID(L->top), &value);
         LUA_STKID(L->top) += 1;
         return true;
+#endif
     }
 
     bool set_array(lua_State* L, const void* tv, unsigned int i) {
+#if LUA_VERSION_NUM >= 505
+        Table* t   = (Table*)tv;
+        unsigned k = (i - 1 < t->asize) ? i : 0;
+        if (k == 0) {
+            return false;
+        }
+        obj2arr(t, k - 1, s2v(LUA_STKID(L->top) - 1));
+        LUA_STKID(L->top) -= 1;
+        return true;
+#else
         const Table* t = (const Table*)tv;
         if (i >= array_limit(t)) {
             return false;
         }
-        TValue* value = &t->array[i];
-        setobj2t(L, value, s2v(LUA_STKID(L->top) - 1));
+        TValue& value = t->array[i];
+        setobj2t(L, &value, s2v(LUA_STKID(L->top) - 1));
         LUA_STKID(L->top) -= 1;
         return true;
+#endif
     }
 }

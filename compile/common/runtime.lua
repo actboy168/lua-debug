@@ -68,6 +68,7 @@ local compat <const> = {
     ["lua52"]          = "compat/5x",
     ["lua53"]          = "compat/5x",
     ["lua54"]          = "compat/5x",
+    ["lua55"]          = "compat/5x",
     ["lua-latest"]     = "compat/5x",
     ["luajit"]         = "compat/jit"
 }
@@ -76,6 +77,7 @@ for _, luaver in ipairs {
     "lua52",
     "lua53",
     "lua54",
+    "lua55",
     "luajit",
     "lua-latest",
 } do
