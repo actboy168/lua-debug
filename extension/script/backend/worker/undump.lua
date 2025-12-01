@@ -371,16 +371,16 @@ local undump55; do
     local function LoadString()
         local size = LoadUnsigned(math.maxinteger)
         if size == 0 then
-            return nil
-        end
-        if size == 1 then
             local idx = LoadUnsigned(math.maxinteger)
+            if idx == 0 then
+                return nil
+            end
             if not cached[idx] then
                 error("invalid string index")
             end
             return cached[idx]
         end
-        local str = LoadCharN(size - 1)
+        local str = LoadCharN(size)
         cached[#cached + 1] = str
         return str
     end
@@ -487,7 +487,7 @@ local undump55; do
         f.linedefined = LoadInt()
         f.lastlinedefined = LoadInt()
         f.numparams = LoadByte()
-        f.is_vararg = LoadByte() & 1
+        f.is_vararg = LoadByte() & 3
         f.maxstacksize = LoadByte()
         LoadCode(f)
         LoadConstants(f)

@@ -32,7 +32,8 @@ local function getactivelines(proto)
         end
         local start = 1
         if proto.is_vararg > 0 then
-            assert(proto.code[1] & 0x7F == 81) -- OP_VARARGPREP
+            local OP_VARARGPREP = version >= 0x55 and 83 or 81
+            assert(proto.code[1] & 0x7F == OP_VARARGPREP)
             currentline = nextline(proto, abs, currentline, 1)
             start = 2
         end
