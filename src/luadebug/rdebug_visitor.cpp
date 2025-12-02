@@ -958,6 +958,10 @@ namespace luadebug::visitor {
             case 't':
                 luadbg_pushboolean(L, ar.istailcall ? 1 : 0);
                 luadbg_setfield(L, 3, "istailcall");
+#if LUA_VERSION_NUM >= 505
+                luadbg_pushinteger(L, ar.extraargs);
+                luadbg_setfield(L, 3, "extraargs");
+#endif
                 break;
 #endif
 #if LUA_VERSION_NUM >= 504
