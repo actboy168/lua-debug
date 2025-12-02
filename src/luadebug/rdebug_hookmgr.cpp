@@ -310,7 +310,10 @@ struct hookmgr {
         int errcode;
         luadebug::debughost::set(L, hL);
         luadbg_pushstring(L, "exception");
-#    if LUA_VERSION_NUM >= 504
+#    if LUA_VERSION_NUM >= 505
+        LUA_STKID(hL->top) = LUA_STKID(hL->stack) + ar->currentline;
+        errcode            = hL->transferinfo.ntransfer;
+#    elif LUA_VERSION_NUM >= 504
         LUA_STKID(hL->top) = LUA_STKID(hL->stack) + ar->currentline;
         errcode            = ar->i_ci->u2.transferinfo.ntransfer;
 #    else

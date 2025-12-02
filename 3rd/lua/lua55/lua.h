@@ -456,7 +456,8 @@ LUA_API void (lua_closeslot) (lua_State *L, int idx);
 #define LUA_HOOKLINE	2
 #define LUA_HOOKCOUNT	3
 #define LUA_HOOKTAILCALL 4
-
+#define LUA_HOOKEXCEPTION 5
+#define LUA_HOOKTHREAD 6
 
 /*
 ** Event masks
@@ -464,8 +465,9 @@ LUA_API void (lua_closeslot) (lua_State *L, int idx);
 #define LUA_MASKCALL	(1 << LUA_HOOKCALL)
 #define LUA_MASKRET	(1 << LUA_HOOKRET)
 #define LUA_MASKLINE	(1 << LUA_HOOKLINE)
-#define LUA_MASKCOUNT	(1 << LUA_HOOKCOUNT)
-
+#define LUA_MASKCOUNT (1 << LUA_HOOKCOUNT)
+#define LUA_MASKEXCEPTION (1 << LUA_HOOKEXCEPTION)
+#define LUA_MASKTHREAD (1 << LUA_HOOKTHREAD)
 
 LUA_API int (lua_getstack) (lua_State *L, int level, lua_Debug *ar);
 LUA_API int (lua_getinfo) (lua_State *L, const char *what, lua_Debug *ar);

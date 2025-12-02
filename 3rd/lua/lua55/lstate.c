@@ -324,8 +324,10 @@ TStatus luaE_resetthread (lua_State *L, TStatus status) {
 LUA_API int lua_closethread (lua_State *L, lua_State *from) {
   TStatus status;
   lua_lock(L);
+  luai_threadcall(L, from);
   L->nCcalls = (from) ? getCcalls(from) : 0;
   status = luaE_resetthread(L, L->status);
+  luai_threadret(from, L);
   if (L == from)  /* closing itself? */
     luaD_throwbaselevel(L, status);
   lua_unlock(L);
