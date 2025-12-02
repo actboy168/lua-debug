@@ -2,17 +2,6 @@ local undump = require 'backend.worker.undump'
 
 local version
 
-local function getproto(content)
-    local f = load(content)
-    if not f then
-        return
-    end
-    local bin = string.dump(f)
-    local cl, v = undump(bin)
-    version = v
-    return cl.f
-end
-
 local function nextline(proto, abs, currentline, pc)
     local line = proto.lineinfo[pc]
     if line == -128 then
@@ -96,13 +85,18 @@ local function normalize(lineinfo, si)
 end
 
 return function (content)
-    local proto = getproto(content)
-    if not proto then
+    local f, err = load(content)
+    if not f then
+        local log = require 'common.log'
+        log.error("ERROR:"..err)
         return
     end
+    local bin = string.dump(f)
+    local cl, v = undump(bin)
+    version = v
     local si = { activelines = {}, definelines = {} }
     local lineinfo = {}
-    calclineinfo(proto, lineinfo, si)
+    calclineinfo(cl.f, lineinfo, si)
     normalize(lineinfo, si)
     return lineinfo
 end
