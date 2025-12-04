@@ -82,7 +82,11 @@
 #include "lutf8lib.c"
 #include "linit.c"
 
-LClosure* luaU_undump(lua_State* L, ZIO* Z, const char* name) {
+#if LUA_VERSION_NUM >= 505
+LClosure *luaU_undump (lua_State *L, ZIO *Z, const char *name, int fixed) {
+#else
+LClosure *luaU_undump (lua_State *L, ZIO *Z, const char *name) {
+#endif
     luaO_pushfstring(L, "%s: binary loader not available", name);
     luaD_throw(L, LUA_ERRSYNTAX);
     return NULL;

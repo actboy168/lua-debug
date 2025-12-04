@@ -5,7 +5,7 @@ if lm.os == "windows" then
         bindir = "publish/bin",
         includes = {
             "3rd/bee.lua",
-            "3rd/bee.lua/3rd/lua54",
+            "3rd/bee.lua/3rd/lua55",
             "3rd/wow64ext/src",
         },
         sources = {

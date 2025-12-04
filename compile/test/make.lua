@@ -39,7 +39,7 @@ lm:executable "test_delayload" {
     sources = "test/delayload.cpp",
     includes = {
         "src/launcher",
-        "3rd/lua/lua54"
+        "3rd/lua/lua55"
     },
 }
 

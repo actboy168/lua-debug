@@ -8,13 +8,13 @@ local function lua_exports()
     local function search_marco(line)
         local marco = line:match "^%s*#define%s+([lL][uU][aA][%w_]+)"
         if marco and not marco:match "_h$" and not marco:match "^LUA_USE_" then
-            marcos[#marcos + 1] = marco
+            marcos[#marcos+1] = marco
         end
     end
     for line in io.lines(luapath.."lua.h") do
         local api = line:match "^%s*LUA_API[%w%s%*_]+%(([%w_]+)%)"
         if api then
-            exports[#exports + 1] = api
+            exports[#exports+1] = api
         else
             search_marco(line)
         end
@@ -22,17 +22,25 @@ local function lua_exports()
     for line in io.lines(luapath.."lauxlib.h") do
         local api = line:match "^%s*LUALIB_API[%w%s%*_]+%(([%w_]+)%)"
         if api then
-            exports[#exports + 1] = api
+            exports[#exports+1] = api
         else
             search_marco(line)
         end
     end
+    ---@TODO: lua55的临时处理
+    exports[#exports+1] = "luaL_alloc"
+
     for line in io.lines(luapath.."lualib.h") do
         local api = line:match "^%s*LUALIB_API[%w%s%*_]+%(([%w_]+)%)"
         if api then
-            exports[#exports + 1] = api
+            exports[#exports+1] = api
         else
-            search_marco(line)
+            local api = line:match "^%s*LUAMOD_API[%w%s%*_]+%(([%w_]+)%)"
+            if api then
+                exports[#exports+1] = api
+            else
+                search_marco(line)
+            end
         end
     end
     for line in io.lines(luapath.."luaconf.h") do
@@ -84,9 +92,11 @@ do
     write "lua_Integer"
     write "lua_Number"
     write "lua_CFunction"
+    write "lua_Alloc"
     write "luaL_Stream"
     write "luaL_Buffer"
     write "luaL_Reg"
+
     f:write "\n"
     for _, marco in ipairs(marcos) do
         f:write(("#define %s %s\n"):format(marco, compile(marco)))

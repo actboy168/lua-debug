@@ -27,6 +27,7 @@ local ArchAlias = {
 }
 
 lm:lua_dll ('launcher.'..ArchAlias[platform]) {
+    luaversion = "lua55",
     bindir = "publish/bin",
     export_luaopen = "off",
     deps = {

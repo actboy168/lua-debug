@@ -5,6 +5,7 @@ require "compile.common.runtime"
 require "compile.common.launcher"
 
 lm:lua_dll 'launcher' {
+    luaversion = "lua55",
     export_luaopen = "off",
     deps = {
         "launcher_source",
