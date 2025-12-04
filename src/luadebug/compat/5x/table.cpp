@@ -139,16 +139,15 @@ namespace luadebug::table {
 
     bool get_array(lua_State* L, const void* tv, unsigned int i) {
 #if LUA_VERSION_NUM >= 505
-        Table* t   = (Table*)tv;
-        unsigned k = (i - 1 < t->asize) ? i : 0;
-        if (k == 0) {
+        Table* t = (Table*)tv;
+        if (i >= t->asize) {
             return false;
         }
-        lu_byte tag = *getArrTag(t, k - 1);
+        lu_byte tag = *getArrTag(t, i);
         if (tagisempty(tag)) {
             return false;
         }
-        farr2val(t, k - 1, tag, s2v(LUA_STKID(L->top)));
+        farr2val(t, i, tag, s2v(LUA_STKID(L->top)));
         LUA_STKID(L->top) += 1;
         return true;
 #else
@@ -166,11 +165,10 @@ namespace luadebug::table {
     bool set_array(lua_State* L, const void* tv, unsigned int i) {
 #if LUA_VERSION_NUM >= 505
         Table* t   = (Table*)tv;
-        unsigned k = (i - 1 < t->asize) ? i : 0;
-        if (k == 0) {
+        if (i >= t->asize) {
             return false;
         }
-        obj2arr(t, k - 1, s2v(LUA_STKID(L->top) - 1));
+        obj2arr(t, i, s2v(LUA_STKID(L->top) - 1));
         LUA_STKID(L->top) -= 1;
         return true;
 #else
