@@ -164,7 +164,7 @@ namespace luadebug::table {
 
     bool set_array(lua_State* L, const void* tv, unsigned int i) {
 #if LUA_VERSION_NUM >= 505
-        Table* t   = (Table*)tv;
+        Table* t = (Table*)tv;
         if (i >= t->asize) {
             return false;
         }
