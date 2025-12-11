@@ -5,6 +5,7 @@
 #include <chrono>
 #include <cstdint>
 #include <memory>
+#include <string_view>
 
 #include "compat/internal.h"
 #include "rdebug_debughost.h"
@@ -106,19 +107,46 @@ struct hookmgr {
     //
     bpmap break_proto;
     int break_mask = 0;
+#ifdef LUAJIT_VERSION
+    luadebug::flatmap<Proto*, bool> break_jitblack;
+#endif
 
     void break_add(lua_State* hL, Proto* p) {
         break_proto.set(p, bpmap::status::Break);
+#ifdef LUAJIT_VERSION
+        if (enable_jit_flag) {
+            auto old_nojit = luajit_set_jitmode(hL, p, false);
+            if (old_nojit) {
+                break_jitblack.insert_or_assign(p, true);
+            }
+        }
+#endif
     }
     void break_del(lua_State* hL, Proto* p) {
         break_proto.set(p, bpmap::status::Ignore);
+#ifdef LUAJIT_VERSION
+        if (enable_jit_flag) {
+            // 如果原来就关闭了就不再启用
+            if (break_jitblack.find(p)) {
+                break_jitblack.erase(p);
+            }
+            else {
+                luajit_set_jitmode(hL, p, true);
+            }
+        }
+#endif
     }
     void break_freeobj(Proto* p) {
         break_proto.set(p, bpmap::status::None);
     }
     void break_open(lua_State* hL, bool enable) {
-        if (enable)
+        if (enable) {
             break_update(hL, lua_getcallinfo(hL), LUA_HOOKCALL);
+#ifdef LUAJIT_VERSION
+            if (enable_jit_flag)
+                break_updateprotos(hL);
+#endif
+        }
         else
             break_hookmask(hL, 0);
     }
@@ -187,6 +215,44 @@ struct hookmgr {
             updatehookmask(hL);
         }
     }
+#ifdef LUAJIT_VERSION
+    inline void break_updateproto(lua_State* hL, Proto* pt) {
+        auto status = break_proto.get(pt);
+        if (status != bpmap::status::None) {
+            return;
+        }
+        break_del(hL, pt);
+
+        luadbgL_checkstack(L, 4, NULL);
+        push_callback(L);
+        luadebug::debughost::set(L, hL);
+        luadbg_pushstring(L, "newprotoimpl");
+        luadbg_pushlightuserdata(L, pt);
+        luadbg_createtable(L, 0, 3);
+        auto info = lua_getprotoinfo(hL, pt);
+        luadbg_pushstring(L, info.source);
+        luadbg_setfield(L, -2, "source");
+        luadbg_pushinteger(L, info.linedefined);
+        luadbg_setfield(L, -2, "linedefined");
+        luadbg_pushinteger(L, info.lastlinedefined);
+        luadbg_setfield(L, -2, "lastlinedefined");
+        if (luadbg_pcall(L, 3, 0, 0) != LUADBG_OK) {
+            luadbg_pop(L, 1);
+        }
+    }
+    void break_updateprotos(lua_State* hL) {
+        lua_foreach_gcobj(
+            hL, [](lua_State* hL, void* ud, GCobject* o) {
+                auto _this = (decltype(this))ud;
+                auto proto = lua_toproto(o);
+                if (!proto)
+                    return;
+                _this->break_updateproto(hL, proto);
+            },
+            this
+        );
+    }
+#endif
 
     //
     // funcbp
@@ -361,6 +427,29 @@ struct hookmgr {
             return nullptr;
         }
         return *r;
+    }
+#endif
+
+#if defined(LUAJIT_VERSION)
+    static void luaJIT_profile_callback(void* data, lua_State* hL, int samples, int vmstate) {
+        auto _this = (hookmgr*)data;
+        _this->update_hook(hL);
+    }
+    bool enable_jit_flag = false;
+    void enable_jit(lua_State* hL, int enable) {
+        constexpr auto profile_ms =
+            "i"
+            "200";
+        if (enable) {
+            if (enable_jit_flag)
+                luaJIT_profile_stop(hL);
+            luaJIT_profile_start(hL, profile_ms, luaJIT_profile_callback, this);
+            enable_jit_flag = true;
+        }
+        else {
+            luaJIT_profile_stop(hL);
+            enable_jit_flag = false;
+        }
     }
 #endif
 
@@ -718,8 +807,13 @@ static int coroutine_from(luadbg_State* L) {
 }
 #endif
 
-LUADEBUG_FUNC
-int luaopen_luadebug_hookmgr(luadbg_State* L) {
+#if defined(LUAJIT_VERSION)
+static int enable_jit(luadbg_State* L) {
+    hookmgr::get_self(L)->enable_jit(luadebug::debughost::get(L), luadbg_toboolean(L, 1));
+    return 0;
+}
+#endif
+LUADEBUG_FUNC int luaopen_luadebug_hookmgr(luadbg_State* L) {
     luadebug::debughost::get(L);
 
     luadbg_newtable(L);
@@ -760,6 +854,9 @@ int luaopen_luadebug_hookmgr(luadbg_State* L) {
         { "thread_open", thread_open },
         { "coroutine_from", coroutine_from },
 #endif
+#if defined(LUAJIT_VERSION)
+        { "enable_jit", enable_jit },
+#endif
         { NULL, NULL },
     };
     luadbgL_setfuncs(L, lib, 1);
@@ -781,6 +878,13 @@ static bool call_event(luadbg_State* L, int nargs) {
 }
 
 bool event(luadbg_State* L, lua_State* hL, const char* name, int start) {
+#ifdef LUAJIT_VERSION
+    using namespace std::string_view_literals;
+    if (name == "create_proto"sv) {
+        hookmgr::get_self(L)->break_updateproto(hL, lua_getproto(hL, start + 1));
+        return true;
+    }
+#endif
     if (luadbg_rawgetp(L, LUADBG_REGISTRYINDEX, &HOOK_CALLBACK) != LUADBG_TFUNCTION) {
         // TODO cache event?
         luadbg_pop(L, 1);
