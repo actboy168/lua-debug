@@ -4,6 +4,8 @@ local proto = require 'common.protocol'
 local function parseAddress(param)
     local mode, address = param:match "^([a-z]+):(.*)"
     if address:sub(1,1) == '@' then
+        local fs = require "bee.filesystem"
+        address = address:gsub("%$tmp", fs.temp_directory_path():string():gsub("([/\\])$", ""))
         return {
             protocol = 'unix',
             address = address:sub(2),

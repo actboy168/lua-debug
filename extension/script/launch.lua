@@ -20,7 +20,7 @@ dbg:set_wait("DBG", function(str)
         cfg = { address = address, client = (client == "c") }
     else
         local pid = params[1]
-        cfg = { address = ("@%s/tmp/pid_%s"):format(path, pid) }
+        cfg = { address = ("@$tmp/luadbg_%s"):format(pid) }
     end
     if params[2] == "ansi" then
         cfg.ansi = true

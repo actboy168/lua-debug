@@ -38,7 +38,7 @@ local function getLuaVersion()
 end
 local dbg = dofile(path.."/script/debugger.lua")
 dbg:start {
-    address = ("@%s/tmp/pid_%s"):format(path, pid),
+    address = ("@$tmp/luadbg_%s"):format(pid),
     luaVersion = getLuaVersion(),
 }
 dbg:event "wait"

@@ -11,9 +11,7 @@ local initReq
 local m = {}
 
 local function getUnixAddress(pid)
-    local path = WORKDIR / "tmp"
-    fs.create_directories(path)
-    return "@"..(path / ("pid_%d"):format(pid)):string()
+    return ("@$tmp/luadbg_%s"):format(pid)
 end
 
 local function ipc_send_luaversion(pid, luaVersion)
@@ -81,10 +79,9 @@ local function proxy_attach(pkg)
     local args = pkg.arguments
     platform_os.init(args)
     if args.processId then
-        local processId = tonumber(args.processId)
-        local ok, errmsg = attach_process(pkg, processId)
+        local ok, errmsg = attach_process(pkg, args.processId)
         if not ok then
-            response_error(pkg, ('Cannot attach process `%d`. %s'):format(processId, errmsg))
+            response_error(pkg, ('Cannot attach process `%d`. %s'):format(args.processId, errmsg))
         end
         return
     end
