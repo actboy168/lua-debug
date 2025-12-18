@@ -14,6 +14,7 @@ namespace luadebug::autoattach {
         lua52,
         lua53,
         lua54,
+        lua55,
     };
     struct lua_module {
         std::string path;
