@@ -35,6 +35,7 @@ namespace luadebug::autoattach {
                 { watch_point::type::common, "luaV_settable" },
             };
         case lua_version::lua54:
+        case lua_version::lua55:
             return {
                 { watch_point::type::common, "luaD_poscall" },
                 { watch_point::type::common, "luaH_finishset" },
