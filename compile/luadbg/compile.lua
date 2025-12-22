@@ -64,8 +64,8 @@ local function compile_to_luadbg(file)
     local f <const> = assert(io.open(outpath..compiled_file, "wb"))
     f:write "/* clang-format off */\n"
     for line in io.lines(luapath..file) do
-        line = compile(line)
-        f:write(line)
+        local compiled_line = compile(line)
+        f:write(compiled_line)
         f:write "\n"
     end
 end

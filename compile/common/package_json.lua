@@ -481,12 +481,12 @@ for _, name in ipairs { "luaArch", "luaVersion", "sourceCoding", "console", "pat
         local cfg = {}
         for k, v in pairs(attr) do
             if k == 'markdownDescription' then
-                k = 'description'
+                cfg['description'] = v
+            elseif k == 'enummarkdownDescriptions' then
+                cfg['enumDescriptions'] = v
+            else
+                cfg[k] = v
             end
-            if k == 'enummarkdownDescriptions' then
-                k = 'enumDescriptions'
-            end
-            cfg[k] = v
         end
         configuration["lua.debug.settings."..name] = cfg
     end
