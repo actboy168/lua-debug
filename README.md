@@ -53,7 +53,7 @@ luamake -mode release
 
 ## Install to VSCode
 
-1. Install extension `actboy168.lua-debug` and `actboy168.extension-path`
+1. Install extension `actboy168.lua-debug`
 2. Open [repo](https://github.com/actboy168/lua-debug) in VSCode
 3. Run task：Copy Publish
 
