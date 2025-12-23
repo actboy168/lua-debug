@@ -28,10 +28,10 @@ local function round(x, increment)
     return (x > 0 and math.floor(x + 0.5) or math.ceil(x - 0.5)) * increment
 end
 
-local function packstring(...)
+local function packstring(...v)
     local t = {}
-    for i = 1, select('#', ...) do
-        local x = select(i, ...)
+    for i = 1, #v do
+        local x = v[i]
         if math.type(x) == 'float' then
             x = round(x, 0.01)
         end

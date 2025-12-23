@@ -96,11 +96,10 @@ ev.on('memory', function(memoryReference, offset, count)
     }
 end)
 
---function print(...)
---    local n = select('#', ...)
+--function print(...v)
 --    local t = {}
---    for i = 1, n do
---        t[i] = tostring(select(i, ...))
+--    for i = 1, #v do
+--        t[i] = tostring(v[i])
 --    end
 --    ev.emit('output', {
 --        category = 'stderr',
@@ -679,11 +678,10 @@ function event.autoUpdate(flag)
     hookmgr.update_open(not noDebug and autoUpdate)
 end
 
-function event.print(...)
+function event.print(...args)
     if not debuggeeReady() then return end
     local res = {}
-    local args = table.pack(...)
-    for i = 1, args.n do
+    for i = 1, #args do
         res[#res + 1] = variables.tostring(args[i])
     end
     local str = table.concat(res, '\t')..'\n'
@@ -692,11 +690,10 @@ function event.print(...)
     return true
 end
 
-function event.iowrite(...)
+function event.iowrite(...args)
     if not debuggeeReady() then return end
     local t = {}
-    local args = table.pack(...)
-    for i = 1, args.n do
+    for i = 1, #args do
         t[#t + 1] = variables.tostring(args[i])
     end
     local res = table.concat(t, '\t')

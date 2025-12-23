@@ -644,11 +644,10 @@ function request.customRequestShowIntegerAsHex(req)
     }
 end
 
---function print(...)
---    local n = select('#', ...)
+--function print(...v)
 --    local t = {}
---    for i = 1, n do
---        t[i] = tostring(select(i, ...))
+--    for i = 1, #v do
+--        t[i] = tostring(v[i])
 --    end
 --    event.output {
 --        category = 'stdout',
