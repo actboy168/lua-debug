@@ -39,7 +39,7 @@ local function run_hover(frameId, expression)
     if not ok then
         return false, res
     end
-    local var = variables.createRef(res, "hover")
+    local var = variables.createRef(res, expression, "hover")
     var.result = var.value
     var.value = nil
     return true, var
