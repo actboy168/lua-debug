@@ -339,6 +339,40 @@ local function varGetName(v)
     return ("%s: %s"):format(type, value)
 end
 
+local function varGetStringValueFromMetaMethod(value, tp, allow_lazy)
+    local meta = rdebug.getmetatablev(value)
+    if meta == nil then return nil end
+        
+    local fn = rdebug.fieldv(meta, '__debugger_tostring')
+    if fn ~= nil then
+        local ok, res = rdebug.eval(fn, value)
+        if ok then
+            return res, tp
+        else
+            return "__debugger_tostring error: "..res, tp
+        end
+    end
+    
+    fn = rdebug.fieldv(meta, '__tostring')
+    if fn ~= nil then
+        if allow_lazy then
+            return tp, tp, true
+        else
+            local ok, res = rdebug.eval(fn, value)
+            if ok then
+                return res, tp
+            else
+                return "__tostring error: "..res, tp
+            end
+        end
+    end
+        
+    local name = rdebug.fieldv(meta, '__name')
+    if name ~= nil then
+        return rdebug.tostring(name), tp
+    end
+end
+
 local function varGetShortUserdata(value)
     local meta = rdebug.getmetatablev(value)
     if meta ~= nil then
@@ -388,6 +422,13 @@ local function varGetShortValue(v)
 end
 
 local function varGetTableValue(t)
+    do
+        local ret1, ret2 = varGetStringValueFromMetaMethod(t, "table")
+        if ret1 then
+            return ret1, ret2
+        end
+    end
+
     local str = ''
     do
         local loct = rdebug.tablearrayv(t, 1 - arrayBase, SHORT_TABLE_ARRAY)
@@ -482,35 +523,11 @@ local function varGetFunctionCode(v, value)
 end
 
 local function varGetUserdata(value, allow_lazy)
-    local meta = rdebug.getmetatablev(value)
-    if meta ~= nil then
-        local fn = rdebug.fieldv(meta, '__debugger_tostring')
-        if fn ~= nil then
-            local ok, res = rdebug.eval(fn, value)
-            if ok then
-                return res, "userdata"
-            else
-                return "__debugger_tostring error: "..res, "userdata"
-            end
-        end
-        local fn = rdebug.fieldv(meta, '__tostring')
-        if fn ~= nil then
-            if allow_lazy then
-                return 'userdata', "userdata", true
-            else
-                local ok, res = rdebug.eval(fn, value)
-                if ok then
-                    return res, "userdata"
-                else
-                    return "__tostring error: "..res, "userdata"
-                end
-            end
-        end
-        local name = rdebug.fieldv(meta, '__name')
-        if name ~= nil then
-            return rdebug.tostring(name), "userdata"
-        end
+    local ret1, ret2 = varGetStringValueFromMetaMethod(value, "userdata", allow_lazy)
+    if ret1 then
+        return ret1, ret2
     end
+
     return 'userdata', "userdata"
 end
 
