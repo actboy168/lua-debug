@@ -17,7 +17,13 @@ local function LoadNumber()
 end
 
 local function LoadCharN(n)
-    return unpack("c" .. tostring(n))
+    return unpack("c" .. n)
+end
+
+local function LoadStringRaw(n)
+    local s = unpack("c" .. (n-1))
+    assert(unpack "I1" == 0)
+    return s
 end
 
 local undump53; do
@@ -37,7 +43,7 @@ local undump53; do
         if size == 0 then
             return nil
         end
-        return LoadCharN(size - 1)
+        return LoadStringRaw(size - 1)
     end
 
     local LoadFunction
@@ -194,7 +200,7 @@ local undump54; do
         if size == 0 then
             return nil
         end
-        return LoadCharN(size - 1)
+        return LoadStringRaw(size - 1)
     end
 
     local LoadFunction
@@ -380,7 +386,7 @@ local undump55; do
             end
             return cached[idx]
         end
-        local str = LoadCharN(size)
+        local str = LoadStringRaw(size)
         cached[#cached + 1] = str
         return str
     end
