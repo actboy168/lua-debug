@@ -523,9 +523,9 @@ local function varGetFunctionCode(v, value)
 end
 
 local function varGetUserdata(value, allow_lazy)
-    local ret1, ret2 = varGetStringValueFromMetaMethod(value, "userdata", allow_lazy)
+    local ret1, ret2, ret3 = varGetStringValueFromMetaMethod(value, "userdata", allow_lazy)
     if ret1 then
-        return ret1, ret2
+        return ret1, ret2, ret3
     end
 
     return 'userdata', "userdata"
