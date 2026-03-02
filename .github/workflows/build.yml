@@ -15,9 +15,9 @@ jobs:
         include:
           - os: windows-latest
             platform: win32-x64
-          - os: ubuntu-22.04
+          - os: ubuntu-24.04
             platform: linux-x64
-          - os: ubuntu-22.04-arm
+          - os: ubuntu-24.04-arm
             platform: linux-arm64
           - os: macos-latest
             platform: darwin-x64
@@ -28,6 +28,9 @@ jobs:
       with:
         submodules : recursive
     - uses: actboy168/setup-luamake@master
+    - if: matrix.platform == 'linux-x64' || matrix.platform == 'linux-arm64'
+      run: |
+        sudo apt-get update && sudo apt-get install -y libiberty-dev
     - run: luamake lua compile/download_deps.lua
     - run: luamake -mode release -platform ${{ matrix.platform }}
     - run: npm install -g @vscode/vsce ovsx

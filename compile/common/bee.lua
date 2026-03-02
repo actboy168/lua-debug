@@ -69,7 +69,6 @@ lm:source_set "source_bee" {
     },
     linux = {
         sources = {
-            "!bee/crash/linux/**/",
             need {
                 "linux",
                 "posix",
@@ -136,9 +135,11 @@ lm:source_set "source_bee" {
         }
     },
     linux = {
-        ldflags = "-pthread",
+        ldflags = "-pthread -l:libbfd.a -l:libiberty.a -l:libsframe.a -l:libzstd.so -l:libz.so",
         links = {
             "stdc++fs",
+            "unwind",
+            "gcc_s"
         }
     },
     macos = {
