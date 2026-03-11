@@ -658,14 +658,23 @@ function event.step(line)
     end
 end
 
-function event.newproto(proto, level)
-    if not debuggeeReady() then return end
-    rdebug.getinfo(level, "S", info)
+local function newprotoimpl(proto, info)
     local src = source.create(info.source)
     if not source.valid(src) then
         return false
     end
     return breakpoint.newproto(proto, src, info.linedefined.."-"..info.lastlinedefined)
+end
+
+function event.newproto(proto, level)
+    if not debuggeeReady() then return end
+    rdebug.getinfo(level, "S", info)
+    return newprotoimpl(proto, info)
+end
+
+function event.newprotoimpl(proto, info)
+    if not debuggeeReady() then return end
+    return newprotoimpl(proto, info)
 end
 
 function event.update()
@@ -878,3 +887,5 @@ end)
 sendToMaster 'initWorker' {}
 
 hookmgr.update_open(true)
+
+return event
