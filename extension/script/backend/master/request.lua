@@ -3,6 +3,7 @@ local response = require 'backend.master.response'
 local event = require 'backend.master.event'
 local ev = require 'backend.event'
 local utility = require 'luadebug.utility'
+local resolve_config = require 'backend.master.resolve_config'
 
 local request = {}
 
@@ -42,6 +43,7 @@ function request.initialize(req)
 end
 
 function request.attach(req)
+    resolve_config(req.arguments)
     response.success(req)
     state = "initializing"
     config = {
