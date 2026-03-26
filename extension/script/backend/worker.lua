@@ -456,7 +456,7 @@ function CMD.setBreakpoints(pkg)
     if noDebug or not source.valid(pkg.source) then
         return
     end
-    breakpoint.set_bp(pkg.source, pkg.breakpoints, pkg.content)
+    breakpoint.set_bp(pkg.source, pkg.breakpoints, pkg.content or false)
 end
 
 function CMD.setFunctionBreakpoints(pkg)
