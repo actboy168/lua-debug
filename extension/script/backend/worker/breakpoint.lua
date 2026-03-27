@@ -256,7 +256,6 @@ function m.set_bp(clientsrc, breakpoints, content)
     if srcarray then
         local ok = false
         for _, src in ipairs(srcarray) do
-            src.content = content
             if calcLineInfo(src, content) then
                 ok = true
             end
@@ -322,12 +321,11 @@ function m.newproto(proto, src, key)
     local bpkey = bpClientKey(src)
     local wv = waitverify[bpkey]
     if wv then
-        src.content = wv.content
-        if not src.content then
+        if not wv.content then
             waitverify[bpkey] = nil
         end
         if not calcLineInfo(src, wv.content) then
-            if src.content == false then
+            if wv.content == false then
                 -- 降级路径：前端已上报但 sourceContent 为空
                 verifyBreakpointWithoutLineInfo(src, wv.breakpoints)
                 updateBreakpoint(src, wv.breakpoints)
