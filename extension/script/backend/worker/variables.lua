@@ -146,18 +146,14 @@ function special_has.Global(frameId)
     rdebug.getinfo(frameId, "f", info)
     local eval, value = rdebug.getupvaluev(info.func, 1)
     if eval ~= "_ENV" then
+        eval = "_G"
+        value = rdebug._G
         if LUAVERSION == 51 then
             local fenv = rdebug.getfenv(info.func)
             if fenv and not rdebug.equal(fenv, rdebug._G) then
                 eval = nil
                 value = fenv
-            else
-                eval = "_G"
-                value = rdebug._G
             end
-        else
-            eval = "_G"
-            value = rdebug._G
         end
     end
     if eval == "_G" and globalCache._G then
