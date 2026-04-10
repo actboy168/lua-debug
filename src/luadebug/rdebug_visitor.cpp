@@ -792,6 +792,19 @@ namespace luadebug::visitor {
         return 2;
     }
 
+    static int visitor_getfenv(luadbg_State* L, lua_State* hL, protected_area& area) {
+#if LUA_VERSION_NUM == 501
+        if (!copy_from_dbg(L, hL, area, 1, LUADBG_TFUNCTION)) {
+            return 0;
+        }
+        lua_pop(hL, 1);
+        refvalue::create(L, 1, refvalue::FENV {});
+        return 1;
+#else
+        return 0;
+#endif
+    }
+
     template <bool getref = true>
     static int visitor_getmetatable(luadbg_State* L, lua_State* hL, protected_area& area) {
         area.check_client_stack(2);
@@ -1120,6 +1133,7 @@ namespace luadebug::visitor {
             { "getlocalv", protected_call<visitor_getlocal<false>> },
             { "getupvalue", protected_call<visitor_getupvalue> },
             { "getupvaluev", protected_call<visitor_getupvalue<false>> },
+            { "getfenv", protected_call<visitor_getfenv> },
             { "getmetatable", protected_call<visitor_getmetatable> },
             { "getmetatablev", protected_call<visitor_getmetatable<false>> },
             { "getuservalue", protected_call<visitor_getuservalue> },
