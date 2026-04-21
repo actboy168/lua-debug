@@ -148,6 +148,13 @@ function special_has.Global(frameId)
     if eval ~= "_ENV" then
         eval = "_G"
         value = rdebug._G
+        if LUAVERSION == 51 then
+            local fenv = rdebug.getfenv(info.func)
+            if fenv and not rdebug.equal(fenv, rdebug._G) then
+                eval = nil
+                value = fenv
+            end
+        end
     end
     if eval == "_G" and globalCache._G then
         local t = globalCache._G

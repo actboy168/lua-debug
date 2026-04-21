@@ -328,6 +328,25 @@ namespace luadebug::refvalue {
         }
     }
 
+    template <>
+    int eval<FENV>(FENV& v, lua_State* hL, value* parent) {
+        int t = eval(parent, hL);
+        if (t == LUA_TNONE)
+            return LUA_TNONE;
+        if (t != LUA_TFUNCTION) {
+            lua_pop(hL, 1);
+            return LUA_TNONE;
+        }
+#if LUA_VERSION_NUM == 501
+        lua_getfenv(hL, -1);
+        lua_replace(hL, -2);
+        return lua_type(hL, -1);
+#else
+        lua_pop(hL, 1);
+        return LUA_TNONE;
+#endif
+    }
+
     int eval(value* v, lua_State* hL) {
         return visit([hL, v](auto&& arg) { return eval(arg, hL, v + 1); }, *v);
     }

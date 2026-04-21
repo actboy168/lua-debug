@@ -53,6 +53,7 @@ namespace luadebug::refvalue {
     struct USERDATA_VAL {
         unsigned int index;
     };
+    struct FENV {};
     using value = variant<
         FRAME_LOCAL,
         FRAME_FUNC,
@@ -66,7 +67,8 @@ namespace luadebug::refvalue {
         TABLE_HASH_KEY,
         TABLE_HASH_VAL,
         USERDATA_KEY,
-        USERDATA_VAL>;
+        USERDATA_VAL,
+        FENV>;
     static_assert(std::is_trivially_copyable_v<value>);
 
     template <typename T>
@@ -102,6 +104,8 @@ namespace luadebug::refvalue {
     struct allow_as_child<USERDATA_KEY> : public std::true_type {};
     template <>
     struct allow_as_child<USERDATA_VAL> : public std::true_type {};
+    template <>
+    struct allow_as_child<FENV> : public std::true_type {};
 
     int eval(value* v, lua_State* hL);
     bool assign(value* v, lua_State* hL);

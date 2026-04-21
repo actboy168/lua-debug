@@ -42,6 +42,9 @@ do
 		i = i + 1
 	end
 end
+if not env and getfenv then
+	env = getfenv(f)
+end
 do
 	local i = 1
 	while true do
@@ -90,6 +93,9 @@ end
 local compiled = env
 	and assert(_load(full_source, '=(EVAL)', "t", env))
 	or  assert(_load(full_source, '=(EVAL)'))
+if env and setfenv then
+	setfenv(compiled, env)
+end
 local func, update = compiled()
 local found = {}
 do
