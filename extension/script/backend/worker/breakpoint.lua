@@ -274,6 +274,8 @@ function m.set_bp(clientsrc, breakpoints, content)
         else
             cantVerifyBreakpoints(breakpoints)
         end
+        waitverify[bpClientKey(clientsrc)] = nil
+        updateHook()
     else
         waitverify[bpClientKey(clientsrc)] = {
             breakpoints = breakpoints,
