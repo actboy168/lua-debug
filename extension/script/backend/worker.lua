@@ -30,6 +30,10 @@ local coroutineTree = {}
 local stackFrame = {}
 local skipFrame = 0
 local baseL
+local continueSkipSource
+local continueSkipLine
+local stoppedSource
+local stoppedLine
 
 local CMD = {}
 
@@ -495,8 +499,11 @@ function CMD.stop(pkg)
 end
 
 function CMD.run()
+    if state == 'stopped' and stoppedSource and stoppedLine then
+        continueSkipSource = stoppedSource
+        continueSkipLine = stoppedLine
+    end
     state = 'running'
-    hookmgr.break_closeline()
     hookmgr.step_cancel()
 end
 
@@ -595,8 +602,20 @@ local function event_breakpoint(src, line)
         hookmgr.break_closeline()
         return
     end
-    local bp = breakpoint.hit_bp(src, source.line(src, line))
+    local currentline = source.line(src, line)
+    if continueSkipSource ~= nil then
+        if continueSkipSource == src and continueSkipLine == currentline then
+            continueSkipSource = nil
+            continueSkipLine = nil
+            return
+        end
+        continueSkipSource = nil
+        continueSkipLine = nil
+    end
+    local bp = breakpoint.hit_bp(src, currentline)
     if bp then
+        stoppedSource = src
+        stoppedLine = currentline
         state = 'stopped'
         runLoop {
             reason = 'breakpoint',
@@ -653,6 +672,8 @@ function event.step(line)
         hookmgr.step_cancel()
     end
     if state == 'stopped' then
+        stoppedSource = src
+        stoppedLine = source.line(src, line)
         runLoop {
             reason = stopReason
         }
