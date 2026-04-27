@@ -496,6 +496,7 @@ end
 
 function CMD.run()
     state = 'running'
+    hookmgr.break_closeline()
     hookmgr.step_cancel()
 end
 
