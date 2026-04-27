@@ -274,8 +274,6 @@ function m.set_bp(clientsrc, breakpoints, content)
         else
             cantVerifyBreakpoints(breakpoints)
         end
-        -- When source is found, sync waitverify so that newly-loaded protos
-        -- use currentactive instead of stale waitverify entries.
         waitverify[bpClientKey(clientsrc)] = nil
         updateHook()
     else
