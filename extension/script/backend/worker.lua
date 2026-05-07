@@ -13,6 +13,7 @@ local thread = require 'bee.thread'
 local fs = require 'backend.worker.filesystem'
 local log = require 'common.log'
 local channel = require "bee.channel"
+local bootstrap = require 'backend.bootstrap'
 
 local initialized = false
 local suspend = false
@@ -113,6 +114,7 @@ local function cleanFrame()
 end
 
 function CMD.initializing(pkg)
+    bootstrap.setKeepSessionAlive(pkg.config.keepSessionAlive)
     luaver.init()
     ev.emit('initializing', pkg.config)
 end

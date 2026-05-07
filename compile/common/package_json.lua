@@ -226,6 +226,11 @@ attributes.common = {
         markdownDescription = "Automatically stop after thread entry.",
         type = "boolean",
     },
+    keepSessionAlive = {
+        default = false,
+        markdownDescription = "Keep the debug session alive when the current debugged Lua VM is closed and later recreated in the same process.",
+        type = "boolean",
+    },
     address = {
         markdownDescription = [[
 Debugger address.
