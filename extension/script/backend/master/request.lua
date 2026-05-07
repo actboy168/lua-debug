@@ -46,6 +46,7 @@ function request.attach(req)
     resolve_config(req.arguments)
     response.success(req)
     state = "initializing"
+    mgr.setKeepSessionAlive(req.arguments.keepSessionAlive)
     config = {
         initialize = req.arguments,
         breakpoints = {},

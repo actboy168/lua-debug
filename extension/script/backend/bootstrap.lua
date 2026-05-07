@@ -2,11 +2,6 @@ local thread = require "bee.thread"
 local channel = require "bee.channel"
 
 local m = {}
-local keepSessionAlive = false
-
-function m.setKeepSessionAlive(enabled)
-    keepSessionAlive = not not enabled
-end
 
 local function hasMaster()
     return channel.query "DbgMaster" ~= nil
@@ -17,7 +12,7 @@ local function initMaster(rootpath, address)
         return
     end
     local chan = channel.create "DbgMaster"
-    local mt = thread.create(([[
+    thread.create(([[
         local rootpath = %q
         package.path = rootpath.."/script/?.lua"
         local log = require "common.log"
@@ -35,14 +30,6 @@ local function initMaster(rootpath, address)
         rootpath,
         address
     ))
-    ExitGuard = setmetatable({}, {__gc=function()
-        if keepSessionAlive then
-            return
-        end
-        chan:push(nil, "EXIT")
-        thread.wait(mt)
-        channel.destroy("DbgMaster")
-    end})
 end
 
 local function startWorker(rootpath)
