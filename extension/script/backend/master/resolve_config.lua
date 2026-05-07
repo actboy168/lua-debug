@@ -22,6 +22,9 @@ local function resolve_config(config)
     if type(config.stopOnThreadEntry) ~= "boolean" then
         config.stopOnThreadEntry = false
     end
+    if type(config.keepSessionAlive) ~= "boolean" then
+        config.keepSessionAlive = false
+    end
     if type(config.luaVersion) ~= "string" then
         config.luaVersion = "lua54"
     end
