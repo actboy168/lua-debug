@@ -18,6 +18,7 @@ return {
     supportsTerminateRequest = true,
     supportsReadMemoryRequest = true,
     supportsWriteMemoryRequest = true,
+    supportsDisassembleRequest = true,
     supportsClipboardContext = true,
     supportsExceptionFilterOptions = true,
     supportsANSIStyling = true,

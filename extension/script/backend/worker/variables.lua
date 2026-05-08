@@ -600,7 +600,7 @@ local function varCreateReference(value, evaluateName, presentationHint, context
     if type == "integer" then
         result.__vscodeVariableMenuContext = showIntegerAsHex and "integer/hex" or "integer/dec"
     end
-    if type == "string" or type == "userdata" then
+    if type == "string" or type == "userdata" or type == "function" then
         memoryRefPool[#memoryRefPool + 1] = {
             type = type,
             value = value,
@@ -1507,6 +1507,14 @@ end
 
 function m.showIntegerAsHex()
     showIntegerAsHex = true
+end
+
+function m.resolveMemoryRef(refId)
+    local ref = memoryRefPool[refId]
+    if not ref then
+        return nil
+    end
+    return ref.type, ref.value
 end
 
 ev.on('terminated', function()

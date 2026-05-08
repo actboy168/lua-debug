@@ -633,6 +633,35 @@ function request.writeMemory(req)
     })
 end
 
+function request.disassemble(req)
+    local args = req.arguments
+    local memoryReference = args.memoryReference
+    -- inst_<threadId>x<rest> (from instructionPointerReference)
+    local threadId, refId = memoryReference:match("inst_(%d+)x(.+)$")
+    if not refId then
+        -- memory_<threadId>x<refId> (from variable with memoryReference)
+        threadId, refId = memoryReference:match("memory_(%d+)x(%d+)")
+    end
+    threadId = tonumber(threadId)
+    if not threadId or not refId then
+        response.error(req, "Invalid memoryReference")
+        return
+    end
+    if not checkThreadId(req, threadId) then
+        return
+    end
+    mgr.workerSend(threadId, {
+        cmd = 'disassemble',
+        command = req.command,
+        seq = req.seq,
+        refId = refId,
+        offset = args.offset,
+        instructionOffset = args.instructionOffset,
+        instructionCount = args.instructionCount,
+        resolveSymbols = args.resolveSymbols,
+    })
+end
+
 function request.customRequestShowIntegerAsDec(req)
     response.success(req)
     mgr.workerBroadcast {

@@ -13,6 +13,7 @@ local thread = require 'bee.thread'
 local fs = require 'backend.worker.filesystem'
 local log = require 'common.log'
 local channel = require "bee.channel"
+local disassemble = require 'backend.worker.disassemble'
 local initialized = false
 local suspend = false
 local info = {}
@@ -197,6 +198,12 @@ local function stackTrace(res, coid, start, levels)
         }
         if info.what ~= 'C' then
             r.column = 1
+            if rdebug.currentpc then
+                local pc = rdebug.currentpc(depth)
+                if pc >= 0 then
+                    r.instructionPointerReference = ("inst_%dx%dx%d"):format(coid, depth, pc)
+                end
+            end
             local src = source.create(info.source)
             if source.valid(src) then
                 r.line = source.line(src, info.currentline)
@@ -569,6 +576,95 @@ function CMD.customRequestShowIntegerAsHex()
     variables.showIntegerAsHex()
     sendToMaster 'eventInvalidated' {
         areas = "variables",
+    }
+end
+
+function CMD.disassemble(pkg)
+    if not rdebug.dumpproto then
+        sendToMaster 'disassemble' {
+            command = pkg.command,
+            seq = pkg.seq,
+            success = false,
+            message = "Disassemble not supported for this Lua version",
+        }
+        return
+    end
+    local proto
+    local defaultOffset = 0
+    local refId = pkg.refId
+    if type(refId) == "string" and refId:match("^%d+x%d+x%d+$") then
+        local coid, depth, pc = refId:match("^(%d+)x(%d+)x(%d+)$")
+        -- navigate to the correct coroutine
+        local L = baseL
+        for _ = 0, tonumber(coid) - 1 do
+            L = coroutineFrom(L)
+            if not L then break end
+        end
+        if L then
+            hookmgr.sethost(L)
+            proto = rdebug.dumpproto(tonumber(depth))
+            hookmgr.sethost(baseL)
+        end
+        defaultOffset = tonumber(pc)
+    end
+    if not proto then
+        local rtype, ref = variables.resolveMemoryRef(tonumber(refId))
+        if ref and rtype == "function" then
+            proto = rdebug.dumpproto(ref)
+        end
+    end
+    if not proto or not proto.code or #proto.code == 0 then
+        sendToMaster 'disassemble' {
+            command = pkg.command,
+            seq = pkg.seq,
+            success = false,
+            message = "Cannot dump function",
+        }
+        return
+    end
+    local instructions = disassemble.disassemble_function(proto, luaver.LUAVERSION)
+    local byteOffset = math.floor((pkg.offset or 0) / 4)
+    local instOffset = defaultOffset + byteOffset + (pkg.instructionOffset or 0)
+    local instCount = pkg.instructionCount or #instructions
+    local result = {}
+    local firstLocation = nil
+    if proto.source then
+        local src = source.create(proto.source)
+        if source.valid(src) then
+            firstLocation = source.output(src)
+        end
+    end
+    local start = math.max(1, instOffset + 1)
+    for i = start, math.min(start + instCount - 1, #instructions) do
+        local inst = instructions[i]
+        local r = {
+            address = inst.address,
+            instructionBytes = inst.instructionBytes,
+            instruction = inst.opName .. "  " .. inst.operands,
+        }
+        if inst.line then
+            r.line = inst.line
+            r.column = 1
+        end
+        if inst.symbol then
+            r.symbol = inst.symbol
+        end
+        if inst.presentationHint then
+            r.presentationHint = inst.presentationHint
+        end
+        if firstLocation then
+            r.location = firstLocation
+            firstLocation = nil
+        end
+        result[#result + 1] = r
+    end
+    sendToMaster 'disassemble' {
+        command = pkg.command,
+        seq = pkg.seq,
+        success = true,
+        body = {
+            instructions = result,
+        },
     }
 end
 

@@ -31,7 +31,7 @@
 | supportsDataBreakpoints               |    🟨    |
 | supportsReadMemoryRequest             |    🟩    |
 | supportsWriteMemoryRequest            |    🟩    |
-| supportsDisassembleRequest            |    🟨    |
+| supportsDisassembleRequest            |    🟩    |
 | supportsCancelRequest                 |    🟨    |
 | supportsBreakpointLocationsRequest    |    🟨    |
 | supportsClipboardContext              |    🟩    |

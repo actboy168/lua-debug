@@ -21,9 +21,7 @@ local function LoadCharN(n)
 end
 
 local function LoadStringRaw(n)
-    local s = unpack("c" .. (n-1))
-    assert(unpack "I1" == 0)
-    return s
+    return unpack("c" .. n)
 end
 
 local undump53; do

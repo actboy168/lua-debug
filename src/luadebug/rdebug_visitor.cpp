@@ -1062,6 +1062,160 @@ namespace luadebug::visitor {
         return 0;
     }
 
+#if LUA_VERSION_NUM >= 503
+    static int visitor_dumpproto(luadbg_State* L, lua_State* hL, protected_area& area) {
+        Proto* p = nullptr;
+        int t = luadbg_type(L, 1);
+        if (t == LUADBG_TNUMBER) {
+            int frame = area.checkinteger<int>(L, 1);
+            lua_Debug ar;
+            if (!lua_getstack(hL, frame, &ar)) {
+                luadbg_pushnil(L);
+                return 1;
+            }
+            CallInfo* ci = lua_debug2ci(hL, &ar);
+            if (ci) {
+                p = lua_ci2proto(ci);
+            }
+        } else {
+            if (copy_from_dbg(L, hL, area, 1) == LUADBG_TNONE) {
+                return 0;
+            }
+            if (lua_type(hL, -1) == LUA_TFUNCTION) {
+                p = lua_getproto(hL, -1);
+            }
+            lua_pop(hL, 1);
+        }
+        if (!p) {
+            luadbg_pushnil(L);
+            return 1;
+        }
+        luadbg_createtable(L, 0, 12);
+        luadbg_pushinteger(L, p->numparams);
+        luadbg_setfield(L, -2, "numparams");
+#if LUA_VERSION_NUM >= 505
+        luadbg_pushinteger(L, isvararg(p) ? 1 : 0);
+#else
+        luadbg_pushinteger(L, p->is_vararg);
+#endif
+        luadbg_setfield(L, -2, "is_vararg");
+        luadbg_pushinteger(L, p->maxstacksize);
+        luadbg_setfield(L, -2, "maxstacksize");
+        luadbg_pushinteger(L, p->linedefined);
+        luadbg_setfield(L, -2, "linedefined");
+        luadbg_pushinteger(L, p->lastlinedefined);
+        luadbg_setfield(L, -2, "lastlinedefined");
+        luadbg_pushinteger(L, p->sizecode);
+        luadbg_setfield(L, -2, "sizecode");
+        luadbg_pushinteger(L, p->sizeupvalues);
+        luadbg_setfield(L, -2, "sizeupvalues");
+        // code array
+        luadbg_createtable(L, p->sizecode, 0);
+        for (int i = 0; i < p->sizecode; i++) {
+            luadbg_pushinteger(L, (luadbg_Integer)(uint32_t)p->code[i]);
+            luadbg_rawseti(L, -2, i + 1);
+        }
+        luadbg_setfield(L, -2, "code");
+        // constants
+        luadbg_createtable(L, p->sizek, 0);
+        for (int i = 0; i < p->sizek; i++) {
+            TValue* tv = &p->k[i];
+            if (ttisnil(tv)) {
+                luadbg_pushnil(L);
+#if LUA_VERSION_NUM >= 504
+            } else if (ttisfalse(tv)) {
+                luadbg_pushboolean(L, 0);
+            } else if (ttistrue(tv)) {
+                luadbg_pushboolean(L, 1);
+#else
+            } else if (ttisboolean(tv)) {
+                luadbg_pushboolean(L, bvalue(tv));
+#endif
+            } else if (ttisinteger(tv)) {
+                luadbg_pushinteger(L, ivalue(tv));
+            } else if (ttisfloat(tv)) {
+                luadbg_pushnumber(L, fltvalue(tv));
+            } else if (ttisstring(tv)) {
+                TString* ts = tsvalue(tv);
+                luadbg_pushlstring(L, getstr(ts), tsslen(ts));
+            } else {
+                luadbg_pushnil(L);
+            }
+            luadbg_rawseti(L, -2, i + 1);
+        }
+        luadbg_setfield(L, -2, "k");
+        // lineinfo
+        luadbg_createtable(L, p->sizelineinfo, 0);
+        for (int i = 0; i < p->sizelineinfo; i++) {
+#if LUA_VERSION_NUM >= 504
+            luadbg_pushinteger(L, (int)(signed char)p->lineinfo[i]);
+#else
+            luadbg_pushinteger(L, p->lineinfo[i]);
+#endif
+            luadbg_rawseti(L, -2, i + 1);
+        }
+        luadbg_setfield(L, -2, "lineinfo");
+#if LUA_VERSION_NUM >= 504
+        // abslineinfo
+        luadbg_createtable(L, p->sizeabslineinfo, 0);
+        for (int i = 0; i < p->sizeabslineinfo; i++) {
+            luadbg_createtable(L, 2, 0);
+            luadbg_pushinteger(L, p->abslineinfo[i].pc);
+            luadbg_setfield(L, -2, "pc");
+            luadbg_pushinteger(L, p->abslineinfo[i].line);
+            luadbg_setfield(L, -2, "line");
+            luadbg_rawseti(L, -2, i + 1);
+        }
+        luadbg_setfield(L, -2, "abslineinfo");
+#endif
+        // upvalues
+        luadbg_createtable(L, p->sizeupvalues, 0);
+        for (int i = 0; i < p->sizeupvalues; i++) {
+#if LUA_VERSION_NUM >= 504
+            luadbg_createtable(L, 3, 0);
+            luadbg_pushinteger(L, p->upvalues[i].instack);
+            luadbg_setfield(L, -2, "instack");
+            luadbg_pushinteger(L, p->upvalues[i].idx);
+            luadbg_setfield(L, -2, "idx");
+            luadbg_pushinteger(L, p->upvalues[i].kind);
+            luadbg_setfield(L, -2, "kind");
+#else
+            luadbg_createtable(L, 2, 0);
+            luadbg_pushinteger(L, p->upvalues[i].instack);
+            luadbg_setfield(L, -2, "instack");
+            luadbg_pushinteger(L, p->upvalues[i].idx);
+            luadbg_setfield(L, -2, "idx");
+#endif
+            luadbg_rawseti(L, -2, i + 1);
+        }
+        luadbg_setfield(L, -2, "upvalues");
+        // source
+        if (p->source) {
+            luadbg_pushlstring(L, getstr(p->source), tsslen(p->source));
+            luadbg_setfield(L, -2, "source");
+        }
+        return 1;
+    }
+
+    static int visitor_currentpc(luadbg_State* L, lua_State* hL, protected_area& area) {
+        int level = area.checkinteger<int>(L, 1);
+        lua_Debug ar;
+        if (!lua_getstack(hL, level, &ar)) {
+            luadbg_pushinteger(L, -1);
+            return 1;
+        }
+        CallInfo* ci = lua_debug2ci(hL, &ar);
+        Proto* p = lua_ci2proto(ci);
+        if (!p) {
+            luadbg_pushinteger(L, -1);
+            return 1;
+        }
+        int pc = (int)(ci->u.l.savedpc - p->code) - 1;
+        luadbg_pushinteger(L, pc);
+        return 1;
+    }
+#endif
+
     static const char* costatus(lua_State* hL, lua_State* co) {
         if (hL == co) return "running";
         switch (lua_status(co)) {
@@ -1163,6 +1317,10 @@ namespace luadebug::visitor {
             { "costatus", protected_call<visitor_costatus> },
             { "gccount", protected_call<visitor_gccount> },
             { "cfunctioninfo", protected_call<visitor_cfunctioninfo> },
+#if LUA_VERSION_NUM >= 503
+            { "dumpproto", protected_call<visitor_dumpproto> },
+            { "currentpc", protected_call<visitor_currentpc> },
+#endif
             { NULL, NULL },
         };
         debughost::get(L);
