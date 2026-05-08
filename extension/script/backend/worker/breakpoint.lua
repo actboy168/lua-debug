@@ -311,7 +311,7 @@ function m.exec(bp)
             end
             return tostring(res)
         end)
-        rdebug.getinfo(1, "Sl", info)
+        rdebug.getinfo(0, "Sl", info)
         stdout(res, info)
         return false
     end
