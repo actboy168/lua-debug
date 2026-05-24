@@ -1218,22 +1218,6 @@ namespace luadebug::visitor {
         return 1;
     }
 
-    static int visitor_currentproto(luadbg_State* L, lua_State* hL, protected_area& area) {
-        int level = area.checkinteger<int>(L, 1);
-        lua_Debug ar;
-        if (!lua_getstack(hL, level, &ar)) {
-            luadbg_pushnil(L);
-            return 1;
-        }
-        CallInfo* ci = lua_debug2ci(hL, &ar);
-        Proto* p = lua_ci2proto(ci);
-        if (!p) {
-            luadbg_pushnil(L);
-            return 1;
-        }
-        luadbg_pushlightuserdata(L, p);
-        return 1;
-    }
 #endif
 
     static const char* costatus(lua_State* hL, lua_State* co) {
@@ -1340,7 +1324,6 @@ namespace luadebug::visitor {
 #if LUA_VERSION_NUM >= 503
             { "dumpproto", protected_call<visitor_dumpproto> },
             { "currentpc", protected_call<visitor_currentpc> },
-            { "currentproto", protected_call<visitor_currentproto> },
 #endif
             { NULL, NULL },
         };

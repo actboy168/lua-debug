@@ -493,14 +493,32 @@ struct hookmgr {
         if ((step_mask & LUA_MASKLINE) && (!stepL || stepL == hL)) {
             luadbg_pushstring(L, "step");
             luadbg_pushinteger(L, ar->currentline);
-            if (luadbg_pcall(L, 2, 0, 0) != LUADBG_OK) {
+#if LUA_VERSION_NUM >= 503
+            {
+                CallInfo* ci = ar->i_ci;
+                Proto* p = lua_ci2proto(ci);
+                luadbg_pushlightuserdata(L, p);
+            }
+#else
+            luadbg_pushnil(L);
+#endif
+            if (luadbg_pcall(L, 3, 0, 0) != LUADBG_OK) {
                 luadbg_pop(L, 1);
                 return;
             }
         } else {
             luadbg_pushstring(L, "bp");
             luadbg_pushinteger(L, ar->currentline);
-            if (luadbg_pcall(L, 2, 0, 0) != LUADBG_OK) {
+#if LUA_VERSION_NUM >= 503
+            {
+                CallInfo* ci = ar->i_ci;
+                Proto* p = lua_ci2proto(ci);
+                luadbg_pushlightuserdata(L, p);
+            }
+#else
+            luadbg_pushnil(L);
+#endif
+            if (luadbg_pcall(L, 3, 0, 0) != LUADBG_OK) {
                 luadbg_pop(L, 1);
                 return;
             }

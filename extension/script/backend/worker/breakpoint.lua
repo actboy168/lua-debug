@@ -470,7 +470,7 @@ function m.set_instbp(breakpoints)
             goto continue
         end
         pc = tonumber(pc) + (bp.offset or 0)
-        local funcId = ld .. "_" .. lld .. "_" .. srcId
+        local funcId = ld .. "-" .. lld .. "_" .. srcId
         local proto = protosById[funcId]
         if not proto then
             bp.message = nil
@@ -508,15 +508,11 @@ function m.hit_instbp(proto, pc)
     return nil
 end
 
-function m.has_any_instbp()
-    return next(instbreakpoints) ~= nil
-end
-
-function m.gate_instbreak()
-    if not rdebug.currentproto then
+function m.gate_instbreak(proto)
+    if next(instbreakpoints) == nil then
+        hookmgr.instbreak_open(false)
         return
     end
-    local proto = rdebug.currentproto(0)
     if not proto then
         return
     end
@@ -525,27 +521,6 @@ end
 
 function m.get_proto(funcId)
     return protosById[funcId]
-end
-
-function m.register_proto(funcId, proto)
-    protosById[funcId] = proto
-    local pending = waitinstbp[funcId]
-    if pending then
-        waitinstbp[funcId] = nil
-        if not instbreakpoints[proto] then
-            instbreakpoints[proto] = {}
-        end
-        for pc, bp in pairs(pending) do
-            if valid(bp) then
-                instbreakpoints[proto][pc] = bp
-                bp.verified = true
-                bp.statHit = 0
-                hookmgr.break_add(proto)
-                ev.emit('breakpoint', 'changed', bp)
-            end
-        end
-        updateHook()
-    end
 end
 
 ev.on('terminated', function()

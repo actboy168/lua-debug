@@ -30,8 +30,6 @@ local coroutineTree = {}
 local stackFrame = {}
 local skipFrame = 0
 local baseL
-local deferredDisassembles = {}
-
 local CMD = {}
 
 local WorkerIdent = tostring(thread.id)
@@ -605,15 +603,13 @@ function CMD.disassemble(pkg)
     local refId = pkg.refId
     local ld, lld, pc, srcId = refId:match("^bp_(%d+)_(%d+)_(%d+)_(.+)$")
     if ld then
-        local funcId = ld .. "_" .. lld .. "_" .. srcId
+        local funcId = ld .. "-" .. lld .. "_" .. srcId
         local proto_ptr = breakpoint.get_proto(funcId)
         if proto_ptr then
             proto = rdebug.dumpproto(proto_ptr)
         else
             proto, proto_ptr = rdebug.dumpproto(0)
-            if proto and proto.linedefined == tonumber(ld) and proto.lastlinedefined == tonumber(lld) then
-                breakpoint.register_proto(funcId, proto_ptr)
-            else
+            if not (proto and proto.linedefined == tonumber(ld) and proto.lastlinedefined == tonumber(lld)) then
                 proto = nil
             end
         end
@@ -635,10 +631,6 @@ function CMD.disassemble(pkg)
         return
     end
     if not proto or not proto.code or #proto.code == 0 then
-        if refId and refId:match("^bp_") then
-            deferredDisassembles[#deferredDisassembles + 1] = pkg
-            return
-        end
         sendToMaster 'disassemble' {
             command = pkg.command,
             seq = pkg.seq,
@@ -708,29 +700,7 @@ local function runLoop(reason, level)
     baseL = hookmgr.gethost()
     sendToMaster 'eventStop' (reason)
     skipFrame = level or 0
-    -- drain pending commands (CMD.setInstructionBreakpoints) before registering proto
     workerThreadUpdate()
-    if rdebug.currentproto then
-        local proto = rdebug.currentproto(0)
-        if proto then
-            local data = rdebug.dumpproto(0)
-            if data and data.linedefined and data.lastlinedefined then
-                local src = source.create(data.source)
-                if source.valid(src) then
-                    local srcId = src.sourceReference and tostring(src.sourceReference) or fs.path_native(fs.path_normalize(src.path))
-                    local funcId = data.linedefined .. "_" .. data.lastlinedefined .. "_" .. srcId
-                    breakpoint.register_proto(funcId, proto)
-                end
-            end
-        end
-    end
-    -- process deferred disassembles now that proto is available
-    for _, pkg in ipairs(deferredDisassembles) do
-        CMD.disassemble(pkg)
-    end
-    deferredDisassembles = {}
-    -- enable count hook before waiting for continue
-    breakpoint.gate_instbreak()
     while true do
         workerThreadUpdate(10)
         if state ~= 'stopped' then
@@ -766,14 +736,12 @@ local function debuggeeReady()
     end
 end
 
-function event.bp(line)
+function event.bp(line, proto)
     if not debuggeeReady() then return end
+    breakpoint.gate_instbreak(proto)
     rdebug.getinfo(0, "S", info)
     local src = source.create(info.source)
     event_breakpoint(src, line)
-    if breakpoint.has_any_instbp() then
-        breakpoint.gate_instbreak()
-    end
 end
 
 function event.funcbp(func)
@@ -788,10 +756,11 @@ function event.funcbp(func)
     end
 end
 
-function event.step(line)
+function event.step(line, proto)
     if not debuggeeReady() then return end
     rdebug.getinfo(0, "S", info)
     local src = source.create(info.source)
+    breakpoint.gate_instbreak(proto)
     if event_breakpoint(src, line) then
         return
     end
