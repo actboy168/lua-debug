@@ -179,6 +179,8 @@ function request.setBreakpoints(req)
     local args = req.arguments
     local invalidPath = args.source.path and not isValidPath(args.source.path)
     for _, bp in ipairs(args.breakpoints) do
+        bp.column = nil
+        bp.endColumn = nil
         bp.id = genBreakpointID()
         bp.verified = false
         bp.message = invalidPath
