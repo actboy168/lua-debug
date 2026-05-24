@@ -15,6 +15,7 @@ local config = {
     breakpoints = {},
     function_breakpoints = {},
     exception_breakpoints = {},
+    instruction_breakpoints = {},
 }
 
 ev.on('close', function()
@@ -52,6 +53,7 @@ function request.attach(req)
         breakpoints = {},
         function_breakpoints = {},
         exception_breakpoints = {},
+        instruction_breakpoints = {},
     }
 end
 
@@ -112,6 +114,10 @@ local function initializeWorker(w)
     mgr.workerSend(w, {
         cmd = 'setExceptionBreakpoints',
         arguments = config.exception_breakpoints,
+    })
+    mgr.workerSend(w, {
+        cmd = 'setInstructionBreakpoints',
+        breakpoints = config.instruction_breakpoints,
     })
     if firstWorker and config.launch then
         mgr.workerSend(w, {
@@ -229,6 +235,36 @@ function request.setFunctionBreakpoints(req)
             cmd = 'setFunctionBreakpoints',
             breakpoints = args.breakpoints,
         }
+    end
+end
+
+function request.setInstructionBreakpoints(req)
+    local args = req.arguments
+    for _, bp in ipairs(args.breakpoints) do
+        bp.id = genBreakpointID()
+        bp.verified = false
+        bp.message = "Wait verify."
+    end
+    response.success(req, { breakpoints = args.breakpoints })
+    config.instruction_breakpoints = {}
+    for _, bp in ipairs(args.breakpoints) do
+        local ref = bp.instructionReference
+        if type(ref) == "string" then
+            local threadId, rest = ref:match("^inst_(%d+)x(.+)$")
+            threadId = tonumber(threadId)
+            if threadId and rest then
+                bp.instructionReference = rest
+                config.instruction_breakpoints[#config.instruction_breakpoints + 1] = bp
+            end
+        end
+    end
+    if state == "initialized" then
+        for w in pairs(mgr.workers()) do
+            mgr.workerSend(w, {
+                cmd = 'setInstructionBreakpoints',
+                breakpoints = config.instruction_breakpoints,
+            })
+        end
     end
 end
 

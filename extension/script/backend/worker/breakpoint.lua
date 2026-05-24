@@ -10,17 +10,21 @@ local stdout = require 'backend.worker.stdout'
 local currentactive = {}
 local waitverify = {}
 local info = {}
+local instbreakpoints = {}  -- {[proto] = {[pc] = bp}}
+local protosById = {}       -- {["{ld}_{lld}_{srcId}"] = proto}
+local waitinstbp = {}       -- {[funcId] = {[pc] = bp}}
 local m = {}
 local enable = false
 
 local function updateHook()
+    local hasInstBp = next(instbreakpoints) ~= nil or next(waitinstbp) ~= nil
     if enable then
-        if next(currentactive) == nil and next(waitverify) == nil then
+        if next(currentactive) == nil and next(waitverify) == nil and not hasInstBp then
             enable = false
             hookmgr.break_open(false)
         end
     else
-        if next(currentactive) ~= nil or next(waitverify) ~= nil then
+        if next(currentactive) ~= nil or next(waitverify) ~= nil or hasInstBp then
             enable = true
             hookmgr.break_open(true)
         end
@@ -75,7 +79,9 @@ local function updateBreakpoint(src, breakpoints)
     if next(bps) == nil then
         currentactive[bpkey] = nil
         for proto in pairs(src.protos) do
-            hookmgr.break_del(proto)
+            if not instbreakpoints[proto] then
+                hookmgr.break_del(proto)
+            end
         end
     else
         currentactive[bpkey] = bps
@@ -84,7 +90,7 @@ local function updateBreakpoint(src, breakpoints)
             for proto, key in pairs(src.protos) do
                 if hasActiveBreakpoint(bps, lineinfo[key]) then
                     hookmgr.break_add(proto)
-                else
+                elseif not instbreakpoints[proto] then
                     hookmgr.break_del(proto)
                 end
             end
@@ -320,6 +326,27 @@ end
 
 function m.newproto(proto, src, key)
     src.protos[proto] = key
+    if rdebug.currentpc then
+        local funcId = key .. "_" .. bpClientKey(src)
+        protosById[funcId] = proto
+        local pending = waitinstbp[funcId]
+        if pending then
+            waitinstbp[funcId] = nil
+            for pc, bp in pairs(pending) do
+                if valid(bp) then
+                    if not instbreakpoints[proto] then
+                        instbreakpoints[proto] = {}
+                    end
+                    instbreakpoints[proto][pc] = bp
+                    bp.verified = true
+                    bp.statHit = 0
+                    hookmgr.break_add(proto)
+                    ev.emit('breakpoint', 'changed', bp)
+                end
+            end
+            updateHook()
+        end
+    end
     local bpkey = bpClientKey(src)
     local wv = waitverify[bpkey]
     if wv then
@@ -430,12 +457,109 @@ function m.setExceptionBreakpoints(breakpoints)
     end
 end
 
+function m.set_instbp(breakpoints)
+    -- clear all existing instruction breakpoints
+    instbreakpoints = {}
+    waitinstbp = {}
+    -- add new breakpoints
+    for _, bp in ipairs(breakpoints) do
+        local ld, lld, pc, srcId = bp.instructionReference:match("^bp_(%d+)_(%d+)_(%d+)_(.+)$")
+        if not ld then
+            bp.message = nil
+            setBreakPointUnverified(bp, "Invalid instruction reference")
+            goto continue
+        end
+        pc = tonumber(pc) + (bp.offset or 0)
+        local funcId = ld .. "_" .. lld .. "_" .. srcId
+        local proto = protosById[funcId]
+        if not proto then
+            bp.message = nil
+            setBreakPointUnverified(bp, "Function not yet loaded")
+            waitinstbp[funcId] = waitinstbp[funcId] or {}
+            waitinstbp[funcId][pc] = bp
+            goto continue
+        end
+        if not valid(bp) then
+            goto continue
+        end
+        if not instbreakpoints[proto] then
+            instbreakpoints[proto] = {}
+        end
+        instbreakpoints[proto][pc] = bp
+        bp.verified = true
+        bp.statHit = 0
+        hookmgr.break_add(proto)
+        ev.emit('breakpoint', 'changed', bp)
+        ::continue::
+    end
+    hookmgr.instbreak_open(next(instbreakpoints) ~= nil)
+    updateHook()
+end
+
+function m.hit_instbp(proto, pc)
+    local pcs = instbreakpoints[proto]
+    if not pcs then
+        return nil
+    end
+    local bp = pcs[pc]
+    if bp and m.exec(bp) then
+        return bp
+    end
+    return nil
+end
+
+function m.has_any_instbp()
+    return next(instbreakpoints) ~= nil
+end
+
+function m.gate_instbreak()
+    if not rdebug.currentproto then
+        return
+    end
+    local proto = rdebug.currentproto(0)
+    if not proto then
+        return
+    end
+    hookmgr.instbreak_open(instbreakpoints[proto] ~= nil)
+end
+
+function m.get_proto(funcId)
+    return protosById[funcId]
+end
+
+function m.register_proto(funcId, proto)
+    protosById[funcId] = proto
+    local pending = waitinstbp[funcId]
+    if pending then
+        waitinstbp[funcId] = nil
+        if not instbreakpoints[proto] then
+            instbreakpoints[proto] = {}
+        end
+        for pc, bp in pairs(pending) do
+            if valid(bp) then
+                instbreakpoints[proto][pc] = bp
+                bp.verified = true
+                bp.statHit = 0
+                hookmgr.break_add(proto)
+                ev.emit('breakpoint', 'changed', bp)
+            end
+        end
+        updateHook()
+    end
+end
+
 ev.on('terminated', function()
     currentactive = {}
     waitverify = {}
+    instbreakpoints = {}
+    protosById = {}
+    waitinstbp = {}
     info = {}
     enable = false
     hookmgr.break_open(false)
+    if hookmgr.instbreak_open then
+        hookmgr.instbreak_open(false)
+    end
 end)
 
 return m

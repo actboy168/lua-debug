@@ -36,7 +36,7 @@
 | supportsBreakpointLocationsRequest    |    🟨    |
 | supportsClipboardContext              |    🟩    |
 | supportsSteppingGranularity           |    🟥    |
-| supportsInstructionBreakpoints        |    🟨    |
+| supportsInstructionBreakpoints        |    🟩    |
 | supportsExceptionFilterOptions        |    🟩    |
 | supportsSingleThreadExecutionRequests |    🟥    |
 | supportsDataBreakpointBytes           |    🟨    |

@@ -1077,6 +1077,8 @@ namespace luadebug::visitor {
             if (ci) {
                 p = lua_ci2proto(ci);
             }
+        } else if (t == LUADBG_TLIGHTUSERDATA) {
+            p = (Proto*)luadbg_touserdata(L, 1);
         } else {
             if (copy_from_dbg(L, hL, area, 1) == LUADBG_TNONE) {
                 return 0;
@@ -1194,7 +1196,8 @@ namespace luadebug::visitor {
             luadbg_pushlstring(L, getstr(p->source), tsslen(p->source));
             luadbg_setfield(L, -2, "source");
         }
-        return 1;
+        luadbg_pushlightuserdata(L, p);
+        return 2;
     }
 
     static int visitor_currentpc(luadbg_State* L, lua_State* hL, protected_area& area) {
@@ -1212,6 +1215,23 @@ namespace luadebug::visitor {
         }
         int pc = (int)(ci->u.l.savedpc - p->code) - 1;
         luadbg_pushinteger(L, pc);
+        return 1;
+    }
+
+    static int visitor_currentproto(luadbg_State* L, lua_State* hL, protected_area& area) {
+        int level = area.checkinteger<int>(L, 1);
+        lua_Debug ar;
+        if (!lua_getstack(hL, level, &ar)) {
+            luadbg_pushnil(L);
+            return 1;
+        }
+        CallInfo* ci = lua_debug2ci(hL, &ar);
+        Proto* p = lua_ci2proto(ci);
+        if (!p) {
+            luadbg_pushnil(L);
+            return 1;
+        }
+        luadbg_pushlightuserdata(L, p);
         return 1;
     }
 #endif
@@ -1320,6 +1340,7 @@ namespace luadebug::visitor {
 #if LUA_VERSION_NUM >= 503
             { "dumpproto", protected_call<visitor_dumpproto> },
             { "currentpc", protected_call<visitor_currentpc> },
+            { "currentproto", protected_call<visitor_currentproto> },
 #endif
             { NULL, NULL },
         };

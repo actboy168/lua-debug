@@ -292,6 +292,16 @@ struct hookmgr {
     }
 
     //
+    // instbreak (instruction breakpoints via count hook)
+    //
+    int instbreak_mask = 0;
+
+    void instbreak_open(lua_State* hL, bool enable) {
+        instbreak_mask = enable ? LUA_MASKCOUNT : 0;
+        updatehookmask(hL);
+    }
+
+    //
     // exception
     //
     int exception_mask = 0;
@@ -448,6 +458,21 @@ struct hookmgr {
 #endif
             return;
         case LUA_HOOKCOUNT:
+#if LUA_VERSION_NUM >= 503
+            if (instbreak_mask) {
+                CallInfo* ci = ar->i_ci;
+                Proto* p = lua_ci2proto(ci);
+                if (p) {
+                    push_callback(L);
+                    luadebug::debughost::set(L, hL);
+                    luadbg_pushstring(L, "instbp");
+                    luadbg_pushlightuserdata(L, p);
+                    if (luadbg_pcall(L, 2, 0, 0) != LUADBG_OK) {
+                        luadbg_pop(L, 1);
+                    }
+                }
+            }
+#endif
             update_hook(hL);
             return;
 #if defined(LUA_HOOKEXCEPTION)
@@ -519,8 +544,13 @@ struct hookmgr {
         if (!stepL || stepL == hL) {
             mask |= step_mask;
         }
+        int count = 0;
+        if (instbreak_mask) {
+            mask |= LUA_MASKCOUNT;
+            count = 1;
+        }
         if (mask) {
-            sethook(hL, (lua_Hook)sc_full_hook->data, mask | exception_mask | thread_mask, 0);
+            sethook(hL, (lua_Hook)sc_full_hook->data, mask | exception_mask | thread_mask, count);
         } else if (update_mask) {
             sethook(hL, (lua_Hook)sc_idle_hook->data, update_mask | exception_mask | thread_mask, 0xfffff);
         } else if (exception_mask | thread_mask) {
@@ -690,6 +720,11 @@ static int step_cancel(luadbg_State* L) {
     return 0;
 }
 
+static int instbreak_open(luadbg_State* L) {
+    hookmgr::get_self(L)->instbreak_open(luadebug::debughost::get(L), luadbg_toboolean(L, 1));
+    return 0;
+}
+
 static int update_open(luadbg_State* L) {
     hookmgr::get_self(L)->update_open(luadebug::debughost::get(L), luadbg_toboolean(L, 1));
     return 0;
@@ -752,6 +787,7 @@ int luaopen_luadebug_hookmgr(luadbg_State* L) {
         { "step_out", step_out },
         { "step_over", step_over },
         { "step_cancel", step_cancel },
+        { "instbreak_open", instbreak_open },
         { "update_open", update_open },
 #if defined(LUA_HOOKEXCEPTION)
         { "exception_open", exception_open },
