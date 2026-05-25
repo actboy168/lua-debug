@@ -461,7 +461,7 @@ struct hookmgr {
 #if LUA_VERSION_NUM >= 503
             if (instbreak_mask) {
                 CallInfo* ci = ar->i_ci;
-                Proto* p = lua_ci2proto(ci);
+                Proto* p     = lua_ci2proto(ci);
                 if (p) {
                     push_callback(L);
                     luadebug::debughost::set(L, hL);
@@ -496,7 +496,7 @@ struct hookmgr {
 #if LUA_VERSION_NUM >= 503
             {
                 CallInfo* ci = ar->i_ci;
-                Proto* p = lua_ci2proto(ci);
+                Proto* p     = lua_ci2proto(ci);
                 luadbg_pushlightuserdata(L, p);
             }
 #else
@@ -512,7 +512,7 @@ struct hookmgr {
 #if LUA_VERSION_NUM >= 503
             {
                 CallInfo* ci = ar->i_ci;
-                Proto* p = lua_ci2proto(ci);
+                Proto* p     = lua_ci2proto(ci);
                 luadbg_pushlightuserdata(L, p);
             }
 #else
