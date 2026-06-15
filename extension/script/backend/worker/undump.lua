@@ -175,13 +175,14 @@ local undump54; do
         return unpack "j"
     end
 
-    local function LoadUnsigned(limit)
+    -- shifted_limit is the pre-shifted maximum value for x in each iteration.
+    -- This matches the C implementation's limit >>= 7 before the loop.
+    local function LoadUnsigned(shifted_limit)
         local b
         local x = 0
-        limit = limit >> 7
         repeat
             b = LoadByte()
-            if x > limit then
+            if x > shifted_limit then
                 error("integer overflow")
             end
             x = (x << 7) | (b & 0x7f)
@@ -190,11 +191,11 @@ local undump54; do
     end
 
     local function LoadInt()
-        return LoadUnsigned(0x7fffffff)
+        return LoadUnsigned(0x7fffffff >> 7)
     end
 
     local function LoadString()
-        local size = LoadUnsigned(math.maxinteger)
+        local size = LoadUnsigned(math.maxinteger >> 6)
         if size == 0 then
             return nil
         end
@@ -345,13 +346,14 @@ local undump55; do
         end
     end
 
-    local function LoadUnsigned(limit)
+    -- shifted_limit is the pre-shifted maximum value for x in each iteration.
+    -- This matches the C implementation's limit >>= 7 before the loop.
+    local function LoadUnsigned(shifted_limit)
         local b
         local x = 0
-        limit = limit >> 7
         repeat
             b = LoadByte()
-            if x > limit then
+            if x > shifted_limit then
                 error("integer overflow")
             end
             x = (x << 7) | (b & 0x7f)
@@ -360,22 +362,28 @@ local undump55; do
     end
 
     local function LoadInteger()
-        local cx = LoadUnsigned(math.maxinteger)
+        -- math.maxinteger >> 6 equals LUA_MAXUNSIGNED >> 7 on 64-bit,
+        -- covering the full unsigned range needed for zigzag-encoded integers.
+        local cx = LoadUnsigned(math.maxinteger >> 6)
+        -- Use logical (unsigned) right shift via mask; Lua's >> is arithmetic.
+        -- For positive cx this is a no-op; for negative cx it clears the
+        -- propagated sign bit, matching the C implementation's unsigned shift.
+        local shifted = (cx >> 1) & math.maxinteger
         if (cx & 1) ~= 0 then
-            return ~(cx >> 1)
+            return ~shifted
         else
-            return cx >> 1
+            return shifted
         end
     end
 
     local function LoadInt()
-        return LoadUnsigned(0x7fffffff)
+        return LoadUnsigned(0x7fffffff >> 7)
     end
 
     local function LoadString()
-        local size = LoadUnsigned(math.maxinteger)
+        local size = LoadUnsigned(math.maxinteger >> 6)
         if size == 0 then
-            local idx = LoadUnsigned(math.maxinteger)
+            local idx = LoadUnsigned(math.maxinteger >> 6)
             if idx == 0 then
                 return nil
             end
