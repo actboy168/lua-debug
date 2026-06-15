@@ -30,7 +30,6 @@ local coroutineTree = {}
 local stackFrame = {}
 local skipFrame = 0
 local baseL
-
 local CMD = {}
 
 local WorkerIdent = tostring(thread.id)
@@ -198,17 +197,20 @@ local function stackTrace(res, coid, start, levels)
         }
         if info.what ~= 'C' then
             r.column = 1
-            if rdebug.currentpc then
-                local pc = rdebug.currentpc(depth)
-                if pc >= 0 then
-                    r.instructionPointerReference = ("inst_%dx%dx%d"):format(coid, depth, pc)
-                end
-            end
             local src = source.create(info.source)
             if source.valid(src) then
                 r.line = source.line(src, info.currentline)
                 r.source = source.output(src)
                 r.presentationHint = 'normal'
+                if rdebug.currentpc then
+                    local pc = rdebug.currentpc(depth)
+                    if pc >= 0 then
+                        local srcId = src.sourceReference and tostring(src.sourceReference) or fs.path_native(fs.path_normalize(src.path))
+                        r.instructionPointerReference = ("bp_%d_%d_%d_%s"):format(
+                            info.linedefined, info.lastlinedefined, pc, srcId
+                        )
+                    end
+                end
             else
                 r.line = info.currentline
                 r.presentationHint = 'label'
@@ -469,6 +471,13 @@ function CMD.setFunctionBreakpoints(pkg)
     breakpoint.set_funcbp(pkg.breakpoints)
 end
 
+function CMD.setInstructionBreakpoints(pkg)
+    if noDebug then
+        return
+    end
+    breakpoint.set_instbp(pkg.breakpoints)
+end
+
 function CMD.setExceptionBreakpoints(pkg)
     breakpoint.setExceptionBreakpoints(pkg.arguments)
 end
@@ -592,18 +601,17 @@ function CMD.disassemble(pkg)
     local proto
     local defaultOffset = 0
     local refId = pkg.refId
-    if type(refId) == "string" and refId:match("^%d+x%d+x%d+$") then
-        local coid, depth, pc = refId:match("^(%d+)x(%d+)x(%d+)$")
-        -- navigate to the correct coroutine
-        local L = baseL
-        for _ = 0, tonumber(coid) - 1 do
-            L = coroutineFrom(L)
-            if not L then break end
-        end
-        if L then
-            hookmgr.sethost(L)
-            proto = rdebug.dumpproto(tonumber(depth))
-            hookmgr.sethost(baseL)
+    local ld, lld, pc, srcId = refId:match("^bp_(%d+)_(%d+)_(%d+)_(.+)$")
+    if ld then
+        local funcId = ld .. "-" .. lld .. "_" .. srcId
+        local proto_ptr = breakpoint.get_proto(funcId)
+        if proto_ptr then
+            proto = rdebug.dumpproto(proto_ptr)
+        else
+            proto, proto_ptr = rdebug.dumpproto(0)
+            if not (proto and proto.linedefined == tonumber(ld) and proto.lastlinedefined == tonumber(lld)) then
+                proto = nil
+            end
         end
         defaultOffset = tonumber(pc)
     end
@@ -612,6 +620,15 @@ function CMD.disassemble(pkg)
         if ref and rtype == "function" then
             proto = rdebug.dumpproto(ref)
         end
+    end
+    if refId and refId:match("^bp_") and pkg.instructionCount == 1 then
+        sendToMaster 'disassemble' {
+            command = pkg.command,
+            seq = pkg.seq,
+            success = true,
+            body = { instructions = {} },
+        }
+        return
     end
     if not proto or not proto.code or #proto.code == 0 then
         sendToMaster 'disassemble' {
@@ -628,10 +645,16 @@ function CMD.disassemble(pkg)
     local instCount = pkg.instructionCount or #instructions
     local result = {}
     local firstLocation = nil
+    local srcId = nil
     if proto.source then
         local src = source.create(proto.source)
         if source.valid(src) then
             firstLocation = source.output(src)
+            if src.sourceReference then
+                srcId = tostring(src.sourceReference)
+            elseif src.path then
+                srcId = fs.path_native(fs.path_normalize(src.path))
+            end
         end
     end
     local start = math.max(1, instOffset + 1)
@@ -656,6 +679,11 @@ function CMD.disassemble(pkg)
             r.location = firstLocation
             firstLocation = nil
         end
+        if srcId and proto.linedefined and proto.lastlinedefined then
+            r.instructionReference = ("bp_%d_%d_%d_%s"):format(
+                proto.linedefined, proto.lastlinedefined, inst.pc, srcId
+            )
+        end
         result[#result + 1] = r
     end
     sendToMaster 'disassemble' {
@@ -670,10 +698,9 @@ end
 
 local function runLoop(reason, level)
     baseL = hookmgr.gethost()
-    --TODO: 只在lua栈帧时需要text？
     sendToMaster 'eventStop' (reason)
     skipFrame = level or 0
-
+    workerThreadUpdate()
     while true do
         workerThreadUpdate(10)
         if state ~= 'stopped' then
@@ -709,8 +736,9 @@ local function debuggeeReady()
     end
 end
 
-function event.bp(line)
+function event.bp(line, proto)
     if not debuggeeReady() then return end
+    breakpoint.gate_instbreak(proto)
     rdebug.getinfo(0, "S", info)
     local src = source.create(info.source)
     event_breakpoint(src, line)
@@ -728,10 +756,11 @@ function event.funcbp(func)
     end
 end
 
-function event.step(line)
+function event.step(line, proto)
     if not debuggeeReady() then return end
     rdebug.getinfo(0, "S", info)
     local src = source.create(info.source)
+    breakpoint.gate_instbreak(proto)
     if event_breakpoint(src, line) then
         return
     end
@@ -766,6 +795,23 @@ end
 function event.update()
     debuggeeReady()
     workerThreadUpdate()
+end
+
+function event.instbp(proto)
+    if not debuggeeReady() then return end
+    if proto and rdebug.currentpc then
+        local curpc = rdebug.currentpc(0)
+        if curpc >= 0 then
+            local bp = breakpoint.hit_instbp(proto, curpc)
+            if bp then
+                state = 'stopped'
+                runLoop {
+                    reason = 'instruction breakpoint',
+                    hitBreakpointIds = { bp.id }
+                }
+            end
+        end
+    end
 end
 
 function event.autoUpdate(flag)

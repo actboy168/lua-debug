@@ -1065,7 +1065,7 @@ namespace luadebug::visitor {
 #if LUA_VERSION_NUM >= 503
     static int visitor_dumpproto(luadbg_State* L, lua_State* hL, protected_area& area) {
         Proto* p = nullptr;
-        int t = luadbg_type(L, 1);
+        int t    = luadbg_type(L, 1);
         if (t == LUADBG_TNUMBER) {
             int frame = area.checkinteger<int>(L, 1);
             lua_Debug ar;
@@ -1077,6 +1077,8 @@ namespace luadebug::visitor {
             if (ci) {
                 p = lua_ci2proto(ci);
             }
+        } else if (t == LUADBG_TLIGHTUSERDATA) {
+            p = (Proto*)luadbg_touserdata(L, 1);
         } else {
             if (copy_from_dbg(L, hL, area, 1) == LUADBG_TNONE) {
                 return 0;
@@ -1093,11 +1095,11 @@ namespace luadebug::visitor {
         luadbg_createtable(L, 0, 12);
         luadbg_pushinteger(L, p->numparams);
         luadbg_setfield(L, -2, "numparams");
-#if LUA_VERSION_NUM >= 505
+#    if LUA_VERSION_NUM >= 505
         luadbg_pushinteger(L, isvararg(p) ? 1 : 0);
-#else
+#    else
         luadbg_pushinteger(L, p->is_vararg);
-#endif
+#    endif
         luadbg_setfield(L, -2, "is_vararg");
         luadbg_pushinteger(L, p->maxstacksize);
         luadbg_setfield(L, -2, "maxstacksize");
@@ -1122,15 +1124,15 @@ namespace luadebug::visitor {
             TValue* tv = &p->k[i];
             if (ttisnil(tv)) {
                 luadbg_pushnil(L);
-#if LUA_VERSION_NUM >= 504
+#    if LUA_VERSION_NUM >= 504
             } else if (ttisfalse(tv)) {
                 luadbg_pushboolean(L, 0);
             } else if (ttistrue(tv)) {
                 luadbg_pushboolean(L, 1);
-#else
+#    else
             } else if (ttisboolean(tv)) {
                 luadbg_pushboolean(L, bvalue(tv));
-#endif
+#    endif
             } else if (ttisinteger(tv)) {
                 luadbg_pushinteger(L, ivalue(tv));
             } else if (ttisfloat(tv)) {
@@ -1147,15 +1149,15 @@ namespace luadebug::visitor {
         // lineinfo
         luadbg_createtable(L, p->sizelineinfo, 0);
         for (int i = 0; i < p->sizelineinfo; i++) {
-#if LUA_VERSION_NUM >= 504
+#    if LUA_VERSION_NUM >= 504
             luadbg_pushinteger(L, (int)(signed char)p->lineinfo[i]);
-#else
+#    else
             luadbg_pushinteger(L, p->lineinfo[i]);
-#endif
+#    endif
             luadbg_rawseti(L, -2, i + 1);
         }
         luadbg_setfield(L, -2, "lineinfo");
-#if LUA_VERSION_NUM >= 504
+#    if LUA_VERSION_NUM >= 504
         // abslineinfo
         luadbg_createtable(L, p->sizeabslineinfo, 0);
         for (int i = 0; i < p->sizeabslineinfo; i++) {
@@ -1167,11 +1169,11 @@ namespace luadebug::visitor {
             luadbg_rawseti(L, -2, i + 1);
         }
         luadbg_setfield(L, -2, "abslineinfo");
-#endif
+#    endif
         // upvalues
         luadbg_createtable(L, p->sizeupvalues, 0);
         for (int i = 0; i < p->sizeupvalues; i++) {
-#if LUA_VERSION_NUM >= 504
+#    if LUA_VERSION_NUM >= 504
             luadbg_createtable(L, 3, 0);
             luadbg_pushinteger(L, p->upvalues[i].instack);
             luadbg_setfield(L, -2, "instack");
@@ -1179,13 +1181,13 @@ namespace luadebug::visitor {
             luadbg_setfield(L, -2, "idx");
             luadbg_pushinteger(L, p->upvalues[i].kind);
             luadbg_setfield(L, -2, "kind");
-#else
+#    else
             luadbg_createtable(L, 2, 0);
             luadbg_pushinteger(L, p->upvalues[i].instack);
             luadbg_setfield(L, -2, "instack");
             luadbg_pushinteger(L, p->upvalues[i].idx);
             luadbg_setfield(L, -2, "idx");
-#endif
+#    endif
             luadbg_rawseti(L, -2, i + 1);
         }
         luadbg_setfield(L, -2, "upvalues");
@@ -1194,7 +1196,8 @@ namespace luadebug::visitor {
             luadbg_pushlstring(L, getstr(p->source), tsslen(p->source));
             luadbg_setfield(L, -2, "source");
         }
-        return 1;
+        luadbg_pushlightuserdata(L, p);
+        return 2;
     }
 
     static int visitor_currentpc(luadbg_State* L, lua_State* hL, protected_area& area) {
@@ -1205,7 +1208,7 @@ namespace luadebug::visitor {
             return 1;
         }
         CallInfo* ci = lua_debug2ci(hL, &ar);
-        Proto* p = lua_ci2proto(ci);
+        Proto* p     = lua_ci2proto(ci);
         if (!p) {
             luadbg_pushinteger(L, -1);
             return 1;
@@ -1214,6 +1217,7 @@ namespace luadebug::visitor {
         luadbg_pushinteger(L, pc);
         return 1;
     }
+
 #endif
 
     static const char* costatus(lua_State* hL, lua_State* co) {

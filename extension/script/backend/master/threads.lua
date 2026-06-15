@@ -61,7 +61,7 @@ function CMD.stackTrace(w, req)
             frame.source.sourceReference = (w << 32) | frame.source.sourceReference
         end
         if frame.instructionPointerReference then
-            frame.instructionPointerReference = ("inst_%dx%s"):format(w, frame.instructionPointerReference:match("^inst_(.+)$"))
+            frame.instructionPointerReference = ("inst_%dx%s"):format(w, frame.instructionPointerReference)
         end
     end
     response.success(req, req.body)
@@ -154,10 +154,17 @@ function CMD.writeMemory(_, req)
     response.success(req, req.body)
 end
 
-function CMD.disassemble(_, req)
+function CMD.disassemble(w, req)
     if not req.success then
         response.error(req, req.message)
         return
+    end
+    if req.body.instructions then
+        for _, inst in ipairs(req.body.instructions) do
+            if inst.instructionReference then
+                inst.instructionReference = ("inst_%dx%s"):format(w, inst.instructionReference)
+            end
+        end
     end
     response.success(req, req.body)
 end

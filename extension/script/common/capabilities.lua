@@ -19,6 +19,7 @@ return {
     supportsReadMemoryRequest = true,
     supportsWriteMemoryRequest = true,
     supportsDisassembleRequest = true,
+    supportsInstructionBreakpoints = true,
     supportsClipboardContext = true,
     supportsExceptionFilterOptions = true,
     supportsANSIStyling = true,
