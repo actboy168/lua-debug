@@ -15,6 +15,9 @@ lm:source_set 'onelua' {
         "3rd/bee.lua/",
         "src/luadebug/",
     },
+    defines = {
+        "LUA_COMPAT_LOOPVAR=1",
+    },
     sources = {
         "src/luadebug/luadbg/onelua.c",
         "3rd/bee.lua/3rd/lua-patch/bee_utf8_crt.cpp",

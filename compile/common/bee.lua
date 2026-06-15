@@ -184,7 +184,6 @@ lm:source_set "source_lua" {
     },
     defines = {
         "MAKE_LIB",
-        "LUA_COMPAT_LOOPVAR",
     },
     windows = {
         defines = "LUA_BUILD_AS_DLL",
