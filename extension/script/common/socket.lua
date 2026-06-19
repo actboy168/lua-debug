@@ -85,7 +85,17 @@ return function (param)
     elseif t.mode == "listen" then
         server = assert(net.listen(t.protocol, t.address, t.port))
         function server:on_accepted(new_s)
-            return init_session(new_s)
+            local ok = init_session(new_s)
+            if not ok then
+                new_s:close()
+                error "Failed to initialize session."
+                return
+            end
+            if writebuf ~= '' then
+                new_s:write(writebuf)
+                writebuf = ''
+            end
+            return ok
         end
     else
         return
