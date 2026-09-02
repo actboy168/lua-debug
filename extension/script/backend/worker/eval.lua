@@ -46,11 +46,14 @@ generate("dump", function()
     if luaver.LUAVERSION <= 52 then
         local compat_dump = assert(load(readfile 'backend.worker.eval.dump'))
         return function(content)
-            local res, err = compat_dump(content)
-            if res then
+            local ok, res, err = pcall(compat_dump, content)
+            if ok and res ~= nil then
                 return true, res
             end
-            return false, err
+            if ok then
+                return false, 'can not dump function.'
+            end
+            return false, res
         end
     else
         local eval_dump = assert(rdebug.load(readfile 'backend.worker.eval.dump'))

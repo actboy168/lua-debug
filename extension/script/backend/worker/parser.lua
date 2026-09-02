@@ -110,7 +110,12 @@ return function (content, syntaxCompatibility)
         log.error("ERROR:"..(err or "unknown error"))
         return
     end
-    local cl, v = undump(bin)
+    local ok, cl, v = pcall(undump, bin)
+    if not ok then
+        local log = require 'common.log'
+        log.error("ERROR:"..tostring(cl))
+        return
+    end
     version = v
     local si = { activelines = {}, definelines = {} }
     local lineinfo = {}

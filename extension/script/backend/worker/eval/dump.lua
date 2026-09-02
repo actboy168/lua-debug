@@ -1,6 +1,6 @@
 local content = ...
-local f = load(content, "=eval.dump")
+local f, err = load(content, "=eval.dump")
 if not f then
-    return
+    error(err, 0)
 end
 return string.dump(f)
