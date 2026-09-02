@@ -15,6 +15,11 @@ local protosById = {}       -- {["{ld}_{lld}_{srcId}"] = proto}
 local waitinstbp = {}       -- {[funcId] = {[pc] = bp}}
 local m = {}
 local enable = false
+local syntaxCompatibility = false
+
+ev.on('initializing', function(config)
+    syntaxCompatibility = config.syntaxCompatibility == true
+end)
 
 local function updateHook()
     local hasInstBp = next(instbreakpoints) ~= nil or next(waitinstbp) ~= nil
@@ -211,7 +216,7 @@ function m.find(src, currentline)
 end
 
 local function parserInlineLineinfo(src)
-    local old = parser(src.content)
+    local old = parser(src.content, syntaxCompatibility)
     if not old then
         return
     end
@@ -241,9 +246,9 @@ local function calcLineInfo(src, content)
         if src.content then
             src.lineinfo = parserInlineLineinfo(src)
         elseif content then
-            src.lineinfo = parser(content)
+            src.lineinfo = parser(content, syntaxCompatibility)
         elseif src.sourceReference then
-            src.lineinfo = parser(source.getCode(src.sourceReference))
+            src.lineinfo = parser(source.getCode(src.sourceReference), syntaxCompatibility)
         end
     end
     return src.lineinfo
@@ -531,6 +536,7 @@ ev.on('terminated', function()
     waitinstbp = {}
     info = {}
     enable = false
+    syntaxCompatibility = false
     hookmgr.break_open(false)
     if hookmgr.instbreak_open then
         hookmgr.instbreak_open(false)

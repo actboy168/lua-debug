@@ -164,6 +164,11 @@ attributes.common = {
         markdownDescription = "%lua.debug.launch.luaVersion.description%",
         type = "string",
     },
+    syntaxCompatibility = {
+        default = false,
+        markdownDescription = "%lua.debug.launch.syntaxCompatibility.description%",
+        type = "boolean",
+    },
     outputCapture = {
         default = {
         },

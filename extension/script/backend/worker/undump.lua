@@ -528,6 +528,7 @@ local undump55; do
     end
 
     function undump55(cl)
+        cached = {}
         CheckHeader()
         cl.nupvalues = LoadByte()
         cl.f = {}
