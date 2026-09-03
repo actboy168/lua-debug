@@ -45,7 +45,7 @@ end
 generate("dump", function()
     local eval_dump = assert(rdebug.load(readfile 'backend.worker.eval.dump'))
     return function(content)
-        return rdebug.eval(eval_dump, content, 0)
+        return rdebug.eval(eval_dump, content)
     end
 end)
 
