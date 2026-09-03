@@ -42,6 +42,13 @@ local function generate(name, init)
     end
 end
 
+generate("dump", function()
+    local eval_dump = assert(rdebug.load(readfile 'backend.worker.eval.dump'))
+    return function(content)
+        return rdebug.eval(eval_dump, content)
+    end
+end)
+
 generate("ffi_reflect", function ()
     if not luaver.isjit then
         return

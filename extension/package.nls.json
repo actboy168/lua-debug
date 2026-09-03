@@ -4,6 +4,7 @@
     "lua.debug.launch.console.integratedTerminal.description": "VS Code integrated terminal.",
     "lua.debug.launch.console.externalTerminal.description": "External terminal that can be configured in user settings.",
     "lua.debug.launch.luaVersion.description": "Default lua version.",
+    "lua.debug.launch.syntaxCompatibility.description": "Use the target Lua VM to parse source syntax for breakpoint line information. Note: only takes effect for Lua 5.3+ targets and requires a compatible bytecode format.",
     "lua.debug.launch.luaArch.description": "Default lua arch.",
     "lua.debug.launch.sourceCoding.description": "Source encoding.",
     "lua.debug.launch.path.description": "Search path for Lua programs",

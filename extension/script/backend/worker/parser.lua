@@ -84,15 +84,44 @@ local function normalize(lineinfo, si)
     end
 end
 
-return function (content)
-    local f, err = load(content)
-    if not f then
-        local log = require 'common.log'
-        log.error("ERROR:"..err)
-        return
+local function dumpTarget(content)
+    local eval = require 'backend.worker.eval'
+    local ok, bin = eval.dump(content)
+    if ok and type(bin) == "string" then
+        return bin
     end
-    local bin = string.dump(f)
-    local cl, v = undump(bin)
+    return nil, type(bin) == "string" and bin or "can not dump function."
+end
+
+return function (content, syntaxCompatibility)
+    local err
+    local bin
+    local cl, v
+    if syntaxCompatibility then
+        bin, err = dumpTarget(content)
+        if not bin then
+            local log = require 'common.log'
+            log.error("ERROR:"..(err or "unknown error"))
+            return
+        end
+        local ok
+        ok, cl, v = pcall(undump, bin)
+        if not ok then
+            local log = require 'common.log'
+            log.error("ERROR:"..tostring(cl))
+            return
+        end
+    else
+        local f
+        f, err = load(content)
+        if not f then
+            local log = require 'common.log'
+            log.error("ERROR:"..(err or "unknown error"))
+            return
+        end
+        bin = string.dump(f)
+        cl, v = undump(bin)
+    end
     version = v
     local si = { activelines = {}, definelines = {} }
     local lineinfo = {}
