@@ -96,25 +96,31 @@ end
 return function (content, syntaxCompatibility)
     local err
     local bin
+    local cl, v
     if syntaxCompatibility then
         bin, err = dumpTarget(content)
+        if not bin then
+            local log = require 'common.log'
+            log.error("ERROR:"..(err or "unknown error"))
+            return
+        end
+        local ok
+        ok, cl, v = pcall(undump, bin)
+        if not ok then
+            local log = require 'common.log'
+            log.error("ERROR:"..tostring(cl))
+            return
+        end
     else
         local f
         f, err = load(content)
-        if f then
-            bin = string.dump(f)
+        if not f then
+            local log = require 'common.log'
+            log.error("ERROR:"..(err or "unknown error"))
+            return
         end
-    end
-    if not bin then
-        local log = require 'common.log'
-        log.error("ERROR:"..(err or "unknown error"))
-        return
-    end
-    local ok, cl, v = pcall(undump, bin)
-    if not ok then
-        local log = require 'common.log'
-        log.error("ERROR:"..tostring(cl))
-        return
+        bin = string.dump(f)
+        cl, v = undump(bin)
     end
     version = v
     local si = { activelines = {}, definelines = {} }
