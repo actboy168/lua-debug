@@ -115,10 +115,9 @@ function checkBinaries() {
         }
     }
     if (newer.length > 0) {
-        log(`[repro] 警告：${LUADEBUG_DLL} 比这些目录里的源码旧，请 luamake -mode release 重新构建:`);
-        for (const d of newer) {
-            log('          ' + d);
-        }
+        fail(`${LUADEBUG_DLL} 比这些目录里的源码旧，请先 luamake -mode release 重新构建：\n          `
+            + newer.join('\n          ')
+            + '\n          （debug 构建会掩盖这个问题，不能用来判断复现结果）');
     }
 }
 
@@ -372,7 +371,7 @@ async function main() {
             });
             log(`[repro] breakpoint: ${JSON.stringify(res.body && res.body.breakpoints)}`);
             stop = await dap.waitStopped(15000);
-            log(`[repro] 断点在 ${where(stop.body)} (reason=${stop.body.reason})`);
+            log(`[repro] 断点在 ${where(await locate(dap, stop.body.threadId))} (reason=${stop.body.reason})`);
         } else if (mode === 'stepbp') {
             // 先暂停，再在停止状态下加断点，然后 stepIn 直到踩到断点行。
             // 这个停止由 event_breakpoint 直接 runLoop，不经过 event.step 的取消分支，
@@ -391,17 +390,20 @@ async function main() {
                 stop = await dap.waitStopped(15000);
                 log(`[repro] stepIn(${i + 1}) 停在 ${where(await locate(dap, stop.body.threadId))} (reason=${stop.body.reason})`);
             }
+            if (stop.body.reason !== 'breakpoint') {
+                fail('stepIn 10 次都没踩到断点，无法构造出"单步被断点打断"的停止状态');
+            }
         } else if (mode === 'entry') {
             stop = await dap.waitStopped(15000);
-            log(`[repro] 入口停在 ${where(stop.body)} (reason=${stop.body.reason})`);
+            log(`[repro] 入口停在 ${where(await locate(dap, stop.body.threadId))} (reason=${stop.body.reason})`);
         } else {
             await dap.request('pause', { threadId: 1 });
             stop = await dap.waitStopped(15000);
-            log(`[repro] 暂停在 ${where(stop.body)} (reason=${stop.body.reason})`);
+            log(`[repro] 暂停在 ${where(await locate(dap, stop.body.threadId))} (reason=${stop.body.reason})`);
             if (mode === 'step') {
                 await dap.request('next', { threadId: stop.body.threadId });
                 stop = await dap.waitStopped(15000);
-                log(`[repro] 单步停在 ${where(stop.body)} (reason=${stop.body.reason})`);
+                log(`[repro] 单步停在 ${where(await locate(dap, stop.body.threadId))} (reason=${stop.body.reason})`);
             }
         }
 
@@ -416,11 +418,12 @@ async function main() {
             .then(r => ({ kind: 'response', r }), e => ({ kind: 'error', e }));
 
         const secondStop = await Promise.race([
-            dap.waitStopped(5000, false).then(m => ({ kind: 'stopped', m }), () => null),
+            dap.waitStopped(5000).then(m => ({ kind: 'stopped', m }), () => null),
             evaluate.then(r => ({ kind: 'pending', r })),
         ]);
 
         if (secondStop && secondStop.kind === 'stopped') {
+            // evaluate 还没返回就又收到 stopped：不管停在哪一行，都说明停止期间又被误触发了一次停止
             const frames = await dap.request('stackTrace', { threadId, startFrame: 0, levels: 3 });
             log('[repro] evaluate 还没返回，调试器却又停在:');
             for (const f of frames.body.stackFrames) {
@@ -431,13 +434,10 @@ async function main() {
             const r = await evaluate;
             log(`[repro] continue 之后 evaluate ${r.kind === 'response' ? '返回: ' + JSON.stringify(r.r.body.result) : '失败: ' + r.e}`);
             const stopLine = (frames.body.stackFrames[0] || {}).line;
-            ok = stopLine !== coroutineLine;
             log('');
             log('===== 结论 =====');
-            log(`第二次 stopped 的位置是 target.lua:${stopLine}，协程第一行是 target.lua:${coroutineLine}`);
-            log(ok
-                ? 'BUG 未复现：停止状态下执行协程没有触发额外的停止'
-                : 'BUG 已复现：停止状态下执行“创建协程并立即执行”，协程第一行被当成 step 停下来，调试控制台的表达式被阻塞');
+            log('BUG 已复现：停止状态下执行“创建协程并立即执行”，evaluate 返回前又收到一次 stopped，调试控制台的表达式被阻塞');
+            log(`（第二次 stopped 在 target.lua:${stopLine}，协程第一行是 target.lua:${coroutineLine}，仅作诊断）`);
         } else {
             const r = await evaluate;
             log('');
