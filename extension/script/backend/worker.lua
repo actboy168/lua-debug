@@ -698,6 +698,7 @@ end
 
 local function runLoop(reason, level)
     baseL = hookmgr.gethost()
+    hookmgr.step_cancel()
     sendToMaster 'eventStop' (reason)
     skipFrame = level or 0
     workerThreadUpdate()
