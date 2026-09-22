@@ -234,7 +234,8 @@ end
 
 local function coroutineFrom(L)
     if hookmgr.coroutine_from then
-        return coroutineTree[L] or hookmgr.coroutine_from(L)
+        -- 手动指定的父协程优先，其次是native推导的，最后才是Lua兜底表
+        return hookmgr.coroutine_from(L) or coroutineTree[L]
     end
     return coroutineTree[L]
 end
@@ -270,11 +271,17 @@ function CMD.stackTrace(pkg)
     start = start + skipFrame
     local L = baseL
     local coroutineId = 0
+    local visited = {}
     local finish
     repeat
         hookmgr.sethost(L)
         local curL = L
         L = coroutineFrom(curL)
+        -- 手动指定的父协程可能构成环
+        if visited[curL] then
+            break
+        end
+        visited[curL] = true
         if stackFrame[curL] == nil then
             local n;
             finish, n = stackTrace(res, coroutineId, start, levels)
@@ -947,16 +954,19 @@ function event.thread(co, type)
     if not debuggeeReady() then return end
     -- L是触发事件的协程，即co的调用方（父协程）
     local L = hookmgr.gethost()
-    if co then
+    if co and rdebug.threadptr then
+        -- 退出事件也可能只是yield，要确认协程真的结束了
+        local dead = type == 1 and rdebug.costatus(co) == "dead"
         -- co是调试目标里的协程，转成地址才能在调试器侧标识它
-        co = rdebug.threadptr and rdebug.threadptr(co)
-        if co then
-            if type == 0 then
-                coroutineTree[co] = L
-                hookmgr.updatehookmask(co)
-                return
-            elseif type == 1 then
-                coroutineTree[co] = nil
+        co = rdebug.threadptr(co)
+        if type == 0 then
+            coroutineTree[co] = L
+            hookmgr.updatehookmask(co)
+            return
+        elseif type == 1 then
+            coroutineTree[co] = nil
+            if dead and hookmgr.coroutine_dead then
+                hookmgr.coroutine_dead(co)
             end
         end
     end
@@ -970,6 +980,16 @@ end
 
 function event.setThreadName(name)
     sendToMaster 'setThreadName' (name)
+end
+
+function event.setCoroutineParent(co, parent)
+    if not debuggeeReady() then return end
+    if not (rdebug.threadptr and hookmgr.coroutine_setparent) then return end
+    -- co和parent是调试目标里的协程，转成地址才能在调试器侧标识它们
+    co = rdebug.threadptr(co)
+    if co then
+        hookmgr.coroutine_setparent(co, parent and rdebug.threadptr(parent))
+    end
 end
 
 function event.exit()

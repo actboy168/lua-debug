@@ -342,7 +342,54 @@ struct hookmgr {
     // thread
     //
     int thread_mask = 0;
+    // 自动推导的调用方：child -> resumer，只有补丁Lua才会有内容
     bee::flatmap<lua_State*, lua_State*> coroutine_tree;
+    // 手动指定的父协程：child -> parent
+    bee::flatmap<lua_State*, lua_State*> coroutine_parent;
+
+    // 协程结束后清掉它的映射，以及所有指向它的映射，否则会留下悬垂的lua_State*
+    void coroutine_dead(lua_State* co) {
+        coroutine_tree.erase(co);
+        coroutine_parent.erase(co);
+        if (coroutine_parent.empty()) {
+            return;
+        }
+        bee::dynarray<lua_State*> children(coroutine_parent.size());
+        size_t n = 0;
+        for (auto [child, parent] : coroutine_parent) {
+            if (parent == co) {
+                children[n++] = child;
+            }
+        }
+        for (size_t i = 0; i < n; ++i) {
+            coroutine_parent.erase(children[i]);
+        }
+    }
+
+    void coroutine_setparent(lua_State* co, lua_State* parent) {
+        if (parent) {
+            coroutine_parent.insert_or_assign(co, parent);
+        } else {
+            coroutine_parent.erase(co);
+        }
+    }
+
+    lua_State* coroutine_from(lua_State* co) {
+        auto p = coroutine_parent.find(co);
+        if (p) {
+            return *p;
+        }
+#if defined(LUA_HOOKTHREAD)
+        auto r = coroutine_tree.find(co);
+        if (!r) {
+            return nullptr;
+        }
+        return *r;
+#else
+        return nullptr;
+#endif
+    }
+
 #if defined(LUA_HOOKTHREAD)
     void thread_hookmask(lua_State* hL, int mask) {
         if (thread_mask != mask) {
@@ -360,17 +407,15 @@ struct hookmgr {
             if (type == 0) {
                 coroutine_tree.insert_or_assign(co, from);
             } else if (type == 1) {
-                coroutine_tree.erase(from);
+                if (lua_status(from) == LUA_YIELD) {
+                    // 只是让出，自动链接下次resume会重来，手动指定的父协程要保留
+                    coroutine_tree.erase(from);
+                } else {
+                    coroutine_dead(from);
+                }
             }
         }
         updatehookmask(co);
-    }
-    lua_State* coroutine_from(lua_State* co) {
-        auto r = coroutine_tree.find(co);
-        if (!r) {
-            return nullptr;
-        }
-        return *r;
     }
 #endif
 
@@ -760,6 +805,7 @@ static int thread_open(luadbg_State* L) {
     hookmgr::get_self(L)->thread_open(luadebug::debughost::get(L), luadbg_toboolean(L, 1));
     return 0;
 }
+#endif
 static int coroutine_from(luadbg_State* L) {
     luadbgL_checktype(L, 1, LUA_TLIGHTUSERDATA);
     lua_State* from = hookmgr::get_self(L)->coroutine_from((lua_State*)luadbg_touserdata(L, 1));
@@ -769,7 +815,23 @@ static int coroutine_from(luadbg_State* L) {
     luadbg_pushlightuserdata(L, from);
     return 1;
 }
-#endif
+static int coroutine_setparent(luadbg_State* L) {
+    luadbgL_checktype(L, 1, LUA_TLIGHTUSERDATA);
+    lua_State* co     = (lua_State*)luadbg_touserdata(L, 1);
+    lua_State* parent = nullptr;
+    int t             = luadbg_type(L, 2);
+    if (t != LUADBG_TNIL && t != LUADBG_TNONE) {
+        luadbgL_checktype(L, 2, LUA_TLIGHTUSERDATA);
+        parent = (lua_State*)luadbg_touserdata(L, 2);
+    }
+    hookmgr::get_self(L)->coroutine_setparent(co, parent);
+    return 0;
+}
+static int coroutine_dead(luadbg_State* L) {
+    luadbgL_checktype(L, 1, LUA_TLIGHTUSERDATA);
+    hookmgr::get_self(L)->coroutine_dead((lua_State*)luadbg_touserdata(L, 1));
+    return 0;
+}
 
 LUADEBUG_FUNC
 int luaopen_luadebug_hookmgr(luadbg_State* L) {
@@ -812,8 +874,10 @@ int luaopen_luadebug_hookmgr(luadbg_State* L) {
 #endif
 #if defined(LUA_HOOKTHREAD)
         { "thread_open", thread_open },
-        { "coroutine_from", coroutine_from },
 #endif
+        { "coroutine_from", coroutine_from },
+        { "coroutine_setparent", coroutine_setparent },
+        { "coroutine_dead", coroutine_dead },
         { NULL, NULL },
     };
     luadbgL_setfuncs(L, lib, 1);
