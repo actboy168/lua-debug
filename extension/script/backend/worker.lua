@@ -945,10 +945,13 @@ end
 
 function event.thread(co, type)
     if not debuggeeReady() then return end
+    -- L是触发事件的协程，即co的调用方（父协程）
     local L = hookmgr.gethost()
     if co then
         if type == 0 then
-            coroutineTree[L] = co
+            coroutineTree[co] = L
+            hookmgr.updatehookmask(co)
+            return
         elseif type == 1 then
             coroutineTree[co] = nil
         end
