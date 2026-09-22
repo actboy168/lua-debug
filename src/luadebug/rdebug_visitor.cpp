@@ -1247,6 +1247,15 @@ namespace luadebug::visitor {
         return 1;
     }
 
+    static int visitor_threadptr(luadbg_State* L, lua_State* hL, protected_area& area) {
+        if (!copy_from_dbg(L, hL, area, 1, LUADBG_TTHREAD)) {
+            return 0;
+        }
+        luadbg_pushlightuserdata(L, lua_tothread(hL, -1));
+        lua_pop(hL, 1);
+        return 1;
+    }
+
     static int visitor_gccount(luadbg_State* L, lua_State* hL, protected_area& area) {
         int k    = lua_gc(hL, LUA_GCCOUNT, 0);
         int b    = lua_gc(hL, LUA_GCCOUNTB, 0);
@@ -1319,6 +1328,7 @@ namespace luadebug::visitor {
             { "watch", protected_call<visitor_watch> },
             { "cleanwatch", protected_call<visitor_cleanwatch> },
             { "costatus", protected_call<visitor_costatus> },
+            { "threadptr", protected_call<visitor_threadptr> },
             { "gccount", protected_call<visitor_gccount> },
             { "cfunctioninfo", protected_call<visitor_cfunctioninfo> },
 #if LUA_VERSION_NUM >= 503

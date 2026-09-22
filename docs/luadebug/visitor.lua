@@ -300,6 +300,14 @@ function visitor.costatus(co)
 end
 
 ---
+---@param co refvalue
+---@return lightuserdata?
+---co不是thread返回nil，否则返回co在调试目标中的地址。该地址能作为协程的标识跨VM传递。
+---
+function visitor.threadptr(co)
+end
+
+---
 ---@return integer
 ---等价于`collectgarbage "count"`。
 ---
