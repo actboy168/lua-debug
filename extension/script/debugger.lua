@@ -39,6 +39,11 @@ if debug.getregistry()["lua-debug"] then
         return self
     end
 
+    function empty:set_coroutine_parent(co, parent)
+        dbg:set_coroutine_parent(co, parent)
+        return self
+    end
+
     function empty:setup_patch()
         return self
     end
@@ -219,6 +224,12 @@ function dbg:set_wait(name, f)
     return self
 end
 
+-- 指定协程co的父协程，堆栈窗口里会把parent的堆栈拼在co后面。parent为nil表示清除。
+function dbg:set_coroutine_parent(co, parent)
+    self:event("setCoroutineParent", co, parent)
+    return self
+end
+
 function dbg:setup_patch()
     local ERREVENT_ERRRUN = 0x02
     local rawxpcall = xpcall
@@ -257,6 +268,16 @@ function dbg:setup_patch()
         return function (...)
             self:event("thread", co, 0)
             return coreturn(co, wf(...))
+        end
+    end
+
+    -- 被close的协程也是结束了，不然它的父链接会一直留着
+    local rawcoroutineclose = coroutine.close
+    if rawcoroutineclose then
+        function coroutine.close(co)
+            local ok, err = rawcoroutineclose(co)
+            self:event("thread", co, 1)
+            return ok, err
         end
     end
 

@@ -130,9 +130,24 @@ end
 ---
 ---@param co thread
 ---@return thread
----获取coroutine调用方
+---获取coroutine调用方。手动指定的父协程优先，其次才是resume关系。
 ---
 function hookmgr.coroutine_from(co)
+end
+
+---
+---@param co lightuserdata
+---@param parent lightuserdata|nil
+---手动指定co的父协程，传nil表示清除。co是协程标识（见rdebug.threadptr）。
+---
+function hookmgr.coroutine_setparent(co, parent)
+end
+
+---
+---@param co lightuserdata
+---通知调试器co已结束，清掉它的映射以及所有指向它的映射。
+---
+function hookmgr.coroutine_dead(co)
 end
 
 return hookmgr
