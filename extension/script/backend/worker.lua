@@ -948,12 +948,16 @@ function event.thread(co, type)
     -- L是触发事件的协程，即co的调用方（父协程）
     local L = hookmgr.gethost()
     if co then
-        if type == 0 then
-            coroutineTree[co] = L
-            hookmgr.updatehookmask(co)
-            return
-        elseif type == 1 then
-            coroutineTree[co] = nil
+        -- co是调试目标里的协程，转成地址才能在调试器侧标识它
+        co = rdebug.threadptr and rdebug.threadptr(co)
+        if co then
+            if type == 0 then
+                coroutineTree[co] = L
+                hookmgr.updatehookmask(co)
+                return
+            elseif type == 1 then
+                coroutineTree[co] = nil
+            end
         end
     end
     hookmgr.updatehookmask(L)
